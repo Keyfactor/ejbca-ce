@@ -2027,7 +2027,7 @@ public class CAsTest extends CaTestCase {
 
         log.trace(">test20BadCaReceiveResponse()");
         try {
-            caAdminSession.receiveResponse(unpriviledgedUser, 0, null, null, null);
+            caAdminSession.receiveResponse(unpriviledgedUser, "CN=TEST".hashCode(), null, null, null);
             fail("Was able to receiveResponse for a CA as unprivileged user.");
         } catch (AuthorizationDeniedException e) {
             // Expected
