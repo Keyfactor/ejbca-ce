@@ -2141,7 +2141,7 @@ public class EjbcaWS implements IEjbcaWS {
             details.put("msg", comment);
             String certstring = null;
             if (logCert != null) {
-            	certstring = CertTools.getIssuerDN(logCert)+";"+CertTools.getSerialNumberAsString(logCert)+";"+CertTools.getSubjectDN(logCert);
+            	certstring = CertTools.getSerialNumberAsString(logCert);
             }
             auditSession.log(event, EventStatus.SUCCESS, EjbcaModuleTypes.CUSTOM, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caId), username, certstring, details);
 			//logSession.log(admin, caId, LogConstants.MODULE_CUSTOM, new Date(), username, (X509Certificate) logCert, event, comment);

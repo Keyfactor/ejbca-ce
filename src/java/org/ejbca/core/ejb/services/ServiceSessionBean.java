@@ -72,7 +72,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.services.IInterval;
 import org.ejbca.core.model.services.IWorker;
 import org.ejbca.core.model.services.ServiceConfiguration;
@@ -191,7 +190,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.SERVICE_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
+                        admin.toString(), null, null, null, details);
             } else {
                 final String msg = intres.getLocalizedMessage("services.erroraddingservice", name);
                 log.info(msg);
@@ -224,7 +223,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.SERVICE_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), String.valueOf(LogConstants.INTERNALCAID), newname, null, details);
+                        admin.toString(), null, null, null, details);
             } else {
                 final String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", oldname);
                 log.info(msg);
@@ -259,7 +258,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.SERVICE_REMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
+                        admin.toString(), null, null, null, details);
                 retval = true;
             } else {
                 final String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", name);
@@ -271,7 +270,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             details.put("msg", msg);
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.SERVICE_REMOVE, EventStatus.FAILURE, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
+                    admin.toString(), null, null, null, details);
         }
         log.trace("<removeService)");
         return retval;
@@ -300,7 +299,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.SERVICE_RENAME, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldname, null, details);
+                    admin.toString(), null, null, null, details);
         } else {
             final String msg = intres.getLocalizedMessage("services.errorrenamingservice", oldname, newname);
             log.info(msg);
@@ -608,14 +607,14 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.SERVICE_EXECUTED, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                    intAdmin.toString(), String.valueOf(LogConstants.INTERNALCAID), serviceName, null, details);
+                    intAdmin.toString(), null, null, null, details);
         } catch (ServiceExecutionFailedException e) {
             final String msg = intres.getLocalizedMessage("services.serviceexecutionfailed", serviceName);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.SERVICE_EXECUTED, EventStatus.FAILURE, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                    intAdmin.toString(), String.valueOf(LogConstants.INTERNALCAID), serviceName, null, details);
+                    intAdmin.toString(), null, null, null, details);
         }
     }
 
@@ -638,7 +637,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
                     auditSession.log(EjbcaEventTypes.SERVICE_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                            intAdmin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
+                            intAdmin.toString(), null, null, null, details);
                 } else {
                     log.info(msg);
                 }
@@ -648,7 +647,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
                     auditSession.log(EjbcaEventTypes.SERVICE_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                            intAdmin.toString(), String.valueOf(LogConstants.INTERNALCAID), name, null, details);
+                            intAdmin.toString(), null, null, null, details);
                 } else {
                     log.error(msg);
                 }

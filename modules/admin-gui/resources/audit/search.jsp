@@ -93,7 +93,8 @@
 		<h:column><f:facet name="header"><h:outputText value="service"/></f:facet><h:outputText value="#{auditLogEntry.serviceTypeValue}"/></h:column>
 		<h:column><f:facet name="header"><h:outputText value="#{web.text.MODULE}"/></f:facet><h:outputText value="#{auditLogEntry.moduleTypeValue}"/></h:column>
 		<h:column><f:facet name="header"><h:outputText value="#{web.text.CA}"/></f:facet>
-		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?caid=#{auditLogEntry.customId}"><h:outputText value="#{auditor.caIdToName[(auditLogEntry.customId)]}"/></h:outputLink>
+		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?caid=#{auditLogEntry.customId}" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] != null}"><h:outputText value="#{auditor.caIdToName[(auditLogEntry.customId)]}"/></h:outputLink>
+		    <h:outputText value="#{auditLogEntry.customId}" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] == null}"/>
 		</h:column>
 		<h:column><f:facet name="header"><h:outputText value="#{web.text.CERTIFICATENR}"/></f:facet>
 		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?serno=#{auditLogEntry.searchDetail1}&caid=#{auditLogEntry.customId}"><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:outputLink>

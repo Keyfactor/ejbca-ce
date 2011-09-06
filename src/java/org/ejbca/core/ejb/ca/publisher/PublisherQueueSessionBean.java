@@ -38,12 +38,14 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -53,7 +55,6 @@ import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
-import org.ejbca.core.model.log.LogConstants;
 
 /**
  * Manages publisher queues which contains data to be republished, either because publishing failed or because publishing is done asynchronously.
@@ -266,8 +267,8 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                 userDataDN = voldata.getUserDN();
             }
             boolean published = false;
-
-            
+            EventType auditEventType = EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE;
+            String certSerialNumber = null;
             try {
                 if (publishType == PublisherConst.PUBLISH_TYPE_CERT) {
                     if (log.isDebugEnabled()) {
@@ -284,8 +285,10 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                         if (cd == null) {
                             throw new FinderException();
                         }
+                        final Certificate cert = cd.getCertificate();
+                        certSerialNumber = CertTools.getSerialNumberAsString(cert);
                         try {
-                        	published = publisherQueueSession.storeCertificateNonTransactional(publisher, admin, cd.getCertificate(), username, password, userDataDN,
+                        	published = publisherQueueSession.storeCertificateNonTransactional(publisher, admin, cert, username, password, userDataDN,
                         			cd.getCaFingerprint(), cd.getStatus(), cd.getType(), cd.getRevocationDate(), cd.getRevocationReason(), cd.getTag(), cd
                         			.getCertificateProfileId(), cd.getUpdateTime(), ei);
                         } catch (EJBException e) {
@@ -301,10 +304,10 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                         log.info(msg);
                     }
                 } else if (publishType == PublisherConst.PUBLISH_TYPE_CRL) {
-
                     if (log.isDebugEnabled()) {
                         log.debug("Publishing CRL");
                     }
+                    auditEventType = EjbcaEventTypes.PUBLISHER_STORE_CRL;
                     CRLData crlData = CRLData.findByFingerprint(entityManager, fingerprint);
 
                     if (crlData == null) {
@@ -320,7 +323,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 details.put("error", e.getMessage());
-                auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), username, String.valueOf(publisherId), details);
+                auditSession.log(auditEventType, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, certSerialNumber, username, details);
             } catch (PublisherException e) {
                 // Publisher session have already logged this error nicely to
                 // getLogSession().log

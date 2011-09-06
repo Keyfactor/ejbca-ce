@@ -41,7 +41,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 
@@ -100,13 +99,13 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                 final String msg = INTRES.getLocalizedMessage("ra.addedprofile", profilename);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.RA_ADDEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), profilename, String.valueOf(profileid), details);
+                auditSession.log(EjbcaEventTypes.RA_ADDEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
             } catch (Exception e) {
             	final String msg = INTRES.getLocalizedMessage("ra.erroraddprofile", profilename);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 details.put("error", e.getMessage());
-                auditSession.log(EjbcaEventTypes.RA_ADDEEPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), profilename, String.valueOf(profileid), details);
+                auditSession.log(EjbcaEventTypes.RA_ADDEEPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
             }
         }
     }
@@ -135,7 +134,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             		final String msg = INTRES.getLocalizedMessage("ra.clonedprofile", newname, orgname);
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
-                    auditSession.log(EjbcaEventTypes.RA_ADDEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), newname, String.valueOf(profileid), details);
+                    auditSession.log(EjbcaEventTypes.RA_ADDEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
             		success = true;
             	} catch (CloneNotSupportedException e) {
             		LOG.error("Cloe not supported?: ", e);
@@ -145,7 +144,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             	final String msg = INTRES.getLocalizedMessage("ra.errorcloneprofile", newname, orgname);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.RA_ADDEEPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), newname, null, details);
+                auditSession.log(EjbcaEventTypes.RA_ADDEEPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
             }
         } else {
         	final String msg = INTRES.getLocalizedMessage("ra.errorcloneprofile", newname, orgname);
@@ -372,7 +371,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
                 details.put(entry.getKey().toString(), entry.getValue().toString());
             }
-            auditSession.log(EjbcaEventTypes.RA_EDITEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), profilename, String.valueOf(pdl.getId()), details);
+            auditSession.log(EjbcaEventTypes.RA_EDITEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
         }
     }
 
@@ -390,7 +389,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     			final String msg = INTRES.getLocalizedMessage("ra.removedprofile", profilename);
     			final Map<String, Object> details = new LinkedHashMap<String, Object>();
     			details.put("msg", msg);
-    			auditSession.log(EjbcaEventTypes.RA_REMOVEEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), profilename, String.valueOf(pdl.getId()), details);
+    			auditSession.log(EjbcaEventTypes.RA_REMOVEEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
     		}
     	} catch (Exception e) {
     		LOG.error("Error was caught when trying to remove end entity profile " + profilename, e);
@@ -398,7 +397,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     		final Map<String, Object> details = new LinkedHashMap<String, Object>();
     		details.put("msg", msg);
     		details.put("error", e.getMessage());
-    		auditSession.log(EjbcaEventTypes.RA_REMOVEEEPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), profilename, String.valueOf(pdl.getId()), details);
+    		auditSession.log(EjbcaEventTypes.RA_REMOVEEEPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
     	}
     }
 
@@ -420,7 +419,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
                 final String msg = INTRES.getLocalizedMessage("ra.renamedprofile", oldprofilename, newprofilename);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.RA_RENAMEEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), oldprofilename, String.valueOf(pdl.getId()), details);
+                auditSession.log(EjbcaEventTypes.RA_RENAMEEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
             }
         } else {
         	final String msg = INTRES.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);

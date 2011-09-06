@@ -121,7 +121,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
                 	Map<String, Object> details = new LinkedHashMap<String, Object>();
                 	details.put("msg", msg);
                 	int caid = CertTools.getIssuerDN(cert).hashCode();
-                	auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
+                	auditSession.log(EjbcaEventTypes.REVOKE_UNREVOKEPUBLISH, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), CertTools.getSerialNumberAsString(cert), username, details);
         		}    			
     		} else {
     			// revocation

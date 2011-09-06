@@ -46,7 +46,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
@@ -93,7 +92,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     					String msg = intres.getLocalizedMessage("userdatasource.fetcheduserdatasource", pdl.getName()); 
     		            final Map<String, Object> details = new LinkedHashMap<String, Object>();
     		            details.put("msg", msg);
-    		            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEFETCHDATA, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
+    		            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEFETCHDATA, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
     				} catch (UserDataSourceException pe) {
     					String msg = intres.getLocalizedMessage("userdatasource.errorfetchuserdatasource", pdl.getName());
     					log.info(msg, pe);
@@ -127,7 +126,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     					String msg = intres.getLocalizedMessage("userdatasource.removeduserdata", pdl.getName());            	
     		            final Map<String, Object> details = new LinkedHashMap<String, Object>();
     		            details.put("msg", msg);
-    		            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEREMOVEDATA, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
+    		            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEREMOVEDATA, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
     				} catch (UserDataSourceException pe) {
     					String msg = intres.getLocalizedMessage("userdatasource.errorremovinguserdatasource", pdl.getName());
     					log.info(msg);
@@ -208,7 +207,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     			String msg = intres.getLocalizedMessage("userdatasource.addedsource", name);            	
 	            final Map<String, Object> details = new LinkedHashMap<String, Object>();
 	            details.put("msg", msg);
-	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEADD, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
+	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEADD, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
         	} else {
     			String msg = intres.getLocalizedMessage("userdatasource.erroraddsource", name);
     			log.info(msg);
@@ -237,7 +236,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     			String msg = intres.getLocalizedMessage("userdatasource.changedsource", name);            	
 	            final Map<String, Object> details = new LinkedHashMap<String, Object>();
 	            details.put("msg", msg);
-	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEEDIT, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
+	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEEDIT, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
         	} else {
     			String msg = intres.getLocalizedMessage("userdatasource.errorchangesource", name);
     			log.info(msg);
@@ -269,7 +268,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         			String msg = intres.getLocalizedMessage("userdatasource.clonedsource", newname, oldname);            	
     	            final Map<String, Object> details = new LinkedHashMap<String, Object>();
     	            details.put("msg", msg);
-    	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEADD, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
+    	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEADD, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
         		} catch (UserDataSourceExistsException f) {
         			String msg = intres.getLocalizedMessage("userdatasource.errorclonesource", newname, oldname);
         			log.info(msg, f);
@@ -304,7 +303,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     			String msg = intres.getLocalizedMessage("userdatasource.removedsource", name);            	
 	            final Map<String, Object> details = new LinkedHashMap<String, Object>();
 	            details.put("msg", msg);
-	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEREMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
+	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEREMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
     			retval = true;
     		}else{
     			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name); 
@@ -340,7 +339,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         	String msg = intres.getLocalizedMessage("userdatasource.renamedsource", oldname, newname);            	
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCERENAME, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
+            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCERENAME, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
         } else {
             String msg = intres.getLocalizedMessage("userdatasource.errorrenamesource", oldname, newname);   
             log.info(msg);
