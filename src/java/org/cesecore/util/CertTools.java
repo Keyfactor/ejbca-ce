@@ -1154,6 +1154,10 @@ public class CertTools {
         return ret;
     }
 
+    /**
+     * 
+     * @throws CertificateException if the byte array does not contain a proper certificate.
+     */
     public static Certificate getCertfromByteArray(byte[] cert) throws CertificateException {
         return getCertfromByteArray(cert, "BC");
     }

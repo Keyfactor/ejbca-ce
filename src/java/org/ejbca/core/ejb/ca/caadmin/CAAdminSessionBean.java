@@ -1028,10 +1028,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             String msg = intres.getLocalizedMessage("caadmin.errorcertresp", Integer.valueOf(caid));
             log.info(msg);
             throw new EjbcaException(e.getMessage());
-        } catch (IOException e) {
-            String msg = intres.getLocalizedMessage("caadmin.errorcertresp", Integer.valueOf(caid));
-            log.info(msg);
-            throw new EjbcaException(e.getMessage());
         } catch (InvalidAlgorithmParameterException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertresp", Integer.valueOf(caid));
             log.info(msg);
