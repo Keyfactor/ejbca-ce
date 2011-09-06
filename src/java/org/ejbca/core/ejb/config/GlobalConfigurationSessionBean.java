@@ -152,7 +152,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
 			for (Map.Entry<Object,Object> entry : diff.entrySet()) {
 				details.put(entry.getKey().toString(), entry.getValue().toString());				
 			}
-            auditSession.log(EjbcaEventTypes.SYSTEMCONF_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
+            auditSession.log(EjbcaEventTypes.SYSTEMCONF_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
         } else {
             // Global configuration doesn't yet exists.
             try {
@@ -160,13 +160,13 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 String msg = intres.getLocalizedMessage("ra.createdconf", pk);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.SYSTEMCONF_CREATE, EventStatus.SUCCESS, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
+                auditSession.log(EjbcaEventTypes.SYSTEMCONF_CREATE, EventStatus.SUCCESS, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
             } catch (Exception e) {
                 String msg = intres.getLocalizedMessage("ra.errorcreateconf");
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 details.put("error", e.getMessage());
-                auditSession.log(EjbcaEventTypes.SYSTEMCONF_CREATE, EventStatus.FAILURE, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, null, details);
+                auditSession.log(EjbcaEventTypes.SYSTEMCONF_CREATE, EventStatus.FAILURE, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
             }
         }
         globalconfigurationCache.setGlobalconfiguration(globconf);

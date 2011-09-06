@@ -97,7 +97,6 @@ import org.ejbca.core.model.approval.approvalrequests.EditEndEntityApprovalReque
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
@@ -188,7 +187,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             final String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+            auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
             throw new AuthorizationDeniedException(msg);
         }
     }
@@ -215,7 +214,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(endEntityProfileId));
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caId).toString(), null, null, details);
+            auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caId), null, null, details);
             throw new AuthorizationDeniedException(msg);
         }
     }
@@ -302,7 +301,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 final String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", endEntityProfileName, dn, e.getMessage());
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+                auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
                 throw e;
             }
         }
@@ -360,14 +359,14 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         		final String msg = intres.getLocalizedMessage("ra.addedentity", username);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+                auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
         	} catch (PersistenceException e) {
         		// PersistenceException could also be caused by various database problems.
         		final String msg = intres.getLocalizedMessage("ra.errorentityexist", username);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 details.put("error", e.getMessage());
-                auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+                auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
         		throw e;
         	} catch (Exception e) {
         		final String msg = intres.getLocalizedMessage("ra.erroraddentity", username);
@@ -375,7 +374,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 details.put("error", e.getMessage());
-                auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+                auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
         		throw new EJBException(e);
         	}
         }
@@ -541,7 +540,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 final String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", Integer.valueOf(endEntityProfileId), dn, e.getMessage());
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+                auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
                 throw e;
             }
         }
@@ -625,19 +624,19 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 final String msg = intres.getLocalizedMessage("ra.editedentitystatus", username, Integer.valueOf(newstatus));
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+                auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
             } else {
                 final String msg = intres.getLocalizedMessage("ra.editedentity", username);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+                auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
             }
         } catch (Exception e) {
             final String msg = intres.getLocalizedMessage("ra.erroreditentity", username);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             details.put("error", e.getMessage());
-            auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+            auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
             log.error("ChangeUser:", e);
             throw new EJBException(e);
         }
@@ -652,10 +651,11 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             log.trace(">deleteUser(" + username + ")");
         }
         // Check if administrator is authorized to delete user.
-        int caid = LogConstants.INTERNALCAID;
+        String caIdLog = null;
         UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
-            caid = data1.getCaId();
+            final int caid = data1.getCaId();
+            caIdLog = String.valueOf(caid);
             assertAuthorizedToCA(admin, caid);
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             	assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_RIGHTS, caid);
@@ -670,13 +670,13 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             String msg = intres.getLocalizedMessage("ra.removedentity", username);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+            auditSession.log(EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), caIdLog, null, username, details);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("ra.errorremoveentity", username);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             details.put("error", e.getMessage());
-            auditSession.log(EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+            auditSession.log(EjbcaEventTypes.RA_DELETEENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), caIdLog, null, username, details);
             throw new RemoveException(msg);
         }
         if (log.isTraceEnabled()) {
@@ -704,10 +704,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     		log.trace(">resetRamainingLoginAttempts(" + username + ")");
     	}
     	int resetValue = -1;
-    	int caid = LogConstants.INTERNALCAID;
     	final UserData data1 = UserData.findByUsername(entityManager, username);
     	if (data1 != null) {
-    		caid = data1.getCaId();
+    		final int caid = data1.getCaId();
     		assertAuthorizedToCA(admin, caid);
     		final ExtendedInformation ei = data1.getExtendedInformation();
     		if (ei != null) {
@@ -739,7 +738,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         	final String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+            auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
         }
         if (log.isTraceEnabled()) {
             log.trace("<resetRamainingLoginAttemptsInternal: " + resetValue);
@@ -751,11 +750,10 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (log.isTraceEnabled()) {
             log.trace(">decRemainingLoginAttempts(" + username + ")");
         }
-        int caid = LogConstants.INTERNALCAID;
 		int counter = Integer.MAX_VALUE;
         UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
-            caid = data1.getCaId();
+            final int caid = data1.getCaId();
             assertAuthorizedToCA(admin, caid);
             final ExtendedInformation ei = data1.getExtendedInformation();
             if (ei != null) {
@@ -768,7 +766,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             			final String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
                         Map<String, Object> details = new LinkedHashMap<String, Object>();
                         details.put("msg", msg);
-                        auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+                        auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
             			resetRemainingLoginAttemptsInternal(admin, ei, username, caid);
         				data1.setTimeModified(new Date().getTime());
         				data1.setExtendedInformation(ei);
@@ -782,7 +780,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             		String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
                     Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
-                    auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+                    auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
             	} else {
             		if (log.isDebugEnabled()) {
             			log.debug("Found a remaining login counter with value UNLIMITED, not decreased in db.");
@@ -810,10 +808,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         // because the default number of allowed requests are 1
         int counter = 0;
         // Check if administrator is authorized to edit user.
-        int caid = LogConstants.INTERNALCAID;
         UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
-            caid = data1.getCaId();
+            final int caid = data1.getCaId();
             assertAuthorizedToCA(admin, caid);
             if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             	assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
@@ -919,11 +916,11 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (log.isTraceEnabled()) {
             log.trace(">cleanUserCertDataSN(" + username + ")");
         }
-        final int caid = LogConstants.INTERNALCAID;
         try {
             // Check if administrator is authorized to edit user.
             UserData data1 = UserData.findByUsername(entityManager, username);
             if (data1 != null) {
+            	final int caid = data1.getCaId();
                 assertAuthorizedToCA(admin, caid);
                 if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 	assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
@@ -1013,7 +1010,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final String msg = intres.getLocalizedMessage("ra.editedentitystatus", username, Integer.valueOf(status));
         Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
-        auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+        auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
         // Send notifications when transitioning user through work-flow, if they
         // should be sent
         final EndEntityInformation userdata = data1.toUserDataVO();
@@ -1073,7 +1070,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 final String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", Integer.valueOf(endEntityProfileId), dn, ufe.getMessage());
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+                auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
                 throw ufe;
             }
             // Check if administrator is authorized to edit user.
@@ -1096,7 +1093,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             final String msg = intres.getLocalizedMessage("ra.editpwdentity", username);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+            auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
         } catch (NoSuchAlgorithmException nsae) {
             log.error("NoSuchAlgorithmException while setting password for user " + username);
             throw new EJBException(nsae);
@@ -1114,11 +1111,11 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         boolean ret = false;
         // Find user
-        UserData data = UserData.findByUsername(entityManager, username);
+        final UserData data = UserData.findByUsername(entityManager, username);
         if (data == null) {
             throw new FinderException("Could not find user " + username);
         }
-        int caid = data.getCaId();
+        final int caid = data.getCaId();
         if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
         	assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
@@ -1232,7 +1229,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final String msg = intres.getLocalizedMessage("ra.revokedentity", username);
         Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
-        auditSession.log(EjbcaEventTypes.RA_REVOKEDENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+        auditSession.log(EjbcaEventTypes.RA_REVOKEDENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
         if (log.isTraceEnabled()) {
             log.trace("<revokeUser()");
         }
@@ -1258,7 +1255,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             String msg = intres.getLocalizedMessage("ra.errorauthrevoke");
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), certserno.toString(16), null, null, details);
+            auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(), null, certserno.toString(16).toUpperCase(), null, details);
             throw new AuthorizationDeniedException(msg);
         }
         // To be fully backwards compatible we just use the first fingerprint found..

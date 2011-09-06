@@ -295,12 +295,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             String msg = intres.getLocalizedMessage("publisher.addedpublisher", name);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.PUBLISHER_CREATION, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, String.valueOf(id), details);            
+            auditSession.log(EjbcaEventTypes.PUBLISHER_CREATION, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
         } else {
             String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", name);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.PUBLISHER_CREATION, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, String.valueOf(id), details);            
+            auditSession.log(EjbcaEventTypes.PUBLISHER_CREATION, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
             throw new PublisherExistsException();
         }
         log.trace("<addPublisher()");
@@ -317,12 +317,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             String msg = intres.getLocalizedMessage("publisher.changedpublisher", name);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.PUBLISHER_CHANGE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, name, details);            
+            auditSession.log(EjbcaEventTypes.PUBLISHER_CHANGE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
         } else {
             String msg = intres.getLocalizedMessage("publisher.errorchangepublisher", name);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.PUBLISHER_CHANGE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, name, details);            
+            auditSession.log(EjbcaEventTypes.PUBLISHER_CHANGE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
         }
         log.trace("<changePublisher()");
     }
@@ -344,12 +344,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 String msg = intres.getLocalizedMessage("publisher.clonedpublisher", newname, oldname);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.PUBLISHER_CLONE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, newname, details);            
+                auditSession.log(EjbcaEventTypes.PUBLISHER_CLONE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
             } catch (PublisherExistsException f) {
                 String msg = intres.getLocalizedMessage("publisher.errorclonepublisher", newname, oldname);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.PUBLISHER_CLONE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, newname, details);            
+                auditSession.log(EjbcaEventTypes.PUBLISHER_CLONE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
                 throw f;
             }
         } catch (Exception e) {
@@ -376,14 +376,14 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 String msg = intres.getLocalizedMessage("publisher.removedpublisher", name);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.PUBLISHER_REMOVAL, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, name, details);            
+                auditSession.log(EjbcaEventTypes.PUBLISHER_REMOVAL, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("publisher.errorremovepublisher", name);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             details.put("error", e.getMessage());
-            auditSession.log(EjbcaEventTypes.PUBLISHER_REMOVAL, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, name, details);            
+            auditSession.log(EjbcaEventTypes.PUBLISHER_REMOVAL, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
         }
         log.trace("<removePublisher()");
     }
@@ -405,12 +405,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             String msg = intres.getLocalizedMessage("publisher.renamedpublisher", oldname, newname);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.PUBLISHER_RENAME, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, newname, details);            
+            auditSession.log(EjbcaEventTypes.PUBLISHER_RENAME, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
         } else {
             String msg = intres.getLocalizedMessage("publisher.errorrenamepublisher", oldname, newname);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.PUBLISHER_RENAME, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, newname, details);            
+            auditSession.log(EjbcaEventTypes.PUBLISHER_RENAME, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
             throw new PublisherExistsException();
         }
         log.trace("<renamePublisher()");

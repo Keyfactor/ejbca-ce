@@ -135,7 +135,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), String.valueOf(approvalRequest.getCAId()), null, String.valueOf(approvalId), details);
+                        admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
             } catch (Exception e1) {
                 String msg = intres.getLocalizedMessage("approval.erroradding", approvalId);
                 log.error(msg, e1);
@@ -143,7 +143,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 details.put("msg", msg);
                 details.put("Error", e1.getMessage());
                 auditSession.log(EjbcaEventTypes.APPROVAL_ADD, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), String.valueOf(approvalRequest.getCAId()), null, String.valueOf(approvalId), details);
+                        admin.toString(), String.valueOf(approvalRequest.getCAId()), null, null, details);
             }
         }
         if (log.isTraceEnabled()) {
@@ -162,7 +162,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.APPROVAL_REMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), String.valueOf(ad.getCaid()), null, String.valueOf(id), details);
+                        admin.toString(), String.valueOf(ad.getCaid()), null, null, details);
             } else {
                 String msg = intres.getLocalizedMessage("approval.notexist", id);
                 log.info(msg);
@@ -174,7 +174,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             details.put("msg", msg);
             details.put("error", e.getMessage());
             auditSession.log(EjbcaEventTypes.APPROVAL_REMOVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), String.valueOf(LogConstants.INTERNALCAID), null, String.valueOf(id), details);
+                    admin.toString(), null, null, null, details);
             log.error("Error removing approval request", e);
         }
         log.trace("<removeApprovalRequest");
@@ -210,7 +210,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.APPROVAL_REJECT, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), String.valueOf(LogConstants.INTERNALCAID), String.valueOf(adl.getCaid()), String.valueOf(approvalId), details);
+                    admin.toString(), String.valueOf(adl.getCaid()), null, null, details);
         } catch (ApprovalRequestExpiredException e) {
             String msg = intres.getLocalizedMessage("approval.expired", approvalId);
             log.info(msg);

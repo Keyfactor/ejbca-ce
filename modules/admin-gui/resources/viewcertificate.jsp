@@ -103,8 +103,7 @@
 	     rabean.loadCertificates(new BigInteger(certificateSerno,16), caid); 
 	     notauthorized = false;
 	     noparameter = false;
-	  }
-  if( request.getParameter(CACERT_PARAMETER ) != null){
+  } else if( request.getParameter(CACERT_PARAMETER ) != null){
      caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
      if(request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null){
        try{  
