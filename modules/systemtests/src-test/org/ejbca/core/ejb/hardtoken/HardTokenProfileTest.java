@@ -16,8 +16,10 @@ package org.ejbca.core.ejb.hardtoken;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Collection;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.model.SecConst;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -58,27 +60,32 @@ public class HardTokenProfileTest {
     @Test
     public void test01AddHardTokenProfile() throws HardTokenProfileExistsException {
 
-        SwedishEIDProfile profile = new SwedishEIDProfile();
-        EnhancedEIDProfile profile2 = new EnhancedEIDProfile();
-        TurkishEIDProfile turprofile = new TurkishEIDProfile();
+        final SwedishEIDProfile swedishProfileOrg = new SwedishEIDProfile();
+        final EnhancedEIDProfile enhancedProfileOrg = new EnhancedEIDProfile();
+        final TurkishEIDProfile turkishProfileOrg = new TurkishEIDProfile();
 
-        String svgdata = createSVGData();
-        profile.setPINEnvelopeData(svgdata);
-        profile2.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC, true);
+        final String svgdata = createSVGData();
+        swedishProfileOrg.setPINEnvelopeData(svgdata);
+        enhancedProfileOrg.setIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC, true);
+        swedishProfileOrg.setCertificateProfileId(SwedishEIDProfile.CERTUSAGE_SIGN, SecConst.CERTPROFILE_NO_PROFILE);
 
-        hardTokenSession.addHardTokenProfile(admin, "SWETEST", profile);
-        hardTokenSession.addHardTokenProfile(admin, "ENHTEST", profile2);
-        hardTokenSession.addHardTokenProfile(admin, "TURTEST", turprofile);
+        this.hardTokenSession.addHardTokenProfile(admin, "SWETEST", swedishProfileOrg);
+        this.hardTokenSession.addHardTokenProfile(admin, "ENHTEST", enhancedProfileOrg);
+        this.hardTokenSession.addHardTokenProfile(admin, "TURTEST", turkishProfileOrg);
 
-        SwedishEIDProfile profile3 = (SwedishEIDProfile) hardTokenSession.getHardTokenProfile(admin, "SWETEST");
-        EnhancedEIDProfile profile4 = (EnhancedEIDProfile) hardTokenSession.getHardTokenProfile(admin, "ENHTEST");
-        TurkishEIDProfile turprofile2 = (TurkishEIDProfile) hardTokenSession.getHardTokenProfile(admin, "TURTEST");
+        final Collection<Integer> authorizedHardTokenIds = this.hardTokenSession.getAuthorizedHardTokenProfileIds(admin);
 
-        String svgdata2 = profile3.getPINEnvelopeData();
+        final SwedishEIDProfile swedishProfile = (SwedishEIDProfile) this.hardTokenSession.getHardTokenProfile(admin, "SWETEST");
+        final EnhancedEIDProfile enhancedProfile = (EnhancedEIDProfile) this.hardTokenSession.getHardTokenProfile(admin, "ENHTEST");
+        final TurkishEIDProfile turkishProfile = (TurkishEIDProfile) this.hardTokenSession.getHardTokenProfile(admin, "TURTEST");
 
+        final String svgdata2 = swedishProfile.getPINEnvelopeData();
+
+        assertTrue(  "Profile not authorized", authorizedHardTokenIds.contains( new Integer(this.hardTokenSession.getHardTokenProfileId(admin, "SWETEST")) )  );
+        assertTrue("Saving certificate profile failed", swedishProfile.getCertificateProfileId(SwedishEIDProfile.CERTUSAGE_SIGN)==SecConst.CERTPROFILE_NO_PROFILE);
         assertTrue("Saving SVG Data failed", svgdata.equals(svgdata2));
-        assertTrue("Saving Hard Token Profile failed", profile4.getIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC));
-        assertTrue("Saving Turkish Hard Token Profile failed", (turprofile2 != null));
+        assertTrue("Saving Hard Token Profile failed", enhancedProfile.getIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC));
+        assertTrue("Saving Turkish Hard Token Profile failed", turkishProfile!=null);
     }
 
     @Test
