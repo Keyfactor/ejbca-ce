@@ -542,6 +542,7 @@
 					<include name="org/cesecore/certificates/certificate/request/CVCRequestMessage.java"/>
 					<include name="org/cesecore/certificates/certificate/request/RequestMessage.java"/>
 					<include name="org/cesecore/certificates/certificate/request/ResponseMessage.java"/>
+					<include name="org/cesecore/certificates/certificate/request/CertificateResponseMessage.java"/>
 					<include name="org/cesecore/certificates/certificate/request/ResponseStatus.java"/>
 					<include name="org/cesecore/certificates/certificate/request/FailInfo.java"/>
 					<include name="org/ejbca/core/protocol/certificatestore/HashID.java"/>
