@@ -33,10 +33,12 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -66,8 +68,12 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     private static final String PBE_SECRET_3 = "sharedSecret3";
     private static final String EEP_1 = "CmpRAAuthenticationTestEEP";
 
+    private static final String USERNAME = "cmpRAAuthenticationTestUser";
+    
     private static X509Certificate caCertificate1;
     private static X509Certificate caCertificate2;
+    
+    private UserAdminSessionRemote userAdminSession = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {
@@ -164,48 +170,52 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         LOG.trace(">testIssueConfirmRevoke");
         // Generate and send certificate request
         byte[] nonce = CmpMessageHelper.createSenderNonce();
-        byte[] transid = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce(); 
         Date notBefore = new Date();
         Date notAfter = new Date(new Date().getTime() + 24 * 3600 * 1000);
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        String subjectDN = "CN=cmpRAAuthenticationTestUser" + RND.nextLong();
-        PKIMessage one = genCertReq(CertTools.getSubjectDN(caCertificate), subjectDN, keys, caCertificate, nonce, transid, true, null, notBefore,
-                notAfter, null);
-        PKIMessage req = protectPKIMessage(one, false, pbeSecret, keyId, 567);
-        assertNotNull("Request was not created properly.", req);
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        new DEROutputStream(bao).writeObject(req);
-        byte[] ba = bao.toByteArray();
-        byte[] resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
-        X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
+        String subjectDN = "CN=" + USERNAME;
+        try {
+            PKIMessage one = genCertReq(CertTools.getSubjectDN(caCertificate), subjectDN, keys, caCertificate, nonce, transid, true, null, notBefore,
+                    notAfter, null);
+            PKIMessage req = protectPKIMessage(one, false, pbeSecret, keyId, 567);
+            assertNotNull("Request was not created properly.", req);
+            int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            new DEROutputStream(bao).writeObject(req);
+            byte[] ba = bao.toByteArray();
+            byte[] resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
+            X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
 
-        // Send a confirm message to the CA
-        String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(subjectDN, caCertificate, nonce, transid, hash, reqId);
-        assertNotNull("Could not create confirmation message.", confirm);
-        PKIMessage req1 = protectPKIMessage(confirm, false, pbeSecret, keyId, 567);
-        bao = new ByteArrayOutputStream();
-        new DEROutputStream(bao).writeObject(req1);
-        ba = bao.toByteArray();
-        resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
-        checkCmpPKIConfirmMessage(subjectDN, caCertificate, resp);
+            // Send a confirm message to the CA
+            String hash = "foo123";
+            PKIMessage confirm = genCertConfirm(subjectDN, caCertificate, nonce, transid, hash, reqId);
+            assertNotNull("Could not create confirmation message.", confirm);
+            PKIMessage req1 = protectPKIMessage(confirm, false, pbeSecret, keyId, 567);
+            bao = new ByteArrayOutputStream();
+            new DEROutputStream(bao).writeObject(req1);
+            ba = bao.toByteArray();
+            resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
+            checkCmpPKIConfirmMessage(subjectDN, caCertificate, resp);
 
-        // Now revoke the bastard using the CMPv1 reason code!
-        PKIMessage rev = genRevReq(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, nonce, transid, false);
-        PKIMessage revReq = protectPKIMessage(rev, false, pbeSecret, keyId, 567);
-        assertNotNull("Could not create revocation message.", revReq);
-        bao = new ByteArrayOutputStream();
-        new DEROutputStream(bao).writeObject(revReq);
-        ba = bao.toByteArray();
-        resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
-        checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
-        int reason = InterfaceCache.getCertificateStoreSession().getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
-        assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
-        LOG.trace("<testIssueConfirmRevoke");
+            // Now revoke the bastard using the CMPv1 reason code!
+            PKIMessage rev = genRevReq(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, nonce, transid, false);
+            PKIMessage revReq = protectPKIMessage(rev, false, pbeSecret, keyId, 567);
+            assertNotNull("Could not create revocation message.", revReq);
+            bao = new ByteArrayOutputStream();
+            new DEROutputStream(bao).writeObject(revReq);
+            ba = bao.toByteArray();
+            resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
+            checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
+            int reason = InterfaceCache.getCertificateStoreSession().getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
+            assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
+            LOG.trace("<testIssueConfirmRevoke");
+        } finally {
+            userAdminSession.deleteUser(ADMIN, USERNAME);
+        }
     }
 
     /** Remove CAs and restore configuration that was used by the tests. */
