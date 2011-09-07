@@ -64,6 +64,7 @@ import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -2045,7 +2046,7 @@ public class CAsTest extends CaTestCase {
             // Expected
         }
         try {
-            ResponseMessage resp = new X509ResponseMessage();
+            CertificateResponseMessage resp = new X509ResponseMessage();
             resp.setCertificate(caSession.getCAInfo(admin, getTestCAName()).getCertificateChain().iterator().next());
             caAdminSession.receiveResponse(admin, "CN=TEST".hashCode(), resp, null, null);
             fail("Was able to receiveResponse for a CA that is not 'signed by external'.");

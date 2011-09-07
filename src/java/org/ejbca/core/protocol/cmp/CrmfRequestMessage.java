@@ -46,9 +46,9 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.util.Arrays;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
@@ -604,7 +604,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 	}
 
 	@Override
-	public ResponseMessage createResponseMessage(final Class responseClass, final RequestMessage req, final Certificate cert, final PrivateKey signPriv, final String provider) {
+	public CertificateResponseMessage createResponseMessage(final Class responseClass, final RequestMessage req, final Certificate cert, final PrivateKey signPriv, final String provider) {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
     }
 }

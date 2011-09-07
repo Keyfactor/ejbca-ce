@@ -52,11 +52,11 @@ import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.CustomCertSerialNumberException;
 import org.cesecore.certificates.certificate.IllegalKeyException;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
-import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -220,7 +220,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     	}
         // Get CA that will receive request
     	EndEntityInformation data = null;
-        ResponseMessage ret = null;
+        CertificateResponseMessage ret = null;
         CA ca;
         if (suppliedUserData == null) {
         	ca = getCAFromRequest(admin, req);
@@ -253,7 +253,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 
                     	// Issue the certificate from the request
                     	ret = certificateCreateSession.createCertificate(admin, data, req, responseClass);
-                    	postCreateCertificate(admin, data, ca, ((X509ResponseMessage) ret).getCertificate());
+                    	postCreateCertificate(admin, data, ca, ret.getCertificate());
                     }
             	} catch (ObjectNotFoundException oe) {
             		// If we didn't find the entity return error message
@@ -344,11 +344,11 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 	}
 
     @Override
-    public ResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req,  Class responseClass, FailInfo failInfo, String failText) throws  AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException {
+    public CertificateResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req,  Class responseClass, FailInfo failInfo, String failText) throws  AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
     		log.trace(">createRequestFailedResponse(IRequestMessage)");
     	}
-        ResponseMessage ret = null;            
+    	CertificateResponseMessage ret = null;            
         CA ca = getCAFromRequest(admin, req);
         try {
             CAToken catoken = ca.getCAToken();

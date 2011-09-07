@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -289,7 +290,7 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
     		assertNotNull("Failed to create certificate", cert);
     		try {
     			cert.verify(cacert.getPublicKey());
-    			assertTrue("Should throw", false);
+    			fail("Should throw");
     		} catch (InvalidKeyException e) {
     			// NOPMD
     		}

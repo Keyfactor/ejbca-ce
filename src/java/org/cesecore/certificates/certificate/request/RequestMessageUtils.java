@@ -60,11 +60,11 @@ public class RequestMessageUtils {
 		return ret;
 	}
 
-	public static ResponseMessage createResponseMessage(Class responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider){
-		ResponseMessage ret = null;
+	public static CertificateResponseMessage createResponseMessage(Class responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider){
+	    CertificateResponseMessage ret = null;
 		// Create the response message and set all required fields
 		try {
-			ret = (ResponseMessage) responseClass.newInstance();
+			ret = (CertificateResponseMessage) responseClass.newInstance();
 		} catch (InstantiationException e) {
 			//TODO : do something with these exceptions
 			log.error("Error creating response message", e);

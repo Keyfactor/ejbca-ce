@@ -47,9 +47,9 @@ import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -59,7 +59,7 @@ import org.cesecore.util.CertTools;
  *
  * @version $Id$
  */
-public class ScepResponseMessage implements ResponseMessage {
+public class ScepResponseMessage implements CertificateResponseMessage {
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -124,6 +124,17 @@ public class ScepResponseMessage implements ResponseMessage {
     public void setCertificate(Certificate cert) {
         this.cert = cert;
     }
+    
+    @Override
+    public Certificate getCertificate() {
+        try {
+            return CertTools.getCertfromByteArray(getResponseMessage());
+        } catch (CertificateEncodingException e) {
+            throw new Error("Could not encode certificate. This should not happen", e);
+        } catch (CertificateException e) {
+            throw new Error("Response was created without containing valid certificate. This should not happen", e);
+        }
+    }
 
     @Override
     public void setCrl(CRL crl) {
@@ -141,7 +152,7 @@ public class ScepResponseMessage implements ResponseMessage {
     }
 
     @Override
-    public byte[] getResponseMessage() throws IOException, CertificateEncodingException {
+    public byte[] getResponseMessage() throws CertificateEncodingException {
         return responseMessage;
     }
 

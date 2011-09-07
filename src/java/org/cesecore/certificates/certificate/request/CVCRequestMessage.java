@@ -327,7 +327,7 @@ public class CVCRequestMessage implements RequestMessage {
     }
     
     @Override
-    public ResponseMessage createResponseMessage(Class responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider) {
+    public CertificateResponseMessage createResponseMessage(Class responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider) {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
     }
     

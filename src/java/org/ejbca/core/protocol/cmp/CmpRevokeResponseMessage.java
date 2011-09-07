@@ -68,10 +68,6 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
     private ResponseStatus status = ResponseStatus.FAILURE;
 
 	@Override
-    public void setCertificate(Certificate cert) {
-	}
-
-	@Override
 	public void setCrl(CRL crl) {
 	}
 
@@ -200,4 +196,5 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 	@Override
     public void setProtectionParamsFromRequest(RequestMessage reqMsg) {
     }
+
 }
