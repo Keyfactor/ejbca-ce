@@ -118,32 +118,38 @@ public class CertificateRequestSessionTest extends CaTestCase {
     @Test
     public void testCertificateRequestRollback() throws Exception {
         // First try a successful request and validate the returned KeyStore
-        String username = "certificateRequestTest-" + random.nextInt();
+        String username = "certificateRequestTest-user1";
         String password = "foo123";
-        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, getTestCAId(), null, null, SecConst.USER_ENDUSER,
+                SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         userdata.setPassword(password);
         String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
         byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, SecConst.CERT_REQ_TYPE_PKCS10, null,
                 SecConst.CERT_RES_TYPE_CERTIFICATE);
-        Certificate cert = CertTools.getCertfromByteArray(encodedCertificate);
-        assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(), CertTools.getSubjectDN(cert), userdata
-                .getDN());
-        // Try again with a user that does not exist and use values that we will
-        // break certificate generation
-        // If the transaction really is rolled back successfully there will be
-        // no trace of the user in the database
-        // We can do this by relying on the Unique Public Key constraint
-        String username2 = "certificateRequestTest-" + random.nextInt();
-        userdata.setUsername(username2); // Still the same Subject DN
-        userdata.setPassword(password);
         try {
-            certificateRequestSession.processCertReq(admin, userdata, pkcs10, SecConst.CERT_REQ_TYPE_PKCS10, null, SecConst.CERT_RES_TYPE_CERTIFICATE);
-            fail("Certificate creation did not fail as expected.");
-        } catch (Exception e) {
-            log.debug("Got an exception as expected: " + e.getMessage());
+            Certificate cert = CertTools.getCertfromByteArray(encodedCertificate);
+            assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(),
+                    CertTools.getSubjectDN(cert), userdata.getDN());
+            // Try again with a user that does not exist and use values that we will
+            // break certificate generation
+            // If the transaction really is rolled back successfully there will be
+            // no trace of the user in the database
+            // We can do this by relying on the Unique Public Key constraint
+            String username2 = "certificateRequestTest-user2";
+            userdata.setUsername(username2); // Still the same Subject DN
+            userdata.setPassword(password);
+            try {
+                certificateRequestSession.processCertReq(admin, userdata, pkcs10, SecConst.CERT_REQ_TYPE_PKCS10, null,
+                        SecConst.CERT_RES_TYPE_CERTIFICATE);
+                fail("Certificate creation did not fail as expected.");
+            } catch (Exception e) {
+                log.debug("Got an exception as expected: " + e.getMessage());
+            }
+            assertFalse("Failed certificate generation request never rolled back user created '" + username2 + "'.",
+                    userAdminSession.existsUser(admin, username2));
+        } finally {
+            userAdminSession.deleteUser(admin, username);
         }
-        assertFalse("Failed certificate generation request never rolled back user created '" + username2 + "'.", userAdminSession.existsUser(admin, username2));
     }
 
     /**
@@ -162,8 +168,13 @@ public class CertificateRequestSessionTest extends CaTestCase {
         String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
         byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, SecConst.CERT_REQ_TYPE_PKCS10, null,
                 SecConst.CERT_RES_TYPE_CERTIFICATE);
-        Certificate cert = CertTools.getCertfromByteArray(encodedCertificate);
-        assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " expectedDn: " + expectedDn, expectedDn, CertTools.getSubjectDN(cert));
+        try {
+            Certificate cert = CertTools.getCertfromByteArray(encodedCertificate);
+            assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " expectedDn: " + expectedDn, expectedDn,
+                    CertTools.getSubjectDN(cert));
+        } finally {
+            userAdminSession.deleteUser(admin, username);
+        }
     }
 
     @After
