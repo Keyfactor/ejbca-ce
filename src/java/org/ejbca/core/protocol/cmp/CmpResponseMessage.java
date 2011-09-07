@@ -23,6 +23,7 @@ import java.security.SignatureException;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
@@ -32,10 +33,11 @@ import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.X509CertificateStructure;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
+import org.cesecore.util.CertTools;
 
 import com.novosec.pkix.asn1.cmp.CertOrEncCert;
 import com.novosec.pkix.asn1.cmp.CertRepMessage;
@@ -53,7 +55,7 @@ import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
  * @author tomas
  * @version $Id$
  */
-public class CmpResponseMessage implements ResponseMessage {
+public class CmpResponseMessage implements CertificateResponseMessage {
 	
 	/**
 	 * Determines if a de-serialized file is compatible with this class.
@@ -113,6 +115,17 @@ public class CmpResponseMessage implements ResponseMessage {
 	private transient String pbeMacAlg = null;
 	private transient String pbeKeyId = null;
 	private transient String pbeKey = null;
+
+    @Override
+    public Certificate getCertificate() {
+        try {
+            return CertTools.getCertfromByteArray(getResponseMessage());
+        } catch (CertificateEncodingException e) {
+            throw new Error("Could not encode certificate. This should not happen", e);
+        } catch (CertificateException e) {
+            throw new Error("Response was created without containing valid certificate. This should not happen", e);
+        }
+    }
 	
 	@Override
 	public void setCertificate(Certificate cert) {
@@ -132,7 +145,7 @@ public class CmpResponseMessage implements ResponseMessage {
 	}
 	
 	@Override
-	public byte[] getResponseMessage() throws IOException, CertificateEncodingException {
+	public byte[] getResponseMessage() throws CertificateEncodingException {
         return responseMessage;
 	}
 	

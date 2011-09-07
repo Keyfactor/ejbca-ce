@@ -34,7 +34,7 @@ import org.cesecore.util.CertTools;
  * 
  * @version $Id: X509ResponseMessage.java 396 2011-03-01 15:48:02Z tomas $
  */
-public class X509ResponseMessage implements ResponseMessage {
+public class X509ResponseMessage implements CertificateResponseMessage {
     /**
      * Determines if a de-serialized file is compatible with this class.
      *
@@ -87,13 +87,7 @@ public class X509ResponseMessage implements ResponseMessage {
 	public void setCACert(Certificate cACert) {
 	}
 
-    /**
-     * Gets the complete certificate in the response message.
-     *
-     * @return certificate in the response message.
-     * 
-     * @throws CertificateException if the byte array in this response does not contain a proper certificate
-     */
+    @Override
     public Certificate getCertificate() {     
         try {
             return CertTools.getCertfromByteArray(getResponseMessage());

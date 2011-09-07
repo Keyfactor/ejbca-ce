@@ -316,7 +316,7 @@ public class SimpleRequestMessage implements RequestMessage {
     
     /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
      */
-    public ResponseMessage createResponseMessage(Class responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider) {
+    public CertificateResponseMessage createResponseMessage(Class responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider) {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);
     }
 } // SimpleRequestMessage

@@ -71,10 +71,6 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
     private byte[] responseMessage = null;
 
 	@Override
-    public void setCertificate(Certificate cert) {
-	}
-
-	@Override
 	public void setCrl(CRL crl) {
 	}
 

@@ -21,12 +21,13 @@ import java.security.PrivateKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 
 import org.cesecore.certificates.ca.SignRequestException;
 
 /**
  * Base interface for response messages sent from the CA. Implementors of this interface must also
- * implement Serializable if they are to be sent to any EJB bussiness methods. 
+ * implement Serializable if they are to be sent to any EJB business methods. 
  * Example: <code>
  * ResponseMessage resp = new ResponseMessage(); 
  * resp.setCertificate(cert); resp.setStatus(OK); 
@@ -44,18 +45,11 @@ import org.cesecore.certificates.ca.SignRequestException;
 public interface ResponseMessage extends Serializable {
 
     /**
-     * Sets the complete certificate in the response message.
-     *
-     * @param cert certificate in the response message.
-     */
-    public void setCertificate(Certificate cert);
-
-    /**
      * Sets the CRL (if present) in the response message.
      *
      * @param crl crl in the response message.
      */
-    public void setCrl(CRL crl);
+    void setCrl(CRL crl);
     
     /** 
      * Determines if the CA certificate should be included in the response message, if
@@ -63,7 +57,7 @@ public interface ResponseMessage extends Serializable {
      * 
      * @param includeCACert true or false
      */
-    public void setIncludeCACert(boolean incCACert);
+    void setIncludeCACert(boolean incCACert);
 
     /** 
      * Explicitly sets the CA certificate if it is not the same as the signer certificate. Used if
@@ -71,7 +65,7 @@ public interface ResponseMessage extends Serializable {
      * 
      * @param caCert a Certificate
      */
-    public void setCACert(Certificate caCert);
+    void setCACert(Certificate caCert);
 
     /**
      * Gets the response message in the default encoding format.
@@ -85,7 +79,7 @@ public interface ResponseMessage extends Serializable {
      *
      * @param status status of the response.
      */
-    public void setStatus(ResponseStatus status);
+    void setStatus(ResponseStatus status);
 
     /**
      * Gets the status of the response message.
@@ -99,7 +93,7 @@ public interface ResponseMessage extends Serializable {
      *
      * @param failInfo reason for failure.
      */
-    public void setFailInfo(FailInfo failInfo);
+    void setFailInfo(FailInfo failInfo);
 
     /**
      * Gets info about reason for failure.
@@ -113,7 +107,7 @@ public interface ResponseMessage extends Serializable {
      *
      * @param failText description about failure.
      */
-    public void setFailText(String failText);
+    void setFailText(String failText);
 
     /**
      * Gets clear text info about reason for failure.
@@ -159,35 +153,35 @@ public interface ResponseMessage extends Serializable {
      *
      * @see #requireSignKeyInfo()
      */
-    public void setSignKeyInfo(Certificate cert, PrivateKey key, String provider);
+    void setSignKeyInfo(Certificate cert, PrivateKey key, String provider);
 
     /**
      * Sets a senderNonce if it should be present in the response
      *
      * @param senderNonce a string of base64 encoded bytes
      */
-    public void setSenderNonce(String senderNonce);
+    void setSenderNonce(String senderNonce);
 
     /**
      * Sets a recipient if it should be present in the response
      *
      * @param recipientNonce a string of base64 encoded bytes
      */
-    public void setRecipientNonce(String recipientNonce);
+    void setRecipientNonce(String recipientNonce);
 
     /**
      * Sets a transaction identifier if it should be present in the response
      *
      * @param transactionId transaction id
      */
-    public void setTransactionId(String transactionId);
+    void setTransactionId(String transactionId);
 
     /**
      * Sets recipient key info, key id or similar. This is usually the request key info from the request message.
      *
      * @param recipientKeyInfo key info
      */
-    public void setRecipientKeyInfo(byte[] recipientKeyInfo);
+    void setRecipientKeyInfo(byte[] recipientKeyInfo);
     
     /**
      * Sets preferred digest algorithm for the response message, if applicable. 
@@ -195,26 +189,26 @@ public interface ResponseMessage extends Serializable {
      * 
      * @param String oid of digest algorithm ex CMSSignedDataGenerator.MD5, SHA1, SHA256 etc
      */
-    public void setPreferredDigestAlg(String digest);
+    void setPreferredDigestAlg(String digest);
     
     /** Sometimes (CMP) the response identifier sent depends on which request identifier was used, 
      * even if the messages themselves are the same mesages.
      * 
      * @param reqtype which type of request message this response is in response to
      */ 
-    public void setRequestType(int reqtype);
+    void setRequestType(int reqtype);
     
     /**
      * For some types of request-responses there is a need for a requetsId to match the request and the
      * response together.
      * @param reqId the id from the request matching to this response
      */
-    public void setRequestId(int reqid);
+    void setRequestId(int reqid);
     
     /**
      * For some types of requests, the protection used depends on parameters from the request,
      * for example password based protection where algorithms, keyId etc is the same in the response as in the request
      * @param RequestMessage the request from where to pick protection parameters
      */
-    public void setProtectionParamsFromRequest(RequestMessage reqMsg);
+    void setProtectionParamsFromRequest(RequestMessage reqMsg);
 }

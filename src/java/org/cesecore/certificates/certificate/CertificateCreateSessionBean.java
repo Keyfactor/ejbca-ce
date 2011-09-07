@@ -61,6 +61,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -125,13 +126,13 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     }
 
     @Override
-    public ResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData, final RequestMessage req,
+    public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData, final RequestMessage req,
             final Class responseClass) throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException,
             CADoesntExistsException, CertificateCreateException, CesecoreException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(IRequestMessage)");
         }
-        ResponseMessage ret = null;
+        CertificateResponseMessage ret = null;
         try {
             CA ca;
             // First find the CA, this checks authorization and that the CA exists

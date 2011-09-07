@@ -66,9 +66,6 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
     private int requestId = 0;
 	private int requestType = 23; // 23 is general error message
 
-	@Override
-    public void setCertificate(Certificate cert) {
-	}
 
 	@Override
 	public void setCrl(CRL crl) {

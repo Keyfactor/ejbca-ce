@@ -94,6 +94,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -1051,7 +1052,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             CADoesntExistsException, AuthorizationDeniedException, CryptoTokenOfflineException {
         final CA ca;
         Collection<Certificate> certchain = null;
-        ResponseMessage returnval = null;
+        CertificateResponseMessage returnval = null;
         int caid = cainfo.getCAId();
         // check authorization
         if (!accessSession.isAuthorizedNoLogging(admin, "/super_administrator")) {

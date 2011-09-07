@@ -28,8 +28,8 @@ import java.util.Date;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509Principal;
+import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 
@@ -40,7 +40,10 @@ import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
  *
  */
 class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
-	final private ICrmfRequestMessage original;
+
+    private static final long serialVersionUID = -4884813822503768798L;
+
+     final private ICrmfRequestMessage original;
 	transient private X509Principal dn;
 
 	private void writeObject(ObjectOutputStream stream) throws IOException {
@@ -163,7 +166,7 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 		return this.original.getRequestId();
 	}
 	@Override
-	public ResponseMessage createResponseMessage(Class responseClass,
+	public CertificateResponseMessage createResponseMessage(Class responseClass,
 			RequestMessage req, Certificate cert, PrivateKey signPriv,
 			String provider) {
 		return this.original.createResponseMessage(responseClass, req, cert, signPriv, provider);
