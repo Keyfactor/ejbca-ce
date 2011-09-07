@@ -118,7 +118,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
     @Override
     public Certificate getCertificate() {
         try {
-            return CertTools.getCertfromByteArray(getResponseMessage());
+            return CertTools.getCertfromByteArray(cert.getEncoded());
         } catch (CertificateEncodingException e) {
             throw new Error("Could not encode certificate. This should not happen", e);
         } catch (CertificateException e) {
