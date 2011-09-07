@@ -53,7 +53,7 @@ import org.cesecore.util.StringTools;
  * 
  * Based on EJBCA version: ICAToken.java 8828 2010-03-29 08:10:51Z anatom
  * 
- * @version $Id: CAToken.java 1012 2011-08-19 12:06:02Z tomas $
+ * @version $Id: CAToken.java 1089 2011-09-07 13:36:53Z tomas $
  */
 public class CAToken extends UpgradeableDataHashMap {
 
@@ -116,6 +116,7 @@ public class CAToken extends UpgradeableDataHashMap {
      * @param caid caid that will be token id in the underlying CryptoToken
      * @throws IllegalCryptoTokenException if token properties can not be loaded
      */
+    @SuppressWarnings("rawtypes")
     public CAToken(final HashMap tokendata, final int caid) throws IllegalCryptoTokenException {
 		loadData(tokendata); 
         final String str = (String) data.get(CAToken.KEYSTORE);
@@ -123,15 +124,7 @@ public class CAToken extends UpgradeableDataHashMap {
         if (StringUtils.isNotEmpty(str)) {
             keyStoreData = Base64.decode(str.getBytes());
         }
-        final String propertyStr = (String) data.get(CAToken.PROPERTYDATA);
-        final Properties prop = new Properties();
-        if (StringUtils.isNotEmpty(propertyStr)) {
-            try {
-                prop.load(new ByteArrayInputStream(propertyStr.getBytes()));
-            } catch (IOException e) {
-                throw new IllegalCryptoTokenException(e);
-            }
-        }
+        Properties prop = getProperties();
         final String classpath = (String) data.get(CAToken.CLASSPATH);
         if (log.isDebugEnabled()) {
             log.debug("CA token classpath: " + classpath);
@@ -396,6 +389,22 @@ public class CAToken extends UpgradeableDataHashMap {
         }
         return ret;
     }
+    
+    private Properties getProperties() {
+        String propertyStr = getPropertyData();
+        final Properties prop = new Properties();
+        if (StringUtils.isNotEmpty(propertyStr)) {
+            try {
+				// If the input string contains \ (backslash on windows) we must convert it to \\
+				// Otherwise properties.load will parse it as an escaped character, and that is not good
+				propertyStr = StringUtils.replace(propertyStr, "\\", "\\\\");
+                prop.load(new ByteArrayInputStream(propertyStr.getBytes()));
+            } catch (IOException e) {
+                log.error("Error getting PCKS#11 token properties: ", e);
+            }
+        }
+        return prop;
+    }
 
     /**
      * Returns the Sequence, that is a sequence that is updated when keys are re-generated
@@ -496,17 +505,9 @@ public class CAToken extends UpgradeableDataHashMap {
                 if (StringUtils.equals(classpath, "org.ejbca.core.model.ca.catoken.SoftCAToken")) {
                 	newclasspath = "org.cesecore.keys.token.SoftCryptoToken";
                 	// Upgrade properties to set a default key, also for soft crypto tokens
-                    final String propertyStr = (String) data.get(CAToken.PROPERTYDATA);
-                    final Properties prop = new Properties();
-                    if (StringUtils.isNotEmpty(propertyStr)) {
-                        try {
-                            prop.load(new ByteArrayInputStream(propertyStr.getBytes()));
-                        } catch (IOException e) {
-                            log.error("Error upgrading SoftCAToken properties: ", e);
-                        }
-                    }
+                	Properties prop = getProperties();
                     // A small unfortunate special property that we have to make in order to 
-                    // be able to use soft keystores that does not have a specific properties set
+                    // be able to use soft keystores that does not have a specific test or default key
                     if ((prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) &&
                     		(prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null)) {
                     	log.info("Setting CAKEYPURPOSE_CERTSIGN_STRING and CAKEYPURPOSE_CRLSIGN_STRING to privatesignkeyalias.");
