@@ -67,6 +67,7 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
@@ -128,6 +129,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private CrlCreateSessionLocal crlCreateSession;
+    @EJB
+    private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
     @EJB
@@ -602,6 +605,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(PublisherQueueSessionLocal.class, publisherQueueSession);
             ejbs.put(PublisherSessionLocal.class, publisherSession);
             ejbs.put(CertificateRequestSessionLocal.class, certificateRequestSession);
+            ejbs.put(EndEntityAccessSessionLocal.class, endEntityAccessSession);
             worker.work(ejbs);
             final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();

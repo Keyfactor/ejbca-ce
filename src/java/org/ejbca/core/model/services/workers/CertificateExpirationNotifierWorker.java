@@ -49,6 +49,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     private CertificateStoreSessionLocal certificateStoreSession;
+    private EndEntityAccessSessionLocal endEntityAccessSession;
 
     /**
      * Worker that makes a query to the Certificate Store about expiring certificates.
@@ -59,7 +60,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
         log.trace(">CertificateExpirationNotifierWorker.work started");
         final CaSessionLocal caSession = ((CaSessionLocal) ejbs.get(CaSessionLocal.class));
         certificateStoreSession = ((CertificateStoreSessionLocal) ejbs.get(CertificateStoreSessionLocal.class));
-        final EndEntityAccessSessionLocal endEntityAccessSession = (EndEntityAccessSessionLocal) ejbs.get(EndEntityAccessSessionLocal.class);
+        endEntityAccessSession = ((EndEntityAccessSessionLocal) ejbs.get(EndEntityAccessSessionLocal.class));
 
         ArrayList<EmailCertData> userEmailQueue = new ArrayList<EmailCertData>();
         ArrayList<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();

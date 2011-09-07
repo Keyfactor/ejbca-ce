@@ -14,10 +14,13 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Remote;
+
+import org.cesecore.util.CertTools;
 
 /**
  * This session bean should under no circumstances be included in the release version of CESeCore.
@@ -52,5 +55,8 @@ public interface InternalCertificateStoreSessionRemote {
     
     /** To allow testing of Local-only method */
     List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
+    
+    
+    Collection<Certificate> findCertificatesByIssuer(String issuerDN);
 
 }
