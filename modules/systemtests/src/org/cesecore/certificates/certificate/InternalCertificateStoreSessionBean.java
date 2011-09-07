@@ -14,6 +14,8 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,9 +25,11 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
+import javax.persistence.Query;
 
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
 /**
@@ -74,6 +78,27 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
 	@Override
     public List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin) {
     	return certStore.findExpirationInfo(cas, activeNotifiedExpireDateMin, activeNotifiedExpireDateMax, activeExpireDateMin);
+    }
+    
+    @Override
+    public Collection<Certificate> findCertificatesByIssuer(String issuerDN) {
+        final List<Certificate> certificateList = new ArrayList<Certificate>();
+        if (null == issuerDN || issuerDN.length() <= 0) {
+            return certificateList;
+        } else {
+            final Query query = entityManager.createQuery("SELECT a.base64Cert FROM CertificateData a WHERE a.issuerDN=:issuerDN");
+            query.setParameter("issuerDN", issuerDN);
+            final List<String> base64CertificateList = query.getResultList();
+            for (String base64Certificate : base64CertificateList) {
+                try {
+                    certificateList.add(CertTools.getCertfromByteArray(Base64.decode(base64Certificate.getBytes())));
+                } catch (CertificateException ce) {
+
+                }
+            }
+            return certificateList;
+        }
+
     }
 
 }

@@ -108,7 +108,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
     private AccessControlSessionRemote accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
 
-    private String roleName; // = "CaTestCase";
+    private String roleName; 
 
     protected TestX509CertificateAuthenticationToken caAdmin;
 

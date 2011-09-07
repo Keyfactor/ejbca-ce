@@ -18,8 +18,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import java.security.KeyPair;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -28,6 +31,8 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -64,6 +69,7 @@ public class CertificateExpireTest extends CaTestCase {
 
     private static final String CERTIFICATE_EXPIRATION_SERVICE = "CertificateExpirationService";
 
+    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
@@ -71,16 +77,26 @@ public class CertificateExpireTest extends CaTestCase {
     private ServiceDataSessionRemote serviceDataSession = InterfaceCache.getServiceDataSessionRemote();
 
  
+    private List<Certificate> certificatesToRemove;
+    
     @Before
     public void setUp() throws Exception {
         super.setUp();
         createTestCA(CA_NAME);
+        certificatesToRemove = new ArrayList<Certificate>();
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        log.trace(">test99CleanUp()");
+        
+        for(Certificate certificate : certificatesToRemove) {
+            internalCertificateStoreSession.removeCertificate(certificate);
+        }
+        for(Certificate certificate : internalCertificateStoreSession.findCertificatesByIssuer("CN="+CA_NAME)) {
+            internalCertificateStoreSession.removeCertificate(certificate);
+        }
+        
         userAdminSession.deleteUser(admin, username);
         log.debug("Removed user: " + username);
         serviceSession.removeService(admin, CERTIFICATE_EXPIRATION_SERVICE);
@@ -88,7 +104,7 @@ public class CertificateExpireTest extends CaTestCase {
         assertNull("ServiceData object with id 4711 was not removed properly.", serviceDataSession.findById(4711));
         removeTestCA(CA_NAME);
         log.debug("Removed test CA");
-        log.trace("<test99CleanUp()");
+
     }
 
     @BeforeClass
@@ -103,8 +119,7 @@ public class CertificateExpireTest extends CaTestCase {
      * 
      */
     @Test
-    public void test01ExpireCertificate() throws Exception {
-        log.trace(">test01CreateNewUser()");
+    public void testExpireCertificate() throws Exception {
 
         // Create a new user
         username = genRandomUserName();
@@ -115,6 +130,8 @@ public class CertificateExpireTest extends CaTestCase {
 
         KeyPair keys = KeyTools.genKeys("1024", "RSA");
         X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, username, pwd, keys.getPublic());
+        certificatesToRemove.add(cert);
+ 
         assertNotNull("Failed to create certificate", cert);
 
         String fp = CertTools.getFingerprintAsString(cert);
@@ -176,7 +193,6 @@ public class CertificateExpireTest extends CaTestCase {
         assertEquals("Status does not match.", SecConst.CERT_NOTIFIEDABOUTEXPIRATION, info.getStatus());
     	log.debug("It took >" + (9+tries) + " seconds before the certificate was expired!");
 
-        log.trace("<test01CreateNewUser()");
     }
 
     public String getRoleName() {
