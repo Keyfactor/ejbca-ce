@@ -376,15 +376,20 @@ public class ProtocolScepHttpTest extends CaTestCase {
         final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN2);
         // Send message with GET
         final byte[] retMsg = sendScep(true, msgBytes, false, HttpServletResponse.SC_BAD_REQUEST);
-        log.debug(new String(retMsg));
-        assertTrue(new String(retMsg).indexOf(InternalResourcesStub.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user",
-                "'" + userName2 + "'", "'" + userName1 + "'")) >= 0);
+    
+        String returnMessageString = new String(retMsg);      
+        String localizedMessage = InternalResourcesStub.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user",
+                "'" + userName2 + "'", "'" + userName1 + "'");
+        if("signsession.key_exists_for_another_user".equals(localizedMessage)) {
+            String currentDirectory = System.getProperty("user.dir");
+            throw new Error("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
+        }
+        assertTrue(returnMessageString.indexOf(localizedMessage) >= 0);
         log.debug("<test10EnforcementOfUniquePublicKeys()");
     }
 
     @Test
-    public void test11EnforcementOfUniqueDN() throws Exception {
-        log.debug(">test10EnforcementOfUniquePublicKeys()");
+    public void test11EnforcementOfUniqueDN() throws Exception {       
         // new user will have a DN of a certificate already issued for another
         // user.
         changeScepUser(userName2, userDN1);
@@ -395,7 +400,6 @@ public class ProtocolScepHttpTest extends CaTestCase {
         log.debug(new String(retMsg));
         assertTrue(new String(retMsg).indexOf(InternalResourcesStub.getInstance().getLocalizedMessage(
                 "signsession.subjectdn_exists_for_another_user", "'" + userName2 + "'", "'" + userName1 + "'")) >= 0);
-        log.debug("<test10EnforcementOfUniquePublicKeys()");
     }
 
     //
