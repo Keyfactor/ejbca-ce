@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
 
+import javax.persistence.PersistenceException;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.httpclient.NameValuePair;
@@ -73,6 +74,8 @@ import org.bouncycastle.cms.SignerInformationStore;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -81,12 +84,15 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
@@ -389,7 +395,8 @@ public class ProtocolScepHttpTest extends CaTestCase {
     }
 
     @Test
-    public void test11EnforcementOfUniqueDN() throws Exception {       
+    public void test11EnforcementOfUniqueDN() throws Exception {
+        createScepUser(userName2, userDN2);
         // new user will have a DN of a certificate already issued for another
         // user.
         changeScepUser(userName2, userDN1);
@@ -397,15 +404,21 @@ public class ProtocolScepHttpTest extends CaTestCase {
         final byte[] msgBytes = genScepRequest(false, CMSSignedGenerator.DIGEST_SHA1, userDN2, key2);
         // Send message with GET
         final byte[] retMsg = sendScep(true, msgBytes, false, HttpServletResponse.SC_BAD_REQUEST);
-        log.debug(new String(retMsg));
-        assertTrue(new String(retMsg).indexOf(InternalResourcesStub.getInstance().getLocalizedMessage(
-                "signsession.subjectdn_exists_for_another_user", "'" + userName2 + "'", "'" + userName1 + "'")) >= 0);
+        String returnMessageString = new String(retMsg);      
+        String localizedMessage = InternalResourcesStub.getInstance().getLocalizedMessage(
+                "signsession.subjectdn_exists_for_another_user", "'" + userName2 + "'", "'" + userName1 + "'");
+        
+        if("signsession.subjectdn_exists_for_another_user".equals(localizedMessage)) {
+            String currentDirectory = System.getProperty("user.dir");
+            throw new Error("Test can't continue, can't find language resource files. Current directory is " + currentDirectory);
+        }
+        assertTrue(returnMessageString.indexOf(localizedMessage) >= 0);
     }
 
     //
     // Private helper methods
     //
-    private EndEntityInformation getUserDataVO(String userName, String userDN) {
+    private EndEntityInformation getEndEntityInformation(String userName, String userDN) {
         final EndEntityInformation data = new EndEntityInformation(userName, userDN, caid, null, "sceptest@primekey.se", SecConst.USER_ENDUSER,
                 SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         data.setPassword("foo123");
@@ -413,18 +426,16 @@ public class ProtocolScepHttpTest extends CaTestCase {
         return data;
     }
 
-    private void createScepUser(String userName, String userDN) throws Exception {
-        try {
-            userAdminSession.addUser(admin, getUserDataVO(userName, userDN), false);
-            log.debug("created user: " + userName + ", foo123, " + userDN);
-        } catch (Exception e) {
-            log.debug("User " + userName + " already exists.");
+    private void createScepUser(String userName, String userDN) throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
+        if(!userAdminSession.existsUser(admin, userName)) {
+            userAdminSession.addUser(admin, getEndEntityInformation(userName, userDN), false);
+        } else {
             changeScepUser(userName, userDN);
         }
     }
 
-    private void changeScepUser(String userName, String userDN) throws Exception {
-        userAdminSession.changeUser(admin, getUserDataVO(userName, userDN), false);
+    private void changeScepUser(String userName, String userDN) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException  {
+        userAdminSession.changeUser(admin, getEndEntityInformation(userName, userDN), false);
         log.debug("changing user: " + userName + ", foo123, " + userDN);
     }
 
