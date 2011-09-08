@@ -37,7 +37,8 @@ import org.ejbca.core.model.SecConst;
  */
 public class HardTokenEncryptCAService extends ExtendedCAService implements Serializable {
 
-	private static Logger log = Logger.getLogger(HardTokenEncryptCAService.class);
+    private static final long serialVersionUID = 2126714932597569623L;
+    private static Logger log = Logger.getLogger(HardTokenEncryptCAService.class);
 	/** Internal localization of logs and errors */
 	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
