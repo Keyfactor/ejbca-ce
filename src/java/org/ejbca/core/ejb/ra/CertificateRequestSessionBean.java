@@ -238,6 +238,9 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         } catch (EjbcaException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
+        } catch (CesecoreException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw e;
         }
         return retval;
     }
