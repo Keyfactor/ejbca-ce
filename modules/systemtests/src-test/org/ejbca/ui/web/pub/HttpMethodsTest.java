@@ -62,37 +62,37 @@ public class HttpMethodsTest {
     /** Test the doc.war module. */
     @Test
     public void testDocs() throws Exception {
-        testResource("/ejbca/doc/index.html");
+        performResourceTest("/ejbca/doc/index.html");
     }
 
     /** Test the publicweb.war module. */
     @Test
     public void testPublicWeb() throws Exception {
-        testResource("/ejbca/index.jsp");
+        performResourceTest("/ejbca/index.jsp");
     }
 
     /** Test the webdist.war module. */
     @Test
     public void testWebDist() throws Exception {
-        testResource("/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dAdminCA1%2cO%3dEJBCA+Sample%2cC%3dSE&level=0");
+        performResourceTest("/ejbca/publicweb/webdist/certdist?cmd=cacert&issuer=CN%3dAdminCA1%2cO%3dEJBCA+Sample%2cC%3dSE&level=0");
     }
 
     /** Test the status.war module. */
     @Test
     public void testStatus() throws Exception {
-        testResource("/ejbca/publicweb/status/ocsp");
+        performResourceTest("/ejbca/publicweb/status/ocsp");
     }
 
     /** Test the scep.war module. */
     @Test
     public void testScep() throws Exception {
-        testResource("/ejbca/publicweb/apply/scep/pkiclient.exe?operation=GetCACert&message=AdminCA1");
+        performResourceTest("/ejbca/publicweb/apply/scep/pkiclient.exe?operation=GetCACert&message=AdminCA1");
     }
 
     /** Test the healthcheck.war module. */
     @Test
     public void testHealthCheck() throws Exception {
-        testResource("/ejbca/publicweb/healthcheck/ejbcahealth");
+        performResourceTest("/ejbca/publicweb/healthcheck/ejbcahealth");
     }
 
     /** Test the cmp.war module. */
@@ -107,14 +107,13 @@ public class HttpMethodsTest {
     // TODO: Renew bundle
 
     /** Perform basic HTTP method tests on the specified resource */
-    @Test
-    private void testResource(String resourceName) throws Exception {
+    private void performResourceTest(String resourceName) throws Exception {
         log.info("Started tests of " + resourceName);
         assertTrue("HTTP GET is not supported. (This test expects " + resourceName + " to exist)", getUrl(httpBaseUrl + resourceName) == 200);
         assertFalse("HTTP DELETE is supported.", allowsDeleteHttpRequest(resourceName, httpPort));
         assertFalse("HTTP PUT is supported.", allowsPutHttpRequest(resourceName + ".2", httpPort));
         assertFalse("HTTP TRACE is supported.", allowsTraceHttpRequest(resourceName, httpPort));
-        assertFalse("HTTP OPTIONS is supported.", allowHttpOptions(resourceName, httpPort));
+        assertFalse("HTTP OPTIONS is supported.haha ", allowHttpOptions(resourceName, httpPort));
     }
 
     /** Try an HTTP OPTIONS and return true if it was successful. */
