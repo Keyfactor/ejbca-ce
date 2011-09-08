@@ -150,17 +150,17 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
         final String secondRoleName = "Leela";
 
         Collection<RoleData> roles = roleAccessSession.getAllRoles();
-        assertTrue("Test failed to due to being run on an unclean database. ", roles.size() == 1);
-        assertEquals("Test failed to due to being run on an unclean database. ", "RoleManagementSessionTest", roles.iterator().next().getRoleName());
+        final int roleSizeBeforeTest = roles.size();
 
         roleManagementSession.create(authenticationToken, firstRoleName);
         roleManagementSession.create(authenticationToken, secondRoleName);
         try {
             roles = roleAccessSession.getAllRoles();
-            assertTrue(roles.size() == 3);
+            assertTrue(roles.size() == (roleSizeBeforeTest+2));
         } finally {
             roleManagementSession.remove(authenticationToken, firstRoleName);
             roleManagementSession.remove(authenticationToken, secondRoleName);
+            assertEquals("testGetAllroles did not clean up after itself properly.", roleSizeBeforeTest, roleAccessSession.getAllRoles().size());
         }
     }
 
