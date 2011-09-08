@@ -91,6 +91,7 @@
 	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-javaee.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/common/lib/servlet-api.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-api.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="conf"/>
 	<classpathentry kind="output" path="out/classes"/>

@@ -29,10 +29,11 @@ public class AuditSearchCondition {
 
 	private final List<SelectItem> options;
 
-	public AuditSearchCondition(String column, String defaultValue) {
+	public AuditSearchCondition(String column, Condition condition, String defaultValue) {
 		this.column = column;
 		this.options = null;
 		this.value = defaultValue;
+		this.condition = condition;
 	}
 
 	public AuditSearchCondition(String column, List<SelectItem> options) {

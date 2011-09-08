@@ -65,6 +65,8 @@ public class AuditorManagedBean implements Serializable {
 	private final SecurityEventsAuditorSessionLocal securityEventsAuditorSession = new EjbLocalHelper().getSecurityEventsAuditorSession();
 	private final CAAdminSessionLocal caAdminSession = new EjbLocalHelper().getCaAdminSession();
 	
+	private boolean renderNext = false;
+
 	private boolean reloadResultsNextView = true;
 	private String device;
 	private String sortColumn = AuditLogEntry.FIELD_TIMESTAMP;
@@ -77,31 +79,36 @@ public class AuditorManagedBean implements Serializable {
 	private List<? extends AuditLogEntry> results;
 	private Map<Object, String> caIdToNameMap;
 
+	private Map<String, String> columnNameMap = new HashMap<String, String>();
 	private final List<SelectItem> eventStatusOptions = new ArrayList<SelectItem>();
 	private final List<SelectItem> eventTypeOptions = new ArrayList<SelectItem>();
 	private final List<SelectItem> moduleTypeOptions = new ArrayList<SelectItem>();
 	private final List<SelectItem> serviceTypeOptions = new ArrayList<SelectItem>();
 	private final List<SelectItem> operationsOptions = new ArrayList<SelectItem>();
 	private final List<SelectItem> conditionsOptions = new ArrayList<SelectItem>();
-	private String conditionColumn;
+	private String conditionColumn = AuditLogEntry.FIELD_SEARCHABLE_DETAIL2;
 	private AuditSearchCondition conditionToAdd;
 	private List<AuditSearchCondition> conditions = new ArrayList<AuditSearchCondition>();
 	
 	public AuditorManagedBean() {
 		final EjbcaWebBean ejbcaWebBean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
-		sortColumns.add(new SelectItem(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, ejbcaWebBean.getText("ADMINISTRATOR")));
-		sortColumns.add(new SelectItem(AuditLogEntry.FIELD_CUSTOM_ID, ejbcaWebBean.getText("CA")));
-		sortColumns.add(new SelectItem(AuditLogEntry.FIELD_EVENTSTATUS));
-		sortColumns.add(new SelectItem(AuditLogEntry.FIELD_EVENTTYPE, ejbcaWebBean.getText("EVENT")));
-		sortColumns.add(new SelectItem(AuditLogEntry.FIELD_MODULE, ejbcaWebBean.getText("MODULE")));
-		sortColumns.add(new SelectItem(AuditLogEntry.FIELD_NODEID));
-		sortColumns.add(new SelectItem(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, ejbcaWebBean.getText("CERTIFICATENR")));
-		sortColumns.add(new SelectItem(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, ejbcaWebBean.getText("USERNAME_ABBR")));
-		sortColumns.add(new SelectItem(AuditLogEntry.FIELD_SEQENCENUMBER));
-		sortColumns.add(new SelectItem(AuditLogEntry.FIELD_SERVICE));
-		sortColumns.add(new SelectItem(AuditLogEntry.FIELD_TIMESTAMP, ejbcaWebBean.getText("TIME")));
+		columnNameMap.put(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, ejbcaWebBean.getText("ADMINISTRATOR"));
+		columnNameMap.put(AuditLogEntry.FIELD_CUSTOM_ID, ejbcaWebBean.getText("CA"));
+		columnNameMap.put(AuditLogEntry.FIELD_EVENTSTATUS, ejbcaWebBean.getText("EVENTSTATUS"));
+		columnNameMap.put(AuditLogEntry.FIELD_EVENTTYPE, ejbcaWebBean.getText("EVENT"));
+		columnNameMap.put(AuditLogEntry.FIELD_MODULE, ejbcaWebBean.getText("MODULE"));
+		columnNameMap.put(AuditLogEntry.FIELD_NODEID, AuditLogEntry.FIELD_NODEID);
+		columnNameMap.put(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, ejbcaWebBean.getText("CERTIFICATENR"));
+		columnNameMap.put(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, ejbcaWebBean.getText("USERNAME_ABBR"));
+		columnNameMap.put(AuditLogEntry.FIELD_SEQENCENUMBER, ejbcaWebBean.getText("SEQENCENUMBER"));
+		columnNameMap.put(AuditLogEntry.FIELD_SERVICE, ejbcaWebBean.getText("SERVICE"));
+		columnNameMap.put(AuditLogEntry.FIELD_TIMESTAMP, ejbcaWebBean.getText("TIME"));
+		for (final Entry<String,String> entry : columnNameMap.entrySet()) {
+			sortColumns.add(new SelectItem(entry.getKey(), entry.getValue()));
+		}
+		columnNameMap.put(AuditLogEntry.FIELD_ADDITIONAL_DETAILS, ejbcaWebBean.getText("ADDITIONAL_DETAILS"));
 		columns.addAll(sortColumns);
-		columns.add(new SelectItem(AuditLogEntry.FIELD_ADDITIONAL_DETAILS));
+		columns.add(new SelectItem(AuditLogEntry.FIELD_ADDITIONAL_DETAILS, columnNameMap.get(AuditLogEntry.FIELD_ADDITIONAL_DETAILS)));
 		sortOrders.add(new SelectItem(QueryCriteria.ORDER_ASC, "ASC"));
 		sortOrders.add(new SelectItem(QueryCriteria.ORDER_DESC, "DESC"));
 		// If no device is chosen we select the first available as default
@@ -136,6 +143,8 @@ public class AuditorManagedBean implements Serializable {
 		for (ServiceType current : EjbcaServiceTypes.values()) {
 			serviceTypeOptions.add(new SelectItem(current));
 		}
+		// By default, don't show the authorized to resource events
+		conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_EVENTTYPE, Condition.NOT_EQUALS, EventTypes.ACCESS_CONTROL.name()));
 	}
 
 	public List<SelectItem> getDevices() {
@@ -144,6 +153,20 @@ public class AuditorManagedBean implements Serializable {
 			list.add(new SelectItem(deviceId, deviceId));
 		}
 		return list;
+	}
+	
+	public boolean isOneLogDevice() {
+		return getDevices().size()==1;
+	}
+	
+	public boolean isRenderNext() throws AuthorizationDeniedException {
+		getResults();
+		return renderNext;
+	}
+
+	public int getResultSize() throws AuthorizationDeniedException {
+		getResults();
+		return results==null?0:results.size();
 	}
 
 	public List<SelectItem> getSortColumns() {
@@ -183,7 +206,7 @@ public class AuditorManagedBean implements Serializable {
 	}
 
 	public void setMaxResults(final int maxResults) {
-		this.maxResults = Math.max(0, maxResults);
+		this.maxResults = Math.min(1000, Math.max(1, maxResults));	// 1-1000 results allowed
 	}
 
 	public int getMaxResults() {
@@ -227,6 +250,11 @@ public class AuditorManagedBean implements Serializable {
 		setConditionToAdd(null);
 	}
 
+	public void clearConditionsAndReload() {
+		clearConditions();
+		reload();
+	}
+
 	public void newCondition() {
 		if (AuditLogEntry.FIELD_ADDITIONAL_DETAILS.equals(conditionColumn)
 				|| AuditLogEntry.FIELD_AUTHENTICATION_TOKEN.equals(conditionColumn)
@@ -234,7 +262,7 @@ public class AuditorManagedBean implements Serializable {
 				|| AuditLogEntry.FIELD_SEARCHABLE_DETAIL1.equals(conditionColumn)
 				|| AuditLogEntry.FIELD_SEARCHABLE_DETAIL2.equals(conditionColumn)
 				|| AuditLogEntry.FIELD_SEQENCENUMBER.equals(conditionColumn)) {
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, ""));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, Condition.EQUALS, ""));
 		} else if (AuditLogEntry.FIELD_CUSTOM_ID.equals(conditionColumn)) {
 			List<SelectItem> caIds = new ArrayList<SelectItem>();
 			for (Entry<Object,String> entry : caIdToNameMap.entrySet()) {
@@ -250,7 +278,7 @@ public class AuditorManagedBean implements Serializable {
 		} else if (AuditLogEntry.FIELD_SERVICE.equals(conditionColumn)) {
 			setConditionToAdd(new AuditSearchCondition(conditionColumn, serviceTypeOptions));
 		} else if (AuditLogEntry.FIELD_TIMESTAMP.equals(conditionColumn)) {
-			setConditionToAdd(new AuditSearchCondition(conditionColumn, ValidityDate.formatAsISO8601(new Date(), ValidityDate.TIMEZONE_SERVER)));
+			setConditionToAdd(new AuditSearchCondition(conditionColumn, Condition.EQUALS, ValidityDate.formatAsISO8601(new Date(), ValidityDate.TIMEZONE_SERVER)));
 		}
 	}
 
@@ -261,6 +289,11 @@ public class AuditorManagedBean implements Serializable {
 	public void addCondition() {
 		getConditions().add(getConditionToAdd());
 		setConditionToAdd(null);
+	}
+
+	public void addConditionAndReload() {
+		addCondition();
+		reload();
 	}
 
 	public void reload()  {
@@ -312,6 +345,7 @@ public class AuditorManagedBean implements Serializable {
 		AuthenticationToken token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Reload action from AuditorManagedBean"));
 		results = securityEventsAuditorSession.selectAuditLogs(token, startIndex, maxResults, criteria.order(sortColumn, sortOrder), device);
 		updateCaIdToNameMap();
+		renderNext = results!=null && !results.isEmpty() && results.size()==maxResults;
 	}
 	
 	public Map<Object, String> getCaIdToName() {
@@ -327,14 +361,21 @@ public class AuditorManagedBean implements Serializable {
 		caIdToNameMap = ret;
 	}
 
+	public Map<String, String> getNameFromColumn() {
+		return columnNameMap;
+	}
+
+	public void first() throws AuthorizationDeniedException {
+		setStartIndex(1);
+		reloadResultsNextView = true;
+	}
+
 	public void next() throws AuthorizationDeniedException {
-		log.info("Next button pressed.");
 		setStartIndex(startIndex + maxResults);
 		reloadResultsNextView = true;
 	}
 
 	public void previous() throws AuthorizationDeniedException {
-		log.info("Previous button pressed.");
 		setStartIndex(startIndex - maxResults);
 		reloadResultsNextView = true;
 	}
@@ -349,7 +390,7 @@ public class AuditorManagedBean implements Serializable {
 		if (searchDetail2String!=null) {
 			reloadResultsNextView = true;
 			conditions.clear();
-			conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, searchDetail2String));
+			conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, Condition.EQUALS, searchDetail2String));
 			sortColumn = AuditLogEntry.FIELD_TIMESTAMP;
 			sortOrder = QueryCriteria.ORDER_DESC;
 		}
@@ -366,5 +407,49 @@ public class AuditorManagedBean implements Serializable {
 
 	private String getHttpParameter(String key) {
 		return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(key);
+	}
+	
+	public void reorderAscByTime() { reorderBy(AuditLogEntry.FIELD_TIMESTAMP, QueryCriteria.ORDER_ASC); }
+	public void reorderDescByTime() { reorderBy(AuditLogEntry.FIELD_TIMESTAMP, QueryCriteria.ORDER_DESC); }
+
+	public void reorderAscByEvent() { reorderBy(AuditLogEntry.FIELD_EVENTTYPE, QueryCriteria.ORDER_ASC); }
+	public void reorderDescByEvent() { reorderBy(AuditLogEntry.FIELD_EVENTTYPE, QueryCriteria.ORDER_DESC); }
+
+	public void reorderAscByStatus() { reorderBy(AuditLogEntry.FIELD_EVENTSTATUS, QueryCriteria.ORDER_ASC); }
+	public void reorderDescByStatus() { reorderBy(AuditLogEntry.FIELD_EVENTSTATUS, QueryCriteria.ORDER_DESC); }
+
+	public void reorderAscByAuthToken() { reorderBy(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, QueryCriteria.ORDER_ASC); }
+	public void reorderDescByAuthToken() { reorderBy(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, QueryCriteria.ORDER_DESC); }
+
+	public void reorderAscByService() { reorderBy(AuditLogEntry.FIELD_SERVICE, QueryCriteria.ORDER_ASC); }
+	public void reorderDescByService() { reorderBy(AuditLogEntry.FIELD_SERVICE, QueryCriteria.ORDER_DESC); }
+
+	public void reorderAscByModule() { reorderBy(AuditLogEntry.FIELD_MODULE, QueryCriteria.ORDER_ASC); }
+	public void reorderDescByModule() { reorderBy(AuditLogEntry.FIELD_MODULE, QueryCriteria.ORDER_DESC); }
+
+	public void reorderAscByCustomId() { reorderBy(AuditLogEntry.FIELD_CUSTOM_ID, QueryCriteria.ORDER_ASC); }
+	public void reorderDescByCustomId() { reorderBy(AuditLogEntry.FIELD_CUSTOM_ID, QueryCriteria.ORDER_DESC); }
+
+	public void reorderAscBySearchDetail1() { reorderBy(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, QueryCriteria.ORDER_ASC); }
+	public void reorderDescBySearchDetail1() { reorderBy(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, QueryCriteria.ORDER_DESC); }
+
+	public void reorderAscBySearchDetail2() { reorderBy(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, QueryCriteria.ORDER_ASC); }
+	public void reorderDescBySearchDetail2() { reorderBy(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, QueryCriteria.ORDER_DESC); }
+
+	public void reorderAscByNodeId() { reorderBy(AuditLogEntry.FIELD_NODEID, QueryCriteria.ORDER_ASC); }
+	public void reorderDescByNodeId() { reorderBy(AuditLogEntry.FIELD_NODEID, QueryCriteria.ORDER_DESC); }
+
+	public void reorderAscBySequenceNumber() { reorderBy(AuditLogEntry.FIELD_SEQENCENUMBER, QueryCriteria.ORDER_ASC); }
+	public void reorderDescBySequenceNumber() { reorderBy(AuditLogEntry.FIELD_SEQENCENUMBER, QueryCriteria.ORDER_DESC); }
+
+	private void reorderBy(String column, boolean orderAsc) {
+		if (!sortColumn.equals(column)) {
+			reloadResultsNextView = true;
+		}
+		sortColumn = column;
+		if (sortOrder != orderAsc) {
+			reloadResultsNextView = true;
+		}
+		sortOrder = orderAsc ? QueryCriteria.ORDER_ASC : QueryCriteria.ORDER_DESC;
 	}
 }
