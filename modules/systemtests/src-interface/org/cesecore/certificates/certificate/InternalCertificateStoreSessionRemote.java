@@ -14,13 +14,10 @@ package org.cesecore.certificates.certificate;
 
 import java.math.BigInteger;
 import java.security.cert.Certificate;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 import javax.ejb.Remote;
-
-import org.cesecore.util.CertTools;
 
 /**
  * This session bean should under no circumstances be included in the release version of CESeCore.
