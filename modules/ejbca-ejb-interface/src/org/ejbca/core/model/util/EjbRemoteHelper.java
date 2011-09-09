@@ -31,7 +31,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionRemote;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
@@ -65,7 +64,6 @@ public class EjbRemoteHelper {
     private CertReqHistorySessionRemote certReqHistorySession = null;
     private CmpMessageDispatcherSessionRemote cmpMessageDispatcherSession = null;
     private ComplexAccessControlSessionRemote complexAccessControlSessionRemote = null;
-    private ConfigurationSessionRemote configurationSession = null;
     private CrlStoreSessionRemote crlSession = null;
     private CrlCreateSessionRemote crlStoreSession = null;
     private EndEntityAccessSessionRemote endEntityAccessSession;
@@ -245,13 +243,6 @@ public class EjbRemoteHelper {
             upgradeSession = JndiHelper.getRemoteSession(UpgradeSessionRemote.class);
         }
         return upgradeSession;
-    }
-
-    public ConfigurationSessionRemote getConfigurationSession() {
-        if (configurationSession == null) {
-            configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
-        }
-        return configurationSession;
     }
 
     public ServiceDataSessionRemote getServiceDataSession() {

@@ -81,6 +81,7 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
@@ -117,7 +118,8 @@ import org.junit.Test;
 /**
  * Tests http pages of ocsp
  * @version $Id$
- **/
+ *
+ */
 public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
     public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
@@ -206,8 +208,8 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
-    RevocationSessionRemote revocationSession = InterfaceCache.getRevocationSession();
+    private ConfigurationSessionRemote configurationSessionRemote = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
+    private RevocationSessionRemote revocationSession = InterfaceCache.getRevocationSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
