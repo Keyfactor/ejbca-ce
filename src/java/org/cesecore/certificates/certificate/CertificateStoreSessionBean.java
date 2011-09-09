@@ -100,9 +100,6 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace(">storeCertificateNoAuth(" + username + ", " + cafp + ", " + status + ", " + type + ")");
         }
-        // Strip dangerous chars
-        username = StringTools.strip(username);
-
         // We need special handling here of CVC certificate with EC keys, because they lack EC parameters in all certs except the Root certificate
         // (CVCA)
         PublicKey pubk = incert.getPublicKey();
@@ -421,8 +418,6 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesByUsername(),  username=" + username);
         }
-        // Strip dangerous chars
-        username = StringTools.strip(username);
         // This method on the entity bean does the ordering in the database
         Collection<CertificateData> coll = CertificateData.findByUsernameOrdered(entityManager, username);
         ArrayList<Certificate> ret = new ArrayList<Certificate>();
@@ -442,8 +437,6 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.trace(">findCertificatesByUsernameAndStatus(),  username=" + username);
         }
         ArrayList<Certificate> ret = new ArrayList<Certificate>();
-        // Strip dangerous chars
-        username = StringTools.strip(username);
         // This method on the entity bean does the ordering in the database
         Collection<CertificateData> coll = CertificateData.findByUsernameAndStatus(entityManager, username, status);
         Iterator<CertificateData> iter = coll.iterator();
@@ -594,9 +587,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             log.info(msg);
             throw new CertificateRevokeException(msg);
         }
-        String username = rev.getUsername();
-        Date now = new Date();
-        String serialNo = CertTools.getSerialNumberAsString(certificate); // for logging
+        final String username = rev.getUsername();
+        final Date now = new Date();
+        final String serialNo = CertTools.getSerialNumberAsString(certificate); // for logging
 
         boolean returnVal = false;
         // A normal revocation
@@ -696,8 +689,6 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     public boolean checkIfAllRevoked(String username) {
         boolean returnval = true;
         Certificate certificate = null;
-        // Strip dangerous chars
-        username = StringTools.strip(username);
         Collection<Certificate> certs = findCertificatesByUsername(username);
         // Revoke all certs
         if (!certs.isEmpty()) {

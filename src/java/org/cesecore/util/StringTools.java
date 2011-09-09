@@ -61,6 +61,8 @@ public final class StringTools {
     private StringTools() {
     } // Not for instantiation
 
+    // Characters that are not allowed for XSS reasons
+    private static final char[] stripCharsIncludingXss = { '<', '>' };
     // Characters that are not allowed in strings that may be stored in the db.
     private static final char[] stripChars = { '\n', '\r', ';', '!', '\0', '%', '`', '?', '$', '~' };
     // Characters that are not allowed in strings that may be used in db queries
@@ -82,19 +84,31 @@ public final class StringTools {
      * SubjectDNs and usernames.
      * 
      * @param str the string whose contents will be stripped.
-     * 
      * @return the stripped version of the input string.
      */
     public static String strip(final String str) {
+    	return strip(str, stripChars);
+    }
+
+    /**
+     * Strips < and > from strings
+     * @param str the string whose contents will be stripped.
+     * @return the stripped version of the input string.
+     */
+    public static String stripIncludingXss(final String str) {
+    	return strip(str, stripCharsIncludingXss);
+    }
+
+    public static String strip(final String str, final char[] stripThis) {
         if (str == null) {
             return null;
         }
         final StringBuilder buf = new StringBuilder(str);
-        for (int i = 0; i < stripChars.length; i++) {
+        for (int i = 0; i < stripThis.length; i++) {
             int index = 0;
             int end = buf.length();
             while (index < end) {
-                if (buf.charAt(index) == stripChars[i]) {
+                if (buf.charAt(index) == stripThis[i]) {
                     // Found an illegal character. Replace it with a '/'.
                     buf.setCharAt(index, '/');
                 } else if (buf.charAt(index) == '\\') {

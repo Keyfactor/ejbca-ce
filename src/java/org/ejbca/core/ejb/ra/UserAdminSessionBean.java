@@ -251,7 +251,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, PersistenceException, CADoesntExistsException {
     	final int endEntityProfileId = endEntity.getEndEntityProfileId();
         final int caid = endEntity.getCAId();
-        final String username = StringTools.strip(endEntity.getUsername());
         // Check if administrator is authorized to add user to CA.
         assertAuthorizedToCA(admin, caid);
         final GlobalConfiguration globalConfiguration = getGlobalConfiguration(admin);
@@ -272,10 +271,10 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         final String altName = StringTools.strip(endEntity.getSubjectAltName());
         final String email = StringTools.strip(endEntity.getEmail());
-        endEntity.setUsername(username);
         endEntity.setDN(dn);
         endEntity.setSubjectAltName(altName);
         endEntity.setEmail(email);
+        final String username = endEntity.getUsername();
         final int type = endEntity.getType();
         String newpassword = endEntity.getPassword();
         EndEntityProfile profile = null;	// Only look this up if we need it..
@@ -339,8 +338,8 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         				endEntity.getTokenType(), endEntity.getHardTokenIssuerId(), endEntity.getExtendedinformation());
         		// Since persist will not commit and fail if the user already exists, we need to check for this
         		// Flushing the entityManager will not allow us to rollback the persisted user if this is a part of a larger transaction.
-        		if (UserData.findByUsername(entityManager, username) != null) {
-        			throw new EntityExistsException("User " + username + " already exists.");
+        		if (UserData.findByUsername(entityManager, userData.getUsername()) != null) {
+        			throw new EntityExistsException("User " + userData.getUsername() + " already exists.");
         		}
         		entityManager.persist(userData);
         		// Although UserDataVO should always have a null password for

@@ -72,7 +72,7 @@ public class HardTokenData implements Serializable {
 
 	//@Column
 	public String getUsername() { return username; }
-	public void setUsername(String username) { this.username = StringTools.strip(username); }
+	public void setUsername(String username) { this.username = StringTools.stripIncludingXss(username); }
 
 	//@Column
 	public long getCtime() { return cTime; }
