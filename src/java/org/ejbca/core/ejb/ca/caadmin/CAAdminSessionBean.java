@@ -1814,7 +1814,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // See if we have auto activation password defined
             String pin = BaseCryptoToken.getAutoActivatePin(tokenProperties);
             if (pin == null) {
-                String msg = intres.getLocalizedMessage("catoken.authcodemissing", Integer.valueOf(tokenId));
+                String msg = intres.getLocalizedMessage("token.authcodemissing", Integer.valueOf(tokenId));
                 log.info(msg);
                 throw new CryptoTokenAuthenticationFailedException(msg);
             }
