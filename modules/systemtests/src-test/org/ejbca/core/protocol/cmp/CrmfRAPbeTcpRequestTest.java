@@ -99,9 +99,14 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
      * 
      */
     @BeforeClass
-    public void beforeClass(String arg0) throws Exception {
-
+    public static void beforeClass(String arg0) throws Exception {
         CryptoProviderTools.installBCProvider();
+    }
+    
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();
+        
         // Try to use AdminCA1 if it exists
         CAInfo adminca1 = caSession.getCAInfo(admin, "AdminCA1");
         if (adminca1 == null) {
@@ -162,11 +167,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
                 log.error("Could not create end entity profile.", e);
             }
         }
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
+        
         if (keys == null) {
             keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         }
@@ -175,6 +176,20 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        boolean cleanUpOk = true;
+        try {
+            userAdminSession.deleteUser(admin, "cmptest");
+        } catch (NotFoundException e) {
+            // A test probably failed before creating the entity
+            log.error("Failed to delete user \"cmptest\".");
+            cleanUpOk = false;
+        }
+        endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
+        certificateProfileSession.removeCertificateProfile(admin, CPNAME);
+        if (!configurationSession.restoreConfiguration()) {
+            cleanUpOk = false;
+        }
+        assertTrue("Unable to clean up properly.", cleanUpOk);
     }
     
     public String getRoleName() {
@@ -233,24 +248,5 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
 
     }
 
-    @AfterClass
-    public void cleanUp() throws Exception {
-        log.trace(">testZZZCleanUp");
-        boolean cleanUpOk = true;
-        try {
-            userAdminSession.deleteUser(admin, "cmptest");
-        } catch (NotFoundException e) {
-            // A test probably failed before creating the entity
-            log.error("Failed to delete user \"cmptest\".");
-            cleanUpOk = false;
-        }
-        endEntityProfileSession.removeEndEntityProfile(admin, EEPNAME);
-        certificateProfileSession.removeCertificateProfile(admin, CPNAME);
-        if (!configurationSession.restoreConfiguration()) {
-            cleanUpOk = false;
-        }
-        assertTrue("Unable to clean up properly.", cleanUpOk);
-        log.trace("<testZZZCleanUp");
-    }
 
 }
