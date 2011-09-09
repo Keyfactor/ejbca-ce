@@ -263,7 +263,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             crmfHttpUserTest(
                     "CN=AdminCA1,O=EJBCA Sample,C=SE",
                     key3,
-                    InternalEjbcaResources.getInstance().getLocalizedMessage("signsession.subjectdn_exists_for_another_user", "'AdminCA1'",
+                    InternalEjbcaResources.getInstance().getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'AdminCA1'",
                             "'SYSTEMCA'"), null);
 
             hostname = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
@@ -271,7 +271,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             crmfHttpUserTest(
                     "CN=" + hostname + ",O=EJBCA Sample,C=SE",
                     key4,
-                    InternalEjbcaResources.getInstance().getLocalizedMessage("signsession.subjectdn_exists_for_another_user", "'" + hostname + "'",
+                    InternalEjbcaResources.getInstance().getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'" + hostname + "'",
                             "'tomcat'"), null);
 
         } finally {
