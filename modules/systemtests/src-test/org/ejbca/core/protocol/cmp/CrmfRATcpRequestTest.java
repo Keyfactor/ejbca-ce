@@ -79,6 +79,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 	
     private static final Logger log = Logger.getLogger(CrmfRATcpRequestTest.class);
 
+    private static final String CMP_USERNAME = "cmptest";
     private static final String PBEPASSWORD = "password";
     
     private static String userDN = "CN=tomas1,UID=tomas2,O=PrimeKey Solutions AB,C=SE";
@@ -146,6 +147,12 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        boolean cleanUpOk = true;
+
+        if (!configurationSession.restoreConfiguration()) {
+            cleanUpOk = false;
+        }
+        assertTrue("Unable to clean up properly.", cleanUpOk);
     }
 
     public String getRoleName() {
@@ -179,37 +186,40 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 
         // Create a new good user
         userDN = "C=SE,O=PrimeKey,CN=cmptest";
-        createCmpUser("cmptest", userDN);
+        createCmpUser(CMP_USERNAME, userDN);
+        try {
+            byte[] nonce = CmpMessageHelper.createSenderNonce();
+            byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        byte[] nonce = CmpMessageHelper.createSenderNonce();
-        byte[] transid = CmpMessageHelper.createSenderNonce();
+            PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
+            PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
 
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+            int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            assertNotNull(req);
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            byte[] resp = sendCmpTcp(ba, 5);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
+            checkCmpCertRepMessage(userDN, cacert, resp, reqId);
 
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
-        assertNotNull(req);
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(req);
-        byte[] ba = bao.toByteArray();
-        // Send request and receive response
-        byte[] resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
-        checkCmpCertRepMessage(userDN, cacert, resp, reqId);
-
-        // Send a confirm message to the CA
-        String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, reqId);
-        assertNotNull(confirm);
-        bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
-        out.writeObject(confirm);
-        ba = bao.toByteArray();
-        // Send request and receive response
-        resp = sendCmpTcp(ba, 5);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        checkCmpPKIConfirmMessage(userDN, cacert, resp);
+            // Send a confirm message to the CA
+            String hash = "foo123";
+            PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, reqId);
+            assertNotNull(confirm);
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(confirm);
+            ba = bao.toByteArray();
+            // Send request and receive response
+            resp = sendCmpTcp(ba, 5);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
+            checkCmpPKIConfirmMessage(userDN, cacert, resp);
+        } finally {
+            userAdminSession.deleteUser(admin, CMP_USERNAME);
+        }
     }
 
     @Test
@@ -304,31 +314,6 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, nonce, transid, false, null);
         checkCmpPKIConfirmMessage(subjectDN, cacert, resp);
 
-    }
-
-    @AfterClass
-    public void cleanUp() throws Exception {
-    	log.trace(">testZZZCleanUp");
-    	boolean cleanUpOk = true;
-		try {
-			userAdminSession.deleteUser(admin, "cmptest");
-		} catch (NotFoundException e) {
-			// A test probably failed before creating the entity
-        	log.error("Failed to delete user \"cmptest\".");
-        	cleanUpOk = false;
-		}
-		try {
-			userAdminSession.deleteUser(admin, "Some Common Name");
-		} catch (NotFoundException e) {
-			// A test probably failed before creating the entity
-        	log.error("Failed to delete user \"Some Common Name\".");
-        	cleanUpOk = false;
-		}
-		if (!configurationSession.restoreConfiguration()) {
-			cleanUpOk = false;
-		}
-        assertTrue("Unable to clean up properly.", cleanUpOk);
-    	log.trace("<testZZZCleanUp");
     }
 
     //
