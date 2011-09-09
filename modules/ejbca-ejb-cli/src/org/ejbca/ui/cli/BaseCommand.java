@@ -39,22 +39,21 @@ import org.ejbca.core.model.util.EjbRemoteHelper;
 
 /**
  * Base for Commands, contains useful functions
- *
+ * 
  * @version $Id$
  */
 public abstract class BaseCommand implements CliCommandPlugin {
 
-	/** This helper will cache interfaces. Don't use static instantiation. */
-	protected EjbRemoteHelper ejb = new EjbRemoteHelper();
+    /** This helper will cache interfaces. Don't use static instantiation. */
+    protected EjbRemoteHelper ejb = new EjbRemoteHelper();
 
-    //private static Logger baseLog = Logger.getLogger(BaseCommand.class);
+    // private static Logger baseLog = Logger.getLogger(BaseCommand.class);
     private static Logger log = null;
 
     /**
-     * Not static since different object should go to different session beans
-     * concurrently
+     * Not static since different object should go to different session beans concurrently
      */
-    //private Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "cli");
+    // private Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "cli");
     private AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CLI"));
 
     protected Logger getLogger() {
@@ -76,24 +75,14 @@ public abstract class BaseCommand implements CliCommandPlugin {
      * Method checking if the application server is running.
      * 
      * @return true if app server is running.
-     *
-    protected boolean appServerRunning() {
-        // Check that the application server is running by getting a home
-        // interface for user admin session
-
-        // FIXME: The following will not comply after the EJB3 migration. The
-        // below line needs to be resolved by some other means. -mikek
-        try {
-            ServiceLocator.getInstance().getRemoteHome(ICAAdminSessionHome.JNDI_NAME, ICAAdminSessionHome.class).getClass(); // avoid
-            // PMD
-            // warning
-            // :)
-            return true;
-        } catch (Exception e) {
-            baseLog.error("Appserver not running: ", e);
-            return false;
-        }
-    }*/
+     * 
+     *         protected boolean appServerRunning() { // Check that the application server is running by getting a home // interface for user admin
+     *         session
+     * 
+     *         // FIXME: The following will not comply after the EJB3 migration. The // below line needs to be resolved by some other means. -mikek
+     *         try { ServiceLocator.getInstance().getRemoteHome(ICAAdminSessionHome.JNDI_NAME, ICAAdminSessionHome.class).getClass(); // avoid // PMD
+     *         // warning // :) return true; } catch (Exception e) { baseLog.error("Appserver not running: ", e); return false; } }
+     */
 
     /** Private key with length 1024 bits */
     static byte[] keys1024bit = Base64.decode(("MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAKA5rNhYbPuVcArT"
@@ -114,13 +103,12 @@ public abstract class BaseCommand implements CliCommandPlugin {
             + "nKuay+xl5aoUcVEs3h3uJDjcpgMAtyusMEyv4d+RFYvWJWFzRTKDueyanw==").getBytes());
 
     /**
-     * Method checking if strong crypto is installed (extra package from
-     * java.sun.com)
+     * Method checking if strong crypto is installed (extra package from java.sun.com)
      * 
      * @return true if strong crypto is installed.
      */
-    protected boolean strongCryptoInstalled() throws IOException, KeyStoreException, CertificateException, NoSuchProviderException, NoSuchAlgorithmException,
-            InvalidKeySpecException {
+    protected boolean strongCryptoInstalled() throws IOException, KeyStoreException, CertificateException, NoSuchProviderException,
+            NoSuchAlgorithmException, InvalidKeySpecException {
         CryptoProviderTools.installBCProvider();
         Certificate cert = CertTools.getCertfromByteArray(certbytes);
         PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(keys1024bit);
