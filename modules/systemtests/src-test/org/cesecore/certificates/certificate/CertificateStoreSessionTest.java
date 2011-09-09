@@ -593,6 +593,25 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     	}
 	}
 
+	@Test
+	public void test13TestXss() throws Exception {
+        X509Certificate xcert = CertTools.genSelfCert("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo<tag>mytag</tag>", 24, null, keys.getPrivate(), 
+        		keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+		try {
+			final String fp = CertTools.getFingerprintAsString(xcert);
+			final String username = "foouser<tag>mytag</mytag>";
+	        boolean ret = certificateStoreSession.storeCertificate(roleMgmgToken, xcert, username, "1234", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
+	        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
+	        assertTrue("Failed to store", ret);
+	        CertificateInfo info = certificateStoreSession.getCertificateInfo(fp);
+	        // Username must not include <tag>s
+	        assertFalse("username must not contain < signs: "+info.getUsername(), info.getUsername().contains("<"));
+	        assertFalse("username must not contain > signs: "+info.getUsername(), info.getUsername().contains(">"));
+		} finally {
+	        internalCertStoreSession.removeCertificate(xcert);			
+		}
+	}
+	
 	// Commented out code.
 	// Keep it here, because it can be nice to have as a reference how this can be done.
 	// Commented out though, since the issue is fixed and the method not available anymore.
@@ -615,7 +634,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
     private X509Certificate generateCert(final AuthenticationToken admin, final int status) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
             SignatureException, InvalidKeyException, CertificateEncodingException, CreateException, AuthorizationDeniedException {
         // create a new self signed certificate
-        X509Certificate xcert = CertTools.genSelfCert("C=SE,O=PrimeCA,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keys.getPrivate(), 
+        X509Certificate xcert = CertTools.genSelfCert("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keys.getPrivate(), 
         		keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         String fp = CertTools.getFingerprintAsString(xcert);
 

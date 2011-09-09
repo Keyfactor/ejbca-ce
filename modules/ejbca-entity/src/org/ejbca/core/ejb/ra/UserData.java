@@ -102,7 +102,7 @@ public class UserData implements Serializable {
     		int type, int eeprofileid, int certprofileid, int tokentype, int hardtokenissuerid, ExtendedInformation extendedInformation) 
     throws NoSuchAlgorithmException {
         long time = new Date().getTime();
-        setUsername(StringTools.strip(username));
+        setUsername(username);
         if (clearpwd) {
         	setOpenPassword(password);
         } else {
@@ -132,10 +132,9 @@ public class UserData implements Serializable {
 
     //@Id @Column
     public String getUsername() { return username; }
-    /**
-     * username must be called 'striped' using StringTools.strip()
-     */
-    public void setUsername(String username) { this.username = username; }
+    public void setUsername(String username) { 
+        this.username = StringTools.stripIncludingXss(username);
+    }
 
     //@Column
     public String getSubjectDN() { return subjectDN; }

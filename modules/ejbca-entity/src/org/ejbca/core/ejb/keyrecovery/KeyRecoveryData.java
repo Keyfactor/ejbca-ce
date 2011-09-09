@@ -73,7 +73,7 @@ public class KeyRecoveryData implements Serializable {
 
 	//@Column
 	public String getUsername() { return username; }
-	public void setUsername(String username) { this.username = StringTools.strip(username); }
+	public void setUsername(String username) { this.username = StringTools.stripIncludingXss(username); }
 
 	@Transient
 	public boolean getMarkedAsRecoverable() {

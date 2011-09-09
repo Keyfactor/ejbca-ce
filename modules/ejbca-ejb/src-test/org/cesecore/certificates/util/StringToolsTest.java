@@ -269,4 +269,15 @@ public class StringToolsTest {
 		assertEquals("åäöü", StringTools.getBase64String(StringTools.putBase64String("åäöü", true)));
 		assertEquals("åäöü", StringTools.getBase64String(StringTools.putBase64String("åäöü", false)));
 	}
+	
+	@Test
+	public void testStripXss() {
+		final String str = "foo<tag>tag</tag>";
+		String ret = StringTools.strip(str);
+		assertTrue("<> should not have been stripped: "+ret, ret.contains("<"));
+		assertTrue("<> should not have been stripped: "+ret, ret.contains(">"));
+		ret = StringTools.stripIncludingXss(str);
+		assertFalse("<> should have been stripped: "+ret, ret.contains("<"));
+		assertFalse("<> should have been stripped: "+ret, ret.contains(">"));
+	}
 }
