@@ -35,7 +35,9 @@ import javax.mail.internet.MimeMultipart;
 import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
+import org.cesecore.jndi.JndiHelper;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.util.InterfaceCache;
 
@@ -49,7 +51,7 @@ import org.ejbca.util.InterfaceCache;
  * @version $Id$
  *
  */
-class CertFetchAndVerify {
+public class CertFetchAndVerify {
 	private final static Logger log = Logger.getLogger(CertFetchAndVerify.class);
 	private final CertificateFactory cf;
 	CertFetchAndVerify() throws CertificateException {
@@ -113,7 +115,7 @@ class CertFetchAndVerify {
 	private String getURL() {
 		if (theURL == null) {
 			try {
-				String port = InterfaceCache.getConfigurationSession().getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+				String port = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
 				theURL = "http://localhost:" + port + "/certificates/search.cgi"; // Fallback, like if we run tests on a stand-alone VA
 			} catch (Exception e) {
 				theURL = "http://localhost:8080/certificates/search.cgi"; // Fallback, like if we run tests on a stand-alone VA

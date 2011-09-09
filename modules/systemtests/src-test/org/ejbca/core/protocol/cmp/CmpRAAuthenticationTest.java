@@ -38,6 +38,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -224,7 +225,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         super.tearDown();
         removeTestCA(CA_NAME_1);
         removeTestCA(CA_NAME_2);
-        InterfaceCache.getConfigurationSession().restoreConfiguration();
+        JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).restoreConfiguration();
         InterfaceCache.getEndEntityProfileSession().removeEndEntityProfile(ADMIN, EEP_1);
     }
     

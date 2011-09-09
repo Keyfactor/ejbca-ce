@@ -148,10 +148,6 @@ public class InterfaceCache {
 	public static UpgradeSessionRemote getUpgradeSession() {
 		return getEjb().getUpgradeSession();
 	}
-
-	public static ConfigurationSessionRemote getConfigurationSession() {
-		return getEjb().getConfigurationSession();
-	}
 	
 	public static RoleAccessSessionRemote getRoleAccessSession() {
 	    return getEjb().getRoleAccessSession();

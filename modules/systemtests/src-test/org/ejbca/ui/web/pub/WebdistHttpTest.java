@@ -23,9 +23,9 @@ import java.util.List;
 import org.apache.commons.httpclient.NameValuePair;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.jndi.JndiHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.util.InterfaceCache;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,7 +43,7 @@ public class WebdistHttpTest {
 
     private String httpPort;
 
-    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
+    private ConfigurationSessionRemote configurationSessionRemote = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
     
     @Before
     public void setUp() {

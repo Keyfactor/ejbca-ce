@@ -70,6 +70,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
@@ -186,7 +187,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
-    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
+    private ConfigurationSessionRemote configurationSessionRemote = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();

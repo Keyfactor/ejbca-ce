@@ -45,6 +45,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.config.OcspConfiguration;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
@@ -85,7 +86,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
     private static X509Certificate ocspTestCert = null;
     
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private ConfigurationSessionRemote configurationSessionRemote = InterfaceCache.getConfigurationSession();
+    private ConfigurationSessionRemote configurationSessionRemote = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
 
     private OcspJunitHelper helper = null;

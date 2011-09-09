@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
-import org.ejbca.util.InterfaceCache;
+import org.cesecore.jndi.JndiHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +30,7 @@ import org.junit.Test;
  */
 public class ConfigurationSessionTest {
 
-    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
+    private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
     
 
     @Before

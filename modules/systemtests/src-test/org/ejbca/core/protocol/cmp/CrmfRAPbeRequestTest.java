@@ -49,6 +49,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -117,7 +118,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
+    private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private GlobalConfigurationSessionRemote raAdminSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();

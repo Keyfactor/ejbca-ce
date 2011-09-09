@@ -45,6 +45,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -87,7 +88,7 @@ public class CrmfRequestTest extends CmpTestCase {
     private static X509Certificate cacert = null;
 
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
+    private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     @BeforeClass

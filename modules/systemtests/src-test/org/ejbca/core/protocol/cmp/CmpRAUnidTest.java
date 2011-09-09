@@ -50,6 +50,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -99,7 +100,7 @@ public class CmpRAUnidTest extends CmpTestCase {
 
     private final CaSessionRemote caSession = InterfaceCache.getCaSession();
     private final CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-    private final ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
+    private final ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
     private final EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
 
     @BeforeClass

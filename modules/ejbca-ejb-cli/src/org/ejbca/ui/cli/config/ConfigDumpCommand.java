@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.config;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -44,7 +45,7 @@ public class ConfigDumpCommand extends BaseCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         getLogger().info("Trying to fetch currently used server properties..");
 
-        Properties properties = ejb.getConfigurationSession().getAllProperties();
+        Properties properties = EjbcaConfigurationHolder.getAsProperties(); 
         Enumeration<Object> enumeration = properties.keys();
         while (enumeration.hasMoreElements()) {
             String key = (String) enumeration.nextElement();

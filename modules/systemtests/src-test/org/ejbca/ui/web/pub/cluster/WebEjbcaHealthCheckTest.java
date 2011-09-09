@@ -17,9 +17,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
+import org.cesecore.jndi.JndiHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -35,7 +35,7 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
 
 	private static final Logger log = Logger.getLogger(WebEjbcaHealthCheckTest.class);
 
-    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
+    private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {

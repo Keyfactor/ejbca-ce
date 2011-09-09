@@ -36,6 +36,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileExistsExce
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -75,7 +76,7 @@ public class CrmfRARequestTest extends CmpTestCase {
 
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
-    private ConfigurationSessionRemote configurationSession = InterfaceCache.getConfigurationSession();
+    private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private EndEntityProfileSession eeProfileSession = InterfaceCache.getEndEntityProfileSession();
     private CertificateProfileSession certProfileSession = InterfaceCache.getCertificateProfileSession();
