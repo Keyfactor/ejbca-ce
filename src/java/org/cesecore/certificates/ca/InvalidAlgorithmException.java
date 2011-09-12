@@ -12,18 +12,19 @@
  *************************************************************************/  
 package org.cesecore.certificates.ca;
 
+import javax.ejb.ApplicationException;
+
 import org.cesecore.CesecoreException;
 
 
 
 /**
- * Error due to an invalid request validity period for a certificate.
+ * Error due to an invalid request certificate signature algorithm for a certificate.
  *
- * Based on EJBCA version: IllegalValidityException.java 8854 2010-03-30 15:55:35Z anatom
- * 
- * @version $Id: IllegalValidityException.java 158 2011-01-26 14:48:51Z mikek $
+ * @version $Id$
  */
-public class IllegalValidityException extends CesecoreException {
+@ApplicationException(rollback=true) 
+public class InvalidAlgorithmException extends CesecoreException {
  
     private static final long serialVersionUID = 6774153561528947364L;
   
@@ -33,7 +34,7 @@ public class IllegalValidityException extends CesecoreException {
      *
      * @param message Human readable error message, can not be NULL.
      */
-    public IllegalValidityException(final String message) {
+    public InvalidAlgorithmException(final String message) {
         super(message);
     }
     /**
@@ -42,7 +43,7 @@ public class IllegalValidityException extends CesecoreException {
      *
      * @param exception exception to be embedded.
      */
-    public IllegalValidityException(final Exception exception) {
+    public InvalidAlgorithmException(final Exception exception) {
         super(exception);
     }
 }

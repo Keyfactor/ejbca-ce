@@ -43,6 +43,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -54,7 +55,7 @@ import org.cesecore.util.CryptoProviderTools;
 /**
  * Implementation of CaTokenSession
  * 
- * @version $Id: CaTokenSessionBean.java 897 2011-06-20 11:17:25Z johane $
+ * @version $Id: CaTokenSessionBean.java 1068 2011-08-31 18:47:34Z filiper $
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CaTokenSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -83,13 +84,13 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">deactivateCAToken: " + caid);
         }
-        CA ca = caSession.getCA(admin, caid);
+        final CA ca = caSession.getCA(admin, caid);
         ca.getCAToken().getCryptoToken().deactivate();
         // Update CA tokeninfo 
-        int tokenstatus = ca.getCAToken().getTokenStatus();
+        final int tokenstatus = ca.getCAToken().getTokenStatus();
         ca.getCAInfo().getCATokenInfo().setTokenStatus(tokenstatus);
-        String msg = intres.getLocalizedMessage("catoken.deactivated", caid);
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final String msg = intres.getLocalizedMessage("catoken.deactivated", caid);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         logSession.log(EventTypes.CA_TOKENDEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
         if (log.isTraceEnabled()) {
@@ -103,13 +104,13 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">activateCAToken: " + caid);
         }
-        CA ca = caSession.getCA(admin, caid);
+        final CA ca = caSession.getCA(admin, caid);
         ca.getCAToken().getCryptoToken().activate(authenticationcode);
         // Update CA tokeninfo 
-        int tokenstatus = ca.getCAToken().getTokenStatus();
+        final int tokenstatus = ca.getCAToken().getTokenStatus();
         ca.getCAInfo().getCATokenInfo().setTokenStatus(tokenstatus);
-        String msg = intres.getLocalizedMessage("catoken.activated", caid);
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final String msg = intres.getLocalizedMessage("catoken.activated", caid);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         logSession.log(EventTypes.CA_TOKENACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
         if (log.isTraceEnabled()) {
@@ -125,20 +126,24 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">generateKeys: " + caid);
         }
-        CA ca = caSession.getCA(admin, caid);
-        CAToken token = ca.getCAToken();
-        CATokenInfo oldinfo = ca.getCAToken().getTokenInfo();
-        Properties oldprop = oldinfo.getProperties();
-        String oldsequence = oldinfo.getKeySequence();
+        final CA ca = caSession.getCA(admin, caid);
+        final CAToken token = ca.getCAToken();
+        final CATokenInfo oldinfo = ca.getCAToken().getTokenInfo();
+        final Properties oldprop = oldinfo.getProperties();
+        final String oldsequence = oldinfo.getKeySequence();
         token.generateKeys(authenticationcode, renew, activate);
-        ca.setCAToken(token);
+        try {
+			ca.setCAToken(token);
+		} catch (InvalidAlgorithmException e) {
+			throw new IllegalCryptoTokenException(e);
+		}
         caSession.editCA(admin, ca, false);
         ca.getCAToken().getCryptoToken().activate(authenticationcode);
-        CATokenInfo info = ca.getCAToken().getTokenInfo();
-        Properties prop = info.getProperties();
-        String sequence = info.getKeySequence();
-        String msg = intres.getLocalizedMessage("catoken.generatedkeys", caid, renew, activate);
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final CATokenInfo info = ca.getCAToken().getTokenInfo();
+        final Properties prop = info.getProperties();
+        final String sequence = info.getKeySequence();
+        final String msg = intres.getLocalizedMessage("catoken.generatedkeys", caid, renew, activate);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         details.put("oldproperties", oldprop);
         details.put("oldsequence", oldsequence);
@@ -158,17 +163,21 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">activateNextSignKey: " + caid);
         }
-        CA ca = caSession.getCA(admin, caid);
-        CAToken token = ca.getCAToken();
+        final CA ca = caSession.getCA(admin, caid);
+        final CAToken token = ca.getCAToken();
         token.activateNextSignKey(authenticationcode);
-        ca.setCAToken(token);
+        try {
+			ca.setCAToken(token);
+		} catch (InvalidAlgorithmException e) {
+			throw new IllegalCryptoTokenException(e);
+		}
         caSession.editCA(admin, ca, false);
         ca.getCAToken().getCryptoToken().activate(authenticationcode);
-        CATokenInfo info = ca.getCAToken().getTokenInfo();
-        Properties prop = info.getProperties();
-        String sequence = info.getKeySequence();
-        String msg = intres.getLocalizedMessage("catoken.activatednextkey", caid);
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final CATokenInfo info = ca.getCAToken().getTokenInfo();
+        final Properties prop = info.getProperties();
+        final String sequence = info.getKeySequence();
+        final String msg = intres.getLocalizedMessage("catoken.activatednextkey", caid);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         details.put("properties", prop);
         details.put("sequence", sequence);
@@ -185,23 +194,26 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">setTokenProperty: " + caid);
         }
-        CA ca = caSession.getCA(admin, caid);
-        CAToken token = ca.getCAToken();
-        CATokenInfo oldinfo = ca.getCAToken().getTokenInfo();
-        Properties oldprop = oldinfo.getProperties();
+        final CA ca = caSession.getCA(admin, caid);
+        final CAToken token = ca.getCAToken();
+        final CATokenInfo oldinfo = ca.getCAToken().getTokenInfo();
+        final Properties oldprop = oldinfo.getProperties();
 
-        CATokenInfo info = ca.getCAToken().getTokenInfo();
-        Properties prop = info.getProperties();
+        final CATokenInfo info = ca.getCAToken().getTokenInfo();
+        final Properties prop = info.getProperties();
         prop.setProperty(key, value);
         info.setProperties(prop);
         token.updateTokenInfo(info);
-
-        ca.setCAToken(token);
+        try {
+			ca.setCAToken(token);
+		} catch (InvalidAlgorithmException e) {
+			throw new IllegalCryptoTokenException(e);
+		}
         caSession.editCA(admin, ca, false);
         ca.getCAToken().getCryptoToken().activate(authenticationcode);
 
-        String msg = intres.getLocalizedMessage("catoken.setproperty", caid, key, value);
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final String msg = intres.getLocalizedMessage("catoken.setproperty", caid, key, value);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         details.put("oldproperties", oldprop);
         details.put("properties", prop);
@@ -212,22 +224,26 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
     }
 
     @Override
-    public void deleteTokenEntry(final AuthenticationToken admin, final int caid, char[] authenticationcode, String alias)
+    public void deleteTokenEntry(final AuthenticationToken admin, final int caid, final char[] authenticationcode, final String alias)
             throws CADoesntExistsException, AuthorizationDeniedException, IllegalCryptoTokenException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
         if (log.isTraceEnabled()) {
             log.trace(">deleteTokenEntry: " + caid);
         }
-        CA ca = caSession.getCA(admin, caid);
-        CAToken token = ca.getCAToken();
+        final CA ca = caSession.getCA(admin, caid);
+        final CAToken token = ca.getCAToken();
         token.getCryptoToken().activate(authenticationcode);
         token.getCryptoToken().deleteEntry(authenticationcode, alias);
-        ca.setCAToken(token);
+        try {
+			ca.setCAToken(token);
+		} catch (InvalidAlgorithmException e) {
+			throw new IllegalCryptoTokenException(e);
+		}
         caSession.editCA(admin, ca, false);
         ca.getCAToken().getCryptoToken().activate(authenticationcode);
 
-        String msg = intres.getLocalizedMessage("token.deleteentry", alias, caid);
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final String msg = intres.getLocalizedMessage("token.deleteentry", alias, caid);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         logSession.log(EventTypes.CA_KEYDELETE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
         if (log.isTraceEnabled()) {
@@ -243,16 +259,20 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">generateKeyPair: " + caid);
         }
-        CA ca = caSession.getCA(admin, caid);
-        CAToken token = ca.getCAToken();
+        final CA ca = caSession.getCA(admin, caid);
+        final CAToken token = ca.getCAToken();
         token.getCryptoToken().activate(authenticationcode);
         token.getCryptoToken().generateKeyPair(keySpec, alias);
-        ca.setCAToken(token);
+        try {
+			ca.setCAToken(token);
+		} catch (InvalidAlgorithmException e) {
+			throw new IllegalCryptoTokenException(e);
+		}
         caSession.editCA(admin, ca, false);
         ca.getCAToken().getCryptoToken().activate(authenticationcode);
 
-        String msg = intres.getLocalizedMessage("token.generatedkeypair", keySpec, alias, caid);
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final String msg = intres.getLocalizedMessage("token.generatedkeypair", keySpec, alias, caid);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         logSession.log(EventTypes.CA_KEYGEN, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
         if (log.isTraceEnabled()) {
@@ -268,17 +288,21 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">generateKeyPair: " + caid);
         }
-        CA ca = caSession.getCA(admin, caid);
-        CAToken token = ca.getCAToken();
+        final CA ca = caSession.getCA(admin, caid);
+        final CAToken token = ca.getCAToken();
         token.getCryptoToken().activate(authenticationcode);
-        AlgorithmParameterSpec spec = KeyTools.getKeyGenSpec(template);
+        final AlgorithmParameterSpec spec = KeyTools.getKeyGenSpec(template);
         token.getCryptoToken().generateKeyPair(spec, alias);
-        ca.setCAToken(token);
+        try {
+			ca.setCAToken(token);
+		} catch (InvalidAlgorithmException e) {
+			throw new IllegalCryptoTokenException(e);
+		}
         caSession.editCA(admin, ca, false);
         ca.getCAToken().getCryptoToken().activate(authenticationcode);
 
-        String msg = intres.getLocalizedMessage("token.generatedkeypair", spec.getClass(), alias, caid);
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        final String msg = intres.getLocalizedMessage("token.generatedkeypair", spec.getClass(), alias, caid);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         logSession.log(EventTypes.CA_KEYGEN, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
         if (log.isTraceEnabled()) {

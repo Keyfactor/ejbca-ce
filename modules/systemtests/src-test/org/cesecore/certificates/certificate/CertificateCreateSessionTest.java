@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.security.KeyPair;
 import java.security.cert.Certificate;
@@ -41,6 +42,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaSessionTest;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -265,6 +267,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         String fp1 = null;
         String fp2 = null;
+        String fp3 = null;
         try {
         	int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
 
@@ -317,7 +320,8 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         	assertNotNull("Failed to get response", resp);
         	Certificate cert3 = (X509Certificate)resp.getCertificate();
     		assertNotNull("Failed to create cert", cert3);
-    		assertEquals(user.getCertificateDN(), CertTools.getSubjectDN(cert3));
+        	fp3 = CertTools.getFingerprintAsString(cert3);
+        	assertEquals(user.getCertificateDN(), CertTools.getSubjectDN(cert3));
     		// Check that it is revoked
             isRevoked = certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert3), CertTools.getSerialNumber(cert3));
             assertTrue(isRevoked);
@@ -328,6 +332,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         	certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
         	internalCertStoreSession.removeCertificate(fp1);
         	internalCertStoreSession.removeCertificate(fp2);
+        	internalCertStoreSession.removeCertificate(fp3);
         }
     }
 
@@ -360,12 +365,12 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         	SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), "certcreatereq", "foo123");
         	req.setIssuerDN(CertTools.getIssuerDN(testx509ca.getCACertificate()));
         	req.setRequestDN("CN=foounique,O=PrimeKey,C=SE");
-        	X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user1, req, X509ResponseMessage.class);
+        	X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user1, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
             assertNotNull("Failed to create cert", resp);
         	fp1 = CertTools.getFingerprintAsString(resp.getCertificate());
             // Create second cert, should not work with the same DN
             try {
-            	resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user2, req, X509ResponseMessage.class);
+            	resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user2, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
             	assertTrue("Should not work to create same DN with another username", false);
             } catch (CesecoreException e) {
             	assertEquals(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, e.getErrorCode());
@@ -402,6 +407,34 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     }
 
     @Test
+    public void testInvalidSignatureAlg() throws Exception {
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certprof.setSignatureAlgorithm("MD5WithRSA");
+        String fingerprint = null;
+        try {
+            int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
+            
+            EndEntityInformation user = new EndEntityInformation("signalgtest","C=SE,O=PrimeKey,CN=signalgtest",testx509ca.getCAId(),null,"foo@anatom.se",EndEntityConstants.USER_ENDUSER,0,cpId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
+            user.setPassword("foo123");
+
+        	SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
+        	try {
+        		X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+                X509Certificate cert = (X509Certificate)resp.getCertificate();
+                fingerprint = CertTools.getFingerprintAsString(cert);
+                fail("Creating certificate should not work with invalid signature algoritmh,");
+        	} catch (InvalidAlgorithmException e) {
+        		// InvalidAlgorithmException is a CesecoreException
+        		// NOPMD: this one should throw and we ignore it
+        	}
+        } finally {
+        	certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
+        	internalCertStoreSession.removeCertificate(fingerprint);
+        }
+    }
+
+    @Test
     public void testAuthorization() throws Exception {
     	
     	// AuthenticationToken that does not have privileges to create a certificate
@@ -419,11 +452,16 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
     	SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());    	
 
+        String fingerprint = null;
         try {
         	X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(adminTokenNoAuth, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+            X509Certificate cert = (X509Certificate)resp.getCertificate();
+            fingerprint = CertTools.getFingerprintAsString(cert);
         	assertTrue("should throw", false);
         } catch (AuthorizationDeniedException e) {
         	// NOPMD
+        } finally {
+        	internalCertStoreSession.removeCertificate(fingerprint);
         }
     }
 

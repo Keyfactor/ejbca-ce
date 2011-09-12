@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -90,7 +91,7 @@ import org.junit.Test;
 
 /** JUnit test for X.509 CA
  * 
- * @version $Id: X509CATest.java 667 2011-04-04 07:57:33Z mikek $
+ * @version $Id: X509CATest.java 988 2011-08-10 14:33:46Z tomas $
  */
 public class X509CATest {
 
@@ -451,7 +452,20 @@ public class X509CATest {
 		assertEquals(CAConstants.CA_OFFLINE, ca.getCAInfo().getStatus());
 	}
 	
-	private static X509CA createTestCA(String cadn) throws Exception {
+	@Test
+	public void testInvalidSignatureAlg() throws Exception {
+		try {
+			createTestCA(CADN, "MD5WithRSA");
+			fail("This should throw because md5withRSA is not an allowed signature algorithm. It is vulnerable.");
+		} catch (InvalidAlgorithmException e) {
+			// NOPMD: this is what we want
+		}
+	}
+	
+	private static X509CA createTestCA(final String cadn) throws Exception {
+		return createTestCA(cadn, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+	}
+	private static X509CA createTestCA(final String cadn, final String sigAlg) throws Exception {
 		// Create catoken
 		Properties prop = new Properties();
     	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
@@ -467,7 +481,7 @@ public class X509CATest {
 		// Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
 		catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
 		catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-		catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
+		catoken.setSignatureAlgorithm(sigAlg);
 		catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
 
 		CATokenInfo catokeninfo = catoken.getTokenInfo();

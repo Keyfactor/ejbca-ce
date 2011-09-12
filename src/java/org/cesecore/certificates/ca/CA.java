@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -47,6 +48,8 @@ import org.cesecore.certificates.ca.internal.CATokenCacheManager;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
@@ -60,7 +63,7 @@ import org.cesecore.util.ValidityDate;
  * 
  * Based on EJBCA version: CA.java 11112 2011-01-09 16:17:33Z anatom
  * 
- * @version $Id: CA.java 667 2011-04-04 07:57:33Z mikek $
+ * @version $Id: CA.java 1073 2011-09-04 19:36:38Z tomas $
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 
@@ -68,6 +71,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     /** Log4j instance */
     private static Logger log = Logger.getLogger(CA.class);
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
 
     public static final String TRUE = "true";
     public static final String FALSE = "false";
@@ -371,8 +376,20 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * Sets the CA token. Adds or updates the token in the token registry.
      * 
      * @param catoken The CAs token, be it soft or hard.
+     * @throws InvalidAlgorithmException 
      */
-    public void setCAToken(CAToken catoken) {
+    public void setCAToken(CAToken catoken) throws InvalidAlgorithmException {
+        // Check that the signature algorithm is one of the allowed ones
+    	final String sigAlg = catoken.getTokenInfo().getSignatureAlgorithm();
+        if (!ArrayUtils.contains(AlgorithmConstants.AVAILABLE_SIGALGS, sigAlg)) {
+            final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", sigAlg);
+            throw new InvalidAlgorithmException(msg);        	
+        }
+    	final String encAlg = catoken.getTokenInfo().getEncryptionAlgorithm();
+        if (!ArrayUtils.contains(AlgorithmConstants.AVAILABLE_SIGALGS, encAlg)) {
+            final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", encAlg);
+            throw new InvalidAlgorithmException(msg);        	
+        }
         data.put(CATOKENDATA, catoken.saveData());
         CATokenCacheManager.instance().addCAToken(getCAId(), catoken);
     }
@@ -622,7 +639,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         CAToken token = getCAToken();
         if (token != null) {
             token.updateTokenInfo(cainfo.getCATokenInfo());
-            setCAToken(token);
+            try {
+				setCAToken(token);
+			} catch (InvalidAlgorithmException e) {
+				throw new IllegalCryptoTokenException(e);
+			}
         }
         setFinishUser(cainfo.getFinishUser());
         setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
