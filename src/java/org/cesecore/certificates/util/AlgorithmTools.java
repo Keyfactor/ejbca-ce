@@ -45,7 +45,7 @@ import org.ejbca.cvc.OIDField;
  * 
  * Based on EJBCA version: AlgorithmTools.java 11100 2011-01-07 16:34:50Z anatom
  * 
- * @version $Id: AlgorithmTools.java 988 2011-08-10 14:33:46Z tomas $
+ * @version $Id: AlgorithmTools.java 1097 2011-09-12 09:01:17Z tomas $
  */
 public final class AlgorithmTools {
 	
@@ -286,7 +286,9 @@ public final class AlgorithmTools {
         PublicKey publickey = cert.getPublicKey();
         if (publickey instanceof RSAPublicKey) {
             if (certSignatureAlgorithm.indexOf("MGF1") == -1) {
-                if (certSignatureAlgorithm.indexOf("SHA1") != -1) {
+            	if (certSignatureAlgorithm.indexOf("MD5") != -1) {
+                    signatureAlgorithm = "MD5WithRSA";
+            	} else if (certSignatureAlgorithm.indexOf("SHA1") != -1) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA1_WITH_RSA;
                 } else if (certSignatureAlgorithm.indexOf("256") != -1) {
                     signatureAlgorithm = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;

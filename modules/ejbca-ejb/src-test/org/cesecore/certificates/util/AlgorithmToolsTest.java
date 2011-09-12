@@ -45,7 +45,7 @@ import org.junit.Test;
  * 
  * Based on EJBCA version: AlgorithmToolsTest.java 10833 2010-12-13 14:00:06Z anatom
  * 
- * @version $Id: AlgorithmToolsTest.java 988 2011-08-10 14:33:46Z tomas $
+ * @version $Id: AlgorithmToolsTest.java 1101 2011-09-12 13:36:41Z tomas $
  */
 public class AlgorithmToolsTest {
 
@@ -118,7 +118,7 @@ public class AlgorithmToolsTest {
         assertEquals(AlgorithmConstants.SIGALG_SHA512_WITH_RSA, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA512_WITH_RSA));
         assertEquals(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA1_WITH_RSA_AND_MGF1));
         assertEquals(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, AlgorithmTools.getEncSigAlgFromSigAlg(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1));
-        assertEquals("FooBar", AlgorithmTools.getEncSigAlgFromSigAlg("Foobar"));
+        assertEquals("Foobar", AlgorithmTools.getEncSigAlgFromSigAlg("Foobar"));
     }
 
     @Test
