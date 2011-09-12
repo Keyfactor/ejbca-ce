@@ -39,7 +39,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.log.LogConstants;
 
 /**
  * This bean handled global configurations.
