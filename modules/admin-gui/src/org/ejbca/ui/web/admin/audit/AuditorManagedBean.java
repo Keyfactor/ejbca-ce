@@ -93,16 +93,16 @@ public class AuditorManagedBean implements Serializable {
 	public AuditorManagedBean() {
 		final EjbcaWebBean ejbcaWebBean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
 		columnNameMap.put(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, ejbcaWebBean.getText("ADMINISTRATOR"));
-		columnNameMap.put(AuditLogEntry.FIELD_CUSTOM_ID, ejbcaWebBean.getText("CA"));
-		columnNameMap.put(AuditLogEntry.FIELD_EVENTSTATUS, ejbcaWebBean.getText("STATUS"));
-		columnNameMap.put(AuditLogEntry.FIELD_EVENTTYPE, ejbcaWebBean.getText("EVENT"));
+		columnNameMap.put(AuditLogEntry.FIELD_CUSTOM_ID, ejbcaWebBean.getText("CUSTOM_ID"));
+		columnNameMap.put(AuditLogEntry.FIELD_EVENTSTATUS, ejbcaWebBean.getText("EVENTSTATUS"));
+		columnNameMap.put(AuditLogEntry.FIELD_EVENTTYPE, ejbcaWebBean.getText("EVENTTYPE"));
 		columnNameMap.put(AuditLogEntry.FIELD_MODULE, ejbcaWebBean.getText("MODULE"));
 		columnNameMap.put(AuditLogEntry.FIELD_NODEID, ejbcaWebBean.getText("NODE"));
-		columnNameMap.put(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, ejbcaWebBean.getText("CERTIFICATENR"));
+		columnNameMap.put(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, ejbcaWebBean.getText("CERTIFICATE"));
 		columnNameMap.put(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, ejbcaWebBean.getText("USERNAME_ABBR"));
 		//columnNameMap.put(AuditLogEntry.FIELD_SEQENCENUMBER, ejbcaWebBean.getText("SEQENCENUMBER"));
 		//columnNameMap.put(AuditLogEntry.FIELD_SERVICE, ejbcaWebBean.getText("SERVICE"));
-		columnNameMap.put(AuditLogEntry.FIELD_TIMESTAMP, ejbcaWebBean.getText("TIME"));
+		columnNameMap.put(AuditLogEntry.FIELD_TIMESTAMP, ejbcaWebBean.getText("TIMESTAMP"));
 		for (final Entry<String,String> entry : columnNameMap.entrySet()) {
 			sortColumns.add(new SelectItem(entry.getKey(), entry.getValue()));
 		}
@@ -117,16 +117,30 @@ public class AuditorManagedBean implements Serializable {
 		}
 		// We can't use enums directly in JSF 1.2
 		for (Operation current : Operation.values()) {
-			operationsOptions.add(new SelectItem(current.name(), ejbcaWebBean.getText(current.name())));
+			operationsOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
 		}
 		for (Condition current : Condition.values()) {
-			conditionsOptions.add(new SelectItem(current.name(), ejbcaWebBean.getText(current.name())));
+			conditionsOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
 		}
 		for (EventStatus current : EventStatus.values()) {
-			eventStatusOptions.add(new SelectItem(current.name(), ejbcaWebBean.getText(current.name())));
+			eventStatusOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
 		}
-		for (EventType current : EventTypes.values()) {
-			eventTypeOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
+		for (EventTypes current : EventTypes.values()) {
+			// TODO: Verify if these are used by EJBCA
+			switch (current) {
+			case BACKUP:
+			case RESTORE:
+			case TIME_SYNC_ACQUIRE:
+			case TIME_SYNC_LOST:
+			//case LOG_MANAGEMENT_CHANGE:
+			//case LOG_SIGN:
+			case CERTIFICATE_KEY_BIND:
+			case CERTIFICATE_KEY_UNBIND:
+				// Ignore!
+				break;
+			default:
+				eventTypeOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
+			}
 		}
 		for (EventType current : EjbcaEventTypes.values()) {
 			eventTypeOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
