@@ -38,7 +38,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
  * @version $Id$
- *
+ * 
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityAccessSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -47,15 +47,15 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     private static final Logger log = Logger.getLogger(EndEntityAccessSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-    
+
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
-    
+
     @EJB
     private AccessControlSessionLocal authorizationSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public EndEntityInformation findUserBySubjectDN(final AuthenticationToken admin, final String subjectdn) throws AuthorizationDeniedException {
@@ -79,10 +79,11 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         }
         return returnval;
     }
-    
+
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public EndEntityInformation findUserBySubjectAndIssuerDN(final AuthenticationToken admin, final String subjectdn, final String issuerdn) throws AuthorizationDeniedException {
+    public EndEntityInformation findUserBySubjectAndIssuerDN(final AuthenticationToken admin, final String subjectdn, final String issuerdn)
+            throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">findUserBySubjectAndIssuerDN(" + subjectdn + ", " + issuerdn + ")");
         }
@@ -104,7 +105,6 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         return returnval;
     }
 
-    
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public EndEntityInformation findUser(final AuthenticationToken admin, final String username) throws AuthorizationDeniedException {
@@ -123,7 +123,6 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         }
         return ret;
     }
-    
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
@@ -159,20 +158,21 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         return returnval;
     }
 
-
     /** @return the userdata value object if admin is authorized. Does not leak username if auth fails. */
-    private EndEntityInformation returnUserDataVO(final AuthenticationToken admin, final UserData data, final String requestedUsername) throws AuthorizationDeniedException {
+    private EndEntityInformation returnUserDataVO(final AuthenticationToken admin, final UserData data, final String requestedUsername)
+            throws AuthorizationDeniedException {
         if (data != null) {
             if (globalConfigurationSession.getCachedGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to view user.
                 if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
-                        if (requestedUsername == null) {
+                    if (requestedUsername == null) {
                         final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()));
                         throw new AuthorizationDeniedException(msg);
-                        } else {
-                        final String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", Integer.valueOf(data.getEndEntityProfileId()), requestedUsername);
+                    } else {
+                        final String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", Integer.valueOf(data.getEndEntityProfileId()),
+                                requestedUsername);
                         throw new AuthorizationDeniedException(msg);
-                        }
+                    }
                 }
             }
             if (!authorizedToCA(admin, data.getCaId())) {
@@ -180,7 +180,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
                     final String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(data.getCaId()));
                     throw new AuthorizationDeniedException(msg);
                 } else {
-                        final String msg = intres.getLocalizedMessage("ra.errorauthcaexist", Integer.valueOf(data.getCaId()), requestedUsername);
+                    final String msg = intres.getLocalizedMessage("ra.errorauthcaexist", Integer.valueOf(data.getCaId()), requestedUsername);
                     throw new AuthorizationDeniedException(msg);
                 }
             }
@@ -188,7 +188,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         }
         return null;
     }
-    
+
     private boolean authorizedToEndEntityProfile(AuthenticationToken admin, int profileid, String rights) {
         boolean returnval = false;
         if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
@@ -204,7 +204,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         }
         return returnval;
     }
-    
+
     private boolean authorizedToCA(AuthenticationToken admin, int caid) {
         boolean returnval = false;
         returnval = authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid);
