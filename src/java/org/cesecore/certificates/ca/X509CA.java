@@ -44,6 +44,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.lang.model.element.UnknownAnnotationValueException;
+
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -98,8 +101,9 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.dn.PrintableStringEntryConverter;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -114,7 +118,7 @@ import org.cesecore.util.StringTools;
  * 
  * Based on EJBCA version: X509CA.java 11112 2011-01-09 16:17:33Z anatom
  * 
- * @version $Id: X509CA.java 667 2011-04-04 07:57:33Z mikek $
+ * @version $Id: X509CA.java 1031 2011-08-25 07:51:36Z tomas $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -562,7 +566,7 @@ public class X509CA extends CA implements Serializable {
         // We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
         // We have to allow expired as well though, so we can renew expired CAs
         if ((getStatus() != CAConstants.CA_ACTIVE) && ((getStatus() != CAConstants.CA_EXPIRED))) {
-            String msg = intres.getLocalizedMessage("error.caoffline", getName(), getStatus());
+            final String msg = intres.getLocalizedMessage("error.caoffline", getName(), getStatus());
             if (log.isDebugEnabled()) {
                 log.debug(msg); // This is something we handle so no need to log with higher priority
             }
@@ -574,6 +578,11 @@ public class X509CA extends CA implements Serializable {
             sigAlg = getCAInfo().getCATokenInfo().getSignatureAlgorithm();
         } else {
             sigAlg = certProfile.getSignatureAlgorithm();
+        }
+        // Check that the signature algorithm is one of the allowed ones
+        if (!ArrayUtils.contains(AlgorithmConstants.AVAILABLE_SIGALGS, sigAlg)) {
+            final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", sigAlg);
+            throw new InvalidAlgorithmException(msg);        	
         }
         final X509Certificate cacert = (X509Certificate) getCACertificate();
         String dn = subject.getCertificateDN();

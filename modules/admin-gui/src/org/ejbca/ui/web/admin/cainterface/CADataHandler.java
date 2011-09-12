@@ -36,6 +36,7 @@ import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -112,9 +113,9 @@ public class CADataHandler implements Serializable {
     }
     
   /**
-   *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
+   * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */    
-  public void createCA(CAInfo cainfo) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, AuthorizationDeniedException{
+  public void createCA(CAInfo cainfo) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, AuthorizationDeniedException, InvalidAlgorithmException{
     caadminsession.createCA(administrator, cainfo);
     info.cAsEdited();
   }

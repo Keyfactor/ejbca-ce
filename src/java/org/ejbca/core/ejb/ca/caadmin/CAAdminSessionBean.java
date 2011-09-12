@@ -80,6 +80,7 @@ import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CVCCA;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -216,7 +217,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
     }
 
-    private CA createCAObject(CAInfo cainfo, CAToken catoken, CertificateProfile certprofile) {
+    private CA createCAObject(CAInfo cainfo, CAToken catoken, CertificateProfile certprofile) throws InvalidAlgorithmException {
     	CA ca = null;
         // X509 CA is the most normal type of CA
         if (cainfo instanceof X509CAInfo) {
@@ -247,7 +248,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     
     @Override
     public void createCA(AuthenticationToken admin, CAInfo cainfo) throws CAExistsException, AuthorizationDeniedException,
-            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         if (log.isTraceEnabled()) {
             log.trace(">createCA: " + cainfo.getName());
         }
@@ -1318,7 +1319,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         ca.setCertificateChain(certificates);
         CAToken token = new CAToken(new NullCryptoToken());
-        ca.setCAToken(token);
+        try {
+        	ca.setCAToken(token);
+        } catch (InvalidAlgorithmException e) {
+        	throw new IllegalCryptoTokenException(e);
+        }
         // Add CA
         caSession.addCA(admin, ca);
         // Publish CA certificates.
@@ -2091,7 +2096,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         // We must activate the token, in case it does not have the default password
         catoken.getCryptoToken().activate(keystorepass.toCharArray());
-        ca.setCAToken(catoken);
+        try {
+        	ca.setCAToken(catoken);
+        } catch (InvalidAlgorithmException e) {
+        	throw new IllegalCryptoTokenException(e);
+        }
         ca.setCertificateChain(certificatechain);
         log.debug("CA-Info: " + catoken.getTokenInfo().getSignatureAlgorithm() + " " + ca.getCAToken().getTokenInfo().getEncryptionAlgorithm());
         // Publish CA certificates.
