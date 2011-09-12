@@ -250,6 +250,7 @@
 					<include name="org/cesecore/certificates/ca/CA.java"/>
 					<include name="org/cesecore/certificates/ca/CADoesntExistsException.java"/>
 					<include name="org/cesecore/certificates/ca/CAExistsException.java"/>
+					<include name="org/cesecore/certificates/ca/InvalidAlgorithmException.java"/>	
 					<include name="org/cesecore/certificates/ca/CAInfo.java"/>
 					<include name="org/cesecore/certificates/ca/SignRequestSignatureException.java"/>
 					<include name="org/cesecore/certificates/ca/catoken/CAToken*.java"/>
