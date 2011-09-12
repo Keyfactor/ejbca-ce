@@ -149,8 +149,7 @@ public class CrmfRequestTest extends CmpTestCase {
             userAdminSession.deleteUser(admin, "cmptest");
         } catch (NotFoundException e) {
             // A test probably failed before creating the entity
-            log.error("Failed to delete user \"cmptest\".");
-            cleanUpOk = false;
+            log.debug("Failed to delete user \"cmptest\".");
         }
         if (!configurationSession.restoreConfiguration()) {
             cleanUpOk = false;
