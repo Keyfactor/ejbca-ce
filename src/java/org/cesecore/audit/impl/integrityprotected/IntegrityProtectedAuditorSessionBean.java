@@ -65,10 +65,7 @@ import org.cesecore.util.ValidityDate;
  *  "CREATE UNIQUE INDEX auditrecorddata_idx1 ON AuditRecordData (nodeId,timeStamp,sequenceNumber);"
  * should be present for proper validation and export performance.
  * 
- * Based on CESeCore version:
- *      IntegrityProtectedAuditorSessionBean.java 935 2011-07-13 08:09:39Z johane
- * 
- * @version $Id$
+ * @version $Id: IntegrityProtectedAuditorSessionBean.java 1064 2011-08-31 10:53:27Z johane $
  */
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -90,7 +87,8 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
     }
 
 	@Override
-	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+    // Requires TransactionAttributeType.REQUIRED in order to select large objects (postgres
 	public AuditLogExportReport exportAuditLogs(AuthenticationToken token, CryptoToken cryptoToken, Date timestamp, boolean deleteAfterExport,
 			Map<String, Object> signatureDetails, final Properties properties, final Class<? extends AuditExporter> c) throws AuditLogExporterException {
         final AuditLogExportReport report = new AuditLogExportReport();
@@ -143,13 +141,15 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
 	}
 
 	@Override
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+    // Requires TransactionAttributeType.REQUIRED in order to select large objects (postgres
 	public List<? extends AuditLogEntry> selectAuditLogs(final AuthenticationToken token, final int startIndex, final int max, final QueryCriteria criteria, final Properties properties) {
         return internalSelectAuditLogs(startIndex, max, criteria);
 	}
 	
 	@Override
-	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+	@TransactionAttribute(TransactionAttributeType.REQUIRED)
+    // Requires TransactionAttributeType.REQUIRED in order to select large objects (postgres
 	public AuditLogValidationReport verifyLogsIntegrity(final AuthenticationToken token, final Date timestamp, final Properties properties) throws AuditLogValidatorException {
         final AuditLogValidationReport report = new AuditLogValidationReport();
         try {
