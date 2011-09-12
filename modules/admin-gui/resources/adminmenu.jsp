@@ -271,17 +271,6 @@
 <%    }
    }catch(AuthorizationDeniedException e){} 
 
-   // If authorized to edit log configurationthen display related link.
-   try{
-     if(ejbcawebbean.isAuthorizedNoLog(LOGCONFIGURATION_RESOURCE)){ 
-            if(!logheaderprinted){
-              out.write("<li id=\"cat4\" class=\"section\"><strong>" + ejbcawebbean.getText("SUPERVISIONFUNCTIONS")+"</strong><ul>"); 
-              logheaderprinted=true;
-            }  %>
-				<li><a href="<%= LOG_CONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("LOGCONFIGURATION") %></a></li>
-<%   }
-   }catch(AuthorizationDeniedException e){}
-
    if(logheaderprinted){
      out.write("</ul></li>"); 
    }

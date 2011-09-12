@@ -671,8 +671,8 @@ td#InfoRow1 { color: black; font-size: 9pt; background-color: #ccffcc; }
 td#ErrorRow0 { color: black; font-size: 9pt; background-color: white; }
 td#ErrorRow1 { color: black; font-size: 9pt; background-color: #ffcccc; }
 
-tr#LogTextRow0 { color: black; font-size: 7pt; background-color: white; }
-tr#LogTextRow1 { color: black; font-size: 7pt; background-color: #e5ecff; }
+tr.LogTextRow0 { color: black; font-size: 7pt; background-color: white; }
+tr.LogTextRow1 { color: black; font-size: 7pt; background-color: #f8f8ff; }
 .jsfrow1 { color: black; font-size: 9pt; background-color: white; }
 .jsfrow2 { color: black; font-size: 9pt; background-color: #e5ecff; }
 
