@@ -13,6 +13,8 @@
 
 package org.ejbca.ui.cli;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
+
 
 /**
  * Implements call to the upgrade function
@@ -34,6 +36,10 @@ public class Upgrade extends BaseCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        
         if (args.length < 3) {
             getLogger().error("Insufficient information to perform upgrade.");
             return;
@@ -49,7 +55,7 @@ public class Upgrade extends BaseCommand {
         }*/
         // Upgrade the database
 
-        final boolean ret = ejb.getUpgradeSession().upgrade(getAdmin(), database, upgradeFromVersion, isPost);
+        final boolean ret = ejb.getUpgradeSession().upgrade(getAdmin(subject), database, upgradeFromVersion, isPost);
         if (ret) {
             getLogger().info("Upgrade completed.");
         } else {

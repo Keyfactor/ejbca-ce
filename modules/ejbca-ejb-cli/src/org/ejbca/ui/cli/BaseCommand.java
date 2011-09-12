@@ -20,15 +20,18 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.keys.util.KeyTools;
@@ -50,12 +53,6 @@ public abstract class BaseCommand implements CliCommandPlugin {
     // private static Logger baseLog = Logger.getLogger(BaseCommand.class);
     private static Logger log = null;
 
-    /**
-     * Not static since different object should go to different session beans concurrently
-     */
-    // private Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "cli");
-    private AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CLI"));
-
     protected Logger getLogger() {
         if (log == null) {
             log = Logger.getLogger(this.getClass());
@@ -63,10 +60,18 @@ public abstract class BaseCommand implements CliCommandPlugin {
         return log;
     }
 
-    protected AuthenticationToken getAdmin() {
-        return admin;
+    protected AuthenticationToken getAdmin(AuthenticationSubject subject) {
+        return ejb.getAuthenticationSession().authenticate(subject, ejb.getCliAuthenticationProvider());
     }
 
+    protected AuthenticationSubject getAuthenticationSubject(String username, String passwordHash) {
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new UsernamePrincipal("usernamehash"));
+        Set<String> credentials = new HashSet<String>();
+        credentials.add("passwordhash");
+        return  new AuthenticationSubject(principals, credentials);
+    }
+    
     protected String getCommand() {
         return (getMainCommand() != null ? getMainCommand() + " " : "") + getSubCommand();
     }

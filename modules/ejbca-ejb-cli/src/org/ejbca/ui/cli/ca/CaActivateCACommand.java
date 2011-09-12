@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ca;
 
 import javax.security.auth.login.FailedLoginException;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -44,6 +45,9 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
         try {
             if (args.length < 2) {
                 getLogger().info("Description: " + getDescription());
@@ -63,7 +67,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             }
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), caname);
+            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(subject), caname);
             if (cainfo == null) {
                 getLogger().error("Error: CA " + caname + " cannot be found");
                 return;
@@ -71,7 +75,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             // Check that CA has correct status.
             if ((cainfo.getStatus() == SecConst.CA_OFFLINE) || (cainfo.getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_OFFLINE)) {
                 try {
-                    ejb.getCAAdminSession().activateCAToken(getAdmin(), cainfo.getCAId(), authorizationcode, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin()));
+                    ejb.getCAAdminSession().activateCAToken(getAdmin(subject), cainfo.getCAId(), authorizationcode, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin(subject)));
                     getLogger().info("CA token activated.");
 
                 } catch (CryptoTokenAuthenticationFailedException e) {
@@ -98,7 +102,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
                 } catch (ApprovalException e) {
                     getLogger().error("CA Token activation approval request already exists.");
                 } catch (WaitingForApprovalException e) {
-                    getLogger().error("CA requires an approval to be activated. A request have been sent to authorized getAdmin()s.");
+                    getLogger().error("CA requires an approval to be activated. A request have been sent to authorized admins.");
                 }
             } else {
                 getLogger().error("CA or CAToken must be offline to be activated.");

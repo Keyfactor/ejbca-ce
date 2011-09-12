@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.authentication;
+package org.ejbca.core.ejb.authentication.web;
 
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
@@ -72,8 +72,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 boolean isRevoked = certificateStoreSession.isRevoked(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
                 if (isRevoked) {
                     // Certificate revoked or missing in the database
-                	String msg = intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
-                	LOG.info(msg);
+                    String msg = intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
+                    LOG.info(msg);
                     return null;
                 }
             } else {

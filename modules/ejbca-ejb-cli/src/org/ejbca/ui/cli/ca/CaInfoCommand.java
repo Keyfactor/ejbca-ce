@@ -18,6 +18,7 @@ import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
 
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -36,6 +37,10 @@ public class CaInfoCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Shows info about a CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        
         if (args.length < 2) {
     		getLogger().info("Description: " + getDescription());
     		getLogger().info("Usage: " + getCommand() + " <caname>");
@@ -44,8 +49,8 @@ public class CaInfoCommand extends BaseCaAdminCommand {
         try {
         	CryptoProviderTools.installBCProvider();
             String caname = args[1];
-            ArrayList chain = new ArrayList(getCertChain(caname));
-            CAInfo cainfo = getCAInfo(caname);
+            ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(getAdmin(subject), caname));
+            CAInfo cainfo = getCAInfo(getAdmin(subject), caname);
                                     
             getLogger().info("CA name: " + caname);
             getLogger().info("CA type: "+cainfo.getCAType());
@@ -62,7 +67,7 @@ public class CaInfoCommand extends BaseCaAdminCommand {
               
             getLogger().info("Size of chain: " + chain.size());
             if (chain.size() > 0) {
-                Certificate rootcert = (Certificate)chain.get(chain.size()-1);
+                Certificate rootcert = chain.get(chain.size()-1);
                 getLogger().info("Root CA DN: "+CertTools.getSubjectDN(rootcert));
                 getLogger().info("Root CA id: "+CertTools.getSubjectDN(rootcert).hashCode());
                 getLogger().info("Certificate valid from: "+CertTools.getNotBefore(rootcert));
@@ -75,7 +80,7 @@ public class CaInfoCommand extends BaseCaAdminCommand {
                 	}
                 }
                 for(int i = chain.size()-2; i>=0; i--){                                          
-                    Certificate cacert = (Certificate)chain.get(i);
+                    Certificate cacert = chain.get(i);
                     getLogger().info("CA DN: "+CertTools.getSubjectDN(cacert));
                     getLogger().info("Certificate valid from: "+CertTools.getNotBefore(cacert));
                     getLogger().info("Certificate valid to: "+CertTools.getNotAfter(cacert));

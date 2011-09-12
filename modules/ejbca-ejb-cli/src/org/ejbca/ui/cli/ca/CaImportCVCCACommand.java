@@ -27,6 +27,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -52,6 +53,10 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Imports a PKCS#8 file and created a new CVC CA from it"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        
         if (args.length < 4) {
     		getLogger().info("Description: " + getDescription());
     		getLogger().info("Usage 1: " + getCommand() + " <CA name> <pkcs8 RSA private key file> <certificate file>");
@@ -125,7 +130,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 
 	        Certificate[] chain = new Certificate[1];
 	        chain[0] = cacert;
-        	ejb.getCAAdminSession().importCAFromKeys(getAdmin(), caName, "foo123", chain, pubKey, privKey, null, null);        	
+        	ejb.getCAAdminSession().importCAFromKeys(getAdmin(subject), caName, "foo123", chain, pubKey, privKey, null, null);        	
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

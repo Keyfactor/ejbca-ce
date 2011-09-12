@@ -6,6 +6,7 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.List;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -27,7 +28,11 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Imports a PEM file and creates a new external CA representation from it"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-		if (args.length < 3) {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);	
+        
+        if (args.length < 3) {
         	getLogger().info("Description: " + getDescription());
         	getLogger().info("Usage: " + getCommand() + " <CA name> <PEM file> [-initauthorization] [-superadmincn SuperAdmin]\n");
 			getLogger().info("Add the argument initauthorization if you are importing an initial administration CA, and this will be the first CA in your system. Only used during installation when there is no local AdminCA on the EJBCA instance, but an external CA is used for administration.\n");
@@ -60,9 +65,9 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 			if (initAuth) {
 				String subjectdn = CertTools.getSubjectDN(certs.iterator().next());
 				Integer caid = Integer.valueOf(subjectdn.hashCode());
-				initAuthorizationModule(caid.intValue(), superAdminCN);
+				initAuthorizationModule(getAdmin(subject), caid.intValue(), superAdminCN);
 			}
-			ejb.getCAAdminSession().importCACertificate(getAdmin(), caName, certs);
+			ejb.getCAAdminSession().importCACertificate(getAdmin(subject), caName, certs);
 			getLogger().info("Imported CA "+caName);			
 		} catch (CertificateException e) {
 			getLogger().error(e.getMessage());

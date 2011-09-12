@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.admins;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -42,6 +43,10 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        
         try {
             if (args.length < 6) {
                 getLogger().info("Description: " + getDescription());
@@ -55,7 +60,7 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String caName = args[2];
-            CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(), caName);
+            CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(subject), caName);
             if (caInfo == null) {
                 getLogger().error("No such CA \"" + caName + "\" .");
                 return;
@@ -71,7 +76,7 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String matchValue = args[5];
-            int caId = ejb.getCaSession().getCAInfo(getAdmin(), caName).getCAId();
+            int caId = ejb.getCaSession().getCAInfo(getAdmin(subject), caName).getCAId();
             AccessUserAspectData accessUserAspectData = new AccessUserAspectData(roleName, caId, matchWith, matchType, matchValue);
             
             for (AccessUserAspectData currentAdminEntity : role.getAccessUsers().values()) {
@@ -80,7 +85,7 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                     Collection<AccessUserAspectData> adminEntities = new ArrayList<AccessUserAspectData>();
                     adminEntities.add(accessUserAspectData);
                    
-                    ejb.getRoleManagementSession().removeSubjectsFromRole(getAdmin(), role, adminEntities);
+                    ejb.getRoleManagementSession().removeSubjectsFromRole(getAdmin(subject), role, adminEntities);
                    
                     return;
                 }

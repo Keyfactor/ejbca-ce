@@ -10,17 +10,19 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-package org.ejbca.ui.cli.ra;
+package org.ejbca.core.ejb.authentication.web;
 
-import org.ejbca.ui.cli.BaseCommand;
+import javax.ejb.Local;
+
+import org.cesecore.authentication.tokens.AuthenticationProvider;
 
 /**
- * Base for RA commands, contains common functions for RA operations
- *
+ * Provides authentication for web service users.
+ * 
  * @version $Id$
+ *
  */
-public abstract class BaseRaAdminCommand extends BaseCommand {
+@Local
+public interface WebAuthenticationProviderSessionLocal extends AuthenticationProvider {
 
-	public static final String MAINCOMMAND = "ra";
 }

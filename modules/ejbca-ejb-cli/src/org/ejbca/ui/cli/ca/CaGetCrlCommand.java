@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ca;
 import java.io.FileOutputStream;
 import java.util.List;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -33,7 +34,11 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Retrieves the latest CRL from a CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-		// Get and remove switches
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);	
+        
+        // Get and remove switches
 		List<String> argsList = CliTools.getAsModifyableList(args);
 		boolean deltaSelector = argsList.remove("-delta");
 		boolean pem = argsList.remove("-pem");
@@ -51,7 +56,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 			// Perform CRL fetch
 			String caname = args[1];
 			String outfile = args[2];
-			String issuerdn = getIssuerDN(caname);
+			String issuerdn = getIssuerDN(getAdmin(subject), caname);
 			byte[] crl = ejb.getCrlStoreSession().getLastCRL(issuerdn, deltaSelector);
 			if (crl != null) {
 				FileOutputStream fos = new FileOutputStream(outfile);

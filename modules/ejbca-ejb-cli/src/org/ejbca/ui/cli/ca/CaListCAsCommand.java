@@ -17,6 +17,7 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -34,13 +35,17 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Lists the names of all available CAs"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        
         try {
         	CryptoProviderTools.installBCProvider();
-            Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin());
+            Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin(subject));
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
                 int caid = ((Integer)iter.next()).intValue();
-                CAInfo ca = ejb.getCaSession().getCAInfo(getAdmin(),caid);
+                CAInfo ca = ejb.getCaSession().getCAInfo(getAdmin(subject), caid);
                 Collection<Certificate> certs = ca.getCertificateChain();
                 Iterator<Certificate> ci = certs.iterator();
                 Certificate cacert = null;

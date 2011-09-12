@@ -45,7 +45,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.authentication.WebAuthenticationProviderSessionLocal;
+import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.ui.web.RequestHelper;

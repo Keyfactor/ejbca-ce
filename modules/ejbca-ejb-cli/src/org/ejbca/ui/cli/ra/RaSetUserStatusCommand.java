@@ -31,6 +31,9 @@ public class RaSetUserStatusCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Change status for a user"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        
         try {
             if (args.length < 3) {
     			getLogger().info("Description: " + getDescription());
@@ -41,7 +44,7 @@ public class RaSetUserStatusCommand extends BaseRaAdminCommand {
             String username = args[1];
             int status = Integer.parseInt(args[2]);
             try {
-                ejb.getUserAdminSession().setUserStatus(getAdmin(), username, status);
+                ejb.getUserAdminSession().setUserStatus(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), username, status);
                 getLogger().info("New status for user " + username + " is " + status);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");

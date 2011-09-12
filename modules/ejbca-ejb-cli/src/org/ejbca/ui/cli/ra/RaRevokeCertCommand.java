@@ -32,6 +32,9 @@ public class RaRevokeCertCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Revokes a certificate"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        
         try {
             if (args.length < 4) {
     			getLogger().info("Description: " + getDescription());
@@ -62,7 +65,7 @@ public class RaRevokeCertCommand extends BaseRaAdminCommand {
         			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
         			// that was permanently revoked
         			try {
-            			ejb.getUserAdminSession().revokeCert(getAdmin(), serno, issuerDN, reason);
+            			ejb.getUserAdminSession().revokeCert(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), serno, issuerDN, reason);
                         getLogger().info( (reason == 8 ? "Unrevoked":"Revoked") + " certificate with issuerDN '"+issuerDN+"' and serialNumber "+certserno+". Revocation reason="+reason);        				
                     } catch (AlreadyRevokedException e) {
                     	if (reason == 8) {

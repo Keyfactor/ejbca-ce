@@ -118,7 +118,7 @@ public class InterfaceCache {
 	}
 
 	public static EndEntityAuthenticationSessionRemote getAuthenticationSession() {
-		return getEjb().getAuthenticationSession();
+		return getEjb().getEndEntityAuthenticationSession();
 	}
 
 	public static ApprovalSessionRemote getApprovalSession() {

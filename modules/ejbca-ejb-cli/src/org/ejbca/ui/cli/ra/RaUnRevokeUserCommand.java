@@ -37,6 +37,9 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Reactivates a user if the revocation reason is 'on hold'"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        
         try {
             if (args.length < 2) {
     			getLogger().info("Description: " + getDescription());
@@ -45,7 +48,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
                 return;
             }
             String username = args[1];
-            EndEntityInformation data = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
+            EndEntityInformation data = ejb.getEndEntityAccessSession().findUser(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), username);
             getLogger().info("Found user:");
             getLogger().info("username=" + data.getUsername());
             getLogger().info("dn=\"" + data.getDN() + "\"");
@@ -61,7 +64,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             				cert.getSerialNumber()).revocationReason == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) {
             			foundCertificateOnHold = true;
             			try {
-            				ejb.getUserAdminSession().revokeCert(getAdmin(), cert.getSerialNumber(), cert.getIssuerDN().toString(), RevokedCertInfo.NOT_REVOKED);
+            				ejb.getUserAdminSession().revokeCert(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), cert.getSerialNumber(), cert.getIssuerDN().toString(), RevokedCertInfo.NOT_REVOKED);
                         } catch (AlreadyRevokedException e) {
                         	getLogger().error("The user was already reactivated while the request executed.");
                         } catch (ApprovalException e) {
@@ -74,7 +77,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
             	if (!foundCertificateOnHold) {
             		getLogger().error("No certificates with status 'On hold' were found for this user.");
             	} else {
-	                data = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
+	                data = ejb.getEndEntityAccessSession().findUser(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), username);
 	                getLogger().info("New status=" + data.getStatus());
             	}
             } catch (AuthorizationDeniedException e) {

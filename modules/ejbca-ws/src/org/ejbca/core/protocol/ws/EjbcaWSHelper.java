@@ -66,7 +66,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ServiceLocatorException;
-import org.ejbca.core.ejb.authentication.WebAuthenticationProviderSessionLocal;
+import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;

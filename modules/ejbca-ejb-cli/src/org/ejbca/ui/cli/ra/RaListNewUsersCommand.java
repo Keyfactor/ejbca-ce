@@ -34,8 +34,11 @@ public class RaListNewUsersCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "List users with status 'NEW'"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        
         try {
-            Collection<EndEntityInformation> coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(), UserDataConstants.STATUS_NEW);
+            Collection<EndEntityInformation> coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), UserDataConstants.STATUS_NEW);
             Iterator<EndEntityInformation> iter = coll.iterator();
             while (iter.hasNext()) {
             	EndEntityInformation data = iter.next();

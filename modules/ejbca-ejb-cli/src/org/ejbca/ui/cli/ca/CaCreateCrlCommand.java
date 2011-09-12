@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli.ca;
 
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -29,6 +30,10 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Issues a new CRL from the CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        
         if ( (args.length < 1) || ((args.length > 1) && StringUtils.equals(args[1], "-?")) ) {
 			getLogger().info("Description: " + getDescription());
 			getLogger().info("Usage: " + getCommand() + " <caname> <-delta>");
@@ -37,7 +42,7 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
         }
         if (args.length == 1) {
         	try{
-        	  createCRL((String) null, false);
+        	  createCRL(getAdmin(subject), (String) null, false);
         	  getLogger().info("You can also run this command with \"" + getCommand() + " <caname> <-delta>\" to force CRL creation for a CA.");
         	} catch (Exception e) {
         		throw new ErrorAdminCommandException(e);
@@ -54,9 +59,9 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
               }
               CryptoProviderTools.installBCProvider();
               // createCRL prints info about crl generation
-              String issuerName = getIssuerDN(caname);
+              String issuerName = getIssuerDN(getAdmin(subject), caname);
               if (issuerName != null) {
-                  createCRL(issuerName, deltaCRL);
+                  createCRL(getAdmin(subject), issuerName, deltaCRL);
               } else {
             	  getLogger().error("No such CA exists.");
               }

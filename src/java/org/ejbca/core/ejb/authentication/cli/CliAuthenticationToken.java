@@ -10,60 +10,66 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.authentication.tokens;
+package org.ejbca.core.ejb.authentication.cli;
 
 import java.security.Principal;
 import java.util.HashSet;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
 
 /**
- * An authentication token that always matches the provided AccessUserAspectData if the AuthenticationToken was created in the same JVM as it is
- * verified.
+ * This authentication token is returned as a result of a CLI authentication action. By design it's only allowed 
+ * to be used once, then becomes invalid. 
  * 
- * Example usage: AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal function abc"));
- * 
- * Based on cesecore version: AlwaysAllowLocalAuthenticationToken.java 948 2011-07-18 09:04:26Z mikek
- * 
- * @version $Id$
+ * @version $Id: AlwaysAllowLocalAuthenticationToken.java 12424 2011-08-31 15:10:44Z mikekushner $
  */
-public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticationToken {
+public class CliAuthenticationToken extends AuthenticationToken {
 
     private static final long serialVersionUID = -3942437717641924829L;
 
-    public AlwaysAllowLocalAuthenticationToken(final Principal principal) {
+    private final long referenceId;
+    
+    public CliAuthenticationToken(final UsernamePrincipal principal, final long referenceId) {
         super(new HashSet<Principal>() {
-            private static final long serialVersionUID = 3125729459998373943L;
+            private static final long serialVersionUID = 5868667272584423392L;
 
             {
                 add(principal);
             }
         }, null);
+        this.referenceId = referenceId;
 
     }
 
     @Override
     public boolean matches(AccessUserAspect accessUser) {
-        return super.isCreatedInThisJvm();
+        //TODO: Incomplete
+        return true;
     }
 
-    @Override
-    public boolean equals(Object authenticationToken) {
-        if (this == authenticationToken) {
-            return true;
-        }
-        if (authenticationToken == null) {
-            return false;
-        }
-        if (getClass() != authenticationToken.getClass()) {
-            return false;
-        } else {
-            return true;
-        }
-    }
 
     @Override
     public int hashCode() {
-        return "AlwaysAllowLocalAuthenticationToken".hashCode();
+        final int prime = 37;
+        int result = 1;
+        result = prime * result + (int) (referenceId ^ (referenceId >>> 32));
+        return result;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        CliAuthenticationToken other = (CliAuthenticationToken) obj;
+        if (referenceId != other.referenceId)
+            return false;
+        return true;
+    }
+
 }

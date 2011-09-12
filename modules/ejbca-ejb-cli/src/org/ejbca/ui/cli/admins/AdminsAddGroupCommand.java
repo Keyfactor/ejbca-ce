@@ -13,6 +13,7 @@
  
 package org.ejbca.ui.cli.admins;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -35,6 +36,10 @@ public class AdminsAddGroupCommand extends BaseAdminsCommand {
 
     /** @see org.ejbca.ui.cli.CliCommandPlugin */
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        
         try {
             if (args.length < 2) {
                 getLogger().info("Description: " + getDescription());
@@ -42,7 +47,7 @@ public class AdminsAddGroupCommand extends BaseAdminsCommand {
                 return;
             }
             String roleName = args[1];
-            ejb.getRoleManagementSession().create(getAdmin(), roleName);
+            ejb.getRoleManagementSession().create(getAdmin(subject), roleName);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

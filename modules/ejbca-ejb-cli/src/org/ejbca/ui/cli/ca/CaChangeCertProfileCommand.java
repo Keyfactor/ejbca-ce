@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Set;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.util.CryptoProviderTools;
@@ -39,14 +40,19 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
 		getLogger().trace(">execute()");
 		CryptoProviderTools.installBCProvider(); // need this for CVC certificate
+		
+	        String cliUserName = "username";
+	        String cliPassword = "passwordhash";
+	        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+		
 		if ( args.length<3 ) {
-			usage();
+			usage(subject);
 			return;
 		}
 		try {
 		    final String caName = args[1];
 		    {
-		        final CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), caName);
+		        final CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(subject), caName);
 		        final String certProfileName = args[2];
 		        getLogger().debug("Searching for Certificate Profile " + certProfileName);
 		        final int certificateprofileid = ejb.getCertificateProfileSession().getCertificateProfileId(certProfileName);
@@ -55,28 +61,28 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		            throw new Exception("Certificate Profile '" + certProfileName + "' does not exist.");
 		        }
                 cainfo.setCertificateProfileId(certificateprofileid);
-                ejb.getCAAdminSession().editCA(getAdmin(), cainfo);
+                ejb.getCAAdminSession().editCA(getAdmin(subject), cainfo);
 		    }{
-                final CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), caName);
+                final CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(subject), caName);
                 getLogger().info("Certificate profile for CA changed:");
                 getLogger().info("CA Name: " + caName);
                 getLogger().info("Certificate Profile: " + ejb.getCertificateProfileSession().getCertificateProfileName(cainfo.getCertificateProfileId()));
 		    }
 		} catch (Exception e) {
 			getLogger().error(e.getMessage());
-			usage();
+			usage(subject);
 		}
 		getLogger().trace("<execute()");
 	}
 
-	protected void usage() {
+	protected void usage(AuthenticationSubject subject) {
 		getLogger().info("Description: " + getDescription());
 		getLogger().info("Usage: " + getCommand() + " <caname> <certificateprofile>");
 		String existingCasInfo = " Existing CAs: ";
 		Collection<Integer> cas = null;
 		try {
 			// Print available CAs
-			cas = ejb.getCaSession().getAvailableCAs(getAdmin());
+			cas = ejb.getCaSession().getAvailableCAs(getAdmin(subject));
 			boolean first = true;
 			for (Integer caid : cas) {
 				if (first) {
@@ -84,7 +90,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 				} else {
 					existingCasInfo += ", ";
 				}
-				CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(), caid);
+				CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(subject), caid);
 				existingCasInfo += info.getName();				
 			}
 		} catch (Exception e) {

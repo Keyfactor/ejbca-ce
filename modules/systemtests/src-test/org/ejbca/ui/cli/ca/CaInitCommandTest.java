@@ -57,7 +57,7 @@ public class CaInitCommandTest {
     public void setUp() throws Exception {
         caInitCommand = new CaInitCommand();
         try {
-            caSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
+            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
         } catch (Exception e) {
             // Ignore.
 
@@ -80,7 +80,7 @@ public class CaInitCommandTest {
             caInitCommand.execute(HAPPY_PATH_ARGS);
             assertNotNull("Happy path CA was not created.", caSession.getCAInfo(admin, CA_NAME));
         } finally {
-            caSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
+            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
         }
     }
 
@@ -90,7 +90,7 @@ public class CaInitCommandTest {
             caInitCommand.execute(ROOT_CA_ARGS);
             assertNotNull("CA was not created using ROOTCA certificate profile.", caSession.getCAInfo(admin, CA_NAME));
         } finally {
-            caSession.removeCA(admin, caInitCommand.getCAInfo(CA_NAME).getCAId());
+            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
         }
     }
 

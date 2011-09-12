@@ -10,19 +10,19 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.authentication;
+package org.ejbca.core.ejb.authentication.cli;
 
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationProvider;
 
 /**
- * Provides authentication for web service users.
+ * This interface provides authentication for CLI users. 
  * 
  * @version $Id$
  *
  */
 @Local
-public interface WebAuthenticationProviderSessionLocal extends AuthenticationProvider {
+public interface CliAuthenticationProviderLocal extends AuthenticationProvider {
 
 }
