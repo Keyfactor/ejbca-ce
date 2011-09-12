@@ -94,14 +94,14 @@ public class AuditorManagedBean implements Serializable {
 		final EjbcaWebBean ejbcaWebBean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
 		columnNameMap.put(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, ejbcaWebBean.getText("ADMINISTRATOR"));
 		columnNameMap.put(AuditLogEntry.FIELD_CUSTOM_ID, ejbcaWebBean.getText("CA"));
-		columnNameMap.put(AuditLogEntry.FIELD_EVENTSTATUS, ejbcaWebBean.getText("EVENTSTATUS"));
+		columnNameMap.put(AuditLogEntry.FIELD_EVENTSTATUS, ejbcaWebBean.getText("STATUS"));
 		columnNameMap.put(AuditLogEntry.FIELD_EVENTTYPE, ejbcaWebBean.getText("EVENT"));
 		columnNameMap.put(AuditLogEntry.FIELD_MODULE, ejbcaWebBean.getText("MODULE"));
-		columnNameMap.put(AuditLogEntry.FIELD_NODEID, AuditLogEntry.FIELD_NODEID);
+		columnNameMap.put(AuditLogEntry.FIELD_NODEID, ejbcaWebBean.getText("NODE"));
 		columnNameMap.put(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, ejbcaWebBean.getText("CERTIFICATENR"));
 		columnNameMap.put(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, ejbcaWebBean.getText("USERNAME_ABBR"));
-		columnNameMap.put(AuditLogEntry.FIELD_SEQENCENUMBER, ejbcaWebBean.getText("SEQENCENUMBER"));
-		columnNameMap.put(AuditLogEntry.FIELD_SERVICE, ejbcaWebBean.getText("SERVICE"));
+		//columnNameMap.put(AuditLogEntry.FIELD_SEQENCENUMBER, ejbcaWebBean.getText("SEQENCENUMBER"));
+		//columnNameMap.put(AuditLogEntry.FIELD_SERVICE, ejbcaWebBean.getText("SERVICE"));
 		columnNameMap.put(AuditLogEntry.FIELD_TIMESTAMP, ejbcaWebBean.getText("TIME"));
 		for (final Entry<String,String> entry : columnNameMap.entrySet()) {
 			sortColumns.add(new SelectItem(entry.getKey(), entry.getValue()));
@@ -117,31 +117,31 @@ public class AuditorManagedBean implements Serializable {
 		}
 		// We can't use enums directly in JSF 1.2
 		for (Operation current : Operation.values()) {
-			operationsOptions.add(new SelectItem(current));
+			operationsOptions.add(new SelectItem(current.name(), ejbcaWebBean.getText(current.name())));
 		}
 		for (Condition current : Condition.values()) {
-			conditionsOptions.add(new SelectItem(current));
+			conditionsOptions.add(new SelectItem(current.name(), ejbcaWebBean.getText(current.name())));
 		}
 		for (EventStatus current : EventStatus.values()) {
-			eventStatusOptions.add(new SelectItem(current));
+			eventStatusOptions.add(new SelectItem(current.name(), ejbcaWebBean.getText(current.name())));
 		}
 		for (EventType current : EventTypes.values()) {
-			eventTypeOptions.add(new SelectItem(current));
+			eventTypeOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
 		}
 		for (EventType current : EjbcaEventTypes.values()) {
-			eventTypeOptions.add(new SelectItem(current));
+			eventTypeOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
 		}
 		for (ModuleType current : ModuleTypes.values()) {
-			moduleTypeOptions.add(new SelectItem(current));
+			moduleTypeOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
 		}
 		for (ModuleType current : EjbcaModuleTypes.values()) {
-			moduleTypeOptions.add(new SelectItem(current));
+			moduleTypeOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
 		}
 		for (ServiceType current : ServiceTypes.values()) {
-			serviceTypeOptions.add(new SelectItem(current));
+			serviceTypeOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
 		}
 		for (ServiceType current : EjbcaServiceTypes.values()) {
-			serviceTypeOptions.add(new SelectItem(current));
+			serviceTypeOptions.add(new SelectItem(current.toString(), ejbcaWebBean.getText(current.toString())));
 		}
 		// By default, don't show the authorized to resource events
 		conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_EVENTTYPE, Condition.NOT_EQUALS, EventTypes.ACCESS_CONTROL.name()));
@@ -302,7 +302,9 @@ public class AuditorManagedBean implements Serializable {
 
 	// TODO: Not the safest way to send user input to the database..
 	private void reloadResults() throws AuthorizationDeniedException {
-		log.info("Reloading audit load. selectedDevice=" + device);
+		if (log.isDebugEnabled()) {
+			log.debug("Reloading audit load. selectedDevice=" + device);
+		}
 		QueryCriteria criteria = QueryCriteria.where();
 		boolean first = true;
 		for (final AuditSearchCondition condition : getConditions()) {
@@ -320,11 +322,11 @@ public class AuditorManagedBean implements Serializable {
 				try {
 					conditionValue = Long.valueOf(ValidityDate.parseAsIso8601(conditionValue.toString()).getTime());
 				} catch (ParseException e) {
-					log.info("Admin entered invalid date for audit log search: " + condition.getValue());
+					log.debug("Admin entered invalid date for audit log search: " + condition.getValue());
 					continue;
 				}
 			}
-			switch (condition.getCondition()) {
+			switch (Condition.valueOf(condition.getCondition())) {
 			case EQUALS:
 				criteria = criteria.eq(condition.getColumn(), conditionValue); break;
 			case NOT_EQUALS:
@@ -389,6 +391,7 @@ public class AuditorManagedBean implements Serializable {
 		final String searchDetail2String = getHttpParameter("username");
 		if (searchDetail2String!=null) {
 			reloadResultsNextView = true;
+			startIndex = 1;
 			conditions.clear();
 			conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, Condition.EQUALS, searchDetail2String));
 			sortColumn = AuditLogEntry.FIELD_TIMESTAMP;
@@ -421,8 +424,8 @@ public class AuditorManagedBean implements Serializable {
 	public void reorderAscByAuthToken() { reorderBy(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, QueryCriteria.ORDER_ASC); }
 	public void reorderDescByAuthToken() { reorderBy(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, QueryCriteria.ORDER_DESC); }
 
-	public void reorderAscByService() { reorderBy(AuditLogEntry.FIELD_SERVICE, QueryCriteria.ORDER_ASC); }
-	public void reorderDescByService() { reorderBy(AuditLogEntry.FIELD_SERVICE, QueryCriteria.ORDER_DESC); }
+	//public void reorderAscByService() { reorderBy(AuditLogEntry.FIELD_SERVICE, QueryCriteria.ORDER_ASC); }
+	//public void reorderDescByService() { reorderBy(AuditLogEntry.FIELD_SERVICE, QueryCriteria.ORDER_DESC); }
 
 	public void reorderAscByModule() { reorderBy(AuditLogEntry.FIELD_MODULE, QueryCriteria.ORDER_ASC); }
 	public void reorderDescByModule() { reorderBy(AuditLogEntry.FIELD_MODULE, QueryCriteria.ORDER_DESC); }
@@ -439,8 +442,8 @@ public class AuditorManagedBean implements Serializable {
 	public void reorderAscByNodeId() { reorderBy(AuditLogEntry.FIELD_NODEID, QueryCriteria.ORDER_ASC); }
 	public void reorderDescByNodeId() { reorderBy(AuditLogEntry.FIELD_NODEID, QueryCriteria.ORDER_DESC); }
 
-	public void reorderAscBySequenceNumber() { reorderBy(AuditLogEntry.FIELD_SEQENCENUMBER, QueryCriteria.ORDER_ASC); }
-	public void reorderDescBySequenceNumber() { reorderBy(AuditLogEntry.FIELD_SEQENCENUMBER, QueryCriteria.ORDER_DESC); }
+	//public void reorderAscBySequenceNumber() { reorderBy(AuditLogEntry.FIELD_SEQENCENUMBER, QueryCriteria.ORDER_ASC); }
+	//public void reorderDescBySequenceNumber() { reorderBy(AuditLogEntry.FIELD_SEQENCENUMBER, QueryCriteria.ORDER_DESC); }
 
 	private void reorderBy(String column, boolean orderAsc) {
 		if (!sortColumn.equals(column)) {

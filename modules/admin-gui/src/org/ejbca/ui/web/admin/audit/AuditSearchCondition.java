@@ -25,7 +25,7 @@ public class AuditSearchCondition {
 	private Operation operation = Operation.AND;
 	private final String column;
 	private Condition condition = Condition.EQUALS;
-	private Object value;
+	private String value;
 
 	private final List<SelectItem> options;
 
@@ -53,19 +53,19 @@ public class AuditSearchCondition {
 		return column;
 	}
 
-	public void setCondition(Condition condition) {
-		this.condition = condition;
+	public void setCondition(String condition) {
+		this.condition = Condition.valueOf(condition);
 	}
 
-	public Condition getCondition() {
-		return condition;
+	public String getCondition() {
+		return condition.name();
 	}
 
-	public void setValue(Object value) {
+	public void setValue(String value) {
 		this.value = value;
 	}
 
-	public Object getValue() {
+	public String getValue() {
 		return value;
 	}
 
