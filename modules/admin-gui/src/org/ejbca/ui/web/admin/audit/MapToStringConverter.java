@@ -36,9 +36,12 @@ public class MapToStringConverter implements Converter {
 		}
 		final StringBuilder sb = new StringBuilder();
 		final Map<Object,Object> map = (Map<Object, Object>) value;
+		if (map.size() == 1 && map.containsKey("msg")) {
+			return (String) map.get("msg");
+		}
 		for (final Object key : map.keySet()) {
 			if (sb.length()!=0) {
-				sb.append(';');
+				sb.append("; ");
 			}
 			sb.append(key).append('=').append(map.get(key));
 		}

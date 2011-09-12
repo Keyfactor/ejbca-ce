@@ -127,8 +127,8 @@
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['timeStamp']}"/>
-					<h:commandButton action="#{auditor.reorderAscByTime}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByTime}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByTime}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
+					<h:commandButton action="#{auditor.reorderDescByTime}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText style="white-space: nowrap;" value="#{auditLogEntry.timeStamp}"><f:convertDateTime pattern="yyyy-MM-dd HH:mm:ssZZ" /></h:outputText>
@@ -137,28 +137,28 @@
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['eventType']}"/>
-					<h:commandButton action="#{auditor.reorderAscByEvent}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByEvent}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByEvent}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
+					<h:commandButton action="#{auditor.reorderDescByEvent}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText value="#{auditLogEntry.eventTypeValue}"/>
+			<h:outputText style="white-space: nowrap;" value="#{web.text[(auditLogEntry.eventTypeValue)]}"/>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['eventStatus']}"/>
-					<h:commandButton action="#{auditor.reorderAscByStatus}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByStatus}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByStatus}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
+					<h:commandButton action="#{auditor.reorderDescByStatus}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText value="#{auditLogEntry.eventStatusValue}"/>
+			<h:outputText value="#{web.text[(auditLogEntry.eventStatusValue)]}"/>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['authToken']}"/>
-					<h:commandButton action="#{auditor.reorderAscByAuthToken}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByAuthToken}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByAuthToken}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
+					<h:commandButton action="#{auditor.reorderDescByAuthToken}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText value="#{auditLogEntry.authToken}"/>
@@ -179,18 +179,18 @@
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['module']}"/>
-					<h:commandButton action="#{auditor.reorderAscByModule}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByModule}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByModule}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
+					<h:commandButton action="#{auditor.reorderDescByModule}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText value="#{auditLogEntry.moduleTypeValue}"/>
+			<h:outputText style="white-space: nowrap;" value="#{web.text[(auditLogEntry.moduleTypeValue)]}"/>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['customId']}"/>
-					<h:commandButton action="#{auditor.reorderAscByCustomId}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByCustomId}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByCustomId}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
+					<h:commandButton action="#{auditor.reorderDescByCustomId}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
 		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?caid=#{auditLogEntry.customId}" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] != null}"><h:outputText value="#{auditor.caIdToName[(auditLogEntry.customId)]}"/></h:outputLink>
@@ -200,8 +200,8 @@
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['searchDetail1']}"/>
-					<h:commandButton action="#{auditor.reorderAscBySearchDetail1}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescBySearchDetail1}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscBySearchDetail1}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
+					<h:commandButton action="#{auditor.reorderDescBySearchDetail1}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
 		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?serno=#{auditLogEntry.searchDetail1}&caid=#{auditLogEntry.customId}"><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:outputLink>
@@ -210,8 +210,8 @@
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['searchDetail2']}"/>
-					<h:commandButton action="#{auditor.reorderAscBySearchDetail2}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescBySearchDetail2}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscBySearchDetail2}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
+					<h:commandButton action="#{auditor.reorderDescBySearchDetail2}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
 		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?username=#{auditLogEntry.searchDetail2}"><h:outputText value="#{auditLogEntry.searchDetail2}"/></h:outputLink>
@@ -220,8 +220,8 @@
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{auditor.nameFromColumn['nodeId']}"/>
-					<h:commandButton action="#{auditor.reorderAscByNodeId}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
-					<h:commandButton action="#{auditor.reorderDescByNodeId}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
+					<h:commandButton action="#{auditor.reorderAscByNodeId}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/downarrow.gif"/>
+					<h:commandButton action="#{auditor.reorderDescByNodeId}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
 			<h:outputText value="#{auditLogEntry.nodeId}"/>

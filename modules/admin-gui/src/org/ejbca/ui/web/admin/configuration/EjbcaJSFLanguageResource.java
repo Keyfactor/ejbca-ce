@@ -40,7 +40,7 @@ public class EjbcaJSFLanguageResource implements Map {
 	}
 
 	public Object get(Object arg0) {
-		String str = ejbcawebbean.getText((String) arg0);
+		String str = ejbcawebbean.getText(arg0.toString());
 		return HTMLTools.htmlunescape(str);
 	}
 
