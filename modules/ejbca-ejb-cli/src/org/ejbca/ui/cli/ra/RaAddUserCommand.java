@@ -18,6 +18,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -57,8 +58,13 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        
         try {
-            GlobalConfiguration globalconfiguration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin());
+            GlobalConfiguration globalconfiguration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin(subject));
             boolean usehardtokens = globalconfiguration.getIssueHardwareTokens();
             boolean usekeyrecovery = globalconfiguration.getEnableKeyRecovery();
             String[] hardtokenissueraliases = null;
@@ -66,10 +72,10 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             HashMap<Integer, String> hardtokenprofileidtonamemap = null;
 
             if (usehardtokens) {
-                hardtokenissueraliases = (String[]) ejb.getHardTokenSession().getHardTokenIssuerAliases(getAdmin()).toArray(new String[0]);
+                hardtokenissueraliases = (String[]) ejb.getHardTokenSession().getHardTokenIssuerAliases(getAdmin(subject)).toArray(new String[0]);
 
-                authorizedhardtokenprofiles = ejb.getHardTokenSession().getAuthorizedHardTokenProfileIds(getAdmin());
-                hardtokenprofileidtonamemap = ejb.getHardTokenSession().getHardTokenProfileIdToNameMap(getAdmin());
+                authorizedhardtokenprofiles = ejb.getHardTokenSession().getAuthorizedHardTokenProfileIds(getAdmin(subject));
+                hardtokenprofileidtonamemap = ejb.getHardTokenSession().getHardTokenProfileIdToNameMap(getAdmin(subject));
             }
 
             String types = "Type (mask): INVALID=0; END-USER=1; SENDNOTIFICATION=256; PRINTUSERDATA=512";
@@ -79,14 +85,14 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             if ((args.length < 9) || (args.length > 12)) {
                 getLogger().info("Description: " + getDescription());
-                Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin());
-                HashMap<Integer, String> caidtonamemap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin());
+                Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin(subject));
+                HashMap<Integer, String> caidtonamemap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin(subject));
 
                 Collection<Integer> certprofileids = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, caids);
                 Map<Integer, String> certificateprofileidtonamemap = ejb.getCertificateProfileSession().getCertificateProfileIdToNameMap();
 
-                Collection<Integer> endentityprofileids = ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin());
-                Map<Integer, String> endentityprofileidtonamemap = ejb.getEndEntityProfileSession().getEndEntityProfileIdToNameMap(getAdmin());
+                Collection<Integer> endentityprofileids = ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(subject));
+                Map<Integer, String> endentityprofileidtonamemap = ejb.getEndEntityProfileSession().getEndEntityProfileIdToNameMap(getAdmin(subject));
 
                 if (usehardtokens) {
                     getLogger().info(
@@ -171,7 +177,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             int caid = 0;
             try {
-                caid = ejb.getCaSession().getCAInfo(getAdmin(), caname).getCAId();
+                caid = ejb.getCaSession().getCAInfo(getAdmin(subject), caname).getCAId();
             } catch (Exception e) {
             }
 
@@ -183,18 +189,18 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             if (args.length > 10) {
                 // Use certificate type and end entity profile.
-                profileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(), args[10]);
+                profileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(subject), args[10]);
                 getLogger().info("Using entity profile: " + args[10] + ", with id: " + profileid);
             }
 
             if (args.length == 12 && usehardtokens) {
                 // Use certificate type, end entity profile and hardtokenissuer.
-                hardtokenissuerid = ejb.getHardTokenSession().getHardTokenIssuerId(getAdmin(), args[11]);
+                hardtokenissuerid = ejb.getHardTokenSession().getHardTokenIssuerId(getAdmin(subject), args[11]);
                 usehardtokenissuer = true;
                 getLogger().info("Using hard token issuer: " + args[11] + ", with id: " + hardtokenissuerid);
             }
 
-            int tokenid = getTokenId(getAdmin(), tokenname, usehardtokens, ejb.getHardTokenSession());
+            int tokenid = getTokenId(getAdmin(subject), tokenname, usehardtokens, ejb.getHardTokenSession());
             if (tokenid == 0) {
                 getLogger().error("Invalid token id.");
                 error = true;
@@ -232,7 +238,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             }
 
             // Check if username already exists.
-            if (ejb.getUserAdminSession().existsUser(getAdmin(), username)) {
+            if (ejb.getUserAdminSession().existsUser(getAdmin(subject), username)) {
                 getLogger().error("User already exists in the database.");
                 error = true;
             }
@@ -259,7 +265,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                     email = null;
                 }
                 try {
-                    ejb.getUserAdminSession().addUser(getAdmin(), username, password, dn, subjectaltname, email, false, profileid, certificatetypeid, type, tokenid,
+                    ejb.getUserAdminSession().addUser(getAdmin(subject), username, password, dn, subjectaltname, email, false, profileid, certificatetypeid, type, tokenid,
                             hardtokenissuerid, caid);
                     getLogger().info("User '" + username + "' has been added.");
                     getLogger().info("Note: If batch processing should be possible, also use 'ra setclearpwd " + username + " <pwd>'.");

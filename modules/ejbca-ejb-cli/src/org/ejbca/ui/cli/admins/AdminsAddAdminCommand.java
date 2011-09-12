@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -46,19 +47,23 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
 
     /** @see org.ejbca.ui.cli.CliCommandPlugin */
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+          
         try {
             if (args.length < 6) {
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
-                Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(getAdmin()); 
+                Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(getAdmin(subject)); 
                 Collections.sort((List<RoleData>) adminGroups);
                 String availableGroups = "";
                 for (RoleData adminGroup : adminGroups) {
                     availableGroups += (availableGroups.length() == 0 ? "" : ", ") + "\"" + adminGroup.getRoleName() + "\"";
                 }
                 getLogger().info("Available Admin groups: " + availableGroups);
-                Map<Integer, String> caIdToNameMap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin());
-                Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin());
+                Map<Integer, String> caIdToNameMap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin(subject));
+                Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin(subject));
                 String availableCas = "";
                 for (Integer caid : caids) {
                     availableCas += (availableCas.length() == 0 ? "" : ", ") + "\"" + caIdToNameMap.get(caid) + "\"";
@@ -82,7 +87,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String caName = args[2];
-            CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(), caName);
+            CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(subject), caName);
             if (caInfo == null) {
                 getLogger().error("No such CA \"" + caName + "\" .");
                 return;
@@ -99,10 +104,10 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String matchValue = args[5];
-            AccessUserAspectData subject = new AccessUserAspectData(roleName, caid, matchWith, matchType, matchValue);
-            Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-            subjects.add(subject);
-            ejb.getRoleManagementSession().addSubjectsToRole(getAdmin(), ejb.getRoleAccessSession().findRole(roleName), subjects);
+            AccessUserAspectData accessUser = new AccessUserAspectData(roleName, caid, matchWith, matchType, matchValue);
+            Collection<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
+            accessUsers.add(accessUser);
+            ejb.getRoleManagementSession().addSubjectsToRole(getAdmin(subject), ejb.getRoleAccessSession().findRole(roleName), accessUsers);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

@@ -31,6 +31,9 @@ public class RaSetPwdCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Set a (hashed) password for a user"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        
         try {
             if (args.length < 3) {
     			getLogger().info("Description: " + getDescription());
@@ -41,7 +44,7 @@ public class RaSetPwdCommand extends BaseRaAdminCommand {
             String password = args[2];
             getLogger().info("Setting password (hashed only) " + password + " for user " + username);
             try {
-                ejb.getUserAdminSession().setPassword(getAdmin(), username, password);
+                ejb.getUserAdminSession().setPassword(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), username, password);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");
             } catch (UserDoesntFullfillEndEntityProfile e) {

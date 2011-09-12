@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -41,6 +42,10 @@ public class AdminsListRulesCommand extends BaseAdminsCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        
         try {
             if (args.length < 2) {
                 getLogger().info("Description: " + getDescription());
@@ -57,7 +62,7 @@ public class AdminsListRulesCommand extends BaseAdminsCommand {
             Collections.sort(list);
             for (AccessRuleData accessRule : list) {
                 getLogger().info(
-                        getParsedAccessRule(accessRule.getAccessRuleName()) + " " + accessRule.getInternalState().getName() + " "
+                        getParsedAccessRule(getAdmin(subject), accessRule.getAccessRuleName()) + " " + accessRule.getInternalState().getName() + " "
                                 + (accessRule.getRecursive() ? "RECURSIVE" : ""));
             }
         } catch (Exception e) {

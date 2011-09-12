@@ -30,6 +30,9 @@ public class RaSetClearPwdCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Set a clear text password for a user for batch generation"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        
         try {
             if (args.length < 3) {
     			getLogger().info("Description: " + getDescription());
@@ -41,7 +44,7 @@ public class RaSetClearPwdCommand extends BaseRaAdminCommand {
             getLogger().info("Setting clear text password for user " + username);
 
             try {
-                ejb.getUserAdminSession().setClearTextPassword(getAdmin(), username, password);
+                ejb.getUserAdminSession().setClearTextPassword(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), username, password);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");
             } catch (UserDoesntFullfillEndEntityProfile e) {

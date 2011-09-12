@@ -28,6 +28,8 @@ import java.util.Collection;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -59,11 +61,11 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
      * @param human readable name of CA
      * @return array of certificates, from ISignSession.getCertificateChain()
      */
-    protected Collection<Certificate> getCertChain(String caname) throws Exception {
+    protected Collection<Certificate> getCertChain(AuthenticationToken authenticationToken, String caname) throws Exception {
         getLogger().trace(">getCertChain()");
         Collection<Certificate> returnval = new ArrayList<Certificate>();
         try {
-            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), caname);
+            CAInfo cainfo = ejb.getCaSession().getCAInfo(authenticationToken, caname);
             if (cainfo != null) {
                 returnval = cainfo.getCertificateChain();
             }
@@ -112,24 +114,24 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         getLogger().trace("<makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
     }
 
-    protected void createCRL(String issuerdn, boolean deltaCRL) {
+    protected void createCRL(AuthenticationToken authenticationToken, String issuerdn, boolean deltaCRL) {
         getLogger().trace(">createCRL()");
         try {
             if (issuerdn != null) {
-                CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), issuerdn.hashCode());
+                CAInfo cainfo = ejb.getCaSession().getCAInfo(authenticationToken, issuerdn.hashCode());
                 if (!deltaCRL) {
-                    ejb.getCrlCreateSession().forceCRL(getAdmin(), cainfo.getCAId());
+                    ejb.getCrlCreateSession().forceCRL(authenticationToken, cainfo.getCAId());
                     int number = ejb.getCrlStoreSession().getLastCRLNumber(issuerdn, false);
                     getLogger().info("CRL with number " + number + " generated.");
                 } else {
-                    ejb.getCrlCreateSession().forceDeltaCRL(getAdmin(), cainfo.getCAId());
+                    ejb.getCrlCreateSession().forceDeltaCRL(authenticationToken, cainfo.getCAId());
                     int number = ejb.getCrlStoreSession().getLastCRLNumber(issuerdn, true);
                     getLogger().info("Delta CRL with number " + number + " generated.");
                 }
             } else {
-                int createdcrls = ejb.getCrlCreateSession().createCRLs(getAdmin());
+                int createdcrls = ejb.getCrlCreateSession().createCRLs(authenticationToken);
                 getLogger().info("  " + createdcrls + " CRLs have been created.");
-                int createddeltacrls = ejb.getCrlCreateSession().createDeltaCRLs(getAdmin());
+                int createddeltacrls = ejb.getCrlCreateSession().createDeltaCRLs(authenticationToken);
                 getLogger().info("  " + createddeltacrls + " delta CRLs have been created.");
             }
         } catch (Exception e) {
@@ -138,15 +140,15 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         getLogger().trace(">createCRL()");
     }
 
-    protected String getIssuerDN(String caname) throws Exception {
-        CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), caname);
+    protected String getIssuerDN(AuthenticationToken authenticationToken, String caname) throws Exception {
+        CAInfo cainfo = ejb.getCaSession().getCAInfo(authenticationToken, caname);
         return cainfo != null ? cainfo.getSubjectDN() : null;
     }
 
-    protected CAInfo getCAInfo(String caname) throws Exception {
+    protected CAInfo getCAInfo(AuthenticationToken authenticationToken, String caname) throws Exception {
         CAInfo result;
         try {
-            result = ejb.getCaSession().getCAInfo(getAdmin(), caname);
+            result = ejb.getCaSession().getCAInfo(authenticationToken, caname);
         } catch (Exception e) {
             getLogger().debug("Error retriving CA " + caname + " info.", e);
             throw new Exception("Error retriving CA " + caname + " info.");
@@ -158,21 +160,21 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         return result;
     }
 
-    protected void initAuthorizationModule(int caid, String superAdminCN) throws AccessRuleNotFoundException, RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+    protected void initAuthorizationModule(AuthenticationToken authenticationToken, int caid, String superAdminCN) throws AccessRuleNotFoundException, RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
     	if (superAdminCN == null) {
     		getLogger().info("Not initializing authorization module.");
     	} else {
     		getLogger().info("Initalizing authorization module with caid="+caid+" and superadmin CN '"+superAdminCN+"'.");
     	}
-        ejb.getComplexAccessControlSession().initializeAuthorizationModule(getAdmin(), caid, superAdminCN);
+        ejb.getComplexAccessControlSession().initializeAuthorizationModule(authenticationToken, caid, superAdminCN);
     } // initAuthorizationModule
     
-    protected String getAvailableCasString() {
+    protected String getAvailableCasString(AuthenticationSubject subject) {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : ejb.getCaSession().getAvailableCAs(getAdmin())) {
-				final String caName = ejb.getCaSession().getCAInfo(getAdmin(), nextId.intValue()).getName();
+			for (final Integer nextId : ejb.getCaSession().getAvailableCAs(getAdmin(subject))) {
+				final String caName = ejb.getCaSession().getCAInfo(getAdmin(subject), nextId.intValue()).getName();
 				if (existingCas.length()>0) {
 					existingCas.append(", ");
 				}
@@ -184,12 +186,12 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		return existingCas.toString();
     }
 
-    protected String getAvailableEepsString() {
+    protected String getAvailableEepsString(AuthenticationSubject subject) {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin())) {
-				final String caName = ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(), nextId.intValue());
+			for (final Integer nextId : ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(subject))) {
+				final String caName = ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(subject), nextId.intValue());
 				if (existingCas.length()>0) {
 					existingCas.append(", ");
 				}
@@ -201,11 +203,11 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		return existingCas.toString();
     }
 
-    protected String getAvailableEndUserCpsString() {
+    protected String getAvailableEndUserCpsString(AuthenticationSubject subject) {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, ejb.getCaSession().getAvailableCAs(getAdmin()))) {
+			for (final Integer nextId : ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, ejb.getCaSession().getAvailableCAs(getAdmin(subject)))) {
 				final String caName = ejb.getCertificateProfileSession().getCertificateProfileName(nextId.intValue());
 				if (existingCas.length()>0) {
 					existingCas.append(", ");

@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.Enumeration;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.util.FileTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -33,6 +34,10 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Restore a CA token keystore from a PKCS12 file."; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        
 		if (args.length < 3 || args.length > 5) {
     		getLogger().info("Description: " + getDescription());
     		getLogger().info("Usage: " + getCommand() + " <CA name> <pkcs12 file> [<signature alias>] [<encryption alias>]");
@@ -79,7 +84,7 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 				}
 				// else alias already contains the only alias, so we can use that
 			}
-			ejb.getCAAdminSession().restoreCAKeyStore(getAdmin(), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
+			ejb.getCAAdminSession().restoreCAKeyStore(getAdmin(subject), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
 		} catch (ErrorAdminCommandException e) {
 			throw e;
 		} catch (Exception e) {

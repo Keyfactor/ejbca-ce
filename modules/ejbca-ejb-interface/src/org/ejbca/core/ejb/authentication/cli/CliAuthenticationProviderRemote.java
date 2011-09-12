@@ -10,17 +10,19 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
-package org.ejbca.ui.cli.ra;
+package org.ejbca.core.ejb.authentication.cli;
 
-import org.ejbca.ui.cli.BaseCommand;
+import javax.ejb.Remote;
+
+import org.cesecore.authentication.tokens.AuthenticationProvider;
 
 /**
- * Base for RA commands, contains common functions for RA operations
- *
+ * This interface provides authentication for CLI users. 
+ * 
  * @version $Id$
+ *
  */
-public abstract class BaseRaAdminCommand extends BaseCommand {
+@Remote
+public interface CliAuthenticationProviderRemote extends AuthenticationProvider {
 
-	public static final String MAINCOMMAND = "ra";
 }

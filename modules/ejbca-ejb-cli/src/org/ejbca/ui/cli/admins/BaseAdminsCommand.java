@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.admins;
 
 import java.util.Map;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -28,24 +29,24 @@ public abstract class BaseAdminsCommand extends BaseCommand {
 
     protected static final String MAINCOMMAND = "admins";
 
-    protected String getParsedAccessRule(String resource) throws NumberFormatException {
+    protected String getParsedAccessRule(AuthenticationToken authenticationToken, String resource) throws NumberFormatException {
         // Check if it is a profile rule, then replace profile id with profile
         // name.
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(), Integer.parseInt(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX
+                        + ejb.getEndEntityProfileSession().getEndEntityProfileName(authenticationToken, Integer.parseInt(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX
                                 .length())));
             } else {
                 String tmpString = resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(), Integer.parseInt(tmpString.substring(0, tmpString.indexOf('/'))))
+                        + ejb.getEndEntityProfileSession().getEndEntityProfileName(authenticationToken, Integer.parseInt(tmpString.substring(0, tmpString.indexOf('/'))))
                         + tmpString.substring(tmpString.indexOf('/'));
             }
         }
         // Check if it is a CA rule, then replace CA id with CA name.
         if (resource.startsWith(StandardRules.CAACCESS.resource())) {
-            Map<Integer,String> caIdToNameMap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin());
+            Map<Integer,String> caIdToNameMap = ejb.getCAAdminSession().getCAIdToNameMap(authenticationToken);
             if (resource.lastIndexOf('/') < StandardRules.CAACCESS.resource().length()) {
                 return StandardRules.CAACCESS.resource() + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length())));
             } else {
@@ -59,11 +60,11 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(AccessRulesConstants.USERDATASOURCEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.USERDATASOURCEPREFIX.length()) {
                 return AccessRulesConstants.USERDATASOURCEPREFIX
-                        + ejb.getUserDataSourceSession().getUserDataSourceName(getAdmin(),
+                        + ejb.getUserDataSourceSession().getUserDataSourceName(authenticationToken,
                                 Integer.parseInt(resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length())));
             } else {
                 return AccessRulesConstants.USERDATASOURCEPREFIX
-                        + ejb.getUserDataSourceSession().getUserDataSourceName(getAdmin(),
+                        + ejb.getUserDataSourceSession().getUserDataSourceName(authenticationToken,
                                 Integer.parseInt(resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length(), resource.lastIndexOf('/'))))
                         + resource.substring(resource.lastIndexOf('/'));
             }
@@ -71,17 +72,17 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         return resource;
     }
 
-    protected String getOriginalAccessRule(String resource) throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
+    protected String getOriginalAccessRule(AuthenticationToken authenticationToken, String resource) throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
         // Check if it is a profile rule, then replace profile id with profile
         // name.
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(), resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()));
+                        + ejb.getEndEntityProfileSession().getEndEntityProfileId(authenticationToken, resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()));
             } else {
                 String tmpString = resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(), tmpString.substring(0, tmpString.indexOf('/')))
+                        + ejb.getEndEntityProfileSession().getEndEntityProfileId(authenticationToken, tmpString.substring(0, tmpString.indexOf('/')))
                         + tmpString.substring(tmpString.indexOf('/'));
             }
         }
@@ -89,10 +90,10 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(StandardRules.CAACCESS.resource())) {
             if (resource.lastIndexOf('/') < StandardRules.CAACCESS.resource().length()) {
                 return StandardRules.CAACCESS.resource()
-                        + ejb.getCaSession().getCAInfo(getAdmin(), resource.substring(StandardRules.CAACCESS.resource().length())).getCAId();
+                        + ejb.getCaSession().getCAInfo(authenticationToken, resource.substring(StandardRules.CAACCESS.resource().length())).getCAId();
             } else {
                 return StandardRules.CAACCESS.resource()
-                        + ejb.getCaSession().getCAInfo(getAdmin(), resource.substring(StandardRules.CAACCESS.resource().length(), resource.lastIndexOf('/'))).getCAId()
+                        + ejb.getCaSession().getCAInfo(authenticationToken, resource.substring(StandardRules.CAACCESS.resource().length(), resource.lastIndexOf('/'))).getCAId()
                         + resource.substring(resource.lastIndexOf('/'));
             }
         }
@@ -101,10 +102,10 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(AccessRulesConstants.USERDATASOURCEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.USERDATASOURCEPREFIX.length()) {
                 return AccessRulesConstants.USERDATASOURCEPREFIX
-                        + ejb.getUserDataSourceSession().getUserDataSourceId(getAdmin(), resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length()));
+                        + ejb.getUserDataSourceSession().getUserDataSourceId(authenticationToken, resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length()));
             } else {
                 return AccessRulesConstants.USERDATASOURCEPREFIX
-                        + ejb.getUserDataSourceSession().getUserDataSourceId(getAdmin(),
+                        + ejb.getUserDataSourceSession().getUserDataSourceId(authenticationToken,
                                 resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length(), resource.lastIndexOf('/')))
                         + resource.substring(resource.lastIndexOf('/'));
             }

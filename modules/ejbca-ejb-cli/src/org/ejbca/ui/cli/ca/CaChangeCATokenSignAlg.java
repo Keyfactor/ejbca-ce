@@ -16,6 +16,8 @@ package org.ejbca.ui.cli.ca;
 import java.util.Collection;
 import java.util.Properties;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.keys.token.CryptoToken;
@@ -37,14 +39,19 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
 		getLogger().trace(">execute()");
 		CryptoProviderTools.installBCProvider(); // need this for CVC certificate
+		
+	        String cliUserName = "username";
+	        String cliPassword = "passwordhash";
+	        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+		
 		if ( args.length<3 ) {
-			usage();
+			usage(subject);
 			return;
 		}
 
 		try {
 			String caName = args[1];
-			CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(), caName);
+			CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(subject), caName);
 			String signAlg = args[2];
 			getLogger().info("Setting new signature algorithm: " + signAlg);
 			CATokenInfo tokeninfo = cainfo.getCATokenInfo();
@@ -56,16 +63,16 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 				tokeninfo.setProperties(prop);
 			}
 			cainfo.setCATokenInfo(tokeninfo);
-			ejb.getCAAdminSession().editCA(getAdmin(), cainfo);
+			ejb.getCAAdminSession().editCA(getAdmin(subject), cainfo);
 			getLogger().info("CA token signature algorithm for CA changed.");
 		} catch (Exception e) {
 			getLogger().error(e.getMessage());
-			usage();
+			usage(subject);
 		}
 		getLogger().trace("<execute()");
 	}
     
-	private void usage() {
+	private void usage(AuthenticationSubject subject) {
 		getLogger().info("Description: " + getDescription());
 		getLogger().info("Usage: " + getCommand() + " <caname> <signature alg> [<keyspec>]");
 		getLogger().info(" Signature alg is one of SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1, SHA224WithECDSA, SHA256WithECDSA, or any other string available in the admin-GUI.");
@@ -73,9 +80,9 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 		getLogger().info(" Existing CAs: ");
 		try {
 			// Print available CAs
-			Collection<Integer> cas = ejb.getCaSession().getAvailableCAs(getAdmin());
+			Collection<Integer> cas = ejb.getCaSession().getAvailableCAs(getAdmin(subject));
 			for (Integer caid : cas) {
-				CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(), caid);
+				CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(subject), caid);
 				getLogger().info("    "+info.getName()+": "+info.getCATokenInfo().getSignatureAlgorithm());				
 			}
 		} catch (Exception e) {

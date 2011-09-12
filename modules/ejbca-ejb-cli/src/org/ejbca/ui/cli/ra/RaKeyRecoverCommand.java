@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ra;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -31,6 +32,10 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Set status to key recovery for a user's certificate"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
+        String cliUserName = "username";
+        String cliPassword = "passwordhash";
+        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        
         try {
             if (args.length != 3) {
     			getLogger().info("Description: " + getDescription());
@@ -39,7 +44,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
             }
             BigInteger certificatesn = new BigInteger(args[1], 16);
             String issuerdn = args[2];
-            boolean usekeyrecovery = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin()).getEnableKeyRecovery();  
+            boolean usekeyrecovery = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin(subject)).getEnableKeyRecovery();  
             if(!usekeyrecovery){
             	getLogger().error("Keyrecovery have to be enabled in the system configuration in order to use this command.");
             	return;                   
@@ -51,20 +56,20 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
             	return;              
             }
             String username = ejb.getCertStoreSession().findUsernameByCertSerno(certificatesn, issuerdn);
-            if(!ejb.getKeyRecoverySession().existsKeys(getAdmin(),cert)){
+            if(!ejb.getKeyRecoverySession().existsKeys(getAdmin(subject) ,cert)){
             	getLogger().error("Specified keys doesn't exist in database.");
             	return;                  
             }
-            if(ejb.getKeyRecoverySession().isUserMarked(getAdmin(),username)){
+            if(ejb.getKeyRecoverySession().isUserMarked(getAdmin(subject) ,username)){
             	getLogger().error("User is already marked for recovery.");
             	return;                     
             }
-            EndEntityInformation userdata = ejb.getEndEntityAccessSession().findUser(getAdmin(), username);
+            EndEntityInformation userdata = ejb.getEndEntityAccessSession().findUser(getAdmin(subject), username);
             if(userdata == null){
             	getLogger().error("The user doesn't exist.");
             	return;
             }
-            if (ejb.getUserAdminSession().prepareForKeyRecovery(getAdmin(), userdata.getUsername(), userdata.getEndEntityProfileId(), cert)) {
+            if (ejb.getUserAdminSession().prepareForKeyRecovery(getAdmin(subject), userdata.getUsername(), userdata.getEndEntityProfileId(), cert)) {
                 getLogger().info("Keys corresponding to given certificate has been marked for recovery.");                           
             } else {
                 getLogger().info("Failed to mark keys corresponding to given certificate for recovery.");                           

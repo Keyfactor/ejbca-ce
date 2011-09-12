@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.util;
 
+import org.cesecore.authentication.AuthenticationSessionRemote;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -23,6 +24,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionRemote;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -54,7 +56,7 @@ public class EjbRemoteHelper {
 
     private ApprovalSessionRemote approvalSession = null;
     private ApprovalExecutionSessionRemote approvalExecutionSession = null;
-    private EndEntityAuthenticationSessionRemote authenticationSession = null;
+    private AuthenticationSessionRemote authenticationSession = null;
     private AccessControlSessionRemote accessControlSession = null;
     private CAAdminSessionRemote caAdminSession = null;
     private CaSessionRemote caSession = null;
@@ -66,14 +68,16 @@ public class EjbRemoteHelper {
     private ComplexAccessControlSessionRemote complexAccessControlSessionRemote = null;
     private CrlStoreSessionRemote crlSession = null;
     private CrlCreateSessionRemote crlStoreSession = null;
-    private EndEntityAccessSessionRemote endEntityAccessSession;
+    private EndEntityAccessSessionRemote endEntityAccessSession = null;
+    private EndEntityAuthenticationSessionRemote endEntityAuthenticationSession = null;
     private EndEntityProfileSessionRemote endEntityProfileSession = null;
+    private GlobalConfigurationSessionRemote globalConfigurationSession;
     private HardTokenSessionRemote hardTokenSession = null;
     private KeyRecoverySessionRemote keyRecoverySession = null;
     private PublisherQueueSessionRemote publisherQueueSession = null;
     private PublisherSessionRemote publisherSession = null;
-    private RaAdminSessionRemote raAdminSession = null;
-    private GlobalConfigurationSessionRemote globalConfigurationSession;
+    private RaAdminSessionRemote raAdminSession = null;  
+    private RevocationSessionRemote revocationSession = null;
     private RoleAccessSessionRemote roleAccessSession = null;
     private RoleManagementSessionRemote roleManagementSession = null;
     private ServiceDataSessionRemote serviceDataSession = null;
@@ -82,8 +86,16 @@ public class EjbRemoteHelper {
     private UpgradeSessionRemote upgradeSession = null;
     private UserAdminSessionRemote userAdminSession = null;
     private UserDataSourceSessionRemote userDataSourceSession = null;
-    private RevocationSessionRemote revocationSession = null;
+   
+    private CliAuthenticationProviderRemote cliAuthenticationProvider = null;
 
+    public AuthenticationSessionRemote getAuthenticationSession() {
+        if(authenticationSession == null) {
+            authenticationSession = JndiHelper.getRemoteSession(AuthenticationSessionRemote.class);
+        }
+        return authenticationSession;
+    }
+    
     public RoleAccessSessionRemote getRoleAccessSession() {
         if (roleAccessSession == null) {
             roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
@@ -189,11 +201,11 @@ public class EjbRemoteHelper {
         return hardTokenSession;
     }
 
-    public EndEntityAuthenticationSessionRemote getAuthenticationSession() {
-        if (authenticationSession == null) {
-            authenticationSession = JndiHelper.getRemoteSession(EndEntityAuthenticationSessionRemote.class);
+    public EndEntityAuthenticationSessionRemote getEndEntityAuthenticationSession() {
+        if (endEntityAuthenticationSession == null) {
+            endEntityAuthenticationSession = JndiHelper.getRemoteSession(EndEntityAuthenticationSessionRemote.class);
         }
-        return authenticationSession;
+        return endEntityAuthenticationSession;
     }
 
     public ApprovalSessionRemote getApprovalSession() {
@@ -299,6 +311,13 @@ public class EjbRemoteHelper {
             endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
         }
         return endEntityAccessSession;
+    }
+    
+    public CliAuthenticationProviderRemote getCliAuthenticationProvider() {
+        if(cliAuthenticationProvider == null) {
+            cliAuthenticationProvider = JndiHelper.getRemoteSession(CliAuthenticationProviderRemote.class);
+        }
+        return cliAuthenticationProvider;
     }
 
 }

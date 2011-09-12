@@ -154,6 +154,7 @@
 		<include name="org/cesecore/certificates/util/**/*.java"/>
 		<exclude name="org/cesecore/audit/AuditDevicesConfig.java"/>
 		<exclude name="org/cesecore/**/*SessionBean.java"/>
+		
 
 		<!-- From EJBCA entity lib -->
 		<include name="org/cesecore/certificates/ca/internal/CACacheManager.java"/>
@@ -231,6 +232,7 @@
 		<!-- Dependecies from EJB CLI, EJBCA WS -->
 		<include name="org/ejbca/core/model/hardtoken/types/EnhancedEIDHardToken.java"/>
 		<include name="org/ejbca/core/model/hardtoken/types/SwedishEIDHardToken.java"/>
+		<include name="org/ejbca/core/ejb/authentication/cli/CliAuthenticationToken.java"/>
 		<!-- Dependecies from multiple places -->
 		<include name="com/novosec/pkix/asn1/**/*.java"/>
 		<include name="org/cesecore/certificates/certificate/request/X509ResponseMessage.java"/>
