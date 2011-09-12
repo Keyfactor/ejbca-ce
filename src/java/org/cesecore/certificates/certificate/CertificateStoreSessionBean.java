@@ -536,7 +536,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // authorization is handled by setRevokeStatus(admin, certificate, reason, userDataDN);
         Certificate certificate = findCertificateByIssuerAndSerno(issuerdn, serno);
         if (certificate == null) {
-        	String msg = INTRES.getLocalizedMessage("store.errorfindcertserno", null, serno);
+        	String msg = INTRES.getLocalizedMessage("store.errorfindcertfp", null, serno);
         	log.info(msg);
         	throw new CertificateRevokeException(msg);
         }
@@ -583,7 +583,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         String fp = CertTools.getFingerprintAsString(certificate);
         CertificateData rev = CertificateData.findByFingerprint(entityManager, fp);
         if (rev == null) {
-            String msg = INTRES.getLocalizedMessage("store.errorfindcertserno",fp,  CertTools.getSerialNumberAsString(certificate));
+            String msg = INTRES.getLocalizedMessage("store.errorfindcertfp",fp,  CertTools.getSerialNumberAsString(certificate));
             log.info(msg);
             throw new CertificateRevokeException(msg);
         }
