@@ -48,12 +48,9 @@ import org.bouncycastle.util.encoders.Hex;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  * 
- * Based on EJBCA version: 
- *      StringTools.java 11221 2011-01-18 14:08:34Z aveen4711
- * Based on CESeCore version:
- *      StringTools.java 858 2011-05-25 09:22:16Z johane
+ * Based on EJBCA version: StringTools.java 11221 2011-01-18 14:08:34Z aveen4711
  * 
- * @version $Id$
+ * @version $Id: StringTools.java 1093 2011-09-09 10:48:31Z tomas $
  */
 public final class StringTools {
     private static final Logger log = Logger.getLogger(StringTools.class);
@@ -139,14 +136,29 @@ public final class StringTools {
      * @see #strip
      */
     public static boolean hasSqlStripChars(final String str) {
+    	return hasStripCharsInternal(str, stripSqlChars);
+    }
+    
+    /**
+     * Checks if a string contains characters that would be potentially dangerous to use as DN, username etc.
+     * 
+     * @param str the string whose contents would be stripped.
+     * @return true if some chars in the string would be stripped, false if not.
+     * @see #strip
+     */
+    public static boolean hasStripChars(final String str) {
+    	return hasStripCharsInternal(str, stripChars);
+    }
+    
+    private static boolean hasStripCharsInternal(final String str, char[] checkThese) {
         if (str == null) {
             return false;
         }
-        for (int i = 0; i < stripSqlChars.length; i++) {
+        for (int i = 0; i < checkThese.length; i++) {
             int index = 0;
             final int end = str.length();
             while (index < end) {
-                if (str.charAt(index) == stripSqlChars[i] && stripSqlChars[i] != '\\') {
+                if (str.charAt(index) == checkThese[i] && checkThese[i] != '\\') {
                     // Found an illegal character.
                     return true;
                 } else if (str.charAt(index) == '\\') {

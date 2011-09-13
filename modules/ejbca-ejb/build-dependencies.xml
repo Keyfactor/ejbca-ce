@@ -528,6 +528,7 @@
 					<include name="org/cesecore/certificates/ca/extendedservices/*.java"/>
 					<include name="org/cesecore/certificates/ca/internal/CertificateValidity.java"/>
 					<include name="org/cesecore/certificates/ca/IllegalValidityException.java"/>
+					<include name="org/cesecore/certificates/ca/IllegalNameException.java"/>
 					<include name="org/cesecore/certificates/ca/CAOfflineException.java"/>
 					<include name="org/cesecore/certificates/ca/SignRequestSignatureException.java"/>
 					<include name="org/cesecore/certificates/ca/SignRequestException.java"/>
