@@ -44,7 +44,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
-import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -113,7 +113,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     @EJB
     private CaSessionLocal caSession;
     @EJB
-    private InternalSecurityEventsLoggerSessionLocal auditSession;
+    private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 

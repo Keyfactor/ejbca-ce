@@ -31,9 +31,11 @@ import org.cesecore.authorization.cache.AccessTreeCache;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
+import org.cesecore.time.TrustedTime;
+import org.cesecore.time.TrustedTimeWatcherSessionLocal;
+import org.cesecore.time.providers.TrustedTimeProviderException;
 
 /**
- * Based on cesecore version: AccessControlSessionBean.java 956 2011-06-20 11:17:25Z johane
  * 
  * @version $Id$
  * 
@@ -50,8 +52,11 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
 
+    // We have to depend on the internal security events logger here, since the remote depends on us
     @EJB
     private InternalSecurityEventsLoggerSessionLocal securityEventsLoggerSession;
+    @EJB
+    private TrustedTimeWatcherSessionLocal trustedTimeWatcherSession;
 
     /** Cache for authorization data */
     private static AccessTreeCache accessTreeCache;
@@ -61,8 +66,14 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("resource", resource);
             if(doLogging) {
-                securityEventsLoggerSession.log(EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL, ServiceTypes.CORE,
-                        authenticationToken.toString(), null, null, null, details);
+            	TrustedTime tt;
+				try {
+					tt = trustedTimeWatcherSession.getTrustedTime(false);
+	                securityEventsLoggerSession.log(tt, EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL, ServiceTypes.CORE,
+	                        authenticationToken.toString(), null, null, null, details);
+				} catch (TrustedTimeProviderException e) {
+					log.error("Error getting trusted time for audit log: ", e);
+				}
             }
             return true;
         } else {
@@ -86,7 +97,6 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
         return isAuthorized(authenticationToken, resource, false);
     }
 
-
     @Override
     public void forceCacheExpire() {
         if (log.isTraceEnabled()) {
@@ -96,8 +106,6 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
             accessTreeCache.forceCacheExpire();
         }
     }
-
- 
 
     /**
      * Method used check if a reconstruction of authorization tree is needed in the authorization beans.

@@ -12,17 +12,13 @@
  *************************************************************************/
 package org.cesecore.time;
 
-import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.time.providers.TrustedTimeProviderException;
 
 /**
  * This is the trusted time watcher. It will periodically update the status of trusted time (if is synchronous, accuracy, etc).
- * The update period is self managed and is based on information gathered from the trusted time provider.
+ * The update period is self managed and is based on infromation gathered from the trusted time provider.
  * 
- * Based on CESeCore version:
- *      TrustedTimeWatcherSession.java 897 2011-06-20 11:17:25Z johane
- * 
- * @version $Id$
+ * @version $Id: TrustedTimeWatcherSession.java 897 2011-06-20 11:17:25Z johane $
  * 
  */
 public interface TrustedTimeWatcherSession {
@@ -38,8 +34,7 @@ public interface TrustedTimeWatcherSession {
      * @return Watcher TrustedTime current instance.
      * 
      * @throws TrustedTimeProviderException
-     * @throws AuditRecordStorageException
      */
-    TrustedTime getTrustedTime(boolean force) throws TrustedTimeProviderException, AuditRecordStorageException;
+    TrustedTime getTrustedTime(boolean force) throws TrustedTimeProviderException;
 
 }

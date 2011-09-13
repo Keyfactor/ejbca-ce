@@ -43,7 +43,7 @@ public class TxFailureLoggerOperationSessionBean implements TxFailureLoggerOpera
     private EntityManager em;
 
     @EJB
-    private InternalSecurityEventsLoggerSessionLocal securityLog;
+    private SecurityEventsLoggerSessionLocal securityLog;
 
     public void willLaunchExceptionAfterLog() throws Exception{
         em.setFlushMode(FlushModeType.COMMIT);

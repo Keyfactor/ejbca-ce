@@ -39,7 +39,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -80,7 +80,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @EJB
     private AccessControlSessionLocal accessSession;
     @EJB
-    private InternalSecurityEventsLoggerSessionLocal logSession;
+    private SecurityEventsLoggerSessionLocal logSession;
 
     @PostConstruct
     public void postConstruct() {
