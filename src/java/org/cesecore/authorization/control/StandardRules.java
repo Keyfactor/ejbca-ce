@@ -10,18 +10,17 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.cesecore.authorization.control;
 
 /**
  * @version $Id$
  */
-
 public enum StandardRules {
 	AUDITLOGMANAGE ("/secureaudit/management/manage"),
 	AUDITLOGEXPORT("/secureaudit/auditor/export"),
 	AUDITLOGSELECT("/secureaudit/auditor/select"),
 	AUDITLOGVERIFY("/secureaudit/auditor/verify"),
+	AUDITLOGLOG("/secureaudit/log"),
 	CAACCESSBASE("/ca"),
 	CAACCESS("/ca/"),
 	CAACCESSANYCA("/ca/-1"),
@@ -48,7 +47,7 @@ public enum StandardRules {
 	public String resource() {
 		return this.resource;
 	}
-	
+
 	public String toString() {
 		return this.resource;
 	}

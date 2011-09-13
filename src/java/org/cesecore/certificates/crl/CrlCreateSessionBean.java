@@ -40,7 +40,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -85,7 +85,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     @EJB
     private AccessControlSessionLocal accessSession;
     @EJB
-    private SecurityEventsLoggerSessionLocal logSession;
+    private InternalSecurityEventsLoggerSessionLocal logSession;
     @EJB
     private CaSessionLocal caSession;
     @EJB

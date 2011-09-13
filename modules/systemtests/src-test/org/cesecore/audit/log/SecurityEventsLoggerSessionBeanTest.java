@@ -41,6 +41,7 @@ import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.impl.ExampleClassEventTypes;
 import org.cesecore.audit.impl.ExampleEnumEventTypes;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.CryptoProviderTools;
@@ -50,11 +51,6 @@ import org.junit.Test;
 
 /**
  * Secure audit logs logger functional tests.
- * 
- * Based on cesecore version:
- *      SecurityEventsLoggerSessionBeanTest.java 920 2011-07-01 11:27:04Z filiper
- *      
- * Tests for queued devices (not included in EJBCA) have been culled.
  * 
  * @version $Id$
  * 
@@ -72,19 +68,17 @@ public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
     }
 
     @Test
-    public void test01SecureLogWithoutAdditionalDetails() {
+    public void test01SecureLogWithoutAdditionalDetails() throws AuditRecordStorageException, AuthorizationDeniedException {
         log.trace(">test01SecureLogWithoutAdditionalDetails");
-        securityEventsLogger.log(EventTypes.AUTHENTICATION, EventStatus.SUCCESS, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE, "authToken");
+        securityEventsLogger.log(roleMgmgToken, EventTypes.AUTHENTICATION, EventStatus.SUCCESS, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE);
         log.trace("<test01SecureLogWithoutAdditionalDetails");
     }
 
     @Test
     public void test02logAppCustomEventTypes() throws Exception {
         log.trace(">test02logAppCustomEventTypes");
-        securityEventsLogger.log(ExampleEnumEventTypes.NEW_EVENT_TYPE, EventStatus.SUCCESS, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE,
-                "authToken");
-        securityEventsLogger.log(ExampleClassEventTypes.NEW_EVENT_TYPE_CLASS, EventStatus.SUCCESS, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE,
-                "authToken");
+        securityEventsLogger.log(roleMgmgToken, ExampleEnumEventTypes.NEW_EVENT_TYPE, EventStatus.SUCCESS, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE);
+        securityEventsLogger.log(roleMgmgToken, ExampleClassEventTypes.NEW_EVENT_TYPE_CLASS, EventStatus.SUCCESS, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE);
         for (final String logDeviceId : securityEventsAuditor.getQuerySupportingLogDevices()) {
             final List<? extends AuditLogEntry> lastSignedLogs = securityEventsAuditor.selectAuditLogs(
                     roleMgmgToken,
@@ -103,13 +97,13 @@ public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
     }
 
     @Test
-    public void test03SecurelogWithAdditionalDetails() {
+    public void test03SecurelogWithAdditionalDetails() throws AuditRecordStorageException, AuthorizationDeniedException {
         log.trace(">test02SecurelogWithAdditionalDetails");
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         final Map<String, String> innerDetails = new LinkedHashMap<String, String>();
         innerDetails.put("extra", "bar");
         details.put("foo", innerDetails);
-        securityEventsLogger.log(EventTypes.AUTHENTICATION, EventStatus.SUCCESS, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE, "authToken", "0",
+        securityEventsLogger.log(roleMgmgToken, EventTypes.AUTHENTICATION, EventStatus.SUCCESS, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE, "0",
                 "7FFFFFFFFFFFFFFF", "someentityname", details);
         log.trace("<test02SecurelogWithAdditionalDetails");
     }
@@ -128,8 +122,11 @@ public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
             workers.execute(new Runnable() { // NOPMD: this is a test, not a JEE application
                 @Override
                 public void run() {
-                    securityEventsLogger.log(EventTypes.AUTHENTICATION, EventStatus.SUCCESS, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE,
-                            "test03SecureMultipleLogAuthToken");
+                    try {
+						securityEventsLogger.log(roleMgmgToken, EventTypes.AUTHENTICATION, EventStatus.SUCCESS, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE);
+					} catch (AuthorizationDeniedException e) {
+						fail("should be authorized");
+					}
                 }
             });
         }
@@ -186,8 +183,6 @@ public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
         }
         log.trace("<test05TxFailure");
     }
-
-   
 
     @AfterClass
     public static void setDown() {

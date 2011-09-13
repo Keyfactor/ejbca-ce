@@ -80,18 +80,15 @@
 	<classpathentry kind="lib" path="lib/ext/easymock/easymock-3.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/easymock/cglib-nodep-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/easymock/objenesis-1.2.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/client/jbossall-client.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/client/activation.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-system.jar"/>
+	<classpathentry kind="var" path="JBOSS6_HOME"/>
+	<classpathentry kind="var" path="JBOSS6_HOME/client/jbossall-client.jar"/>
+	<classpathentry kind="var" path="JBOSS6_HOME/client/activation.jar"/>
+	<classpathentry kind="var" path="JBOSS6_HOME/lib/jboss-system.jar"/>
+	<classpathentry kind="var" path="JBOSS6_HOME/lib/jboss-system-jmx.jar"/>
+	<classpathentry kind="var" path="JBOSS6_HOME/lib/jboss-j2se.jar"/>
+	<classpathentry kind="var" path="JBOSS6_HOME/lib/jboss-kernel.jar"/>
+	<classpathentry kind="var" path="JBOSS6_HOME/server/default/deployers/jsf.deployer/Mojarra-1.2/jsf-libs/jsf-api-1.2_15.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-logging-log4j.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-system-jmx.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-j2se.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-kernel.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-javaee.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/common/lib/servlet-api.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-api.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="conf"/>
 	<classpathentry kind="output" path="out/classes"/>

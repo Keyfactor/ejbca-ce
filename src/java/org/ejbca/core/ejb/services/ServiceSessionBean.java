@@ -44,6 +44,7 @@ import javax.ejb.TransactionAttributeType;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -108,7 +109,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private AccessControlSessionLocal authorizationSession;
     @EJB
-    private SecurityEventsLoggerSessionLocal auditSession;
+    private InternalSecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private ServiceDataSessionLocal serviceDataSession;
 

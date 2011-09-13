@@ -30,7 +30,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -65,7 +65,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
     @EJB
     private AccessControlSessionLocal accessSession;
     @EJB
-    private SecurityEventsLoggerSessionLocal logSession;
+    private InternalSecurityEventsLoggerSessionLocal logSession;
 
     @Override
     public void storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate,

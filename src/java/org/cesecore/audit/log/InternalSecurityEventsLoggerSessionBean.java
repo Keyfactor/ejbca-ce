@@ -31,12 +31,10 @@ import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedLoggerSessionLocal;
 import org.cesecore.audit.impl.queued.QueuedLoggerSessionLocal;
 import org.cesecore.time.TrustedTime;
+import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 
 /**
  * Internal logging without dependency on TrustedTime.
- * 
- * Based on CESeCore version:
- *      InternalSecurityEventsLoggerSessionBean.java 921 2011-07-01 19:23:27Z johane
  * 
  * @version $Id$
  */  
@@ -50,10 +48,30 @@ public class InternalSecurityEventsLoggerSessionBean implements InternalSecurity
     private QueuedLoggerSessionLocal queuedLoggerSession;
     @EJB
     private IntegrityProtectedLoggerSessionLocal integrityProtectedLoggerSession;
+    @EJB
+    private TrustedTimeWatcherSessionLocal trustedTimeWatcherSession;
 
     @Override
-    public void log(final TrustedTime trustedTime, EventType eventType, EventStatus eventStatus, ModuleType module, ServiceType service, String authToken,
-    		String customId, String searchDetail1, String searchDetail2, Map<String, Object> additionalDetails) throws AuditRecordStorageException {
+    public void log(final EventType eventType, final EventStatus eventStatus, final ModuleType module, final ServiceType service, final String authToken, final String customId, final String searchDetail1, final String searchDetail2,
+    		final Map<String, Object> additionalDetails) throws AuditRecordStorageException {
+        try {
+        	final TrustedTime tt = trustedTimeWatcherSession.getTrustedTime(false);
+        	log(tt, eventType, eventStatus, module, service, authToken, customId, searchDetail1, searchDetail2, additionalDetails);
+        } catch (AuditRecordStorageException e) {
+        	throw e;
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+            throw new AuditRecordStorageException(e.getMessage(), e);
+        } finally {
+            if (LOG.isTraceEnabled()) {
+            	LOG.trace("<log");
+            }
+        }
+    }
+
+    @Override
+    public void log(final TrustedTime trustedTime, final EventType eventType, final EventStatus eventStatus, final ModuleType module, final ServiceType service, final String authToken,
+    		final String customId, final String searchDetail1, final String searchDetail2, final Map<String, Object> additionalDetails) throws AuditRecordStorageException {
     	if (LogServiceState.INSTANCE.isDisabled()) {
     		throw new AuditRecordStorageException("Security audit logging is currently disabled.");
     	}

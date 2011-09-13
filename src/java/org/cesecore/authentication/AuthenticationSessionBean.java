@@ -24,7 +24,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationProvider;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -44,7 +44,7 @@ import org.cesecore.jndi.JndiConstants;
 public class AuthenticationSessionBean implements AuthenticationSessionLocal, AuthenticationSessionRemote {
 
     @EJB
-    private SecurityEventsLoggerSessionLocal securityEventsLogger;
+    private InternalSecurityEventsLoggerSessionLocal securityEventsLogger;
     
     /**
      * Retrieves an AuthenticationToken from the provided AuthenticationProvider, based on the provided Subject.

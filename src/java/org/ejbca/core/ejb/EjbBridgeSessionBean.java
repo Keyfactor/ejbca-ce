@@ -19,7 +19,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
@@ -98,7 +98,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB RoleAccessSessionLocal roleAccessSession;
 	@EJB RoleManagementSessionLocal roleManagementSession;
 	@EJB SecurityEventsAuditorSessionLocal securityEventsAuditorSession;
-	@EJB SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
+	@EJB InternalSecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 	@EJB ServiceSessionLocal serviceSession;
 	@EJB SignSessionLocal signSession;
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
@@ -134,7 +134,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public RoleAccessSessionLocal getRoleAccessSession() { return roleAccessSession; }
 	@Override public RoleManagementSessionLocal getRoleManagementSession() { return roleManagementSession; }
 	@Override public SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession() { return securityEventsAuditorSession; }
-	@Override public SecurityEventsLoggerSessionLocal getSecurityEventsLoggerSession() { return securityEventsLoggerSession; }
+	@Override public InternalSecurityEventsLoggerSessionLocal getInternalSecurityEventsLoggerSession() { return securityEventsLoggerSession; }
 	@Override public ServiceSessionLocal getServiceSession() { return serviceSession; }
 	@Override public SignSessionLocal getSignSession() { return signSession; }
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }

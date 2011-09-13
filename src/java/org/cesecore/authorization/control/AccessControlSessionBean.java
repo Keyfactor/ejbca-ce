@@ -25,7 +25,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.cache.AccessTreeCache;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
@@ -51,7 +51,7 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
     private RoleAccessSessionLocal roleAccessSession;
 
     @EJB
-    private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
+    private InternalSecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
     /** Cache for authorization data */
     private static AccessTreeCache accessTreeCache;

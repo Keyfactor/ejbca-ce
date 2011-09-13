@@ -49,6 +49,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -110,7 +111,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     @EJB
     private AccessControlSessionLocal accessSession;
     @EJB
-    private SecurityEventsLoggerSessionLocal logSession;
+    private InternalSecurityEventsLoggerSessionLocal logSession;
+    // Myself needs to be looked up in postConstruct
     private CertificateCreateSessionLocal certificateCreateSession;
 
     /** Default create for SessionBean without any creation Arguments. */
