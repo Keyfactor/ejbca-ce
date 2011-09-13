@@ -42,6 +42,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaSessionTest;
+import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -72,7 +73,7 @@ import org.junit.Test;
  *
  * Based on EJBCA version: ExtendedKeyUsageTest.java 11280 2011-01-28 15:42:09Z jeklund
  * 
- * @version $Id: CertificateCreateSessionTest.java 1063 2011-08-31 08:16:03Z tomas $
+ * @version $Id: CertificateCreateSessionTest.java 1097 2011-09-12 09:01:17Z tomas $
  */
 public class CertificateCreateSessionTest extends RoleUsingTestCase {
     
@@ -431,6 +432,89 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         } finally {
         	certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
         	internalCertStoreSession.removeCertificate(fingerprint);
+        }
+    }
+
+    @Test
+    public void testNullInjection() throws Exception {
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+    	certprof.setAllowDNOverride(true);
+        String fp1 = null;
+        String fp2 = null;
+        String fp3 = null;
+        String fp4 = null;
+        String fp5 = null;
+        try {
+            int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
+            EndEntityInformation user = new EndEntityInformation("null\0injecttest","C=SE,O=PrimeKey,CN=null\0inject%00test",testx509ca.getCAId(),null,"foo@anatom.se",EndEntityConstants.USER_ENDUSER,0,cpId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
+            user.setPassword("foo123");
+
+        	SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
+        	try {
+        		X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+        		X509Certificate cert = (X509Certificate)resp.getCertificate();
+        		fp1 = CertTools.getFingerprintAsString(cert);
+        		fail("We should not have been allowed to create certificate with that DN.");
+        	} catch (IllegalNameException e) {
+        		// NOPMD: This is correct and we ignore it 
+        	}
+        	try {
+        		// Test by passing it to requestX509Name instead
+        		final String requestName = "CN=another\0nullguy%00";
+        		req.setRequestDN(requestName);
+        		X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+        		X509Certificate cert = (X509Certificate)resp.getCertificate();
+        		fp2 = CertTools.getFingerprintAsString(cert);
+        		fail("We should not have been allowed to create certificate with that DN.");
+        	} catch (IllegalNameException e) {
+        		// NOPMD: This is correct and we ignore it 
+        	}
+        	try {
+        		// Test with an escaped %, escaping % is not allowed
+        		final String requestName = "CN=anothernullguy\\\\%00";
+        		req.setRequestDN(requestName);
+        		X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+        		X509Certificate cert = (X509Certificate)resp.getCertificate();
+        		fp3 = CertTools.getFingerprintAsString(cert);
+        		fail("We should not have been allowed to create certificate with that DN.");
+        	} catch (IllegalNameException e) {
+        		// NOPMD: This is correct and we ignore it 
+        	}
+        	try {
+        		// Test with a semicolon, not allowed per se, but for requestX509Name it is escaped automatically
+        		final String requestName = "CN=anothersemicolon;guy";
+        		req.setRequestDN(requestName);
+        		X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+        		X509Certificate cert = (X509Certificate)resp.getCertificate();
+        		fp4 = CertTools.getFingerprintAsString(cert);
+        		assertEquals("Escaped semicolon should have worked","CN=anothersemicolon\\;guy", cert.getSubjectDN().toString());
+        		CertificateInfo info = certificateStoreSession.getCertificateInfo(fp4);
+        		assertEquals("Escaped semicolon should have worked","CN=anothersemicolon\\;guy", info.getSubjectDN());
+        	} catch (IllegalNameException e) {
+        		fail("We should have been allowed to create certificate with that DN.");
+        	}
+        	try {
+        		// Test with an escaped semicolon, this is allowed
+        		final String requestName = "CN=anothersemicolon\\;guy";
+        		req.setRequestDN(requestName);
+        		X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+        		X509Certificate cert = (X509Certificate)resp.getCertificate();
+        		fp5 = CertTools.getFingerprintAsString(cert);
+        		assertEquals("Escaped semicolon should have worked","CN=anothersemicolon\\;guy", cert.getSubjectDN().toString());
+        		CertificateInfo info = certificateStoreSession.getCertificateInfo(fp5);
+        		assertEquals("Escaped semicolon should have worked","CN=anothersemicolon\\;guy", info.getSubjectDN());
+        	} catch (IllegalNameException e) {
+        		fail("We should have been allowed to create certificate with that DN.");
+        	}
+
+        } finally {
+        	certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
+        	internalCertStoreSession.removeCertificate(fp1);
+        	internalCertStoreSession.removeCertificate(fp2);
+        	internalCertStoreSession.removeCertificate(fp3);
+        	internalCertStoreSession.removeCertificate(fp4);
+        	internalCertStoreSession.removeCertificate(fp4);
         }
     }
 

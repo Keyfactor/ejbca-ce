@@ -44,8 +44,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.lang.model.element.UnknownAnnotationValueException;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -101,8 +99,8 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.dn.PrintableStringEntryConverter;
 import org.cesecore.internal.InternalResources;
@@ -118,7 +116,7 @@ import org.cesecore.util.StringTools;
  * 
  * Based on EJBCA version: X509CA.java 11112 2011-01-09 16:17:33Z anatom
  * 
- * @version $Id: X509CA.java 1031 2011-08-25 07:51:36Z tomas $
+ * @version $Id: X509CA.java 1097 2011-09-12 09:01:17Z tomas $
  */
 public class X509CA extends CA implements Serializable {
 
@@ -600,7 +598,7 @@ public class X509CA extends CA implements Serializable {
             BigInteger customSN = ei != null ? ei.certificateSerialNumber() : null;
             if (customSN != null) {
                 if (!certProfile.getAllowCertSerialNumberOverride()) {
-                    final String msg = intres.getLocalizedMessage("signsession.certprof_not_allowing_cert_sn_override_using_normal",
+                    final String msg = intres.getLocalizedMessage("createcert.certprof_not_allowing_cert_sn_override_using_normal",
                             customSN.toString(16));
                     log.info(msg);
                     customSN = null;
@@ -643,6 +641,14 @@ public class X509CA extends CA implements Serializable {
             if (log.isDebugEnabled()) {
                 log.debug("Using X509Name from request instead of user's registered.");
             }
+        }
+        // Make sure the DN does not contain dangerous characters
+        if (StringTools.hasStripChars(subjectDNName.toString())) {
+            if (log.isTraceEnabled()) {
+            	log.trace("DN with illegal name: "+subjectDNName);
+            }
+            final String msg = intres.getLocalizedMessage("createcert.illegalname");
+        	throw new IllegalNameException(msg);
         }
         if (log.isDebugEnabled()) {
             log.debug("Using subjectDN: " + subjectDNName.toString());
