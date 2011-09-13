@@ -147,7 +147,7 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
 	}
 	
 	@Override
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public AuditLogValidationReport verifyLogsIntegrity(final AuthenticationToken token, final Date timestamp, final Properties properties) throws AuditLogValidatorException {
         final AuditLogValidationReport report = new AuditLogValidationReport();
         try {
