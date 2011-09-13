@@ -45,7 +45,6 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -597,7 +596,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(CrlCreateSessionLocal.class, crlCreateSession);
             ejbs.put(EndEntityProfileSessionLocal.class, endEntityProfileSession);
             ejbs.put(HardTokenSessionLocal.class, hardTokenSession);
-            ejbs.put(SecurityEventsLoggerSessionLocal.class, auditSession);
+            ejbs.put(InternalSecurityEventsLoggerSessionLocal.class, auditSession);
             ejbs.put(KeyRecoverySessionLocal.class, keyRecoverySession);
             ejbs.put(RaAdminSessionLocal.class, raAdminSession);
             ejbs.put(GlobalConfigurationSessionLocal.class, globalConfigurationSession);
