@@ -39,7 +39,7 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.crl.CRLData;
@@ -76,7 +76,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     private SessionContext sessionContext;
 
     @EJB
-    private SecurityEventsLoggerSessionLocal auditSession;
+    private InternalSecurityEventsLoggerSessionLocal auditSession;
     
     private PublisherQueueSessionLocal publisherQueueSession;
 

@@ -47,7 +47,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.dbprotection.DatabaseProtectionError;
@@ -78,7 +78,8 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
     @Resource
     private SessionContext sessionContext;
     @EJB
-    private SecurityEventsLoggerSessionLocal securityEventsLogger;
+    private InternalSecurityEventsLoggerSessionLocal securityEventsLogger;
+    // Myself needs to be injected in postConstruct
     private IntegrityProtectedAuditorSessionLocal integrityProtectedAuditorSession;
 
     @PostConstruct

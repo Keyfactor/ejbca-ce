@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -77,7 +77,7 @@ public class StartServicesServlet extends HttpServlet {
     @EJB
     private CertificateCreateSessionLocal certCreateSession;
     @EJB
-    private SecurityEventsLoggerSessionLocal logSession;
+    private InternalSecurityEventsLoggerSessionLocal logSession;
     @EJB
     private ComplexAccessControlSessionLocal complexAccessControlSession;
     

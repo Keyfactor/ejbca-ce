@@ -47,7 +47,7 @@ import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -162,7 +162,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     @EJB
     private RevocationSessionLocal revocationSession;
     @EJB
-    private SecurityEventsLoggerSessionLocal auditSession;
+    private InternalSecurityEventsLoggerSessionLocal auditSession;
 
     /** Columns in the database used in select. */
     private static final String USERDATA_CREATED_COL = "timeCreated";

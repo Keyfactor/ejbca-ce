@@ -25,7 +25,7 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.jndi.JndiConstants;
@@ -72,7 +72,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     @EJB
     private ApprovalSessionLocal approvalSession;
     @EJB
-    private SecurityEventsLoggerSessionLocal auditSession;
+    private InternalSecurityEventsLoggerSessionLocal auditSession;
 
     @Override
     public void approve(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,

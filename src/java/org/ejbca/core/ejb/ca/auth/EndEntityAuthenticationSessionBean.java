@@ -29,7 +29,7 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.ModuleTypes;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -65,7 +65,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     @EJB
     private UserAdminSessionLocal userAdminSession;
     @EJB
-    private SecurityEventsLoggerSessionLocal auditSession;
+    private InternalSecurityEventsLoggerSessionLocal auditSession;
     
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();

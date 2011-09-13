@@ -24,16 +24,16 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.ModuleType;
 import org.cesecore.audit.enums.ServiceType;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.time.TrustedTime;
-import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 
 /**
  * This class implements the SecurityEventsLogger interface. It handles the
  * creation of a signed log for an event.
- * 
- * Based on CESeCore version:
- *      SecurityEventsLoggerSessionBean.java 921 2011-07-01 19:23:27Z johane
  * 
  * @version $Id$
  * 
@@ -43,28 +43,35 @@ import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 public class SecurityEventsLoggerSessionBean implements SecurityEventsLoggerSessionLocal, SecurityEventsLoggerSessionRemote {
 
     private static final Logger log = Logger.getLogger(SecurityEventsLoggerSessionBean.class);
+    /** Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
 
     @EJB
     private InternalSecurityEventsLoggerSessionLocal internalSecurityEventsLoggerSession;
-
     @EJB
-    private TrustedTimeWatcherSessionLocal trustedTimeWatcherSession;
+    private AccessControlSessionLocal accessSession;
 
     @Override
-    public void log(EventType eventType, EventStatus eventStatus, ModuleType module, ServiceType service, String authToken)
-            throws AuditRecordStorageException {
-        log(eventType, eventStatus, module, service, authToken, null, null, null, null);
+    public void log(final AuthenticationToken authToken, EventType eventType, EventStatus eventStatus, ModuleType module, ServiceType service)
+            throws AuditRecordStorageException, AuthorizationDeniedException {
+        log(authToken, eventType, eventStatus, module, service, null, null, null, null);
     }
 
     @Override
-    public void log(EventType eventType, EventStatus eventStatus, ModuleType module, ServiceType service, String authToken, String customId, String searchDetail1, String searchDetail2,
-            Map<String, Object> additionalDetails) throws AuditRecordStorageException {
+    public void log(final AuthenticationToken authToken, EventType eventType, EventStatus eventStatus, ModuleType module, ServiceType service, String customId, String searchDetail1, String searchDetail2,
+            Map<String, Object> additionalDetails) throws AuditRecordStorageException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(String.format(">log:%s:%s:%s:%s:%s:%s:%s:%s:%s", eventType, eventStatus, module, service, authToken, customId, searchDetail1, searchDetail2, additionalDetails));
         }
+        
+        // We need to check that admin have rights to log
+        if (!accessSession.isAuthorized(authToken, StandardRules.AUDITLOGLOG.resource())) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.AUDITLOGLOG.resource(), null);
+            throw new AuthorizationDeniedException(msg);
+        }
+
         try {
-        	final TrustedTime tt = trustedTimeWatcherSession.getTrustedTime(false);
-        	internalSecurityEventsLoggerSession.log(tt, eventType, eventStatus, module, service, authToken, customId, searchDetail1, searchDetail2, additionalDetails);
+        	internalSecurityEventsLoggerSession.log(eventType, eventStatus, module, service, authToken.toString(), customId, searchDetail1, searchDetail2, additionalDetails);
         } catch (AuditRecordStorageException e) {
         	throw e;
         } catch (Exception e) {
