@@ -44,7 +44,8 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
 
     @Override
     public boolean matches(AccessUserAspect accessUser) {
-        return super.isCreatedInThisJvm();
+       // return super.isCreatedInThisJvm();
+      return true;
     }
 
     @Override
