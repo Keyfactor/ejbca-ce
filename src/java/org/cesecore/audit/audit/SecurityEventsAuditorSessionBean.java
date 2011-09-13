@@ -44,7 +44,7 @@ import org.cesecore.util.QueryCriteria;
  * This class handles secure logs auditing. This class is responsible for checking
  * authorization and delegating a request to the right implementation.
  * 
- * @version $Id: SecurityEventsAuditorSessionBean.java 960 2011-07-22 10:14:28Z filiper $
+ * @version $Id: SecurityEventsAuditorSessionBean.java 1100 2011-09-12 11:31:55Z tomas $
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SecurityEventsAuditorSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -66,14 +66,14 @@ public class SecurityEventsAuditorSessionBean implements SecurityEventsAuditorSe
     }
 
     @Override
-    // Requires TransactionAttributeType.REQUIRED in order to select large objects (postgres
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<? extends AuditLogEntry> selectAuditLogs(final AuthenticationToken token, final int startIndex, final int max, final QueryCriteria criteria, final String logDeviceId) throws AuthorizationDeniedException {
         assertAuthorization(token, StandardRules.AUDITLOGSELECT.resource());
     	return AuditDevicesConfig.getDevice(getEjbs(), logDeviceId).selectAuditLogs(token, startIndex, max, criteria, AuditDevicesConfig.getProperties(logDeviceId));
     }
 
     @Override
-    // Requires TransactionAttributeType.REQUIRED in order to select large objects (postgres
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AuditLogExportReport exportAuditLogs(final AuthenticationToken token, final CryptoToken cryptoToken, final Date timestamp,
             final boolean deleteAfterExport, final String keyAlias, final String algorithm, final String logDeviceId) throws AuditLogExporterException, AuthorizationDeniedException {
         final HashMap<String, Object> details = new LinkedHashMap<String, Object>();
@@ -83,7 +83,7 @@ public class SecurityEventsAuditorSessionBean implements SecurityEventsAuditorSe
     }
 
     @Override
-    // Requires TransactionAttributeType.REQUIRED in order to select large objects (postgres
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AuditLogExportReport exportAuditLogs(final AuthenticationToken token, final CryptoToken cryptoToken, final Date timestamp,
             final boolean deleteAfterExport, final String keyAlias, final String algorithm, final Certificate certificate, final String logDeviceId)
             throws AuditLogExporterException, AuthorizationDeniedException {
@@ -95,7 +95,7 @@ public class SecurityEventsAuditorSessionBean implements SecurityEventsAuditorSe
     }
 
     @Override
-    // Requires TransactionAttributeType.REQUIRED in order to select large objects (postgres
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AuditLogExportReport exportAuditLogs(final AuthenticationToken token, final CryptoToken cryptoToken, final Date timestamp,
             final boolean deleteAfterExport, final Map<String, Object> signatureDetails, final String logDeviceId) throws AuditLogExporterException, AuthorizationDeniedException {
     	// StandardRules.AUDITLOGEXPORT export implies StandardRules.AUDITLOGVERIFY.
@@ -107,7 +107,7 @@ public class SecurityEventsAuditorSessionBean implements SecurityEventsAuditorSe
     }
 
     @Override
-    // Requires TransactionAttributeType.REQUIRED in order to select large objects (postgres
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AuditLogValidationReport verifyLogsIntegrity(final AuthenticationToken token, final Date timestamp, final String logDeviceId) throws AuditLogValidatorException, AuthorizationDeniedException {
     	assertAuthorization(token, StandardRules.AUDITLOGVERIFY.resource());
         LOG.info("Validation of audit logs in device " + logDeviceId + " requested.");

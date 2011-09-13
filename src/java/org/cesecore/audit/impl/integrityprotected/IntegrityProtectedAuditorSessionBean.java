@@ -65,7 +65,7 @@ import org.cesecore.util.ValidityDate;
  *  "CREATE UNIQUE INDEX auditrecorddata_idx1 ON AuditRecordData (nodeId,timeStamp,sequenceNumber);"
  * should be present for proper validation and export performance.
  * 
- * @version $Id: IntegrityProtectedAuditorSessionBean.java 1064 2011-08-31 10:53:27Z johane $
+ * @version $Id: IntegrityProtectedAuditorSessionBean.java 1106 2011-09-13 11:43:50Z tomas $
  */
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -88,8 +88,7 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
     }
 
 	@Override
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-    // Requires TransactionAttributeType.REQUIRED in order to select large objects (postgres
+	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
 	public AuditLogExportReport exportAuditLogs(AuthenticationToken token, CryptoToken cryptoToken, Date timestamp, boolean deleteAfterExport,
 			Map<String, Object> signatureDetails, final Properties properties, final Class<? extends AuditExporter> c) throws AuditLogExporterException {
         final AuditLogExportReport report = new AuditLogExportReport();
@@ -142,15 +141,13 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
 	}
 
 	@Override
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-    // Requires TransactionAttributeType.REQUIRED in order to select large objects (postgres
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public List<? extends AuditLogEntry> selectAuditLogs(final AuthenticationToken token, final int startIndex, final int max, final QueryCriteria criteria, final Properties properties) {
         return internalSelectAuditLogs(startIndex, max, criteria);
 	}
 	
 	@Override
-	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-    // Requires TransactionAttributeType.REQUIRED in order to select large objects (postgres
+	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 	public AuditLogValidationReport verifyLogsIntegrity(final AuthenticationToken token, final Date timestamp, final Properties properties) throws AuditLogValidatorException {
         final AuditLogValidationReport report = new AuditLogValidationReport();
         try {
