@@ -4,7 +4,6 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
-import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.time.TrustedTime;
 import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 import org.cesecore.time.providers.TrustedTimeProviderException;
@@ -21,7 +20,7 @@ import org.cesecore.time.providers.TrustedTimeProviderException;
 public class ServerTimeWatcherSessionBean implements TrustedTimeWatcherSessionLocal {
 
 	@Override
-	public TrustedTime getTrustedTime(final boolean force) throws TrustedTimeProviderException, AuditRecordStorageException {
+	public TrustedTime getTrustedTime(final boolean force) throws TrustedTimeProviderException {
 		final TrustedTime tt = new TrustedTime();
 		tt.setSync(false);
 		return tt;

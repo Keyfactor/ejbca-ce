@@ -41,7 +41,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
-import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -116,7 +116,7 @@ public class EjbcaWebBean implements Serializable {
     private final ComplexAccessControlSessionLocal complexAccessControlSession = ejb.getComplexAccessControlSession();
     private final EndEntityProfileSessionLocal endEntityProfileSession = ejb.getEndEntityProfileSession();
     private final HardTokenSessionLocal hardTokenSession = ejb.getHardTokenSession();
-    private final InternalSecurityEventsLoggerSessionLocal auditSession = ejb.getInternalSecurityEventsLoggerSession();
+    private final SecurityEventsLoggerSessionLocal auditSession = ejb.getSecurityEventsLoggerSession();
     private final PublisherSessionLocal publisherSession = ejb.getPublisherSession();
     private final RoleAccessSessionLocal roleAccessSession = ejb.getRoleAccessSession();
     private final RoleManagementSessionLocal roleManagementSession = ejb.getRoleManagementSession();

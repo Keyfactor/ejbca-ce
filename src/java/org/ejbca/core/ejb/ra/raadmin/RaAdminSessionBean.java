@@ -26,7 +26,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
-import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -54,7 +54,7 @@ public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRe
     private EntityManager entityManager;
 
     @EJB
-    private InternalSecurityEventsLoggerSessionLocal auditSession;
+    private SecurityEventsLoggerSessionLocal auditSession;
 
     @Override
     public AdminPreference getAdminPreference(AuthenticationToken admin, String certificatefingerprint) {

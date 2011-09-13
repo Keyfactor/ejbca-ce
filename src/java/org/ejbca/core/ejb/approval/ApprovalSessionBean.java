@@ -38,7 +38,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
-import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -89,7 +89,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @EJB
     private AccessControlSessionLocal authorizationSession;
     @EJB
-    private InternalSecurityEventsLoggerSessionLocal auditSession;
+    private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     

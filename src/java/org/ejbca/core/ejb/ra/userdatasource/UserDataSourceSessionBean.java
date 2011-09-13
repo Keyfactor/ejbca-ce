@@ -34,7 +34,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
-import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -75,7 +75,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     @EJB
     private CaSessionLocal caSession;
     @EJB
-    private InternalSecurityEventsLoggerSessionLocal auditSession;
+    private SecurityEventsLoggerSessionLocal auditSession;
 
     @Override
     public Collection<UserDataSourceVO> fetch(AuthenticationToken admin, Collection<Integer> userdatasourceids, String searchstring) throws AuthorizationDeniedException, UserDataSourceException{

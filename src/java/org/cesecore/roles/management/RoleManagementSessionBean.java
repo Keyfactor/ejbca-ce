@@ -33,7 +33,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
-import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
@@ -91,7 +91,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     private RoleAccessSessionLocal roleAccessSession;
 
     @EJB
-    private InternalSecurityEventsLoggerSessionLocal securityEventsLogger;
+    private SecurityEventsLoggerSessionLocal securityEventsLogger;
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;

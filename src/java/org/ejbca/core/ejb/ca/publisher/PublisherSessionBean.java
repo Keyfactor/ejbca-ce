@@ -35,7 +35,7 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
-import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -86,7 +86,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @EJB
     private PublisherQueueSessionLocal publisherQueueSession;
     @EJB
-    private InternalSecurityEventsLoggerSessionLocal auditSession;
+    private SecurityEventsLoggerSessionLocal auditSession;
 
     @Override
     public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate incert, String username, String password, String userDN, String cafp,

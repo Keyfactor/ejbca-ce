@@ -16,7 +16,7 @@ package org.ejbca.core.ejb;
 import javax.ejb.Local;
 
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
-import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
@@ -95,7 +95,7 @@ public interface EjbBridgeSessionLocal {
 	RoleAccessSessionLocal getRoleAccessSession();
 	RoleManagementSessionLocal getRoleManagementSession();
 	SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession();
-	InternalSecurityEventsLoggerSessionLocal getInternalSecurityEventsLoggerSession();
+	SecurityEventsLoggerSessionLocal getSecurityEventsLoggerSession();
 	ServiceSessionLocal getServiceSession();
 	SignSessionLocal getSignSession();
 	CertificateCreateSessionLocal getCertificateCreateSession();
