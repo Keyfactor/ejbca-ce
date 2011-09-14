@@ -757,7 +757,7 @@ public class X509CA extends CA implements Serializable {
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
                 if (overridenexts.getExtension(new DERObjectIdentifier(certExt.getOID())) == null) {
-                    DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey, caPublicKey);
+                    byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey);
                     if (value != null) {
                         extgen.addExtension(new DERObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
                     }

@@ -130,8 +130,40 @@ public abstract class CertificateExtension {
 	 * @param caPublicKey public key of the CA, or null if not available
 	 * @return a DEREncodable or null, if this extension should not be used, which was determined from the values somehow.
 	 * @throws CertificateExtensionException if there was an error constructing the certificate extension
+         * @deprecated Callers should use the getValueEncoded method as this 
+         * method might not be supported by all implementations. Implementors 
+         * can still implement this method if they prefer as it gets called 
+         * from getValueEncoded.
 	 */
 	public abstract DEREncodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException;
 
+	/**
+	 * Method that should return the byte[] value used in the extension. 
+	 * 
+	 * The default implementation of this method first calls the getValue() 
+	 * method and then encodes the result as an byte array. 
+	 * CertificateExtension implementors has the choice of overriding this 
+	 * method if they want to include byte[] data in the certificate that
+	 * is not necessarily an ASN.1 structure otherwise the getValue method 
+	 * can be implemented as before.
+	 * 
+	 * @param userData the userdata of the issued certificate.
+	 * @param ca the CA data with access to all the keys etc
+	 * @param certProfile the certificate profile
+	 * @param userPublicKey public key of the user, or null if not available
+	 * @param caPublicKey public key of the CA, or null if not available
+	 * @return a byte[] or null, if this extension should not be used, which was determined from the values somehow.
+	 * @throws CertificateExtensionException if there was an error constructing the certificate extension
+	 */
+	public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+		final byte[] result;
+		final DEREncodable value = getValue(userData, ca, certProfile, userPublicKey, caPublicKey);
+		if (value == null) {
+			result = null;
+		} else {
+			result = value.getDERObject().getDEREncoded();
+		}
+		return result;
+	}
 	
 }
