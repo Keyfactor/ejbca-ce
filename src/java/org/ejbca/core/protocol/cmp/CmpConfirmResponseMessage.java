@@ -25,7 +25,6 @@ import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.certificate.request.FailInfo;
@@ -120,11 +119,9 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 			NoSuchAlgorithmException, NoSuchProviderException,
 			SignRequestException {
 
-		X509Name sender = X509Name.getInstance(getSender().getName());
-		X509Name recipient = X509Name.getInstance(getRecipient().getName());
-		PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(sender, recipient, getSenderNonce(), getRecipientNonce(), getTransactionId());
-		PKIBody myPKIBody = new PKIBody(new DERNull(), 19);
-		PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
+		final PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
+		final PKIBody myPKIBody = new PKIBody(new DERNull(), 19);
+		final PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
 
 		if ((getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ) {
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());

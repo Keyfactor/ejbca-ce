@@ -26,7 +26,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -120,9 +119,7 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 			NoSuchAlgorithmException, NoSuchProviderException,
 			SignRequestException {
 
-		X509Name sender = X509Name.getInstance(getSender().getName());
-		X509Name recipient = X509Name.getInstance(getRecipient().getName());
-		PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(sender, recipient, getSenderNonce(), getRecipientNonce(), getTransactionId());
+		final PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
 
 		PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(0)); // 0 = accepted
 		if (status != ResponseStatus.SUCCESS && status != ResponseStatus.GRANTED_WITH_MODS) {
