@@ -23,6 +23,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 
 /** AccessTreeUpdateData holds a counter, i.e. sequence for when the access rules have been changed. 
  * Especially in a cluster this is used in order to avoid rebuilding the internal access tree unless it has changed.
@@ -120,7 +121,7 @@ public class AccessTreeUpdateData extends ProtectedData implements Serializable 
 	@Transient
 	@Override
 	protected String getProtectString(final int version) {
-		StringBuilder build = new StringBuilder();
+		final ProtectionStringBuilder build = new ProtectionStringBuilder();
 		// What is important to protect here is the data that we define
 		// rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
 		build.append(getPrimaryKey()).append(getAccessTreeUpdateNumber());

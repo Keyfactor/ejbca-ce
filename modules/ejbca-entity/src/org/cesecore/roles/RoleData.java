@@ -30,6 +30,7 @@ import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 
 /**
  * Represents a role, and is based in the AdminGroup concept from EJBCA.
@@ -189,7 +190,7 @@ public class RoleData extends ProtectedData implements Serializable, Comparable<
     @Transient
     @Override
     protected String getProtectString(final int version) {
-        StringBuilder build = new StringBuilder();
+    	final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getPrimaryKey()).append(getRoleName());

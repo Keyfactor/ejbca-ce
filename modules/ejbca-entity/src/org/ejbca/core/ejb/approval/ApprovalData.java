@@ -20,11 +20,15 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 
@@ -35,7 +39,7 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
  */
 @Entity
 @Table(name="ApprovalData")
-public class ApprovalData implements Serializable {
+public class ApprovalData extends ProtectedData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(ApprovalData.class);
@@ -69,7 +73,7 @@ public class ApprovalData implements Serializable {
 	}
 
 	public ApprovalData() { 
-		// used from test code
+		// used from test code (also required by JPA!)
 	}
 
 	/** unique row id */
@@ -255,7 +259,52 @@ s	 */
 		return retval;
 	}
 
-	//
+    //
+    // Start Database integrity protection methods
+    //
+
+    @Transient
+    @Override
+    protected String getProtectString(final int version) {
+        final StringBuilder build = new StringBuilder();
+        // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
+        build.append(getId()).append(getApprovalid()).append(getApprovaltype()).append(getEndentityprofileid()).append(getCaid()).append(getReqadmincertissuerdn());
+        build.append(getReqadmincertsn()).append(getStatus()).append(getApprovaldata()).append(getRequestdata()).append(getRequestdate()).append(getExpiredate()).append(getRemainingapprovals());
+        return build.toString();
+    }
+
+    @Transient
+    @Override
+    protected int getProtectVersion() {
+        return 1;
+    }
+
+    @PrePersist
+    @PreUpdate
+    @Transient
+    @Override
+    protected void protectData() {
+        super.protectData();
+    }
+
+    @PostLoad
+    @Transient
+    @Override
+    protected void verifyData() {
+        super.verifyData();
+    }
+
+    @Override
+    @Transient
+    protected String getRowId() {
+        return String.valueOf(getId());
+    }
+
+    //
+    // End Database integrity protection methods
+    //
+
+    //
 	// Search functions. 
 	//
 

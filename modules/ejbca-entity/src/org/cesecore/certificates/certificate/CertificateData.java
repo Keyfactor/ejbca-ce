@@ -41,6 +41,7 @@ import javax.persistence.Transient;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -1103,7 +1104,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     @Transient
     @Override
     protected String getProtectString(final int version) {
-        StringBuilder build = new StringBuilder(3000);
+    	final ProtectionStringBuilder build = new ProtectionStringBuilder(3000);
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getFingerprint()).append(getIssuerDN()).append(getSubjectDN()).append(getCaFingerprint()).append(getStatus()).append(getType())

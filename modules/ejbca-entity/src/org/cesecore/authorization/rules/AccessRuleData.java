@@ -23,6 +23,7 @@ import javax.persistence.Transient;
 
 import org.cesecore.authorization.access.AccessTreeState;
 import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 
 /**
  * POJO that represents an access rule.
@@ -274,8 +275,8 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
 
     @Override
     public String toString() {
-    	final StringBuilder buf = new StringBuilder();
-    	buf.append(primaryKey).append(':').append(accessRuleName).append(':').append(internalState).append(':').append(recursiveBool).append(':').append(recursiveInt);
+    	final ProtectionStringBuilder buf = new ProtectionStringBuilder();
+    	buf.append(getPrimaryKey()).append(getAccessRuleName()).append(getInternalState()).append(getRecursiveBool()).append(getRecursiveInt());
     	return buf.toString();
     }
 	//

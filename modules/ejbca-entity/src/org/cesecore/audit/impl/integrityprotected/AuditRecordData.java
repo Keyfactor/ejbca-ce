@@ -31,6 +31,7 @@ import org.cesecore.audit.enums.ModuleTypeHolder;
 import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.audit.enums.ServiceTypeHolder;
 import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.GUIDGenerator;
 import org.cesecore.util.XmlSerializer;
 
@@ -289,10 +290,10 @@ public class AuditRecordData extends ProtectedData implements Serializable, Audi
 	@Transient
 	@Override
 	protected String getProtectString(final int version) {
-		final StringBuilder build = new StringBuilder();
+		final ProtectionStringBuilder build = new ProtectionStringBuilder();
 		// What is important to protect here is the data that we define
 		// rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-		build.append(getPk()).append(getNodeId()).append(getSequenceNumber().toString()).append(getTimeStamp().toString());
+		build.append(getPk()).append(getNodeId()).append(getSequenceNumber()).append(getTimeStamp());
 		build.append(getEventType()).append(getEventStatus()).append(getAuthToken()).append(getService()).append(getModule());
 		build.append(getCustomId()).append(getSearchDetail1()).append(getSearchDetail2()).append(getAdditionalDetails());
 		return build.toString();
