@@ -17,10 +17,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -85,8 +89,8 @@ public class CertificateExtensionFactoryTest {
 		assertTrue(certExt.getId() == 1);
 		assertTrue(certExt.getOID().equals("1.2.3.4"));
 		assertTrue(certExt.isCriticalFlag());
-		assertTrue(certExt.getValue(null, null, null, null, null) instanceof DERPrintableString);
-		assertTrue(((DERPrintableString) certExt.getValue(null, null, null, null, null)).getString().equals("Test 123"));
+		assertTrue(getObject(certExt.getValueEncoded(null, null, null, null, null)) instanceof DERPrintableString);
+		assertTrue(((DERPrintableString) getObject(certExt.getValueEncoded(null, null, null, null, null))).getString().equals("Test 123"));
 		
 		assertNull(fact.getCertificateExtensions(Integer.valueOf(2)));
 		
@@ -95,8 +99,8 @@ public class CertificateExtensionFactoryTest {
 		assertTrue(certExt.getId() == 3);
 		assertTrue(certExt.getOID().equals("3.2.3.4"));
 		assertTrue(!certExt.isCriticalFlag());
-		assertTrue(certExt.getValue(null, null, null, null, null) instanceof DERPrintableString);
-		assertTrue(((DERPrintableString) certExt.getValue(null, null, null, null, null)).getString().equals("Test 321"));
+		assertTrue(getObject(certExt.getValueEncoded(null, null, null, null, null)) instanceof DERPrintableString);
+		assertTrue(((DERPrintableString) getObject(certExt.getValueEncoded(null, null, null, null, null))).getString().equals("Test 321"));
 		
 	}
 	
@@ -125,6 +129,11 @@ public class CertificateExtensionFactoryTest {
         	assertNotNull(certExt);
         }
 		
+	}
+	
+	private DEREncodable getObject(byte[] valueEncoded) throws IOException {
+		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(valueEncoded));
+		return in.readObject();
 	}
 
 }
