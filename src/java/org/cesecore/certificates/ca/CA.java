@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -379,17 +380,22 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @throws InvalidAlgorithmException 
      */
     public void setCAToken(CAToken catoken) throws InvalidAlgorithmException {
-        // Check that the signature algorithm is one of the allowed ones
+        // Check that the signature algorithm is one of the allowed ones, only check if there is a sigAlg though
+    	// things like a NulLCryptoToken does not have signature algorithms
     	final String sigAlg = catoken.getTokenInfo().getSignatureAlgorithm();
-        if (!ArrayUtils.contains(AlgorithmConstants.AVAILABLE_SIGALGS, sigAlg)) {
-            final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", sigAlg);
-            throw new InvalidAlgorithmException(msg);        	
-        }
+    	if (StringUtils.isNotEmpty(sigAlg)) {
+            if (!ArrayUtils.contains(AlgorithmConstants.AVAILABLE_SIGALGS, sigAlg)) {
+                final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", sigAlg);
+                throw new InvalidAlgorithmException(msg);        	
+            }    		
+    	}
     	final String encAlg = catoken.getTokenInfo().getEncryptionAlgorithm();
-        if (!ArrayUtils.contains(AlgorithmConstants.AVAILABLE_SIGALGS, encAlg)) {
-            final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", encAlg);
-            throw new InvalidAlgorithmException(msg);        	
-        }
+    	if (StringUtils.isNotEmpty(encAlg)) {
+    		if (!ArrayUtils.contains(AlgorithmConstants.AVAILABLE_SIGALGS, encAlg)) {
+    			final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", encAlg);
+    			throw new InvalidAlgorithmException(msg);        	
+    		}
+    	}
         data.put(CATOKENDATA, catoken.saveData());
         CATokenCacheManager.instance().addCAToken(getCAId(), catoken);
     }

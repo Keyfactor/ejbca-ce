@@ -82,6 +82,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
+import org.cesecore.keys.token.NullCryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -460,6 +461,10 @@ public class X509CATest {
 		} catch (InvalidAlgorithmException e) {
 			// NOPMD: this is what we want
 		}
+		X509CA ca = createTestCA(CADN, "SHA1WithRSA");
+		assertNotNull("should work to create a CA", ca);
+		CAToken token = new CAToken(new NullCryptoToken());
+		ca.setCAToken(token);
 	}
 	
 	private static X509CA createTestCA(final String cadn) throws Exception {
