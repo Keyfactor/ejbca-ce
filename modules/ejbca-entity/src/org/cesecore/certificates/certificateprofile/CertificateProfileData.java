@@ -27,6 +27,7 @@ import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.QueryResultWrapper;
@@ -204,7 +205,7 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     @Transient
     @Override
     protected String getProtectString(final int version) {
-        StringBuilder build = new StringBuilder(2200); // an almost empty profile gives ~2100 chars of protect string
+    	final ProtectionStringBuilder build = new ProtectionStringBuilder(2200); // an almost empty profile gives ~2100 chars of protect string
         // What is important to protect here is the data that we define, id, name and certificate profile data
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getId()).append(getCertificateProfileName()).append(getData());

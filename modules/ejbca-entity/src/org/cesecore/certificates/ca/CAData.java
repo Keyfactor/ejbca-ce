@@ -32,6 +32,7 @@ import javax.persistence.Transient;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.internal.CACacheManager;
 import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.Base64GetHashMap;
@@ -342,7 +343,7 @@ public class CAData extends ProtectedData implements Serializable {
 	@Transient
 	@Override
 	protected String getProtectString(final int version) {
-		StringBuilder build = new StringBuilder(8000);
+		final ProtectionStringBuilder build = new ProtectionStringBuilder(8000);
 		// What is important to protect here is the data that we define
 		// rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
 		build.append(getCaId()).append(getName()).append(getSubjectDN()).append(getStatus()).append(getExpireTime()).append(getUpdateTime()).append(getData());

@@ -21,6 +21,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 
 /**
  * Represents an aspect of an external user. It can be set to match one administrator's <i>DN</i> or an entire organization by matching against
@@ -227,7 +228,7 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 	@Transient
 	@Override
 	protected String getProtectString(final int version) {
-		StringBuilder build = new StringBuilder();
+		final ProtectionStringBuilder build = new ProtectionStringBuilder();
 		// What is important to protect here is the data that we define
 		// rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
 		build.append(getPrimaryKey()).append(getMatchWith()).append(getMatchType()).append(getMatchValue()).append(getCaId());
