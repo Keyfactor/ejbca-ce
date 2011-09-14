@@ -732,7 +732,7 @@ public class X509CA extends CA implements Serializable {
             if (overridenexts.getExtension(new DERObjectIdentifier(oid)) == null) {
                 CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
                 if (certExt != null) {
-                    DEREncodable value = certExt.getValue(subject, this, certProfile, publicKey, caPublicKey);
+                    byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey);
                     if (value != null) {
                         extgen.addExtension(new DERObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
                     }
