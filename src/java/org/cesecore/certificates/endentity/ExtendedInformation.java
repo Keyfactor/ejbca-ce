@@ -64,6 +64,13 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
     public  static final String XKMSREVOCATIONCODEIDENTIFIER = "revocationcodeidentifier";
     /** Custom data can be used by various custom work-flows and other non-standard things to store information needed */
     public  static final String CUSTOMDATA = "customdata_";
+    
+    /**
+     * Extension data can be used by the BasicCertificateExtension or custom 
+     * certificate extensions to store data to be used when creating the 
+     * extension such as the extension value. 
+     */
+    public static final String EXTENSIONDATA = "extensiondata_";
 
     /**
      * Identifier for Custom data holding a end time when the users certificate should be valid extInfo.setCustomData(EndEntityProfile.STARTTIME, "");
@@ -258,6 +265,24 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements Seria
         return retval;
     }
 
+    /**
+     * Sets extension data.
+     * @param customly defined key to store the data with
+     * @param the string representation of the data
+     */
+    public void setExtensionData(String key, String value) {        	    	
+    	data.put(EXTENSIONDATA + key, value);
+    }
+    
+    /**
+     * Special method used to retrieve custom extension data.
+     * @returns The data or null if no such data have been set for the user
+     */
+    public String getExtensionData(String key){ 
+    	String retval = (String) data.get(EXTENSIONDATA + key);	
+    	return retval;
+    }
+    
     /**
      * 
      * @param customly
