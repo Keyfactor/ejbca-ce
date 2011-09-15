@@ -87,6 +87,7 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ws.logger.TransactionTags;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.ExtendedInformationWS;
+import org.ejbca.util.cert.OID;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.NameAndId;
 import org.ejbca.core.protocol.ws.objects.PinDataWS;
@@ -374,25 +375,7 @@ public class EjbcaWSHelper {
             useEI = true;
         }
 
-        // Set generic Custom ExtendedInformation from potential data in UserDataVOWS
-        List<ExtendedInformationWS> userei = userdata.getExtendedInformation();
-        if (userei != null) {
-            for (ExtendedInformationWS item : userei) {
-            	String key = item.getName();
-            	String value = item.getValue ();
-            	if ((key != null) && (value != null)) {
-            		if (log.isDebugEnabled()) {
-            			log.debug("Set generic extended information: "+key+", "+value);
-            		}
-                    ei.setMapData(key, value);    			            		
-                    useEI = true;
-            	} else {
-            		if (log.isDebugEnabled()) {
-            			log.debug("Key or value is null when trying to set generic extended information.");
-            		}
-            	}
-    		}
-        }
+        useEI = setExtendedInformationFromUserDataVOWS(userdata, ei) || useEI;
 
         final EndEntityInformation userdatavo = new EndEntityInformation(userdata.getUsername(),
         		userdata.getSubjectDN(),
@@ -413,9 +396,40 @@ public class EjbcaWSHelper {
 		
 		return userdatavo;
 	}
-	
-	
-	
+
+
+	private boolean setExtendedInformationFromUserDataVOWS( UserDataVOWS userdata, ExtendedInformation ei ) {
+		// Set generic Custom ExtendedInformation from potential data in UserDataVOWS
+		final List<ExtendedInformationWS> userei = userdata.getExtendedInformation();
+		if ( userei==null ) {
+			return false;
+		}
+		boolean useEI = false;
+		for (ExtendedInformationWS item : userei) {
+			final String key = item.getName();
+			final String value = item.getValue ();
+			if ( value==null || key==null ) {
+				if (log.isDebugEnabled()) {
+					log.debug("Key or value is null when trying to set generic extended information.");
+				}
+				continue;
+			}
+			if ( OID.isStartingWithValidOID(key)  ) {
+				ei.setExtensionData(key, value);
+				if (log.isDebugEnabled()) {
+					log.debug("Set certificate extension: "+key+", "+value);
+				}
+			} else {
+				ei.setMapData(key, value);
+				if (log.isDebugEnabled()) {
+					log.debug("Set generic extended information: "+key+", "+value);
+				}
+			}
+			useEI = true;
+		}
+		return useEI;
+	}
+
 	protected UserDataVOWS convertUserDataVO(AuthenticationToken admin, EndEntityInformation userdata) throws EjbcaException, ClassCastException, CADoesntExistsException, AuthorizationDeniedException {
 	    UserDataVOWS dataWS = new UserDataVOWS();
 		String username = userdata.getUsername();

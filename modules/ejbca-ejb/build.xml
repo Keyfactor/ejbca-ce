@@ -189,6 +189,7 @@
 		<include name="org/cesecore/certificates/ca/CAExistsException.java"/>
 		<include name="org/cesecore/certificates/certificate/CertificateStatus.java"/>
 		<include name="org/ejbca/core/model/authorization/AdminGroupExistsException.java"/>
+       	<include name="org/ejbca/util/cert/OID.java"/>
 		<include name="org/ejbca/core/model/ca/store/CRLInfo.java"/>
 		<include name="org/ejbca/core/model/ca/certificateprofiles/CertificateProfileExistsException.java"/>
 		<include name="org/ejbca/core/model/log/ILogExporter.java"/>
