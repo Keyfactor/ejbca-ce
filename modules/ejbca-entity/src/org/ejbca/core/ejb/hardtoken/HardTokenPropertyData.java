@@ -19,9 +19,15 @@ import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
 import javax.persistence.NonUniqueResultException;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+
+import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 
 /**
  * Complementary class used to assign extended properties like copyof to a hard
@@ -31,7 +37,7 @@ import javax.persistence.Transient;
  */
 @Entity
 @Table(name = "HardTokenPropertyData")
-public class HardTokenPropertyData implements Serializable {
+public class HardTokenPropertyData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
     public static final String PROPERTY_COPYOF = "copyof=";
@@ -69,8 +75,54 @@ public class HardTokenPropertyData implements Serializable {
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	//@Column @Lob
+	@Override
 	public String getRowProtection() { return rowProtection; }
+	@Override
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
+
+    //
+    // Start Database integrity protection methods
+    //
+
+    @Transient
+    @Override
+    protected String getProtectString(final int version) {
+        final ProtectionStringBuilder build = new ProtectionStringBuilder();
+        // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
+        build.append(getHardTokenPropertyDataPK().getId()).append(getHardTokenPropertyDataPK().getProperty()).append(getValue());
+        return build.toString();
+    }
+
+    @Transient
+    @Override
+    protected int getProtectVersion() {
+        return 1;
+    }
+
+    @PrePersist
+    @PreUpdate
+    @Transient
+    @Override
+    protected void protectData() {
+        super.protectData();
+    }
+
+    @PostLoad
+    @Transient
+    @Override
+    protected void verifyData() {
+        super.verifyData();
+    }
+
+    @Override
+    @Transient
+    protected String getRowId() {
+    	return new ProtectionStringBuilder().append(getHardTokenPropertyDataPK().getId()).append(getHardTokenPropertyDataPK()).toString();
+    }
+
+    //
+    // End Database integrity protection methods
+    //
 
     //
     // Search functions.

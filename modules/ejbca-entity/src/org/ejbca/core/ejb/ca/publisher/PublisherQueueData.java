@@ -22,11 +22,16 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.GUIDGenerator;
@@ -56,7 +61,7 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
  */
 @Entity
 @Table(name = "PublisherQueueData")
-public class PublisherQueueData implements Serializable {
+public class PublisherQueueData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(PublisherQueueData.class);
@@ -148,7 +153,9 @@ public class PublisherQueueData implements Serializable {
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	//@Column @Lob
+	@Override
 	public String getRowProtection() { return rowProtection; }
+	@Override
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
     /**
@@ -209,7 +216,52 @@ public class PublisherQueueData implements Serializable {
             }
         }
     }
-    
+
+    //
+    // Start Database integrity protection methods
+    //
+
+    @Transient
+    @Override
+    protected String getProtectString(final int version) {
+        final ProtectionStringBuilder build = new ProtectionStringBuilder();
+        // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
+        build.append(getPk()).append(getTimeCreated()).append(getLastUpdate()).append(getPublishStatus());
+        build.append(getTryCounter()).append(getPublishType()).append(getFingerprint()).append(getPublisherId()).append(getVolatileData());
+        return build.toString();
+    }
+
+    @Transient
+    @Override
+    protected int getProtectVersion() {
+        return 1;
+    }
+
+    @PrePersist
+    @PreUpdate
+    @Transient
+    @Override
+    protected void protectData() {
+        super.protectData();
+    }
+
+    @PostLoad
+    @Transient
+    @Override
+    protected void verifyData() {
+        super.verifyData();
+    }
+
+    @Override
+    @Transient
+    protected String getRowId() {
+        return getPk();
+    }
+
+    //
+    // End Database integrity protection methods
+    //
+
     //
     // Search functions. 
     //

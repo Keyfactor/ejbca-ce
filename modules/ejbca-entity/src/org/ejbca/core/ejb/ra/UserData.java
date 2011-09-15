@@ -22,6 +22,9 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Query;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -31,6 +34,8 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.StringTools;
@@ -49,7 +54,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
  */
 @Entity
 @Table(name = "UserData")
-public class UserData implements Serializable {
+public class UserData extends ProtectedData implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(UserData.class);
@@ -361,10 +366,12 @@ public class UserData implements Serializable {
     }
 
     // @Column @Lob
+    @Override
     public String getRowProtection() {
         return rowProtection;
     }
 
+    @Override
     public void setRowProtection(String rowProtection) {
         this.rowProtection = rowProtection;
     }
@@ -504,6 +511,52 @@ public class UserData implements Serializable {
         data.setCardNumber(getCardNumber());
         return data;
     }
+
+    //
+    // Start Database integrity protection methods
+    //
+
+    @Transient
+    @Override
+    protected String getProtectString(final int version) {
+        final ProtectionStringBuilder build = new ProtectionStringBuilder();
+        // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
+        build.append(getUsername()).append(getSubjectDN()).append(getCardNumber()).append(getCaId()).append(getSubjectAltName()).append(getCardNumber());
+        build.append(getSubjectEmail()).append(getStatus()).append(getType()).append(getClearPassword()).append(getPasswordHash()).append(getTimeCreated()).append(getTimeModified());
+        build.append(getEndEntityProfileId()).append(getCertificateProfileId()).append(getTokenType()).append(getHardTokenIssuerId()).append(getExtendedInformationData());
+        return build.toString();
+    }
+
+    @Transient
+    @Override
+    protected int getProtectVersion() {
+        return 1;
+    }
+
+    @PrePersist
+    @PreUpdate
+    @Transient
+    @Override
+    protected void protectData() {
+        super.protectData();
+    }
+
+    @PostLoad
+    @Transient
+    @Override
+    protected void verifyData() {
+        super.verifyData();
+    }
+
+    @Override
+    @Transient
+    protected String getRowId() {
+        return getUsername();
+    }
+
+    //
+    // End Database integrity protection methods
+    //
 
     //
     // Search functions.
