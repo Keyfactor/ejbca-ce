@@ -13,15 +13,20 @@
  
 package org.ejbca.core.protocol.ws.client;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
+import org.ejbca.util.cert.OID;
 
 
 
@@ -50,7 +55,9 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 	private static final int ARG_ISSUERALIAS        = 13;
 	private static final int ARG_STARTTIME          = 14;
 	private static final int ARG_ENDTIME            = 15;
-	
+
+	private static final int NR_OF_MANDATORY_ARGS = ARG_CERTIFICATEPROFILE+1;
+	private static final int MAX_NR_OF_ARGS = ARG_ENDTIME+1;
     /**
      * Creates a new instance of RaAddUserCommand
      *
@@ -68,36 +75,37 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
     	
-        try {   
-           
-            if(args.length < 13 || args.length > 16){
+        final UserDataVOWS userdata = new UserDataVOWS();
+        final String[] myArgs = setExtensionData(this.args, userdata);
+        try {
+        	
+        	if(myArgs.length < NR_OF_MANDATORY_ARGS || myArgs.length > MAX_NR_OF_ARGS){
             	usage();
             	System.exit(-1); // NOPMD, this is not a JEE app
             }
             
 
-            UserDataVOWS userdata = new UserDataVOWS();
-            userdata.setUsername(args[ARG_USERNAME]);
-            String pwd = args[ARG_PASSWORD];
+            userdata.setUsername(myArgs[ARG_USERNAME]);
+            String pwd = myArgs[ARG_PASSWORD];
             if (StringUtils.equalsIgnoreCase("null", pwd)) {
             	pwd = null;
             }
             userdata.setPassword(pwd);
-            userdata.setClearPwd(args[ARG_CLEARPWD].equalsIgnoreCase("true"));
-            userdata.setSubjectDN(args[ARG_SUBJECTDN]);
-            if(!args[ARG_SUBJECTALTNAME].equalsIgnoreCase("NULL")){                        
-            	userdata.setSubjectAltName(args[ARG_SUBJECTALTNAME]);
+            userdata.setClearPwd(myArgs[ARG_CLEARPWD].equalsIgnoreCase("true"));
+            userdata.setSubjectDN(myArgs[ARG_SUBJECTDN]);
+            if(!myArgs[ARG_SUBJECTALTNAME].equalsIgnoreCase("NULL")){                        
+            	userdata.setSubjectAltName(myArgs[ARG_SUBJECTALTNAME]);
             }
-            if(!args[ARG_EMAIL].equalsIgnoreCase("NULL")){
-            	userdata.setEmail(args[ARG_EMAIL]);
+            if(!myArgs[ARG_EMAIL].equalsIgnoreCase("NULL")){
+            	userdata.setEmail(myArgs[ARG_EMAIL]);
             }
-            userdata.setCaName(args[ARG_CA]);
-            userdata.setTokenType(args[ARG_TOKEN]);
-            userdata.setStatus(getStatus(args[ARG_STATUS]));
-            userdata.setEndEntityProfileName(args[ARG_ENDENTITYPROFILE]);
-            userdata.setCertificateProfileName(args[ARG_CERTIFICATEPROFILE]);
+            userdata.setCaName(myArgs[ARG_CA]);
+            userdata.setTokenType(myArgs[ARG_TOKEN]);
+            userdata.setStatus(getStatus(myArgs[ARG_STATUS]));
+            userdata.setEndEntityProfileName(myArgs[ARG_ENDENTITYPROFILE]);
+            userdata.setCertificateProfileName(myArgs[ARG_CERTIFICATEPROFILE]);
             
-            int type = Integer.parseInt(args[ARG_TYPE]);
+            int type = Integer.parseInt(myArgs[ARG_TYPE]);
             
             if((type & SecConst.USER_SENDNOTIFICATION) != 0){
             	userdata.setSendNotification(true);
@@ -106,19 +114,19 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             	userdata.setKeyRecoverable(true);
             }
 
-            if(args.length > 13){
-            	if(!args[ARG_ISSUERALIAS].equalsIgnoreCase("NULL")){                        
-            		userdata.setHardTokenIssuerName(args[ARG_ISSUERALIAS]);
+            if(myArgs.length > ARG_ISSUERALIAS){
+            	if(!myArgs[ARG_ISSUERALIAS].equalsIgnoreCase("NULL")){                        
+            		userdata.setHardTokenIssuerName(myArgs[ARG_ISSUERALIAS]);
             	}
             }
-            if(args.length > 14){
-            	if(!args[ARG_STARTTIME].equalsIgnoreCase("NULL")){                        
-            		userdata.setStartTime(args[ARG_STARTTIME]);
+            if(myArgs.length > ARG_STARTTIME){
+            	if(!myArgs[ARG_STARTTIME].equalsIgnoreCase("NULL")){                        
+            		userdata.setStartTime(myArgs[ARG_STARTTIME]);
             	}
             }
-            if(args.length > 15){
-            	if(!args[ARG_ENDTIME].equalsIgnoreCase("NULL")){                        
-            		userdata.setEndTime(args[ARG_ENDTIME]);
+            if(myArgs.length > ARG_ENDTIME){
+            	if(!myArgs[ARG_ENDTIME].equalsIgnoreCase("NULL")){                        
+            		userdata.setEndTime(myArgs[ARG_ENDTIME]);
             	}
             }
    
@@ -166,8 +174,33 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             throw new ErrorAdminCommandException(e);
         }
     }
-
-	private int getStatus(String status) {
+	private static String[] setExtensionData(String args[], UserDataVOWS userData) {
+		final List<ExtendedInformationWS> lei = new LinkedList<ExtendedInformationWS>();
+		final List<String> lArgs = new LinkedList<String>();
+		for ( int i=0; i<args.length; i++ ) {
+			final String arg = args[i];
+			final int equalPos = arg.indexOf('=');
+			if ( equalPos<1 || equalPos+1>args.length ) {
+				lArgs.add(arg);
+				continue;
+			}
+			final String key = arg.substring(0, equalPos);
+			final String value = arg.substring(equalPos+1,arg.length());
+			if ( !OID.isStartingWithValidOID(key) ) {
+				lArgs.add(arg);
+				continue;				
+			}
+			final ExtendedInformationWS ei = new ExtendedInformationWS();
+			ei.setName(key);
+			ei.setValue(value);
+			lei.add(ei);
+		}
+		if ( lei.size()>0 ) {
+			userData.setExtendedInformation(lei);
+		}
+		return lArgs.toArray(new String[0]);
+	}
+    private int getStatus(String status) {
 		if(status.equalsIgnoreCase("NEW")){
 			return UserDataConstants.STATUS_NEW;
 		}
