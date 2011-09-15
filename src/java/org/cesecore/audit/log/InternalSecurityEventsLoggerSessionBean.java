@@ -61,7 +61,7 @@ public class InternalSecurityEventsLoggerSessionBean implements InternalSecurity
         		AuditDevicesConfig.getDevice(ejbs, loggerId).log(trustedTime, eventType, eventStatus, module, service, authToken, customId, searchDetail1, searchDetail2, additionalDetails, AuditDevicesConfig.getProperties(loggerId));
         	} catch (Exception e) {	// AuditRecordStorageException
         		anyFailures = true;
-        		LOG.error("AuditDevice " + loggerId + " failed. A event was not logged to this device!", e);
+        		LOG.error("AuditDevice " + loggerId + " failed. An event was not logged to this device!", e);
         	}
         }
         if (anyFailures) {
