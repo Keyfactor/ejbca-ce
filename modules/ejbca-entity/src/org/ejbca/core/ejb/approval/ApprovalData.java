@@ -29,6 +29,7 @@ import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
 import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 
@@ -222,7 +223,9 @@ s	 */
 	public void setRowVersion(final int rowVersion) { this.rowVersion = rowVersion; }
 
 	//@Column @Lob
+	@Override
 	public String getRowProtection() { return rowProtection; }
+	@Override
 	public void setRowProtection(final String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient public Date getRequestDate() {
@@ -266,7 +269,7 @@ s	 */
     @Transient
     @Override
     protected String getProtectString(final int version) {
-        final StringBuilder build = new StringBuilder();
+        final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getId()).append(getApprovalid()).append(getApprovaltype()).append(getEndentityprofileid()).append(getCaid()).append(getReqadmincertissuerdn());
         build.append(getReqadmincertsn()).append(getStatus()).append(getApprovaldata()).append(getRequestdata()).append(getRequestdate()).append(getExpiredate()).append(getRemainingapprovals());

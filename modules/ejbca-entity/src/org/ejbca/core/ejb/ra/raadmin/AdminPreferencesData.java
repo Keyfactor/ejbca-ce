@@ -19,10 +19,15 @@ import java.util.List;
 
 import javax.persistence.Entity;
 import javax.persistence.EntityManager;
+import javax.persistence.PostLoad;
+import javax.persistence.PrePersist;
+import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.cesecore.dbprotection.ProtectedData;
+import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.JBossUnmarshaller;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
@@ -33,7 +38,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  */
 @Entity
 @Table(name="AdminPreferencesData")
-public class AdminPreferencesData implements Serializable {
+public class AdminPreferencesData extends ProtectedData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(AdminPreferencesData.class);
@@ -71,7 +76,9 @@ public class AdminPreferencesData implements Serializable {
 	public void setRowVersion(int rowVersion) { this.rowVersion = rowVersion; }
 
 	//@Column @Lob
+	@Override
 	public String getRowProtection() { return rowProtection; }
+	@Override
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
@@ -95,6 +102,50 @@ public class AdminPreferencesData implements Serializable {
 	public void setAdminPreference(AdminPreference adminpreference) {
 		setData((LinkedHashMap) adminpreference.saveData());
 	}
+
+    //
+    // Start Database integrity protection methods
+    //
+
+    @Transient
+    @Override
+    protected String getProtectString(final int version) {
+        final ProtectionStringBuilder build = new ProtectionStringBuilder();
+        // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
+        build.append(getId()).append(getData());
+        return build.toString();
+    }
+
+    @Transient
+    @Override
+    protected int getProtectVersion() {
+        return 1;
+    }
+
+    @PrePersist
+    @PreUpdate
+    @Transient
+    @Override
+    protected void protectData() {
+        super.protectData();
+    }
+
+    @PostLoad
+    @Transient
+    @Override
+    protected void verifyData() {
+        super.verifyData();
+    }
+
+    @Override
+    @Transient
+    protected String getRowId() {
+        return getId();
+    }
+
+    //
+    // End Database integrity protection methods
+    //
 
 	//
 	// Search functions. 
