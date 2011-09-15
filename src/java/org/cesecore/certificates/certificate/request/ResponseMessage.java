@@ -40,7 +40,7 @@ import org.cesecore.certificates.ca.SignRequestException;
  *
  * Based on EJBCA version: IResponseMessage.java 10365 2010-11-04 10:11:23Z anatom
  * 
- * @version $Id: ResponseMessage.java 396 2011-03-01 15:48:02Z tomas $
+ * @version $Id$
  */
 public interface ResponseMessage extends Serializable {
 

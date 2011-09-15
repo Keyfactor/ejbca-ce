@@ -24,7 +24,7 @@ import javax.ejb.Remote;
  * It allows removal of certificates, and may be used only for functional tests to clean up after
  * themselves.
  * 
- * @version $Id: InternalCertificateStoreSessionRemote.java 1046 2011-08-29 10:38:20Z tomas $
+ * @version $Id$
  */
 @Remote
 public interface InternalCertificateStoreSessionRemote {

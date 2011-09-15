@@ -34,7 +34,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * 
  * Based on EJBCA version: SubjectKeyIdentifier.java 11883 2011-05-04 08:52:09Z anatom $
  * 
- * @version $Id: SubjectKeyIdentifier.java 740 2011-05-04 10:06:51Z tomas $
+ * @version $Id$
  */
 public class SubjectKeyIdentifier extends StandardCertificateExtension {
 

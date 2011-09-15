@@ -47,7 +47,7 @@ import org.cesecore.util.CertTools;
  * Based on EJBCA version: CrlSessionBean.java 11143 2011-01-11 15:32:31Z jeklund
  * 
  * 
- * @version $Id: CrlStoreSessionBean.java 897 2011-06-20 11:17:25Z johane $
+ * @version $Id$
  * 
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CrlStoreSessionRemote")

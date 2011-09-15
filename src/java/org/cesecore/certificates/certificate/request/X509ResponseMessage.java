@@ -32,7 +32,7 @@ import org.cesecore.util.CertTools;
  *
  * Based on EJBCA version: X509ResponseMessage.java 10365 2010-11-04 10:11:23Z anatom
  * 
- * @version $Id: X509ResponseMessage.java 396 2011-03-01 15:48:02Z tomas $
+ * @version $Id$
  */
 public class X509ResponseMessage implements CertificateResponseMessage {
     /**

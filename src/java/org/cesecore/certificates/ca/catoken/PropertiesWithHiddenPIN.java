@@ -23,7 +23,7 @@ import org.cesecore.keys.token.CryptoToken;
  * 
  * Based on EJBCA version: CATokenContainerImpl.java 10397 2010-11-08 14:18:57Z anatom $
  * 
- * @version $Id: PropertiesWithHiddenPIN.java 478 2011-03-09 12:59:46Z mikek $
+ * @version $Id$
  */
 public class PropertiesWithHiddenPIN extends Properties {
 

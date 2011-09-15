@@ -28,7 +28,7 @@ import org.cesecore.util.StringTools;
  *
  * Based on EJBCA version: UserDataVO.java 10252 2010-10-21 19:02:03Z primelars $
  * 
- * @version $Id: EndEntityInformation.java 844 2011-05-19 16:28:12Z johane $
+ * @version $Id$
  */
 public class EndEntityInformation implements Serializable {
 

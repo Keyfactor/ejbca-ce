@@ -28,7 +28,7 @@ import org.cesecore.util.FileTools;
  *
  * Based on EJBCA version: RequestMessageUtils.java 10878 2010-12-15 13:23:52Z anatom
  * 
- * @version $Id: RequestMessageUtils.java 146 2011-01-25 11:59:11Z tomas $
+ * @version $Id$
  */
 public class RequestMessageUtils {
 	/**

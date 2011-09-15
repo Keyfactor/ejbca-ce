@@ -29,7 +29,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 /**
  * Local interface for CertificateCreateSession.
  * 
- * @version $Id: CertificateCreateSessionLocal.java 848 2011-05-20 12:43:31Z johane $
+ * @version $Id$
  */
 @Local
 public interface CertificateCreateSessionLocal extends CertificateCreateSession {

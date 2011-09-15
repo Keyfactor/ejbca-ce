@@ -45,7 +45,7 @@ import org.cesecore.util.StringTools;
  * 
  * Based on EJBCA version: CrlDistributionPoints.java 11883 2011-05-04 08:52:09Z anatom $
  * 
- * @version $Id: CrlDistributionPoints.java 740 2011-05-04 10:06:51Z tomas $
+ * @version $Id$
  */
 public class CrlDistributionPoints extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(CrlDistributionPoints.class);

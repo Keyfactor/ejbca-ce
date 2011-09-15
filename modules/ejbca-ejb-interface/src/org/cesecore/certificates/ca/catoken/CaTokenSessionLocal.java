@@ -15,7 +15,7 @@ package org.cesecore.certificates.ca.catoken;
 import javax.ejb.Local;
 
 /**
- * @version $Id: CaTokenSessionLocal.java 285 2011-02-18 15:52:03Z tomas $
+ * @version $Id$
  */
 @Local
 public interface CaTokenSessionLocal extends CaTokenSession {

@@ -41,7 +41,7 @@ import java.util.Set;
  * 
  * Based on EJBCA version: KeyStrings.java 10397 2010-11-08 14:18:57Z anatom $
  * 
- * @version $Id: PurposeMapping.java 389 2011-03-01 14:56:15Z tomas $
+ * @version $Id$
  */
 public final class PurposeMapping {
     

@@ -38,7 +38,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
  * Also removed setArchivedStatus, strange "use internally only" method
  * IMPORTANT: Also removed publishing to publishersession from setRevokeStatus
  * 
- * @version $Id: CertificateStoreSession.java 972 2011-08-03 09:12:39Z tomas $
+ * @version $Id$
  */
 public interface CertificateStoreSession {
 

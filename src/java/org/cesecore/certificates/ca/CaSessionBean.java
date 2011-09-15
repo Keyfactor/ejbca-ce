@@ -63,7 +63,7 @@ import org.cesecore.util.CryptoProviderTools;
  * 
  * Based on EJBCA version: CaSessionBean.java 10861 2010-12-14 16:00:17Z anatom
  * 
- * @version $Id: CaSessionBean.java 1012 2011-08-19 12:06:02Z tomas $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CaSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

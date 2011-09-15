@@ -19,7 +19,7 @@ import java.io.Serializable;
  *
  * Based on EJBCA version: ExtendedCAServiceResponse.java 8373 2009-11-30 14:07:00Z jeklund $
  * 
- * @version $Id: ExtendedCAServiceResponse.java 158 2011-01-26 14:48:51Z mikek $
+ * @version $Id$
  */
 public abstract class ExtendedCAServiceResponse  implements Serializable {    
        

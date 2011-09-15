@@ -28,7 +28,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
  * Local interface for CertificateStoreSession.
  * Based on EJBCA version: CertificateStoreSessionLocal.java 11278 2011-01-28 14:06:19Z anatom
  * 
- * @version $Id: CertificateStoreSessionLocal.java 979 2011-08-04 16:55:49Z tomas $
+ * @version $Id$
  */
 @Local
 public interface CertificateStoreSessionLocal extends CertificateStoreSession {

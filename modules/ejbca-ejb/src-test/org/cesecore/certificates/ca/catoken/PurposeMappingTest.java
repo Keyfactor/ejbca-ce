@@ -25,7 +25,7 @@ import org.junit.Test;
 /**
  * Tests key strings used for crypto tokens
  * 
- * @version $Id: PurposeMappingTest.java 389 2011-03-01 14:56:15Z tomas $
+ * @version $Id$
  */
 public class PurposeMappingTest {
 

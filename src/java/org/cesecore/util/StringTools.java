@@ -50,7 +50,7 @@ import org.bouncycastle.util.encoders.Hex;
  * 
  * Based on EJBCA version: StringTools.java 11221 2011-01-18 14:08:34Z aveen4711
  * 
- * @version $Id: StringTools.java 1093 2011-09-09 10:48:31Z tomas $
+ * @version $Id$
  */
 public final class StringTools {
     private static final Logger log = Logger.getLogger(StringTools.class);

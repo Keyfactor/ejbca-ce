@@ -21,7 +21,7 @@ import java.util.Date;
  *
  * Based on EJBCA version: CertificateInfo.java 10498 2010-11-15 15:01:03Z jeklund
  * 
- * @version $Id: CertificateInfo.java 207 2011-01-31 13:36:36Z tomas $
+ * @version $Id$
  */
 public class CertificateInfo implements Serializable {
 

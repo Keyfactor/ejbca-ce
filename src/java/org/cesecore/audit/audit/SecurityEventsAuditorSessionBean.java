@@ -44,7 +44,7 @@ import org.cesecore.util.QueryCriteria;
  * This class handles secure logs auditing. This class is responsible for checking
  * authorization and delegating a request to the right implementation.
  * 
- * @version $Id: SecurityEventsAuditorSessionBean.java 1100 2011-09-12 11:31:55Z tomas $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SecurityEventsAuditorSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

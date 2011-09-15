@@ -22,7 +22,7 @@ import org.junit.Test;
 /**
  * Based on EJBCA version: TestDNFieldsUtil.java 10267 2010-10-22 13:27:52Z primelars
  * 
- * @version $Id: DNFieldsUtilTest.java 844 2011-05-19 16:28:12Z johane $
+ * @version $Id$
  */
 public class DNFieldsUtilTest {
     final private static String trickyValue1=" 10/2=5; 2 backs and a comma\\\\\\\\\\, 8/2=4 2 backs\\\\\\\\";// last comma is end of value since it is a even number (4) of \ before

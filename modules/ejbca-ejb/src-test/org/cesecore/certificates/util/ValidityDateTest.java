@@ -25,7 +25,7 @@ import org.junit.Test;
 /**
  * Based on ValidityDateTest.java 11936 2011-05-10 11:29:55Z anatom from EJBCA
  * 
- * @version $Id: ValidityDateTest.java 11936 2011-05-10 11:29:55Z anatom $
+ * @version $Id$
  */
 public class ValidityDateTest {
 

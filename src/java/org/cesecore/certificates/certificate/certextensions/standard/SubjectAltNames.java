@@ -31,7 +31,7 @@ import org.cesecore.util.CertTools;
  * 
  * Based on EJBCA version: SubjectAltNames.java 11883 2011-05-04 08:52:09Z anatom $
  * 
- * @version $Id: SubjectAltNames.java 906 2011-06-22 13:45:24Z tomas $
+ * @version $Id$
  */
 public class SubjectAltNames extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(SubjectAltNames.class);

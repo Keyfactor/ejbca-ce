@@ -45,7 +45,7 @@ import org.junit.Test;
  * 
  * Based on EJBCA version: AlgorithmToolsTest.java 10833 2010-12-13 14:00:06Z anatom
  * 
- * @version $Id: AlgorithmToolsTest.java 1101 2011-09-12 13:36:41Z tomas $
+ * @version $Id$
  */
 public class AlgorithmToolsTest {
 

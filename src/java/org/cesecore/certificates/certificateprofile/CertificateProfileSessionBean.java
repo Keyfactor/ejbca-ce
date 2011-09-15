@@ -50,7 +50,7 @@ import org.cesecore.jndi.JndiConstants;
  * 
  * Version moved from EJBCA: CertificateProfileSessionBean.java 11170 2011-01-12 17:08:32Z anatom
  * 
- * @version $Id: CertificateProfileSessionBean.java 897 2011-06-20 11:17:25Z johane $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateProfileSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)

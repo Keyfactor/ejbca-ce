@@ -65,7 +65,7 @@ import org.cesecore.util.ValidityDate;
  *  "CREATE UNIQUE INDEX auditrecorddata_idx1 ON AuditRecordData (nodeId,timeStamp,sequenceNumber);"
  * should be present for proper validation and export performance.
  * 
- * @version $Id: IntegrityProtectedAuditorSessionBean.java 1106 2011-09-13 11:43:50Z tomas $
+ * @version $Id$
  */
 @Stateless
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

@@ -45,7 +45,7 @@ import org.ejbca.cvc.OIDField;
  * 
  * Based on EJBCA version: AlgorithmTools.java 11100 2011-01-07 16:34:50Z anatom
  * 
- * @version $Id: AlgorithmTools.java 1097 2011-09-12 09:01:17Z tomas $
+ * @version $Id$
  */
 public final class AlgorithmTools {
 	

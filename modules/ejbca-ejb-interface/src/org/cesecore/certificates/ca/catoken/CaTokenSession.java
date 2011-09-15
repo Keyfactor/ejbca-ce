@@ -32,7 +32,7 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 /**
  * Bean for operations on a CA token that requires audit.
  * 
- * @version $Id: CaTokenSession.java 756 2011-05-09 09:25:42Z tomas $
+ * @version $Id$
  */
 public interface CaTokenSession {
 

@@ -55,7 +55,7 @@ import org.junit.Test;
  * 
  * Based on CertificateProfileTest.java 11524 2011-03-16 09:57:15Z netmackan from EJBCA
  *
- * @version $Id: CertificateProfileSessionTest.java 1002 2011-08-18 11:08:07Z tomas $
+ * @version $Id$
  */
 public class CertificateProfileSessionTest extends RoleUsingTestCase {
     private static final Logger log = Logger.getLogger(CertificateProfileSessionTest.class);

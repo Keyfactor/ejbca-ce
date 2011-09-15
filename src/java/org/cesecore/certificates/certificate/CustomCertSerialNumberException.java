@@ -20,7 +20,7 @@ import org.cesecore.CesecoreException;
  * 
  * Based on Exception private to RSASignSessionBean: RSASignSessionBean.java 11374 2011-02-19 08:12:26Z anatom
  * 
- * @version $Id: CustomCertSerialNumberException.java 819 2011-05-18 13:45:09Z mikek $
+ * @version $Id$
  */
 public class CustomCertSerialNumberException extends CesecoreException {
 

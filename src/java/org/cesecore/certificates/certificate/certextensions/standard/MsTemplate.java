@@ -30,7 +30,7 @@ import org.cesecore.util.CertTools;
  * 
  * Based on EJBCA version: MsTemplate.java 11883 2011-05-04 08:52:09Z anatom $
  * 
- * @version $Id: MsTemplate.java 740 2011-05-04 10:06:51Z tomas $
+ * @version $Id$
  */
 public class MsTemplate extends StandardCertificateExtension {
 	

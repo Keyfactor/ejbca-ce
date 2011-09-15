@@ -26,7 +26,7 @@ import org.cesecore.ErrorCode;
  *
  * Based on EJBCA version: CADoesntExistsException.java 11201 2011-01-15 10:23:15Z anatom
  * 
- * @version $Id: CADoesntExistsException.java 124 2011-01-20 14:41:21Z tomas $
+ * @version $Id$
  */
 @WebFault
 public class CADoesntExistsException extends CesecoreException {

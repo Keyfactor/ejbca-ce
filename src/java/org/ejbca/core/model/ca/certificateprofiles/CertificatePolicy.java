@@ -21,7 +21,7 @@ import org.bouncycastle.asn1.x509.PolicyQualifierId;
 /** NOTE! This class is only kept for upgrade and backwards compatibility purposes.
  * Replaced by org.cesecore.certificates.certificateprofile.CertificatePolicy
  * 
- * @version $Id: CertificatePolicy.java 12022 2011-05-19 07:18:32Z mikekushner $
+ * @version $Id$
  */
 public class CertificatePolicy implements Serializable, Cloneable {
 

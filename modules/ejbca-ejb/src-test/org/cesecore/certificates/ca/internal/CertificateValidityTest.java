@@ -37,7 +37,7 @@ import org.junit.Test;
  * Tests calculation of certificate validity dates
  * 
  * @author tomas
- * @version $Id: CertificateValidityTest.java 668 2011-04-04 08:03:51Z mikek $
+ * @version $Id$
  *
  */
 public class CertificateValidityTest {

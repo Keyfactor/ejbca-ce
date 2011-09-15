@@ -15,7 +15,7 @@ package org.cesecore.certificates.ocsp.exception;
 /**
  * Thrown when a byte array couldn't be formed into a proper OCSP request.
  * 
- * @version $Id: MalformedRequestException.java 488 2011-03-09 15:49:46Z mikek $
+ * @version $Id$
  * 
  */
 public class MalformedRequestException extends Exception {

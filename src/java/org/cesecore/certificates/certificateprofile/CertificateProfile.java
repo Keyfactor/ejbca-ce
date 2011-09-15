@@ -41,7 +41,7 @@ import org.cesecore.util.CertTools;
  * 
  * Based on EJBCA version: CertificateProfile.java 11141 2011-01-11 13:44:11Z anatom
  * 
- * @version $Id: CertificateProfile.java 845 2011-05-20 09:05:46Z mikek $
+ * @version $Id$
  */
 public class CertificateProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(CertificateProfile.class);

@@ -55,7 +55,7 @@ import org.cesecore.util.CryptoProviderTools;
 /**
  * Implementation of CaTokenSession
  * 
- * @version $Id: CaTokenSessionBean.java 1068 2011-08-31 18:47:34Z filiper $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CaTokenSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

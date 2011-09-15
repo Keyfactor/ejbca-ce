@@ -116,7 +116,7 @@ import org.cesecore.util.StringTools;
  * 
  * Based on EJBCA version: X509CA.java 11112 2011-01-09 16:17:33Z anatom
  * 
- * @version $Id: X509CA.java 1097 2011-09-12 09:01:17Z tomas $
+ * @version $Id$
  */
 public class X509CA extends CA implements Serializable {
 

@@ -57,7 +57,7 @@ import org.junit.Test;
 
 /** JUnit test for X.509 CA
  * 
- * @version $Id: CVCCATest.java 667 2011-04-04 07:57:33Z mikek $
+ * @version $Id$
  */
 public class CVCCATest {
 

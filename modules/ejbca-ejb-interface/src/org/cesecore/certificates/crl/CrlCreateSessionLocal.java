@@ -18,7 +18,7 @@ import javax.ejb.Local;
  * Local interface for CrlCreateSession
  * 
  * Based on EJBCA version: CrlCreateSessionLocal.java 10401 2010-11-09 12:20:21Z anatom
- * @version $Id: CrlCreateSessionLocal.java 349 2011-02-25 16:06:32Z tomas $
+ * @version $Id$
  *
  */
 @Local

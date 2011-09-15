@@ -15,7 +15,7 @@ package org.cesecore.certificates.ca.catoken;
 import javax.ejb.Remote;
 
 /**
- * @version $Id: CaTokenSessionRemote.java 285 2011-02-18 15:52:03Z tomas $
+ * @version $Id$
  */
 @Remote
 public interface CaTokenSessionRemote extends CaTokenSession {

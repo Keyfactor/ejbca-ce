@@ -23,7 +23,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
  * Based on EJBCA version: CaSession.java 10428 2010-11-11 16:45:12Z anatom
  * Based on EJBCA version: CaSessionRemote.java 10428 2010-11-11 16:45:12Z anatom
  * 
- * @version $Id: CaTestSessionRemote.java 841 2011-05-19 14:14:29Z johane $
+ * @version $Id$
  */
 @Remote
 public interface CaTestSessionRemote {

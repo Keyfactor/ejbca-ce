@@ -46,7 +46,7 @@ import org.cesecore.util.StringTools;
 
 /**
  * 
- * @version $Id: CATokenTestBase.java 1088 2011-09-07 08:55:12Z tomas $
+ * @version $Id$
  *
  */
 public abstract class CATokenTestBase {

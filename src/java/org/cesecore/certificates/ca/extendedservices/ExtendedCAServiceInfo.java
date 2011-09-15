@@ -20,7 +20,7 @@ import java.io.Serializable;
  * 
  * Based on EJBCA version: ExtendedCAServiceInfo.java 8616 2010-02-03 16:03:01Z jeklund $
  * 
- * @version $Id: ExtendedCAServiceInfo.java 523 2011-03-11 17:33:11Z tomas $
+ * @version $Id$
  */
 public abstract class ExtendedCAServiceInfo implements Serializable {
 

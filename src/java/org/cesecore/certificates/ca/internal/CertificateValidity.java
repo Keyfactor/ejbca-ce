@@ -30,7 +30,7 @@ import org.cesecore.util.ValidityDate;
  * 
  * Based on EJBCA version: CertificateValidity.java 8373 2009-11-30 14:07:00Z jeklund
  * 
- * @version $Id: CertificateValidity.java 984 2011-08-10 11:42:39Z tomas $
+ * @version $Id$
  */
 public class CertificateValidity {
 

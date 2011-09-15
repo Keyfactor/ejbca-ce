@@ -42,7 +42,7 @@ import org.junit.Test;
  * Based on cesecore version:
  *      AccessControlSessionBeanTest.java 506 2011-03-10 12:46:42Z tomas
  * 
- * @version $Id: AccessControlSessionBeanTest.java 12186 2011-07-27 09:33:06Z mikekushner $
+ * @version $Id$
  * 
  */
 public class AccessControlSessionBeanTest extends RoleUsingTestCase {

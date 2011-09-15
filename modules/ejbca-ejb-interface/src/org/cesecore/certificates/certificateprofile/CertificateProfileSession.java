@@ -26,7 +26,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
  * - if "available CAs" contains ANYCA (-1) the -1 caid privilege is needed.
  *
  * Based on EJBCA version: CertificateProfileSession.java 11156 2011-01-12 11:58:47Z anatom
- * @version $Id: CertificateProfileSession.java 818 2011-05-18 12:53:56Z johane $
+ * @version $Id$
  */
 public interface CertificateProfileSession {
 

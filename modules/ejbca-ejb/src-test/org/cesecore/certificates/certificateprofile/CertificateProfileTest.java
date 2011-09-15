@@ -40,7 +40,7 @@ import org.junit.Test;
  * 
  * Based on EJBCA version:  CertificateProfileTest.java 11524 2011-03-16 09:57:15Z netmackan
  * 
- * @version $Id: CertificateProfileTest.java 1001 2011-08-18 11:02:01Z tomas $
+ * @version $Id$
  */
 public class CertificateProfileTest {
 

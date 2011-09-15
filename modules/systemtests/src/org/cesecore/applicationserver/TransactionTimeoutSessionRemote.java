@@ -17,7 +17,7 @@ import javax.ejb.Remote;
 /**
  * This bean exists for the sole purpose of verifying that transactional timeouts work as expected on different application servers.
  * 
- * @version $Id: TransactionTimeoutSessionRemote.java 769 2011-05-11 08:07:05Z tomas $
+ * @version $Id$
  * 
  */
 @Remote

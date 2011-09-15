@@ -18,7 +18,7 @@ package org.cesecore.certificates.certificateprofile;
  * 
  * Based on EJBCA version: CertificateProfileExistsException.java 8373 2009-11-30 14:07:00Z jeklund
  * 
- * @version $Id: CertificateProfileExistsException.java 159 2011-01-26 15:02:18Z tomas $
+ * @version $Id$
  */
 public class CertificateProfileExistsException extends Exception {
 

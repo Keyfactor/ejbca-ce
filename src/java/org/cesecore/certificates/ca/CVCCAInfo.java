@@ -27,7 +27,7 @@ import org.cesecore.util.StringTools;
  *
  * Probably based on EJBCA's org.ejbca.core.model.ca.caadmin.CVCCAInfo r11111
  *
- * @version $Id: CVCCAInfo.java 790 2011-05-16 14:45:05Z johane $
+ * @version $Id$
  */
 public class CVCCAInfo extends CAInfo {
 

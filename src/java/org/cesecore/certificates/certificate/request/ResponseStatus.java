@@ -12,7 +12,7 @@
  *************************************************************************/
  
 /**
- * @version $Id: ResponseStatus.java 158 2011-01-26 14:48:51Z mikek $
+ * @version $Id$
  */
 package org.cesecore.certificates.certificate.request;
 
@@ -23,7 +23,7 @@ import java.io.Serializable;
  *
  * Based on EJBCA version: ResponseStatus.java 11140 2011-01-11 13:38:41Z anatom
  *
- * @version $Id: ResponseStatus.java 158 2011-01-26 14:48:51Z mikek $
+ * @version $Id$
  */
 public final class ResponseStatus implements Serializable {
 

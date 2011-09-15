@@ -54,7 +54,7 @@ import org.cesecore.util.CertTools;
  *
  * Based on EJBCA version: CertificateExtensionFactory.java 10397 2010-11-08 14:18:57Z anatom
  * 
- * @version $Id: CertificateExtensionFactory.java 845 2011-05-20 09:05:46Z mikek $
+ * @version $Id$
  */
 public class CertificateExtensionFactory {
 

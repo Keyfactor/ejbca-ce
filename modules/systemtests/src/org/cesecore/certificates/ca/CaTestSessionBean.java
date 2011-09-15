@@ -24,7 +24,7 @@ import org.cesecore.jndi.JndiConstants;
 /**
  * Session bean used by functional tests in order to access local EJB interfaces of CaSession
  * 
- * @version $Id: CaTestSessionBean.java 841 2011-05-19 14:14:29Z johane $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CaTestSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

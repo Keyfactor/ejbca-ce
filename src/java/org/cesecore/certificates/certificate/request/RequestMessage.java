@@ -32,7 +32,7 @@ import org.bouncycastle.asn1.x509.X509Name;
  *
  * Based on EJBCA version: IRequestMessage.java 10364 2010-11-04 09:57:19Z anatom
  * 
- * @version $Id: RequestMessage.java 143 2011-01-24 15:15:49Z tomas $
+ * @version $Id$
  */
 public interface RequestMessage extends Serializable {
     /**

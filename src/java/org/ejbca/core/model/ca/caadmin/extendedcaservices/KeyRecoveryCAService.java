@@ -32,7 +32,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 
 /** Handles and maintains the CA-part of the Key Recovery functionality
  * 
- * @version $Id: OCSPCAService.java 12227 2011-08-10 13:31:23Z anatom $
+ * @version $Id$
  */
 public class KeyRecoveryCAService extends ExtendedCAService implements Serializable {
 

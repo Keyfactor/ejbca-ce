@@ -20,7 +20,7 @@ import org.cesecore.CesecoreException;
  *
  * Based on EJBCA version: CertificateProfileDoesntExistsException.java 8373 2009-11-30 14:07:00Z jeklund
  * 
- * @version $Id: CertificateProfileDoesNotExistException.java 168 2011-01-27 10:07:30Z mikek $
+ * @version $Id$
  */
 public class CertificateProfileDoesNotExistException extends CesecoreException {
     

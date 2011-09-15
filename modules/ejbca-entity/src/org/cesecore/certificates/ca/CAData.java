@@ -45,7 +45,7 @@ import org.cesecore.util.QueryResultWrapper;
  * 
  * Based on EJBCA's org.ejbca.core.ejb.ca.caadmin.CAData (probably r11168)
  * 
- * @version $Id: CAData.java 809 2011-05-17 15:21:27Z mikek $
+ * @version $Id$
  */
 @Entity
 @Table(name="CAData")

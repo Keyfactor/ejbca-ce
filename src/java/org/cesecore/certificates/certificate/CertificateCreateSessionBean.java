@@ -87,7 +87,7 @@ import org.cesecore.util.CryptoProviderTools;
  * 
  * Only one method from this bean is used, and it's the private method for creating certificates, also this modified.
  * 
- * @version $Id: CertificateCreateSessionBean.java 897 2011-06-20 11:17:25Z johane $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateCreateSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

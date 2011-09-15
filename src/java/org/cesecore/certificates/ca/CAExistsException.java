@@ -20,7 +20,7 @@ import org.cesecore.CesecoreException;
  *
  * Based on EJBCA version: CAExistsException.java 8373 2009-11-30 14:07:00Z jeklund
  * 
- * @version $Id: CAExistsException.java 158 2011-01-26 14:48:51Z mikek $
+ * @version $Id$
  */
 public class CAExistsException extends CesecoreException {
     

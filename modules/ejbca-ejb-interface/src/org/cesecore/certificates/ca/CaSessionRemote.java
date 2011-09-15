@@ -19,7 +19,7 @@ import javax.ejb.Remote;
  * 
  * Based on EJBCA version: CaSessionRemote.java 10428 2010-11-11 16:45:12Z anatom
  * 
- * @version $Id: CaSessionRemote.java 124 2011-01-20 14:41:21Z tomas $
+ * @version $Id$
  */
 @Remote
 public interface CaSessionRemote extends CaSession {

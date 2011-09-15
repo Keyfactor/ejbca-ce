@@ -27,7 +27,7 @@ import org.cesecore.util.Base64GetHashMap;
  *
  * Based on EJBCA version: UpgradeableDataHashMap.java 11075 2011-01-07 07:40:42Z anatom
  * 
- * @version $Id: UpgradeableDataHashMap.java 1001 2011-08-18 11:02:01Z tomas $
+ * @version $Id$
  *
  * @see org.cesecore.internal.IUpgradeableData
  */

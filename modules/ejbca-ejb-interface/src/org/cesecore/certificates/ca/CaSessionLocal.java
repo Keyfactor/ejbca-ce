@@ -23,7 +23,7 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
  * 
  * Based on EJCBA version: CaSessionLocal.java 10428 2010-11-11 16:45:12Z anatom
  * 
- * @version $Id: CaSessionLocal.java 406 2011-03-02 11:38:30Z tomas $
+ * @version $Id$
  */
 @Local
 public interface CaSessionLocal extends CaSession {

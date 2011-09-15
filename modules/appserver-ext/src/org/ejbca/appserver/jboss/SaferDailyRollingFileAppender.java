@@ -21,7 +21,7 @@ import org.ejbca.core.protocol.ocsp.ISaferAppenderListener;
  * The purpose of this extension is to notify the client of the this log appender that it isn't possible to log anymore.
  * 
  * @author Tham Wickenberg
- * @version  $Id: SaferDailyRollingFileAppender.java 6516 2008-10-28 16:00:01Z anatom $
+ * @version  $Id$
  */
 public class SaferDailyRollingFileAppender extends org.jboss.logging.appender.DailyRollingFileAppender {
 	private static ISaferAppenderListener subscriber;

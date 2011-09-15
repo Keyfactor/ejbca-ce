@@ -33,7 +33,7 @@ import org.bouncycastle.cms.CMSSignedGenerator;
  *
  * Based on EJBCA version: SimpleRequestMessage.java 10364 2010-11-04 09:57:19Z anatom
  * 
- * @version $Id: SimpleRequestMessage.java 635 2011-03-23 13:24:57Z tomas $
+ * @version $Id$
  */
 public class SimpleRequestMessage implements RequestMessage {
     /**

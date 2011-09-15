@@ -35,7 +35,7 @@ import org.junit.Test;
  * 
  * Based on version UniqueSernoHelperTest.java 11901 2011-05-05 09:39:45Z jeklund  
  * 
- * @version $Id: UniqueSernoHelperTest.java 948 2011-07-18 09:04:26Z mikek $
+ * @version $Id$
  */
 public class UniqueSernoHelperTest {
 

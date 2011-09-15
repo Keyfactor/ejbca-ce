@@ -23,7 +23,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
  * 
  * Based on EJBCA version: CATokenManager.java 10174 2010-10-12 08:25:40Z mikekushner $
  * 
- * @version $Id: CATokenCacheManager.java 253 2011-02-14 13:33:59Z tomas $
+ * @version $Id$
  * 
  */
 public class CATokenCacheManager {

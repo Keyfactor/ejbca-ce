@@ -28,7 +28,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * 
  * Only one method from this bean is used.
  * 
- * @version $Id: CertificateCreateSession.java 667 2011-04-04 07:57:33Z mikek $
+ * @version $Id$
  */
 public interface CertificateCreateSession {
 

@@ -37,7 +37,7 @@ import org.cesecore.config.CesecoreConfiguration;
  * 
  * Probably based on EJBCA's org.ejbca.core.ejb.ca.store.CertificateProfileCache r11155
  * 
- * @version $Id: CertificateProfileCache.java 851 2011-05-20 15:35:33Z mikek $
+ * @version $Id$
  */
 public final class CertificateProfileCache {
 

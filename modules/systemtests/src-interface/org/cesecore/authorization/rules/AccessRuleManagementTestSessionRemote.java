@@ -19,7 +19,7 @@ import javax.ejb.Remote;
 /**
  * Local interface for AccessRuleManagement
  * 
- * @version $Id: AccessRuleManagementTestSessionRemote.java 475 2011-03-09 09:54:43Z tomas $
+ * @version $Id$
  *
  */
 @Remote

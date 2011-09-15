@@ -13,7 +13,7 @@ import org.cesecore.time.providers.TrustedTimeProviderException;
  * 
  * TODO: Move this to an EJBCA package, since it isn't a CESeCore class..
  *
- * @version $Id: TrustedTimeWatcherSessionBean.java 897 2011-06-20 11:17:25Z johane $
+ * @version $Id$
  */
 @Stateless
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)

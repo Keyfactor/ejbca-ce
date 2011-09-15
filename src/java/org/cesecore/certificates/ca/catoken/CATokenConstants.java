@@ -15,7 +15,7 @@ package org.cesecore.certificates.ca.catoken;
 /**
  * Based on EJBCA version: CATokenConstants.java 8629 2010-02-08 15:47:15Z jeklund
  * 
- * @version $Id: CATokenConstants.java 451 2011-03-07 07:56:04Z tomas $
+ * @version $Id$
  */
 public final class CATokenConstants {
 

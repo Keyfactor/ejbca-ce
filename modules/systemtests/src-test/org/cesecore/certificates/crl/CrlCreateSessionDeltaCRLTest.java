@@ -63,7 +63,7 @@ import org.junit.Test;
  * 
  * Based on EJBCA version: DeltaCRLTest.java 11010 2010-12-29 17:40:11Z jeklund
  * 
- * @version $Id: CrlCreateSessionDeltaCRLTest.java 988 2011-08-10 14:33:46Z tomas $
+ * @version $Id$
  */
 public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
 

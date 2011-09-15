@@ -25,7 +25,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
  * 
  * Based on EJBCA version: StandardCertificateExtension.java 11096 2011-01-07 16:06:28Z anatom
  * 
- * @version $Id: StandardCertificateExtension.java 146 2011-01-25 11:59:11Z tomas $
+ * @version $Id$
  */
 public abstract class StandardCertificateExtension extends CertificateExtension {
 	

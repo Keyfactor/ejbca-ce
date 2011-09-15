@@ -32,7 +32,7 @@ import org.cesecore.util.StringTools;
  *
  * Based on EJBCA version: X509CAInfo.java 11009 2010-12-29 15:20:37Z jeklund
  * 
- * @version $Id: X509CAInfo.java 247 2011-02-11 16:35:06Z tomas $
+ * @version $Id$
  */
 public class X509CAInfo extends CAInfo{
    

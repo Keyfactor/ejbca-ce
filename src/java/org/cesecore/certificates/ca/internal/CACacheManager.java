@@ -28,7 +28,7 @@ import org.cesecore.certificates.ca.CA;
  * 
  * Based on EJBCA version: CACacheManager.java 11575 2011-03-22 09:56:18Z jeklund
  * 
- * @version $Id: CACacheManager.java 819 2011-05-18 13:45:09Z mikek $
+ * @version $Id$
  */
 public class CACacheManager {
 

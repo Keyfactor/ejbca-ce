@@ -19,7 +19,7 @@ import javax.ejb.TransactionAttributeType;
 import org.cesecore.jndi.JndiConstants;
 
 /**
- * @version $Id: TransactionTimeoutSessionBean.java 769 2011-05-11 08:07:05Z tomas $
+ * @version $Id$
  *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "TransactionTimeoutSessionRemote")

@@ -36,7 +36,7 @@ import org.junit.Test;
  * 
  * Based on EJBCA version: CertificateExtensionManagerTest.java 10397 2010-11-08 14:18:57Z anatom
  * 
- * @version $Id: CertificateExtensionFactoryTest.java 190 2011-01-28 15:01:49Z tomas $
+ * @version $Id$
  */
 public class CertificateExtensionFactoryTest {
 

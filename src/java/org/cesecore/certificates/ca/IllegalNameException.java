@@ -21,7 +21,7 @@ import org.cesecore.CesecoreException;
 /**
  * Error due to an invalid request name for a certificate.
  *
- * @version $Id: IllegalValidityException.java 1097 2011-09-12 09:01:17Z tomas $
+ * @version $Id$
  */
 @ApplicationException(rollback=true) 
 public class IllegalNameException extends CesecoreException {

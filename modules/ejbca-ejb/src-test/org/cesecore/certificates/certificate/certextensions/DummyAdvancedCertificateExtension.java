@@ -30,7 +30,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * 
  * Based on EJBCA version: DummyAdvancedCertificateExtension.java 8597 2010-01-29 11:01:30Z anatom
  * 
- * @version $Id: DummyAdvancedCertificateExtension.java 668 2011-04-04 08:03:51Z mikek $
+ * @version $Id$
  */
 public class DummyAdvancedCertificateExtension extends CertificateExtension {
 
