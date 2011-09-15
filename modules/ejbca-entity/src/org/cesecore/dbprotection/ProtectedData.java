@@ -170,7 +170,7 @@ public abstract class ProtectedData {
             final int index2 = prot.indexOf(':', index1 + 1);
             final Integer keyid = Integer.parseInt(prot.substring(index1 + 1, index2));
             if (log.isTraceEnabled()) {
-                log.trace("Verifying row string: " + str);
+                log.trace("Verifying row string (" + this.getClass().getName() + "): " + str);
                 log.trace("RowProtection: " + prot);
                 log.trace("ProtectVersion: " + protectVersion);
                 log.trace("KeyId: " + keyid);
