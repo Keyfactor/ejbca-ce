@@ -650,8 +650,26 @@ function confirmrepublish(){
             &nbsp;
           </td>   
           <td align="right" style="vertical-align: bottom;">
-            <input type="button" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="3"
-                   onClick='self.close()' />  
+<%        // Show either a "Back"-link or a "Close"-button. Avoid link injection by using a fixed set of return options.
+          String returnToLink = null;
+          final String RETURNTO_PARAMETER = "returnTo";
+          final String returnToParameter = request.getParameter(RETURNTO_PARAMETER);
+          try {
+              final int returnToId = Integer.parseInt(returnToParameter);
+              switch (returnToId) {
+              case 0: // 0 = send user to the audit log page
+            	  returnToLink = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.jsf";
+            	  break;
+              }
+          } catch (NumberFormatException e) {
+          }
+          // If there was to "returnTo" specified we assume that this page is displayes as a popup and e show a Close-button.
+          if (returnToLink == null) { %>
+            <input type="button" name="<%= BUTTON_CLOSE %>" value="<%= ejbcawebbean.getText("CLOSE") %>" tabindex="3" onClick='self.close()' />  
+<%        } else { %>
+            <input type="hidden" name='<%= RETURNTO_PARAMETER %>' value='<%= returnToParameter %>'>
+            <a href="<%=returnToLink%>" class="commandLink"><%= ejbcawebbean.getText("BACK")%></a><br/>
+<%        } %>
           </td>
        </tr> 
 
