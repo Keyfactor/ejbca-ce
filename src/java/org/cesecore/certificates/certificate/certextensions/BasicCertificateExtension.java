@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificate.certextensions;
 
 import java.math.BigInteger;
 import java.security.PublicKey;
+import java.util.Arrays;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -77,6 +78,11 @@ public class BasicCertificateExtension extends CertificateExtension {
     private static String ENCODING_DERNULL = "DERNULL";
     private static String ENCODING_DEROBJECT = "DEROBJECT";
     private static String ENCODING_DEROID = "DERBOJECTIDENTIFIER";
+    
+    /** 
+     * The value is expected to by hex encoded and is added as an byte array 
+     * as the extension value. 
+     **/
     private static String ENCODING_RAW = "RAW";
 
     // Defined Properties
@@ -118,6 +124,9 @@ public class BasicCertificateExtension extends CertificateExtension {
         try {
                 String encoding = StringUtils.trim(getProperties().getProperty(PROPERTY_ENCODING));
                 String[] values = getValues(userData);
+    	        if (log.isDebugEnabled()) {
+    		    	log.debug("Got extension values: " + Arrays.toString(values));
+        	    }
 
                 if (values == null || values.length == 0) {
                         throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId())));
