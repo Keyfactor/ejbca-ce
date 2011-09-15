@@ -536,7 +536,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
         // authorization is handled by setRevokeStatus(admin, certificate, reason, userDataDN);
         Certificate certificate = findCertificateByIssuerAndSerno(issuerdn, serno);
         if (certificate == null) {
-        	String msg = INTRES.getLocalizedMessage("store.errorfindcertfp", null, serno);
+        	String msg = INTRES.getLocalizedMessage("store.errorfindcertserno", null, serno);
         	log.info(msg);
         	throw new CertificateRevokeException(msg);
         }
