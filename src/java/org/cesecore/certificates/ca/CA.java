@@ -64,7 +64,7 @@ import org.cesecore.util.ValidityDate;
  * 
  * Based on EJBCA version: CA.java 11112 2011-01-09 16:17:33Z anatom
  * 
- * @version $Id: CA.java 1073 2011-09-04 19:36:38Z tomas $
+ * @version $Id$
  */
 public abstract class CA extends UpgradeableDataHashMap implements Serializable {
 

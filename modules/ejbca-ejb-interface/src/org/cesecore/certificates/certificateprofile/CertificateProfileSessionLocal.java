@@ -15,7 +15,7 @@ package org.cesecore.certificates.certificateprofile;
 import javax.ejb.Local;
 
 /**
- * @version $Id: CertificateProfileSessionLocal.java 294 2011-02-21 14:17:52Z tomas $
+ * @version $Id$
  */
 @Local
 public interface CertificateProfileSessionLocal extends CertificateProfileSession {

@@ -35,7 +35,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * 
  * Based on PrivateKeyUsagePeriod.java 11883 2011-05-04 08:52:09Z anatom from EJBCA  
  * 
- * @version $Id: PrivateKeyUsagePeriod.java 948 2011-07-18 09:04:26Z mikek $
+ * @version $Id$
  */
 public class PrivateKeyUsagePeriod extends StandardCertificateExtension {
 

@@ -18,7 +18,7 @@ import org.cesecore.time.providers.TrustedTimeProviderException;
  * This is the trusted time watcher. It will periodically update the status of trusted time (if is synchronous, accuracy, etc).
  * The update period is self managed and is based on infromation gathered from the trusted time provider.
  * 
- * @version $Id: TrustedTimeWatcherSession.java 897 2011-06-20 11:17:25Z johane $
+ * @version $Id$
  * 
  */
 public interface TrustedTimeWatcherSession {

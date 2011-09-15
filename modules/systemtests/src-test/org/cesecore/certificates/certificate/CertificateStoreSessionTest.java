@@ -69,7 +69,7 @@ import org.junit.Test;
  * 
  * With all tests for CertReqHistory removed.
  * 
- * @version $Id: CertificateStoreSessionTest.java 988 2011-08-10 14:33:46Z tomas $
+ * @version $Id$
  */
 public class CertificateStoreSessionTest extends RoleUsingTestCase {
 

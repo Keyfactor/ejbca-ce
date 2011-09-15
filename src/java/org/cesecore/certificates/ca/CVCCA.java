@@ -71,7 +71,7 @@ import org.ejbca.cvc.exception.ParseException;
  *
  * Probably based on EJBCA's org.ejbca.core.model.ca.caadmin.CVCCA r11112
  *
- * @version $Id: CVCCA.java 790 2011-05-16 14:45:05Z johane $
+ * @version $Id$
  */
 public class CVCCA extends CA implements Serializable {
 

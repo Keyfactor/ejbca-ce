@@ -73,7 +73,7 @@ import org.junit.Test;
  *
  * Based on EJBCA version: ExtendedKeyUsageTest.java 11280 2011-01-28 15:42:09Z jeklund
  * 
- * @version $Id: CertificateCreateSessionTest.java 1097 2011-09-12 09:01:17Z tomas $
+ * @version $Id$
  */
 public class CertificateCreateSessionTest extends RoleUsingTestCase {
     

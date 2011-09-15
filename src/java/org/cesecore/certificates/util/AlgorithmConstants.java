@@ -16,7 +16,7 @@ package org.cesecore.certificates.util;
  * 
  * Based on EJBCA version: AlgorithmConstants.java 11087 2011-01-07 11:00:24Z anatom
  * 
- * @version $Id: AlgorithmConstants.java 199 2011-01-31 09:41:48Z tomas $
+ * @version $Id$
  */
 public final class AlgorithmConstants {
 

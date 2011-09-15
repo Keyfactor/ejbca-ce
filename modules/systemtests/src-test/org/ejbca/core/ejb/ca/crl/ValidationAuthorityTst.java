@@ -30,7 +30,7 @@ import org.ejbca.ui.web.protocol.RFC4387URL;
  * The junit framework can't stand these extra classes if they have "Test" in the name.
  * 
  * @author Lars Silven PrimeKey
- * @version $Id: ValidationAuthorityTst.java 10737 2010-11-28 15:56:35Z anatom $
+ * @version $Id$
  */
 class ValidationAuthorityTst {
 	private final static Logger log = Logger.getLogger(ValidationAuthorityTst.class);

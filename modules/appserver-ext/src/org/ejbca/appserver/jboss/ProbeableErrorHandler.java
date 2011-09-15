@@ -22,7 +22,7 @@ import org.apache.log4j.spi.LoggingEvent;
  * but repeated errors will only be logged once.
  * 
  * @author Tham Wickenberg
- * @version  $Id: ProbeableErrorHandler.java 8053 2009-10-01 11:44:10Z anatom $
+ * @version  $Id$
  */
 
 public class ProbeableErrorHandler extends org.jboss.logging.util.OnlyOnceErrorHandler {

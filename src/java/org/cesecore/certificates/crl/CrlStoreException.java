@@ -22,7 +22,7 @@ import org.cesecore.CesecoreException;
  * If this happens any transaction depending on this should be rolled back.
  * 
  *
- * @version $Id: CrlStoreException.java 373 2011-02-28 16:18:58Z tomas $
+ * @version $Id$
  */
 @ApplicationException(rollback=true)  
 public class CrlStoreException extends CesecoreException {

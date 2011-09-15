@@ -15,7 +15,7 @@ package org.cesecore.certificates.ca;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 
 /**
- * @version $Id: MyExtendedCAServiceInfo.java 523 2011-03-11 17:33:11Z tomas $
+ * @version $Id$
  */ 
 public class TestExtendedCAServiceInfo extends ExtendedCAServiceInfo {
 

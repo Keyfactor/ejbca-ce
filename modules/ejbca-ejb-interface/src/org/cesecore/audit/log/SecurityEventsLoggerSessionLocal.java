@@ -25,7 +25,7 @@ import org.cesecore.time.TrustedTime;
 /**
  * Local interface for the SecurityEventsLogger
  * 
- * @version $Id: SecurityEventsLoggerSessionLocal.java 900 2011-06-21 16:33:28Z johane $
+ * @version $Id$
  */
 @Local
 public interface SecurityEventsLoggerSessionLocal extends SecurityEventsLoggerSession {

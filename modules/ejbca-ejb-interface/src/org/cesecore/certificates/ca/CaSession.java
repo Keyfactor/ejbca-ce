@@ -52,7 +52,7 @@ signature
  * 
  * Based on EJBCA version: CaSession.java 10428 2010-11-11 16:45:12Z anatom
  * 
- * @version $Id: CaSession.java 661 2011-03-25 15:45:18Z tomas $
+ * @version $Id$
  */
 public interface CaSession {
 

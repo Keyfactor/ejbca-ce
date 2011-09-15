@@ -49,7 +49,7 @@ import org.cesecore.internal.InternalResources;
  * 
  * Based on EJBCA version: SernoGenerator.java 11594 2011-03-23 12:23:46Z jeklund
  * 
- * @version $Id: SernoGeneratorRandom.java 819 2011-05-18 13:45:09Z mikek $
+ * @version $Id$
  */
 public class SernoGeneratorRandom implements SernoGenerator {
     /** Log4j instance */

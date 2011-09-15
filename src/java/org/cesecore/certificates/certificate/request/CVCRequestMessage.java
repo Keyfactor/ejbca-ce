@@ -43,7 +43,7 @@ import org.ejbca.cvc.exception.ParseException;
  *
  * Based on EJBCA version: CVCRequestMessage.java 10364 2010-11-04 09:57:19Z anatom
  * 
- * @version $Id: CVCRequestMessage.java 983 2011-08-09 09:47:07Z tomas $
+ * @version $Id$
  */
 public class CVCRequestMessage implements RequestMessage {
     /**

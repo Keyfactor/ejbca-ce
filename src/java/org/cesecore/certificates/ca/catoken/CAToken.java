@@ -53,7 +53,7 @@ import org.cesecore.util.StringTools;
  * 
  * Based on EJBCA version: ICAToken.java 8828 2010-03-29 08:10:51Z anatom
  * 
- * @version $Id: CAToken.java 1089 2011-09-07 13:36:53Z tomas $
+ * @version $Id$
  */
 public class CAToken extends UpgradeableDataHashMap {
 

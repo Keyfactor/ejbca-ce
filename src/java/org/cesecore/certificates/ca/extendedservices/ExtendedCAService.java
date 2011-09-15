@@ -22,7 +22,7 @@ import org.cesecore.internal.UpgradeableDataHashMap;
  * 
  * Based on EJBCA version: ExtendedCAService.java 10397 2010-11-08 14:18:57Z anatom $
  * 
- * @version $Id: ExtendedCAService.java 523 2011-03-11 17:33:11Z tomas $
+ * @version $Id$
  */
 public abstract class ExtendedCAService extends UpgradeableDataHashMap implements java.io.Serializable {
 

@@ -25,7 +25,7 @@ import org.junit.Test;
  *
  * Based on EJBCA version: SernoGeneratorTest.java 9435 2010-07-14 15:18:39Z mikekushner
  * 
- * @version $Id: SernoGeneratorTest.java 146 2011-01-25 11:59:11Z tomas $
+ * @version $Id$
  */
 public class SernoGeneratorTest {
 //    private static final Logger log = Logger.getLogger(SernoGeneratorTest.class);

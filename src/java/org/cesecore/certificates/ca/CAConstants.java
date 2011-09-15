@@ -17,7 +17,7 @@ package org.cesecore.certificates.ca;
  *
  * Based on EJBCA version: SecConst.java 11245 2011-01-24 00:56:57Z dcarella
  * 
- * @version $Id: CAConstants.java 349 2011-02-25 16:06:32Z tomas $
+ * @version $Id$
  */
 public final class CAConstants {
     

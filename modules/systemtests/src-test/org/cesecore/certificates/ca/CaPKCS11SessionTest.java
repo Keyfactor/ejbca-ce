@@ -25,7 +25,7 @@ import org.junit.Test;
  * private key across a remote link, and the PKCS#11 sesison when updated (key gen) in one JVM is not
  * updated in another JVM with JVM restart between.
  * 
- * @version $Id: CaPKCS11SessionTest.java 765 2011-05-09 15:39:53Z tomas $
+ * @version $Id$
  */
 public class CaPKCS11SessionTest extends RoleUsingTestCase {
 

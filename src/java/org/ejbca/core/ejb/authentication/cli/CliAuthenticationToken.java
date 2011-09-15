@@ -23,7 +23,7 @@ import org.cesecore.authorization.user.AccessUserAspect;
  * This authentication token is returned as a result of a CLI authentication action. By design it's only allowed 
  * to be used once, then becomes invalid. 
  * 
- * @version $Id: AlwaysAllowLocalAuthenticationToken.java 12424 2011-08-31 15:10:44Z mikekushner $
+ * @version $Id$
  */
 public class CliAuthenticationToken extends AuthenticationToken {
 

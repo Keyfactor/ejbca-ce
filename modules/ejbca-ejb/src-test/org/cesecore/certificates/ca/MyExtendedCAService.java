@@ -23,7 +23,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 
 /**
- * @version $Id: MyExtendedCAService.java 523 2011-03-11 17:33:11Z tomas $
+ * @version $Id$
  */ 
 public class MyExtendedCAService extends ExtendedCAService {
 

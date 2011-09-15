@@ -18,7 +18,7 @@ import org.cesecore.CesecoreException;
 
 /** Thrown if there is an error revoking a certificate, causes rollback.
  *  
- * @version $Id: CertificateRevokeException.java 435 2011-03-04 13:41:15Z tomas $
+ * @version $Id$
  */
 @ApplicationException(rollback=true)  
 public class CertificateRevokeException extends CesecoreException {

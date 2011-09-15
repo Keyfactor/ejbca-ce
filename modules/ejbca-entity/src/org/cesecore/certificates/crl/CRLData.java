@@ -38,7 +38,7 @@ import org.cesecore.util.QueryResultWrapper;
  * 
  * Based on EJBCA version: CRLData.java 11168 2011-01-12 15:05:15Z jeklund
  * 
- * @version $Id: CRLData.java 809 2011-05-17 15:21:27Z mikek $
+ * @version $Id$
  */
 @Entity
 @Table(name = "CRLData")

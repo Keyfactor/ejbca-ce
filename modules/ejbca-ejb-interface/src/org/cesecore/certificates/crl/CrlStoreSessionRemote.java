@@ -18,7 +18,7 @@ import javax.ejb.Remote;
  * Remote interface for CreateCRLSession
  * Based on EJBCA version: CrlSessionRemote.java 11122 2011-01-10 11:08:59Z anatom
  * 
- * @version $Id: CrlStoreSessionRemote.java 207 2011-01-31 13:36:36Z tomas $
+ * @version $Id$
  */
 @Remote
 public interface CrlStoreSessionRemote extends CrlStoreSession {

@@ -35,7 +35,7 @@ import org.cesecore.util.CertTools;
  *  
  * Based on EJBCA version: UniqueSernoHelper.java 10867 2010-12-14 16:35:40Z anatom
  * 
- * @version $Id: UniqueSernoHelper.java 848 2011-05-20 12:43:31Z johane $
+ * @version $Id$
  */
 public final class UniqueSernoHelper {
     private static final Logger log = Logger.getLogger(UniqueSernoHelper.class);

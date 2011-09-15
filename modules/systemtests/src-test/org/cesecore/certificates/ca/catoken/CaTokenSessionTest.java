@@ -62,7 +62,7 @@ import org.junit.Test;
 /**
  * Tests the CA token session
  * 
- * @version $Id: CaTokenSessionTest.java 815 2011-05-18 09:19:08Z tomas $
+ * @version $Id$
  */
 public class CaTokenSessionTest extends RoleUsingTestCase {
 

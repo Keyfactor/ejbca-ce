@@ -16,7 +16,7 @@ package org.cesecore.certificates.ca.extendedservices;
  * 
  * Based on EJBCA version: ExtendedCAServiceRequestException.java 8373 2009-11-30 14:07:00Z jeklund $
  * 
- * @version $Id: ExtendedCAServiceRequestException.java 158 2011-01-26 14:48:51Z mikek $
+ * @version $Id$
  */
 public class ExtendedCAServiceRequestException extends java.lang.Exception {
     

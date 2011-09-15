@@ -21,7 +21,7 @@ import java.security.NoSuchAlgorithmException;
  *
  * Based on EJBCA version: ISernoGenerator.java 8373 2009-11-30 14:07:00Z jeklund
  * 
- * @version $Id: SernoGenerator.java 819 2011-05-18 13:45:09Z mikek $
+ * @version $Id$
  */
 public interface SernoGenerator {
     /**

@@ -62,7 +62,7 @@ import org.junit.Test;
 /**
  * Tests the CA session bean using soft CA tokens.
  * 
- * @version $Id: CaSessionTest.java 1073 2011-09-04 19:36:38Z tomas $
+ * @version $Id$
  */
 public class CaSessionTest extends RoleUsingTestCase {
 

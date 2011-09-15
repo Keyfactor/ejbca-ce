@@ -23,7 +23,7 @@ import java.util.Map;
  * 
  * Based on EJBCA version: CaHelperCache.java 10862 2010-12-14 16:07:19Z anatom
  * 
- * @version $Id: CACacheHelper.java 146 2011-01-25 11:59:11Z tomas $
+ * @version $Id$
  */
 public final class CACacheHelper {
 

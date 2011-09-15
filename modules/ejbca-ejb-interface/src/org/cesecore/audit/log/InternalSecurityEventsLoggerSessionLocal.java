@@ -25,7 +25,7 @@ import org.cesecore.time.TrustedTime;
 /**
  * Local internal secure audit log interface.
  *
- * @version $Id: InternalSecurityEventsLoggerSessionLocal.java 1106 2011-09-13 11:43:50Z tomas $
+ * @version $Id$
  */
 @Local
 public interface InternalSecurityEventsLoggerSessionLocal {

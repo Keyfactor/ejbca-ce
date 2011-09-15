@@ -36,7 +36,7 @@ import org.cesecore.certificates.util.cert.SubjectDirAttrExtension;
  * 
  * Based on EJBCA version: SubjectDirectoryAttributes.java 11883 2011-05-04 08:52:09Z anatom $
  * 
- * @version $Id: SubjectDirectoryAttributes.java 906 2011-06-22 13:45:24Z tomas $
+ * @version $Id$
  */
 public class SubjectDirectoryAttributes extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(SubjectDirectoryAttributes.class);

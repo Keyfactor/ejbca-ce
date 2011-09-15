@@ -52,7 +52,7 @@ import org.junit.Test;
  *
  * Based on EJBCA version: RequestMessageTest.java 10893 2010-12-17 14:21:18Z anatom
  * 
- * @version $Id: RequestMessageTest.java 805 2011-05-17 14:00:19Z johane $
+ * @version $Id$
  */
 public class RequestMessageTest {
 

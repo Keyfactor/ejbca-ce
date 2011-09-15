@@ -26,7 +26,7 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
  * Authorization checks are thus done in CaSessionBean when this session retrieves the CA for CRL generation.
  * 
  * Based on EJBCA version: CrlCreateSession.java 11405 2011-02-23 22:42:51Z jeklund
- * @version $Id: CrlCreateSession.java 760 2011-05-09 11:29:39Z tomas $
+ * @version $Id$
  */
 public interface CrlCreateSession {
 

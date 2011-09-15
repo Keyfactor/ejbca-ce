@@ -21,7 +21,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
  * 
  * Based on EJBCA version: CrlSession.java 11143 2011-01-11 15:32:31Z jeklund
  * 
- * @version $Id: CrlStoreSession.java 818 2011-05-18 12:53:56Z johane $
+ * @version $Id$
  */
 public interface CrlStoreSession {
 

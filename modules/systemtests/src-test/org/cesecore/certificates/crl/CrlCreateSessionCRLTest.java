@@ -83,7 +83,7 @@ import org.junit.Test;
  * 
  * NOTE: Remove tests for the CRLStore which is an external http based service and should have it's own tests test08TestCRLStore
  * 
- * @version $Id: CrlCreateSessionCRLTest.java 988 2011-08-10 14:33:46Z tomas $
+ * @version $Id$
  */
 public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
 

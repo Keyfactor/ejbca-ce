@@ -38,7 +38,7 @@ import org.cesecore.util.FileTools;
  * This was the only way I could find to implement the desired functionality.
  * 
  * @author tomas
- * @version $Id: SigningDailyRollingFileAppender.java 10367 2010-11-04 12:16:27Z mikekushner $
+ * @version $Id$
  */
 public class SigningDailyRollingFileAppender extends FileAppender {
 

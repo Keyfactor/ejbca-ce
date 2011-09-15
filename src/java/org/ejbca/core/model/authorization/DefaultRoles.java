@@ -17,7 +17,7 @@ package org.ejbca.core.model.authorization;
  * Represents a set of predefined roles.
  * 
  * 
- * @version $Id: DefaultRoles.java 12221 2011-08-09 14:18:26Z mikekushner $
+ * @version $Id$
  * 
  */
 public enum DefaultRoles {

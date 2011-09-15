@@ -22,7 +22,7 @@ import org.cesecore.authentication.tokens.AuthenticationProvider;
  * 
  * TODO: Remove me when proper authentication infrastructure falls into place.
  * 
- * @version $Id: SimpleAuthenticationProviderRemote.java 12169 2011-07-20 15:45:35Z mikekushner $
+ * @version $Id$
  */
 @Local
 public interface SimpleAuthenticationProviderLocal extends AuthenticationProvider {

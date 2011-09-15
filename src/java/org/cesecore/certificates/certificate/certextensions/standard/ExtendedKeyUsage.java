@@ -33,7 +33,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * 
  * Based on EJBCA version: ExtendedKeyUsage.java 11883 2011-05-04 08:52:09Z anatom $
  * 
- * @version $Id: ExtendedKeyUsage.java 740 2011-05-04 10:06:51Z tomas $
+ * @version $Id$
  */
 public class ExtendedKeyUsage extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(ExtendedKeyUsage.class);

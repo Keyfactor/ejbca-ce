@@ -24,7 +24,7 @@ import org.bouncycastle.asn1.x509.PolicyQualifierId;
  * 
  * Based on EJBCA version: CertificatePolicy.java 11092 2011-01-07 12:05:08Z anatom
  * 
- * @version $Id: CertificatePolicy.java 829 2011-05-19 07:20:16Z mikek $
+ * @version $Id$
  */
 public class CertificatePolicy implements Serializable, Cloneable {
 

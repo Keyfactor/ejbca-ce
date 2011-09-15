@@ -27,7 +27,7 @@ import org.cesecore.util.StringTools;
  *
  * Based on EJBCA version: CATokenInfo.java 8828 2010-03-29 08:10:51Z anatom
  * 
- * @version $Id: CATokenInfo.java 403 2011-03-02 10:43:47Z tomas $
+ * @version $Id$
  */
 public class CATokenInfo implements Serializable {
 

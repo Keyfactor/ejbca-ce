@@ -22,7 +22,7 @@ import org.cesecore.CesecoreException;
  *
  * Based on EJBCA version: IllegalKeyException.java 10392 2010-11-08 08:22:39Z mikekushner
  * 
- * @version $Id: IllegalKeyException.java 451 2011-03-07 07:56:04Z tomas $
+ * @version $Id$
  */
 public class IllegalKeyException extends CesecoreException {
 

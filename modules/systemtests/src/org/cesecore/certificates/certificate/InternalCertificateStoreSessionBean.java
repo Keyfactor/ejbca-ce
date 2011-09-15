@@ -33,7 +33,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 
 /**
- * @version $Id: InternalCertificateStoreSessionBean.java 1046 2011-08-29 10:38:20Z tomas $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "InternalCertificateStoreSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

@@ -37,7 +37,7 @@ import org.cesecore.util.QueryResultWrapper;
  * 
  * Based on EJBCA version: CertificateProfileData.java 11161 2011-01-12 12:24:34Z anatom
  * 
- * @version $Id: CertificateProfileData.java 820 2011-05-18 13:46:59Z mikek $
+ * @version $Id$
  */
 @Entity
 @Table(name = "CertificateProfileData")

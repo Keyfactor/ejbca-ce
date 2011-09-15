@@ -23,7 +23,7 @@ import org.cesecore.CesecoreException;
  * 
  * Probably based on EJCBA's org.ejbca.core.model.ca.SignRequestException r11201
  *
- * @version $Id: SignRequestException.java 790 2011-05-16 14:45:05Z johane $
+ * @version $Id$
  */
 @WebFault
 public class SignRequestException extends CesecoreException {

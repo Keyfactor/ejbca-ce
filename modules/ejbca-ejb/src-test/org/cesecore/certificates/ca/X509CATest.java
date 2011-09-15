@@ -92,7 +92,7 @@ import org.junit.Test;
 
 /** JUnit test for X.509 CA
  * 
- * @version $Id: X509CATest.java 988 2011-08-10 14:33:46Z tomas $
+ * @version $Id$
  */
 public class X509CATest {
 

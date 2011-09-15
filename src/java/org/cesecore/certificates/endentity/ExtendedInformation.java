@@ -35,7 +35,7 @@ import org.cesecore.util.ValidityDate;
  * 
  * Based on EJBCA version: ExtendedInformation.java 10633 2010-11-22 13:09:38Z anatom
  * 
- * @version $Id: ExtendedInformation.java 850 2011-05-20 15:01:44Z johane $
+ * @version $Id$
  *
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements Serializable {

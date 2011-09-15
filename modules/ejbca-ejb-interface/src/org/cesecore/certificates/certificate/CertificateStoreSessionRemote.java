@@ -18,7 +18,7 @@ import javax.ejb.Remote;
  * Remote interface for CertificateStoreSession.
  * Based on EJBCA version: CertificateStoreSessionRemote.java 11278 2011-01-28 14:06:19Z anatom
  * 
- * @version $Id: CertificateStoreSessionRemote.java 207 2011-01-31 13:36:36Z tomas $
+ * @version $Id$
  */
 @Remote
 public interface CertificateStoreSessionRemote extends CertificateStoreSession {

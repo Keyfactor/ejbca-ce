@@ -26,7 +26,7 @@ import org.ejbca.config.EjbcaConfiguration;
 /**
  * This bean handles configuration changes for system tests.
  * 
- * @version $Id: ConfigurationSessionBean.java 11337 2011-02-10 22:37:15Z jeklund $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "HealthCheckSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)

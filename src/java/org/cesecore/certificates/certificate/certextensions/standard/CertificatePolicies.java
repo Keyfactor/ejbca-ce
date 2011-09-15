@@ -44,7 +44,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  * 
  * Based on EJBCA version: CertificatePolicies.java 11883 2011-05-04 08:52:09Z anatom $
  * 
- * @version $Id: CertificatePolicies.java 740 2011-05-04 10:06:51Z tomas $
+ * @version $Id$
  */
 public class CertificatePolicies extends StandardCertificateExtension {
     private static final Logger log = Logger.getLogger(CertificatePolicies.class);

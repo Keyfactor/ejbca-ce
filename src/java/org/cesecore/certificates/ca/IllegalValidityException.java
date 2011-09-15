@@ -21,7 +21,7 @@ import org.cesecore.CesecoreException;
  *
  * Based on EJBCA version: IllegalValidityException.java 8854 2010-03-30 15:55:35Z anatom
  * 
- * @version $Id: IllegalValidityException.java 158 2011-01-26 14:48:51Z mikek $
+ * @version $Id$
  */
 public class IllegalValidityException extends CesecoreException {
  

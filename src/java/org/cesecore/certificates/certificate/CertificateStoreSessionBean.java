@@ -62,7 +62,7 @@ import org.ejbca.cvc.PublicKeyEC;
 /**
  * Based on EJBCA version: CertificateStoreSessionBean.java 11170 2011-01-12 17:08:32Z anatom
  * 
- * @version $Id: CertificateStoreSessionBean.java 1026 2011-08-23 15:00:31Z mikek $
+ * @version $Id$
  * 
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CertificateStoreSessionRemote")

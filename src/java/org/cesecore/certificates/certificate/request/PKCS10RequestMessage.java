@@ -45,7 +45,7 @@ import org.cesecore.util.CertTools;
  *
  * Based on EJBCA version: PKCS10RequestMessage.java 10894 2010-12-17 15:18:09Z anatom
  * 
- * @version $Id: PKCS10RequestMessage.java 148 2011-01-25 12:17:53Z tomas $
+ * @version $Id$
  */
 public class PKCS10RequestMessage implements RequestMessage {
     /**

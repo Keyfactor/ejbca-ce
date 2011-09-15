@@ -25,7 +25,7 @@ import org.junit.Test;
  * 
  * Based on EJBCA version: CATokenContainerTest.java 10288 2010-10-26 11:27:21Z anatom $
  * 
- * @version $Id: PKCS11CATokenTest.java 389 2011-03-01 14:56:15Z tomas $
+ * @version $Id$
  */
 public class PKCS11CATokenTest extends CATokenTestBase {
 

@@ -28,7 +28,7 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.util.QueryResultWrapper;
 
 /**
- * @version $Id: RoleAccessSessionBean.java 854 2011-05-24 12:57:17Z johane $
+ * @version $Id$
  *
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RoleAccessSessionRemote")

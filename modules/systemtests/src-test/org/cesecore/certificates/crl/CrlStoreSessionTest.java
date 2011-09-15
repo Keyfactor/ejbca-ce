@@ -53,7 +53,7 @@ import org.junit.Test;
 /**
  * Tests CRL store.
  *
- * @version $Id: CrlStoreSessionTest.java 988 2011-08-10 14:33:46Z tomas $
+ * @version $Id$
  */
 public class CrlStoreSessionTest extends RoleUsingTestCase {
 

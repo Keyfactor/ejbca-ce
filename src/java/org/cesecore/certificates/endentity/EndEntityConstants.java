@@ -16,7 +16,7 @@ package org.cesecore.certificates.endentity;
  * 
  * Based on EJBCA version: SecConst.java 11082 2011-01-07 09:14:46Z anatom
  * 
- * @version $Id: EndEntityConstants.java 172 2011-01-27 11:13:39Z tomas $
+ * @version $Id$
  */
 public final class EndEntityConstants {
 

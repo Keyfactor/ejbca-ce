@@ -66,7 +66,7 @@ import org.cesecore.util.CertTools;
 /**
  * Tests the CA session bean.
  * 
- * @version $Id: CaSessionTestBase.java 1073 2011-09-04 19:36:38Z tomas $
+ * @version $Id$
  */
 public class CaSessionTestBase extends RoleUsingTestCase {
 

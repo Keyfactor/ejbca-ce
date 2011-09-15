@@ -68,7 +68,7 @@ import org.cesecore.util.CryptoProviderTools;
  * Business class for CRL actions, i.e. running CRLs. CRUD operations can be found in CrlSession.
  * 
  * Based on EJBCA version CrlCreateSessionBean.java 11386 2011-02-22 19:03:22Z jeklund
- * @version $Id: CrlCreateSessionBean.java 897 2011-06-20 11:17:25Z johane $
+ * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CrlCreateSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)

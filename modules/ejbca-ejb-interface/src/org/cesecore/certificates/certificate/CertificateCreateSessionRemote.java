@@ -17,7 +17,7 @@ import javax.ejb.Remote;
 /**
  * Remote interface for CertificateCreateSession.
  * 
- * @version $Id: CertificateCreateSessionRemote.java 451 2011-03-07 07:56:04Z tomas $
+ * @version $Id$
  */
 @Remote
 public interface CertificateCreateSessionRemote extends CertificateCreateSession {

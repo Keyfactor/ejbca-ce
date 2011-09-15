@@ -26,7 +26,7 @@ import org.junit.Test;
 /**
  * Based on EJBCA version: CACacheManagerTest.java 11004 2010-12-29 11:57:22Z anatom
  * 
- * @version $Id: CACacheManagerTest.java 146 2011-01-25 11:59:11Z tomas $
+ * @version $Id$
  *
  */
 public class CACacheManagerTest {

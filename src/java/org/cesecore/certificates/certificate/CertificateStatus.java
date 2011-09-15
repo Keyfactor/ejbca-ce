@@ -23,7 +23,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
  * 
  * Based on EJBCA version: CertificateStatus.java 8402 2009-12-04 14:00:15Z anatom
  * 
- * @version $Id: CertificateStatus.java 491 2011-03-09 16:07:03Z mikek $
+ * @version $Id$
  */
 public class CertificateStatus implements Serializable {
 
