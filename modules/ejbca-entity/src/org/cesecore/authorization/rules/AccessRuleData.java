@@ -275,7 +275,7 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
 
     @Override
     public String toString() {
-    	final ProtectionStringBuilder buf = new ProtectionStringBuilder();
+    	final StringBuilder buf = new StringBuilder();
     	buf.append(getPrimaryKey()).append(getAccessRuleName()).append(getInternalState()).append(getRecursiveBool()).append(getRecursiveInt());
     	return buf.toString();
     }
@@ -286,7 +286,7 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
 	@Transient
 	@Override
 	protected String getProtectString(final int version) {
-		StringBuilder build = new StringBuilder();
+		ProtectionStringBuilder build = new ProtectionStringBuilder();
 		// What is important to protect here is the data that we define
 		// rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
 		build.append(getPrimaryKey()).append(getAccessRuleName()).append(getInternalState()).append(getRecursive());
