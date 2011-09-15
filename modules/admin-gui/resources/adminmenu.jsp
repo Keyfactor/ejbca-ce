@@ -267,7 +267,7 @@
               out.write("<li id=\"cat4\" class=\"section\"><strong>" + ejbcawebbean.getText("SUPERVISIONFUNCTIONS")+"</strong><ul>"); 
               logheaderprinted=true;
             }  %>
-				<li><a href="<%= AUDIT_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("VIEWLOG") %></a></li>
+				<li><a href="<%= AUDIT_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("VIEWAUDITLOG") %></a></li>
 <%    }
    }catch(AuthorizationDeniedException e){} 
 

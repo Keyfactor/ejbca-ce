@@ -29,6 +29,13 @@
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script language="javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
+     <style type="text/css">
+		/* CSS2 compatible expandable text*/
+		.expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }
+		.expandOnClick:after { content: "..."; }
+		.expandOnClick:focus { width: 100%; display: inline; overflow: auto; color:#000000; white-space: pre-wrap; cursor: pointer; }
+		.expandOnClick:focus:after { content: ""; }
+   </style>
 </head>
 <body>
 
@@ -193,8 +200,8 @@
 					<h:commandButton action="#{auditor.reorderDescByCustomId}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
-		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?caid=#{auditLogEntry.customId}" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] != null}"><h:outputText value="#{auditor.caIdToName[(auditLogEntry.customId)]}"/></h:outputLink>
-		    <h:outputText value="#{auditLogEntry.customId}" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] == null}"/>
+		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?caid=#{auditLogEntry.customId}&returnTo=0" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] != null}"><h:outputText value="#{auditor.caIdToName[(auditLogEntry.customId)]}"/></h:outputLink>
+		    <h:outputText value="#{auditLogEntry.customId}" title="#{web.text.UNKNOWNCAID}" rendered="#{auditor.caIdToName[(auditLogEntry.customId)] == null}"/>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
@@ -204,7 +211,7 @@
 					<h:commandButton action="#{auditor.reorderDescBySearchDetail1}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
-		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?serno=#{auditLogEntry.searchDetail1}&caid=#{auditLogEntry.customId}"><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:outputLink>
+		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?serno=#{auditLogEntry.searchDetail1}&caid=#{auditLogEntry.customId}&returnTo=0"><h:outputText value="#{auditLogEntry.searchDetail1}"/></h:outputLink>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
@@ -214,7 +221,7 @@
 					<h:commandButton action="#{auditor.reorderDescBySearchDetail2}" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/uparrow.gif"/>
 				</h:panelGroup>
 			</f:facet>
-		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?username=#{auditLogEntry.searchDetail2}"><h:outputText value="#{auditLogEntry.searchDetail2}"/></h:outputLink>
+		    <h:outputLink value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}viewcertificate.jsf?username=#{auditLogEntry.searchDetail2}&returnTo=0"><h:outputText value="#{auditLogEntry.searchDetail2}"/></h:outputLink>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
@@ -242,7 +249,11 @@
 			<f:facet name="header">
 				<h:outputText value="#{auditor.nameFromColumn['additionalDetails']}"/>
 			</f:facet>
-		<h:outputText value="#{auditLogEntry.mapAdditionalDetails}"><f:converter converterId="mapToStringConverter"/></h:outputText></h:column>
+			<h:outputLink rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] > 50}" value="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}audit/search.jsf#" styleClass="expandOnClick">
+				<h:outputText value="#{auditLogEntry.mapAdditionalDetails}" title="#{auditLogEntry.mapAdditionalDetails}"><f:converter converterId="mapToStringConverter"/></h:outputText>
+			</h:outputLink>
+			<h:outputText rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] <= 50}" value="#{auditLogEntry.mapAdditionalDetails}"><f:converter converterId="mapToStringConverter"/></h:outputText>
+		</h:column>
 	</h:dataTable>
 	<p>
 		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value="First"/>

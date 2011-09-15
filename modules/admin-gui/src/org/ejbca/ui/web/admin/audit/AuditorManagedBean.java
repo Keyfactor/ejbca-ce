@@ -15,10 +15,12 @@ package org.ejbca.ui.web.admin.audit;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Map.Entry;
 
 import javax.faces.context.FacesContext;
@@ -468,5 +470,31 @@ public class AuditorManagedBean implements Serializable {
 			reloadResultsNextView = true;
 		}
 		sortOrder = orderAsc ? QueryCriteria.ORDER_ASC : QueryCriteria.ORDER_DESC;
+	}
+	
+	/**
+	 * Ugly hack to be able to read the length of the resulting String from JSF EL.
+	 * 
+	 * Example: "#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] > 50}"
+	 * 
+	 * @return a fake "Map" where the get(Map) returns the length of the output-formatted Map
+	 */
+	public Map<String,Integer> getStringTooLong() {
+		return new Map<String,Integer>() {
+			@Override public Integer get(Object key) {
+				return new MapToStringConverter().getAsString(null, null, key).length();
+			}
+			@Override public void clear() { }
+			@Override public boolean containsKey(Object key) { return false; }
+			@Override public boolean containsValue(Object value) { return false; }
+			@Override public Set<Entry<String, Integer>> entrySet() { return null; }
+			@Override public boolean isEmpty() { return false; }
+			@Override public Set<String> keySet() { return null; }
+			@Override public Integer put(String key, Integer value) { return null; }
+			@Override public void putAll(Map<? extends String, ? extends Integer> m) { }
+			@Override public Integer remove(Object key) { return null; }
+			@Override public int size() { return 0; }
+			@Override public Collection<Integer> values() { return null; }
+		};
 	}
 }
