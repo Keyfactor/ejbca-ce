@@ -14,6 +14,7 @@ package org.cesecore.certificates.certificate.certextensions;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -26,6 +27,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERBoolean;
 import org.bouncycastle.asn1.DEREncodable;
@@ -38,6 +40,9 @@ import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -46,7 +51,7 @@ import org.junit.Test;
 /**
  * Based on EJBCA version: BasicCertificateExtensionTest.java 8865 2010-04-09 15:14:51Z mikekushner
  * 
- * @version $Id: BasicCertificateExtensionTest.java 146 2011-01-25 11:59:11Z tomas $
+ * @version $Id$
  */
 public class BasicCertificateExtensionTest {
 	private static Logger log = Logger.getLogger(BasicCertificateExtensionTest.class);
@@ -618,6 +623,30 @@ public class BasicCertificateExtensionTest {
 		value = baseExt.getValueEncoded(userData, null, null, null, null);
 		assertEquals("value", "eeff0000", new String(Hex.encode(value)));
 	}
+
+        @Test
+        public void test20CertExtensionEncoding() throws Exception{
+        	Properties props = new Properties();
+        	props.put("id1.property.encoding", "DERIA5STRING");
+        	props.put("id1.property.value", "This is a printable string");
+
+        	BasicCertificateExtension baseExt = new BasicCertificateExtension();
+        	baseExt.init(1, "1.2.3", false, props);
+
+        	byte[] value = baseExt.getValueEncoded(null, null, null, null, null);
+
+        	X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
+        	extgen.addExtension(new DERObjectIdentifier(baseExt.getOID()), baseExt.isCriticalFlag(), value);
+        	X509Extensions exts = extgen.generate();
+        	DERObjectIdentifier oid = new DERObjectIdentifier(baseExt.getOID());
+        	X509Extension ext = exts.getExtension(oid);
+        	assertNotNull(ext);
+        	// Read the extension value, it's a DERIA5String wrapped in an ASN1OctetString
+        	ASN1OctetString str = ext.getValue();
+        	ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(str.getOctets()));
+        	DERIA5String ia5str = (DERIA5String)aIn.readObject();
+        	assertEquals("This is a printable string", ia5str.getString());
+        }
 
 	private DEREncodable getObject(byte[] valueEncoded) throws IOException {
 		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(valueEncoded));
