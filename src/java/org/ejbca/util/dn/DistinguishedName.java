@@ -78,7 +78,7 @@ public class DistinguishedName extends LdapName {
      * @param dnMap values that must be inserted in the DN.
      * @return a new DN resulting from the merge.
      */
-    public DistinguishedName mergeDN(DistinguishedName dn, boolean override, Map dnMap) {
+    public DistinguishedName mergeDN(DistinguishedName dn, boolean override, Map<String,String> dnMap) {
 
         boolean useEntityEmailField = (dnMap == null ? false : (dnMap.size() > 0));
 
@@ -108,18 +108,18 @@ public class DistinguishedName extends LdapName {
         }
 
         // convert to a Map of Iterators :
-        Map providedRdnIteratorsMap = new HashMap();
-        for (Iterator it = providedRdnsMap.keySet().iterator(); it.hasNext(); ) {
+        Map<String,Iterator<Rdn>> providedRdnIteratorsMap = new HashMap<String,Iterator<Rdn>>();
+        for (Iterator<String> it = providedRdnsMap.keySet().iterator(); it.hasNext(); ) {
             String key = (String) it.next();
-            providedRdnIteratorsMap.put(key, ((List) providedRdnsMap.get(key)).iterator());
+            providedRdnIteratorsMap.put(key, ((List<Rdn>) providedRdnsMap.get(key)).iterator());
         }
 
         // loop on all Rdn and check if they must be replaced :
-        for (ListIterator it = getRdns().listIterator(getRdns().size()); it.hasPrevious();) {
+        for (ListIterator<Rdn> it = getRdns().listIterator(getRdns().size()); it.hasPrevious();) {
             Rdn localRdn = (Rdn) it.previous();
             if (providedRdnIteratorsMap.containsKey(localRdn.getType())
-                    && ((Iterator) providedRdnIteratorsMap.get(localRdn.getType())).hasNext()) {
-                Rdn providedRdn = (Rdn) ((Iterator) providedRdnIteratorsMap.get(localRdn.getType())).next();
+                    && (providedRdnIteratorsMap.get(localRdn.getType())).hasNext()) {
+                Rdn providedRdn = (Rdn) (providedRdnIteratorsMap.get(localRdn.getType())).next();
                 if (override) {
                     localRdns.add(providedRdn);
                 } else {
@@ -128,7 +128,7 @@ public class DistinguishedName extends LdapName {
             } else {
                 if (useEntityEmailField && override) {
                     boolean finded = false;
-                    for (Iterator dnIt = dnMap.keySet().iterator(); dnIt.hasNext();) {
+                    for (Iterator<String> dnIt = dnMap.keySet().iterator(); dnIt.hasNext();) {
                         String key = (String) dnIt.next();
                         if (translateComponentName(key).equalsIgnoreCase(localRdn.getType())) {
                             finded = true;
@@ -151,8 +151,8 @@ public class DistinguishedName extends LdapName {
         }
 
         // loop on all remaining provided components and add them at the end of the dn :
-        for (Iterator it = providedRdnIteratorsMap.values().iterator(); it.hasNext(); ) {
-            Iterator rdnIterator = (Iterator) it.next();
+        for (Iterator<Iterator<Rdn>> it = providedRdnIteratorsMap.values().iterator(); it.hasNext(); ) {
+            Iterator<Rdn> rdnIterator = it.next();
             while (rdnIterator.hasNext()) {
                 Rdn providedRdn = (Rdn) rdnIterator.next();
                 localRdns.add(providedRdn);
@@ -161,10 +161,10 @@ public class DistinguishedName extends LdapName {
 
         // Add entity data if necessary
         if (useEntityEmailField) {
-            for (Iterator it = dnMap.keySet().iterator(); it.hasNext();) {
+            for (Iterator<String> it = dnMap.keySet().iterator(); it.hasNext();) {
                 boolean finded = false;
                 String compName = (String) it.next();
-                for (Iterator rdnIt = localRdns.iterator(); rdnIt.hasNext();) {
+                for (Iterator<Rdn> rdnIt = localRdns.iterator(); rdnIt.hasNext();) {
                     Rdn rdn = (Rdn) rdnIt.next();
                     if (translateComponentName(compName).equalsIgnoreCase(rdn.getType())) {
                         finded = true;
@@ -213,10 +213,10 @@ public class DistinguishedName extends LdapName {
         }
 
         // list of RDN of the specified type.
-        List rdnsOfThisType = new ArrayList();
+        List<Rdn> rdnsOfThisType = new ArrayList<Rdn>();
 
         // First step, get the list of all Rdn of this type:
-        for (Iterator it = dn.getRdns().iterator(); it.hasNext();) {
+        for (Iterator<Rdn> it = dn.getRdns().iterator(); it.hasNext();) {
             Rdn rdn = (Rdn) it.next();
             if (rdn.getType().equalsIgnoreCase(type)) {
                 rdnsOfThisType.add(rdn);

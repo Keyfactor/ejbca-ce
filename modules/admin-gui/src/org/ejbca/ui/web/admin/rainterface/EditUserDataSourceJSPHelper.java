@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -235,23 +236,23 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
                             
                             String[] values = request.getParameterValues(SELECT_MODIFYABLEFIELDS);
                             if(values != null){
-                                Set modifyablefields = new HashSet();
+                                Set<Integer> modifyablefields = new HashSet<Integer>();
                                 for(int i=0;i< values.length;i++){
                                 	modifyablefields.add(Integer.valueOf(values[i]));
                                 }
 
                                 userdatasourcedata.setModifiableFields(modifyablefields);
                             }else{
-                            	userdatasourcedata.setModifiableFields(new HashSet());
+                            	userdatasourcedata.setModifiableFields(new HashSet<Integer>());
                             }
 
                             values = request.getParameterValues(SELECT_APPLICABLECAS);
                             if(values != null){
-                                ArrayList useCAs = new ArrayList();
+                                List<Integer> useCAs = new ArrayList<Integer>();
                                 for(int i=0;i< values.length;i++){
                                 	Integer caid = Integer.valueOf(values[i]);
                                 	if(caid.intValue() == BaseUserDataSource.ANYCA){
-                                		useCAs = new ArrayList();
+                                		useCAs = new ArrayList<Integer>();
                                 		useCAs.add(caid);
                                 		break;
                                 	}
@@ -260,7 +261,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
 
                                 userdatasourcedata.setApplicableCAs(useCAs);
                             }else{
-                            	userdatasourcedata.setApplicableCAs(new ArrayList());
+                            	userdatasourcedata.setApplicableCAs(new ArrayList<Integer>());
                             }
                             
                            

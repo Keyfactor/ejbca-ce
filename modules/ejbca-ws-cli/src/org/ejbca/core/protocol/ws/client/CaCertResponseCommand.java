@@ -19,6 +19,7 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -90,8 +91,8 @@ public class CaCertResponseCommand extends EJBCAWSRABaseCommand implements IAdmi
 			Certificate incert = null;
 			try {
 				FileInputStream in = new FileInputStream(certfile);
-				Collection certs = CertTools.getCertsFromPEM(in);
-				Iterator iter = certs.iterator();
+				Collection<Certificate> certs = CertTools.getCertsFromPEM(in);
+				Iterator<Certificate> iter = certs.iterator();
 				if (iter.hasNext()) {
 					incert = (Certificate)iter.next();
 				}
@@ -100,17 +101,16 @@ public class CaCertResponseCommand extends EJBCAWSRABaseCommand implements IAdmi
 				byte[] bytes = FileTools.readFiletoBuffer(certfile);
 				incert = CertTools.getCertfromByteArray(bytes); // check if it is a good cert, decode PEM if it is PEM, etc
 			}
-			byte[] certbytes = incert.getEncoded();
 
 			getPrintStream().println("Importing certificate with subjectDN '"+CertTools.getSubjectDN(incert)+"', and issuerDN '"+CertTools.getIssuerDN(incert)+"'.");
 
-			ArrayList cachain = new ArrayList();
+			List<byte[]> cachain = new ArrayList<byte[]>();
 			try {
 				FileInputStream in = new FileInputStream(cachainfile);
-				Collection certs = CertTools.getCertsFromPEM(in);
-				Iterator iter = certs.iterator();
+				Collection<Certificate> certs = CertTools.getCertsFromPEM(in);
+				Iterator<Certificate> iter = certs.iterator();
 				while (iter.hasNext()) {
-					Certificate c = (Certificate)iter.next();
+					Certificate c = iter.next();
 					cachain.add(c.getEncoded());
 				}
 			} catch (IOException e) {

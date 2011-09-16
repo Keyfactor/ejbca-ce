@@ -17,11 +17,13 @@ import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
@@ -153,7 +155,7 @@ public class Constants {
 	}
 
 	public static KeyStore getUserKeyStore() throws Exception {
-		ArrayList list = new ArrayList();
+		List<Certificate> list = new ArrayList<Certificate>();
 		list.add(Constants.getRootCert());
 		list.add(Constants.getIntermediateCert());
 
