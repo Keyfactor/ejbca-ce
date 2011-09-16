@@ -30,19 +30,19 @@ public class UserMatch {
 	public static final int MATCH_WITH_TOKEN               = org.ejbca.util.query.UserMatch.MATCH_WITH_TOKEN;
 	public static final int MATCH_WITH_DN                  = org.ejbca.util.query.UserMatch.MATCH_WITH_DN;
     // Subject DN fields.
-    public static final int MATCH_WITH_UID              = org.ejbca.util.query.UserMatch.MATCH_WITH_UID;
-    public static final int MATCH_WITH_COMMONNAME       = org.ejbca.util.query.UserMatch.MATCH_WITH_COMMONNAME;
-    public static final int MATCH_WITH_DNSERIALNUMBER   = org.ejbca.util.query.UserMatch.MATCH_WITH_DNSERIALNUMBER;
-    public static final int MATCH_WITH_GIVENNAME        = org.ejbca.util.query.UserMatch.MATCH_WITH_GIVENNAME;
-    public static final int MATCH_WITH_INITIALS         = org.ejbca.util.query.UserMatch.MATCH_WITH_INITIALS;
-    public static final int MATCH_WITH_SURNAME          = org.ejbca.util.query.UserMatch.MATCH_WITH_SURNAME;
-    public static final int MATCH_WITH_TITLE            = org.ejbca.util.query.UserMatch.MATCH_WITH_TITLE;
-    public static final int MATCH_WITH_ORGANIZATIONUNIT = org.ejbca.util.query.UserMatch.MATCH_WITH_ORGANIZATIONUNIT;
-    public static final int MATCH_WITH_ORGANIZATION     = org.ejbca.util.query.UserMatch.MATCH_WITH_ORGANIZATION;
-    public static final int MATCH_WITH_LOCALE           = org.ejbca.util.query.UserMatch.MATCH_WITH_LOCALE;
-    public static final int MATCH_WITH_STATE            = org.ejbca.util.query.UserMatch.MATCH_WITH_STATE;
-    public static final int MATCH_WITH_DOMAINCOMPONENT  = org.ejbca.util.query.UserMatch.MATCH_WITH_DOMAINCOMPONENT;
-    public static final int MATCH_WITH_COUNTRY          = org.ejbca.util.query.UserMatch.MATCH_WITH_COUNTRY;
+    public static final int MATCH_WITH_UID                 = org.ejbca.util.query.UserMatch.MATCH_WITH_UID;
+    public static final int MATCH_WITH_COMMONNAME          = org.ejbca.util.query.UserMatch.MATCH_WITH_COMMONNAME;
+    public static final int MATCH_WITH_DNSERIALNUMBER      = org.ejbca.util.query.UserMatch.MATCH_WITH_DNSERIALNUMBER;
+    public static final int MATCH_WITH_GIVENNAME           = org.ejbca.util.query.UserMatch.MATCH_WITH_GIVENNAME;
+    public static final int MATCH_WITH_INITIALS            = org.ejbca.util.query.UserMatch.MATCH_WITH_INITIALS;
+    public static final int MATCH_WITH_SURNAME             = org.ejbca.util.query.UserMatch.MATCH_WITH_SURNAME;
+    public static final int MATCH_WITH_TITLE               = org.ejbca.util.query.UserMatch.MATCH_WITH_TITLE;
+    public static final int MATCH_WITH_ORGANIZATIONALUNIT  = org.ejbca.util.query.UserMatch.MATCH_WITH_ORGANIZATIONALUNIT;
+    public static final int MATCH_WITH_ORGANIZATION        = org.ejbca.util.query.UserMatch.MATCH_WITH_ORGANIZATION;
+    public static final int MATCH_WITH_LOCALITY            = org.ejbca.util.query.UserMatch.MATCH_WITH_LOCALITY;
+    public static final int MATCH_WITH_STATEORPROVINCE     = org.ejbca.util.query.UserMatch.MATCH_WITH_STATEORPROVINCE;
+    public static final int MATCH_WITH_DOMAINCOMPONENT     = org.ejbca.util.query.UserMatch.MATCH_WITH_DOMAINCOMPONENT;
+    public static final int MATCH_WITH_COUNTRY             = org.ejbca.util.query.UserMatch.MATCH_WITH_COUNTRY;
 	
     public static final int MATCH_TYPE_EQUALS     = BasicMatch.MATCH_TYPE_EQUALS;
     public static final int MATCH_TYPE_BEGINSWITH = BasicMatch.MATCH_TYPE_BEGINSWITH;
