@@ -242,6 +242,7 @@ public class RequestInstance {
 						log.debug("Received IE request: "+new String(reqBytes));
 						byte[] b64cert=helper.pkcs10CertRequest(signSession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
 						debug.ieCertFix(b64cert);
+						response.setContentType("text/html");
 						RequestHelper.sendNewCertToIEClient(b64cert, response.getOutputStream(), servletContext, servletConfig.getInitParameter("responseTemplate"),classid);
 					} else {
 						throw new SignRequestException("No request bytes received.");
