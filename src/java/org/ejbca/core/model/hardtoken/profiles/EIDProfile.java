@@ -132,7 +132,8 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 * See above
 	 */
 	public void setCertificateProfileId(int certusage, int certprofileid){
-	  List list = (List) data.get(CERTIFICATEPROFILEID);	  
+		@SuppressWarnings("unchecked")
+	  List<Integer> list = (List<Integer>) data.get(CERTIFICATEPROFILEID);	  
 	  list.set(certusage, Integer.valueOf(certprofileid));
 	  data.put(CERTIFICATEPROFILEID, list);
 	}
@@ -141,8 +142,9 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	/**
 	 * See above
 	 */
-    public void setCertWritable(int certusage, boolean certWritable){ 
-		List list = (List) data.get(CERTWRITABLE);	  
+    @SuppressWarnings("unchecked")
+	public void setCertWritable(int certusage, boolean certWritable){ 
+		List<Boolean> list = (List<Boolean>) data.get(CERTWRITABLE);	  
 		list.set(certusage, Boolean.valueOf(certWritable));
 		data.put(CERTWRITABLE, list);
     }
@@ -150,8 +152,9 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	/**
 	 * See above
 	 */
+	@SuppressWarnings("unchecked")
 	public void setCAId (int certusage, int caid){
-      List list = (List) data.get(CAID);	  
+      List<Integer> list = (List<Integer>) data.get(CAID);	  
 	  list.set(certusage, Integer.valueOf(caid));
 	  data.put(CAID, list);		
 	}
@@ -159,8 +162,9 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	/**
 	 * See above
 	 */
+	@SuppressWarnings("unchecked")
 	public void setIsKeyRecoverable (int certusage, boolean iskeyrecoverable){		
-		List list = (List) data.get(ISKEYRECOVERABLE);	  
+		List<Boolean> list = (List<Boolean>) data.get(ISKEYRECOVERABLE);	  
 		list.set(certusage, Boolean.valueOf(iskeyrecoverable));
 		data.put(ISKEYRECOVERABLE, list);		
 	}
@@ -168,8 +172,9 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	/**
 	 * See above
 	 */
+	@SuppressWarnings("unchecked")
 	public void setReuseOldCertificate (int certusage, boolean reuseoldcertificate){
-		List list = (List) data.get(REUSEOLDCERTIFICATE);	  
+		List<Boolean> list = (List<Boolean>) data.get(REUSEOLDCERTIFICATE);	  
 		list.set(certusage, Boolean.valueOf(reuseoldcertificate));
 		data.put(REUSEOLDCERTIFICATE, list);				
 	}
@@ -177,8 +182,9 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	/**
 	 * See above
 	 */
+	@SuppressWarnings("unchecked")
 	public void setMinimumKeyLength (int certusage, int minimumkeylength){		
-		List list = (List) data.get(MINIMUMKEYLENGTH);	  
+		List<Integer> list = (List<Integer>) data.get(MINIMUMKEYLENGTH);	  
 		list.set(certusage, Integer.valueOf(minimumkeylength));
 		data.put(MINIMUMKEYLENGTH, list);				 
 	}
@@ -186,8 +192,9 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	/**
 	 * See above
 	 */
+	@SuppressWarnings("unchecked")
 	public void setKeyType (int certusage, String keytype){
-	  List list = (List) data.get(KEYTYPES);	  
+	  List<String> list = (List<String>) data.get(KEYTYPES);	  
 	  list.set(certusage, keytype);
 	  data.put(KEYTYPES, list);				 
 	}
@@ -196,8 +203,8 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 * Returns a collection of all defined certificate profiles.
 	 *
 	 */
-	public Collection getAllCertificateProfileIds(){
-	  return (Collection) data.get(CERTIFICATEPROFILEID);	
+	public Collection<Integer> getAllCertificateProfileIds(){
+	  return (Collection<Integer>) data.get(CERTIFICATEPROFILEID);	
 	}
 	
 	/**
@@ -206,10 +213,11 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 * 
 	 * @return
 	 */
-	public Collection getAllCAIds(){
-      Collection caids = (Collection) data.get(CAID);	
-      ArrayList retval = new ArrayList();
-      Iterator iter = caids.iterator();
+	public Collection<Integer> getAllCAIds(){
+		@SuppressWarnings("unchecked")
+      Collection<Integer> caids = (Collection<Integer>) data.get(CAID);	
+      List<Integer> retval = new ArrayList<Integer>();
+      Iterator<Integer> iter = caids.iterator();
       while(iter.hasNext()){
       	Integer value = (Integer) iter.next();
       	if(value.intValue() > CAInfo.SPECIALCAIDBORDER || value.intValue() < 0){
@@ -228,14 +236,15 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
     }
     
     // Protected methods
-    public boolean isTokenSupported(String[][] supportedcards, String tokenidentificationstring){
+	public boolean isTokenSupported(String[][] supportedcards, String tokenidentificationstring){
       boolean returnval = true;	
-      Iterator iter = ((List) data.get(MINIMUMKEYLENGTH)).iterator();
+      @SuppressWarnings("unchecked")
+      Iterator<Integer> iter = ((List<Integer>) data.get(MINIMUMKEYLENGTH)).iterator();
 	  int[] availablekeylengths = getAvailableMinimumKeyLengths();
 	  
       while(iter.hasNext()){
       	int index = -1;
-      	int keylength = ((Integer) iter.next()).intValue();
+      	int keylength = iter.next().intValue();
         for(int i=0;i<availablekeylengths.length;i++){
 		  if(availablekeylengths[i] == keylength){
 		  	index=i;

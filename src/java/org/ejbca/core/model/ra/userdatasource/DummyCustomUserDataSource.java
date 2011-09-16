@@ -15,6 +15,7 @@ package org.ejbca.core.model.ra.userdatasource;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
@@ -54,9 +55,9 @@ public class DummyCustomUserDataSource implements ICustomUserDataSource{
 	 * 
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
 	 */
-	public Collection fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException {
+	public Collection<UserDataSourceVO> fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException {
 
-		ArrayList result = new ArrayList();
+		List<UserDataSourceVO> result = new ArrayList<UserDataSourceVO>();
 		if(searchstring.equalsIgnoreCase("per")){
 			EndEntityInformation userDataVO = new EndEntityInformation("PER","CN=PER,C=SE",1,"RFC822NAME=per@test.com", "per@test.com",0,1,1,1,null,null,SecConst.TOKEN_SOFT_BROWSERGEN,0,null);
 			result.add(new UserDataSourceVO(userDataVO));

@@ -215,7 +215,7 @@ public class CertificateView implements Serializable {
     }
 
     public String[] getExtendedKeyUsageAsTexts(){
-     List extendedkeyusage = null;  
+     List<String> extendedkeyusage = null;  
       if (certificate instanceof X509Certificate) {
     	  X509Certificate x509cert = (X509Certificate)certificate;
           try {  
@@ -223,10 +223,10 @@ public class CertificateView implements Serializable {
             } catch (java.security.cert.CertificateParsingException e) {}  
       }
       if(extendedkeyusage == null) {
-        extendedkeyusage = new ArrayList();
+        extendedkeyusage = new ArrayList<String>();
       }
       String[] returnval = new String[extendedkeyusage.size()]; 
-      Map map = CertificateProfile.getAllExtendedKeyUsageTexts();
+      Map<String,String> map = CertificateProfile.getAllExtendedKeyUsageTexts();
       for(int i=0; i < extendedkeyusage.size(); i++){
         returnval[i] = (String)map.get(extendedkeyusage.get(i));    
       }

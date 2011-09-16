@@ -69,7 +69,7 @@ public class CreateCert extends BaseCommand {
 			byte[] respBytes = resp.getResponseMessage();
 			// Convert to PEM
 			Certificate cert = CertTools.getCertfromByteArray(respBytes);
-			Collection certs = new ArrayList();
+			Collection<Certificate> certs = new ArrayList<Certificate>();
 			certs.add(cert);
 			byte[] pembytes = CertTools.getPEMFromCerts(certs);
 			// Write the resulting cert to file

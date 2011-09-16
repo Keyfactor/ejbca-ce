@@ -245,7 +245,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         catokeninfo.setProperties(prop);
 
         // Create and active OSCP CA Service.
-        ArrayList extendedcaservices = new ArrayList();
+        List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE, "CN=XKMSCertificate, " + dn, "", "" + keyStrength,
                 AlgorithmConstants.KEYALGORITHM_RSA));
@@ -271,7 +271,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 null, // defaultfreshestcrl
                 true, // Finish User
                 extendedcaservices, false, // use default utf8 settings
-                new ArrayList(), // Approvals Settings
+                new ArrayList<Integer>(), // Approvals Settings
                 1, // Number of Req approvals
                 false, // Use UTF8 subject DN by default
                 true, // Use LDAP DN order by default
@@ -337,10 +337,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         Certificate cacert = null;
         final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         CAInfo cainfo = caSession.getCAInfo(admin, getTestCAId(caName));
-        Collection certs = cainfo.getCertificateChain();
+        Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
-            Iterator certiter = certs.iterator();
-            cacert = (X509Certificate) certiter.next();
+            Iterator<Certificate> certiter = certs.iterator();
+            cacert = certiter.next();
         } else {
             log.error("NO CACERT for caid " + getTestCAId(caName));
         }
@@ -424,8 +424,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             ApprovalExecutionSessionRemote approvalExecutionSession, int approvalCAID) throws Exception {
         log.debug("approvingAdmin=" + approvingAdmin.toString() + " username=" + username + " reason=" + reason + " approvalType=" + approvalType
                 + " approvalCAID=" + approvalCAID);
-        Collection userCerts = certificateStoreSession.findCertificatesByUsername(username);
-        Iterator i = userCerts.iterator();
+        Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);
+        Iterator<Certificate> i = userCerts.iterator();
         int approvedRevocations = 0;
         while (i.hasNext()) {
             X509Certificate cert = (X509Certificate) i.next();

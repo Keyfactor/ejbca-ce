@@ -20,6 +20,7 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -97,14 +98,14 @@ public class CaCertRequestCommand extends EJBCAWSRABaseCommand implements IAdmin
 			getPrintStream().println("Output file: "+outfile);
 			//getPrintStream().println("CA token password: "+keystorepwd);                        
 
-			ArrayList cachain = new ArrayList();
+			List<byte[]> cachain = new ArrayList<byte[]>();
 			if (!cachainfile.equalsIgnoreCase("NULL")){
 				try {
 					FileInputStream in = new FileInputStream(cachainfile);
-					Collection certs = CertTools.getCertsFromPEM(in);
-					Iterator iter = certs.iterator();
+					Collection<Certificate> certs = CertTools.getCertsFromPEM(in);
+					Iterator<Certificate> iter = certs.iterator();
 					while (iter.hasNext()) {
-						Certificate cert = (Certificate)iter.next();
+						Certificate cert = iter.next();
 						cachain.add(cert.getEncoded());
 					}
 				} catch (IOException e) {
