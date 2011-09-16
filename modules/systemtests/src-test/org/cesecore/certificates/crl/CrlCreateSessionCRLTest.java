@@ -144,11 +144,11 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
             byte[] crl;
             while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false)) != null) {
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-                crlStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(x509crl));
+                internalCertificateStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(x509crl));
             }
             while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true)) != null) {
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-                crlStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(x509crl));
+                internalCertificateStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(x509crl));
             }
 
             caSession.removeCA(roleMgmgToken, testx509ca.getCAId());
@@ -451,11 +451,11 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
             byte[] crl;
             while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false)) != null) {
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-                crlStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(x509crl));
+                internalCertificateStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(x509crl));
             }
             while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true)) != null) {
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-                crlStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(x509crl));
+                internalCertificateStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(x509crl));
             }
         }
     }

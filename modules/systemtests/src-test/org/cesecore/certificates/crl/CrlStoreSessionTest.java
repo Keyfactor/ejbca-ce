@@ -35,6 +35,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.jndi.JndiHelper;
@@ -62,6 +63,7 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
     private CrlStoreSessionRemote crlStoreSession = JndiHelper.getRemoteSession(CrlStoreSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
     private static byte[] testcrl = Base64.decode(("MIIBjjB4AgEBMA0GCSqGSIb3DQEBBQUAMBUxEzARBgNVBAMMCkx1bmFDQTEwMjQX"
     		+"DTEwMTEyNTEwMzkwMFoXDTEwMTEyNjEwMzkwMFqgLzAtMB8GA1UdIwQYMBaAFHxk"
@@ -105,10 +107,10 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
         // Remove any lingering test crl before starting the tests
     	X509CRL crl = CertTools.getCRLfromByteArray(testcrl);
     	String fingerprint = CertTools.getFingerprintAsString(crl);
-        crlStoreSession.removeCRL(roleMgmgToken, fingerprint);
+        internalCertificateStoreSession.removeCRL(roleMgmgToken, fingerprint);
     	X509CRL deltacrl = CertTools.getCRLfromByteArray(testdeltacrl);
     	String deltaFingerprint = CertTools.getFingerprintAsString(deltacrl);
-        crlStoreSession.removeCRL(roleMgmgToken, deltaFingerprint);
+    	internalCertificateStoreSession.removeCRL(roleMgmgToken, deltaFingerprint);
     }
 
     @After
@@ -117,10 +119,10 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
         // Remove any lingering test crl before starting the tests
     	X509CRL crl = CertTools.getCRLfromByteArray(testcrl);
     	String fingerprint = CertTools.getFingerprintAsString(crl);
-        crlStoreSession.removeCRL(roleMgmgToken, fingerprint);
+    	internalCertificateStoreSession.removeCRL(roleMgmgToken, fingerprint);
     	X509CRL deltacrl = CertTools.getCRLfromByteArray(testdeltacrl);
     	String deltaFingerprint = CertTools.getFingerprintAsString(deltacrl);
-        crlStoreSession.removeCRL(roleMgmgToken, deltaFingerprint);
+    	internalCertificateStoreSession.removeCRL(roleMgmgToken, deltaFingerprint);
     	} finally {
     		// Be sure to to this, even if the above fails
         	tearDownRemoveRole();
@@ -206,7 +208,7 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
     	String fingerprint = CertTools.getFingerprintAsString(crl);
 
     	// Make sure we don't have the CRL stored
-    	crlStoreSession.removeCRL(roleMgmgToken, fingerprint);
+    	internalCertificateStoreSession.removeCRL(roleMgmgToken, fingerprint);
 
     	// Try to store a CRL with an admin that does not have access to CA
         try {
@@ -223,7 +225,7 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
     	assertNotNull(info);
         // Try to remove a CRL with an admin that does not have access to CA
         try {
-        	crlStoreSession.removeCRL(adminTokenNoAuth, fingerprint);
+        	internalCertificateStoreSession.removeCRL(adminTokenNoAuth, fingerprint);
         	assertTrue("Should throw", false);
         } catch (AuthorizationDeniedException e) {
         	// NOPMD
@@ -231,7 +233,7 @@ public class CrlStoreSessionTest extends RoleUsingTestCase {
     	info = crlStoreSession.getCRLInfo(fingerprint);
     	assertNotNull(info);
     	// Remove it for real
-    	crlStoreSession.removeCRL(roleMgmgToken, fingerprint);
+    	internalCertificateStoreSession.removeCRL(roleMgmgToken, fingerprint);
     	info = crlStoreSession.getCRLInfo(fingerprint);
     	assertNull(info);
 	}
