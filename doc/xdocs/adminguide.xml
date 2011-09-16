@@ -4376,18 +4376,18 @@ The OtherName consists of:
 From EJBCA 3.4 it is possible to add customized certificate extensions to certificates.
 Simple extensions only containing a static value can be added by simply editing a property file, these are called
 "basic certificate extension". It is also possible to generate advanced certificate extension by
-implementing a simple java interface.
+implementing a simple Java interface.
 </p>
 <subsection name="Configuring Custom Certificate Extensions">
 <p>
-Certificate extensions is configured in the file 'src/java/certextensions.properties'
+Certificate extensions are configured in the file 'src/java/certextensions.properties'.
 All extensions should have a id ranging from 1 up to 255, the number order is important.
 </p>
 The following properties must be set for each extension (all beginning with idN.)
 <ul>
 <li>oid : The unique OID of the extension (Required)
 </li>
-<li>classpath : Classpath to the CertificateExtention implementing class. (Required)
+<li>classpath : Full class name of the CertificateExtension implementation class. (Required)
 </li>
 <li>displayname : Display name of the extension in the 'Edit Certificate Profile' page (Required)
 </li>
@@ -4397,7 +4397,7 @@ The following properties must be set for each extension (all beginning with idN.
 </li>
 <li>critical : Defines if the extension should be marked as critical in the certificate. (Required)
 </li>
-<li>property.'property' : It is possible to define properties to the actual implementation of the CertificateExtention, for example does the BasicCerticateExtension require the properties 'encoding' and 'value' to be set.
+<li>property.'property' : It is possible to define properties to the actual implementation of the CertificateExtension, for example does the BasicCerticateExtension require the properties 'encoding' and 'value' to be set.
 </li>
 </ul>
 <p>
@@ -4409,9 +4409,10 @@ in the 'Edit Certificate Profile' page.
 </subsection>
 <subsection name="Basic Certificate Extension">
 <p>
-In order to create a Basic Certificate Extension you use the classpath org.ejbca.core.model.ca.certextensions.BasicCertificateExtension
-and specify the properties idX.property.encoding and idX.property.value.
-See the following table for the available encodings and how their value is interpreted
+In order to create a Basic Certificate Extension you set the "classpath" property to org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension
+and specify the properties idX.property.encoding and idX.property.value 
+(idX.property.value is optionally if idX.property.dynamic=true).
+See the following table for the available encodings and how their value is interpreted:
 </p>
 <ul>
 <li>DERBITSTRING : A String containing the characters '0' and '1'.
@@ -4431,6 +4432,8 @@ See the following table for the available encodings and how their value is inter
 <li>DERNULL : Value isn't used, an empty value.
 </li>
 <li>DEROBJECT : The hex encoded DER value of the extensions. You can use this to create any extension with sequences etc.
+</li>
+<li>RAW : The hex encoded byte array value of the extensions. You can supply any data hex encoded to be used as the extension value bytes.
 </li>
 </ul>
 <p>Examples of certificate extensions that you can configure with the BasicCertificateExtension are given in 'src/java/certextensions.properties'.
@@ -4452,14 +4455,25 @@ See the following table for the available encodings and how their value is inter
 </subsection>
 <subsection name="Implementing an Advanced Certificate Extension">
 <p>
-To create an advanced extension it is required to create a java class extending
+To create an advanced extension it is required to create a Java class extending
 the CertificateExtension abstract class. One method getValue is required and
-the current user data, ca and certificate profile is sent to the extension in order
+the current user data, CA and certificate profile is sent to the extension in order
 to generate dynamic extensions.
 </p><p>
+If your advanced extension needs to return a byte array that is not necessarly 
+an ASN.1 structure it is possible to override the getValueEncoded method as this 
+is the method EJBCA will call when adding the extension to the certificate. See 
+BasicCertificateExtension.java for an example of this special case.
+</p><p>
+In addition to static values defined as properties in certextensions.properties 
+it is also possible to get values from the extension data in the end entity's 
+extended information store. A good choice is to use the extension oid as a 
+prefix to the key of the property to associate the value with this extension.
+</p><p>
 Here is an example of a simple advanced extension. To add this extension to EJBCA
-add it to to the classpath in certextensions.properties, make sure the class is 
-accessible in the classpath and redeploy.
+create properties for it in certextensions.properties and make sure the full class
+name is set as its "classpath" property, also make sure the class is accessible on 
+the classpath and redeploy.
 </p>
 <source>
 public class SomeAdvancedCertificateExtension extends CertificateExtension {
@@ -4471,10 +4485,14 @@ public class SomeAdvancedCertificateExtension extends CertificateExtension {
 	 * using the input data (optional) or defined properties (optional)
 	 * 
 	 * @see org.cesecore.certificates.certificate.certextensions.CertificateExtension#getValue(org.cesecore.certificates.endentity.EndEntityInformation, org.cesecore.certificates.ca.caadmin.CA, org.cesecore.certificates.certificateprofile.CertificateProfile)
-	 */	
-	public DEREncodable getValue(UserDataVO userData, CA ca,
+	 */
+        @Override
+	public DEREncodable getValue(EndEntityInformation userData, CA ca,
 			CertificateProfile certProfile) {
 		
+                // Optionally get dynamic values for this extension
+                //String dynamicValue = userData.getExtendedinformation().getExtensionData(getOID() + ".someotherproperty");
+                
 		String value = getProperties().getProperty(PROPERTY_SOMEPROPERTY);
 		
 		return new DERPrintableString(value);
