@@ -210,10 +210,13 @@
 		</antcall>
 	</target>
 
+	<condition property="p11exclude" value="" else="**/*PKCS11*Test.class">
+		<isset property="test.includep11"/>
+	</condition>
 	<!-- =================================
           Run most system tests
          ================================= -->
-	<target name="run" depends="build, assert-appserverrunning, runws, runxkms" description="Run all system tests, enable CMP TCP to run those tests, set -Dmysql.lib=... to enable Cmp Unid test.">
+	<target name="run" depends="build, assert-appserverrunning, runws, runxkms" description="Run all system tests, enable CMP TCP to run those tests, set -Dmysql.lib=... to enable Cmp Unid test, use -Dtest.includep11=true to include P11 tests">
 		<antcall target="showtime"/>
 		<delete dir="${reports.base.dir}/run" />
 		<mkdir dir="${reports.base.dir}/run/html"/>
@@ -233,6 +236,7 @@
 		<condition property="cmpunid.enabled" value="true">
 			<isset property="mysql.lib"/>
 		</condition>
+    	<echo message="pkcs11-exclude=${p11exclude}"/>
 		<junit printsummary="yes" haltonfailure="no">
 			<classpath>
 				<path location="${build.test.dir}" />
@@ -255,6 +259,8 @@
 			<batchtest fork="yes" todir="${reports.base.dir}/run">
 				<fileset dir="${build.test.dir}">
 					<include name="**/*Test.class" />
+					<!-- optionally include PKCS11 tests, requires PKCS11 emulator -->
+					<exclude name="${p11exclude}" />
 					<!-- Tests that require TestCAs to setup CAs -->
 					<exclude name="org/ejbca/core/ejb/ca/caadmin/CAsTest.class" />
 					<exclude name="org/ejbca/core/ejb/ca/sign/SignSessionTest.class" />
