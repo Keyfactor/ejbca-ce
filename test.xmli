@@ -7,11 +7,11 @@
     	<echo message="Please observe that there are additional reports from the test:runsa tests" /> 
     </target>
 
-    <target name="test:runsys" description="run system test">
+    <target name="test:runsys" description="run system test, use -Dtest.includep11=true to include P11 tests">
     	<ant antfile="build.xml" dir="modules/systemtests" target="run" />    	
     </target>
 
-    <target name="test:runsa" description="run stand-alone JUnit test cases">
+    <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests">
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" />
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" />
     </target>

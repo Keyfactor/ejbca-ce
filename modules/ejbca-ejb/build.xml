@@ -549,11 +549,16 @@
 		</copy>
 	</target>
 
-	<target name="test" depends="compile-tests" description="Run tests for this module">
+	<condition property="p11exclude" value="" else="**/*PKCS11*Test.class">
+		<isset property="test.includep11"/>
+	</condition>
+
+	<target name="test" depends="compile-tests" description="Run tests for this module, use -Dtest.includep11=true to include P11 tests">
 		<antcall target="showtime"/>
 		<property name="reports.dir" location="${reports.base.dir}/test"/>
 		<delete dir="${reports.dir}" />
 		<mkdir dir="${reports.dir}/html"/>
+    	<echo message="pkcs11-exclude=${p11exclude}"/>
 		<echo message=" ** Running stand-alone tests in parallel chunks. Console output will be a bit scrambled.. **"/>
 		<parallel>
 			<antcall target="test-subprocess">
@@ -566,7 +571,7 @@
 			</antcall>
 			<antcall target="test-subprocess">
 				<param name="test-subprocess.include-pattern" value="**/*Test.class" />
-				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/**/*Test.class org/ejbca/util/**/*Test.class" />
+				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/**/*Test.class org/ejbca/util/**/*Test.class ${p11exclude}" />
 			</antcall>
 		</parallel>
 		<antcall target="createreport"/>
