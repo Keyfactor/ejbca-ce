@@ -138,10 +138,10 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
                     parameter = DNFieldExtractor.DC;
                     break;
                 case WITH_STATEORPROVINCE:
-                    parameter = DNFieldExtractor.L;
+                    parameter = DNFieldExtractor.ST;
                     break;
                 case WITH_LOCALITY:
-                    parameter = DNFieldExtractor.ST;
+                    parameter = DNFieldExtractor.L;
                     break;
                 case WITH_ORGANIZATION:
                     parameter = DNFieldExtractor.O;
