@@ -66,10 +66,10 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
     	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_INITIALS,
     	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_SURNAME,
     	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_TITLE, 
-    	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_ORGANIZATIONUNIT, 
+    	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_ORGANIZATIONALUNIT, 
     	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_ORGANIZATION,
-    	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_LOCALE,
-    	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_STATE,
+    	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_LOCALITY,
+    	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_STATEORPROVINCE,
     	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_DOMAINCOMPONENT,
     	                                           org.ejbca.util.query.UserMatch.MATCH_WITH_COUNTRY};
     

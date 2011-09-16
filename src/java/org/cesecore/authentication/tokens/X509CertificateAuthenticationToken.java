@@ -137,16 +137,16 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
                 case WITH_DOMAINCOMPONENT:
                     parameter = DNFieldExtractor.DC;
                     break;
-                case WITH_STATE:
+                case WITH_STATEORPROVINCE:
                     parameter = DNFieldExtractor.L;
                     break;
-                case WITH_LOCALE:
+                case WITH_LOCALITY:
                     parameter = DNFieldExtractor.ST;
                     break;
                 case WITH_ORGANIZATION:
                     parameter = DNFieldExtractor.O;
                     break;
-                case WITH_ORGANIZATIONUNIT:
+                case WITH_ORGANIZATIONALUNIT:
                     parameter = DNFieldExtractor.OU;
                     break;
                 case WITH_TITLE:
@@ -161,7 +161,7 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
                 case WITH_UID:
                     parameter = DNFieldExtractor.UID;
                     break;
-                case WITH_DNEMAIL:
+                case WITH_DNEMAILADDRESS:
                     parameter = DNFieldExtractor.E;
                     break;
                 case WITH_RFC822NAME:

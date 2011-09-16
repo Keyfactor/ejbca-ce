@@ -10,8 +10,8 @@
                                    UserMatch.MATCH_NONE,  // Separator
                                    UserMatch.MATCH_WITH_UID, UserMatch.MATCH_WITH_COMMONNAME, UserMatch.MATCH_WITH_DNSERIALNUMBER,
                                    UserMatch.MATCH_WITH_GIVENNAME, UserMatch.MATCH_WITH_INITIALS, UserMatch.MATCH_WITH_SURNAME,
-                                   UserMatch.MATCH_WITH_TITLE, UserMatch.MATCH_WITH_ORGANIZATIONUNIT, UserMatch.MATCH_WITH_ORGANIZATION,
-                                   UserMatch.MATCH_WITH_LOCALE, UserMatch.MATCH_WITH_STATE, UserMatch.MATCH_WITH_DOMAINCOMPONENT,
+                                   UserMatch.MATCH_WITH_TITLE, UserMatch.MATCH_WITH_ORGANIZATIONALUNIT, UserMatch.MATCH_WITH_ORGANIZATION,
+                                   UserMatch.MATCH_WITH_LOCALITY, UserMatch.MATCH_WITH_STATEORPROVINCE, UserMatch.MATCH_WITH_DOMAINCOMPONENT,
                                    UserMatch.MATCH_WITH_COUNTRY};
    String[] matchwithtexts      = {"MATCHCA", "MATCHCERTIFICATEPROFILE", "MATCHENDENTITYPROFILE",
                                    "MATCHSTATUS", "MATCHEMAILADDRESS", "MATCHUSERNAME",
