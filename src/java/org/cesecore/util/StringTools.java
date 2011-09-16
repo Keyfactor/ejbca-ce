@@ -58,10 +58,10 @@ public final class StringTools {
     private StringTools() {
     } // Not for instantiation
 
-    // Characters that are not allowed for XSS reasons
-    private static final char[] stripCharsIncludingXss = { '<', '>' };
     // Characters that are not allowed in strings that may be stored in the db.
     private static final char[] stripChars = { '\n', '\r', ';', '!', '\0', '%', '`', '?', '$', '~' };
+    // Characters that are not allowed in strings that may be stored in the db, including Xss chars (< and >)
+    private static final char[] stripCharsIncludingXSS = { '\n', '\r', ';', '!', '\0', '%', '`', '?', '$', '~', '<', '>' };
     // Characters that are not allowed in strings that may be used in db queries
     private static final char[] stripSqlChars = { '\'', '\"', '\n', '\r', '\\', ';', '&', '|', '!', '\0', '%', '`', '<', '>', '?', '$', '~' };
     // Characters that are allowed to escape in strings.
@@ -93,7 +93,7 @@ public final class StringTools {
      * @return the stripped version of the input string.
      */
     public static String stripIncludingXss(final String str) {
-    	return strip(str, stripCharsIncludingXss);
+    	return strip(str, stripCharsIncludingXSS);
     }
 
     public static String strip(final String str, final char[] stripThis) {

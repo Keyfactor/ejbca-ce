@@ -680,7 +680,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         expireDate = certificateData.expireDate;
         revocationDate = certificateData.revocationDate;
         revocationReason = certificateData.revocationReason;
-        username = certificateData.username;
+        setUsername(certificateData.username);
         tag = certificateData.tag;
         certificateProfileId = certificateData.certificateProfileId;
         updateTime = certificateData.updateTime;
