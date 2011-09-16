@@ -31,7 +31,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.crl.CRLData;
-import org.cesecore.certificates.crl.CrlStoreSessionBean;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64;
@@ -44,7 +43,7 @@ import org.cesecore.util.CertTools;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class InternalCertificateStoreSessionBean implements InternalCertificateStoreSessionRemote {
 
-    private static final Logger log = Logger.getLogger(CrlStoreSessionBean.class);
+    private static final Logger log = Logger.getLogger(InternalCertificateStoreSessionBean.class);
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
