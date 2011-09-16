@@ -496,7 +496,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         		assertTrue("Should not throw here", false);
         	} finally {
         		// Remove it to clean database
-                crlStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(crl));    		
+        		internalCertStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(crl));    		
         	}
     	} finally {
     		caSession.removeCA(roleMgmgToken, ca.getCAId());

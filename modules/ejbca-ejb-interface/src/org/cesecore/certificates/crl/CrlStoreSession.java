@@ -78,15 +78,5 @@ public interface CrlStoreSession {
      */
     void storeCRL(AuthenticationToken admin, byte[] incrl, String cafp, int number, String issuerDN, Date thisUpdate, Date nextUpdate, int deltaCRLIndicator)
     	throws CrlStoreException, AuthorizationDeniedException;
-    
-	/**
-	 * Removes a CRL from the database, does not throw any errors if the CRL does not exist.
-	 *
-	 * @param admin Administrator performing the operation
-	 * @param fingerprint the fingerprint of the CRL to remove
-	 * 
-     * @throws AuthorizationDeniedException (rollback) if admin was not authorized to remove CRL
-	 */
-	void removeCRL(final AuthenticationToken admin, final String fingerprint) throws AuthorizationDeniedException;
 	
 }

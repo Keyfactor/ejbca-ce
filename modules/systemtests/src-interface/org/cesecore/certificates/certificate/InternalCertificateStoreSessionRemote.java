@@ -19,6 +19,9 @@ import java.util.List;
 
 import javax.ejb.Remote;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+
 /**
  * This session bean should under no circumstances be included in the release version of CESeCore.
  * It allows removal of certificates, and may be used only for functional tests to clean up after
@@ -52,8 +55,17 @@ public interface InternalCertificateStoreSessionRemote {
     
     /** To allow testing of Local-only method */
     List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
-    
-    
+     
     Collection<Certificate> findCertificatesByIssuer(String issuerDN);
+
+	/**
+	 * Removes a CRL from the database, does not throw any errors if the CRL does not exist.
+	 *
+	 * @param admin Administrator performing the operation
+	 * @param fingerprint the fingerprint of the CRL to remove
+	 * 
+     * @throws AuthorizationDeniedException (rollback) if admin was not authorized to remove CRL
+	 */
+	void removeCRL(final AuthenticationToken admin, final String fingerprint) throws AuthorizationDeniedException;
 
 }

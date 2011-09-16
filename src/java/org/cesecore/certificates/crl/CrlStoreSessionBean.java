@@ -219,27 +219,6 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
         return maxnumber;
     }
 
-    @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void removeCRL(final AuthenticationToken admin, final String fingerprint) throws AuthorizationDeniedException {
-        final CRLData crld = CRLData.findByFingerprint(entityManager, fingerprint);
-        if (crld == null) {
-            if (log.isDebugEnabled()) {
-                log.debug("Trying to remove a CRL that does not exist: " + fingerprint);
-            }
-        } else {
-            // Check that user is authorized to the CA that issued this CRL
-            int caid = crld.getIssuerDN().hashCode();
-            authorizedToCA(admin, caid);
-
-            entityManager.remove(crld);
-            final String msg = intres.getLocalizedMessage("store.removedcrl", fingerprint, crld.getCrlNumber(), crld.getIssuerDN());
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            logSession.log(EventTypes.CRL_DELETED, EventStatus.SUCCESS, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
-        }
-    }
-
     private void authorizedToCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         if (!accessSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
             final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
