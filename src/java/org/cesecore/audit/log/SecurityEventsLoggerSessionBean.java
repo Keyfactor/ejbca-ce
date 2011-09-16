@@ -70,15 +70,7 @@ public class SecurityEventsLoggerSessionBean implements SecurityEventsLoggerSess
             final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.AUDITLOGLOG.resource(), null);
             throw new AuthorizationDeniedException(msg);
         }
-
-        try {
-        	log(eventType, eventStatus, module, service, authToken.toString(), customId, searchDetail1, searchDetail2, additionalDetails);
-        } catch (AuditRecordStorageException e) {
-        	throw e;
-        } catch (Exception e) {
-            log.error(e.getMessage(), e);
-            throw new AuditRecordStorageException(e.getMessage(), e);
-        }
+        log(eventType, eventStatus, module, service, authToken.toString(), customId, searchDetail1, searchDetail2, additionalDetails);
     }
     
     @Override
