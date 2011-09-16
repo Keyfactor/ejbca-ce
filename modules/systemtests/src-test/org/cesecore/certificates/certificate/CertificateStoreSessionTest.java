@@ -599,14 +599,13 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
         		keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
 		try {
 			final String fp = CertTools.getFingerprintAsString(xcert);
-			final String username = "foouser<tag>mytag</mytag>";
+			final String username = "foouser<tag>mytag</mytag>!";
 	        boolean ret = certificateStoreSession.storeCertificate(roleMgmgToken, xcert, username, "1234", CertificateConstants.CERT_ACTIVE, CertificateConstants.CERTTYPE_ENDENTITY,
 	        		CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
 	        assertTrue("Failed to store", ret);
 	        CertificateInfo info = certificateStoreSession.getCertificateInfo(fp);
-	        // Username must not include <tag>s
-	        assertFalse("username must not contain < signs: "+info.getUsername(), info.getUsername().contains("<"));
-	        assertFalse("username must not contain > signs: "+info.getUsername(), info.getUsername().contains(">"));
+	        // Username must not include <tag>s or !
+	        assertEquals("username must not contain < or ! signs: ", "foouser/tag/mytag//mytag//", info.getUsername());
 		} finally {
 	        internalCertStoreSession.removeCertificate(xcert);			
 		}

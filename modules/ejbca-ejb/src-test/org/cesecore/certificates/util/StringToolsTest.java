@@ -37,7 +37,7 @@ public class StringToolsTest {
     private static Logger log = Logger.getLogger(StringToolsTest.class);
 
     /**
-     * tests stipping whitespace
+     * tests stripping whitespace
      * 
      * @throws Exception
      *             error
@@ -272,12 +272,10 @@ public class StringToolsTest {
 	
 	@Test
 	public void testStripXss() {
-		final String str = "foo<tag>tag</tag>";
+		final String str = "foo<tag>tag</tag>!";
 		String ret = StringTools.strip(str);
-		assertTrue("<> should not have been stripped: "+ret, ret.contains("<"));
-		assertTrue("<> should not have been stripped: "+ret, ret.contains(">"));
+		assertEquals("<> should not have been stripped, but ! should have: ", "foo<tag>tag</tag>/", ret);
 		ret = StringTools.stripIncludingXss(str);
-		assertFalse("<> should have been stripped: "+ret, ret.contains("<"));
-		assertFalse("<> should have been stripped: "+ret, ret.contains(">"));
+		assertEquals("<> should have been stripped and so should !", "foo/tag/tag//tag//", ret);
 	}
 }
