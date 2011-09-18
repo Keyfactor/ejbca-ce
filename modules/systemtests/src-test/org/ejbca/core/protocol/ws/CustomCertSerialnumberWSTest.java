@@ -4,42 +4,23 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.IOException;
 import java.math.BigInteger;
-import java.net.URL;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
-import javax.ejb.CreateException;
-import javax.xml.namespace.QName;
-
 import org.apache.log4j.Logger;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
-import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
-import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
-import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -51,106 +32,148 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(CustomCertSerialnumberWSTest.class);
 
-    private CertificateProfileSession certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-
     private final String wsadminRoleName = "WsCustomSernoTestRole";
     
+	private static final String END_ENTITY_PROFILE = "customSerialNrCertEndEntityProfile";
+
+	private static final String CERTIFICATE_PROFILE = "customSerialNrCertProfile";
+
+	private static final String TEST_USER1 = "customSerialNrUser1";
+
+	private static final String TEST_USER2 = "customSerialNrUser2";
+
+	private static final String TEST_USER3 = "customSerialNrUser3";
+
+    @BeforeClass
+    public static void setupAccessRights() {
+    	adminBeforeClass();
+    }
+
     @Before
-    public void setupAccessRights() {
-        try {
-            super.setupAccessRights(wsadminRoleName);
-        } catch (Exception e) {
-            log.debug(e.getMessage());
-        }
+    public void setUpAdmin() throws Exception {
+		adminSetUpAdmin();
+    }
+
+    @Override
+	@After
+    public void tearDown() throws Exception {
+        super.tearDown();
     }
 
     @Test
-    public void test01CreateCertWithCustomSN() throws CreateException, CertificateProfileExistsException, ApprovalException_Exception,
-            AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception, NotFoundException_Exception,
-            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, CertificateException, NoSuchAlgorithmException,
-            KeyStoreException, NoSuchProviderException, IOException, AuthorizationDeniedException {
+    public void test00setupAccessRights() throws Exception {
+        super.setupAccessRights(this.wsadminRoleName);
+    }
+
+    @Test
+    public void test01CreateCertWithCustomSN() throws Exception {
 
         log.debug(">test01CreateCertWithCustomSN");
 
-        if (new File("p12/wstest.jks").exists()) {
-            log.debug("new file exists");
-            String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
-            log.info("Contacting web service at " + urlstr);
-
-            System.setProperty("javax.net.ssl.trustStore", "p12/wstest.jks");
-            System.setProperty("javax.net.ssl.trustStorePassword", "foo123");
-            System.setProperty("javax.net.ssl.keyStore", "p12/wstest.jks");
-            System.setProperty("javax.net.ssl.keyStorePassword", "foo123");
-
-            QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
-            EjbcaWSService service = new EjbcaWSService(new URL(urlstr), qname);
-            super.ejbcaraws = service.getEjbcaWSPort();
-        } else {
-            log.debug("new file does not exist");
-        }
-
-        BigInteger serno = SernoGeneratorRandom.instance().getSerno();
+        final BigInteger serno = SernoGeneratorRandom.instance().getSerno();
         log.debug("serno: " + serno);
 
-        if (certificateProfileSession.getCertificateProfileId("WSTESTPROFILE") != 0) {
-            certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
-        }
-
-        CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        profile.setAllowCertSerialNumberOverride(true);
-        certificateProfileSession.addCertificateProfile(intAdmin, "WSTESTPROFILE", profile);
-
+		if (this.certificateProfileSession.getCertificateProfileId(CERTIFICATE_PROFILE) != 0) {
+			this.certificateProfileSession.removeCertificateProfile(intAdmin, CERTIFICATE_PROFILE);
+		}
+		final int certProfID; {
+			final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+			profile.setAllowCertSerialNumberOverride(true);
+			this.certificateProfileSession.addCertificateProfile(intAdmin, CERTIFICATE_PROFILE, profile);
+			certProfID = this.certificateProfileSession.getCertificateProfileId(CERTIFICATE_PROFILE);
+		}
+		if ( this.endEntityProfileSession.getEndEntityProfile(intAdmin, END_ENTITY_PROFILE)!=null ) {
+			this.endEntityProfileSession.removeEndEntityProfile(intAdmin, END_ENTITY_PROFILE);
+		}
+		{
+			final EndEntityProfile profile = new EndEntityProfile(true);
+	        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certProfID));
+			this.endEntityProfileSession.addEndEntityProfile(intAdmin, END_ENTITY_PROFILE, profile);
+		}
         // Creating certificate for user: wsfoo
-        UserDataVOWS user = new UserDataVOWS("wsfoo", "foo123", true, "C=SE, CN=wsfoo", getAdminCAName(), null, "foo@anatom.se",
-                UserDataVOWS.STATUS_NEW, UserDataVOWS.TOKEN_TYPE_P12, "EMPTY", "WSTESTPROFILE", null);
-        user.setCertificateSerialNumber(serno);
+		UserDataVOWS user = new UserDataVOWS(TEST_USER1, PASSWORD, true, "C=SE, CN="+TEST_USER1,
+				getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
+				UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
+		user.setCertificateSerialNumber(serno);
 
-        KeyStore ksenv = ejbcaraws.softTokenRequest(user, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo123");
+        KeyStore ksenv = this.ejbcaraws.softTokenRequest(user, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
         assertNotNull(keyStore);
         Enumeration<String> en = keyStore.aliases();
         String alias = en.nextElement();
         X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-        log.debug("wsfoo serno: " + cert.getSerialNumber());
-        assertTrue(cert.getSerialNumber().compareTo(serno) == 0);
+        assertTrue("wsfoo serno: " + cert.getSerialNumber(), cert.getSerialNumber().compareTo(serno) == 0);
 
         // Creating certificate for user: wsfoo2
-        user = new UserDataVOWS("wsfoo2", "foo123", true, "C=SE, CN=wsfoo2", getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
-                UserDataVOWS.TOKEN_TYPE_P12, "EMPTY", "WSTESTPROFILE", null);
+		user = new UserDataVOWS(TEST_USER2, PASSWORD, true, "C=SE, CN="+TEST_USER2,
+				getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
+				UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
 
-        ksenv = ejbcaraws.softTokenRequest(user, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo123");
+		ksenv = this.ejbcaraws.softTokenRequest(user,null,"1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
         assertNotNull(keyStore);
         en = keyStore.aliases();
-        alias = (String) en.nextElement();
+        alias = en.nextElement();
         cert = (X509Certificate) keyStore.getCertificate(alias);
         log.debug("wsfoo2 serno: " + cert.getSerialNumber());
         assertTrue(cert.getSerialNumber().compareTo(serno) != 0);
 
         // Creating certificate for user: wsfoo3
-        user = new UserDataVOWS("wsfoo3", "foo123", true, "C=SE, CN=wsfoo3", getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
-                UserDataVOWS.TOKEN_TYPE_P12, "EMPTY", "WSTESTPROFILE", null);
+		user = new UserDataVOWS(TEST_USER3, PASSWORD, true, "C=SE, CN="+TEST_USER3,
+				getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
+				UserDataVOWS.TOKEN_TYPE_P12, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
         user.setCertificateSerialNumber(serno);
 
         ksenv = null;
         try {
-            ksenv = ejbcaraws.softTokenRequest(user, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
+            ksenv = this.ejbcaraws.softTokenRequest(user, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
         } catch (Exception e) {
-            log.debug(e.getMessage());
-            assertTrue("Unexpected Exception.",
-                    e.getMessage().startsWith("There is already a certificate stored in 'CertificateData' with the serial number"));
+			final String message = e.getMessage();
+			log.debug("Message when there is allready a certificate in the DB: "+message);
+			assertTrue("Unexpected Exception." ,
+					message.startsWith("There is already a certificate stored in 'CertificateData' with the serial number") ||
+					message.startsWith("Transaction rolled back"));
         }
         assertNull(ksenv);
 
         log.debug("<test01CreateCertWithCustomSN");
     }
-
-    @After
-    public void cleanUpAdmins() throws Exception {
-        super.cleanUpAdmins(wsadminRoleName);
+    @Test
+    public void test99cleanUpAdmins() throws Exception {
+		try {
+			this.certificateProfileSession.removeCertificateProfile(intAdmin, CERTIFICATE_PROFILE);
+		} catch (Throwable e) {
+			// do nothing
+		}
+		try {
+			this.endEntityProfileSession.removeEndEntityProfile(intAdmin, END_ENTITY_PROFILE);
+		} catch (Throwable e) {
+			// do nothing
+		}
+		try {
+            this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+		} catch (Throwable e) {
+			// do nothing
+		}
+		try {
+            this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER2, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+		} catch (Throwable e) {
+			// do nothing
+		}
+		try {
+            this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER3, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+		} catch (Throwable e) {
+			// do nothing
+		}
+		try {
+	        super.cleanUpAdmins(this.wsadminRoleName);
+		} catch (Throwable e) {
+			// do nothing
+		}
     }
 
-    public String getRoleName() {
-        return "";
+    @Override
+	public String getRoleName() {
+        return this.wsadminRoleName+"Mgmt";
     }
 }

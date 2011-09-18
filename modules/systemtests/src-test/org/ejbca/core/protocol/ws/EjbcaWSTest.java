@@ -18,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.net.URL;
 import java.security.KeyPair;
 import java.security.Principal;
 import java.security.SecureRandom;
@@ -34,8 +33,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
-
-import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
@@ -59,7 +56,6 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
@@ -77,7 +73,6 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
@@ -122,26 +117,16 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     
     @BeforeClass
     public static void beforeClass() {
-        CryptoProviderTools.installBCProviderIfNotAvailable();    	
-        System.setProperty("javax.net.ssl.trustStore", "p12/wstest.jks");
-        System.setProperty("javax.net.ssl.trustStorePassword", "foo123");
-        System.setProperty("javax.net.ssl.keyStore", "p12/wstest.jks");
-        System.setProperty("javax.net.ssl.keyStorePassword", "foo123");
+    	adminBeforeClass();
     }
 
     @Before
     public void setUpAdmin() throws Exception {
-    	super.setUp();
-        if (new File("p12/wstest.jks").exists()) {
-            final String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
-            log.info("Contacting webservice at " + urlstr);
-            QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
-            EjbcaWSService service = new EjbcaWSService(new URL(urlstr), qname);
-            super.ejbcaraws = service.getEjbcaWSPort();
-        }
+    	adminSetUpAdmin();
     }
 
-    public String getRoleName() {
+    @Override
+	public String getRoleName() {
         return "WsTestRoleMgmt";
     }
 
@@ -675,7 +660,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         String userName = "wsSpecialChars" + new SecureRandom().nextLong();
         final UserDataVOWS userData = new UserDataVOWS();
         userData.setUsername(userName);
-        userData.setPassword("foo123");
+        userData.setPassword(PASSWORD);
         userData.setClearPwd(true);
         userData.setSubjectDN(requestedSubjectDN);
         userData.setCaName(getAdminCAName());
@@ -687,7 +672,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         userData.setCertificateProfileName("ENDUSER");
 
         KeyStore ksenv = ejbcaraws.softTokenRequest(userData, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", "foo123");
+        java.security.KeyStore keyStore = KeyStoreHelper.getKeyStore(ksenv.getKeystoreData(), "PKCS12", PASSWORD);
         assertNotNull(keyStore);
         Enumeration<String> en = keyStore.aliases();
         String alias = en.nextElement();
@@ -714,7 +699,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         certificateProfileSession.addCertificateProfile(intAdmin, "WSTESTPROFILE", profile);
         UserDataVOWS tokenUser1 = new UserDataVOWS();
         tokenUser1.setUsername(username);
-        tokenUser1.setPassword("foo123");
+        tokenUser1.setPassword(PASSWORD);
         tokenUser1.setClearPwd(true);
         tokenUser1.setSubjectDN("CN=" + username);
         tokenUser1.setCaName(caName);
@@ -769,7 +754,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private X509Certificate createUserAndCert(String username, int caID) throws Exception {
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
-        userdata.setPassword("foo123");
+        userdata.setPassword(PASSWORD);
         userAdminSession.addUser(intAdmin, userdata, true);
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
