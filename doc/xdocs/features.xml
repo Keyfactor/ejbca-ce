@@ -35,6 +35,7 @@
 <li>Enrollment for other applications through open APIs and tools.</li>
 <li>Enrollment generating complete OpenVPN installers for VPN users.</li>
 <li>Mobile enrollment, i.e. iOS using <a href="adminguide.html#Tested devices">SCEP</a>.</li>
+<li><a href="http://www.3gpp.org/">3GPP</a>, i.e. LTE/4G, compatible PKI.</li>
 <li>Smart card logon certificates.</li>
 <li>Notification system for e-mail notification to users and administrators when a user is added or certificates expire etc.</li>
 <li>Random or manual password for initial user authentication.</li>
