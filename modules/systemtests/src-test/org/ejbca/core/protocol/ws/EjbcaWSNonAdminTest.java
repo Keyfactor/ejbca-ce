@@ -113,10 +113,10 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        System.setProperty("javax.net.ssl.trustStore", "p12/wsnonadmintest.jks");
-        System.setProperty("javax.net.ssl.trustStorePassword", "foo123");
-        System.setProperty("javax.net.ssl.keyStore", "p12/wsnonadmintest.jks");
-        System.setProperty("javax.net.ssl.keyStorePassword", "foo123");
+        System.setProperty("javax.net.ssl.trustStore", TEST_NONADMIN_FILE);
+        System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
+        System.setProperty("javax.net.ssl.keyStore", TEST_NONADMIN_FILE);
+        System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
     }
 
     @Before
@@ -134,7 +134,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     }
 
     private void setUpNonAdmin() throws Exception {
-        if (new File("p12/wsnonadmintest.jks").exists()) {
+        if (new File(TEST_NONADMIN_FILE).exists()) {
             String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
             log.info("Contacting webservice at " + urlstr);
             QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
@@ -433,7 +433,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         caid = cainfo.getCAId();
 
         EndEntityInformation userData = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null); 
-        userData.setPassword("foo123");
+        userData.setPassword(PASSWORD);
         userAdminSession.addUser(intadmin, userData, true);
 
         BatchMakeP12 makep12 = new BatchMakeP12();
@@ -450,12 +450,12 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         admincert1 = (X509Certificate) certificateStoreSession.findCertificatesByUsername(adminusername1).iterator().next();
 
         KeyStore ks = KeyStore.getInstance("JKS");
-        ks.load(new FileInputStream("p12/wsnonadmintest.jks"), "foo123".toCharArray());
+        ks.load(new FileInputStream(TEST_NONADMIN_FILE), PASSWORD.toCharArray());
         Enumeration<String> enumer = ks.aliases();
         X509Certificate reqadmincert = null;
         while (enumer.hasMoreElements()) {
             String nextAlias = enumer.nextElement();
-            if (nextAlias.equals("wsnonadmintest")) {
+            if (nextAlias.equals(TEST_NONADMIN_USERNAME)) {
                 reqadmincert = (X509Certificate) ks.getCertificate(nextAlias);
             }
         }
