@@ -492,7 +492,7 @@
 	<target name="compile-va-ejb" depends="with.clover, va-ejb-interface, compile-va-common">
 		<mkdir dir="${build-va.dir}"/>
 		<javac srcdir="${src.dir}" destdir="${build-va.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" classpathref="compile-va-ejb.classpath">
-			<include name="org/cesecore/certificates/certifciate/CertificateStoreSessionBean.java" />
+			<include name="org/cesecore/certificates/certificate/CertificateStoreSessionBean.java" />
 			<include name="org/cesecore/certificates/crl/CrlStoreSessionBean.java" />
 		</javac>
 	</target>

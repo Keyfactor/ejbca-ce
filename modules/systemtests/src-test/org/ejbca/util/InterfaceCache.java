@@ -13,6 +13,7 @@
 
 package org.ejbca.util;
 
+import org.cesecore.audit.log.SecurityEventsLoggerSessionRemote;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -175,5 +176,9 @@ public class InterfaceCache {
 	
 	public static CertReqHistorySessionRemote getCertReqHistorySession() {
 		return getEjb().getCertReqHistorySession();
+	}
+
+	public static SecurityEventsLoggerSessionRemote getSecurityEventsLoggerSession() {
+		return getEjb().getSecurityEventsLoggerSession();
 	}
 }

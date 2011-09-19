@@ -47,7 +47,6 @@
     <target name="compile" depends="setup">
     	<mkdir dir="${build.dir}" />
         <javac destdir="${build.dir}" debug="on" includeantruntime="no" encoding="utf-8" target="${java.target.version}" classpathref="oldlogexport.lib.classpath">
-            <src path="${mod.ejbca-entity.path}/src" />
             <src path="${ejbca.home}/src/java" />
         	<src path="${src.dir}"/>
             <include name="org/ejbca/ui/cli/OldLogExportCli.java" />

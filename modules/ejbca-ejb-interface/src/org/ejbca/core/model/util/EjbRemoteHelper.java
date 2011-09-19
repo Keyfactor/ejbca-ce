@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.model.util;
 
+import org.cesecore.audit.log.SecurityEventsLoggerSessionRemote;
 import org.cesecore.authentication.AuthenticationSessionRemote;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -80,6 +81,7 @@ public class EjbRemoteHelper {
     private RevocationSessionRemote revocationSession = null;
     private RoleAccessSessionRemote roleAccessSession = null;
     private RoleManagementSessionRemote roleManagementSession = null;
+    private SecurityEventsLoggerSessionRemote securityEventsLoggerSession = null;
     private ServiceDataSessionRemote serviceDataSession = null;
     private ServiceSessionRemote serviceSession = null;
     private SignSessionRemote signSession = null;
@@ -257,6 +259,13 @@ public class EjbRemoteHelper {
         return upgradeSession;
     }
 
+	public SecurityEventsLoggerSessionRemote getSecurityEventsLoggerSession() {
+        if (securityEventsLoggerSession == null) {
+            securityEventsLoggerSession = JndiHelper.getRemoteSession(SecurityEventsLoggerSessionRemote.class);
+        }
+        return securityEventsLoggerSession;
+	}
+
     public ServiceDataSessionRemote getServiceDataSession() {
         if (serviceDataSession == null) {
             serviceDataSession = JndiHelper.getRemoteSession(ServiceDataSessionRemote.class);
@@ -319,5 +328,4 @@ public class EjbRemoteHelper {
         }
         return cliAuthenticationProvider;
     }
-
 }

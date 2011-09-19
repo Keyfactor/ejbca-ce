@@ -24,7 +24,6 @@ CREATE TABLE AdminEntityData (
 CREATE TABLE AdminGroupData (
     pK INTEGER NOT NULL,
     adminGroupName VARCHAR(254) NOT NULL,
-    cAId INTEGER NOT NULL,
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (pK)
@@ -55,6 +54,25 @@ CREATE TABLE ApprovalData (
     rowVersion INTEGER NOT NULL,
     status INTEGER NOT NULL,
     PRIMARY KEY (id)
+);
+
+CREATE TABLE AuditRecordData (
+    pk VARCHAR(254) NOT NULL,
+    additionalDetails CLOB,
+    authToken VARCHAR(254) NOT NULL,
+    customId VARCHAR(254),
+    eventStatus VARCHAR(254) NOT NULL,
+    eventType VARCHAR(254) NOT NULL,
+    module VARCHAR(254) NOT NULL,
+    nodeId VARCHAR(254) NOT NULL,
+    rowProtection CLOB(10K),
+    rowVersion INTEGER NOT NULL,
+    searchDetail1 VARCHAR(254),
+    searchDetail2 VARCHAR(254),
+    sequenceNumber BIGINT NOT NULL,
+    service VARCHAR(254) NOT NULL,
+    timeStamp BIGINT NOT NULL,
+    PRIMARY KEY (pk)
 );
 
 CREATE TABLE AuthorizationTreeUpdateData (
@@ -213,31 +231,6 @@ CREATE TABLE KeyRecoveryData (
     username VARCHAR(254),
     PRIMARY KEY (certSN,
     issuerDN)
-);
-
-CREATE TABLE LogConfigurationData (
-    id INTEGER NOT NULL,
-    logConfiguration BLOB(200K) NOT NULL,
-    logEntryRowNumber INTEGER NOT NULL,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE LogEntryData (
-    id INTEGER NOT NULL,
-    adminData VARCHAR(254),
-    adminType INTEGER NOT NULL,
-    cAId INTEGER NOT NULL,
-    certificateSNR VARCHAR(254),
-    event INTEGER NOT NULL,
-    logComment VARCHAR(254),
-    module INTEGER NOT NULL,
-    rowProtection CLOB(10K),
-    rowVersion INTEGER NOT NULL,
-    time BIGINT NOT NULL,
-    username VARCHAR(254),
-    PRIMARY KEY (id)
 );
 
 CREATE TABLE PublisherData (
