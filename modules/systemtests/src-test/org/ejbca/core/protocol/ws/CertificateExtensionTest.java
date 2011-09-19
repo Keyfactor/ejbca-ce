@@ -1,30 +1,35 @@
-/*************************************************************************
- *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
- *                                                                       *
- *  This software is free software; you can redistribute it and/or       *
- *  modify it under the terms of the GNU Lesser General Public           *
- *  License as published by the Free Software Foundation; either         *
- *  version 2.1 of the License, or any later version.                    *
- *                                                                       *
- *  See terms of license at gnu.org.                                     *
- *                                                                       *
- *************************************************************************/
+/************************************************************************
+ *																		*
+ *  EJBCA: The OpenSource Certificate Authority							*
+ *																		*
+ *  This software is free software; you can redistribute it and/or		*
+ *  modify it under the terms of the GNU Lesser General Public			*
+ *  License as published by the Free Software Foundation; either		*
+ *  version 2.1 of the License, or any later version.					*
+ *																		*
+ *  See terms of license at gnu.org.									*
+ *																		*
+ ***********************************************************************/
 package org.ejbca.core.protocol.ws;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.KeyPair;
 import java.security.cert.X509Certificate;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
+import java.util.Random;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -43,7 +48,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * 
+ * Test of certificate extensions with values from WS.
  * 
  * @author Lars Silvén
  * @version $Id$
@@ -51,46 +56,34 @@ import org.junit.Test;
 public class CertificateExtensionTest extends CommonEjbcaWS {
 
 	private static final Logger log = Logger.getLogger(CertificateExtensionTest.class);
-    private final String wsadminRoleName = "CertificateExtensionTest";    
+	private final String wsadminRoleName = "CertificateExtensionTest";	
 	private static final String CERTIFICATE_PROFILE = "certExtension";
 	private static final String TEST_USER = "certExtension";
 	private static final String END_ENTITY_PROFILE = "endEntityProfile";
 
-    @BeforeClass
-    public static void setupAccessRights() {
-    	adminBeforeClass();
-    }
+	@BeforeClass
+	public static void setupAccessRights() {
+		adminBeforeClass();
+	}
 
-    @Before
-    public void setUpAdmin() throws Exception {
+	@Before
+	public void setUpAdmin() throws Exception {
 		adminSetUpAdmin();
-    }
+	}
 
-    @Override
+	@Override
 	@After
-    public void tearDown() throws Exception {
-        super.tearDown();
-    }
+	public void tearDown() throws Exception {
+		super.tearDown();
+	}
 
 	@Test
-    public void test00setupAccessRights() throws Exception {
-        super.setupAccessRights(this.wsadminRoleName);
-    }
+	public void test00setupAccessRights() throws Exception {
+		super.setupAccessRights(this.wsadminRoleName);
+	}
 
-    @Test
+	@Test
 	public void test1() throws Exception {
-		{
-			Properties props = new Properties();
-			props.put("id1.oid", "1.2.3.4");
-			props.put("id1.classpath", "org.ejbca.core.model.ca.certextensions.BasicCertificateExtension");
-			props.put("id1.displayname", "TESTEXTENSION");
-			props.put("id1.used", "TRUE");
-			props.put("id1.translatable", "FALSE");
-			props.put("id1.critical", "TRUE");		
-			props.put("id1.property.encoding", "DERPRINTABLESTRING");
-			props.put("id1.property.value", "Test 123");
-			CertificateExtensionFactory.getInstance(props);
-		}
 		if (this.certificateProfileSession.getCertificateProfileId(CERTIFICATE_PROFILE) != 0) {
 			this.certificateProfileSession.removeCertificateProfile(intAdmin, CERTIFICATE_PROFILE);
 		}
@@ -107,22 +100,24 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 		}
 		{
 			final EndEntityProfile profile = new EndEntityProfile(true);
-	        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certProfID));
+			profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certProfID));
 			this.endEntityProfileSession.addEndEntityProfile(intAdmin, END_ENTITY_PROFILE, profile);
 		}
 
 		final UserDataVOWS userData = new UserDataVOWS(TEST_USER, PASSWORD, true, "C=SE, CN=cert extension test",
 				getAdminCAName(), null, "foo@anatom.se", UserDataVOWS.STATUS_NEW,
 				UserDataVOWS.TOKEN_TYPE_USERGENERATED, END_ENTITY_PROFILE, CERTIFICATE_PROFILE, null);
+		final String sOID = "1.2.3.4";
+		final byte input[] = new byte[400];
+		new Random().nextBytes(input);
 		{
 			final List<ExtendedInformationWS> lei = new LinkedList<ExtendedInformationWS>();
 			final ExtendedInformationWS ei = new ExtendedInformationWS();
-			ei.setName("1.2.3");
-			ei.setValue("1234567890abcdef");
+			ei.setName(sOID);
+			ei.setValue(new String(Hex.encode(input)));
 			lei.add(ei);
 			userData.setExtendedInformation(lei);
 		}
-		setUpAdmin();
 		this.ejbcaraws.editUser(userData);
 
 		final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -135,9 +130,33 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 		assertNotNull(certenv);
 		assertTrue(certenv.getResponseType().equals(CertificateHelper.RESPONSETYPE_CERTIFICATE));
 		final X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
-
-		CertificateExtensionFactory.getInstance(null);
+		final byte extension[] = cert.getExtensionValue(sOID);
+		assertNotNull(getNoCertExtensionProperties(sOID), extension);
+		final ASN1Object asn1o = ASN1Object.fromByteArray(extension);
+		assertNotNull(asn1o);
+		log.info("Extension: "+asn1o);
+		assertTrue(asn1o instanceof ASN1OctetString);
+		assertArrayEquals(input, ((ASN1OctetString)asn1o).getOctets());
 	}
+	private String getNoCertExtensionProperties(String sOID) {
+		final StringWriter sw = new StringWriter();
+		final PrintWriter pw = new PrintWriter(sw);
+		pw.println("No '"+sOID+"' extension in generated certificate.");
+		pw.println("The reason might be that '"+sOID+"' is not defined in the file src/java/certextensions.properties .");
+		pw.println("The files should look something like this:");
+		pw.println();
+		pw.println("id1.oid = "+sOID);
+		pw.println("id1.classpath=org.cesecore.certificates.certificate.certextensions.BasicCertificateExtension");
+		pw.println("id1.displayname=TESTEXTENSION");
+		pw.println("id1.used=true");
+		pw.println("id1.translatable=false");
+		pw.println("id1.critical=false");
+		pw.println("id1.property.dynamic=true");
+		pw.println("id1.property.encoding=RAW");
+		pw.flush();
+		return sw.toString();
+	}
+	
 	public void test99cleanUpAdmins() {
 		try {
 			this.certificateProfileSession.removeCertificateProfile(intAdmin, CERTIFICATE_PROFILE);
@@ -150,18 +169,18 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 			// do nothing
 		}
 		try {
-            this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+			this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 		} catch (Throwable e) {
 			// do nothing
 		}
 		try {
-	        super.cleanUpAdmins(this.wsadminRoleName);
+			super.cleanUpAdmins(this.wsadminRoleName);
 		} catch (Throwable e) {
 			// do nothing
 		}
 	}
 	@Override
 	public String getRoleName() {
-        return this.wsadminRoleName+"Mgmt";
+		return this.wsadminRoleName+"Mgmt";
 	}
 }
