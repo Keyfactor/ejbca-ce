@@ -97,14 +97,13 @@ public class CertificateExtensionFactory {
 	
 	
 	/**
-	 * Special Method that should only be used from test scripts. New instance is created at each call.
+	 * Special Method that should only be used from test scripts.
 	 */
-	static public CertificateExtensionFactory getInstance(Properties props){
-		if (props==null) {
-			instance=null;
-			return null;
+	static CertificateExtensionFactory getInstance(Properties props){
+		if(instance == null){
+			instance = parseConfiguration(props);
 		}
-		instance = parseConfiguration(props);
+		
 		return instance;
 	}
 	
