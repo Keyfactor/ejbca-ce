@@ -81,8 +81,6 @@ import org.junit.Test;
  * 
  * Based on EJBCA version: CreateCRLSessionTest.java 11375 2011-02-21 12:25:48Z anatom
  * 
- * NOTE: Remove tests for the CRLStore which is an external http based service and should have it's own tests test08TestCRLStore
- * 
  * @version $Id$
  */
 public class CrlCreateSessionCRLTest extends RoleUsingTestCase {

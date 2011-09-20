@@ -12,6 +12,9 @@
  *************************************************************************/
 package org.cesecore.authentication;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import junit.framework.Assert;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -42,6 +45,16 @@ public class AuthenticationSessionBeanTest {
         SimpleSubject subject = new SimpleSubject(null, null);
         AuthenticationToken token = authentication.authenticate(subject, authenticationProvider);
         Assert.assertNotNull("Token was not succesfully delivered by trivial AuthenticationProvider implementation.", token);
+    }
+
+    @Test
+    public void testAuthenticationFailure() {
+    	// A credential "fail" will force failure in the SimpleAuthenticationProviderSessionBean
+    	Set<String> set = new HashSet<String>();
+    	set.add("fail");
+        SimpleSubject subject = new SimpleSubject(null, set);
+        AuthenticationToken token = authentication.authenticate(subject, authenticationProvider);
+        Assert.assertNull("The authentication should have failed, because we added a 'fail' credential.", token);
     }
 
 }

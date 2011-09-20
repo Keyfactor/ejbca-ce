@@ -33,7 +33,5 @@ public class SimpleSubject extends AuthenticationSubject {
 
     public SimpleSubject(Set<Principal> principals, Set<?> credentials) {
         super(principals, credentials);
-        
     }
-
 }
