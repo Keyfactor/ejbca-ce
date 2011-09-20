@@ -40,9 +40,6 @@ import org.cesecore.keys.token.PrivateKeyNotExtractableException;
  * Used to speed up database integrity protection, where the key should always
  * be available.  
  * 
- * Based on CESeCore version:
- *       CachedCryptoToken.java 948 2011-07-18 09:04:26Z mikek
- * 
  * @version $Id$
  * 
  */
@@ -81,9 +78,15 @@ public class CachedCryptoToken implements CryptoToken {
 
 	@Override
 	public byte[] extractKey(String privKeyTransform, String encryptionKeyAlias, String privateKeyAlias) throws NoSuchAlgorithmException, NoSuchPaddingException,
-			NoSuchProviderException, InvalidKeyException, IllegalBlockSizeException, CryptoTokenOfflineException, PrivateKeyNotExtractableException {
+			NoSuchProviderException, InvalidKeyException, IllegalBlockSizeException, CryptoTokenOfflineException, PrivateKeyNotExtractableException, InvalidAlgorithmParameterException {
 		return wrappedCryptoToken.extractKey(privKeyTransform, encryptionKeyAlias, privateKeyAlias);
 	}
+
+    @Override
+    public byte[] extractKey(String privKeyTransform, AlgorithmParameterSpec spec, String encryptionKeyAlias, String privateKeyAlias) throws NoSuchAlgorithmException, NoSuchPaddingException,
+            NoSuchProviderException, InvalidKeyException, IllegalBlockSizeException, CryptoTokenOfflineException, PrivateKeyNotExtractableException, InvalidAlgorithmParameterException {
+        return wrappedCryptoToken.extractKey(privKeyTransform, spec, encryptionKeyAlias, privateKeyAlias);
+    }
 
 	@Override
 	public void generateKey(String algorithm, int keysize, String alias) throws NoSuchAlgorithmException, NoSuchProviderException,
