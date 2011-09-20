@@ -490,13 +490,13 @@
 		<mkdir dir="${build.dir}/keys"/>
 		<copy file="${ejbca.home}/p12/ocspTestSigner.p12" todir="${build.dir}/keys" failonerror="false"/>
 		<echo>
-			Configure ocsp.properties:
+			Configure va.properties:
 			 ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 			 ocsp.keys.dir=${build.dir}/keys
 			 ocsp.keys.storePassword=foo123
 			 ocsp.untilNextUpdate=5
 			 ocsp.maxAge=4
-			and redeploy using 'ant ocsp-deploy'.
+			and redeploy using 'ant va-deploy'.
 		</echo>
 		<available file="${build.dir}/keys/ocspTestSigner.p12" property="noOcspTestSigner" />
 		<fail unless="noOcspTestSigner" message="Could not batch generate OCSP signing keystore."/>

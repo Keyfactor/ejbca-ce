@@ -43,7 +43,7 @@ import org.bouncycastle.ocsp.RevokedStatus;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.util.Base64;
-import org.junit.After;
+import org.cesecore.util.CertTools;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -60,26 +60,17 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     private static final Logger log = Logger.getLogger(ProtocolOcspHttpStandaloneTest.class);
 
     private static final int myCaId = issuerDN.hashCode();
-    //private static final String myOcspIp = "127.0.0.1";	TODO: Refactor back to where we could use this test remotely?
-  
-    private String httpReqPath = "http://127.0.0.1:" + "8080" + "/ejbca";
-    private String resourceOcsp = "publicweb/status/ocsp";
 
     // Required to override check in baseclass
     @Before
     public void setUp() throws Exception {
-        super.setUp();
+        //super.setUp(); We don't want to initialize roles etc, since this is a standalone test!
         caid = myCaId;
         httpPort = "8080";
         httpReqPath = "http://127.0.0.1:" + "8080" + "/ejbca";
         resourceOcsp = "publicweb/status/ocsp";
         helper = new OcspJunitHelper(httpReqPath, resourceOcsp);
-    }
-
-    // Required to override check in baseclass
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
+        unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
     }
 
     public String getRoleName() {
@@ -234,7 +225,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
      */
     @Test
     public void test17VerifyHttpGetHeaders() throws Exception {
-        final X509Certificate ocspTestCert = getTestCert(false);
+        loadUserCert(caid);
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
@@ -307,7 +298,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
      */
     @Test
     public void test18NextUpdateThisUpdate() throws Exception {
-        final X509Certificate ocspTestCert = getTestCert(false);
+        loadUserCert(caid);
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
@@ -346,7 +337,4 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         assertTrue("nextUpdate cannot be before thisUpdate.", !nextUpdate.before(thisUpdate));
         assertTrue("producedAt cannot be before thisUpdate.", !producedAt.before(thisUpdate));
     }
-
-
-
 }
