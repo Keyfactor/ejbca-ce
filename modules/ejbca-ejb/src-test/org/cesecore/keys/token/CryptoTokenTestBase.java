@@ -15,6 +15,7 @@ package org.cesecore.keys.token;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
@@ -42,9 +43,6 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 
 /**
- * 
- * Based on cesecore version:
- *      CryptoTokenTestBase.java 511 2011-03-10 15:23:28Z tomas
  * 
  * @version $Id$
  *
@@ -501,7 +499,7 @@ public abstract class CryptoTokenTestBase {
 			    catoken.deleteEntry(tokenpin.toCharArray(), "rsatest00001");
 			}
 
-	protected void doStoreAndLoad(CryptoToken token) throws InvalidKeyException, CryptoTokenOfflineException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, SignatureException, CryptoTokenAuthenticationFailedException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	protected void doStoreAndLoad(CryptoToken token) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException  {
 	    token.activate(tokenpin.toCharArray());
 	    assertEquals(CryptoToken.STATUS_ACTIVE, token.getTokenStatus());
 	    token.deleteEntry(tokenpin.toCharArray(), "rsatest00001");
@@ -534,7 +532,7 @@ public abstract class CryptoTokenTestBase {
 	    token.deleteEntry(tokenpin.toCharArray(), "rsatest00001");
 	}
 
-	protected void doGenerateSymKey(CryptoToken token) throws InvalidKeyException, CryptoTokenOfflineException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, SignatureException, CryptoTokenAuthenticationFailedException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, BadPaddingException {
+	protected void doGenerateSymKey(CryptoToken token) throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException, SignatureException, CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, BadPaddingException  {
 	    token.activate(tokenpin.toCharArray());
 	    assertEquals(CryptoToken.STATUS_ACTIVE, token.getTokenStatus());
 	    token.deleteEntry(tokenpin.toCharArray(), "aestest00001");
@@ -624,13 +622,8 @@ public abstract class CryptoTokenTestBase {
 
 	protected void doExtractKeyFalse(CryptoToken token) throws InvalidKeyException, CryptoTokenOfflineException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, SignatureException, CryptoTokenAuthenticationFailedException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException {
 
-		Properties prop = token.getProperties();
-	    prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(false));
-	    token.setProperties(prop);
+	    assertFalse("Token should not allow extraction on this test", token.doPermitExtractablePrivateKey());
 
-	    BaseCryptoToken basetoken = (BaseCryptoToken)token;
-	    assertFalse(basetoken.doPermitExtractablePrivateKey());
-	    
         //create encryption key
         token.activate(tokenpin.toCharArray());
         assertEquals(CryptoToken.STATUS_ACTIVE, token.getTokenStatus());
@@ -643,9 +636,11 @@ public abstract class CryptoTokenTestBase {
         //extract the private key
         try {
             token.extractKey("DESede/ECB/PKCS5Padding", "encryptkeytest001", "extractkeytest001");
-            assertTrue("Should have received an exception", false);
+            fail("Should have received an exception");
         } catch (PrivateKeyNotExtractableException e) {
-            assertTrue(true);
+            // NOPMD
+        } catch (InvalidKeyException e) {
+            // NOPMD
         }
 
         token.deleteEntry(tokenpin.toCharArray(), "encryptkeytest001");
@@ -655,12 +650,7 @@ public abstract class CryptoTokenTestBase {
 
 	protected void doExtractKey(CryptoToken token) throws InvalidKeyException, CryptoTokenOfflineException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, SignatureException, CryptoTokenAuthenticationFailedException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException, PrivateKeyNotExtractableException {
 
-		Properties prop = token.getProperties();
-	    prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, Boolean.toString(true));
-	    token.setProperties(prop);
-
-	    BaseCryptoToken basetoken = (BaseCryptoToken)token;
-	    assertTrue(basetoken.doPermitExtractablePrivateKey());
+	    assertTrue("Token should allow extraction on this test", token.doPermitExtractablePrivateKey());
 
         //create encryption key
         token.activate(tokenpin.toCharArray());
@@ -668,27 +658,28 @@ public abstract class CryptoTokenTestBase {
         try {
             token.deleteEntry(tokenpin.toCharArray(), "encryptkeytest001");
             token.deleteEntry(tokenpin.toCharArray(), "extractkeytest001");
-    	    //token.generateKey("AES", 256, "encryptkeytest001");
-            token.generateKey("DESede", 128, "encryptkeytest001");
-            //token.generateKey("DESede", 192, "encryptkeytest001");
+            token.generateKey("DESede", 168, "encryptkeytest001");
             
             //create the key pair
             token.generateKeyPair("512", "extractkeytest001");
             
             //extract the private key
-            byte[] wrappedkey = token.extractKey("DESede/ECB/PKCS5Padding", "encryptkeytest001", "extractkeytest001");
-            //byte[] wrappedkey = token.extractKey("AES/CBC/NoPadding", "encryptkeytest001", "extractkeytest001");
+            byte[] cbcIv = { 0x01, 0x23, 0x45, 0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF };
+            IvParameterSpec ivParam = new IvParameterSpec( cbcIv );
+            byte[] wrappedkey = token.extractKey("DESede/CBC/PKCS5Padding", ivParam, "encryptkeytest001", "extractkeytest001");
             
             //get encryption key
             Key encryptionKey = token.getKey("encryptkeytest001");
             
             //unwrap private key and check if it is ok
-            Cipher c = Cipher.getInstance( "DESede/ECB/PKCS5Padding" );
-            c.init(Cipher.UNWRAP_MODE, encryptionKey);
+            Cipher c = Cipher.getInstance( "DESede/CBC/PKCS5Padding" ,"BC");
+            c.init(Cipher.UNWRAP_MODE, encryptionKey, ivParam);
             
             Key unwrappedkey = c.unwrap(wrappedkey, "RSA", Cipher.PRIVATE_KEY);
             
             assertEquals(token.getPrivateKey("extractkeytest001"), unwrappedkey);
+        } catch (PrivateKeyNotExtractableException e) {
+        	fail("Private key is not extractable, this failure is normal on a SafeNet Luna, but should work on a Utimaco and SafeNet ProtectServer.");
         } finally {
         	token.deleteEntry(tokenpin.toCharArray(), "encryptkeytest001");
         	token.deleteEntry(tokenpin.toCharArray(), "extractkeytest001");

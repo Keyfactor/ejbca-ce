@@ -41,10 +41,7 @@ import org.cesecore.keys.util.KeyTools;
 /**
  * Class implementing a keystore on PKCS11 tokens.
  * 
- * Based on EJBCA version: 
- *      PKCS11CAToken.java 9024 2010-05-06 14:09:14Z anatom $
- * CESeCore version:
- *      PKCS11CryptoToken.java 933 2011-07-07 18:53:11Z mikek
+ * Based on EJBCA version: PKCS11CAToken.java 9024 2010-05-06 14:09:14Z anatom $
  * 
  * @version $Id$
  */
@@ -63,6 +60,11 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     public final static String ATTRIB_LABEL_KEY = "attributesFile";
     public final static String SLOT_LIST_INDEX_LABEL_KEY = "slotListIndex";
     public final static String PASSWORD_LABEL_KEY = "pin";
+    /** A user defined name of the slot provider. Used in order to be able to have two different providers
+     * (with different PKCS#11 attributes) for the same slot. If this is not set (null), the default
+     * java provider name is used (SunPKCS11-pkcs11LibName-slotNr for example SunPKCS11-libcryptoki.so-slot1).
+     */
+    public final static String TOKEN_FRIENDLY_NAME = "tokenFriendlyName";
 
     private P11Slot p11slot;
 
@@ -75,7 +77,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         try {
             Thread.currentThread().getContextClassLoader().loadClass(KeyTools.SUNPKCS11CLASS);
         } catch (Throwable t) {
-            throw new InstantiationException("Pkcs11 provider class " + KeyTools.SUNPKCS11CLASS + " not found.");
+            throw new InstantiationException("PKCS11 provider class " + KeyTools.SUNPKCS11CLASS + " not found.");
         }
     }
 
@@ -94,8 +96,15 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         }
         String sharedLibrary = properties.getProperty(PKCS11CryptoToken.SHLIB_LABEL_KEY);
         String attributesFile = properties.getProperty(PKCS11CryptoToken.ATTRIB_LABEL_KEY);
-        // getInstance will run autoActivate()
-        this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, isIndex, attributesFile, this, id);
+
+        String friendlyName = properties.getProperty(TOKEN_FRIENDLY_NAME);
+
+        if(friendlyName != null){
+        	this.p11slot = P11Slot.getInstance(friendlyName, this.sSlotLabel, sharedLibrary, isIndex, attributesFile, this, id);
+        } else {
+        	// getInstance will run autoActivate()
+        	this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, isIndex, attributesFile, this, id);
+        }
         final Provider provider = this.p11slot.getProvider();
         setJCAProvider(provider);
     }
@@ -232,5 +241,9 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     public byte[] getTokenData() {
         return null;
     }
-
+    
+    /** Used for testing */
+    protected P11Slot getP11slot() {
+    	return p11slot;
+    }
 }

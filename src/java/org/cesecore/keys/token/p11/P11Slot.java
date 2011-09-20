@@ -36,10 +36,7 @@ import org.cesecore.keys.util.KeyTools;
  * Use an instance of this class for all your access of a specific P11 slot.
  * Use {@link P11Slot#getProvider()} to get a provider for the slot.
  *
- * Based on EJBCA version: 
- *      P11Slot.java 11228 2011-01-19 11:34:11Z anatom
- * CESeCore version:
- *      P11Slot.java 912 2011-06-28 15:21:43Z mikek
+ * Based on EJBCA version: P11Slot.java 11228 2011-01-19 11:34:11Z anatom
  * 
  * @version $Id$
  */
@@ -121,13 +118,33 @@ public class P11Slot {
      */
     public static P11Slot getInstance(String slotNr, String sharedLibrary, boolean isIndex, 
                                       String attributesFile, P11SlotUser token, int id) throws CryptoTokenOfflineException {
+        
+        return getInstance(null, slotNr, sharedLibrary, isIndex, attributesFile, token, id);
+    }
+    
+    
+    
+    /**
+     * Get P11 slot instance. Only one instance (provider) will ever be created for each slot regardless of how many times this method is called.
+     * @param friendlyName name to identify the instance
+     * @param slotNr number of the slot
+     * @param sharedLibrary file path of shared
+     * @param isIndex true if not slot number but index in slot list
+     * @param attributesFile Attributes file. Optional. Set to null if not used
+     * @param token Token that should use this object
+     * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
+     * @return P11Slot
+     * @throws CryptoTokenOfflineException if token can not be activated, IllegalArgumentException if sharedLibrary is null.
+     */
+    public static P11Slot getInstance(String friendlyName, String slotNr, String sharedLibrary, boolean isIndex, 
+                                      String attributesFile, P11SlotUser token, int id) throws CryptoTokenOfflineException {
         if (sharedLibrary == null) {
             throw new IllegalArgumentException("sharedLibrary = null");
         }
         if (log.isDebugEnabled()) {
         	log.debug("P11Slot.getInstance(): '"+slotNr+"', '"+sharedLibrary+"', "+isIndex+", '"+attributesFile+"', "+id);
         }
-        return getInstance(new SlotDataParam(slotNr, sharedLibrary, isIndex, attributesFile), token, id);
+        return getInstance(new SlotDataParam(friendlyName, slotNr, sharedLibrary, isIndex, attributesFile), token, id);
     }
     /**
      * As {@link #getInstance(String, String, boolean, String, org.ejbca.util.keystore.P11Slot.P11SlotUser)} but is using config file instead parameters. Do only use this method if the P11 shared library is ony specified in this config file.
@@ -135,7 +152,7 @@ public class P11Slot {
      * @param token Token that should use this object.
      * @param id unique ID of the user of the token. For EJBCA this is the caid. For the OCSP responder this is fixed since then there is only one user.
      * @return a new P11Slot instance
-     * @throws CryptoTokenOfflineException
+     * @throws CATokenOfflineException
      */
     static public P11Slot getInstance(String configFileName, P11SlotUser token, int id) throws CryptoTokenOfflineException {
         return getInstance(new SlotDataConfigFile(configFileName), token, id);
@@ -217,24 +234,30 @@ public class P11Slot {
         }
     }
     private static class SlotDataParam implements ISlotData {
+    	private final String friendlyName;
         private final String slotNr;
         private final String sharedLibrary;
         private final String libName;
         private final boolean isIndex; 
         private final String attributesFile;
-        SlotDataParam(String _slotNr, String _sharedLibrary, boolean _isIndex, 
+        SlotDataParam(String _friendlyName, String _slotNr, String _sharedLibrary, boolean _isIndex, 
                       String _attributesFile) {
             this.slotNr = _slotNr;
             this.sharedLibrary = _sharedLibrary;
             this.isIndex = _isIndex;
             this.attributesFile = _attributesFile;
             this.libName = new File(this.sharedLibrary).getName();
+            this.friendlyName = _friendlyName;
         }
         public P11Slot getNewP11Slot() throws CryptoTokenOfflineException {
             return new P11Slot(this.slotNr, this.sharedLibrary, this.isIndex, this.attributesFile);
         }
         public String getSlotLabel() {
-            return this.slotNr + this.libName + this.isIndex;
+        	if(this.friendlyName != null) {
+        		return this.friendlyName;
+        	} else {
+        		return this.slotNr + this.libName + this.isIndex;
+        	}
         }
         public String getLibName() {
             return this.libName;
@@ -264,7 +287,6 @@ public class P11Slot {
     }
     /**
      * @return  the provider of the slot.
-     * @throws CryptoTokenOfflineException
      */
     public Provider getProvider() {
         return this.provider;
@@ -307,7 +329,9 @@ public class P11Slot {
             Security.removeProvider(tmpProvider.getName());
         }
         Security.addProvider( tmpProvider );
-        log.debug("Provider successfully added: "+tmpProvider);
+        if (log.isDebugEnabled()) {
+        	log.debug("Provider successfully added: "+tmpProvider);
+        }
         return tmpProvider;
     }
 }

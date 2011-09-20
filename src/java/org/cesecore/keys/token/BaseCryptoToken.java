@@ -14,6 +14,7 @@ package org.cesecore.keys.token;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.KeyStore;
@@ -27,12 +28,14 @@ import java.security.PublicKey;
 import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.Enumeration;
 import java.util.Properties;
 
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
+import javax.crypto.spec.IvParameterSpec;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -45,10 +48,7 @@ import org.cesecore.util.StringTools;
 /**
  * Base class for crypto tokens handling things that are common for all crypto tokens, hard or soft.
  * 
- * Based on EJBCA version: 
- *      BaseCAToken.java 10358 2010-11-03 18:34:23Z mikekushner
- * CESeCore version:
- *      BaseCryptoToken.java 933 2011-07-07 18:53:11Z mikek 
+ * Based on EJBCA version: BaseCAToken.java 10358 2010-11-03 18:34:23Z mikekushner
  * 
  * @version $Id$
  */
@@ -531,24 +531,58 @@ public abstract class BaseCryptoToken implements CryptoToken {
      * @throws IllegalBlockSizeException if the Cipher created using privKeyTransform is a block cipher, no padding has been requested, and the length
      *             of the encoding of the key to be wrapped is not a multiple of the block size.
      * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
+     * @throws InvalidAlgorithmParameterException if using CBC mode and the IV 0x0000000000000000 is not accepted.
      */
     public byte[] extractKey(String privKeyTransform, String encryptionKeyAlias, String privateKeyAlias) throws NoSuchAlgorithmException,
             NoSuchPaddingException, NoSuchProviderException, InvalidKeyException, IllegalBlockSizeException, CryptoTokenOfflineException,
-            PrivateKeyNotExtractableException {
+            PrivateKeyNotExtractableException, InvalidAlgorithmParameterException {
+        IvParameterSpec ivParam = null;
+        if (privKeyTransform.matches( ".+\\/CBC\\/.+" )){
+            byte[] cbcIv = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+            ivParam = new IvParameterSpec(cbcIv);
+        }
+        return extractKey(privKeyTransform, ivParam, encryptionKeyAlias, privateKeyAlias);
+    }
+
+    /**
+     * This method extracts a PrivateKey from the keystore and wraps it, using a symmetric encryption key
+     *
+     * @param privKeyTransform - transformation algorithm
+     * @param spec - transformation algorithm spec (e.g: IvParameterSpec for CBC mode)
+     * @param encryptionKeyAlias - alias of the symmetric key that will encrypt the private key
+     * @param privateKeyAlias - alias for the PrivateKey to be extracted
+     * @return byte[] with the encrypted extracted key
+     * @throws NoSuchAlgorithmException if privKeyTransform is null, empty, in an invalid format, or if no Provider supports a CipherSpi
+     *             implementation for the specified algorithm.
+     * @throws NoSuchPaddingException if privKeyTransform contains a padding scheme that is not available.
+     * @throws NoSuchProviderException if BouncyCastle is not registered in the security provider list.
+     * @throws InvalidKeyException if the encryption key derived from encryptionKeyAlias was invalid.
+     * @throws IllegalBlockSizeException if the Cipher created using privKeyTransform is a block cipher, no padding has been requested, and the length
+     *             of the encoding of the key to be wrapped is not a multiple of the block size.
+     * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
+     * @throws InvalidAlgorithmParameterException if spec id not valid or supported.
+     */
+    public byte[] extractKey(String privKeyTransform, AlgorithmParameterSpec spec, String encryptionKeyAlias, String privateKeyAlias) throws NoSuchAlgorithmException,
+            NoSuchPaddingException, NoSuchProviderException, InvalidKeyException, IllegalBlockSizeException, CryptoTokenOfflineException,
+            PrivateKeyNotExtractableException, InvalidAlgorithmParameterException {
 
         if (doPermitExtractablePrivateKey()) {
             // get encryption key
             Key encryptionKey = getKey(encryptionKeyAlias);
-
             // get private key to wrap
             PrivateKey privateKey = getPrivateKey(privateKeyAlias);
+            if (privateKey == null) {
+            	throw new PrivateKeyNotExtractableException("Extracting key with alias '"+encryptionKeyAlias+"' return null.");
+            }
 
             // initialize cipher in wrap mode
             Cipher c = null;
-            c = (this.getEncProviderName() == null || this.getEncProviderName().equals("")) ? Cipher.getInstance(privKeyTransform) : Cipher
-                    .getInstance(privKeyTransform, this.getEncProviderName());
-
-            c.init(Cipher.WRAP_MODE, encryptionKey);
+            c = Cipher.getInstance(privKeyTransform, "BC");
+            if (spec == null){
+                c.init(Cipher.WRAP_MODE, encryptionKey);
+            } else {
+                c.init(Cipher.WRAP_MODE, encryptionKey, spec);
+            }
 
             // wrap key
             byte[] encryptedKey = c.wrap(privateKey);
