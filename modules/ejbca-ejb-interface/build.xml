@@ -53,8 +53,10 @@
     		<src path="${ejbca.home}/src/java"/>
 			<include name="org/cesecore/certificates/certificate/CertificateStoreSession*.java"/>
 			<include name="org/cesecore/certificates/crl/CrlStoreSession*.java"/>
-			<include name="org/cesecore/audit/log/SecurityEventsLoggerSession*.java"/>
-			<include name="org/cesecore/authorization/control/AccessControlSession*.java"/>
+			<include name="org/cesecore/audit/log/SecurityEventsLoggerSession.java"/>
+			<include name="org/cesecore/audit/log/SecurityEventsLoggerSessionLocal.java"/>
+			<include name="org/cesecore/authorization/control/AccessControlSession.java"/>
+			<include name="org/cesecore/authorization/control/AccessControlSessionLocal.java"/>
         	<exclude name="org/cesecore/certificates/certificate/CertificateStore*SessionBean.java" />
 			<exclude name="org/cesecore/certificates/crl/CrlStore*SessionBean.java" />
 			<exclude name="org/cesecore/audit/log/SecurityEventsLoggerSessionBean.java"/>

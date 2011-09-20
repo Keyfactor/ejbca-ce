@@ -346,6 +346,7 @@
 		<exclude name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java" />
 		<exclude name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
 		<exclude name="org/cesecore/core/ejb/ca/crl/CrlStandAloneSessionBean.java" />
+		<exclude name="org/ejbca/cesecoreintegration/StandAloneVaMockSessionBean.java" />
 		<!-- Samples should never be included.. -->
 		<exclude name="org/ejbca/samples/**/*.java" />
 		<!-- Some common classes used by various components.. TODO: If possible, move to the only component using the class.. -->
@@ -494,6 +495,7 @@
 		<javac srcdir="${src.dir}" destdir="${build-va.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" classpathref="compile-va-ejb.classpath">
 			<include name="org/cesecore/certificates/certificate/CertificateStoreSessionBean.java" />
 			<include name="org/cesecore/certificates/crl/CrlStoreSessionBean.java" />
+			<include name="org/ejbca/cesecoreintegration/StandAloneVaMockSessionBean.java" />
 		</javac>
 	</target>
 
@@ -507,6 +509,7 @@
 			<include name="org/ejbca/util/DummyPatternLogger.java"/>
 			<include name="org/ejbca/config/EjbcaConfiguration.java"/>
 			<include name="org/ejbca/core/model/InternalEjbcaResources.java"/>
+			<include name="org/cesecore/config/OcspConfiguration.java"/>
 			<include name="org/ejbca/core/protocol/ws/common/CertificateHelper.java"/>
 			<include name="org/ejbca/core/protocol/ws/client/gen/CertificateResponse.java"/>
 			<include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWS.java"/>
