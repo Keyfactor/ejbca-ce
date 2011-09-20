@@ -294,10 +294,9 @@
 					<exclude name="org/ejbca/core/protocol/cmp/CmpRAUnidTest.class" />
 					<!-- Tests that require unique index in the database to work -->
 					<exclude name="org/ejbca/core/ejb/ca/sign/CustomCertSerialnumberTest.class" />
-					<exclude name="org/ejbca/core/protocol/ws/CustomCertSerialnumberWSTest.class" />
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRARequestCustomSerialNoTest.class" />
 					<!-- Exclude WS, they are run from their own target, runws -->
-					<exclude name="**/EjbcaWS*Test.class" />
+					<exclude name="**/protocol/ws/*" />
 					<!-- Exclude XKMS, they are run from their own target, runxkms -->
 					<exclude name="**/XKMS*Test.class" />
 				</fileset>
@@ -413,7 +412,7 @@
 		<!-- no jee classes for ws tests -->
 		<antcall target="runone-internal" inheritrefs="true">
 			<param name="reports.dir" value="${reports.base.dir}/runws"/>
-			<param name="test.runone" value="EjbcaWS*Test"/>
+			<param name="test.runone" value="protocol/ws/*Test"/>
 		</antcall>
 	</target>
 
