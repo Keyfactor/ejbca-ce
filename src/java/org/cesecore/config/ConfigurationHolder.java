@@ -54,8 +54,8 @@ public final class ConfigurationHolder {
     private static CompositeConfiguration configBackup = null;
 
     /** cesecore.properties must be first in this file, because CONFIGALLOWEXTERNAL is defined in there. */
-    private static final String[] CONFIG_FILES = { "/conf/cesecore.properties", "/conf/extendedkeyusage.properties", "/conf/log.properties",
-            "/conf/cache.properties", "/conf/database.properties", "/conf/databaseprotection.properties"};
+    private static final String[] CONFIG_FILES = { "cesecore.properties", "extendedkeyusage.properties", "log.properties",
+            "cache.properties", "database.properties", "databaseprotection.properties", "va.properties", "ocsp.properties"};
 
     /** Configuration property that enables dynamic reading of properties from the file system. This is not allowed by default for security reasons. */
     private static final String CONFIGALLOWEXTERNAL = "allow.external-dynamic.configuration";
@@ -127,7 +127,7 @@ public final class ConfigurationHolder {
 
             // Default values build into jar file, this is last prio used if no of the other sources override this
             for (int i = 0; i < CONFIG_FILES.length; i++) {
-                addConfigurationResource(CONFIG_FILES[i]);
+                addConfigurationResource("/conf/"+CONFIG_FILES[i]);
             }
             // Load internal.properties only from built in configuration file
             try {
