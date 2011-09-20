@@ -37,7 +37,6 @@ import org.junit.Test;
 /**
  * Testing of CertStoreServlet
  * 
- * @author lars
  * @version $Id$
  * 
  */

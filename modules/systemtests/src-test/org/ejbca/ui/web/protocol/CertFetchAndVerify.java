@@ -39,7 +39,6 @@ import org.cesecore.jndi.JndiHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.protocol.certificatestore.HashID;
-import org.ejbca.util.InterfaceCache;
 
 /**
  * Tests that it is possible to find certificates for all CAs that has been created.
@@ -58,7 +57,7 @@ public class CertFetchAndVerify {
 		this.cf = CertificateFactory.getInstance("X.509");
 	}
 	/**
-	 * One could thin that the class javax.activation.URLDataSource should be usable when connection to a server to retrieve a multipart
+	 * One could think that the class javax.activation.URLDataSource should be usable when connection to a server to retrieve a multipart
 	 * message, but it is not. URLDataSource makes two connections when a message is received.
 	 *
 	 */
@@ -71,7 +70,7 @@ public class CertFetchAndVerify {
 			if ( reponseCode==HttpURLConnection.HTTP_NO_CONTENT ) {
 				throw new NoData();
 			}
-			Assert.assertEquals("Fetching CRL with '"+url+"' is not working. Response code is :"+reponseCode,
+			Assert.assertEquals("Fetching cert with '"+url+"' is not working. Response code is :"+reponseCode,
 			                    HttpURLConnection.HTTP_OK, reponseCode );
 		}
 		/**
@@ -129,7 +128,7 @@ public class CertFetchAndVerify {
 		log.debug("URL: '"+sURI+"'.");
 		final HttpURLConnection connection = (HttpURLConnection)new URI(sURI).toURL().openConnection();
 		connection.connect();
-		Assert.assertTrue( "Fetching CRL with '"+sURI+"' is not working.", HttpURLConnection.HTTP_OK==connection.getResponseCode() );
+		Assert.assertTrue( "Fetching cert with '"+sURI+"' is not working.", HttpURLConnection.HTTP_OK==connection.getResponseCode() );
 		return (X509Certificate)this.cf.generateCertificate(connection.getInputStream());
 	}
 	private void checkIssuer( X509Certificate bottom ) throws IOException, CertificateException, URISyntaxException {
