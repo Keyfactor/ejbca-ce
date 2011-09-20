@@ -57,7 +57,6 @@ import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -98,16 +97,15 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private static final AuthenticationToken intadmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("WSTEST"));
     private AuthenticationToken reqadmin;
 
-    private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
-    private RoleAccessSessionRemote roleAccessSession = InterfaceCache.getRoleAccessSession();
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private ApprovalExecutionSessionRemote approvalExecutionSession = InterfaceCache.getApprovalExecutionSession();
-    private ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-    private HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
-    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
-    private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private final AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
+    private final RoleAccessSessionRemote roleAccessSession = InterfaceCache.getRoleAccessSession();
+    private final CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private final ApprovalExecutionSessionRemote approvalExecutionSession = InterfaceCache.getApprovalExecutionSession();
+    private final ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
+    private final CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private final HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
+    private final GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
+    private final RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
 
     private final String wsadminRoleName = "WsNonAdminTestRole";
     @BeforeClass
