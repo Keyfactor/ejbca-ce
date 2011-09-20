@@ -29,6 +29,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.security.auth.x500.X500Principal;
 
+import org.apache.commons.lang.StringUtils;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
@@ -42,9 +43,6 @@ import org.cesecore.util.CryptoProviderTools;
 
 /**
  * @see SimpleAuthenticationProvider
- * 
- * Based on cesecore version:
- *      SimpleAuthenticationProviderSessionBean.java 841 2011-05-19 14:14:29Z johane
  * 
  * @version $Id$
  * 
@@ -65,6 +63,19 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
     @Override
     public AuthenticationToken authenticate(AuthenticationSubject subject) {
 
+    	// A small check if we have added a "fail" credential to the subject.
+    	// If we have we will return null, so we can test authentication failure.
+    	Set<?> usercredentials = subject.getCredentials();
+    	if ((usercredentials != null) && (usercredentials.size() > 0)) {
+    		Object o = usercredentials.iterator().next();
+    		if (o instanceof String) {
+				String str = (String) o;
+				if (StringUtils.equals("fail", str)) {
+					return null;
+				}
+			}
+    	}
+    	
         X509Certificate certificate = null;
         // If we have a certificate as input, use that, otherwise generate a self signed certificate
         Set<X509Certificate> credentials = new HashSet<X509Certificate>();
@@ -79,9 +90,6 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
         
         // If there was no certificate input, create a self signed
         if (certificate == null) {
-            /*
-             * TODO: Document the bellow try/catch better.
-             */
             String dn = "C=SE,O=Test,CN=Test"; // default
             // If we have created a subject with an X500Principal we will use this DN to create the dummy certificate.
             if (subject != null) {
@@ -100,8 +108,7 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
             } catch (NoSuchAlgorithmException e) {
                 throw new InvalidAuthenticationTokenException("Could not create authentication token.", e);
             } catch (NoSuchProviderException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                throw new InvalidAuthenticationTokenException("Could not create authentication token.", e);
             } catch (InvalidAlgorithmParameterException e) {
                 throw new InvalidAuthenticationTokenException("Could not create authentication token.", e);
             }
