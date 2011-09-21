@@ -14,7 +14,6 @@
 package org.ejbca.ui.cli.ca;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -30,9 +29,8 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Issues a new CRL from the CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         
         if ( (args.length < 1) || ((args.length > 1) && StringUtils.equals(args[1], "-?")) ) {
 			getLogger().info("Description: " + getDescription());
@@ -42,7 +40,7 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
         }
         if (args.length == 1) {
         	try{
-        	  createCRL(getAdmin(subject), (String) null, false);
+        	  createCRL(getAdmin(cliUserName, cliPassword), (String) null, false);
         	  getLogger().info("You can also run this command with \"" + getCommand() + " <caname> <-delta>\" to force CRL creation for a CA.");
         	} catch (Exception e) {
         		throw new ErrorAdminCommandException(e);
@@ -59,9 +57,9 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
               }
               CryptoProviderTools.installBCProvider();
               // createCRL prints info about crl generation
-              String issuerName = getIssuerDN(getAdmin(subject), caname);
+              String issuerName = getIssuerDN(getAdmin(cliUserName, cliPassword), caname);
               if (issuerName != null) {
-                  createCRL(getAdmin(subject), issuerName, deltaCRL);
+                  createCRL(getAdmin(cliUserName, cliPassword), issuerName, deltaCRL);
               } else {
             	  getLogger().error("No such CA exists.");
               }

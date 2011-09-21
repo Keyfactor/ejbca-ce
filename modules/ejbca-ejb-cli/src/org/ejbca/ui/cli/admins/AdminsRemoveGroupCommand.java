@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.cli.admins;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -27,9 +26,8 @@ public class AdminsRemoveGroupCommand extends BaseAdminsCommand {
 	public String getDescription() { return "Remove admin role"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         
         try {
             if (args.length < 2) {
@@ -43,7 +41,7 @@ public class AdminsRemoveGroupCommand extends BaseAdminsCommand {
             	getLogger().error("No such role \"" + roleName + "\" .");
                 return;
             }
-            ejb.getRoleManagementSession().remove(getAdmin(subject), role);
+            ejb.getRoleManagementSession().remove(getAdmin(cliUserName, cliPassword), role);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
 		}

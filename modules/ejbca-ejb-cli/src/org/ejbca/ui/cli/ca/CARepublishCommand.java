@@ -20,7 +20,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateInfo;
@@ -52,9 +51,8 @@ public class CARepublishCommand extends BaseCaAdminCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         
         try {
             // Get and remove switches
@@ -71,7 +69,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             String caname = args[1];
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(subject), caname);
+            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname);
             if (cainfo == null) {
                 getLogger().info("CA with name '" + caname + "' does not exist.");
                 return;
@@ -91,12 +89,12 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                     String fingerprint = CertTools.getFingerprintAsString(cacert);
                     String username = ejb.getCertStoreSession().findUsernameByCertSerno(cacert.getSerialNumber(), cacert.getIssuerDN().getName());
                     CertificateInfo certinfo = ejb.getCertStoreSession().getCertificateInfo(fingerprint);
-                    ejb.getPublisherSession().storeCertificate(getAdmin(subject), capublishers, cacert, username, null, cainfo.getSubjectDN(), fingerprint, certinfo
+                    ejb.getPublisherSession().storeCertificate(getAdmin(cliUserName, cliPassword), capublishers, cacert, username, null, cainfo.getSubjectDN(), fingerprint, certinfo
                             .getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo.getTag(),
                             certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);
                     getLogger().info("Certificate published for " + caname);
                     if ( crlbytes!=null && crlbytes.length>0 && crlNumber>0 ) {
-                        ejb.getPublisherSession().storeCRL(getAdmin(subject), capublishers, crlbytes, fingerprint, crlNumber, cainfo.getSubjectDN());
+                        ejb.getPublisherSession().storeCRL(getAdmin(cliUserName, cliPassword), capublishers, crlbytes, fingerprint, crlNumber, cainfo.getSubjectDN());
                         getLogger().info("CRL with number "+crlNumber+" published for " + caname);
                     } else {
                         getLogger().info("CRL not published, no CRL createed for CA?");
@@ -109,7 +107,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             }
 
             // Get all users for this CA
-            Collection<EndEntityInformation> coll = ejb.getUserAdminSession().findAllUsersByCaId(getAdmin(subject), cainfo.getCAId());
+            Collection<EndEntityInformation> coll = ejb.getUserAdminSession().findAllUsersByCaId(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
             Iterator<EndEntityInformation> iter = coll.iterator();
             while (iter.hasNext()) {
             	EndEntityInformation data = iter.next();
@@ -148,12 +146,12 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                                 Iterator<Certificate> i = certCol.iterator();
                                 while (i.hasNext()) {
                                     X509Certificate c = (X509Certificate) i.next();
-                                    publishCert(getAdmin(subject), data, certProfile, c);
+                                    publishCert(getAdmin(cliUserName, cliPassword), data, certProfile, c);
                                 }
                             }
                             // Publish the latest again, last to make sure that
                             // is the one stuck in LDAP for example
-                            publishCert(getAdmin(subject), data, certProfile, cert);
+                            publishCert(getAdmin(cliUserName, cliPassword), data, certProfile, cert);
                         } else {
                             getLogger().info("Not publishing user " + data.getUsername() + ", no publisher in certificate profile.");
                         }

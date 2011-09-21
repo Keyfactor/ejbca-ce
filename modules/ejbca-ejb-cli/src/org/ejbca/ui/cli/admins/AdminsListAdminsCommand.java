@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.cli.admins;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -39,9 +38,8 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         
         try {
             if (args.length < 2) {
@@ -56,7 +54,7 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
                 return;
             }
             for (AccessUserAspectData  userAspect : adminGroup.getAccessUsers().values()) {
-                String caName = (String) ejb.getCAAdminSession().getCAIdToNameMap(getAdmin(subject)).get(userAspect.getCaId());
+                String caName = (String) ejb.getCAAdminSession().getCAIdToNameMap(getAdmin(cliUserName, cliPassword)).get(userAspect.getCaId());
                 if (caName == null) {
                     caName = "Unknown CA with id " + userAspect.getCaId();
                 }

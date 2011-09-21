@@ -10,66 +10,61 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.authentication.cli;
+package org.cesecore.mock.authentication.tokens;
 
 import java.security.Principal;
 import java.util.HashSet;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
 
 /**
- * This authentication token is returned as a result of a CLI authentication action. By design it's only allowed 
- * to be used once, then becomes invalid. 
+ * This token is God-token that can be sent via remote (and should never be deployed). It's purpose is to simplify boilerplate work in system tests, and
+ * should not be used as a substitute for proper authentication. 
+ * 
+ * 
+ * Example usage: TestAlwaysAllowLocalAuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal function abc"));
+ * 
  * 
  * @version $Id$
  */
-public class CliAuthenticationToken extends AuthenticationToken {
+public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken {
 
     private static final long serialVersionUID = -3942437717641924829L;
 
-    private final long referenceId;
-    
-    public CliAuthenticationToken(final UsernamePrincipal principal, final long referenceId) {
+    public TestAlwaysAllowLocalAuthenticationToken(final Principal principal) {
         super(new HashSet<Principal>() {
-            private static final long serialVersionUID = 5868667272584423392L;
+            private static final long serialVersionUID = 3125729459998373943L;
 
             {
                 add(principal);
             }
         }, null);
-        this.referenceId = referenceId;
 
     }
 
     @Override
     public boolean matches(AccessUserAspect accessUser) {
-        //TODO: Incomplete
-        return true;
+       return true;
     }
 
+    @Override
+    public boolean equals(Object authenticationToken) {
+        if (this == authenticationToken) {
+            return true;
+        }
+        if (authenticationToken == null) {
+            return false;
+        }
+        if (getClass() != authenticationToken.getClass()) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 
     @Override
     public int hashCode() {
-        final int prime = 37;
-        int result = 1;
-        result = prime * result + (int) (referenceId ^ (referenceId >>> 32));
-        return result;
+        return "AlwaysAllowLocalAuthenticationToken".hashCode();
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        CliAuthenticationToken other = (CliAuthenticationToken) obj;
-        if (referenceId != other.referenceId)
-            return false;
-        return true;
-    }
-
 }

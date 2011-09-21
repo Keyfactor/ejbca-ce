@@ -82,6 +82,9 @@ public class XKMSSigTest {
 
     private static final Logger log = Logger.getLogger(XKMSSigTest.class);
 
+    private final String cliUserName = "ejbca";
+    private final String cliPassword = "ejbca";
+    
     private ObjectFactory xKMSObjectFactory = new ObjectFactory();
     private org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
 
@@ -154,7 +157,7 @@ public class XKMSSigTest {
 
         // log.debug("tempdir="+tmpfile.getParent());
         makep12.setMainStoreDir(tmpfile.getAbsolutePath());
-        makep12.createAllNew();
+        makep12.createAllNew(cliUserName, cliPassword);
     	log.trace("<test00SetupAccessRights");
     }
 

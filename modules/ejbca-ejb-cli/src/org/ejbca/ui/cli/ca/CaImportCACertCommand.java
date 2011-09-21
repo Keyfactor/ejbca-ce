@@ -6,7 +6,6 @@ import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.List;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -28,9 +27,8 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Imports a PEM file and creates a new external CA representation from it"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);	
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         
         if (args.length < 3) {
         	getLogger().info("Description: " + getDescription());
@@ -65,9 +63,9 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 			if (initAuth) {
 				String subjectdn = CertTools.getSubjectDN(certs.iterator().next());
 				Integer caid = Integer.valueOf(subjectdn.hashCode());
-				initAuthorizationModule(getAdmin(subject), caid.intValue(), superAdminCN);
+				initAuthorizationModule(getAdmin(cliUserName, cliPassword), caid.intValue(), superAdminCN);
 			}
-			ejb.getCAAdminSession().importCACertificate(getAdmin(subject), caName, certs);
+			ejb.getCAAdminSession().importCACertificate(getAdmin(cliUserName, cliPassword), caName, certs);
 			getLogger().info("Imported CA "+caName);			
 		} catch (CertificateException e) {
 			getLogger().error(e.getMessage());

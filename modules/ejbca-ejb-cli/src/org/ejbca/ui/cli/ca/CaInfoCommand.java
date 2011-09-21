@@ -37,9 +37,9 @@ public class CaInfoCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Shows info about a CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
+        
         
         if (args.length < 2) {
     		getLogger().info("Description: " + getDescription());
@@ -49,8 +49,8 @@ public class CaInfoCommand extends BaseCaAdminCommand {
         try {
         	CryptoProviderTools.installBCProvider();
             String caname = args[1];
-            ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(getAdmin(subject), caname));
-            CAInfo cainfo = getCAInfo(getAdmin(subject), caname);
+            ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(getAdmin(cliUserName, cliPassword), caname));
+            CAInfo cainfo = getCAInfo(getAdmin(cliUserName, cliPassword), caname);
                                     
             getLogger().info("CA name: " + caname);
             getLogger().info("CA type: "+cainfo.getCAType());

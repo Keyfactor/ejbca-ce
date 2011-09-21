@@ -87,6 +87,9 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(EjbcaWSNonAdminTest.class);
 
+    private final String cliUserName = "ejbca";
+    private final String cliPassword = "ejbca";
+    
     private static String adminusername1 = null;
     private static X509Certificate admincert1 = null;
     private static AuthenticationToken admin1 = null;
@@ -438,7 +441,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         File tmpfile = File.createTempFile("ejbca", "p12");
 
         makep12.setMainStoreDir(tmpfile.getParent());
-        makep12.createAllNew();
+        makep12.createAllNew(cliUserName, cliPassword);
 
         adminEntities = new ArrayList<AccessUserAspectData>();
         adminEntities.add(new AccessUserAspectData(getRoleName(), caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminusername1));  

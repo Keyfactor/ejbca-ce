@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -40,12 +39,11 @@ public class AdminsListGroupsCommand extends BaseAdminsCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         
         try {
-            Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(getAdmin(subject));            
+            Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));            
             Collections.sort((List<RoleData>) adminGroups);
             for (RoleData adminGroup : adminGroups) {                
                 int numberOfAdmins = adminGroup.getAccessUsers().size();

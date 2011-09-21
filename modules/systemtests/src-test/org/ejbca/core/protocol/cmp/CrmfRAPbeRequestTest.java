@@ -112,6 +112,9 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private static X509Certificate cacert = null;
 
+    private final String cliUserName = "ejbca";
+    private final String cliPassword = "ejbca";
+    
     private ApprovalExecutionSessionRemote approvalExecutionSession = InterfaceCache.getApprovalExecutionSession();
     private ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
@@ -350,7 +353,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             BatchMakeP12 makep12 = new BatchMakeP12();
             File tmpfile = File.createTempFile("ejbca", "p12");
             makep12.setMainStoreDir(tmpfile.getParent());
-            makep12.createAllNew();
+            makep12.createAllNew(cliUserName, cliPassword);
             Collection<java.security.cert.Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);
             assertTrue(userCerts.size() == 1);
             X509Certificate cert = (X509Certificate) userCerts.iterator().next();

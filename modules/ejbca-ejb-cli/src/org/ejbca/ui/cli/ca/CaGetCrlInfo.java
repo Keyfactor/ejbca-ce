@@ -15,7 +15,6 @@ package org.ejbca.ui.cli.ca;
 
 import java.util.Collection;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.util.ValidityDate;
@@ -34,14 +33,13 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
 
 	@Override
 	public void execute(String[] args) throws ErrorAdminCommandException {
-	        String cliUserName = "username";
-	        String cliPassword = "passwordhash";
-	        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+	        String cliUserName = "ejbca";
+	        String cliPassword = "ejbca";
 	    
         try {
-        	Collection<Integer> caIds = ejb.getCaSession().getAvailableCAs(getAdmin(subject));
+        	Collection<Integer> caIds = ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword));
         	for (Integer caId : caIds) {
-        		final CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(subject), caId);
+        		final CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caId);
         		final StringBuilder sb = new StringBuilder();
         		sb.append("\"").append(cainfo.getName()).append("\" \"").append(cainfo.getSubjectDN()).append("\"");
         		final CRLInfo crlInfo = ejb.getCrlStoreSession().getLastCRLInfo(cainfo.getSubjectDN(), false);

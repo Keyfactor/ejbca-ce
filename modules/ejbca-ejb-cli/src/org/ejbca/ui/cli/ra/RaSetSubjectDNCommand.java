@@ -45,8 +45,8 @@ public class RaSetSubjectDNCommand extends BaseRaAdminCommand {
 	@Override
 	public void execute(String[] args) throws ErrorAdminCommandException {
 
-	    String cliUserName = "username";
-	    String cliPassword = "passwordhash";
+	    String cliUserName = "ejbca";
+	    String cliPassword = "ejbca";
 	    
         try {
             if (args.length < 3) {
@@ -70,9 +70,9 @@ public class RaSetSubjectDNCommand extends BaseRaAdminCommand {
             }
             getLogger().info("Setting subjectDN '" + subjectDN + "' for user " + username);
             try {
-            	EndEntityInformation uservo = ejb.getEndEntityAccessSession().findUser(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), username);
+            	EndEntityInformation uservo = ejb.getEndEntityAccessSession().findUser(getAdmin(cliUserName, cliPassword), username);
             	uservo.setDN(subjectDN);
-            	ejb.getUserAdminSession().changeUser(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), uservo, false);
+            	ejb.getUserAdminSession().changeUser(getAdmin(cliUserName, cliPassword), uservo, false);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");
             } catch (UserDoesntFullfillEndEntityProfile e) {

@@ -19,7 +19,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -29,6 +28,7 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
  * Adds an admin
+ * 
  * @version $Id$
  */
 public class AdminsAddAdminCommand extends BaseAdminsCommand {
@@ -47,23 +47,22 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
 
     /** @see org.ejbca.ui.cli.CliCommandPlugin */
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
-          
         try {
-            if (args.length < 6) {
+            String cliUserName = args[0];
+            String cliPassword = args[1];
+            if (args.length < 8) {         
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
-                Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(getAdmin(subject)); 
+                Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(
+                        getAdmin(cliUserName, cliPassword));
                 Collections.sort((List<RoleData>) adminGroups);
                 String availableGroups = "";
                 for (RoleData adminGroup : adminGroups) {
                     availableGroups += (availableGroups.length() == 0 ? "" : ", ") + "\"" + adminGroup.getRoleName() + "\"";
                 }
                 getLogger().info("Available Admin groups: " + availableGroups);
-                Map<Integer, String> caIdToNameMap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin(subject));
-                Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin(subject));
+                Map<Integer, String> caIdToNameMap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin(cliUserName, cliPassword));
+                Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword));
                 String availableCas = "";
                 for (Integer caid : caids) {
                     availableCas += (availableCas.length() == 0 ? "" : ", ") + "\"" + caIdToNameMap.get(caid) + "\"";
@@ -81,33 +80,34 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 getLogger().info("Match type is one of: " + availableMatchTypes);
                 return;
             }
-            String roleName = args[1];
+            String roleName = args[3];
             if (ejb.getRoleAccessSession().findRole(roleName) == null) {
                 getLogger().error("No such group \"" + roleName + "\" .");
                 return;
             }
-            String caName = args[2];
-            CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(subject), caName);
+            String caName = args[4];
+            CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caName);
             if (caInfo == null) {
                 getLogger().error("No such CA \"" + caName + "\" .");
                 return;
             }
             int caid = caInfo.getCAId();
-            AccessMatchValue matchWith = AccessMatchValue.matchFromName(args[3]); 
+            AccessMatchValue matchWith = AccessMatchValue.matchFromName(args[5]);
             if (matchWith == null) {
-                getLogger().error("No such thing to match with as \"" + args[3] + "\" .");
+                getLogger().error("No such thing to match with as \"" + args[5] + "\" .");
                 return;
             }
-            AccessMatchType matchType = AccessMatchType.matchFromName(args[4]);
+            AccessMatchType matchType = AccessMatchType.matchFromName(args[6]);
             if (matchType == null) {
-                getLogger().error("No such type to match with as \"" + args[4] + "\" .");
+                getLogger().error("No such type to match with as \"" + args[6] + "\" .");
                 return;
             }
-            String matchValue = args[5];
+            String matchValue = args[7];
             AccessUserAspectData accessUser = new AccessUserAspectData(roleName, caid, matchWith, matchType, matchValue);
             Collection<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
             accessUsers.add(accessUser);
-            ejb.getRoleManagementSession().addSubjectsToRole(getAdmin(subject), ejb.getRoleAccessSession().findRole(roleName), accessUsers);
+            ejb.getRoleManagementSession().addSubjectsToRole(getAdmin(cliUserName, cliPassword), ejb.getRoleAccessSession().findRole(roleName),
+                    accessUsers);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

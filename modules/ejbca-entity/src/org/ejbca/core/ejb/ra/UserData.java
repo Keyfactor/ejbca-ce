@@ -15,7 +15,6 @@ package org.ejbca.core.ejb.ra;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.List;
@@ -31,7 +30,6 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.dbprotection.ProtectedData;
@@ -39,9 +37,11 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.StringTools;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.util.crypto.BCrypt;
+import org.ejbca.util.crypto.CryptoTools;
+import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 
 /**
  * Representation of a User.
@@ -104,14 +104,13 @@ public class UserData extends ProtectedData implements Serializable {
      * @throws NoSuchAlgorithmException
      */
     public UserData(String username, String password, boolean clearpwd, String dn, int caid, String cardnumber, String altname, String email,
-            int type, int eeprofileid, int certprofileid, int tokentype, int hardtokenissuerid, ExtendedInformation extendedInformation)
-            throws NoSuchAlgorithmException {
+            int type, int eeprofileid, int certprofileid, int tokentype, int hardtokenissuerid, ExtendedInformation extendedInformation) {
         long time = new Date().getTime();
         setUsername(username);
         if (clearpwd) {
             setOpenPassword(password);
         } else {
-            setPasswordHash(makePasswordHash(password));
+            setPasswordHash(CryptoTools.makePasswordHash(password));
             setClearPassword(null);
         }
         setSubjectDN(CertTools.stringToBCDNString(dn));
@@ -391,7 +390,7 @@ public class UserData extends ProtectedData implements Serializable {
      * Sets password in hashed form in the database, this way it cannot be read in clear form
      */
     public void setPassword(String password) throws NoSuchAlgorithmException {
-        String passwordHash = makePasswordHash(password);
+        String passwordHash = CryptoTools.makePasswordHash(password);
         setPasswordHash(passwordHash);
         setClearPassword(null);
     }
@@ -399,12 +398,25 @@ public class UserData extends ProtectedData implements Serializable {
     /**
      * Sets the password in clear form in the database, needed for machine processing, also sets the hashed password to the same value
      */
-    public void setOpenPassword(String password) throws NoSuchAlgorithmException {
-        String passwordHash = makePasswordHash(password);
+    public void setOpenPassword(String password) {
+        String passwordHash = CryptoTools.makePasswordHash(password);
         setPasswordHash(passwordHash);
         setClearPassword(password);
     }
 
+    /**
+     * 
+     * @return which hashing algorithm was used for this UserData object
+     */
+    public SupportedPasswordHashAlgorithm findHashAlgorithm() {
+        final String hash = getPasswordHash();
+        if (StringUtils.startsWith(hash, "$2")) {
+            return SupportedPasswordHashAlgorithm.SHA1_BCRYPT;
+        } else {
+            return SupportedPasswordHashAlgorithm.SHA1_OLD;
+        }
+    }
+    
     /**
      * Verifies password by verifying against passwordhash
      */
@@ -416,12 +428,15 @@ public class UserData extends ProtectedData implements Serializable {
         if (password != null) {
             final String hash = getPasswordHash();
             // Check if it is a new or old style hashing
-            if (StringUtils.startsWith(hash, "$2")) {
+            switch (findHashAlgorithm()) {
+            case SHA1_BCRYPT:
                 // new style with good salt
                 ret = BCrypt.checkpw(password, hash);
-            } else {
-                // old style, plain SHA1 hash
-                ret = makeOldPasswordHash(password).equals(getPasswordHash());
+                break;
+            case SHA1_OLD:
+            default:
+                ret = CryptoTools.makeOldPasswordHash(password).equals(getPasswordHash());
+                break;
             }
         }
         if (log.isTraceEnabled()) {
@@ -433,40 +448,6 @@ public class UserData extends ProtectedData implements Serializable {
     //
     // Helper functions
     //
-
-    /**
-     * Creates the hashed password using the bcrypt algorithm, http://www.mindrot.org/projects/jBCrypt/
-     */
-    private String makePasswordHash(String password) throws NoSuchAlgorithmException {
-        if (password == null) {
-            return null;
-        }
-        final int rounds = EjbcaConfiguration.getPasswordLogRounds();
-        if (rounds > 0 && EjbcaConfiguration.getEffectiveApplicationVersion() > 311) {
-            return BCrypt.hashpw(password, BCrypt.gensalt(rounds));
-        } else {
-            return makeOldPasswordHash(password);
-        }
-    }
-
-    /**
-     * Creates the hashed password using the old hashing, which is a plain SHA1 password
-     */
-    private String makeOldPasswordHash(String password) throws NoSuchAlgorithmException {
-        if (password == null) {
-            return null;
-        }
-        String ret = null;
-        try {
-            final MessageDigest md = MessageDigest.getInstance("SHA1");
-            final byte[] pwdhash = md.digest(password.trim().getBytes());
-            ret = new String(Hex.encode(pwdhash));
-        } catch (NoSuchAlgorithmException e) {
-            log.error("SHA1 algorithm not supported.", e);
-            throw e;
-        }
-        return ret;
-    }
 
     /**
      * Non-searchable information about a user.

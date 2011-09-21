@@ -60,16 +60,32 @@ public abstract class BaseCommand implements CliCommandPlugin {
         return log;
     }
 
-    protected AuthenticationToken getAdmin(AuthenticationSubject subject) {
-        return ejb.getAuthenticationSession().authenticate(subject, ejb.getCliAuthenticationProvider());
-    }
-
-    protected AuthenticationSubject getAuthenticationSubject(String username, String passwordHash) {
+    /**
+     * This utility method gets an authenticated CliAuthenticationToken from the authentication service.
+     * 
+     * Worth noting in this method is that the password is not sent as a credential, because this would imply sending it
+     * (or its hash) in cleartext over the network. Instead, it's only sent as part of a SHA1 hash (as part of the 
+     * CliAuthenticationToken specification). Actual check of the password's validity will formally occur at the first time
+     * that the authentication token is checked for authorization. 
+     * 
+     * Note also that the CliAuthenticationToken may only be used for a single call via remote. I.e once it's passed through the
+     * network once, it's invalid for further use. 
+     * 
+     * @param username The main principal being requested
+     * @param cleartextPassword The password in cleartext. While within the same call chain, there is little point in obfuscating it.
+     * @return a single use CliAuthenticationToken.
+     */
+    protected AuthenticationToken getAdmin(String username, String cleartextPassword) {
         Set<Principal> principals = new HashSet<Principal>();
-        principals.add(new UsernamePrincipal("usernamehash"));
-        Set<String> credentials = new HashSet<String>();
-        credentials.add("passwordhash");
-        return  new AuthenticationSubject(principals, credentials);
+        principals.add(new UsernamePrincipal(username));
+
+        AuthenticationSubject subject = new AuthenticationSubject(principals, null);
+
+        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) ejb.getAuthenticationSession().authenticate(subject,
+                ejb.getCliAuthenticationProvider());
+        // Set hashed value anew in order to send back
+        authenticationToken.setSha1HashFromCleartextPassword(cleartextPassword);
+        return authenticationToken;
     }
     
     protected String getCommand() {

@@ -13,7 +13,6 @@
  
 package org.ejbca.ui.cli.ca;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
@@ -31,9 +30,8 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Makes the specified HSM CA offline"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         
         try {
             if (args.length < 2) {
@@ -44,13 +42,13 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
             String caname = args[1];
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(subject), caname);
+            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname);
             if(cainfo == null){
             	getLogger().error("CA " + caname + " cannot be found");	
             	return;            	
             }
             if(cainfo.getStatus() == SecConst.CA_ACTIVE){
-              ejb.getCAAdminSession().deactivateCAToken(getAdmin(subject), cainfo.getCAId());                        
+              ejb.getCAAdminSession().deactivateCAToken(getAdmin(cliUserName, cliPassword), cainfo.getCAId());                        
               getLogger().info("CA token deactivated.");
             }else{
             	getLogger().error("CA or CAToken must be active to be put offline.");

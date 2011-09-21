@@ -44,7 +44,7 @@
    		</fileset>
 	</copy>
 
-	<!-- Load property files -->
+	<!-- Load property files -->	
     <property file="${ejbca.home}/conf/ejbca.properties" />
     <property file="${ejbca.home}/conf/install.properties"/>
     <property file="${ejbca.home}/conf/protection.properties" />
@@ -143,6 +143,10 @@
 	<condition property="datasource.jndi-name-prefix" value=""><equals arg1="weblogic" arg2="${appserver.type}"/></condition>
 	<condition property="datasource.jndi-name-prefix" value="jdbc/"><equals arg1="websphere" arg2="${appserver.type}"/></condition>
 
+	<!-- These values are temporarily set here. Remove them when defaultvalues.properties can be used in the build -->
+	<property name="ejbca.cli.defaultusername" value="ejbca"/>
+	<property name="ejbca.cli.defaultpassword" value="ejbca"/>
+	
 	<!-- java.ver is used to select the correct version of bc libraries to include in ear -->   
 	<property name="java.ver" value="16" />
 	<property name="ejbca.productionmode" value="true"/>

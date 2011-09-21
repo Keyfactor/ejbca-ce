@@ -206,6 +206,10 @@
 # ecdsa.implicitlyca.g=020ffa963cdca8816ccc33b8642bedf905c3d358573d3f27fbbd3b3cb9aaaf
 # ecdsa.implicitlyca.n=883423532389192164791648750360308884807550341691627752275345424702807307
 
+#------------------- CLI settings -------------
+ejbca.cli.defaultusername=ejbca
+ejbca.cli.defaultpassword=ejbca
+
 #------------------- Debug and special settings -------------
 #
 # Custom Available Access Rules. Use ';' to separate multiple accessrules

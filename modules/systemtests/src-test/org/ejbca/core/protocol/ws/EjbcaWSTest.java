@@ -18,6 +18,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.net.URL;
 import java.security.KeyPair;
 import java.security.Principal;
 import java.security.SecureRandom;
@@ -98,6 +99,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(EjbcaWSTest.class);
 
+    private final String cliUserName = "ejbca";
+    private final String cliPassword = "ejbca";
+    
     private final ApprovalExecutionSessionRemote approvalExecutionSession = InterfaceCache.getApprovalExecutionSession();
     private final ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
     private final CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
@@ -753,7 +757,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
-        makep12.createAllNew();
+        makep12.createAllNew(cliUserName, cliPassword);
         Collection<Certificate> userCerts = certificateStoreSession.findCertificatesByUsername(username);
         assertTrue(userCerts.size() == 1);
         return (X509Certificate) userCerts.iterator().next();

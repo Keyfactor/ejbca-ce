@@ -165,18 +165,19 @@ public final class EjbcaConfigurationHolder {
 		}
 	}
 	
-	/**
-	 * @return the configuration as a regular Properties object
-	 */
-	public static Properties getAsProperties() {
-		final Properties properties = new Properties();
-		final Iterator i = instance().getKeys();
-		while (i.hasNext()) {
-			final String key = (String) i.next();
-			properties.setProperty(key, instance().getString(key));
-		}
-		return properties;
-	}
+    /**
+     * @return the configuration as a regular Properties object
+     */
+    public static Properties getAsProperties() {
+        final Properties properties = new Properties();
+        @SuppressWarnings("unchecked")
+        final Iterator<String> i = instance().getKeys();
+        while (i.hasNext()) {
+            final String key = (String) i.next();
+            properties.setProperty(key, instance().getString(key));
+        }
+        return properties;
+    }
 
 	/**
 	 * @param property the property to look for

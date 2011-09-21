@@ -26,6 +26,8 @@ import org.ejbca.core.EjbcaException;
  */
 @WebFault
 public class NotFoundException extends EjbcaException {
+ 
+    private static final long serialVersionUID = 1L;
     /**
      * Constructor used to create exception with an errormessage. Calls the same constructor in
      * baseclass <code>Exception</code>.

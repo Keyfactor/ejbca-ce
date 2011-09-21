@@ -19,7 +19,6 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Enumeration;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
@@ -37,9 +36,8 @@ public class CaImportCACommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Imports a keystore and creates a new X509 CA from it"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";    
         
         if (args.length < 3) {
     		getLogger().info("Description: " + getDescription());
@@ -95,7 +93,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                     } 
                     // else alias already contains the only alias, so we can use that
                 }
-                ejb.getCAAdminSession().importCAFromKeyStore(getAdmin(subject), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);        		
+                ejb.getCAAdminSession().importCAFromKeyStore(getAdmin(cliUserName, cliPassword), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);        		
         	} else {
         		// Import HSM keystore
                 // "Usage2: CA importca <CA name> <catokenclasspath> <catokenpassword> <catokenproperties> <ca-certificate-file>\n" +
@@ -104,7 +102,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
         		String catokenproperties = new String(FileTools.readFiletoBuffer(args[4]));
         		Collection<Certificate> cacerts = CertTools.getCertsFromPEM(args[5]);
         		Certificate[] cacertarray = cacerts.toArray(new Certificate[0]);
-        		ejb.getCAAdminSession().importCAFromHSM(getAdmin(subject), caName, cacertarray, tokenpwd, tokenclasspath, catokenproperties);
+        		ejb.getCAAdminSession().importCAFromHSM(getAdmin(cliUserName, cliPassword), caName, cacertarray, tokenpwd, tokenclasspath, catokenproperties);
         	}
         } catch (ErrorAdminCommandException e) {
         	throw e;

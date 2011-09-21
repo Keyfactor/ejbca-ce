@@ -13,6 +13,7 @@
  
 package org.ejbca.config;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,7 +26,9 @@ import org.ejbca.core.model.InternalEjbcaResources;
  *
  * @version $Id$
  */
-public class GlobalConfiguration extends UpgradeableDataHashMap implements java.io.Serializable {
+public class GlobalConfiguration extends UpgradeableDataHashMap implements Serializable {
+
+    private static final long serialVersionUID = 5319951951877577390L;
 
     // Default Values
     public static final float LATEST_VERSION = 2;

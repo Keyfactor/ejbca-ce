@@ -114,6 +114,9 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private static final AuthenticationToken admin1 = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
     private static String adminUsername;
+    
+    private final String cliUserName = "ejbca";
+    private final String cliPassword = "ejbca";
 
     private static Collection<String> createdUsers = new LinkedList<String>();
 
@@ -469,17 +472,17 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
                 SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
         // userdata.setKeyRecoverable(true);
-        createUser(admin, userdata);
+        createUser(cliUserName, cliPassword, userdata);
     }
 
-    private void createUser(AuthenticationToken admin, EndEntityInformation userdata) throws PersistenceException, AuthorizationDeniedException,
+    private void createUser(String cliUserName, String cliPassword, EndEntityInformation userdata) throws PersistenceException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
-        userAdminSession.addUser(admin, userdata, true);
+        userAdminSession.addUser(admin1, userdata, true);
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
-        makep12.createAllNew();
-        EndEntityInformation userdata2 = endEntityAccessSession.findUser(admin, userdata.getUsername());
+        makep12.createAllNew(cliUserName, cliPassword);
+        EndEntityInformation userdata2 = endEntityAccessSession.findUser(admin1, userdata.getUsername());
         assertNotNull("findUser: " + userdata.getUsername(), userdata2);
         createdUsers.add(userdata.getUsername());
         log.info("created: " + userdata.getUsername());

@@ -264,7 +264,8 @@
 					<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
 					<include name="org/ejbca/core/ejb/authorization/*Cache.java"/>	
 					<include name="org/ejbca/core/model/authorization/*.java"/>
-					<include name="org/ejbca/config/*.java"/>					
+					<include name="org/ejbca/config/*.java"/>	
+					<include name="org/ejbca/util/crypto/SupportedPasswordHashAlgorithm.java"/>	
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/authorization" destdir="${build-temp.dir}/authorization" debug="on" includeantruntime="no"
@@ -683,6 +684,8 @@
 					<include name="org/ejbca/core/model/ra/raadmin/UserDoesntFullfillEndEntityProfile.java"/>
 					<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
 					<include name="org/ejbca/core/model/ra/UserDataConstants.java"/>
+					<include name="org/ejbca/util/crypto/BCrypt.java"/>
+					<include name="org/ejbca/util/crypto/CryptoTools.java"/>
 					<include name="org/cesecore/certificates/certificate/CertificateCreateException.java"/>
 					<include name="org/cesecore/certificates/certificate/CertificateCreateSessionBean.java"/>
 				</fileset>

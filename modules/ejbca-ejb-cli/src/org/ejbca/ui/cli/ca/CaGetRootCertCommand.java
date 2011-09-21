@@ -18,7 +18,6 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -36,10 +35,9 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Save root CA certificate (PEM- or DER-format) to file"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
-        
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
+
 		// Get and remove switches
 		List<String> argsList = CliTools.getAsModifyableList(args);
 		boolean pem = !argsList.remove("-der");
@@ -55,7 +53,7 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
         String filename = args[2];
         try {
         	CryptoProviderTools.installBCProvider();
-            ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(getAdmin(subject), caname));
+            ArrayList<Certificate> chain = new ArrayList<Certificate>(getCertChain(getAdmin(cliUserName, cliPassword), caname));
             if (chain.size() > 0) {
                 Certificate rootcert = (Certificate)chain.get(chain.size()-1);
  

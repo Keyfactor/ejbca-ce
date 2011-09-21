@@ -15,7 +15,6 @@ package org.ejbca.ui.cli.ca;
 
 import java.io.FileOutputStream;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -30,9 +29,8 @@ public class CaExportCACommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Exports CA as a PCKS#12 or PKCS#8 file"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         
         String signatureKeyAlias = "SignatureKeyAlias";
     	String encryptionKeyAlias = "EncryptionKeyAlias";
@@ -56,7 +54,7 @@ public class CaExportCACommand extends BaseCaAdminCommand {
             getLogger().info("Enter keystore password: ");
             String kspwd = new String(System.console().readPassword());
             
-            byte[] keyStoreBytes = ejb.getCAAdminSession().exportCAKeyStore(getAdmin(subject), caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
+            byte[] keyStoreBytes = ejb.getCAAdminSession().exportCAKeyStore(getAdmin(cliUserName, cliPassword), caName, kspwd, kspwd, signatureKeyAlias, encryptionKeyAlias);
             FileOutputStream fos = new FileOutputStream(p12file);
             fos.write(keyStoreBytes);
             fos.close();
