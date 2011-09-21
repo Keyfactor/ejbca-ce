@@ -23,6 +23,7 @@ import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
@@ -124,12 +125,16 @@ public class AccessTreeNodeTest {
     @Test
     public void testIsAuthorizedToRoot() {
         AccessRuleData acceptRule = EasyMock.createMock(AccessRuleData.class);
+        EasyMock.expect(acceptRule.getAccessRuleName()).andReturn("/").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(acceptRule.getTreeState()).andReturn(AccessTreeState.STATE_ACCEPT);
 
         AccessUserAspectData accessUser = EasyMock.createMock(AccessUserAspectData.class);
 
         AuthenticationToken authenticationToken = EasyMock.createMock(AuthenticationToken.class);
         EasyMock.expect(authenticationToken.matches(accessUser)).andReturn(true);
+        EasyMock.expect(accessUser.getMatchWithByValue()).andReturn(AccessMatchValue.WITH_COUNTRY).anyTimes();	// Required if we run the test in trace mode
+        EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASE).anyTimes();	// Required if we run the test in trace mode
+        EasyMock.expect(accessUser.getMatchValue()).andReturn("SE").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(accessUser.getPriority()).andReturn(AccessMatchValue.WITH_COUNTRY);
 
         Map<Integer, AccessUserAspectData> accessUsers = new HashMap<Integer, AccessUserAspectData>();
@@ -155,8 +160,10 @@ public class AccessTreeNodeTest {
     public void testIsAuthorizedToRootWithHigherRankingUserDenial() {
 
         AccessRuleData acceptRule = EasyMock.createMock(AccessRuleData.class);
+        EasyMock.expect(acceptRule.getAccessRuleName()).andReturn("/").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(acceptRule.getTreeState()).andReturn(AccessTreeState.STATE_ACCEPT);
         AccessRuleData declineRule = EasyMock.createMock(AccessRuleData.class);
+        EasyMock.expect(declineRule.getAccessRuleName()).andReturn("/").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(declineRule.getTreeState()).andReturn(AccessTreeState.STATE_DECLINE);
 
         AccessUserAspectData countryUser = EasyMock.createMock(AccessUserAspectData.class);
@@ -172,7 +179,13 @@ public class AccessTreeNodeTest {
         AuthenticationToken authenticationToken = EasyMock.createMock(AuthenticationToken.class);
         EasyMock.expect(authenticationToken.matches(countryUser)).andReturn(true);
         EasyMock.expect(authenticationToken.matches(upnUser)).andReturn(true);
+        EasyMock.expect(countryUser.getMatchWithByValue()).andReturn(AccessMatchValue.WITH_COUNTRY).anyTimes();	// Required if we run the test in trace mode
+        EasyMock.expect(countryUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASE).anyTimes();	// Required if we run the test in trace mode
+        EasyMock.expect(countryUser.getMatchValue()).andReturn("SE").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(countryUser.getPriority()).andReturn(AccessMatchValue.WITH_COUNTRY);
+        EasyMock.expect(upnUser.getMatchWithByValue()).andReturn(AccessMatchValue.WITH_UPN).anyTimes();	// Required if we run the test in trace mode
+        EasyMock.expect(upnUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASE).anyTimes();	// Required if we run the test in trace mode
+        EasyMock.expect(upnUser.getMatchValue()).andReturn("userid").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(upnUser.getPriority()).andReturn(AccessMatchValue.WITH_UPN);
 
         RoleData role = EasyMock.createMock(RoleData.class);
@@ -209,9 +222,13 @@ public class AccessTreeNodeTest {
         final String resourcePath = "/parent/child";
 
         AccessRuleData accessRule = EasyMock.createMock(AccessRuleData.class);
+        EasyMock.expect(accessRule.getAccessRuleName()).andReturn("/").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(accessRule.getTreeState()).andReturn(AccessTreeState.STATE_ACCEPT_RECURSIVE);
 
         AccessUserAspectData accessUser = EasyMock.createMock(AccessUserAspectData.class);
+        EasyMock.expect(accessUser.getMatchWithByValue()).andReturn(AccessMatchValue.WITH_COUNTRY).anyTimes();	// Required if we run the test in trace mode
+        EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASE).anyTimes();	// Required if we run the test in trace mode
+        EasyMock.expect(accessUser.getMatchValue()).andReturn("SE").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(accessUser.getPriority()).andReturn(AccessMatchValue.WITH_COUNTRY);
 
         AuthenticationToken authenticationToken = EasyMock.createMock(AuthenticationToken.class);
@@ -241,11 +258,16 @@ public class AccessTreeNodeTest {
     public void testIsAuthorizedForExistingChild() {
 
         AccessRuleData acceptRecursive = EasyMock.createMock(AccessRuleData.class);
+        EasyMock.expect(acceptRecursive.getAccessRuleName()).andReturn("/").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(acceptRecursive.getTreeState()).andReturn(AccessTreeState.STATE_ACCEPT_RECURSIVE);
         AccessRuleData unknown = EasyMock.createMock(AccessRuleData.class);
+        EasyMock.expect(unknown.getAccessRuleName()).andReturn("/parent").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(unknown.getTreeState()).andReturn(AccessTreeState.STATE_UNKNOWN);
 
         AccessUserAspectData accessUser = EasyMock.createMock(AccessUserAspectData.class);
+        EasyMock.expect(accessUser.getMatchWithByValue()).andReturn(AccessMatchValue.WITH_COUNTRY).anyTimes();	// Required if we run the test in trace mode
+        EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASE).anyTimes();	// Required if we run the test in trace mode
+        EasyMock.expect(accessUser.getMatchValue()).andReturn("SE").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(accessUser.getPriority()).andReturn(AccessMatchValue.WITH_COUNTRY).times(2);
 
         AuthenticationToken authenticationToken = EasyMock.createMock(AuthenticationToken.class);
