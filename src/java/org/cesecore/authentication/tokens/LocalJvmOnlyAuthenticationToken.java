@@ -58,6 +58,10 @@ public abstract class LocalJvmOnlyAuthenticationToken extends AuthenticationToke
 		return isCreatedInThisJvm;
 	}
 
+	public void initRandomToken() {
+		authToken = RANDOM_TOKEN;
+	}
+	
 	private static byte[] createRandomToken() {
     	final byte[] token = new byte[32];
         new SecureRandom().nextBytes(token);
