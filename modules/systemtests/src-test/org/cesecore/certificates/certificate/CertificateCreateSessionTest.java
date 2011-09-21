@@ -29,6 +29,8 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.RoleUsingTestCase;
@@ -44,6 +46,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -515,8 +518,31 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         	internalCertStoreSession.removeCertificate(fp3);
         	internalCertStoreSession.removeCertificate(fp4);
         	internalCertStoreSession.removeCertificate(fp4);
+        	internalCertStoreSession.removeCertificate(fp5);
         }
     }
+
+	@Test
+	public void testPKCS10Request() throws Exception {
+	    String fp1 = null;
+	    try {
+	    	final String dn = "C=SE,O=PrimeKey,CN=pkcs10requesttest";
+	        final EndEntityInformation user = new EndEntityInformation("pkcs10requesttest",dn,testx509ca.getCAId(),null,"foo@anatom.se",EndEntityConstants.USER_ENDUSER,0,CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
+	        user.setStatus(EndEntityConstants.STATUS_NEW);
+
+	        final KeyPair keyPair = KeyTools.genKeys("512", "RSA"); 
+			final X509Name x509dn = new X509Name(dn);
+			PKCS10CertificationRequest basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", x509dn, 
+	        		keyPair.getPublic(), null, keyPair.getPrivate());
+			PKCS10RequestMessage req = new PKCS10RequestMessage(basicpkcs10);
+			X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+	        assertNotNull("Creating a cert should have worked", resp);
+	        X509Certificate cert = (X509Certificate)resp.getCertificate();
+	        fp1 = CertTools.getFingerprintAsString(cert);
+	    } finally {
+	    	internalCertStoreSession.removeCertificate(fp1);
+	    }
+	}
 
     @Test
     public void testAuthorization() throws Exception {
@@ -548,5 +574,4 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         	internalCertStoreSession.removeCertificate(fingerprint);
         }
     }
-
 }
