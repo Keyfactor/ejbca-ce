@@ -219,16 +219,23 @@ public class AccessTreeNode {
     private AccessTreeState findPreferredRule(AuthenticationToken authenticationToken) {
         AccessTreeState state = AccessTreeState.STATE_UNKNOWN;
         AccessMatchValue statePriority = AccessMatchValue.NONE;
-
         Collection<AccessUserAspectData> accessUsers;
-
+        if (log.isTraceEnabled()) {
+        	log.trace("AccessTreeNode " + resource + " has " + roleRulePairs.size() + " roleRulePairs");
+        }
         for (Tuplet<RoleData, AccessRuleData> roleRulePair : roleRulePairs) {
             accessUsers = roleRulePair.getFirstElement().getAccessUsers().values();
+            if (log.isTraceEnabled()) {
+            	log.trace("roleRulePair for accessRuleName " + roleRulePair.getSecondElement().getAccessRuleName() + " has " + accessUsers.size() + " accessUsers");
+            }
             for (AccessUserAspect accessUser : accessUsers) {
                 // If two principals match.
                 if (authenticationToken.matches(accessUser)) {
                     AccessTreeState thisUserState = roleRulePair.getSecondElement().getTreeState();
                     AccessMatchValue thisUserStatePriority = accessUser.getPriority();
+                    if (log.isTraceEnabled()) {
+                    	log.trace("accessUser "+accessUser.getMatchWithByValue().name()+" "+accessUser.getMatchTypeAsType().name()+" "+accessUser.getMatchValue()+" matched authenticationToken. thisUserState=" + thisUserState.name() + " thisUserStatePriority=" + thisUserStatePriority.name());
+                    }
                     // If rule has higher priority, its state is to be used.
                     if (statePriority.getNumericValue() < thisUserStatePriority.getNumericValue()) {
                         state = thisUserState;
@@ -241,9 +248,10 @@ public class AccessTreeNode {
                             }
                         }
                     }
+                } else if (log.isTraceEnabled()) {
+                	log.trace("accessUser "+accessUser.getMatchWithByValue().name()+" "+accessUser.getMatchTypeAsType().name()+" "+accessUser.getMatchValue()+" did not match authenticationToken.");
                 }
             }
-
         }
         return state;
     }

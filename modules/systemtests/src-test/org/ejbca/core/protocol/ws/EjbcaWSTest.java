@@ -281,7 +281,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
             credentials.add(adminCert);
             Set<Principal> principals = new HashSet<Principal>();
             principals.add(adminCert.getSubjectX500Principal());
-            AuthenticationToken approvingAdmin = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+            AuthenticationToken approvingAdmin = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, credentials));
             //AuthenticationToken approvingAdmin = new X509CertificateAuthenticationToken(principals, credentials);
             //Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
             try {
