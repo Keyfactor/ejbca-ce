@@ -39,14 +39,15 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 	
 	private static final int ARG_USERNAME                 = 1;
 	private static final int ARG_SUBJECTDN                = 2;
-	private static final int ARG_CANAME                   = 3;
-	private static final int ARG_EEPROF                   = 4;
-	private static final int ARG_CERTPROF                 = 5;
-	private static final int ARG_REQPATH                  = 6;
-	private static final int ARG_REQTYPE                  = 7;
-	private static final int ARG_ENCODING                 = 8;
-	private static final int ARG_HARDTOKENSN              = 9;
-	private static final int ARG_OUTPUTPATH               = 10;
+	private static final int ARG_SUBJECTALTNAME           = 3;
+	private static final int ARG_CANAME                   = 4;
+	private static final int ARG_EEPROF                   = 5;
+	private static final int ARG_CERTPROF                 = 6;
+	private static final int ARG_REQPATH                  = 7;
+	private static final int ARG_REQTYPE                  = 8;
+	private static final int ARG_ENCODING                 = 9;
+	private static final int ARG_HARDTOKENSN              = 10;
+	private static final int ARG_OUTPUTPATH               = 11;
 	
     /**
      * Creates a new instance of CertificateRequestCommand
@@ -67,7 +68,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
  
         try {   
            
-            if(args.length <  10 || args.length > 11){
+            if(args.length <  11 || args.length > 12){
             	usage();
             	System.exit(-1); // NOPMD, it's not a JEE app
             }
@@ -75,6 +76,9 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
             UserDataVOWS userdata = new UserDataVOWS();
             userdata.setUsername(args[ARG_USERNAME]);
             userdata.setSubjectDN(args[ARG_SUBJECTDN]);
+            if(!args[ARG_SUBJECTALTNAME].equalsIgnoreCase("NULL")){                        
+            	userdata.setSubjectAltName(args[ARG_SUBJECTALTNAME]);
+            }
             userdata.setCaName(args[ARG_CANAME]);
             userdata.setEndEntityProfileName(args[ARG_EEPROF]);
             userdata.setCertificateProfileName(args[ARG_CERTPROF]);
@@ -84,13 +88,25 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
             String hardtokensn = getHardTokenSN(args[ARG_HARDTOKENSN]);
 
             String outputPath = null;
-            if(args.length > 10){
+            if(args.length > 11){
               outputPath = getOutputPath(args[ARG_OUTPUTPATH]);
             }
             
+            getPrintStream().println("Requesting certificate for end entity:");
+            getPrintStream().println("Username: "+userdata.getUsername());
+            getPrintStream().println("Subject DN: "+userdata.getSubjectDN());
+            getPrintStream().println("Subject Altname: "+userdata.getSubjectAltName());
+            getPrintStream().println("Email: "+userdata.getEmail());
+            getPrintStream().println("CA Name: "+userdata.getCaName());                        
+            getPrintStream().println("Token: "+userdata.getTokenType());
+            getPrintStream().println("End entity profile: "+userdata.getEndEntityProfileName());
+            getPrintStream().println("Certificate profile: "+userdata.getCertificateProfileName());
+            getPrintStream().println("Hard token SN: "+hardtokensn);
+            getPrintStream().println("Request type: "+requesttype);
+            getPrintStream().println("Encoding: "+encoding);
+            getPrintStream().println("Output path: "+outputPath);
 
             try{
-
             	//UserDataVOWS userdata, String requestData, int requestType, String hardTokenSN, String responseType)
             	CertificateResponse result = getEjbcaRAWS().certificateRequest(userdata,requestdata,requesttype, hardtokensn,CertificateHelper.RESPONSETYPE_CERTIFICATE);
             	
@@ -208,8 +224,8 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
 
 
 	protected void usage() {
-		getPrintStream().println("Command used to generate a users certificate");
-		getPrintStream().println("Usage : certreq <username> <subjectdn> <caname> <endentityprofilename> <certificateprofilename> <reqpath> <reqtype (PKCS10|SPKAC|CRMF)> <encoding (DER|PEM)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");       
+		getPrintStream().println("Command used to generate a users certificate.");
+        getPrintStream().println("Usage : certreq <username> <subjectdn> <subjectaltname or NULL> <caname> <endentityprofilename> <certificateprofilename> <reqpath> <reqtype (PKCS10|SPKAC|CRMF)> <encoding (DER|PEM)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");       
         getPrintStream().println("outputpath : directory where certificate is written in form outputpath/username+.cer|.pem ");
    }
 
