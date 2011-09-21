@@ -8,14 +8,8 @@
 delete from CertificateData where fingerprint='caba75f68c833c3c2d33f3f5052b7d5a76e80383';
 delete from CertificateData where fingerprint='05a219d835622653192c30eeeee8f01f918b30fb';
  
--- Selecting log entries when viewing logs:
-create index logentry_idx1 on LogEntryData (time);
-create index logentry_idx2 on LogEntryData (caId);
-create index logentry_idx3 on LogEntryData (event);
-create index logentry_idx4 on LogEntryData (username);
-
 -- Selecting log entries when verifying/exporting IntegrityProtectedDevice logs:
-CREATE UNIQUE INDEX auditrecorddata_idx1 ON AuditRecordData (nodeId,timeStamp,sequenceNumber);
+create unique index auditrecorddata_idx1 on AuditRecordData (nodeId,timeStamp,sequenceNumber);
 
 -- Indexes on CRLData:	
 -- unique to ensure that no two CRLs with the same CRLnumber from the same issuer is created

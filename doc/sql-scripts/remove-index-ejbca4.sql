@@ -1,7 +1,4 @@
-drop index logentry_idx1 on LogEntryData;
-drop index logentry_idx2 on LogEntryData;
-drop index logentry_idx3 on LogEntryData;
-drop index logentry_idx4 on LogEntryData;
+drop index auditrecorddata_idx1 on AuditRecordData;
 drop index crldata_idx1 on CRLData;
 drop index crldata_idx2 on CRLData;
 drop index certificatedata_idx1 on CertificateData;
@@ -31,3 +28,8 @@ drop index adminentity_idx1 on AdminEntityData;
 drop index publisherqueue_idx1 on PublisherQueueData;
 drop index publisherqueue_idx2 on PublisherQueueData;
 drop index publisherqueue_idx3 on PublisherQueueData;
+-- Pre EJBCA 5 indexes
+drop index logentry_idx1 on LogEntryData;
+drop index logentry_idx2 on LogEntryData;
+drop index logentry_idx3 on LogEntryData;
+drop index logentry_idx4 on LogEntryData;
