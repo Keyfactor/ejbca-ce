@@ -121,7 +121,6 @@ public class BasicCertificateExtension extends CertificateExtension {
     public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey)
             throws CertificateExtensionException, CertificateExtentionConfigurationException {
         final byte[] result;
-        try {
                 String encoding = StringUtils.trim(getProperties().getProperty(PROPERTY_ENCODING));
                 String[] values = getValues(userData);
     	        if (log.isDebugEnabled()) {
@@ -129,11 +128,16 @@ public class BasicCertificateExtension extends CertificateExtension {
         	    }
 
                 if (values == null || values.length == 0) {
-                        throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId())));
+                    throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
                 }
 
                 if (encoding.equalsIgnoreCase(ENCODING_RAW)) {
+                    if (values.length > 1) {
+                        // nvalues can not be used together with encoding=RAW
+                        throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured", Integer.valueOf(getId())));
+                    } else {
                         result = parseRaw(values[0]);
+                    }
                 } else {
                         if (values.length > 1) {
                                 ASN1EncodableVector ev = new ASN1EncodableVector();
@@ -146,12 +150,6 @@ public class BasicCertificateExtension extends CertificateExtension {
                                 result = parseValue(encoding, values[0]).getDERObject().getDEREncoded();
                         }
                 }
-        } catch (Exception e) {
-                if (log.isDebugEnabled()) {
-                        log.debug("BasicCertificateExtension missconfigured", e);
-                }
-                throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured",Integer.valueOf(getId())));
-        }
         return result;
     }
     
@@ -227,7 +225,7 @@ public class BasicCertificateExtension extends CertificateExtension {
         DEREncodable toret = null;
 
         if (!encoding.equalsIgnoreCase(ENCODING_DERNULL) && (value == null || value.trim().equals(""))) {
-            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId())));
+            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
         }
 
         if (encoding.equalsIgnoreCase(ENCODING_DERBITSTRING)) {
@@ -277,7 +275,7 @@ public class BasicCertificateExtension extends CertificateExtension {
             retval = new DERBitString(byteArray, padBits);
         } catch (NumberFormatException e) {
             throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
-                    Integer.valueOf(getId())));
+                    Integer.valueOf(getId()), getOID()));
         }
 
         return retval;
@@ -289,7 +287,7 @@ public class BasicCertificateExtension extends CertificateExtension {
             retval = new DERObjectIdentifier(value);
         } catch (Exception e) {
             throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
-                    Integer.valueOf(getId())));
+                    Integer.valueOf(getId()), getOID()));
         }
 
         return retval;
@@ -302,7 +300,7 @@ public class BasicCertificateExtension extends CertificateExtension {
             retval = new DERInteger(intValue);
         } catch (NumberFormatException e) {
             throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
-                    Integer.valueOf(getId())));
+                    Integer.valueOf(getId()), getOID()));
         }
 
         return retval;
@@ -315,7 +313,7 @@ public class BasicCertificateExtension extends CertificateExtension {
             retval = new DEROctetString(bytes);
         } else {
             throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
-                    Integer.valueOf(getId())));
+                    Integer.valueOf(getId()), getOID()));
         }
         return retval;
     }
@@ -342,11 +340,11 @@ public class BasicCertificateExtension extends CertificateExtension {
                 }
             } catch (Exception e) {
                 throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
-                        Integer.valueOf(getId())));
+                        Integer.valueOf(getId()), getOID()));
             }
         } else {
             throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
-                    Integer.valueOf(getId())));
+                    Integer.valueOf(getId()), getOID()));
         }
         return retval;
     }
@@ -363,7 +361,7 @@ public class BasicCertificateExtension extends CertificateExtension {
 
         if (retval == null) {
             throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
-                    Integer.valueOf(getId())));
+                    Integer.valueOf(getId()), getOID()));
         }
 
         return retval;
@@ -374,7 +372,7 @@ public class BasicCertificateExtension extends CertificateExtension {
             return new DERPrintableString(value, true);
         } catch (java.lang.IllegalArgumentException e) {
             throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
-                    Integer.valueOf(getId())));
+                    Integer.valueOf(getId()), getOID()));
         }
     }
 
@@ -387,11 +385,14 @@ public class BasicCertificateExtension extends CertificateExtension {
             return new DERIA5String(value, true);
         } catch (java.lang.IllegalArgumentException e) {
             throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
-                    Integer.valueOf(getId())));
+                    Integer.valueOf(getId()), getOID()));
         }
     }
 
-    private byte[] parseRaw(String value) {
+	private byte[] parseRaw(String value) throws CertificateExtentionConfigurationException {
+            if(value == null) {
+                throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
+            }
         return Hex.decode(value);
     }
 }
