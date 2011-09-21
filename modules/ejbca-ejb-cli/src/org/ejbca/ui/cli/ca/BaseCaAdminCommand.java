@@ -28,7 +28,6 @@ import java.util.Collection;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
@@ -169,12 +168,12 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         ejb.getComplexAccessControlSession().initializeAuthorizationModule(authenticationToken, caid, superAdminCN);
     } // initAuthorizationModule
     
-    protected String getAvailableCasString(AuthenticationSubject subject) {
+    protected String getAvailableCasString(String cliUserName, String cliPassword) {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : ejb.getCaSession().getAvailableCAs(getAdmin(subject))) {
-				final String caName = ejb.getCaSession().getCAInfo(getAdmin(subject), nextId.intValue()).getName();
+			for (final Integer nextId : ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword))) {
+				final String caName = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), nextId.intValue()).getName();
 				if (existingCas.length()>0) {
 					existingCas.append(", ");
 				}
@@ -186,12 +185,12 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		return existingCas.toString();
     }
 
-    protected String getAvailableEepsString(AuthenticationSubject subject) {
+    protected String getAvailableEepsString(String cliUserName, String cliPassword) {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(subject))) {
-				final String caName = ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(subject), nextId.intValue());
+			for (final Integer nextId : ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword))) {
+				final String caName = ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(cliUserName, cliPassword), nextId.intValue());
 				if (existingCas.length()>0) {
 					existingCas.append(", ");
 				}
@@ -203,11 +202,11 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		return existingCas.toString();
     }
 
-    protected String getAvailableEndUserCpsString(AuthenticationSubject subject) {
+    protected String getAvailableEndUserCpsString(String cliUserName, String cliPassword) {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, ejb.getCaSession().getAvailableCAs(getAdmin(subject)))) {
+			for (final Integer nextId : ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword)))) {
 				final String caName = ejb.getCertificateProfileSession().getCertificateProfileName(nextId.intValue());
 				if (existingCas.length()>0) {
 					existingCas.append(", ");

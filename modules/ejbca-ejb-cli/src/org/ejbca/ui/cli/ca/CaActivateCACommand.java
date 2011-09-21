@@ -15,7 +15,6 @@ package org.ejbca.ui.cli.ca;
 
 import javax.security.auth.login.FailedLoginException;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -45,9 +44,8 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         try {
             if (args.length < 2) {
                 getLogger().info("Description: " + getDescription());
@@ -67,7 +65,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             }
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(subject), caname);
+            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname);
             if (cainfo == null) {
                 getLogger().error("Error: CA " + caname + " cannot be found");
                 return;
@@ -75,7 +73,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             // Check that CA has correct status.
             if ((cainfo.getStatus() == SecConst.CA_OFFLINE) || (cainfo.getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_OFFLINE)) {
                 try {
-                    ejb.getCAAdminSession().activateCAToken(getAdmin(subject), cainfo.getCAId(), authorizationcode, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin(subject)));
+                    ejb.getCAAdminSession().activateCAToken(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), authorizationcode, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin(cliUserName, cliPassword)));
                     getLogger().info("CA token activated.");
 
                 } catch (CryptoTokenAuthenticationFailedException e) {

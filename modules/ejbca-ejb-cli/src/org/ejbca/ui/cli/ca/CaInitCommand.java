@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -65,9 +64,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
     	// Install BC provider
     	CryptoProviderTools.installBCProvider();
 
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
+        
     	
     	// Create new CA.
         if (args.length < 10) {
@@ -208,13 +207,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger().info("CA token properties: "+catokenproperties);
             getLogger().info("Signed by: "+(signedByCAId == CAInfo.SELFSIGNED ? "self signed " : signedByCAId));
             if (signedByCAId != CAInfo.SELFSIGNED) {
-            	CAInfo signedBy = ejb.getCaSession().getCAInfo(getAdmin(subject), signedByCAId);
+            	CAInfo signedBy = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), signedByCAId);
             	if (signedBy == null) {
                 	throw new IllegalArgumentException("CA with id "+signedByCAId+" does not exist.");            		
             	}
             }
                             
-            initAuthorizationModule(getAdmin(subject), dn.hashCode(), superAdminCN);
+            initAuthorizationModule(getAdmin(cliUserName, cliPassword), dn.hashCode(), superAdminCN);
             // Define CAToken type (soft token or hsm).
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setSignatureAlgorithm(signAlg);
@@ -317,9 +316,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
 			                                 );
             
             getLogger().info("Creating CA...");
-            ejb.getCAAdminSession().createCA(getAdmin(subject), cainfo);
+            ejb.getCAAdminSession().createCA(getAdmin(cliUserName, cliPassword), cainfo);
             
-            CAInfo newInfo = ejb.getCaSession().getCAInfo(getAdmin(subject), caname);
+            CAInfo newInfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname);
             int caid = newInfo.getCAId();
             getLogger().info("CAId for created CA: " + caid);
             getLogger().info("-Created and published initial CRL.");

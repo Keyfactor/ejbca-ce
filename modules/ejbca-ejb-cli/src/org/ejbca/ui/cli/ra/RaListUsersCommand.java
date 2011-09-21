@@ -34,9 +34,9 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "List users with a specified status"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
+        
         
         try {
             if (args.length < 2) {
@@ -48,14 +48,14 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
             int status = Integer.parseInt(args[1]);
             Collection<EndEntityInformation> coll = null;
             if (status==0) {
-                coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(subject), 10);
-                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(subject), 11));
-                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(subject), 20));
-                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(subject), 30));
-                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(subject), 40));
-                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(subject), 50));
+                coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 10);
+                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 11));
+                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 20));
+                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 30));
+                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 40));
+                coll.addAll(ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 50));
             } else {
-                coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(subject), status);
+                coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(cliUserName, cliPassword), status);
             }
             Iterator<EndEntityInformation> iter = coll.iterator();
             while (iter.hasNext()) {

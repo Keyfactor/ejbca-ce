@@ -1,4 +1,4 @@
-package org.ejbca.core.ejb.ra;
+package org.ejbca.util.crypto;
 // Copyright (c) 2006 Damien Miller <djm@mindrot.org>
 //
 // Permission to use, copy, modify, and distribute this software for any

@@ -32,8 +32,8 @@ public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Set the Subject Directory Attributes for a user"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         
         try {
             if (args.length < 3) {
@@ -50,14 +50,14 @@ public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
             }
             getLogger().info("Setting subject directory attributes '" + attributes + "' for user " + username);
             try {
-            	EndEntityInformation uservo = ejb.getEndEntityAccessSession().findUser(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), username);
+            	EndEntityInformation uservo = ejb.getEndEntityAccessSession().findUser(getAdmin(cliUserName, cliPassword), username);
             	ExtendedInformation ext = uservo.getExtendedinformation();
             	if (ext == null) {
             		ext = new ExtendedInformation();
             	}
             	ext.setSubjectDirectoryAttributes(attributes);
             	uservo.setExtendedinformation(ext);
-            	ejb.getUserAdminSession().changeUser(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), uservo, false);
+            	ejb.getUserAdminSession().changeUser(getAdmin(cliUserName, cliPassword), uservo, false);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");
             } catch (UserDoesntFullfillEndEntityProfile e) {

@@ -243,5 +243,13 @@ public final class EjbcaConfiguration {
         }
         return time;
     }
+    
+    public static String getCliDefaultUser() {
+        return EjbcaConfigurationHolder.getString("ejbca.cli.defaultusername", "ejbca");
+    }
+    
+    public static String getCliDefaultPassword() {
+        return EjbcaConfigurationHolder.getString("ejbca.cli.defaultpassword", "ejbca");
+    }
 
 }

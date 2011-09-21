@@ -19,7 +19,10 @@ package org.ejbca.core.model.ra.raadmin;
  * @author Philip Vendil 2002-04-12
  * @version $Id$
  */
-public class EndEntityProfileExistsException extends java.lang.Exception {
+public class EndEntityProfileExistsException extends Exception {
+
+    private static final long serialVersionUID = 6926015866489483152L;
+
     /**
      * Creates a new instance of <code>EndEntityProfileExistsException</code> without detail
      * message.

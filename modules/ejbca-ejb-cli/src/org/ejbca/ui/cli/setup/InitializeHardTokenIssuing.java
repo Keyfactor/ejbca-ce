@@ -18,7 +18,6 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessMatchValue;
@@ -72,9 +71,9 @@ public class InitializeHardTokenIssuing extends BaseCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
+        
         
         if (args.length < 2) {
             getLogger().info("Description: " + getDescription());
@@ -83,7 +82,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         }
         String caname = args[1];
         try {
-            runSetup(subject, caname);
+            runSetup(cliUserName, cliPassword, caname);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
@@ -92,17 +91,17 @@ public class InitializeHardTokenIssuing extends BaseCommand {
     /**
      * See class header for explanation.
      */
-    private void runSetup(AuthenticationSubject subject, String caname) throws Exception {
+    private void runSetup(String cliUserName, String cliPassword, String caname) throws Exception {
         getLogger().info("Adding Hard Token Super Administrator .....\n\n");
-        int caid = ejb.getCaSession().getCAInfo(getAdmin(subject), caname).getCAId();
+        int caid = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname).getCAId();
         int admingroupid = ejb.getRoleAccessSession().findRole(DefaultRoles.SUPERADMINISTRATOR.getName()).getPrimaryKey();
 
-        configureGlobalConfiguration(getAdmin(subject));
-        createAdministratorTokenProfile(getAdmin(subject));
-        createLocalHardTokenIssuer(subject, admingroupid);
-        createAdminTokenEndEntityProfile(subject, caid);
-        createSuperAdminTokenUser(subject, caid);
-        addSuperAdminTokenUserToTemporarySuperAdminGroup(subject, caid);
+        configureGlobalConfiguration(getAdmin(cliUserName, cliPassword));
+        createAdministratorTokenProfile(getAdmin(cliUserName, cliPassword));
+        createLocalHardTokenIssuer(cliUserName, cliPassword, admingroupid);
+        createAdminTokenEndEntityProfile(cliUserName, cliPassword, caid);
+        createSuperAdminTokenUser(cliUserName, cliPassword, caid);
+        addSuperAdminTokenUserToTemporarySuperAdminGroup(cliUserName, cliPassword, caid);
 
         getLogger().info(
                 "A hard token Administrator have been added.\n\n" + "In order to issue the card. Startup PrimeCard in local mode using\n"
@@ -149,16 +148,16 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * 
      * @throws Exception
      */
-    private void createLocalHardTokenIssuer(AuthenticationSubject subject, int admingroupid) throws Exception {
+    private void createLocalHardTokenIssuer(String cliUserName, String cliPassword, int admingroupid) throws Exception {
         HardTokenIssuer localissuer = new HardTokenIssuer();
 
         localissuer.setDescription("Issuer created by installation script, used to create the first administration token");
 
         ArrayList<Integer> availableprofiles = new ArrayList<Integer>();
-        availableprofiles.add(Integer.valueOf(ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(subject), ADMINTOKENPROFILENAME)));
+        availableprofiles.add(Integer.valueOf(ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(cliUserName, cliPassword), ADMINTOKENPROFILENAME)));
         localissuer.setAvailableHardTokenProfiles(availableprofiles);
 
-        this.ejb.getHardTokenSession().addHardTokenIssuer(getAdmin(subject), ISSUERALIAS, admingroupid, localissuer);
+        this.ejb.getHardTokenSession().addHardTokenIssuer(getAdmin(cliUserName, cliPassword), ISSUERALIAS, admingroupid, localissuer);
 
     }
 
@@ -167,9 +166,9 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * 
      * @throws Exception
      */
-    private void createAdminTokenEndEntityProfile(AuthenticationSubject subject, int caid) throws Exception {
-        int tokenid = ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(subject), ADMINTOKENPROFILENAME);
-        int hardtokenissuerid = ejb.getHardTokenSession().getHardTokenIssuerId(getAdmin(subject), ISSUERALIAS);
+    private void createAdminTokenEndEntityProfile(String cliUserName, String cliPassword, int caid) throws Exception {
+        int tokenid = ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(cliUserName, cliPassword), ADMINTOKENPROFILENAME);
+        int hardtokenissuerid = ejb.getHardTokenSession().getHardTokenIssuerId(getAdmin(cliUserName, cliPassword), ISSUERALIAS);
         EndEntityProfile profile = new EndEntityProfile();
 
         // Set autogenerated password
@@ -200,7 +199,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         profile.setValue(EndEntityProfile.AVAILTOKENISSUER, 0, "" + hardtokenissuerid);
 
         // Save Profile
-        this.ejb.getEndEntityProfileSession().addEndEntityProfile(getAdmin(subject), ADMINTOKENENDENTITYPROFILE, profile);
+        this.ejb.getEndEntityProfileSession().addEndEntityProfile(getAdmin(cliUserName, cliPassword), ADMINTOKENENDENTITYPROFILE, profile);
     }
 
     /**
@@ -208,13 +207,13 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * 
      * @throws Exception
      */
-    private void createSuperAdminTokenUser(AuthenticationSubject subject, int caid) throws Exception {
-        int endentityprofileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(subject), ADMINTOKENENDENTITYPROFILE);
+    private void createSuperAdminTokenUser(String cliUserName, String cliPassword, int caid) throws Exception {
+        int endentityprofileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(cliUserName, cliPassword), ADMINTOKENENDENTITYPROFILE);
         int certificateprofileid = SecConst.CERTPROFILE_FIXED_ENDUSER;
-        int tokenid = ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(subject), ADMINTOKENPROFILENAME);
-        int hardtokenissuerid = ejb.getHardTokenSession().getHardTokenIssuerId(getAdmin(subject), ISSUERALIAS);
+        int tokenid = ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(cliUserName, cliPassword), ADMINTOKENPROFILENAME);
+        int hardtokenissuerid = ejb.getHardTokenSession().getHardTokenIssuerId(getAdmin(cliUserName, cliPassword), ISSUERALIAS);
 
-        this.ejb.getUserAdminSession().addUser(getAdmin(subject), SUPERADMINTOKENNAME, null, "CN=" + SUPERADMINTOKENNAME, null, null, true,
+        this.ejb.getUserAdminSession().addUser(getAdmin(cliUserName, cliPassword), SUPERADMINTOKENNAME, null, "CN=" + SUPERADMINTOKENNAME, null, null, true,
                 endentityprofileid, certificateprofileid, 65, tokenid, hardtokenissuerid, caid);
     }
 
@@ -223,12 +222,12 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * 
      * @throws Exception
      */
-    private void addSuperAdminTokenUserToTemporarySuperAdminGroup(AuthenticationSubject subject, int caid) throws Exception {
+    private void addSuperAdminTokenUserToTemporarySuperAdminGroup(String cliUserName, String cliPassword, int caid) throws Exception {
         String roleName = "Temporary Super Administrator Group";
         List<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
         subjects.add(new AccessUserAspectData(roleName, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS,
                 SUPERADMINTOKENNAME));
         RoleData role = ejb.getRoleAccessSession().findRole(roleName);
-        ejb.getRoleManagementSession().addSubjectsToRole(getAdmin(subject), role, subjects);
+        ejb.getRoleManagementSession().addSubjectsToRole(getAdmin(cliUserName, cliPassword), role, subjects);
     }
 }

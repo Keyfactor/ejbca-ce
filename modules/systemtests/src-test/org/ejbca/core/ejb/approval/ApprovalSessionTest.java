@@ -116,6 +116,9 @@ public class ApprovalSessionTest extends CaTestCase {
 
     private int removeApprovalId = 0;
     
+    private final String cliUserName = "ejbca";
+    private final String cliPassword = "ejbca";
+    
     private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
     private RoleManagementSessionRemote roleManagementSession = InterfaceCache.getRoleManagementSession();
     private RoleAccessSessionRemote roleAccessSessionRemote = InterfaceCache.getRoleAccessSession();
@@ -167,7 +170,7 @@ public class ApprovalSessionTest extends CaTestCase {
             File tmpfile = File.createTempFile("ejbca", "p12");
             BatchMakeP12 makep12 = new BatchMakeP12();
             makep12.setMainStoreDir(tmpfile.getParent());
-            makep12.createAllNew();
+            makep12.createAllNew(cliUserName, cliPassword);
             tmpfile.delete();
         }
         role = roleAccessSessionRemote.findRole(roleName);

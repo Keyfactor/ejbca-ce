@@ -31,7 +31,7 @@ public interface UserAdminSessionLocal extends UserAdminSession {
      * 
      * @return Collection of EndEntityInformation
      */
-    public Collection<EndEntityInformation> findAllUsersWithLimit(AuthenticationToken admin) throws FinderException;
+    Collection<EndEntityInformation> findAllUsersWithLimit(AuthenticationToken admin) throws FinderException;
     
 
 }

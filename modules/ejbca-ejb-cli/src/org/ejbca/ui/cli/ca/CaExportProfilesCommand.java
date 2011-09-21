@@ -19,7 +19,6 @@ import java.io.FileOutputStream;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.ejbca.core.model.SecConst;
@@ -38,9 +37,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Export profiles from the database to XML-files."; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         
         try {
             if (args.length < 2) {
@@ -53,8 +51,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             	getLogger().error("Error: '"+outpath+"' is not a directory.");
                 return;
             }
-            Collection<Integer> certprofids = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(0, ejb.getCaSession().getAvailableCAs(getAdmin(subject)));                                               
-			Collection<Integer> endentityprofids = ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(subject));
+            Collection<Integer> certprofids = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(0, ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword)));                                               
+			Collection<Integer> endentityprofids = ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword));
             
 			getLogger().info("Exporting non-fixed certificate profiles: ");
             Iterator<Integer> iter = certprofids.iterator();
@@ -87,8 +85,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
                     //getLogger().debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
                 } else {
-                	String profilename = ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(subject), profileid);
-                    EndEntityProfile profile = ejb.getEndEntityProfileSession().getEndEntityProfile(getAdmin(subject), profileid);
+                	String profilename = ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(cliUserName, cliPassword), profileid);
+                    EndEntityProfile profile = ejb.getEndEntityProfileSession().getEndEntityProfile(getAdmin(cliUserName, cliPassword), profileid);
                     if (profile == null) {
                     	getLogger().error("Error : Couldn't find entity profile '"+profilename+"'-"+profileid+" in database.");
                     } else {

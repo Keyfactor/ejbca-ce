@@ -157,6 +157,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected final static String TEST_NONADMIN_CN = "CN="+TEST_NONADMIN_USERNAME;
     protected final static String PASSWORD = "foo123";
 
+    private final String cliUserName = "ejbca";
+    private final String cliPassword = "ejbca";
+    
     protected EjbcaWS ejbcaraws;
 
     protected final static AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
@@ -316,8 +319,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         BatchMakeP12 batch = new BatchMakeP12();
         batch.setMainStoreDir("p12");
-        batch.createUser(user1.getUsername());
-        batch.createUser(user2.getUsername());
+        batch.createUser(cliUserName, cliPassword, user1.getUsername());
+        batch.createUser(cliUserName, cliPassword, user2.getUsername());
     }
 
     private String getDN(String userName) {

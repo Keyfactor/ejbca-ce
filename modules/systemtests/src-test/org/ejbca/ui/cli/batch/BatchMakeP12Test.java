@@ -39,6 +39,9 @@ public class BatchMakeP12Test extends CaTestCase {
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private int caid = getTestCAId();
 
+    private final String cliUserName = "ejbca";
+    private final String cliPassword = "ejbca";
+    
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
 
@@ -105,7 +108,7 @@ public class BatchMakeP12Test extends CaTestCase {
 
         //log.debug("tempdir="+tmpfile.getParent());
         makep12.setMainStoreDir(tmpfile.getParent());
-        makep12.createAllNew();
+        makep12.createAllNew(cliUserName, cliPassword);
         log.trace("<test02MakeP12()");
     }
 

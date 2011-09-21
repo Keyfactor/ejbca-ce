@@ -30,8 +30,8 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Find and show details of a user"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         
         try {
             if (args.length < 2) {
@@ -41,7 +41,7 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
             }
             String username = args[1];
             try {
-                EndEntityInformation data = ejb.getEndEntityAccessSession().findUser(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), username);
+                EndEntityInformation data = ejb.getEndEntityAccessSession().findUser(getAdmin(cliUserName, cliPassword), username);
                 if (data != null) {
                 	getLogger().info("Found user:");
                 	getLogger().info("username=" + data.getUsername());

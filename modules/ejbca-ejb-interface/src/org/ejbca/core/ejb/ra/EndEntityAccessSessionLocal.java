@@ -12,7 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import javassist.NotFoundException;
+
 import javax.ejb.Local;
+
+import org.cesecore.util.Tuplet;
+import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 
 /**
  * @version $Id$
@@ -21,4 +26,12 @@ import javax.ejb.Local;
 @Local
 public interface EndEntityAccessSessionLocal extends EndEntityAccessSession {
 
+    /**
+     * Using some heuristics and tarot cards, returns which algorithm and method that's been used to hash this user's password.
+     * 
+     * @param username the user name of the sought user.
+     * @return the password and algorithm for the sought user. If algorithm is hashed, so will the password be, otherwise cleartext. Null if user was not found.
+     * @throws NotFoundException 
+     */
+    Tuplet<String, SupportedPasswordHashAlgorithm> getPasswordAndHashAlgorithmForUser(String username) throws NotFoundException;
 }

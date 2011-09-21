@@ -64,12 +64,12 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 		getLogger().trace(">execute()");
 		CryptoProviderTools.installBCProvider();
 		
-	        String cliUserName = "username";
-	        String cliPassword = "passwordhash";
-	        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+	        String cliUserName = "ejbca";
+	        String cliPassword = "ejbca";
+	        
 		
 		if (args.length != 4 || (!args[3].equalsIgnoreCase(STRICT_OP) && !args[3].equalsIgnoreCase(LENIENT_OP) && !args[3].equalsIgnoreCase(ADAPTIVE_OP))) {
-			usage(subject);
+			usage(cliUserName, cliPassword);
 			return;
 		}
 		try {
@@ -79,7 +79,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 			final boolean strict = args[3].equalsIgnoreCase(STRICT_OP);
 			final boolean adaptive = args[3].equalsIgnoreCase(ADAPTIVE_OP);
 			// Fetch CA and related info
-			final CAInfo cainfo = getCAInfo(getAdmin(subject), caname);
+			final CAInfo cainfo = getCAInfo(getAdmin(cliUserName, cliPassword), caname);
 			final X509Certificate cacert = (X509Certificate) cainfo.getCertificateChain().iterator().next();
 			final String issuer = CertTools.stringToBCDNString(cacert.getSubjectDN().toString());
 			getLogger().info("CA: " + issuer);
@@ -123,7 +123,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	        		final X509Certificate certificate = certGen.generate(key_pair.getPrivate(), "BC");
 	        		final String fingerprint = CertTools.getFingerprintAsString(certificate);
 	        		// We add all certificates that does not have a user already to "missing_user_name"
-	        		final EndEntityInformation missingUserDataVO = ejb.getEndEntityAccessSession().findUser(getAdmin(subject), missing_user_name);
+	        		final EndEntityInformation missingUserDataVO = ejb.getEndEntityAccessSession().findUser(getAdmin(cliUserName, cliPassword), missing_user_name);
 	        		if (missingUserDataVO == null) {
 	        			// Add the user and change status to REVOKED
 		        		getLogger().debug("Loading/updating user " + missing_user_name);
@@ -131,12 +131,12 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 		        				UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
 		        				SecConst.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 		        		userdataNew.setPassword("foo123");
-		        		ejb.getUserAdminSession().addUser(getAdmin(subject), userdataNew, false);
+		        		ejb.getUserAdminSession().addUser(getAdmin(cliUserName, cliPassword), userdataNew, false);
 		        		getLogger().info("User '" + missing_user_name + "' has been added.");
-		        		ejb.getUserAdminSession().setUserStatus(getAdmin(subject), missing_user_name, UserDataConstants.STATUS_REVOKED);
+		        		ejb.getUserAdminSession().setUserStatus(getAdmin(cliUserName, cliPassword), missing_user_name, UserDataConstants.STATUS_REVOKED);
 		        		getLogger().info("User '" + missing_user_name + "' has been updated.");
 	        		}
-	        		ejb.getCertStoreSession().storeCertificate(getAdmin(subject), certificate, missing_user_name, fingerprint,
+	        		ejb.getCertStoreSession().storeCertificate(getAdmin(cliUserName, cliPassword), certificate, missing_user_name, fingerprint,
 	        				SecConst.CERT_ACTIVE, SecConst.USER_ENDUSER, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
         			getLogger().info("Dummy certificate  '" + serialHex + "' has been stored.");
 	        	}
@@ -148,7 +148,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	        	}
 	        	getLogger().info("Revoking '" + serialHex +"' " + "(" + serialNr.toString() + ")");
 	        	try {
-		        	ejb.getUserAdminSession().revokeCert(getAdmin(subject), serialNr, entry.getRevocationDate(), issuer, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+		        	ejb.getUserAdminSession().revokeCert(getAdmin(cliUserName, cliPassword), serialNr, entry.getRevocationDate(), issuer, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 		        	revoked++;
 	        	} catch (AlreadyRevokedException e) {
 		        	already_revoked++;
@@ -156,7 +156,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	        	}
 	        }
 	        if (ejb.getCrlStoreSession().getLastCRLNumber(issuer, false) < crl_no) {
-	        	ejb.getCrlStoreSession().storeCRL(getAdmin(subject), x509crl.getEncoded(), CertTools.getFingerprintAsString(cacert), crl_no, issuer, x509crl.getThisUpdate(), x509crl.getNextUpdate(), -1);
+	        	ejb.getCrlStoreSession().storeCRL(getAdmin(cliUserName, cliPassword), x509crl.getEncoded(), CertTools.getFingerprintAsString(cacert), crl_no, issuer, x509crl.getThisUpdate(), x509crl.getNextUpdate(), -1);
 	        } else {
 	        	if (strict) {
 	        		throw new IOException("CRL #" + crl_no + " or higher is already in the database");
@@ -176,12 +176,12 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 		getLogger().trace("<execute()");
 	}
 
-	private void usage(AuthenticationSubject subject) {
+	private void usage(String cliUserName, String cliPassword) {
 		getLogger().info("Description: " + getDescription());
-		getLogger().info("Usage: " + getCommand() + " <caname> <crl file> <" + STRICT_OP + "|" + LENIENT_OP + "|" + ADAPTIVE_OP + ">");
+		getLogger().info("Usage: " + getCommand() + " <username> <password> <caname> <crl file> <" + STRICT_OP + "|" + LENIENT_OP + "|" + ADAPTIVE_OP + ">");
 		getLogger().info(STRICT_OP + " means that all certificates must be in the database and that the CRL must not already be in the database");
 		getLogger().info(LENIENT_OP + " means not strict and not adaptive");
 		getLogger().info(ADAPTIVE_OP + " means that missing certficates will be replaced by dummy certificates to cater for proper CRLs for missing certificates");
-		getLogger().info(" Existing CAs: " + getAvailableCasString(subject));
+		getLogger().info(" Existing CAs: " + getAvailableCasString(cliUserName, cliPassword));
 	}	
 }

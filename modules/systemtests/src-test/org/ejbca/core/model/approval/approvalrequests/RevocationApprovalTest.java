@@ -44,6 +44,7 @@ import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -86,6 +87,9 @@ public class RevocationApprovalTest extends CaTestCase {
     private static AuthenticationToken approvingAdmin = null;
     private static ArrayList<AccessUserAspectData> adminentities;
     
+    private final String cliUserName = "ejbca";
+    private final String cliPassword = "ejbca";
+    
     private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
@@ -125,7 +129,7 @@ public class RevocationApprovalTest extends CaTestCase {
         	BatchMakeP12 makep12 = new BatchMakeP12();
         	File tmpfile = File.createTempFile("ejbca", "p12");
         	makep12.setMainStoreDir(tmpfile.getParent());
-        	makep12.createAllNew();
+        	makep12.createAllNew(cliUserName, cliPassword);
         }
         RoleData role = roleAccessSession.findRole(getRoleName());
         if (role == null) {
@@ -193,7 +197,7 @@ public class RevocationApprovalTest extends CaTestCase {
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
-        makep12.createAllNew();
+        makep12.createAllNew(cliUserName, cliPassword);
     }
 
 
@@ -220,7 +224,7 @@ public class RevocationApprovalTest extends CaTestCase {
         approvalSettings.add(approvalRequirementType);
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 365, new Date(
                 System.currentTimeMillis() + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catokeninfo, "Used for testing approvals",
-                -1, null, null, 24, 0, 10, 0, new ArrayList(), true, false, true, false, "", "", "", "", true, new ArrayList(), false, approvalSettings, 1,
+                -1, null, null, 24, 0, 10, 0, new ArrayList<Integer>(), true, false, true, false, "", "", "", "", true, new ArrayList<ExtendedCAServiceInfo>(), false, approvalSettings, 1,
                 false, true, false, false, true, true, true, false, true, true, true, null);
         int caID = cainfo.getCAId();
         try {

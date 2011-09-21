@@ -35,17 +35,17 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Lists the names of all available CAs"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
+        
         
         try {
         	CryptoProviderTools.installBCProvider();
-            Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin(subject));
+            Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword));
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
                 int caid = ((Integer)iter.next()).intValue();
-                CAInfo ca = ejb.getCaSession().getCAInfo(getAdmin(subject), caid);
+                CAInfo ca = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caid);
                 Collection<Certificate> certs = ca.getCertificateChain();
                 Iterator<Certificate> ci = certs.iterator();
                 Certificate cacert = null;

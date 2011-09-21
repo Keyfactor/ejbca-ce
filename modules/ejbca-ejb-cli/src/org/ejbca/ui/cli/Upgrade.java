@@ -36,9 +36,9 @@ public class Upgrade extends BaseCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
+        
         
         if (args.length < 3) {
             getLogger().error("Insufficient information to perform upgrade.");
@@ -55,7 +55,7 @@ public class Upgrade extends BaseCommand {
         }*/
         // Upgrade the database
 
-        final boolean ret = ejb.getUpgradeSession().upgrade(getAdmin(subject), database, upgradeFromVersion, isPost);
+        final boolean ret = ejb.getUpgradeSession().upgrade(getAdmin(cliUserName, cliPassword), database, upgradeFromVersion, isPost);
         if (ret) {
             getLogger().info("Upgrade completed.");
         } else {

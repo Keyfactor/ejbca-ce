@@ -34,9 +34,9 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Restore a CA token keystore from a PKCS12 file."; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
+        
         
 		if (args.length < 3 || args.length > 5) {
     		getLogger().info("Description: " + getDescription());
@@ -84,7 +84,7 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 				}
 				// else alias already contains the only alias, so we can use that
 			}
-			ejb.getCAAdminSession().restoreCAKeyStore(getAdmin(subject), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
+			ejb.getCAAdminSession().restoreCAKeyStore(getAdmin(cliUserName, cliPassword), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
 		} catch (ErrorAdminCommandException e) {
 			throw e;
 		} catch (Exception e) {

@@ -39,9 +39,9 @@ public class CreateCert extends BaseCommand {
 	public String getDescription() { return "Issue a certificate for a user based on a CSR"; }
 
 	public void execute(String[] args) throws ErrorAdminCommandException {
-	        String cliUserName = "username";
-	        String cliPassword = "passwordhash";
-	        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+	        String cliUserName = "ejbca";
+	        String cliPassword = "ejbca";
+	        
 	    
         if ( args.length != 5 ) {
             getLogger().info("Usage: " + getCommand() + " <username> <password> <csr.pem> <cert.pem>");
@@ -65,7 +65,7 @@ public class CreateCert extends BaseCommand {
 				return;
 			}
 			// Call signsession to create a certificate
-			ResponseMessage resp = ejb.getSignSession().createCertificate(getAdmin(subject), req, X509ResponseMessage.class, null);
+			ResponseMessage resp = ejb.getSignSession().createCertificate(getAdmin(cliUserName, cliPassword), req, X509ResponseMessage.class, null);
 			byte[] respBytes = resp.getResponseMessage();
 			// Convert to PEM
 			Certificate cert = CertTools.getCertfromByteArray(respBytes);

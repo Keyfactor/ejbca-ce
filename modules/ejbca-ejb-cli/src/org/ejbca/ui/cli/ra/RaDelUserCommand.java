@@ -40,8 +40,8 @@ public class RaDelUserCommand extends BaseRaAdminCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
         
         // Get and remove switches
         List<String> argsList = CliTools.getAsModifyableList(args);
@@ -63,7 +63,7 @@ public class RaDelUserCommand extends BaseRaAdminCommand {
             }
             if ((inp == 121) || (inp == 89)) {
                 try {
-                    ejb.getUserAdminSession().deleteUser(getAdmin(getAuthenticationSubject(cliUserName, cliPassword)), username);
+                    ejb.getUserAdminSession().deleteUser(getAdmin(cliUserName, cliPassword), username);
                     getLogger().info("Deleted user " + username);
                 } catch (AuthorizationDeniedException e) {
                     getLogger().error("Not authorized to remove user.");

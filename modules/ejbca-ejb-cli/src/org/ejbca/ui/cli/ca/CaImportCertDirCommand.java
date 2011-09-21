@@ -21,7 +21,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -56,13 +55,13 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
 		getLogger().trace(">execute()");
 		
-	        String cliUserName = "username";
-	        String cliPassword = "passwordhash";
-	        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+	        String cliUserName = "ejbca";
+	        String cliPassword = "ejbca";
+	        
 		
 		CryptoProviderTools.installBCProvider();
 		if (args.length != 7) {
-			usage(subject);
+			usage(cliUserName, cliPassword);
 			return;
 		}
 		try {
@@ -87,13 +86,13 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 				throw new Exception(usernameFilter + "is not a valid option. Currently only \"DN\", \"CN\" and \"FILE\" username-source are implemented");
 			}
 			// Fetch CA info
-			final CAInfo caInfo = getCAInfo(getAdmin(subject), caName);
+			final CAInfo caInfo = getCAInfo(getAdmin(cliUserName, cliPassword), caName);
 			final X509Certificate cacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
 			final String issuer = CertTools.stringToBCDNString(cacert.getSubjectDN().toString());
 			getLogger().info("CA: " + issuer);
 			// Fetch End Entity Profile info
 			getLogger().debug("Searching for End Entity Profile " + eeProfile);
-			final int endEntityProfileId = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(subject), eeProfile);
+			final int endEntityProfileId = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(cliUserName, cliPassword), eeProfile);
 			if (endEntityProfileId == 0) {
 				getLogger().error("End Entity Profile " + eeProfile + " does not exist.");
 				throw new Exception("End Entity Profile '" + eeProfile + "' does not exist.");
@@ -131,7 +130,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 						username = cn;
 					}
 				}
-				switch (performImport(subject, certificate, status, endEntityProfileId, certificateProfileId, cacert, caInfo, filename, issuer, username)) {
+				switch (performImport(cliUserName, cliPassword, certificate, status, endEntityProfileId, certificateProfileId, cacert, caInfo, filename, issuer, username)) {
 				case STATUS_REDUNDANT: redundant++; break;
 				case STATUS_REJECTED: rejected++; break;
 				default: count++;
@@ -155,7 +154,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 	 * Imports a certificate to the database and creates a user if necessary.
 	 * @return STATUS_OK, STATUS_REDUNDANT or STATUS_REJECTED
 	 */
-	private int performImport(AuthenticationSubject subject, X509Certificate certificate, int status, int endEntityProfileId, int certificateProfileId,
+	private int performImport(String cliUserName, String cliPassword, X509Certificate certificate, int status, int endEntityProfileId, int certificateProfileId,
 			                   X509Certificate cacert, CAInfo caInfo, String filename, String issuer, String username) throws Exception {
 		final String fingerprint = CertTools.getFingerprintAsString(certificate);
 		if (ejb.getCertStoreSession().findCertificateByFingerprint(fingerprint) != null) {
@@ -179,7 +178,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 		}
 		getLogger().debug("Loading/updating user " + username);
 		// Check if username already exists.
-		EndEntityInformation userdata = ejb.getEndEntityAccessSession().findUser(getAdmin(subject), username);
+		EndEntityInformation userdata = ejb.getEndEntityAccessSession().findUser(getAdmin(cliUserName, cliPassword), username);
 		if (userdata==null) {
 			// Add a "user" to map this certificate to
 			final String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
@@ -188,34 +187,34 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 					UserDataConstants.STATUS_GENERATED, SecConst.USER_ENDUSER, endEntityProfileId,
 					certificateProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 			userdata.setPassword("foo123");
-			ejb.getUserAdminSession().addUser(getAdmin(subject), userdata, false);
+			ejb.getUserAdminSession().addUser(getAdmin(cliUserName, cliPassword), userdata, false);
 			getLogger().info("User '" + username + "' has been added.");
 		}
 		// addUser always adds the user with STATUS_NEW (even if we specified otherwise)
 		// We always override the userdata with the info from the certificate even if the user existed.
 		userdata.setStatus(UserDataConstants.STATUS_GENERATED);
-		ejb.getUserAdminSession().changeUser(getAdmin(subject), userdata, false);
+		ejb.getUserAdminSession().changeUser(getAdmin(cliUserName, cliPassword), userdata, false);
 		getLogger().info("User '" + username + "' has been updated.");
 		// Finally import the certificate and revoke it if necessary
-		ejb.getCertStoreSession().storeCertificate(getAdmin(subject), certificate, username, fingerprint, SecConst.CERT_ACTIVE, SecConst.USER_ENDUSER, certificateProfileId, null, now.getTime());
+		ejb.getCertStoreSession().storeCertificate(getAdmin(cliUserName, cliPassword), certificate, username, fingerprint, SecConst.CERT_ACTIVE, SecConst.USER_ENDUSER, certificateProfileId, null, now.getTime());
 		if (status == SecConst.CERT_REVOKED) {
-			ejb.getUserAdminSession().revokeCert(getAdmin(subject), certificate.getSerialNumber(), issuer, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+			ejb.getUserAdminSession().revokeCert(getAdmin(cliUserName, cliPassword), certificate.getSerialNumber(), issuer, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 		}
 		getLogger().info("Certificate '" + CertTools.getSerialNumberAsString(certificate) + "' has been added.");
 		return STATUS_OK;
 	}
 
 	/** Print out usage. */
-	private void usage(AuthenticationSubject subject) {
+	private void usage(String cliUserName, String cliPassword) {
 		getLogger().info("Description: " + getDescription());
 		getLogger().info("Usage: " + getCommand() + " <username-source> <caname> <status> <certificate dir> <endentityprofile> <certificateprofile>");
 		getLogger().info(" Username-source: \"DN\" means use certificate's SubjectDN as username, \"CN\" means use certificate subject's common name as username and \"FILE\" means user the file's name as username");
 		// List available CAs by name
-		getLogger().info(" Available CAs: " + getAvailableCasString(subject));
+		getLogger().info(" Available CAs: " + getAvailableCasString(cliUserName, cliPassword));
 		getLogger().info(" Status: ACTIVE, REVOKED");
 		getLogger().info(" Certificate dir: A directory where all files are PEM encoded certificates");
-		getLogger().info(" Available end entity profiles: " + getAvailableEepsString(subject));
-		getLogger().info(" Available certificate profiles: " + getAvailableEndUserCpsString(subject));
+		getLogger().info(" Available end entity profiles: " + getAvailableEepsString(cliUserName, cliPassword));
+		getLogger().info(" Available certificate profiles: " + getAvailableEndUserCpsString(cliUserName, cliPassword));
 	}
 	
 	/** Load a PEM encoded certificate from the specified file. */

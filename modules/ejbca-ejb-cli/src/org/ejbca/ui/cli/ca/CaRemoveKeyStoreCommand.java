@@ -29,9 +29,9 @@ public class CaRemoveKeyStoreCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Remove the CA token keystore from a CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "username";
-        String cliPassword = "passwordhash";
-        AuthenticationSubject subject = getAuthenticationSubject(cliUserName, cliPassword);
+        String cliUserName = "ejbca";
+        String cliPassword = "ejbca";
+        
         
 		if (args.length < 2) {
     		getLogger().info("Description: " + getDescription());
@@ -40,7 +40,7 @@ public class CaRemoveKeyStoreCommand extends BaseCaAdminCommand {
 		}
 		try {
 			String caName = args[1];
-			ejb.getCAAdminSession().removeCAKeyStore(getAdmin(subject), caName);
+			ejb.getCAAdminSession().removeCAKeyStore(getAdmin(cliUserName, cliPassword), caName);
 		} catch (Exception e) {
 			throw new ErrorAdminCommandException(e);
 		}
