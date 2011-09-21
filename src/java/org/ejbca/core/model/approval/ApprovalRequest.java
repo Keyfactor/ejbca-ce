@@ -30,6 +30,7 @@ import javax.security.auth.x500.X500Principal;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.LocalJvmOnlyAuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -300,11 +301,11 @@ public abstract class ApprovalRequest implements Externalizable {
     }
 
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
-        int version = in.readInt();
+        final int version = in.readInt();
         if (version == 1) {
-            String requestAdminCert = (String) in.readObject();
-            byte[] certbuf = Base64.decode(requestAdminCert.getBytes());
-            CertificateFactory cf = CertTools.getCertificateFactory();
+            final String requestAdminCert = (String) in.readObject();
+            final byte[] certbuf = Base64.decode(requestAdminCert.getBytes());
+            final CertificateFactory cf = CertTools.getCertificateFactory();
             X509Certificate x509cert = null;
             try {
                 x509cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(certbuf));
@@ -312,9 +313,9 @@ public abstract class ApprovalRequest implements Externalizable {
                 log.error(e);
             }
 
-            Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
             credentials.add(x509cert);
-            Set<X500Principal> principals = new HashSet<X500Principal>();
+            final Set<X500Principal> principals = new HashSet<X500Principal>();
             principals.add(x509cert.getSubjectX500Principal());
             this.requestAdmin = new X509CertificateAuthenticationToken(principals, credentials);
             this.requestSignature = (String) in.readObject();
@@ -333,9 +334,9 @@ public abstract class ApprovalRequest implements Externalizable {
             		token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(admin.getUsername()));
             	}
             } else {
-                Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            	final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
                 credentials.add(x509cert);
-                Set<X500Principal> principals = new HashSet<X500Principal>();
+                final Set<X500Principal> principals = new HashSet<X500Principal>();
                 principals.add(x509cert.getSubjectX500Principal());
                 token = new X509CertificateAuthenticationToken(principals, credentials);
             }
@@ -358,9 +359,9 @@ public abstract class ApprovalRequest implements Externalizable {
             		token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(admin.getUsername()));
             	}
             } else {
-                Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+            	final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
                 credentials.add(x509cert);
-                Set<X500Principal> principals = new HashSet<X500Principal>();
+                final Set<X500Principal> principals = new HashSet<X500Principal>();
                 principals.add(x509cert.getSubjectX500Principal());
                 token = new X509CertificateAuthenticationToken(principals, credentials);
             }
@@ -370,7 +371,7 @@ public abstract class ApprovalRequest implements Externalizable {
             this.numOfRequiredApprovals = in.readInt();
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
-            int stepSize = in.readInt();
+            final int stepSize = in.readInt();
             this.approvalSteps = new boolean[stepSize];
             for (int i = 0; i < approvalSteps.length; i++) {
                 approvalSteps[i] = in.readBoolean();
@@ -379,12 +380,22 @@ public abstract class ApprovalRequest implements Externalizable {
         if (version == 4) {
         	// Version 4 after conversion to CESeCore where Admin was deprecated.
             this.requestAdmin = (AuthenticationToken) in.readObject();
+            if (log.isTraceEnabled()) {
+            	log.trace("ApprovalRequest has a requestAdmin token of type: "+this.requestAdmin.getClass().getName());
+            }
+            if (this.requestAdmin instanceof LocalJvmOnlyAuthenticationToken) {
+                if (log.isTraceEnabled()) {
+                	log.trace("It was a LocalJvmOnlyAuthenticationToken so we will re-init it with local random token.");
+                }
+				LocalJvmOnlyAuthenticationToken localtoken = (LocalJvmOnlyAuthenticationToken) this.requestAdmin;
+				localtoken.initRandomToken();
+			}
             this.requestSignature = (String) in.readObject();
             this.approvalRequestType = in.readInt();
             this.numOfRequiredApprovals = in.readInt();
             this.cAId = in.readInt();
             this.endEntityProfileId = in.readInt();
-            int stepSize = in.readInt();
+            final int stepSize = in.readInt();
             this.approvalSteps = new boolean[stepSize];
             for (int i = 0; i < approvalSteps.length; i++) {
                 approvalSteps[i] = in.readBoolean();
