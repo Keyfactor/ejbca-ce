@@ -1,3 +1,5 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<c:set var="THIS_TITLE" value="Certificate Enrollment from CSR" />
 <%@ include file="header.jsp" %>
 <h1 class="title">Certificate enrollment from a CSR</h1>
 <p>Please give your username and password, select a PEM- or DER-formated certification request file (CSR) for upload, 

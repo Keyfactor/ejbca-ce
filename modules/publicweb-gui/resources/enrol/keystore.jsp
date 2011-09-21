@@ -1,5 +1,6 @@
-<%@ include file="header.jsp" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<c:set var="THIS_TITLE" value="Keystore Enrollment" />
+<%@ include file="header.jsp" %>
 
 <jsp:useBean id="internalConfiguration" class="org.ejbca.config.InternalConfiguration" scope="request" />
 
