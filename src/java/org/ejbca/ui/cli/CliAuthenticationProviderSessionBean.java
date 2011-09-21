@@ -17,8 +17,6 @@ import java.security.Principal;
 import java.security.SecureRandom;
 import java.util.Set;
 
-import javassist.NotFoundException;
-
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -35,6 +33,7 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderLocal;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 
