@@ -110,6 +110,7 @@
   static final String CHECKBOX_USE_ISSUANCEREVOCATIONREASON = "checkboxuseissuancerevocationreason";
   static final String CHECKBOX_USE_MAXFAILEDLOGINS	 = "checkboxusemaxfailedlogins";
   static final String CHECKBOX_USE_CERTSERIALNR      =  "checkboxusecertserialonr";
+  static final String CHECKBOX_USE_EXTENSIONDATA     = "checkboxuseextensiondata";
   
   static final String RADIO_MAXFAILEDLOGINS		  		  = "radiomaxfailedlogins";
   static final String RADIO_MAXFAILEDLOGINS_VAL_UNLIMITED = "unlimited";
@@ -470,6 +471,8 @@
              profiledata.setRequired(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0,true);
 
              profiledata.setUse(EndEntityProfile.CERTSERIALNR, 0 ,ejbcarabean.getEndEntityParameter(request.getParameter(CHECKBOX_USE_CERTSERIALNR)));
+
+             profiledata.setUseExtensiondata(CHECKBOX_VALUE.equalsIgnoreCase(request.getParameter(CHECKBOX_USE_EXTENSIONDATA)));
 
              String defaultcertprof =  request.getParameter(SELECT_DEFAULTCERTPROFILE);
              profiledata.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0,defaultcertprof);
