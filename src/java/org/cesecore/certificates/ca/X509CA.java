@@ -93,6 +93,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtension;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
@@ -804,7 +805,9 @@ public class X509CA extends CA implements Serializable {
                 if (!eq) {
                     String akistr = new String(Hex.encode(aki));
                     String skistr = new String(Hex.encode(ski));
-                    log.error(intres.getLocalizedMessage("signsession.errorpathverifykeyid", akistr, skistr));
+                    final String msg = intres.getLocalizedMessage("signsession.errorpathverifykeyid", akistr, skistr);
+                    log.error(msg);
+                    throw new CertificateCreateException(msg);
                 }
             }
             Principal issuerDN = cert.getIssuerX500Principal();
@@ -812,7 +815,9 @@ public class X509CA extends CA implements Serializable {
             if ((issuerDN != null) && (subjectDN != null)) {
                 boolean eq = issuerDN.equals(subjectDN);
                 if (!eq) {
-                    log.error(intres.getLocalizedMessage("signsession.errorpathverifydn", issuerDN.getName(), subjectDN.getName()));
+                	final String msg = intres.getLocalizedMessage("signsession.errorpathverifydn", issuerDN.getName(), subjectDN.getName());
+                    log.error(msg);
+                    throw new CertificateCreateException(msg);
                 }
             }
         }
