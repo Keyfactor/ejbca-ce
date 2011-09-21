@@ -798,22 +798,22 @@ public class X509CA extends CA implements Serializable {
 
         // If we have a CA-certificate, verify that we have all path verification stuff correct
         if (cacert != null) {
-            byte[] aki = CertTools.getAuthorityKeyId(cert);
-            byte[] ski = CertTools.getSubjectKeyId(isRootCA ? cert : cacert);
+            final byte[] aki = CertTools.getAuthorityKeyId(cert);
+            final byte[] ski = CertTools.getSubjectKeyId(isRootCA ? cert : cacert);
             if ((aki != null) && (ski != null)) {
-                boolean eq = Arrays.equals(aki, ski);
+                final boolean eq = Arrays.equals(aki, ski);
                 if (!eq) {
-                    String akistr = new String(Hex.encode(aki));
-                    String skistr = new String(Hex.encode(ski));
+                    final String akistr = new String(Hex.encode(aki));
+                    final String skistr = new String(Hex.encode(ski));
                     final String msg = intres.getLocalizedMessage("signsession.errorpathverifykeyid", akistr, skistr);
                     log.error(msg);
                     throw new CertificateCreateException(msg);
                 }
             }
-            Principal issuerDN = cert.getIssuerX500Principal();
-            Principal subjectDN = cacert.getSubjectX500Principal();
+            final Principal issuerDN = cert.getIssuerX500Principal();
+            final Principal subjectDN = cacert.getSubjectX500Principal();
             if ((issuerDN != null) && (subjectDN != null)) {
-                boolean eq = issuerDN.equals(subjectDN);
+                final boolean eq = issuerDN.equals(subjectDN);
                 if (!eq) {
                 	final String msg = intres.getLocalizedMessage("signsession.errorpathverifydn", issuerDN.getName(), subjectDN.getName());
                     log.error(msg);
