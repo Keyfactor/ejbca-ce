@@ -17,7 +17,8 @@ import javax.ejb.ApplicationException;
 import org.cesecore.CesecoreException;
 
 /**
- * An exception thrown when a serious error happens creating a CRL. If this happens any transaction depending on this should be rolled back.
+ * An exception thrown when a serious error happens creating a certificate. 
+ * If this happens any transaction depending on this should be rolled back.
  * 
  * Based on cesecore version: 
  *      CertificateCreateException.java 451 2011-03-07 07:56:04Z tomas
