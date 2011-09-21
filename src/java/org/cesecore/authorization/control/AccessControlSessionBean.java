@@ -77,6 +77,9 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
             }
             return true;
         } else {
+        	if (log.isDebugEnabled()) {
+        		log.debug("Authorization failed for " + authenticationToken.toString() + " of type " + authenticationToken.getClass().getSimpleName() + " for resource " + resource);
+        	}
             return false;
         }
     }

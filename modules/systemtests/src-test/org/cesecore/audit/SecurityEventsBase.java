@@ -72,6 +72,7 @@ public abstract class SecurityEventsBase extends RoleUsingTestCase {
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.AUDITLOGVERIFY.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.AUDITLOGSELECT.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.AUDITLOGMANAGE.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.AUDITLOGLOG.resource(), AccessRuleState.RULE_ACCEPT, true));
         roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
     }
 
