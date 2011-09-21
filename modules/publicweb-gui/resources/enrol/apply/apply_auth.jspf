@@ -1,6 +1,6 @@
-<h1 class="title">Certificate enrollment</h1>
+<h1 class="title">${THIS_TITLE}</h1>
 
-<p>Welcome to certificate enrollment.</p>
+<p>Welcome to ${THIS_TITLE}.</p>
 <p>Please enter your username and password. Then click OK to generate your token.</p>
 
 <form name="CertReqForm" action="${THIS_FILENAME}"  method="post">

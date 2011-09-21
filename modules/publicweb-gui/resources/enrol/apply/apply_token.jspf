@@ -1,7 +1,7 @@
 <h1 class="title"><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Token Certificate Enrollment</h1>
 <hr />
 
-<p>Welcome to certificate enrollment.</p>
+<p>Welcome to keystore enrollment.</p>
 <p>If you want to, you can manually install the CA certificate(s)
    in your browser, otherwise this will be done automatically when
    your certificate is retrieved.</p>

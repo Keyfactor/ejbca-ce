@@ -9,7 +9,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
-    <title><%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Public Web</title>
+    <title>Certificate renewal - <%= org.ejbca.config.InternalConfiguration.getAppNameCapital() %> Public Web</title>
     <link rel="stylesheet" href="styles.css" type="text/css" />
   </head>
 

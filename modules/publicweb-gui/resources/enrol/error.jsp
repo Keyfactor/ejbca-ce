@@ -1,5 +1,6 @@
-<%@ include file="header.jsp" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
+<c:set var="THIS_TITLE" value="Error" />
+<%@ include file="header.jsp" %>
 
     <c:set var="isException" value="${param.Exception}" />
     <c:set var="errMsg" value="${ErrorMessage}" />
