@@ -55,7 +55,7 @@ public final class ConfigurationHolder {
 
     /** cesecore.properties must be first in this file, because CONFIGALLOWEXTERNAL is defined in there. */
     private static final String[] CONFIG_FILES = { "cesecore.properties", "extendedkeyusage.properties", "log.properties",
-            "cache.properties", "database.properties", "databaseprotection.properties", "va.properties", "ocsp.properties"};
+            "cache.properties", "database.properties", "databaseprotection.properties", "backup.properties", "va.properties", "ocsp.properties"};
 
     /** Configuration property that enables dynamic reading of properties from the file system. This is not allowed by default for security reasons. */
     private static final String CONFIGALLOWEXTERNAL = "allow.external-dynamic.configuration";
