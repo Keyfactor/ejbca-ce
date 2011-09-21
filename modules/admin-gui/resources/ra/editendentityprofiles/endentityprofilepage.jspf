@@ -1109,6 +1109,25 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td> 
     </tr>
 
+    <!-- Extensiondata -->
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="10%" valign="top">
+         &nbsp;
+      </td>
+      <td width="40%"  align="right"> 
+		<%= ejbcawebbean.getText("CERT_EXTENSIONDATA_CUSTOM") %> <%= ejbcawebbean.getHelpReference("/userguide.html#-TODO-ExtensionData") %>
+      </td>
+      <td width="50%"> 
+        <%	used = profiledata.getUseExtensiondata(); %>
+		<%= ejbcawebbean.getText("USE") %>
+		<input type="checkbox" name="<%=CHECKBOX_USE_EXTENSIONDATA %>" value="<%=CHECKBOX_VALUE %>" 
+			<%	if ( used ) {
+				out.write(" CHECKED ");
+				} %>
+			/>
+      </td> 
+    </tr>
+
     <tr  id="Row<%=row++%2%>"> 
       <td width="10%" valign="top">
          &nbsp;

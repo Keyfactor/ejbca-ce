@@ -10,6 +10,7 @@
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
 <jsp:useBean id="tokenbean" scope="session" class="org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean" />
+<jsp:useBean id="editendentitybean" scope="page" class="org.ejbca.ui.web.admin.rainterface.EditEndEntityBean" />
 <%! // Declarations
 
 
@@ -35,6 +36,7 @@
   static final String TEXTFIELD_MAXFAILEDLOGINS	  = "textfieldmaxfailedlogins";
   static final String TEXTFIELD_CERTSERIALNUMBER  = "textfieldcertserialnumber";
 
+  static final String TEXTAREA_EXTENSIONDATA      = "textareaextensiondata";
 
   static final String SELECT_ENDENTITYPROFILE     = "selectendentityprofile";
   static final String SELECT_CERTIFICATEPROFILE   = "selectcertificateprofile";
@@ -74,6 +76,7 @@
   static final String CHECKBOX_REQUIRED_STARTTIME         = "checkboxrequiredstarttime";
   static final String CHECKBOX_REQUIRED_ENDTIME           = "checkboxrequiredendtime";
   static final String CHECKBOX_REQUIRED_CERTSERIALNUMBER  = "checkboxrequiredcertserialnumber";
+  static final String CHECKBOX_REQUIRED_EXTENSIONDATA     = "checkboxrequiredextensiondata";
   
   static final String CHECKBOX_RESETLOGINATTEMPTS	  	  = "checkboxresetloginattempts";
   static final String CHECKBOX_UNLIMITEDLOGINATTEMPTS	  = "checkboxunlimitedloginattempts";
@@ -181,6 +184,7 @@
              if (ei == null) {
             	 ei = new ExtendedInformation();
              }
+             editendentitybean.setExtendedInformation(ei);
              ExtendedInformation userei = userdata.getExtendedInformation();
              if (userei != null) {            	 
                  ei.setRemainingLoginAttempts(userei.getRemainingLoginAttempts());
@@ -195,6 +199,14 @@
              if(value != null) {
             	 ei.setMaxLoginAttempts(Integer.parseInt(value));
             	 newuser.setExtendedInformation(ei);
+             }
+             
+             value = request.getParameter(TEXTAREA_EXTENSIONDATA);
+             if (value != null) {
+                 // Save the new value if the profile allows it
+                 if (profile.getUseExtensiondata()) {
+                    editendentitybean.setExtensionData(value);
+                 }
              }
              
              value = request.getParameter(CHECKBOX_RESETLOGINATTEMPTS);
@@ -567,6 +579,9 @@
       availablecas = ejbcawebbean.getInformationMemory().getEndEntityAvailableCAs(profileid);
     }
 
+    editendentitybean.setExtendedInformation(userdata.getExtendedInformation());
+    pageContext.setAttribute("profile", profile);
+    
     int row = 0;
     int tabindex = 1;
 %>
@@ -1596,6 +1611,18 @@ function checkUseInBatch(){
     </tr>
      <% } %>
 
+     <%	if (profile.getUseExtensiondata()) { %>
+            <tr  id="Row<%=(row++)%2%>"> 
+                    <td align="right"> 
+                            <c:out value="<%= ejbcawebbean.getText(\"CERT_EXTENSIONDATA\") %>"/><br/>
+                    </td><td>
+                            <textarea name="<%=TEXTAREA_EXTENSIONDATA%>" rows="4" cols="35"><c:if test="${!useradded}"><c:out value="${editendentitybean.extensionData}"/></c:if></textarea>
+                    </td>
+                    <td>
+                            <input type="checkbox" name="<%= CHECKBOX_REQUIRED_EXTENSIONDATA %>" value="<%= CHECKBOX_VALUE %>" disabled="true"/>
+                    </td>
+            </tr>
+    <%	} %> 
 
     <!-- ---------- Other data -------------------- -->
 
