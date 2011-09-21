@@ -12,11 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
-import javassist.NotFoundException;
-
 import javax.ejb.Local;
 
 import org.cesecore.util.Tuplet;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 
 /**
