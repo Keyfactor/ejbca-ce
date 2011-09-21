@@ -46,6 +46,7 @@ import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.internal.InternalResources;
 import org.junit.Test;
 
 /**
@@ -56,6 +57,8 @@ import org.junit.Test;
 public class BasicCertificateExtensionTest {
 	private static Logger log = Logger.getLogger(BasicCertificateExtensionTest.class);
 	
+        private static final InternalResources intres = InternalResources.getInstance();
+        
 	@Test
 	public void test01NullBasicExtension() throws Exception{
 		Properties props = new Properties();
@@ -97,6 +100,7 @@ public class BasicCertificateExtensionTest {
 		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
+                        assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "123SA4", 1, "1.2.3"), e.getMessage());
 		}
 		assertTrue(exceptionThrown);
 	
@@ -148,7 +152,7 @@ public class BasicCertificateExtensionTest {
 			value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
 			assertTrue("Should throw", false);
 		} catch (CertificateExtentionConfigurationException e) {
-			// NOPMD
+			assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "qqqq", 1, "1.2.3"), e.getMessage());
 		}
 
 	}	
@@ -187,6 +191,7 @@ public class BasicCertificateExtensionTest {
 		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
+                        assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "1sdf", 1, "1.2.3"), e.getMessage());
 		}
 		assertTrue(exceptionThrown);		
 	}
@@ -214,6 +219,7 @@ public class BasicCertificateExtensionTest {
 		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null));		  
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
+                        assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "123SA4", 1, "1.2.3"), e.getMessage());
 		}
 		assertTrue(exceptionThrown);
 
@@ -242,6 +248,7 @@ public class BasicCertificateExtensionTest {
 		  value = getObject(baseExt.getValueEncoded(null, null, null, null, null));
 		}catch(CertificateExtentionConfigurationException e){
 			exceptionThrown = true;
+                        assertEquals(intres.getLocalizedMessage("certext.basic.illegalvalue", "This is a non  printable string ���", 1, "1.2.3"), e.getMessage());
 		}
 		assertTrue(exceptionThrown);        
 	}
@@ -273,7 +280,7 @@ public class BasicCertificateExtensionTest {
 			baseExt.getValueEncoded(null, null, null, null, null);
 			assertTrue("Should throw", false);		
 		}catch(CertificateExtentionConfigurationException e){
-			// NOPMD
+			assertEquals(intres.getLocalizedMessage("certext.basic.incorrectenc", "DERUTF8sdfTRING", 1), e.getMessage());
 		}
 		
 		Properties props1 = new Properties();
@@ -424,10 +431,8 @@ public class BasicCertificateExtensionTest {
 		try {
 			baseExt.getValueEncoded(userData, null, null, null, null);
 			fail("Should have failed as no value was specified in EI.");
-		} catch (CertificateExtensionException ignored) {
-			// OK
-		} catch (CertificateExtentionConfigurationException ignored) {
-			// OK
+		} catch (CertificateExtentionConfigurationException ex) {
+			assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
 		}
 		
 		// Success with value specified
@@ -603,6 +608,9 @@ public class BasicCertificateExtensionTest {
 		assertEquals("The value 456", ((DERPrintableString) value1).getString());
 	}
 	
+        /**
+         * Test using encoding=RAW and both dynamic and static value.
+         */
         @Test
 	public void test19RawValue() throws Exception {
 		Properties props = new Properties();
@@ -653,4 +661,76 @@ public class BasicCertificateExtensionTest {
 		return in.readObject();
 	}
 
+        /**
+         * Test using encoding=RAW and only dynamic value.
+         */
+        @Test
+	public void test21RawValueNotSpecified() throws Exception {
+		Properties props = new Properties();
+		props.put("id1.property.encoding", "RAW");
+		props.put("id1.property.dynamic", "true");
+		BasicCertificateExtension baseExt = new BasicCertificateExtension();
+		baseExt.init(1, "1.2.3", false, props);
+		EndEntityInformation userData = new EndEntityInformation();
+		userData.setExtendedinformation(new ExtendedInformation());
+		
+		// Without value in userdata it should fail
+                try {
+                    byte[] value = baseExt.getValueEncoded(userData, null, null, null, null);
+                    fail("Should have fail as no dynamic value specified");
+                } catch (CertificateExtentionConfigurationException ex) {
+                    assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
+}
+		
+		// With value in userdata, that value is used
+		userData.getExtendedinformation().setExtensionData("1.2.3", "eeff0000");
+		byte[] value = baseExt.getValueEncoded(userData, null, null, null, null);
+		assertEquals("value", "eeff0000", new String(Hex.encode(value)));
+	}
+        
+        /**
+         * Test without any value specified.
+         */
+        @Test
+        public void test22ValueNotSpecified() throws Exception{
+		Properties props = new Properties();
+		props.put("id1.property.encoding", "DERINTEGER");
+		
+		BasicCertificateExtension baseExt = new BasicCertificateExtension();
+		baseExt.init(1, "1.2.3", false, props);
+		
+                try {
+                    baseExt.getValueEncoded(null, null, null, null, null);
+                    fail("Should have fail as no value specified");
+                } catch (CertificateExtentionConfigurationException ex) {
+                    assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
+                }
+	}
+        
+        /**
+         * Test using encoding=RAW but nvalues > 1 specified which is a
+         * configuration error.
+         */
+        @Test
+	public void test23RawValueButNValues() throws Exception {
+		Properties props = new Properties();
+		props.put("id1.property.encoding", "RAW");
+		props.put("id1.property.dynamic", "true");
+                props.put("id1.property.nvalues", "3"); 
+		props.put("id1.property.value1", "foo1");
+		props.put("id1.property.value2", "foo2");
+		props.put("id1.property.value3", "foo3");
+                
+		BasicCertificateExtension baseExt = new BasicCertificateExtension();
+		baseExt.init(1, "1.2.3", false, props);
+		EndEntityInformation userData = new EndEntityInformation();
+		userData.setExtendedinformation(new ExtendedInformation());
+		
+                try {
+                    byte[] value = baseExt.getValueEncoded(userData, null, null, null, null);
+                    fail("Should have fail as both raw and nvalues specified");
+                } catch (CertificateExtentionConfigurationException ex) {
+                    assertEquals(intres.getLocalizedMessage("certext.certextmissconfigured", 1), ex.getMessage());
+                }
+	}
 }
