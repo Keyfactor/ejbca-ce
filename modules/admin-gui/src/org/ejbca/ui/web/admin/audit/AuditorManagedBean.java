@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.ui.web.admin.audit;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -23,11 +25,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.AuditDevicesConfig;
 import org.cesecore.audit.AuditLogEntry;
+import org.cesecore.audit.audit.AuditExporter;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionLocal;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
@@ -36,6 +43,8 @@ import org.cesecore.audit.enums.ModuleType;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.impl.AuditExporterXml;
+import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -497,4 +506,73 @@ public class AuditorManagedBean implements Serializable {
 			@Override public Collection<Integer> values() { return null; }
 		};
 	}
+
+    public void downloadResults() {
+        // We could extend this without too much problems to allow the admin to choose between different formats.
+        // By reading it from the config we could drop a custom exporter in the class-path and use it if configured
+        Class<? extends AuditExporter> exporterClass = AuditDevicesConfig.getExporter(getDevice());
+        AuditExporter auditExporter = null;
+        if (exporterClass != null) {
+            try {
+				auditExporter = exporterClass.newInstance();
+			} catch (Exception e) {
+			    log.warn("AuditExporter for " + getDevice() + " is not configured correctly.", e);
+			}
+        }
+        if (auditExporter==null) {
+            if (log.isDebugEnabled()) {
+                log.debug("AuditExporter not configured. Using default: " + AuditExporterXml.class.getSimpleName());
+            }
+            auditExporter = new AuditExporterXml(); // Use Java-friendly XML as default
+        }
+        downloadResults(auditExporter, "text/xml", "export-"+results.get(0).getTimeStamp()+".xml"); // "application/force-download" is an alternative here..
+    }
+
+    /** Uses the provided exporter to generate export data in memory. Responds with the data instead of rendering a new page. */
+    private void downloadResults(AuditExporter auditExporter, String contentType, String filename) {
+        try {
+            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            auditExporter.setOutputStream(baos);
+            for (final AuditLogEntry auditLogEntry : results) {
+                writeToExport(auditExporter, (AuditRecordData) auditLogEntry);
+            }
+            auditExporter.close();
+            final byte[] b = baos.toByteArray();
+            //ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext();
+            final HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
+            response.setContentType(contentType);
+            response.addHeader("Content-Disposition", "attachment; filename=\""+filename+"\"");
+            final ServletOutputStream out = response.getOutputStream();
+            response.setContentLength(b.length);
+            out.write(b);
+            out.close();
+            FacesContext.getCurrentInstance().responseComplete();   // No further JSF navigation
+        } catch (IOException e) {
+            log.info("Administration tried to export audit log, but failed. " + e.getMessage());
+            final FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error during export.", "Error during export.");
+            FacesContext.getCurrentInstance().addMessage(null, message);
+        }
+    }
+
+    // Duplicate of code from org.cesecore.audit.impl.integrityprotected.IntegrityProtectedAuditorSessionBean.writeToExport
+    // (unusable from here.. :/)
+    /** We want to export exactly like it was stored in the database, to comply with requirements on logging systems where no altering of the original log data is allowed. */
+    private void writeToExport(final AuditExporter auditExporter, final AuditRecordData auditRecordData) throws IOException {
+        auditExporter.writeStartObject();
+        auditExporter.writeField("pk", auditRecordData.getPk());
+        auditExporter.writeField(AuditLogEntry.FIELD_NODEID, auditRecordData.getNodeId());
+        auditExporter.writeField(AuditLogEntry.FIELD_SEQENCENUMBER, auditRecordData.getSequenceNumber());
+        auditExporter.writeField(AuditLogEntry.FIELD_TIMESTAMP, auditRecordData.getTimeStamp());
+        auditExporter.writeField(AuditLogEntry.FIELD_EVENTTYPE, auditRecordData.getEventTypeValue().toString());
+        auditExporter.writeField(AuditLogEntry.FIELD_EVENTSTATUS, auditRecordData.getEventStatusValue().toString());
+        auditExporter.writeField(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, auditRecordData.getAuthToken());
+        auditExporter.writeField(AuditLogEntry.FIELD_SERVICE, auditRecordData.getServiceTypeValue().toString());
+        auditExporter.writeField(AuditLogEntry.FIELD_MODULE, auditRecordData.getModuleTypeValue().toString());
+        auditExporter.writeField(AuditLogEntry.FIELD_CUSTOM_ID, auditRecordData.getCustomId());
+        auditExporter.writeField(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, auditRecordData.getSearchDetail1());
+        auditExporter.writeField(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, auditRecordData.getSearchDetail2());
+        auditExporter.writeField(AuditLogEntry.FIELD_ADDITIONAL_DETAILS, auditRecordData.getAdditionalDetails());
+        auditExporter.writeField("rowProtection", auditRecordData.getRowProtection());
+        auditExporter.writeEndObject();
+    }
 }

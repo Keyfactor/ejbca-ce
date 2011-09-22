@@ -106,7 +106,7 @@
 	</h:form>
 	<h:form id="search2" rendered="#{auditor.device != null}">
 	<p>
-		<h:commandButton disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value="First"/>
+		<h:commandButton disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value="#{web.text.FIRST}"/>
 		<h:commandButton disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value="#{web.text.PREVIOUS}"/>
 		<h:commandButton action="#{auditor.reload}" styleClass="commandLink" value="#{web.text.RELOAD}"/>
 		<h:commandButton disabled="#{auditor.renderNext==false}" action="#{auditor.next}" styleClass="commandLink" value="#{web.text.NEXT}"/>
@@ -123,6 +123,7 @@
 		<h:outputText value="Displaying results "/>
 		<h:inputText id="startIndex2" value="#{auditor.startIndex}" style="width: 6em; text-align:right;"><f:convertNumber type="number"/></h:inputText>
 		<h:outputText value=" to #{auditor.startIndex + auditor.resultSize - 1}."/>
+		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResults}" styleClass="commandLink" value="#{web.text.AUDIT_DOWNLOAD}"/>
 	</p>
 	<h:dataTable value="#{auditor.results}" var="auditLogEntry" captionStyle="text-align: left; background-color: #5B8CCD; color: #FFF;" headerClass="results" styleClass="grid" rowClasses="LogTextRow0,LogTextRow1" rendered="#{not empty auditor.results}">
 		<f:facet name="caption">
