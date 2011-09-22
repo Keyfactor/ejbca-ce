@@ -65,7 +65,7 @@ import org.cesecore.internal.InternalResources;
 public class BasicCertificateExtension extends CertificateExtension {
 
     private static final Logger log = Logger.getLogger(BasicCertificateExtension.class);
-	
+
     private static final InternalResources intres = InternalResources.getInstance();
 
     private static String ENCODING_DERBITSTRING = "DERBITSTRING";
@@ -78,7 +78,7 @@ public class BasicCertificateExtension extends CertificateExtension {
     private static String ENCODING_DERNULL = "DERNULL";
     private static String ENCODING_DEROBJECT = "DEROBJECT";
     private static String ENCODING_DEROID = "DERBOJECTIDENTIFIER";
-    
+
     /** 
      * The value is expected to by hex encoded and is added as an byte array 
      * as the extension value. 
@@ -95,10 +95,10 @@ public class BasicCertificateExtension extends CertificateExtension {
      * @deprecated use getValueEncoded instead.
      */
     public DEREncodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey)
-            throws CertificateExtensionException, CertificateExtentionConfigurationException {
+    throws CertificateExtensionException, CertificateExtentionConfigurationException {
         throw new UnsupportedOperationException("Use getValueEncoded instead");
     }
-    
+
     /**
      * Returns the defined property 'value' in the encoding specified in 'encoding'.
      * 
@@ -119,40 +119,40 @@ public class BasicCertificateExtension extends CertificateExtension {
      */
     @Override
     public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey)
-            throws CertificateExtensionException, CertificateExtentionConfigurationException {
+    throws CertificateExtensionException, CertificateExtentionConfigurationException {
         final byte[] result;
-                String encoding = StringUtils.trim(getProperties().getProperty(PROPERTY_ENCODING));
-                String[] values = getValues(userData);
-    	        if (log.isDebugEnabled()) {
-    		    	log.debug("Got extension values: " + Arrays.toString(values));
-        	    }
+        String encoding = StringUtils.trim(getProperties().getProperty(PROPERTY_ENCODING));
+        String[] values = getValues(userData);
+        if (log.isDebugEnabled()) {
+            log.debug("Got extension values: " + Arrays.toString(values));
+        }
 
-                if (values == null || values.length == 0) {
-                    throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
-                }
+        if (values == null || values.length == 0) {
+            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
+        }
 
-                if (encoding.equalsIgnoreCase(ENCODING_RAW)) {
-                    if (values.length > 1) {
-                        // nvalues can not be used together with encoding=RAW
-                        throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured", Integer.valueOf(getId())));
-                    } else {
-                        result = parseRaw(values[0]);
-                    }
-                } else {
-                        if (values.length > 1) {
-                                ASN1EncodableVector ev = new ASN1EncodableVector();
-                                for (String value : values) {
-                                        DEREncodable derval = parseValue(encoding, value);
-                                        ev.add(derval);
-                                }
-                                result = new DERSequence(ev).getDEREncoded();
-                        } else {
-                                result = parseValue(encoding, values[0]).getDERObject().getDEREncoded();
-                        }
+        if (encoding.equalsIgnoreCase(ENCODING_RAW)) {
+            if (values.length > 1) {
+                // nvalues can not be used together with encoding=RAW
+                throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.certextmissconfigured", Integer.valueOf(getId())));
+            } else {
+                result = parseRaw(values[0]);
+            }
+        } else {
+            if (values.length > 1) {
+                ASN1EncodableVector ev = new ASN1EncodableVector();
+                for (String value : values) {
+                    DEREncodable derval = parseValue(encoding, value);
+                    ev.add(derval);
                 }
+                result = new DERSequence(ev).getDEREncoded();
+            } else {
+                result = parseValue(encoding, values[0]).getDERObject().getDEREncoded();
+            }
+        }
         return result;
     }
-    
+
     /**
      * Get the extension value by first looking in the ExtendedInformation (if 
      * dynamic is enabled) and then in the static configuration.
@@ -161,63 +161,63 @@ public class BasicCertificateExtension extends CertificateExtension {
      * @return The value(s) for the extension (usually 1) or null if no value found
      */
     private String[] getValues(EndEntityInformation userData) {
-            String[] result = null;
+        String[] result = null;
 
-            boolean dynamic = Boolean.parseBoolean(StringUtils.trim(getProperties().getProperty(PROPERTY_DYNAMIC, Boolean.FALSE.toString())));
+        boolean dynamic = Boolean.parseBoolean(StringUtils.trim(getProperties().getProperty(PROPERTY_DYNAMIC, Boolean.FALSE.toString())));
 
-            String strnvalues = getProperties().getProperty(PROPERTY_NVALUES);
+        String strnvalues = getProperties().getProperty(PROPERTY_NVALUES);
 
-            int nvalues;
+        int nvalues;
 
-            if ( strnvalues == null || strnvalues.trim().equals("") ) {
-                    nvalues = 0;
+        if ( strnvalues == null || strnvalues.trim().equals("") ) {
+            nvalues = 0;
+        } else {
+            nvalues = Integer.parseInt(strnvalues);
+        }
+
+        if (dynamic) {
+            final ExtendedInformation ei = userData.getExtendedinformation();
+            if (ei == null) {
+                result = null;
             } else {
-                    nvalues = Integer.parseInt(strnvalues);
-            }
-
-            if (dynamic) {
-                    final ExtendedInformation ei = userData.getExtendedinformation();
-                    if (ei == null) {
-                            result = null;
-                    } else {
-                            if (nvalues < 1 ) {
-                                    String value = userData.getExtendedinformation().getExtensionData(getOID());
-                                    if (value == null || value.trim().isEmpty()) {
-                                            value = userData.getExtendedinformation().getExtensionData(getOID() + "." + PROPERTY_VALUE);
-                                    }
-                                    if (value == null) {
-                                            result = null;
-                                    } else {
-                                            result = new String[] { value };
-                                    }
-                            } else {
-                                    for (int i = 1; i <= nvalues; i++) {
-                                             String value = userData.getExtendedinformation().getExtensionData(getOID() + "." + PROPERTY_VALUE + Integer.toString(i));
-                                             if (value != null) {
-                                                     if (result == null) {
-                                                            result = new String[nvalues];
-                                                     }
-                                                     result[i - 1] = value;
-                                             }
-                                    }
-                            }
+                if (nvalues < 1 ) {
+                    String value = userData.getExtendedinformation().getExtensionData(getOID());
+                    if (value == null || value.trim().isEmpty()) {
+                        value = userData.getExtendedinformation().getExtensionData(getOID() + "." + PROPERTY_VALUE);
                     }
-            }
-            if (result == null) {
-                    if (nvalues < 1 ) {
-                            String value = getProperties().getProperty(PROPERTY_VALUE);
-                            if ( value == null || value.trim().equals("") ) {
-                                    value = getProperties().getProperty(PROPERTY_VALUE+"1");
-                            }
-                            result = new String[] { value };
+                    if (value == null) {
+                        result = null;
                     } else {
-                            result = new String[nvalues];
-                            for (int i=1; i<=nvalues; i++) {
-                                    result[i - 1] = getProperties().getProperty(PROPERTY_VALUE+Integer.toString(i));
-                            }
+                        result = new String[] { value };
                     }
+                } else {
+                    for (int i = 1; i <= nvalues; i++) {
+                        String value = userData.getExtendedinformation().getExtensionData(getOID() + "." + PROPERTY_VALUE + Integer.toString(i));
+                        if (value != null) {
+                            if (result == null) {
+                                result = new String[nvalues];
+                            }
+                            result[i - 1] = value;
+                        }
+                    }
+                }
             }
-            return result;
+        }
+        if (result == null) {
+            if (nvalues < 1 ) {
+                String value = getProperties().getProperty(PROPERTY_VALUE);
+                if ( value == null || value.trim().equals("") ) {
+                    value = getProperties().getProperty(PROPERTY_VALUE+"1");
+                }
+                result = new String[] { value };
+            } else {
+                result = new String[nvalues];
+                for (int i=1; i<=nvalues; i++) {
+                    result[i - 1] = getProperties().getProperty(PROPERTY_VALUE+Integer.toString(i));
+                }
+            }
+        }
+        return result;
     } 
 
     private DEREncodable parseValue(String encoding, String value) throws CertificateExtentionConfigurationException, CertificateExtensionException {
@@ -389,10 +389,10 @@ public class BasicCertificateExtension extends CertificateExtension {
         }
     }
 
-	private byte[] parseRaw(String value) throws CertificateExtentionConfigurationException {
-            if(value == null) {
-                throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
-            }
+    private byte[] parseRaw(String value) throws CertificateExtentionConfigurationException {
+        if(value == null) {
+            throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
+        }
         return Hex.decode(value);
     }
 }
