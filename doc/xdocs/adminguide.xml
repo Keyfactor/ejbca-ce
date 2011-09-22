@@ -4452,6 +4452,7 @@ See the following table for the available encodings and how their value is inter
 <li>...
 </li>
 </ul>
+<p>If the the property idX.property.dynamic is configured to true the extension value may be taken from extension data supplied with the end entity. See <a href="userguide.html#Custom%20certificate%20extension%20data">Custom certificate extension data</a> for how this can be added from admin web.</p>
 </subsection>
 <subsection name="Implementing an Advanced Certificate Extension">
 <p>
