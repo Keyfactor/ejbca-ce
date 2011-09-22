@@ -41,7 +41,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -55,6 +54,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -1085,7 +1085,7 @@ public class XKMSKRSSTest {
             credentials.add(adminCert);
             Set<X500Principal> principals = new HashSet<X500Principal>();
             principals.add(adminCert.getSubjectX500Principal());
-            AuthenticationToken approvingAdmin = new X509CertificateAuthenticationToken(principals, credentials);
+            AuthenticationToken approvingAdmin = new TestX509CertificateAuthenticationToken(principals, credentials);
             // Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
             try {
                 // Create new user
