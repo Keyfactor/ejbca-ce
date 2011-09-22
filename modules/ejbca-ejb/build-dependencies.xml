@@ -541,7 +541,6 @@
 					<include name="org/cesecore/util/SimpleTime.java"/>
 					<include name="org/cesecore/certificates/certificate/request/RequestMessageUtils.java"/>
 					<include name="org/cesecore/certificates/util/dn/PrintableStringEntryConverter.java"/>
-					<include name="org/ejbca/core/model/ra/NotFoundException.java"/>
 					<include name="org/cesecore/certificates/certificate/CertificateCreateException.java"/>
 					<include name="org/cesecore/certificates/certificate/request/PKCS10RequestMessage.java"/>
 					<include name="org/cesecore/certificates/certificate/request/CVCRequestMessage.java"/>
