@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli.admins;
 
 import org.cesecore.roles.RoleData;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -26,7 +27,11 @@ public class AdminsRemoveGroupCommand extends BaseAdminsCommand {
 	public String getDescription() { return "Remove admin role"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         try {
             if (args.length < 2) {

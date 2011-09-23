@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ca;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -29,7 +30,11 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Issues a new CRL from the CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         if ( (args.length < 1) || ((args.length > 1) && StringUtils.equals(args[1], "-?")) ) {
 			getLogger().info("Description: " + getDescription());

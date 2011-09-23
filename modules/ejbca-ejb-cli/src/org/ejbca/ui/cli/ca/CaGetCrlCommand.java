@@ -18,6 +18,7 @@ import java.util.List;
 
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CliTools;
 
@@ -33,7 +34,11 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Retrieves the latest CRL from a CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);	
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         // Get and remove switches
 		List<String> argsList = CliTools.getAsModifyableList(args);

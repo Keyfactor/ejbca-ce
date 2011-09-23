@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CliTools;
 
@@ -40,7 +41,11 @@ public class RaDelUserCommand extends BaseRaAdminCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         // Get and remove switches
         List<String> argsList = CliTools.getAsModifyableList(args);

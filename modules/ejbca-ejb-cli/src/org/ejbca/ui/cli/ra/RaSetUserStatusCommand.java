@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli.ra;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -31,7 +32,11 @@ public class RaSetUserStatusCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Change status for a user"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         try {
             if (args.length < 3) {

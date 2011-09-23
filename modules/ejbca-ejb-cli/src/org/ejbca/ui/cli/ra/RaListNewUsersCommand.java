@@ -18,6 +18,7 @@ import java.util.Iterator;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -34,7 +35,11 @@ public class RaListNewUsersCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "List users with status 'NEW'"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         try {
             Collection<EndEntityInformation> coll = ejb.getUserAdminSession().findAllUsersByStatus(getAdmin(cliUserName, cliPassword), UserDataConstants.STATUS_NEW);

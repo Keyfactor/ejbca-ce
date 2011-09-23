@@ -75,12 +75,10 @@ public abstract class BaseCommand implements CliCommandPlugin {
      * (and their respective flags), returns them as a tuplet and returns the args without those flags.
      * 
      * @param args the list of arguments
-     * @return the array of arguments stripped of any supplied usernames or passwords. Returns an empty array if no username/password
-     * can be established, which should be caught as an error in later code. 
-     * @throws DefaultCliUserDisabledException if default CLI user was used, but is disabled
-     * @throws NoCliUserProvidedException if no user was provided
+     * @return the array of arguments stripped of any supplied usernames or passwords. 
+     * @throws CliUserAuthenticationFailedException if CLI user authentication failed
      */
-    protected String[] parseUsernameAndPasswordFromArgs(String[] args) {
+    protected String[] parseUsernameAndPasswordFromArgs(String[] args) throws CliUserAuthenticationFailedException {
         List<String> argsList = new ArrayList<String>(Arrays.asList(args));
 
         int index;
@@ -104,18 +102,17 @@ public abstract class BaseCommand implements CliCommandPlugin {
                 if (cliPassword == null) {
                     cliPassword = EjbcaConfiguration.getCliDefaultPassword();
                 }
-            } else {
-                // throw new NoCliUserProvidedException("No CLI user provided and default CLI user is disabled.");
+            } else {                
                 getLogger().info("No CLI user was supplied, and use of the default CLI user is disabled.");
                 getLogger().info("Please supply username and password in the command line with the syntax -u <username> -p <password>");
                 getLogger().info("Password may be omitted to prompt.");
-                return new String[0];
+                throw new CliUserAuthenticationFailedException();
             }
         } else if (cliUserName.equals(EjbcaConfiguration.getCliDefaultUser()) && !defaultUserEnabled) {
             getLogger().info("CLI authentication using default user is disabled.");
             getLogger().info("Please supply username and password in the command line with the syntax -u <username> -p <password>");
             getLogger().info("Password may be omitted to prompt.");
-            return new String[0];
+            throw new CliUserAuthenticationFailedException();
         }
 
         return argsList.toArray(new String[argsList.size()]);

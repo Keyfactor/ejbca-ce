@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -36,7 +37,11 @@ public class CaImportCACommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Imports a keystore and creates a new X509 CA from it"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);   
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        } 
         
         if (args.length < 3) {
     		getLogger().info("Description: " + getDescription());

@@ -130,9 +130,9 @@ class MockCliCommand extends BaseCommand {
 
     @Override
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
-
-        if (args.length == 0) {
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
             throw new CliTestRuntimeException();
         }
     }

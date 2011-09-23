@@ -20,6 +20,7 @@ import java.util.List;
 
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CliTools;
 
@@ -35,7 +36,11 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Save root CA certificate (PEM- or DER-format) to file"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
 
 		// Get and remove switches
 		List<String> argsList = CliTools.getAsModifyableList(args);

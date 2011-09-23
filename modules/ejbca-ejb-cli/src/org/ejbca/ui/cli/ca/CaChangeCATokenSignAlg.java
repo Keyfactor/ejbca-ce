@@ -20,6 +20,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -38,7 +39,11 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 		getLogger().trace(">execute()");
 		CryptoProviderTools.installBCProvider(); // need this for CVC certificate
 		
-		args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
 		
 		if ( args.length<3 ) {
 			usage(cliUserName, cliPassword);

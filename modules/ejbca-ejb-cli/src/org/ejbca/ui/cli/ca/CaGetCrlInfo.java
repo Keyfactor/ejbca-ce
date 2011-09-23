@@ -18,6 +18,7 @@ import java.util.Collection;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.crl.CRLInfo;
 import org.cesecore.util.ValidityDate;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -33,7 +34,11 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
 
 	@Override
 	public void execute(String[] args) throws ErrorAdminCommandException {
-	    args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
 	    
         try {
         	Collection<Integer> caIds = ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword));

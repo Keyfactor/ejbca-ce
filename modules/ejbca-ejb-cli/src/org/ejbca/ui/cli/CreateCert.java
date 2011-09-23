@@ -38,8 +38,11 @@ public class CreateCert extends BaseCommand {
 	public String getDescription() { return "Issue a certificate for a user based on a CSR"; }
 
 	public void execute(String[] args) throws ErrorAdminCommandException {
-
-        args = parseUsernameAndPasswordFromArgs(args);
+	    try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
 
         if ( args.length != 5 ) {
             getLogger().info("Usage: " + getCommand() + " <username> <password> <csr.pem> <cert.pem>");
