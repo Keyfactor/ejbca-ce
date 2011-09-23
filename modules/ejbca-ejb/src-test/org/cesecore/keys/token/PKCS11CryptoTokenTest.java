@@ -24,8 +24,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
@@ -36,9 +38,9 @@ import org.junit.Test;
 
 /**
  * Tests PKCS11 keystore crypto token. To run this test a slot 1 must exist on the hsm, with a user with user pin "userpin1" that can use the slot.
- * 
+ *
  * Based on EJBCA version: CATokenContainerTest.java 10288 2010-10-26 11:27:21Z anatom $
- * 
+ *
  * @version $Id$
  */
 public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
@@ -137,7 +139,7 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 
 	/**
 	 * This test is hard to make working on different HSMs due to algorithms restrictions
-	 * Not implemented yet, see CESECORE-42 
+	 * Not implemented yet, see CESECORE-42
 	 */
 //	@Test
 //    public void testGenerateHMACKey() throws Exception {
@@ -151,7 +153,7 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 //	}
 
 	@Test
-	public void testExtractKeyFalse() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, CryptoTokenOfflineException, IOException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, NoSuchPaddingException, IllegalBlockSizeException{
+	public void testExtractKeyFalse() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, CryptoTokenOfflineException, IOException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, NoSuchPaddingException, IllegalBlockSizeException {
     	CryptoToken token = createPKCS11Token("testExtractKeyFalse", false);
 		doExtractKeyFalse(token);
 	}
@@ -173,8 +175,8 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 	  "CKA_UNWRAP = true\n"+
 	  "}\n"+
 	"attributes(*, CKO_SECRET_KEY, *) = {\n"+
-	  "CKA_SENSITIVE = false\n"+
-	  "CKA_EXTRACTABLE = true\n"+
+	  "CKA_SENSITIVE = true\n"+
+	  "CKA_EXTRACTABLE = false\n"+
 	  "CKA_ENCRYPT = true\n"+
 	  "CKA_DECRYPT = true\n"+
 	  "CKA_SIGN = true\n"+
@@ -183,12 +185,8 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 	  "CKA_UNWRAP = true\n"+
 	"}";
 
-	/**
-	 * This test is hard to make working on different HSMs due to algorithms restrictions
-	 * This is not implemented yet, see CESECORE-80
-	 */
 	@Test
-	public void testExtractKey() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException, SignatureException, CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, PrivateKeyNotExtractableException{
+	public void testExtractKey() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException, SignatureException, CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, PrivateKeyNotExtractableException, BadPaddingException, InvalidKeySpecException{
 		File f = File.createTempFile("tokentest", "txt");
 		f.deleteOnExit();
 		FileOutputStream fos = new FileOutputStream(f);
@@ -230,9 +228,9 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
         if (log.isDebugEnabled()) {
         	log.debug("getHSMProvider: "+ret);
         }
-	    return ret;		
+	    return ret;
 	}
-	
+
 	public static CryptoToken createPKCS11Token() {
 		return createPKCS11TokenWithAttributesFile(null, null, true);
 	}

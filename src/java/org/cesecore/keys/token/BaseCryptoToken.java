@@ -32,6 +32,7 @@ import java.security.spec.AlgorithmParameterSpec;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
@@ -47,9 +48,9 @@ import org.cesecore.util.StringTools;
 
 /**
  * Base class for crypto tokens handling things that are common for all crypto tokens, hard or soft.
- * 
+ *
  * Based on EJBCA version: BaseCAToken.java 10358 2010-11-03 18:34:23Z mikekushner
- * 
+ *
  * @version $Id$
  */
 public abstract class BaseCryptoToken implements CryptoToken {
@@ -90,7 +91,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     /**
      * Return the key store for this crypto token.
-     * 
+     *
      * @return the keystore.
      * @throws CryptoTokenOfflineException if Crypto Token is not available or connected.
      */
@@ -104,7 +105,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     /**
      * TODO: This structure is confusing, with exceptions being thrown, caught, ignored and then rethrown at a later stage. Please fix.
-     * 
+     *
      */
     protected void autoActivate() {
         if ((this.mAuthCode != null) && (this.keyStore == null)) {
@@ -120,7 +121,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     /**
      * Do we permit extractable private keys? Only SW keys should be permitted to be extractable, an overriding crypto token class can override this
      * value.
-     * 
+     *
      * @return false if the key must not be extractable
      */
     public boolean doPermitExtractablePrivateKey() {
@@ -148,7 +149,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     /**
      * Reads the public key object, does so from the certificate retrieved from the alias from the KeyStore.
-     * 
+     *
      * @param alias alias the key alias to retrieve from the token
      * @return the public key for the certificate represented by the given alias.
      * @throws KeyStoreException if the keystore has not been initialized.
@@ -173,7 +174,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     /**
      * Initiates the class members of this crypto token.
-     * 
+     *
      * @param sSlotLabelKey A String representation of the slot label key.
      * @param properties A Properties object containing properties for this token.
      * @param doAutoActivate Set true if activation of this crypto token should happen in this method.
@@ -242,7 +243,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     /**
      * Extracts the slotLabel that is used for many tokens in construction of the provider
-     * 
+     *
      * @param sSlotLabelKey which key in the properties that gives us the label
      * @param properties CA token properties
      * @return String with the slot label, trimmed from whitespace
@@ -261,7 +262,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     /**
      * Retrieves the auto activation PIN code, if it has been set for this crypto token. With an auto activation PIN the token does not have to be
      * manually activated.
-     * 
+     *
      * @param properties the crypto token properties that may contain auto activation PIN code
      * @return String or null
      */
@@ -278,7 +279,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     /**
      * Sets auto activation pin in passed in properties. Also returns the string format of the autoactivation properties: pin mypassword
-     * 
+     *
      * @param properties a Properties bag where to set the auto activation pin, can be null if you only want to create the return string, does not set
      *            a null or empty password
      * @param pin the activation password
@@ -309,7 +310,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     /**
      * Sets both signature and encryption providers. If encryption provider is the same as signature provider this class name can be null.
-     * 
+     *
      * @param jcaProviderClassName signature provider class name
      * @param jceProviderClassName encryption provider class name, can be null
      * @throws ClassNotFoundException if the class specified by jcaProviderClassName could not be found.
@@ -339,7 +340,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     /**
      * If we only have one provider to handle both JCA and JCE, and perhaps it is not so straightforward to create the provider (for example PKCS#11
      * provider), we can create the provider in sub class and set it here, instead of calling setProviders.
-     * 
+     *
      * @param prov the fully constructed Provider
      * @see #setProviders(String, String)
      */
@@ -351,7 +352,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     /**
      * If we don't use any of the methods to set a specific provider, but use some already existing provider we should set the name of that provider
      * at least.
-     * 
+     *
      * @param pName the provider name as retriever from Provider.getName()
      */
     protected void setJCAProviderName(String pName) {
@@ -518,7 +519,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
 
     /**
      * This method extracts a PrivateKey from the keystore and wraps it, using a symmetric encryption key
-     * 
+     *
      * @param privKeyTransform - transformation algorithm
      * @param encryptionKeyAlias - alias of the symmetric key that will encrypt the private key
      * @param privateKeyAlias - alias for the PrivateKey to be extracted
@@ -561,6 +562,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
      *             of the encoding of the key to be wrapped is not a multiple of the block size.
      * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
      * @throws InvalidAlgorithmParameterException if spec id not valid or supported.
+     * @throws PrivateKeyNotExtractableException if the key is not extractable, does not exist or encryption fails
      */
     public byte[] extractKey(String privKeyTransform, AlgorithmParameterSpec spec, String encryptionKeyAlias, String privateKeyAlias) throws NoSuchAlgorithmException,
             NoSuchPaddingException, NoSuchProviderException, InvalidKeyException, IllegalBlockSizeException, CryptoTokenOfflineException,
@@ -572,20 +574,26 @@ public abstract class BaseCryptoToken implements CryptoToken {
             // get private key to wrap
             PrivateKey privateKey = getPrivateKey(privateKeyAlias);
             if (privateKey == null) {
-            	throw new PrivateKeyNotExtractableException("Extracting key with alias '"+encryptionKeyAlias+"' return null.");
+            	throw new PrivateKeyNotExtractableException("Extracting key with alias '"+privateKeyAlias+"' return null.");
             }
 
-            // initialize cipher in wrap mode
+            // since SUN PKCS11 Provider does not implements WRAP_MODE,
+            // ENCRYPT_MODE with encoded private key will be used instead, giving the same result
             Cipher c = null;
-            c = Cipher.getInstance(privKeyTransform, "BC");
+            c = Cipher.getInstance(privKeyTransform, getEncProviderName());
             if (spec == null){
-                c.init(Cipher.WRAP_MODE, encryptionKey);
+                c.init(Cipher.ENCRYPT_MODE, encryptionKey);
             } else {
-                c.init(Cipher.WRAP_MODE, encryptionKey, spec);
+              c.init(Cipher.ENCRYPT_MODE, encryptionKey, spec);
             }
 
             // wrap key
-            byte[] encryptedKey = c.wrap(privateKey);
+            byte[] encryptedKey;
+            try {
+                encryptedKey = c.doFinal(privateKey.getEncoded());
+            } catch (BadPaddingException e) {
+                throw new PrivateKeyNotExtractableException("Extracting key with alias '"+privateKeyAlias+"' failed.");
+            }
 
             return encryptedKey;
         } else {
