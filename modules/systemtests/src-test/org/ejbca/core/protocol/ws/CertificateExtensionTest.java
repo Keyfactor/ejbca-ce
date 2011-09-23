@@ -27,6 +27,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
+import javax.xml.ws.soap.SOAPFaultException;
+
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
@@ -203,6 +205,8 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 			certenv = this.ejbcaraws.pkcs10Request(TEST_USER, PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
 					CertificateHelper.RESPONSETYPE_CERTIFICATE);
 		} catch (EjbcaException_Exception e) {
+			return null;
+		} catch (SOAPFaultException e) {
 			return null;
 		}
 		assertNotNull(certenv);
