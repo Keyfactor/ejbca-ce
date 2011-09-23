@@ -22,6 +22,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -44,7 +45,11 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         try {
             if (args.length < 2) {
                 getLogger().info("Description: " + getDescription());

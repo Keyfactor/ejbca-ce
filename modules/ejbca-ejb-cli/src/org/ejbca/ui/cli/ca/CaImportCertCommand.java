@@ -27,6 +27,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -42,7 +43,11 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Imports a certificate file to the database"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         getLogger().trace(">execute()");
 		if ((args.length < 7) || (args.length > 9)) {

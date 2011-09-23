@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ca;
 
 import java.io.FileOutputStream;
 
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -29,7 +30,11 @@ public class CaExportCACommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Exports CA as a PCKS#12 or PKCS#8 file"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         String signatureKeyAlias = "SignatureKeyAlias";
     	String encryptionKeyAlias = "EncryptionKeyAlias";

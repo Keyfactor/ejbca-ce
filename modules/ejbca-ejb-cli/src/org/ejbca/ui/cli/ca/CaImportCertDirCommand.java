@@ -30,6 +30,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -54,7 +55,11 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 	@Override
     public void execute(String[] args) throws ErrorAdminCommandException {
 		getLogger().trace(">execute()");
-		args = parseUsernameAndPasswordFromArgs(args);	        
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
 		
 		CryptoProviderTools.installBCProvider();
 		if (args.length != 7) {

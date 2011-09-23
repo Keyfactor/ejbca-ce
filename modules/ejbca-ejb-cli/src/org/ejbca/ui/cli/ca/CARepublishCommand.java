@@ -28,6 +28,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CliTools;
 
@@ -51,7 +52,11 @@ public class CARepublishCommand extends BaseCaAdminCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         try {
             // Get and remove switches

@@ -21,6 +21,7 @@ import org.cesecore.authorization.user.AccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.roles.RoleData;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -42,7 +43,11 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         try {
             if (args.length < 6) {

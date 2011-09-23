@@ -20,6 +20,7 @@ import java.util.Properties;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.ui.cli.BaseCommand;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.ui.cli.hardtoken.importer.IHardTokenImporter;
@@ -44,7 +45,11 @@ public class ImportDataCommand extends BaseCommand {
 	public String getDescription() { return "Used to import hard token data from a source"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
 		// Get and remove switches
 		List<String> argsList = CliTools.getAsModifyableList(args);

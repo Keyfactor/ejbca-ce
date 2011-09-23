@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ca;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -30,7 +31,11 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Makes the specified HSM CA offline"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         try {
             if (args.length < 2) {

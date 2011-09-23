@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.cli.ca;
 
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -28,7 +29,11 @@ public class CaRemoveKeyStoreCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Remove the CA token keystore from a CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         
 		if (args.length < 2) {

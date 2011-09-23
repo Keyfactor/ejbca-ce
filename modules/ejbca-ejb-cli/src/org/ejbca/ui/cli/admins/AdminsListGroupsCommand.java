@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.cesecore.roles.RoleData;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -39,7 +40,11 @@ public class AdminsListGroupsCommand extends BaseAdminsCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         try {
             Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));            

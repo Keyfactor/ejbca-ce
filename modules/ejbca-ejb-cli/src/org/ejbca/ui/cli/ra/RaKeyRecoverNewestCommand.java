@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli.ra;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -28,7 +29,11 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Set status to key recovery for a user's newest certificate"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         try {
     		if (args.length != 2) {
     			getLogger().info("Description: " + getDescription());

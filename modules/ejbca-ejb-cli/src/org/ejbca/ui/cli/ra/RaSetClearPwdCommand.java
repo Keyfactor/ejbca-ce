@@ -15,6 +15,7 @@ package org.ejbca.ui.cli.ra;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
+import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -30,7 +31,11 @@ public class RaSetClearPwdCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Set a clear text password for a user for batch generation"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        args = parseUsernameAndPasswordFromArgs(args);
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUserAuthenticationFailedException e) {
+            return;
+        }
         
         try {
             if (args.length < 3) {
