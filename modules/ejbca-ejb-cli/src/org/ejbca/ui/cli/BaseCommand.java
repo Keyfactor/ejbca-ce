@@ -27,7 +27,10 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
@@ -38,6 +41,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.util.EjbRemoteHelper;
 
 /**
@@ -47,8 +51,14 @@ import org.ejbca.core.model.util.EjbRemoteHelper;
  */
 public abstract class BaseCommand implements CliCommandPlugin {
 
+    public static final String USERNAME_FLAG = "-u";
+    public static final String PASSWORD_FLAG = "-p";
+
     /** This helper will cache interfaces. Don't use static instantiation. */
     protected EjbRemoteHelper ejb = new EjbRemoteHelper();
+
+    protected String cliUserName = null;
+    protected String cliPassword = null;
 
     // private static Logger baseLog = Logger.getLogger(BaseCommand.class);
     private static Logger log = null;
@@ -61,15 +71,78 @@ public abstract class BaseCommand implements CliCommandPlugin {
     }
 
     /**
+     * In order to change the existing code as little as possible, this method takes the supplied args and extracts any found usernames and passwords
+     * (and their respective flags), returns them as a tuplet and returns the args without those flags.
+     * 
+     * @param args the list of arguments
+     * @return the array of arguments stripped of any supplied usernames or passwords. Returns an empty array if no username/password
+     * can be established, which should be caught as an error in later code. 
+     * @throws DefaultCliUserDisabledException if default CLI user was used, but is disabled
+     * @throws NoCliUserProvidedException if no user was provided
+     */
+    protected String[] parseUsernameAndPasswordFromArgs(String[] args) {
+        List<String> argsList = new ArrayList<String>(Arrays.asList(args));
+
+        int index;
+        if ((index = argsList.indexOf(USERNAME_FLAG)) != -1) {
+            cliUserName = argsList.get(index + 1);
+            argsList.remove(index + 1);
+            argsList.remove(index);
+        }
+        if ((index = argsList.indexOf(PASSWORD_FLAG)) != -1) {
+            cliPassword = argsList.get(index + 1);
+            argsList.remove(index + 1);
+            argsList.remove(index);
+        }
+        boolean defaultUserEnabled = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration().getEnableCommandLineInterfaceDefaultUser();      
+
+        if ((cliUserName == null || cliPassword == null)) {
+            if (defaultUserEnabled) {
+                if (cliUserName == null) {
+                    cliUserName = EjbcaConfiguration.getCliDefaultUser();
+                }
+                if (cliPassword == null) {
+                    cliPassword = EjbcaConfiguration.getCliDefaultPassword();
+                }
+            } else {
+                // throw new NoCliUserProvidedException("No CLI user provided and default CLI user is disabled.");
+                getLogger().info("No CLI user was supplied, and use of the default CLI user is disabled.");
+                getLogger().info("Please supply username and password in the command line with the syntax -u <username> -p <password>");
+                getLogger().info("Password may be omitted to prompt.");
+                return new String[0];
+            }
+        } else if (cliUserName.equals(EjbcaConfiguration.getCliDefaultUser()) && !defaultUserEnabled) {
+            getLogger().info("CLI authentication using default user is disabled.");
+            getLogger().info("Please supply username and password in the command line with the syntax -u <username> -p <password>");
+            getLogger().info("Password may be omitted to prompt.");
+            return new String[0];
+        }
+
+        return argsList.toArray(new String[argsList.size()]);
+    }
+
+    protected void logDefaultCliUserDisabled() {
+        getLogger()
+                .info("CLI authentication using default user is disabled.");
+        getLogger().info("Please supply username and password in the command line with the syntax -u <username> -p <password>");
+        getLogger().info("Password may be omitted to prompt.");
+    }
+    
+    protected void logNoUserProvided() {
+        getLogger().info("No CLI user was supplied, and use of the default CLI user is disabled.");
+        getLogger().info("Please supply username and password in the command line with the syntax -u <username> -p <password>");
+        getLogger().info("Password may be omitted to prompt.");
+    }
+
+    /**
      * This utility method gets an authenticated CliAuthenticationToken from the authentication service.
      * 
-     * Worth noting in this method is that the password is not sent as a credential, because this would imply sending it
-     * (or its hash) in cleartext over the network. Instead, it's only sent as part of a SHA1 hash (as part of the 
-     * CliAuthenticationToken specification). Actual check of the password's validity will formally occur at the first time
-     * that the authentication token is checked for authorization. 
+     * Worth noting in this method is that the password is not sent as a credential, because this would imply sending it (or its hash) in cleartext
+     * over the network. Instead, it's only sent as part of a SHA1 hash (as part of the CliAuthenticationToken specification). Actual check of the
+     * password's validity will formally occur at the first time that the authentication token is checked for authorization.
      * 
-     * Note also that the CliAuthenticationToken may only be used for a single call via remote. I.e once it's passed through the
-     * network once, it's invalid for further use. 
+     * Note also that the CliAuthenticationToken may only be used for a single call via remote. I.e once it's passed through the network once, it's
+     * invalid for further use.
      * 
      * @param username The main principal being requested
      * @param cleartextPassword The password in cleartext. While within the same call chain, there is little point in obfuscating it.
@@ -87,7 +160,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
         authenticationToken.setSha1HashFromCleartextPassword(cleartextPassword);
         return authenticationToken;
     }
-    
+
     protected String getCommand() {
         return (getMainCommand() != null ? getMainCommand() + " " : "") + getSubCommand();
     }

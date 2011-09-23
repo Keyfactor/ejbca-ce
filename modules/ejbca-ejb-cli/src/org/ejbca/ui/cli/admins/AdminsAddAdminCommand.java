@@ -47,10 +47,9 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
 
     /** @see org.ejbca.ui.cli.CliCommandPlugin */
     public void execute(String[] args) throws ErrorAdminCommandException {
+        args = parseUsernameAndPasswordFromArgs(args);
         try {
-            String cliUserName = args[0];
-            String cliPassword = args[1];
-            if (args.length < 8) {         
+            if (args.length < 6) {         
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
                 Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(
@@ -80,29 +79,29 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 getLogger().info("Match type is one of: " + availableMatchTypes);
                 return;
             }
-            String roleName = args[3];
+            String roleName = args[1];
             if (ejb.getRoleAccessSession().findRole(roleName) == null) {
                 getLogger().error("No such group \"" + roleName + "\" .");
                 return;
             }
-            String caName = args[4];
+            String caName = args[2];
             CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caName);
             if (caInfo == null) {
                 getLogger().error("No such CA \"" + caName + "\" .");
                 return;
             }
             int caid = caInfo.getCAId();
-            AccessMatchValue matchWith = AccessMatchValue.matchFromName(args[5]);
+            AccessMatchValue matchWith = AccessMatchValue.matchFromName(args[3]);
             if (matchWith == null) {
-                getLogger().error("No such thing to match with as \"" + args[5] + "\" .");
+                getLogger().error("No such thing to match with as \"" + args[3] + "\" .");
                 return;
             }
-            AccessMatchType matchType = AccessMatchType.matchFromName(args[6]);
+            AccessMatchType matchType = AccessMatchType.matchFromName(args[4]);
             if (matchType == null) {
-                getLogger().error("No such type to match with as \"" + args[6] + "\" .");
+                getLogger().error("No such type to match with as \"" + args[4] + "\" .");
                 return;
             }
-            String matchValue = args[7];
+            String matchValue = args[5];
             AccessUserAspectData accessUser = new AccessUserAspectData(roleName, caid, matchWith, matchType, matchValue);
             Collection<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
             accessUsers.add(accessUser);

@@ -27,8 +27,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Imports a PEM file and creates a new external CA representation from it"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         if (args.length < 3) {
         	getLogger().info("Description: " + getDescription());

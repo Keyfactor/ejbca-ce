@@ -32,8 +32,7 @@ public class RaSetSubjDirAttrCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Set the Subject Directory Attributes for a user"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             if (args.length < 3) {

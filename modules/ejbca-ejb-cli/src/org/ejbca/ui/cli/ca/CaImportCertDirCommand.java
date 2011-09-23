@@ -54,10 +54,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 	@Override
     public void execute(String[] args) throws ErrorAdminCommandException {
 		getLogger().trace(">execute()");
-		
-	        String cliUserName = "ejbca";
-	        String cliPassword = "ejbca";
-	        
+		args = parseUsernameAndPasswordFromArgs(args);	        
 		
 		CryptoProviderTools.installBCProvider();
 		if (args.length != 7) {

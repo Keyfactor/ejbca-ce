@@ -378,7 +378,7 @@ public class CADataHandler implements Serializable {
 	 }
  
  public void activateCAToken(int caid, String authorizationcode) throws AuthorizationDeniedException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, ApprovalException, WaitingForApprovalException, CADoesntExistsException {
-   caadminsession.activateCAToken(administrator,caid,authorizationcode, globalconfigurationsession.getCachedGlobalConfiguration(administrator));	
+   caadminsession.activateCAToken(administrator,caid,authorizationcode, globalconfigurationsession.getCachedGlobalConfiguration());	
  }
  
  public void deactivateCAToken(int caid) throws AuthorizationDeniedException, EjbcaException, IllegalCryptoTokenException, CADoesntExistsException{

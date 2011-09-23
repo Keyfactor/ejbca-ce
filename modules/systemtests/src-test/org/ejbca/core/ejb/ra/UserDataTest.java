@@ -79,7 +79,7 @@ public class UserDataTest extends CaTestCase {
         // Global configuration must have "Enable End Entity Profile Limitations" set to true in order for
         // the request counter tests to pass, we check if we are allowed to set this value or not
         // The value is reset to whatever it was from the beginning in the last "clean up" test.
-        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
         gcEELimitations = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(true);
         globalConfigurationSession.saveGlobalConfigurationRemote(admin, gc);
@@ -91,7 +91,7 @@ public class UserDataTest extends CaTestCase {
         super.tearDown();
 
         // Reset the value of "EnableEndEntityProfileLimitations" to whatever it was before we ran test00SetEnableEndEntityProfileLimitations
-        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
         gc.setEnableEndEntityProfileLimitations(gcEELimitations);
         globalConfigurationSession.saveGlobalConfigurationRemote(admin, gc);
 

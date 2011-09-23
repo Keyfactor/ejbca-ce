@@ -29,8 +29,7 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Issues a new CRL from the CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         if ( (args.length < 1) || ((args.length > 1) && StringUtils.equals(args[1], "-?")) ) {
 			getLogger().info("Description: " + getDescription());

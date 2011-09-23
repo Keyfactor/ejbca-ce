@@ -357,7 +357,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         byte[] ret = null;
         try {
             // Get key recovery info
-            boolean usekeyrecovery = globalConfigurationSession.getCachedGlobalConfiguration(admin).getEnableKeyRecovery();
+            boolean usekeyrecovery = globalConfigurationSession.getCachedGlobalConfiguration().getEnableKeyRecovery();
             if (log.isDebugEnabled()) {
                 log.debug("usekeyrecovery: " + usekeyrecovery);
             }

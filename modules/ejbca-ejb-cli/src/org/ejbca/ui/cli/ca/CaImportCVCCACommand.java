@@ -52,10 +52,8 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Imports a PKCS#8 file and created a new CVC CA from it"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
-        
-        
+        args = parseUsernameAndPasswordFromArgs(args);
+             
         if (args.length < 4) {
     		getLogger().info("Description: " + getDescription());
     		getLogger().info("Usage 1: " + getCommand() + " <CA name> <pkcs8 RSA private key file> <certificate file>");

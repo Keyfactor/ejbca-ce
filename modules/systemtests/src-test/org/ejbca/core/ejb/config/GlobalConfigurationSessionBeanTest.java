@@ -78,7 +78,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
         // First save the original
         if (original == null) {
-            original = this.globalConfigurationSession.getCachedGlobalConfiguration(administrator);
+            original = this.globalConfigurationSession.getCachedGlobalConfiguration();
         }
         caids = caSession.getAvailableCAs(administrator);
         assertFalse("No CAs exists so this test will not work", caids.isEmpty());
@@ -117,7 +117,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     public void testAddAndReadGlobalConfigurationCache() throws Exception {
 
         // Read a value to reset the timer
-        globalConfigurationSession.getCachedGlobalConfiguration(administrator);
+        globalConfigurationSession.getCachedGlobalConfiguration();
         setInitialValue();
 
         // Set a brand new value
@@ -125,9 +125,9 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         newValue.setEjbcaTitle("BAR");
         globalConfigurationSession.saveGlobalConfigurationRemote(administrator, newValue);
 
-        GlobalConfiguration cachedValue = globalConfigurationSession.getCachedGlobalConfiguration(administrator);
+        GlobalConfiguration cachedValue = globalConfigurationSession.getCachedGlobalConfiguration();
 
-        cachedValue = globalConfigurationSession.getCachedGlobalConfiguration(administrator);
+        cachedValue = globalConfigurationSession.getCachedGlobalConfiguration();
         assertEquals("The GlobalConfigfuration cache was not automatically updated.", "BAR", cachedValue.getEjbcaTitle());
 
     }

@@ -30,8 +30,7 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Makes the specified HSM CA offline"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             if (args.length < 2) {

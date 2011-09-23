@@ -17,7 +17,6 @@ import java.io.FileInputStream;
 import java.security.KeyStore;
 import java.util.Enumeration;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.util.FileTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -34,8 +33,7 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Restore a CA token keystore from a PKCS12 file."; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         
 		if (args.length < 3 || args.length > 5) {

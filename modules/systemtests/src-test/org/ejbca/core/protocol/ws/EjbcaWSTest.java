@@ -18,7 +18,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.net.URL;
 import java.security.KeyPair;
 import java.security.Principal;
 import java.security.SecureRandom;
@@ -56,6 +55,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
@@ -99,8 +99,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(EjbcaWSTest.class);
 
-    private final String cliUserName = "ejbca";
-    private final String cliPassword = "ejbca";
+    private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
+    private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
     private final ApprovalExecutionSessionRemote approvalExecutionSession = InterfaceCache.getApprovalExecutionSession();
     private final ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
@@ -685,7 +685,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      * Creates a "hardtoken" with certficates.
      */
     private void createHardToken(String username, String caName, String serialNumber) throws Exception {
-        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration(intAdmin);
+        GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration();
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
         raAdminSession.saveGlobalConfigurationRemote(intAdmin, gc);

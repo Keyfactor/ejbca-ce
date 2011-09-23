@@ -18,7 +18,6 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
@@ -39,10 +38,9 @@ public class CreateCert extends BaseCommand {
 	public String getDescription() { return "Issue a certificate for a user based on a CSR"; }
 
 	public void execute(String[] args) throws ErrorAdminCommandException {
-	        String cliUserName = "ejbca";
-	        String cliPassword = "ejbca";
-	        
-	    
+
+        args = parseUsernameAndPasswordFromArgs(args);
+
         if ( args.length != 5 ) {
             getLogger().info("Usage: " + getCommand() + " <username> <password> <csr.pem> <cert.pem>");
             getLogger().info(" <csr.pem> must be a PKCS#10 request in PEM format.");

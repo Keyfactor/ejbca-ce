@@ -31,8 +31,7 @@ public class RaSetUserStatusCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Change status for a user"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             if (args.length < 3) {

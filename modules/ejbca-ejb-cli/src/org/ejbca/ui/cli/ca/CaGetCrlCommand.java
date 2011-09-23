@@ -33,8 +33,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Retrieves the latest CRL from a CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";	
+        args = parseUsernameAndPasswordFromArgs(args);	
         
         // Get and remove switches
 		List<String> argsList = CliTools.getAsModifyableList(args);

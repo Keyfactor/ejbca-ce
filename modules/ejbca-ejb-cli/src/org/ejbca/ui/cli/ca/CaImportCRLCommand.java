@@ -26,7 +26,6 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.x509.X509V3CertificateGenerator;
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -63,9 +62,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	public void execute(String[] args) throws ErrorAdminCommandException {
 		getLogger().trace(">execute()");
 		CryptoProviderTools.installBCProvider();
-		
-	        String cliUserName = "ejbca";
-	        String cliPassword = "ejbca";
+		args = parseUsernameAndPasswordFromArgs(args);
 	        
 		
 		if (args.length != 4 || (!args[3].equalsIgnoreCase(STRICT_OP) && !args[3].equalsIgnoreCase(LENIENT_OP) && !args[3].equalsIgnoreCase(ADAPTIVE_OP))) {

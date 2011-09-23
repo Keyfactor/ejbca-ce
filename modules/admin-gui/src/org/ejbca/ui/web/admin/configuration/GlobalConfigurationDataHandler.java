@@ -49,7 +49,7 @@ public class GlobalConfigurationDataHandler implements java.io.Serializable {
     public GlobalConfiguration loadGlobalConfiguration() throws NamingException{
         GlobalConfiguration ret = null;
         // TODO: These should be dropped or moved to property files!!
-        ret = globalconfigurationsession.getCachedGlobalConfiguration(administrator);
+        ret = globalconfigurationsession.getCachedGlobalConfiguration();
         if (initialContext == null) {
             initialContext = new InitialContext();
         }

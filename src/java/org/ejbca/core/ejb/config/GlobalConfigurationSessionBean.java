@@ -60,6 +60,8 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
      * threads in the same VM. Uses volatile internal to make it thread friendly.
      */
     private static final GlobalConfigurationCache globalconfigurationCache = new GlobalConfigurationCache();
+    
+    private final AlwaysAllowLocalAuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal GlobalConfiguration Admin"));
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -80,7 +82,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public GlobalConfiguration getCachedGlobalConfiguration(AuthenticationToken admin) {
+    public GlobalConfiguration getCachedGlobalConfiguration() {
         GlobalConfiguration result;
         try {
             if (log.isTraceEnabled()) {
@@ -103,7 +105,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                         log.debug("No default GlobalConfiguration exists. Trying to create a new one.");
                     }
                     result = new GlobalConfiguration();
-                	saveGlobalConfiguration(admin, result);
+                	saveGlobalConfiguration(internalAdmin, result);
                 }
             }
             return result;
@@ -182,8 +184,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     		log.trace(">flushGlobalConfigurationCache()");
     	}
     	globalconfigurationCache.clearCache();
-    	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("flushGlobalConfigurationCache"));
-    	getCachedGlobalConfiguration(admin);
+    	getCachedGlobalConfiguration();
     	if (log.isDebugEnabled()) {
     		log.debug("Flushed global configuration cache.");
     	}

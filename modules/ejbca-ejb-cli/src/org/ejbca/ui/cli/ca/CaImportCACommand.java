@@ -36,8 +36,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Imports a keystore and creates a new X509 CA from it"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";    
+        args = parseUsernameAndPasswordFromArgs(args);   
         
         if (args.length < 3) {
     		getLogger().info("Description: " + getDescription());

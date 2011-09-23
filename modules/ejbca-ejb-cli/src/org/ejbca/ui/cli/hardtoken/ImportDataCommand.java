@@ -17,7 +17,6 @@ import java.io.FileInputStream;
 import java.util.List;
 import java.util.Properties;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.ui.cli.BaseCommand;
@@ -45,9 +44,7 @@ public class ImportDataCommand extends BaseCommand {
 	public String getDescription() { return "Used to import hard token data from a source"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
-        
+        args = parseUsernameAndPasswordFromArgs(args);
         
 		// Get and remove switches
 		List<String> argsList = CliTools.getAsModifyableList(args);

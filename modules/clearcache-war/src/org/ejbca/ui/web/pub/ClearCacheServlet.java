@@ -125,7 +125,7 @@ public class ClearCacheServlet extends HttpServlet {
 		}    	
 		boolean ret = false;
 		AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ClearCacheServlet: "+remotehost));
-		GlobalConfiguration gc = globalconfigurationsession.getCachedGlobalConfiguration(admin);
+		GlobalConfiguration gc = globalconfigurationsession.getCachedGlobalConfiguration();
 		Set<String> nodes = gc.getNodesInCluster();
 		Iterator<String> itr = nodes.iterator();
 		String nodename = null;

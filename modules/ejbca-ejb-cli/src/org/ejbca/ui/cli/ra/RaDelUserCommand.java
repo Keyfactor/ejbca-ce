@@ -40,8 +40,7 @@ public class RaDelUserCommand extends BaseRaAdminCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         // Get and remove switches
         List<String> argsList = CliTools.getAsModifyableList(args);

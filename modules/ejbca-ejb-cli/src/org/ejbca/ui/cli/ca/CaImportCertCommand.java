@@ -42,9 +42,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Imports a certificate file to the database"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
-        	
+        args = parseUsernameAndPasswordFromArgs(args);
         
         getLogger().trace(">execute()");
 		if ((args.length < 7) || (args.length > 9)) {

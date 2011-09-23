@@ -116,10 +116,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-    public boolean upgrade(AuthenticationToken admin, String dbtype, String sOldVersion, boolean isPost) {
-        if (log.isTraceEnabled()) {
-            log.trace(">upgrade(" + admin.toString() + ")");
-        }
+    public boolean upgrade( String dbtype, String sOldVersion, boolean isPost) {
+
         try {
             log.debug("Upgrading from version=" + sOldVersion);
             final int oldVersion;

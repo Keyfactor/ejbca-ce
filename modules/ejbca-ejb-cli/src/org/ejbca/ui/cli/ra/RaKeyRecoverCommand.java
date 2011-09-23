@@ -16,7 +16,6 @@ package org.ejbca.ui.cli.ra;
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -32,9 +31,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Set status to key recovery for a user's certificate"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
-        
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             if (args.length != 3) {
@@ -44,7 +41,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
             }
             BigInteger certificatesn = new BigInteger(args[1], 16);
             String issuerdn = args[2];
-            boolean usekeyrecovery = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin(cliUserName, cliPassword)).getEnableKeyRecovery();  
+            boolean usekeyrecovery = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration().getEnableKeyRecovery();  
             if(!usekeyrecovery){
             	getLogger().error("Keyrecovery have to be enabled in the system configuration in order to use this command.");
             	return;                   
