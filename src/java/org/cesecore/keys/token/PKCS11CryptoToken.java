@@ -100,10 +100,10 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         String friendlyName = properties.getProperty(TOKEN_FRIENDLY_NAME);
 
         if(friendlyName != null){
-        	this.p11slot = P11Slot.getInstance(friendlyName, this.sSlotLabel, sharedLibrary, isIndex, attributesFile, this, id);
+            this.p11slot = P11Slot.getInstance(friendlyName, this.sSlotLabel, sharedLibrary, isIndex, attributesFile, this, id);
         } else {
-        	// getInstance will run autoActivate()
-        	this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, isIndex, attributesFile, this, id);
+            // getInstance will run autoActivate()
+            this.p11slot = P11Slot.getInstance(this.sSlotLabel, sharedLibrary, isIndex, attributesFile, this, id);
         }
         final Provider provider = this.p11slot.getProvider();
         setJCAProvider(provider);
@@ -195,7 +195,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         if (StringUtils.isNotEmpty(alias)) {
             KeyStoreTools cont = new KeyStoreTools(getKeyStore(), getSignProviderName());
             cont.deleteEntry(alias);
-            String msg = intres.getLocalizedMessage("token.deleteentry", getId(), alias);
+            String msg = intres.getLocalizedMessage("token.deleteentry", alias, getId());
             log.info(msg);
         } else {
             log.debug("Trying to delete keystore entry with empty alias.");
@@ -229,6 +229,9 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     @Override
     public void generateKey(final String algorithm, final int keysize, final String alias) throws NoSuchAlgorithmException, NoSuchProviderException,
             KeyStoreException, CryptoTokenOfflineException {
+        if (log.isDebugEnabled()) {
+            log.debug("Generate key, "+algorithm+", "+keysize+", "+alias);
+        }
         if (StringUtils.isNotEmpty(alias)) {
             KeyStoreTools cont = new KeyStoreTools(getKeyStore(), getSignProviderName());
             cont.generateKey(algorithm, keysize, alias);
@@ -244,6 +247,6 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     
     /** Used for testing */
     protected P11Slot getP11slot() {
-    	return p11slot;
+        return p11slot;
     }
 }
