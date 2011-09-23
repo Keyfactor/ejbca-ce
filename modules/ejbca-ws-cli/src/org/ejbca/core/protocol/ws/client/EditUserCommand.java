@@ -163,11 +163,21 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             }else{
                 getPrintStream().println("End time: "+userdata.getEndTime());
             }
-            getPrintStream().println("Extended information:");
-            for ( ExtendedInformationWS ei : userdata.getExtendedInformation() ) {
-            	getPrintStream().println("	'"+ei.getName()+"' = '"+ei.getValue()+"'");
+            {
+            	final List<ExtendedInformationWS> eil = userdata.getExtendedInformation();
+            	if ( eil!=null ) {
+            		getPrintStream().println("Extended information:");
+            		for ( ExtendedInformationWS ei : eil ) {
+            			getPrintStream().println("	'"+ei.getName()+"' = '"+ei.getValue()+"'");
+            		}
+            	}
             }
-            getPrintStream().println(certificateSerialNumber+"="+userdata.getCertificateSerialNumber().toString());
+            {
+            	final BigInteger bi = userdata.getCertificateSerialNumber();
+            	if ( bi!=null ) {
+            		getPrintStream().println(certificateSerialNumber+"="+bi.toString());
+            	}
+            }
             
            try{
             	getEjbcaRAWS().editUser(userdata);
