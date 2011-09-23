@@ -236,15 +236,15 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		getPrintStream().println("Command used to add or edit userdata, if user exist will the data be overwritten.");
 		getPrintStream().println("Usage : edituser <username> <password|null> <clearpwd (true|false)> <subjectdn> <subjectaltname or NULL> <email or NULL> <caname> <type> <token> <status> <endentityprofilename> <certificateprofilename> <issueralias or NULL (optional)> <starttime or NULL (optional)> <endtime (starttime)>\n\n");
         getPrintStream().println("DN is of form \"C=SE, O=MyOrg, OU=MyOrgUnit, CN=MyName\" etc.");
-        getPrintStream().println(
-            "SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>\"");
-
+        getPrintStream().println("SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uri=<http://host.com/>, ipaddress=<address>, guid=<globally unique id>\"");
         getPrintStream().println("Type (mask): INVALID=0; END-USER=1; KEYRECOVERABLE=128; SENDNOTIFICATION=256");
-		
-        getPrintStream().print("Existing tokens      : " + "USERGENERATED" + ", " +
-        		"P12" + ", "+ "JKS" + ", "  + "PEM" + "\n");
-        getPrintStream().print("Existing statuses (new users will always be set as NEW) : NEW, INPROCESS, FAILED, HISTORICAL\n");
-        getPrintStream().print("Start time and end time is of form \"May 26, 2009 9:52 AM\" or \"days:hours:minutes\"\n");
+        getPrintStream().println("Existing tokens: USERGENERATED, P12, JKS, PEM");
+        getPrintStream().println("Existing statuses (new users will always be set as NEW) : NEW, INPROCESS, FAILED, HISTORICAL");
+        getPrintStream().println("Start time and end time is of form \"May 26, 2009 9:52 AM\" or \"days:hours:minutes\"");
+        getPrintStream().println();
+        getPrintStream().println("Extended information for the user and certificate extension may be added as extra parameters. These parameters may be inserted at any position since they are removed before the other parameters (above) are parsed.");
+        getPrintStream().println("For extended information the parameter look like this 'extinfo.<name>=<value>'. Example: extinfo.CERTIFICATESERIALNUMBER=1a7b9eff44");
+        getPrintStream().println("For certificate extension the parameter look like this '<oid>[.<type>]=value'. The key '1.2.3.4' is same as '1.2.3.4.value'. Example: 1.2.840.113635.100.6.1.1=00aa00bb 1.2.3.4.value1=1234 1.2.3.4.value2=abcdef");
 	}
 
 
