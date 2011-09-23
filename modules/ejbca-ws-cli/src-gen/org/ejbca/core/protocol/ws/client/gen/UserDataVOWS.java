@@ -404,6 +404,10 @@ public class UserDataVOWS implements Serializable{
     /**
      * Generic setter for extendedInformation. Set with values from ExtendedInformation such as:
      * ExtendedInformation.CUSTOM_REVOCATIONREASON, Integer.toString(RevokeStatus.REVOKATION_REASON_CERTIFICATEHOLD)
+     * 
+     * Add certificate extension properties like this by adding a ExtendedInformationWS:
+     * Set the name to the string representation of the OID optionally prepended with '.' and type of property (<oid>[.<type>]). <oid> is same as <oid>.value. Example 1.2.3.4 1.2.3.5.value1
+     * Set the value to what should be used in the implementation class.
      * @param extendedInformation
      */
 	public void setExtendedInformation(List<ExtendedInformationWS> extendedInformation) {
