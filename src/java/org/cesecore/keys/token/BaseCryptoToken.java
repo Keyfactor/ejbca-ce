@@ -29,6 +29,7 @@ import java.security.Security;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.spec.AlgorithmParameterSpec;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -40,6 +41,7 @@ import javax.crypto.spec.IvParameterSpec;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.crypto.paddings.PKCS7Padding;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
@@ -590,7 +592,21 @@ public abstract class BaseCryptoToken implements CryptoToken {
             // wrap key
             byte[] encryptedKey;
             try {
-                encryptedKey = c.doFinal(privateKey.getEncoded());
+                byte[] data = privateKey.getEncoded();
+                if (StringUtils.containsIgnoreCase(privKeyTransform, "NoPadding")) {
+                    // We must add PKCS7/PKCS5 padding ourselves to the data
+                    final PKCS7Padding padding = new PKCS7Padding();
+                    // Calculate the number of pad bytes needed
+                    final int rem = data.length % c.getBlockSize();
+                    final int padlen = c.getBlockSize()-rem;
+                    if (log.isDebugEnabled()) {
+                        log.debug("Padding key data with "+padlen+" bytes, using PKCS7/5Padding. Total len: "+(data.length+padlen));
+                    }
+                    byte[] newdata = Arrays.copyOf(data, data.length+padlen);
+                    padding.addPadding(newdata, data.length);
+                    data = newdata;
+                }
+                encryptedKey = c.doFinal(data);
             } catch (BadPaddingException e) {
                 throw new PrivateKeyNotExtractableException("Extracting key with alias '"+privateKeyAlias+"' failed.");
             }
