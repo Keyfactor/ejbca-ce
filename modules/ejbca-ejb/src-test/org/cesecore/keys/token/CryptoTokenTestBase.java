@@ -673,7 +673,7 @@ public abstract class CryptoTokenTestBase {
             //extract the private key
             byte[] cbcIv = { 0x01, 0x23, 0x45, 0x67, (byte)0x89, (byte)0xAB, (byte)0xCD, (byte)0xEF };
             IvParameterSpec ivParam = new IvParameterSpec( cbcIv );
-            byte[] wrappedkey = token.extractKey("DESede/CBC/PKCS5Padding", ivParam, "encryptkeytest001", "extractkeytest001");
+            byte[] wrappedkey = token.extractKey("DESede/CBC/NoPadding", ivParam, "encryptkeytest001", "extractkeytest001");
 
             //get encryption key
             Key encryptionKey = token.getKey("encryptkeytest001");
@@ -681,7 +681,7 @@ public abstract class CryptoTokenTestBase {
             //unwrap private key and check if it is ok
             // since SUN PKCS11 Provider does not implements WRAP_MODE,
             // DECRYPT_MODE with encoded private key will be used instead, giving the same result
-            Cipher c = Cipher.getInstance( "DESede/CBC/PKCS5Padding" ,token.getEncProviderName());
+            Cipher c = Cipher.getInstance( "DESede/CBC/NoPadding" ,token.getEncProviderName());
             c.init(Cipher.DECRYPT_MODE, encryptionKey, ivParam);
             byte[] decryptedBytes = c.doFinal(wrappedkey);
 
