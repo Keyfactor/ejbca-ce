@@ -38,8 +38,7 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             if (args.length < 2) {

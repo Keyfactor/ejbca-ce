@@ -46,9 +46,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Import profiles from XML-files to the database"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
-        
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             if (args.length < 2) {

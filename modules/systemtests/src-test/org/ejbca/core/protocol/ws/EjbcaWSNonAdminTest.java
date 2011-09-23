@@ -52,6 +52,7 @@ import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthentication
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
@@ -87,8 +88,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(EjbcaWSNonAdminTest.class);
 
-    private final String cliUserName = "ejbca";
-    private final String cliPassword = "ejbca";
+    private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
+    private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
     private static String adminusername1 = null;
     private static X509Certificate admincert1 = null;
@@ -147,7 +148,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @Test
     public void test00SetupAccessRights() throws Exception {        
         super.setupAccessRights(wsadminRoleName);
-        gc = globalConfigurationSession.getCachedGlobalConfiguration(intadmin);
+        gc = globalConfigurationSession.getCachedGlobalConfiguration();
         assertNotNull("Unable to fetch GlobalConfiguration.");
     }
 

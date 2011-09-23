@@ -59,6 +59,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -116,8 +117,8 @@ public class ApprovalSessionTest extends CaTestCase {
 
     private int removeApprovalId = 0;
     
-    private final String cliUserName = "ejbca";
-    private final String cliPassword = "ejbca";
+    private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
+    private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
     private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
     private RoleManagementSessionRemote roleManagementSession = InterfaceCache.getRoleManagementSession();
@@ -205,7 +206,7 @@ public class ApprovalSessionTest extends CaTestCase {
         reqadmin = simpleAuthenticationProvider.authenticate(makeAuthenticationSubject(reqadmincert));
         // TODO: before is had both a cert and username input?
 
-        gc = globalConfigurationSession.getCachedGlobalConfiguration(intadmin);
+        gc = globalConfigurationSession.getCachedGlobalConfiguration();
     }
 
     private AuthenticationSubject makeAuthenticationSubject(X509Certificate certificate) {

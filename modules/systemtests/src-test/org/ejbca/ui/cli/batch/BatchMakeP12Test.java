@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -39,8 +40,8 @@ public class BatchMakeP12Test extends CaTestCase {
     private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private int caid = getTestCAId();
 
-    private final String cliUserName = "ejbca";
-    private final String cliPassword = "ejbca";
+    private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
+    private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 

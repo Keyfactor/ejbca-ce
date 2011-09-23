@@ -18,7 +18,6 @@ import java.security.interfaces.ECPublicKey;
 import java.util.ArrayList;
 
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -37,9 +36,7 @@ public class CaInfoCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Shows info about a CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
-        
+        args = parseUsernameAndPasswordFromArgs(args);
         
         if (args.length < 2) {
     		getLogger().info("Description: " + getDescription());

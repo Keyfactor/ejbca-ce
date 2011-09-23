@@ -102,7 +102,7 @@ public class AutoEnrollServlet extends HttpServlet {
 		log.trace(">doPost");
 		AuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AutoEnrollServlet: "+request.getRemoteAddr()));
 		//Admin internalAdmin = Admin.getInternalAdmin();
-		GlobalConfiguration globalConfiguration = globalConfigurationSession.getCachedGlobalConfiguration(internalAdmin);
+		GlobalConfiguration globalConfiguration = globalConfigurationSession.getCachedGlobalConfiguration();
 		// Make sure we allow use of this Servlet
 		if ( !globalConfiguration.getAutoEnrollUse() ) {
 			log.info("Unauthorized access attempt from " + request.getRemoteAddr());

@@ -187,7 +187,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     public void testUnmarkKeyRecoveryOnFinish() throws Exception {
         log.trace(">test05UnmarkKeyRecoveryOnFinish()");
 
-        GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
         boolean orgkeyrecconfig = config.getEnableKeyRecovery();
         config.setEnableKeyRecovery(true);
         globalConfigurationSession.saveGlobalConfigurationRemote(admin, config);

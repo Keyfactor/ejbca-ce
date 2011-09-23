@@ -78,8 +78,7 @@ public class BatchMakeP12 extends BaseCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             String username = null;
@@ -128,7 +127,7 @@ public class BatchMakeP12 extends BaseCommand {
 
     private boolean getUseKeyRecovery(String cliUserName, String cliPassword) {
         if (usekeyrecovery == null) {
-            usekeyrecovery = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin(cliUserName, cliPassword)).getEnableKeyRecovery();
+            usekeyrecovery = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration().getEnableKeyRecovery();
         }
         return usekeyrecovery;
     }

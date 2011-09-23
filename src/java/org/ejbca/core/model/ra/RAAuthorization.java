@@ -105,7 +105,7 @@ public class RAAuthorization implements Serializable {
         }
 
     	String endentityauth = null;
-        GlobalConfiguration globalconfiguration = globalConfigurationSession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration globalconfiguration = globalConfigurationSession.getCachedGlobalConfiguration();
         if (globalconfiguration.getEnableEndEntityProfileLimitations()){
         	endentityauth = getEndEntityProfileAuthorizationString(true);
         	if(authorizedToApproveCAActions && authorizedToApproveRAActions){

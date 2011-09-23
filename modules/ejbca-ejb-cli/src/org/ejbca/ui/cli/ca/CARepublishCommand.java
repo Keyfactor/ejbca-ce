@@ -51,8 +51,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             // Get and remove switches

@@ -35,9 +35,7 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Lists the names of all available CAs"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
-        
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
         	CryptoProviderTools.installBCProvider();

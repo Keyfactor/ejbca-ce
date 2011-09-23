@@ -33,8 +33,7 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
 
 	@Override
 	public void execute(String[] args) throws ErrorAdminCommandException {
-	        String cliUserName = "ejbca";
-	        String cliPassword = "ejbca";
+	    args = parseUsernameAndPasswordFromArgs(args);
 	    
         try {
         	Collection<Integer> caIds = ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword));

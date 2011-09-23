@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -58,13 +57,10 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
-        
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
-            GlobalConfiguration globalconfiguration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin(cliUserName, cliPassword));
+            GlobalConfiguration globalconfiguration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration();
             boolean usehardtokens = globalconfiguration.getIssueHardwareTokens();
             boolean usekeyrecovery = globalconfiguration.getEnableKeyRecovery();
             String[] hardtokenissueraliases = null;

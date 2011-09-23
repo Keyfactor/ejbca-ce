@@ -26,8 +26,7 @@ public class AdminsRemoveGroupCommand extends BaseAdminsCommand {
 	public String getDescription() { return "Remove admin role"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             if (args.length < 2) {

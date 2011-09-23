@@ -169,7 +169,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
     /** Gets the Global Configuration from ra admin session bean */
     private GlobalConfiguration getGlobalConfiguration(AuthenticationToken admin) {
-        return globalConfigurationSession.getCachedGlobalConfiguration(admin);
+        return globalConfigurationSession.getCachedGlobalConfiguration();
     }
 
     private boolean authorizedToCA(AuthenticationToken admin, int caid) {
@@ -1816,7 +1816,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     public boolean prepareForKeyRecovery(AuthenticationToken admin, String username, int endEntityProfileId, Certificate certificate)
             throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
         boolean ret;
-        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration(admin);
+        GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
         if (certificate == null) {
             ret = keyRecoverySession.markNewestAsRecoverable(admin, username, endEntityProfileId, gc);
         } else {

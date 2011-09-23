@@ -63,11 +63,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
     	// Install BC provider
     	CryptoProviderTools.installBCProvider();
-
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
-        
-    	
+    	args = parseUsernameAndPasswordFromArgs(args);
     	// Create new CA.
         if (args.length < 10) {
     		getLogger().info("Description: " + getDescription());

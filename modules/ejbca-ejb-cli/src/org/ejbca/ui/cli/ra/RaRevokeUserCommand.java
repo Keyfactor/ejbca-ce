@@ -32,8 +32,7 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Revokes a user and all certificates for a user"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             if (args.length < 3) {

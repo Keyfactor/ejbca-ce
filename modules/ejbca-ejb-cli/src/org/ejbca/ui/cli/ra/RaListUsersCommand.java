@@ -16,7 +16,6 @@ package org.ejbca.ui.cli.ra;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -34,9 +33,7 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "List users with a specified status"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
-        
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             if (args.length < 2) {

@@ -28,10 +28,10 @@ import org.ejbca.core.model.InternalEjbcaResources;
  */
 public class GlobalConfiguration extends UpgradeableDataHashMap implements Serializable {
 
-    private static final long serialVersionUID = 5319951951877577390L;
+    private static final long serialVersionUID = -2051789798029184421L;
 
     // Default Values
-    public static final float LATEST_VERSION = 2;
+    public static final float LATEST_VERSION = 3f;
     
     public static final String EJBCA_VERSION = InternalConfiguration.getAppVersion();
 
@@ -82,6 +82,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements Seria
     
     /** Default value for Enable Command Line Interface. */
     private static final boolean DEFAULTENABLECOMMANDLINEINTERFACE = true;
+    private static final boolean DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER = true;
     
     // Language codes. Observe the order is important
     public static final  int      EN                 = 0;
@@ -436,6 +437,12 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements Seria
     	   final Boolean ret = (Boolean) data.get(ENABLECOMMANDLINEINTERFACE);
     	   return (ret == null ? DEFAULTENABLECOMMANDLINEINTERFACE : ret);
        }
+       
+       public void setEnableCommandLineInterfaceDefaultUser(final boolean enable) { data.put(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, Boolean.valueOf(enable)); }
+       public boolean getEnableCommandLineInterfaceDefaultUser() {
+           final Boolean ret = (Boolean) data.get(ENABLECOMMANDLINEINTERFACEDEFAULTUSER);
+           return(ret == null ? DEFAULTENABLECOMMANDLINEINTERFACEDEFAULTUSER : ret);
+       }
 
     /** Implementation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
@@ -453,8 +460,11 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements Seria
     		if(data.get(REPORTS_PATH) == null){
     			data.put(REPORTS_PATH, ((String) data.get(ADMINPATH) + "reports"));
     		}
+    		if(data.get(ENABLECOMMANDLINEINTERFACEDEFAULTUSER) == null) {
+    		        data.put(ENABLECOMMANDLINEINTERFACEDEFAULTUSER, Boolean.TRUE);
+    		}
     		
-    		data.put(VERSION, new Float(LATEST_VERSION));    		
+    		data.put(VERSION,  Float.valueOf(LATEST_VERSION));    		
     	}
     }
 
@@ -490,6 +500,7 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements Seria
     private static final   String NODESINCLUSTER               = "nodesincluster";
     
     private static final   String ENABLECOMMANDLINEINTERFACE   = "enablecommandlineinterface";
+    private static final   String ENABLECOMMANDLINEINTERFACEDEFAULTUSER = "enablecommandlineinterfacedefaultuser";
 
     // Configuration for Auto Enrollment
     private static final   String AUTOENROLL_USE = "autoenroll.use";

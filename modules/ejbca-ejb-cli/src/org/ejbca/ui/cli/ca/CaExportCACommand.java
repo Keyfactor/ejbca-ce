@@ -29,8 +29,7 @@ public class CaExportCACommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Exports CA as a PCKS#12 or PKCS#8 file"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         String signatureKeyAlias = "SignatureKeyAlias";
     	String encryptionKeyAlias = "EncryptionKeyAlias";

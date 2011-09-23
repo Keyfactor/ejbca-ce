@@ -71,8 +71,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         
         if (args.length < 2) {

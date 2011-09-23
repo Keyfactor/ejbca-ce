@@ -37,8 +37,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Reactivates a user if the revocation reason is 'on hold'"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             if (args.length < 2) {

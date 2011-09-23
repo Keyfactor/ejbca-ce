@@ -56,6 +56,7 @@ import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -115,8 +116,8 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
     private static String adminUsername;
     
-    private final String cliUserName = "ejbca";
-    private final String cliPassword = "ejbca";
+    private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
+    private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
 
     private static Collection<String> createdUsers = new LinkedList<String>();
 
@@ -251,7 +252,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             caAdminSession.deactivateCAToken(admin1, anotherCAID1);
             CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, anotherCAID1);
             assertEquals("CA should be offline", SecConst.CA_OFFLINE, cainfo.getStatus());
-            caAdminSession.activateCAToken(admin1, anotherCAID1, "foo123", globalConfigurationSession.getCachedGlobalConfiguration(admin1));
+            caAdminSession.activateCAToken(admin1, anotherCAID1, "foo123", globalConfigurationSession.getCachedGlobalConfiguration());
             cainfo = caSession.getCAInfo(roleMgmgToken, anotherCAID1);
             assertEquals("CA should be online", SecConst.CA_ACTIVE, cainfo.getStatus());
         } catch (WaitingForApprovalException ex) {
@@ -262,7 +263,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             caAdminSession.deactivateCAToken(admin1, anotherCAID2);
             CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, anotherCAID2);
             assertEquals("CA should be offline", SecConst.CA_OFFLINE, cainfo.getStatus());
-            caAdminSession.activateCAToken(admin1, anotherCAID2, "foo123", globalConfigurationSession.getCachedGlobalConfiguration(admin1));
+            caAdminSession.activateCAToken(admin1, anotherCAID2, "foo123", globalConfigurationSession.getCachedGlobalConfiguration());
             fail("This should have caused an approval request");
         } catch (WaitingForApprovalException ex) {
             // OK

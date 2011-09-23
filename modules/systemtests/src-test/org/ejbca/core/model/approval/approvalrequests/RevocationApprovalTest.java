@@ -57,6 +57,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -87,8 +88,8 @@ public class RevocationApprovalTest extends CaTestCase {
     private static AuthenticationToken approvingAdmin = null;
     private static ArrayList<AccessUserAspectData> adminentities;
     
-    private final String cliUserName = "ejbca";
-    private final String cliPassword = "ejbca";
+    private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
+    private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
     private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();

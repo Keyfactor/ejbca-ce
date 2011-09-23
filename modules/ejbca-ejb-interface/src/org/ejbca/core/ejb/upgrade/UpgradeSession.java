@@ -12,18 +12,14 @@
  *************************************************************************/
 package org.ejbca.core.ejb.upgrade;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-
 public interface UpgradeSession {
 
-	/**
+    /**
      * Upgrades the database
      * 
-     * @param admin
      * @return true or false if upgrade was done or not
      */
-    public boolean upgrade(AuthenticationToken admin, String dbtype, String sOldVersion, boolean isPost);
-    
+    public boolean upgrade(String dbtype, String sOldVersion, boolean isPost);
+
     public boolean checkColumnExists500();
 }
-

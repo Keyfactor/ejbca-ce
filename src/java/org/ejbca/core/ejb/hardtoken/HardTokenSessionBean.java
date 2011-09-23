@@ -663,7 +663,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (data == null) {
             try {
                 entityManager.persist(new org.ejbca.core.ejb.hardtoken.HardTokenData(tokensn, username, new java.util.Date(), new java.util.Date(),
-                        tokentype, bcdn, setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
+                        tokentype, bcdn, setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(),
                                 hardtokendata)));
                 if (certificates != null) {
                     Iterator<Certificate> i = certificates.iterator();
@@ -703,7 +703,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                 throw new FinderException();
             }
             htd.setTokenType(tokentype);
-            htd.setData(setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(), hardtokendata));
+            htd.setData(setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(), hardtokendata));
             htd.setModifyTime(new java.util.Date());
             int caid = htd.getSignificantIssuerDN().hashCode();
             String msg = intres.getLocalizedMessage("hardtoken.changedtoken", tokensn);
@@ -798,7 +798,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             }
             if (htd != null) {
                 returnval = new HardTokenData(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
-                        .getSignificantIssuerDN(), getHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
+                        .getSignificantIssuerDN(), getHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(),
                         includePUK, htd.getData()), copyof, copies);
                 int caid = htd.getSignificantIssuerDN().hashCode();
                 String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", tokensn);
@@ -847,7 +847,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                 }
             }
             returnval.add(new HardTokenData(htd.getTokenSN(), htd.getUsername(), htd.getCreateTime(), htd.getModifyTime(), htd.getTokenType(), htd
-                    .getSignificantIssuerDN(), getHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration(admin).getHardTokenEncryptCA(),
+                    .getSignificantIssuerDN(), getHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(),
                     includePUK, htd.getData()), copyof, copies));
             int caid = htd.getSignificantIssuerDN().hashCode();
             String msg = intres.getLocalizedMessage("hardtoken.viewedtoken", htd.getTokenSN());

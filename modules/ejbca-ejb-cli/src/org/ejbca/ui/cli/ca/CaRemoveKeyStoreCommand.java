@@ -13,7 +13,6 @@
 
 package org.ejbca.ui.cli.ca;
 
-import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -29,8 +28,7 @@ public class CaRemoveKeyStoreCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Remove the CA token keystore from a CA"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         
 		if (args.length < 2) {

@@ -445,7 +445,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                         "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")").get(0));
                 Approval approval = new Approval("Approved during testing.");
                 approvalExecutionSession.approve(approvingAdmin, approvalID, approval,
-                        globalConfigurationSession.getCachedGlobalConfiguration(internalAdmin));
+                        globalConfigurationSession.getCachedGlobalConfiguration());
                 approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                 Assert.assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                 CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);

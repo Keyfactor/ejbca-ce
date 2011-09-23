@@ -44,8 +44,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         try {
             if (args.length < 2) {
                 getLogger().info("Description: " + getDescription());
@@ -73,7 +72,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             // Check that CA has correct status.
             if ((cainfo.getStatus() == SecConst.CA_OFFLINE) || (cainfo.getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_OFFLINE)) {
                 try {
-                    ejb.getCAAdminSession().activateCAToken(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), authorizationcode, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration(getAdmin(cliUserName, cliPassword)));
+                    ejb.getCAAdminSession().activateCAToken(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), authorizationcode, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration());
                     getLogger().info("CA token activated.");
 
                 } catch (CryptoTokenAuthenticationFailedException e) {

@@ -30,8 +30,7 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
 	public String getDescription() { return "Find and show details of a user"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             if (args.length < 2) {

@@ -210,7 +210,7 @@ public class StartServicesServlet extends HttpServlet {
         	
         	// Add this node's hostname to list of nodes
             log.trace(">init checking if this node is in the list of nodes");
-            final GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration(admin);
+            final GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
             final Set<String> nodes = config.getNodesInCluster();
             final String hostname = getHostName();
             if (hostname != null && !nodes.contains(hostname)) {

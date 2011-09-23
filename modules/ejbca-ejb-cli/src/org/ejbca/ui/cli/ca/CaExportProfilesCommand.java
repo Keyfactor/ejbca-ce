@@ -37,8 +37,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Export profiles from the database to XML-files."; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
         
         try {
             if (args.length < 2) {

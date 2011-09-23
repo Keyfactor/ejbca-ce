@@ -38,8 +38,7 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 		getLogger().trace(">execute()");
 		CryptoProviderTools.installBCProvider(); // need this for CVC certificate
 		
-	        String cliUserName = "ejbca";
-	        String cliPassword = "ejbca";
+		args = parseUsernameAndPasswordFromArgs(args);
 		
 		if ( args.length<3 ) {
 			usage(cliUserName, cliPassword);

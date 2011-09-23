@@ -410,7 +410,7 @@ public class CAKeystoreExportRemoveRestoreTest {
         assertEquals("offline token", CryptoToken.STATUS_OFFLINE, info.getCATokenInfo().getTokenStatus());
 
         // Should not be possible to activate
-        caAdminSession.activateCAToken(admin, cainfo.getCAId(), capassword, globalConfigurationSession.getCachedGlobalConfiguration(admin));
+        caAdminSession.activateCAToken(admin, cainfo.getCAId(), capassword, globalConfigurationSession.getCachedGlobalConfiguration());
         info = caSession.getCAInfo(admin, caname);
         assertEquals("offline token", CryptoToken.STATUS_OFFLINE, info.getCATokenInfo().getTokenStatus());
 

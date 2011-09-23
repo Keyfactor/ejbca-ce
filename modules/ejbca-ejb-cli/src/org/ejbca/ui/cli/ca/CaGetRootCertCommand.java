@@ -35,8 +35,7 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
 	public String getDescription() { return "Save root CA certificate (PEM- or DER-format) to file"; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
-        String cliUserName = "ejbca";
-        String cliPassword = "ejbca";
+        args = parseUsernameAndPasswordFromArgs(args);
 
 		// Get and remove switches
 		List<String> argsList = CliTools.getAsModifyableList(args);

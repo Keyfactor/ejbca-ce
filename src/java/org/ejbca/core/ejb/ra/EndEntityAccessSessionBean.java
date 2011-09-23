@@ -155,7 +155,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         }
         final List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>();
         for (final UserData data : result) {
-            if (globalConfigurationSession.getCachedGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+            if (globalConfigurationSession.getCachedGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to view user.
                 if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
                     continue;
@@ -176,7 +176,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     private EndEntityInformation returnUserDataVO(final AuthenticationToken admin, final UserData data, final String requestedUsername)
             throws AuthorizationDeniedException {
         if (data != null) {
-            if (globalConfigurationSession.getCachedGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+            if (globalConfigurationSession.getCachedGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
                 // Check if administrator is authorized to view user.
                 if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
                     if (requestedUsername == null) {
