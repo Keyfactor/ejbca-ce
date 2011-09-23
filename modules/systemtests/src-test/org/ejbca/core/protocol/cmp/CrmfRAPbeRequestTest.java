@@ -95,11 +95,9 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private static final Logger log = Logger.getLogger(CrmfRAPbeRequestTest.class);
 
     private static final String PBEPASSWORD = "password";
-    private static final String APPROVINGADMINNAME = "superadmin";
+
     private static final String CPNAME = CrmfRAPbeRequestTest.class.getName();
     private static final String EEPNAME = CrmfRAPbeRequestTest.class.getName();
-    
-    private static final String APPROVING_ROLE_NAME = "CrmfRAPbeRequestTest_Approving_Role";
 
     /**
      * userDN of user used in this test, this contains special, escaped, characters to test that this works with CMP RA operations

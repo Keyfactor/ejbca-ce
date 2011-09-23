@@ -49,6 +49,7 @@
   static final String CHECKBOX_AUTOENROLL_SSLCONNECTION      = "checkboxautoenrollsslconnection";
   static final String CHECKBOX_AUTOENROLL_USE                = "checkboxautoenrolluse";
   static final String CHECKBOX_ENABLECOMMANDLINEINTERFACE	 = "checkboxenablecommandlineinterface";
+  static final String CHECKBOX_ENABLECLIDEFAULTUSER			 = "checkboxenableclidefaultuser";
 
 // Lists used in defaultuserprefereces.jsp
   static final String LIST_PREFEREDLANGUAGE                  = "listpreferedlanguage";
@@ -127,6 +128,7 @@
        gc.setEnableKeyRecovery(CHECKBOX_VALUE.equals(request.getParameter(CHECKBOX_ENABLEKEYRECOVERY)));
        gc.setIssueHardwareTokens(CHECKBOX_VALUE.equals(request.getParameter(CHECKBOX_ISSUEHARDWARETOKENS)));
        gc.setEnableCommandLineInterface(CHECKBOX_VALUE.equals(request.getParameter(CHECKBOX_ENABLECOMMANDLINEINTERFACE)));
+       gc.setEnableCommandLineInterfaceDefaultUser(CHECKBOX_VALUE.equals(request.getParameter(CHECKBOX_ENABLECLIDEFAULTUSER)));
 
        if(request.getParameter(CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS) != null && request.getParameter(CHECKBOX_APPROVALUSEEMAILNOTIFICATIONS).equals(CHECKBOX_VALUE)){
     	   gc.setUseApprovalNotifications(true);

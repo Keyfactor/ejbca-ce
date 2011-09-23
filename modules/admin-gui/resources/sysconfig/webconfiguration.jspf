@@ -326,7 +326,7 @@ function checkuseautoenroll(){
     <tr id="Row0">
       <td width="49%" valign="top">
         <h3><c:out value="<%= ejbcawebbean.getText(\"ENABLECLIACCESS\") %>"/>
-        <%= ejbcawebbean.getHelpReference("/adminguide.html#Disable%20command%20line%20interface") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Disable%20default%20CLI%20user") %>
         </h3>
         <p class="help"><c:out value="<%= ejbcawebbean.getText(\"ENABLECLIACCESSHELPER\") %>"/></p>
       </td>
@@ -335,4 +335,18 @@ function checkuseautoenroll(){
                                                                                           <% if(gc.getEnableCommandLineInterface())
                                                                                                 out.write(" CHECKED "); %>>
       </td>
+    </tr>
+    <tr id="Row1">
+  	  <td width="49%" valign="top">
+  	  	<h3>
+  	  		<c:out value="<%= ejbcawebbean.getText(\"ENABLECLIDEFAULTUSER\") %>"/>
+  	  		<%= ejbcawebbean.getHelpReference("/adminguide.html#Disable%20command%20line%20interface") %>
+  	  	</h3>
+  	  	<p class="help"><c:out value="<%= ejbcawebbean.getText(\"ENABLECLIDEFAULTUSERHELPER\") %>"/></p>
+  	  </td>
+  	  <td width="51%" valign="top">
+  	  	<input type="checkbox" name="<%=CHECKBOX_ENABLECLIDEFAULTUSER %>" value="<%=CHECKBOX_VALUE %>" 
+  	  																					<% if(gc.getEnableCommandLineInterfaceDefaultUser()) 
+  	  																					    	out.write(" CHECKED "); %>>
+  	  </td>
     </tr>

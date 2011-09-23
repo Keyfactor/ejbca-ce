@@ -36,6 +36,9 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         args = parseUsernameAndPasswordFromArgs(args);
+        if(cliUserName == null) {
+            return;
+        }
         
         try {
         	CryptoProviderTools.installBCProvider();
