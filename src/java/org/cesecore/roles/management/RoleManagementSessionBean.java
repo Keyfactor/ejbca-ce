@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.roles.management;
 
-import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,6 +70,8 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(RoleManagementSessionBean.class);
+    /** random used to generate unique IDs. */
+    private static final Random RANDOM = new Random();
 
     /** Internal localization of logs and errors */
     private static final InternalResources INTERNAL_RESOURCES = InternalResources.getInstance();
@@ -410,14 +411,10 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     }
 
     private int findFreeRoleId() {
-        final Random random = new SecureRandom();
-        int id = random.nextInt();
-        boolean foundfree = false;
-        while (!foundfree) {
-            if (roleAccessSession.findRole(id) == null) {
-                foundfree = true;
-            }
-            id = random.nextInt();
+        int id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
+        // Never generate id's less than 10000
+        while ((id < 10000) || (roleAccessSession.findRole(id) != null)) {
+            id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
         }
         return id;
     }
