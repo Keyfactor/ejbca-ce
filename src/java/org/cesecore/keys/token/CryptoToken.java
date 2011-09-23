@@ -34,10 +34,10 @@ import javax.crypto.NoSuchPaddingException;
 
 /** Handles operations of the device producing signatures and handling the private key.
  *  All Crypto Token plug-ins must implement this interface.
- * 
- * 
+ *
+ *
  * Based on EJBCA version: ICAToken.java 8828 2010-03-29 08:10:51Z anatom
- * 
+ *
  * @version $Id$
  */
 public interface CryptoToken extends Serializable {
@@ -258,9 +258,9 @@ public interface CryptoToken extends Serializable {
      * @return false if the private key is not extractable.
      */
     boolean doPermitExtractablePrivateKey();
-    
+
     /**
-     * 
+     *
      * @return an enumeration of aliases from this token's key store.
      * @throws KeyStoreException if the keystore has not been initialized (loaded).
      * @throws CryptoTokenOfflineException if the keystore has not been initialized (loaded).

@@ -22,8 +22,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.CertificateException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Properties;
 
+import javax.crypto.BadPaddingException;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 
@@ -33,9 +35,9 @@ import org.junit.Test;
 
 /**
  * Tests soft keystore crypto token
- * 
+ *
  * Based on EJBCA version: CATokenContainerTest.java 10288 2010-10-26 11:27:21Z anatom $
- * 
+ *
  * @version $Id$
  */
 public class SoftCryptoTokenTest extends CryptoTokenTestBase {
@@ -43,7 +45,7 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 	public SoftCryptoTokenTest() {
 		CryptoProviderTools.installBCProvider();
 	}
-	
+
     @Test
     public void testCryptoTokenRSA() throws Exception {
     	CryptoToken catoken = createSoftToken(true);
@@ -67,7 +69,7 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
     	CryptoToken catoken = createSoftToken(true);
         doCryptoTokenDSA(catoken);
     }
-	
+
 	@Test
     public void testActivateDeactivate() throws Exception {
     	CryptoToken catoken = createSoftToken(true);
@@ -127,7 +129,7 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
 		KeyTools.testKey(catoken.getPrivateKey("foo"), catoken.getPublicKey("foo"), null);
 
 	}
-	
+
 	@Override
 	String getProvider() {
 		return "BC";
@@ -151,18 +153,18 @@ public class SoftCryptoTokenTest extends CryptoTokenTestBase {
         CryptoToken catoken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), prop, null, 111);
 		return catoken;
 	}
-	
-	
+
+
 	@Test
-	public void testExtractKeyFalse() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, CryptoTokenOfflineException, IOException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, NoSuchPaddingException, IllegalBlockSizeException{
+	public void testExtractKeyFalse() throws KeyStoreException, NoSuchAlgorithmException, CertificateException, CryptoTokenOfflineException, IOException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, NoSuchPaddingException, IllegalBlockSizeException {
     	CryptoToken token = createSoftToken(true, false);
 		doExtractKeyFalse(token);
 	}
-	
-	
+
+
 	@Test
-	public void testExtractKey() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException, SignatureException, CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, PrivateKeyNotExtractableException{
+	public void testExtractKey() throws CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, KeyStoreException, InvalidAlgorithmParameterException, SignatureException, CertificateException, NoSuchPaddingException, IllegalBlockSizeException, IOException, PrivateKeyNotExtractableException, BadPaddingException, InvalidKeySpecException{
     	CryptoToken token = createSoftToken(true, true);
-		doExtractKey(token);	    
+		doExtractKey(token);
 	}
 }
