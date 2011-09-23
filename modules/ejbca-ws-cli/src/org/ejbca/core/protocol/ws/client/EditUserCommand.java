@@ -157,6 +157,10 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             }else{
                 getPrintStream().println("End time: "+userdata.getEndTime());
             }
+            getPrintStream().println("Extended information:");
+            for ( ExtendedInformationWS ei : userdata.getExtendedInformation() ) {
+            	getPrintStream().println("	'"+ei.getName()+"' = '"+ei.getValue()+"'");
+            }
             
            try{
             	getEjbcaRAWS().editUser(userdata);
@@ -180,12 +184,20 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		for ( int i=0; i<args.length; i++ ) {
 			final String arg = args[i];
 			final int equalPos = arg.indexOf('=');
-			if ( equalPos<1 || equalPos+1>args.length ) {
+			if ( equalPos<0 || equalPos+1>arg.length() ) {
 				lArgs.add(arg);
 				continue;
 			}
-			final String key = arg.substring(0, equalPos);
-			final String value = arg.substring(equalPos+1,arg.length());
+			final String key = arg.substring(0, equalPos).trim();
+			final String value = arg.substring(equalPos+1,arg.length()).trim();
+			final String eiPrefix = "extinfo.";
+			if ( key.length()>eiPrefix.length() && key.substring(0, eiPrefix.length()).toLowerCase().equals(eiPrefix) ) {
+				final ExtendedInformationWS ei = new ExtendedInformationWS();
+				ei.setName(key.substring(eiPrefix.length()));
+				ei.setValue(value);
+				lei.add(ei);				
+				continue;
+			}
 			if ( !OID.isStartingWithValidOID(key) ) {
 				lArgs.add(arg);
 				continue;				
