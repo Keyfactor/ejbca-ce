@@ -153,6 +153,7 @@
     		<fileset dir="${this.dir}/resources" includes="**"/>
     	</copy>
         <copy file="${log4j.cli.file}" tofile="${mod.ejbca-ws-cli.dist}/log4j.xml" failonerror="true"/>
+        <copy file="${ejbca.home}/src/java/defaultvalues.properties" tofile="${mod.ejbca-ws-cli.dist}/defaultvalues.properties" failonerror="true"/>
         <chmod file="${mod.ejbca-ws-cli.dist}/*.sh" perm="a+rx"/>
     </target>
 </project>
