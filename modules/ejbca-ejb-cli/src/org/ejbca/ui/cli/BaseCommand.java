@@ -43,6 +43,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 
@@ -85,12 +86,22 @@ public abstract class BaseCommand implements CliCommandPlugin {
      *            the list of arguments
      * @return the array of arguments stripped of any supplied usernames or
      *         passwords.
+     * @throws ErrorAdminCommandException
+     *             if the CLI was disabled.
      * @throws CliUserAuthenticationFailedException
      *             if CLI user authentication failed
      */
-    protected String[] parseUsernameAndPasswordFromArgs(String[] args) throws CliUsernameException {
+    protected String[] parseUsernameAndPasswordFromArgs(String[] args) throws CliUsernameException, ErrorAdminCommandException {
         List<String> argsList = new ArrayList<String>(Arrays.asList(args));
 
+        GlobalConfiguration configuration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration();
+        
+        //Check if ClI is enabled
+        if(!configuration.getEnableCommandLineInterface()) {
+            getLogger().info("Command line interface is disabled");
+            throw new ErrorAdminCommandException("Command line interface is disabled");
+        }
+        
         int index;
         if ((index = argsList.indexOf(USERNAME_FLAG)) != -1) {
             cliUserName = argsList.get(index + 1);
@@ -125,7 +136,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
             }
             argsList.remove(index);
         }
-        boolean defaultUserEnabled = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration().getEnableCommandLineInterfaceDefaultUser();
+        boolean defaultUserEnabled = configuration.getEnableCommandLineInterfaceDefaultUser();
 
         if ((cliUserName == null || cliPassword == null)) {
             if (defaultUserEnabled) {

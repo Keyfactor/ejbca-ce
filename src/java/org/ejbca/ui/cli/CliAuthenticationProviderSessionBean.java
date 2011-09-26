@@ -32,8 +32,10 @@ import org.cesecore.util.Tuplet;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderLocal;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 
@@ -58,6 +60,8 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
 
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @PostConstruct
     public void initialize() throws NoSuchAlgorithmException {
@@ -66,34 +70,44 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
 
     @Override
     public AuthenticationToken authenticate(AuthenticationSubject subject) {
-        Set<Principal> subjectPrincipals = subject.getPrincipals();
-        if (subjectPrincipals.size() == 0) {
-            log.error("ClI Authentication was attempted without principals");
-            return null;
-        } else if (subjectPrincipals.size() > 1) {
-            log.error("ClI Authentication was attempted with multiple principals");
-            return null;
+        /*
+         * An extra check if CLI authentication is allowed. This must be done on the
+         * server and not the client to avoid spoofing.
+         */
+        if (!globalConfigurationSession.getCachedGlobalConfiguration().getEnableCommandLineInterface()) {
+            throw new CliAuthenticationFailedException("Could not authenticate from CLI, CLI is disabled.");
+        } else {
+
+            Set<Principal> subjectPrincipals = subject.getPrincipals();
+            if (subjectPrincipals.size() == 0) {
+                log.error("ClI Authentication was attempted without principals");
+                return null;
+            } else if (subjectPrincipals.size() > 1) {
+                log.error("ClI Authentication was attempted with multiple principals");
+                return null;
+            }
+
+            final long referenceId = randomGenerator.nextLong();
+
+            UsernamePrincipal usernamePrincipal = subjectPrincipals.toArray((new UsernamePrincipal[subjectPrincipals.size()]))[0];
+
+            try {
+                Tuplet<String, SupportedPasswordHashAlgorithm> passwordAndAlgorithm = endEntityAccessSession
+                        .getPasswordAndHashAlgorithmForUser(usernamePrincipal.getName());
+                CliAuthenticationToken result = new CliAuthenticationToken(usernamePrincipal, passwordAndAlgorithm.getFirstElement(),
+                        BCrypt.gensalt(EjbcaConfiguration.getPasswordLogRounds()), referenceId, passwordAndAlgorithm.getSecondElement());
+                CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(result);
+                /*
+                 * It is imperative that a cloned version of the
+                 * CliAuthenticationToken is returned, not containing the SHA1
+                 * hash.
+                 */
+                return result.clone();
+            } catch (NotFoundException e) {
+                log.error("User " + usernamePrincipal.getName() + " not found in database", e);
+                return null;
+            }
         }
-
-        final long referenceId = randomGenerator.nextLong();
-
-        UsernamePrincipal usernamePrincipal = subjectPrincipals.toArray((new UsernamePrincipal[subjectPrincipals.size()]))[0];
-
-        try {
-            Tuplet<String, SupportedPasswordHashAlgorithm> passwordAndAlgorithm = endEntityAccessSession
-                    .getPasswordAndHashAlgorithmForUser(usernamePrincipal.getName());    
-            CliAuthenticationToken result = new CliAuthenticationToken(usernamePrincipal, passwordAndAlgorithm.getFirstElement(),
-                    BCrypt.gensalt(EjbcaConfiguration.getPasswordLogRounds()), referenceId, passwordAndAlgorithm.getSecondElement());
-            CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(result);
-            /*
-             * It is imperative that a cloned version of the CliAuthenticationToken is returned, not containing the SHA1 hash. 
-             */
-            return result.clone();
-        } catch (NotFoundException e) {
-            log.error("User " + usernamePrincipal.getName() + " not found in database", e);
-            return null;
-        }
-
     }
 
 }
