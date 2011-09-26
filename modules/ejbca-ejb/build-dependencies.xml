@@ -267,6 +267,7 @@
                     <include name="org/ejbca/core/model/ra/NotFoundException*.java"/>
 					<include name="org/ejbca/config/*.java"/>	
 					<include name="org/ejbca/util/crypto/SupportedPasswordHashAlgorithm.java"/>	
+					<include name="org/ejbca/util/ProfileID.java"/>	
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/authorization" destdir="${build-temp.dir}/authorization" debug="on" includeantruntime="no"
@@ -431,6 +432,7 @@
 				<fileset dir="${src.dir}">
 					<include name="org/cesecore/certificates/certificateprofile/*.java"/>
 					<include name="org/ejbca/config/ExtendedKeyUsageConfiguration.java"/>
+					<include name="org/ejbca/util/ProfileID.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/certprof" destdir="${build-temp.dir}/certprof" debug="on" includeantruntime="no"
