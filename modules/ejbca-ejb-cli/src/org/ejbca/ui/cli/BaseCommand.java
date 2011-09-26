@@ -105,8 +105,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
                 if ((argsList.indexOf(PROMPT_PASSWORD_FLAG)) != -1) {
                     // Uh-oh, can't both specify password and ask for ask for
                     // prompt.
-                    getLogger().info(
-                            "Password can't both be specified and prompted");
+                    getLogger().info("Password can't both be specified and prompted");
                     getLogger().info(PASSWORD_MAN_TEXT);
                     throw new CliAuthenticationFailedException();
                 } else {
@@ -120,16 +119,13 @@ public abstract class BaseCommand implements CliCommandPlugin {
             // Okay, let's prompt
             Console console;
             char[] password;
-            if ((console = System.console()) != null
-                    && (password = console.readPassword("[%s]", "Password:")) != null) {
+            if ((console = System.console()) != null && (password = console.readPassword("[%s]", "Password:")) != null) {
                 cliPassword = new String(password);
                 Arrays.fill(password, ' ');
             }
             argsList.remove(index);
         }
-        boolean defaultUserEnabled = ejb.getGlobalConfigurationSession()
-                .getCachedGlobalConfiguration()
-                .getEnableCommandLineInterfaceDefaultUser();
+        boolean defaultUserEnabled = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration().getEnableCommandLineInterfaceDefaultUser();
 
         if ((cliUserName == null || cliPassword == null)) {
             if (defaultUserEnabled) {
@@ -140,38 +136,34 @@ public abstract class BaseCommand implements CliCommandPlugin {
                     cliPassword = EjbcaConfiguration.getCliDefaultPassword();
                 }
             } else {
-                getLogger()
-                        .info("No CLI user was supplied, and use of the default CLI user is disabled.");
+                getLogger().info("No CLI user was supplied, and use of the default CLI user is disabled.");
                 getLogger().info(PASSWORD_MAN_TEXT);
                 throw new CliUsernameException();
             }
-        } else if (cliUserName.equals(EjbcaConfiguration.getCliDefaultUser())
-                && !defaultUserEnabled) {
-            getLogger().info(
-                    "CLI authentication using default user is disabled.");
+        } else if (cliUserName.equals(EjbcaConfiguration.getCliDefaultUser()) && !defaultUserEnabled) {
+            getLogger().info("CLI authentication using default user is disabled.");
             getLogger().info(PASSWORD_MAN_TEXT);
             throw new CliUsernameException();
         }
-        
-        //TODO: Check that username exists here. 
-        //throw new CliAuthenticationFailedClientException(
-        //"Authentication failed. Username or password were not correct.");
+
+        if (!ejb.getUserAdminSession().existsUser(cliUserName)) {
+            //We only check for username here, but it's needless to give too much info. 
+            getLogger().info("CLI authentication failed. username/password combination does not exist.");
+            throw new CliUsernameException("Authentication failed. User does not exist.");
+        }
 
         return argsList.toArray(new String[argsList.size()]);
     }
 
     protected void logDefaultCliUserDisabled() {
         getLogger().info("CLI authentication using default user is disabled.");
-        getLogger()
-                .info("Please supply username and password in the command line with the syntax -u <username> -p <password>");
+        getLogger().info("Please supply username and password in the command line with the syntax -u <username> -p <password>");
         getLogger().info("Password may be omitted to prompt.");
     }
 
     protected void logNoUserProvided() {
-        getLogger()
-                .info("No CLI user was supplied, and use of the default CLI user is disabled.");
-        getLogger()
-                .info("Please supply username and password in the command line with the syntax -u <username> -p <password>");
+        getLogger().info("No CLI user was supplied, and use of the default CLI user is disabled.");
+        getLogger().info("Please supply username and password in the command line with the syntax -u <username> -p <password>");
         getLogger().info("Password may be omitted to prompt.");
     }
 
@@ -201,26 +193,21 @@ public abstract class BaseCommand implements CliCommandPlugin {
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new UsernamePrincipal(username));
 
-        AuthenticationSubject subject = new AuthenticationSubject(principals,
-                null);
+        AuthenticationSubject subject = new AuthenticationSubject(principals, null);
 
-        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) ejb
-                .getAuthenticationSession().authenticate(subject,
-                        ejb.getCliAuthenticationProvider());
+        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) ejb.getAuthenticationSession().authenticate(subject,
+                ejb.getCliAuthenticationProvider());
         // Set hashed value anew in order to send back
         if (authenticationToken == null) {
-            throw new CliAuthenticationFailedException(
-                    "Authentication failed. Username or password were not correct.");
+            throw new CliAuthenticationFailedException("Authentication failed. Username or password were not correct.");
         } else {
-            authenticationToken
-                    .setSha1HashFromCleartextPassword(cleartextPassword);
+            authenticationToken.setSha1HashFromCleartextPassword(cleartextPassword);
             return authenticationToken;
         }
     }
 
     protected String getCommand() {
-        return (getMainCommand() != null ? getMainCommand() + " " : "")
-                + getSubCommand();
+        return (getMainCommand() != null ? getMainCommand() + " " : "") + getSubCommand();
     }
 
     /**
@@ -242,36 +229,22 @@ public abstract class BaseCommand implements CliCommandPlugin {
      */
 
     /** Private key with length 1024 bits */
-    static byte[] keys1024bit = Base64
-            .decode(("MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAKA5rNhYbPuVcArT"
-                    + "mkthfrW2tX1Z7SkCD01sDYrkiwOcodFmS1cSyz8eHM51iwHA7CW0WFvfUjomBT5y"
-                    + "gRQfIsf5M5DUtYcKM1hmGKSPzvmF4nYv+3UBUesCvBXVRN/wFZ44SZZ3CVvpQUYb"
-                    + "GWjyC+Dgol5n8oKOC287rnZUPEW5AgMBAAECgYEAhMtoeyLGqLlRVFfOoL1cVGTr"
-                    + "BMp8ail/30435y7GHKc74p6iwLcd5uEhROhc3oYz8ogHV5W+w9zxKbGjU7b+jmh+"
-                    + "h/WFao+Gu3sSrZ7ieg95fSuQsBlJp3w+eCAOZwlEu/JQQHDtURui25SPVblZ9/41"
-                    + "u8VwFjk9YQx+nT6LclECQQDYlC9bOr1SWL8PBlipXB/UszMsTM5xEH920A+JPF4E"
-                    + "4tw+AHecanjr5bXSluRbWSWUjtl5LV2edqAP9EsH1/A1AkEAvWOctUvTlm6fWHJq"
-                    + "lZhsWVvOhDG7cn5gFu34J8JJd5QHov0469CpSamY0Q/mPE/y3kDllmyYvnQ+yobB"
-                    + "ZRg39QJBAINCM/0/eVQ58vlBKGTkL2pyfNYhapB9pjK04GWVD4o4j7CICfXjVYvq"
-                    + "eSq7RoTSX4NMnCLjyrRqQpHIxdxoE+0CQQCz7MzWWGF+Cz6LUrf7w0E8a8H5SR4i"
-                    + "GfnEDvSxIR2W4yWWLShEsIoEF4G9LHO5XOMJT3JOxIEgf2OgGQHmv2l5AkBThYUo"
-                    + "ni82jZuue3YqXXHY2lz3rVmooAv7LfQ63yzHECFsQz7kDwuRVWWRsoCOURtymAHp"
-                    + "La09g2BE+Q5oUUFx").getBytes());
+    static byte[] keys1024bit = Base64.decode(("MIICeAIBADANBgkqhkiG9w0BAQEFAASCAmIwggJeAgEAAoGBAKA5rNhYbPuVcArT"
+            + "mkthfrW2tX1Z7SkCD01sDYrkiwOcodFmS1cSyz8eHM51iwHA7CW0WFvfUjomBT5y" + "gRQfIsf5M5DUtYcKM1hmGKSPzvmF4nYv+3UBUesCvBXVRN/wFZ44SZZ3CVvpQUYb"
+            + "GWjyC+Dgol5n8oKOC287rnZUPEW5AgMBAAECgYEAhMtoeyLGqLlRVFfOoL1cVGTr" + "BMp8ail/30435y7GHKc74p6iwLcd5uEhROhc3oYz8ogHV5W+w9zxKbGjU7b+jmh+"
+            + "h/WFao+Gu3sSrZ7ieg95fSuQsBlJp3w+eCAOZwlEu/JQQHDtURui25SPVblZ9/41" + "u8VwFjk9YQx+nT6LclECQQDYlC9bOr1SWL8PBlipXB/UszMsTM5xEH920A+JPF4E"
+            + "4tw+AHecanjr5bXSluRbWSWUjtl5LV2edqAP9EsH1/A1AkEAvWOctUvTlm6fWHJq" + "lZhsWVvOhDG7cn5gFu34J8JJd5QHov0469CpSamY0Q/mPE/y3kDllmyYvnQ+yobB"
+            + "ZRg39QJBAINCM/0/eVQ58vlBKGTkL2pyfNYhapB9pjK04GWVD4o4j7CICfXjVYvq" + "eSq7RoTSX4NMnCLjyrRqQpHIxdxoE+0CQQCz7MzWWGF+Cz6LUrf7w0E8a8H5SR4i"
+            + "GfnEDvSxIR2W4yWWLShEsIoEF4G9LHO5XOMJT3JOxIEgf2OgGQHmv2l5AkBThYUo" + "ni82jZuue3YqXXHY2lz3rVmooAv7LfQ63yzHECFsQz7kDwuRVWWRsoCOURtymAHp"
+            + "La09g2BE+Q5oUUFx").getBytes());
     /** self signed cert done with above private key */
-    static byte[] certbytes = Base64
-            .decode(("MIICNzCCAaCgAwIBAgIIIOqiVwJHz+8wDQYJKoZIhvcNAQEFBQAwKzENMAsGA1UE"
-                    + "AxMEVGVzdDENMAsGA1UEChMEVGVzdDELMAkGA1UEBhMCU0UwHhcNMDQwNTA4MDkx"
-                    + "ODMwWhcNMDUwNTA4MDkyODMwWjArMQ0wCwYDVQQDEwRUZXN0MQ0wCwYDVQQKEwRU"
-                    + "ZXN0MQswCQYDVQQGEwJTRTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAgbf2"
-                    + "Sv34lsY43C8WJjbUd57TNuHJ6p2Es7ojS3D2yxtzQg/A8wL1OfXes344PPNGHkDd"
-                    + "QPBaaWYQrvLvqpjKwx/vA1835L3I92MsGs+uivq5L5oHfCxEh8Kwb9J2p3xjgeWX"
-                    + "YdZM5dBj3zzyu+Jer4iU4oCAnnyG+OlVnPsFt6ECAwEAAaNkMGIwDwYDVR0TAQH/"
-                    + "BAUwAwEB/zAPBgNVHQ8BAf8EBQMDBwYAMB0GA1UdDgQWBBQArVZXuGqbb9yhBLbu"
-                    + "XfzjSuXfHTAfBgNVHSMEGDAWgBQArVZXuGqbb9yhBLbuXfzjSuXfHTANBgkqhkiG"
-                    + "9w0BAQUFAAOBgQA1cB6wWzC2rUKBjFAzfkLvDUS3vEMy7ntYMqqQd6+5s1LHCoPw"
-                    + "eaR42kMWCxAbdSRgv5ATM0JU3Q9jWbLO54FkJDzq+vw2TaX+Y5T+UL1V0o4TPKxp"
-                    + "nKuay+xl5aoUcVEs3h3uJDjcpgMAtyusMEyv4d+RFYvWJWFzRTKDueyanw==")
-                    .getBytes());
+    static byte[] certbytes = Base64.decode(("MIICNzCCAaCgAwIBAgIIIOqiVwJHz+8wDQYJKoZIhvcNAQEFBQAwKzENMAsGA1UE"
+            + "AxMEVGVzdDENMAsGA1UEChMEVGVzdDELMAkGA1UEBhMCU0UwHhcNMDQwNTA4MDkx" + "ODMwWhcNMDUwNTA4MDkyODMwWjArMQ0wCwYDVQQDEwRUZXN0MQ0wCwYDVQQKEwRU"
+            + "ZXN0MQswCQYDVQQGEwJTRTCBnzANBgkqhkiG9w0BAQEFAAOBjQAwgYkCgYEAgbf2" + "Sv34lsY43C8WJjbUd57TNuHJ6p2Es7ojS3D2yxtzQg/A8wL1OfXes344PPNGHkDd"
+            + "QPBaaWYQrvLvqpjKwx/vA1835L3I92MsGs+uivq5L5oHfCxEh8Kwb9J2p3xjgeWX" + "YdZM5dBj3zzyu+Jer4iU4oCAnnyG+OlVnPsFt6ECAwEAAaNkMGIwDwYDVR0TAQH/"
+            + "BAUwAwEB/zAPBgNVHQ8BAf8EBQMDBwYAMB0GA1UdDgQWBBQArVZXuGqbb9yhBLbu" + "XfzjSuXfHTAfBgNVHSMEGDAWgBQArVZXuGqbb9yhBLbuXfzjSuXfHTANBgkqhkiG"
+            + "9w0BAQUFAAOBgQA1cB6wWzC2rUKBjFAzfkLvDUS3vEMy7ntYMqqQd6+5s1LHCoPw" + "eaR42kMWCxAbdSRgv5ATM0JU3Q9jWbLO54FkJDzq+vw2TaX+Y5T+UL1V0o4TPKxp"
+            + "nKuay+xl5aoUcVEs3h3uJDjcpgMAtyusMEyv4d+RFYvWJWFzRTKDueyanw==").getBytes());
 
     /**
      * Method checking if strong crypto is installed (extra package from
@@ -279,16 +252,14 @@ public abstract class BaseCommand implements CliCommandPlugin {
      * 
      * @return true if strong crypto is installed.
      */
-    protected boolean strongCryptoInstalled() throws IOException,
-            KeyStoreException, CertificateException, NoSuchProviderException,
+    protected boolean strongCryptoInstalled() throws IOException, KeyStoreException, CertificateException, NoSuchProviderException,
             NoSuchAlgorithmException, InvalidKeySpecException {
         CryptoProviderTools.installBCProvider();
         Certificate cert = CertTools.getCertfromByteArray(certbytes);
         PKCS8EncodedKeySpec pkKeySpec = new PKCS8EncodedKeySpec(keys1024bit);
         KeyFactory keyFactory = KeyFactory.getInstance("RSA");
         PrivateKey pk = keyFactory.generatePrivate(pkKeySpec);
-        KeyStore ks = KeyTools.createP12("Foo", pk, cert,
-                (X509Certificate) null);
+        KeyStore ks = KeyTools.createP12("Foo", pk, cert, (X509Certificate) null);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         // If password below is more than 7 chars, strong crypto is needed
         ks.store(baos, "foo1234567890".toCharArray());
