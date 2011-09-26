@@ -313,7 +313,7 @@ public class RAInterfaceBean implements Serializable {
 
     /** Method used to check if user exists */
     public boolean userExist(String username) throws Exception{
-    	return userAdminSession.existsUser(administrator, username);
+    	return userAdminSession.existsUser(username);
     }
         
     /** Method to retrieve a user from the database without inserting it into users data, used by 'viewuser.jsp' and page*/

@@ -240,7 +240,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
     }
 
     private boolean userDataExists(EndEntityInformation userData) {
-        return userAdminSession.existsUser(admin, userData.getUsername());
+        return userAdminSession.existsUser(userData.getUsername());
     }
 
     private boolean certificateRequestHistoryExists(Certificate certificate) {

@@ -148,7 +148,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
         assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, InterfaceCache.getCertReqHistorySession()
                 .retrieveCertReqHistory(ADMIN, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null);
-        assertEquals("User data was or wasn't stored: ", useUserStorage, InterfaceCache.getUserAdminSession().existsUser(ADMIN, username));
+        assertEquals("User data was or wasn't stored: ", useUserStorage, InterfaceCache.getUserAdminSession().existsUser(username));
         assertEquals("Certificate data was or wasn't stored: ", useCertificateStorage, InterfaceCache.getCertificateStoreSession()
                 .findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) != null);
 

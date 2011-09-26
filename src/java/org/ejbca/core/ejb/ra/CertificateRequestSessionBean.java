@@ -290,7 +290,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         // Add or edit user
         try {
             String username = userdata.getUsername();
-            if (useUserStorage && userAdminSession.existsUser(admin, username)) {
+            if (useUserStorage && userAdminSession.existsUser(username)) {
                 if (log.isDebugEnabled()) {
                     log.debug("User " + username + " exists, update the userdata. New status of user '" + userdata.getStatus() + "'.");
                 }

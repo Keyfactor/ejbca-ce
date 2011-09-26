@@ -478,7 +478,7 @@ public interface UserAdminSession {
      * 
      * @return true if username already exists.
      */
-    public boolean existsUser(AuthenticationToken admin, String username);
+    public boolean existsUser(String username);
 
     /**
      * Mark a user's certificate for key recovery and set the user status to

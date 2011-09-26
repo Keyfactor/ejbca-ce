@@ -381,7 +381,7 @@ public class SignSessionTest extends CaTestCase {
         final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(admin, "FOOEEPROFILE");
 
     	// Make user that we know...
-    	if (!userAdminSession.existsUser(admin, "foo")) {
+    	if (!userAdminSession.existsUser("foo")) {
     		userAdminSession.addUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo", null, "foo@anatom.se", false, fooEEProfile, fooCertProfile,
     				SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
     		if (log.isDebugEnabled()) {
@@ -396,7 +396,7 @@ public class SignSessionTest extends CaTestCase {
     		}
     	}
 
-    	if (!userAdminSession.existsUser(admin, "foorev")) {
+    	if (!userAdminSession.existsUser("foorev")) {
     		userAdminSession.addUser(admin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
     				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsareversecaid);
     		log.debug("created user: foorev, foo123, C=SE, O=AnaTom, CN=foorev");
@@ -407,7 +407,7 @@ public class SignSessionTest extends CaTestCase {
     		log.debug("Reset status to NEW");
     	}
 
-    	if (!userAdminSession.existsUser(admin, "fooecdsa")) {
+    	if (!userAdminSession.existsUser("fooecdsa")) {
     		userAdminSession.addUser(admin, "fooecdsa", "foo123", "C=SE,O=AnaTom,CN=fooecdsa", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
     				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ecdsacaid);
     		log.debug("created user: fooecdsa, foo123, C=SE, O=AnaTom, CN=fooecdsa");
@@ -417,7 +417,7 @@ public class SignSessionTest extends CaTestCase {
     		log.debug("Reset status to NEW");
     	}
 
-    	if (!userAdminSession.existsUser(admin, "fooecdsaimpca")) {
+    	if (!userAdminSession.existsUser("fooecdsaimpca")) {
     		userAdminSession.addUser(admin, "fooecdsaimpca", "foo123", "C=SE,O=AnaTom,CN=fooecdsaimpca", null, "foo@anatom.se", false,
     				SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
     				ecdsaimplicitlycacaid);
@@ -428,7 +428,7 @@ public class SignSessionTest extends CaTestCase {
     		log.debug("Reset status to NEW");
     	}
 
-    	if (!userAdminSession.existsUser(admin, "foorsamgf1ca")) {
+    	if (!userAdminSession.existsUser("foorsamgf1ca")) {
     		userAdminSession.addUser(admin, "foorsamgf1ca", "foo123", "C=SE,O=AnaTom,CN=foorsamgf1ca", null, "foo@anatom.se", false,
     				SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsamgf1cacaid);
     		log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
@@ -438,7 +438,7 @@ public class SignSessionTest extends CaTestCase {
     		log.debug("Reset status to NEW");
     	}
 
-    	if (!userAdminSession.existsUser(admin, "foodsa")) {
+    	if (!userAdminSession.existsUser("foodsa")) {
     		userAdminSession.addUser(admin, "foodsa", "foo123", "C=SE,O=AnaTom,CN=foodsa", null, "foodsa@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
     				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, dsacaid);
     		log.debug("created user: foodsa, foo123, C=SE, O=AnaTom, CN=foodsa");
@@ -448,7 +448,7 @@ public class SignSessionTest extends CaTestCase {
     		log.debug("Reset status to NEW");
     	}
 
-    	if (!userAdminSession.existsUser(admin, USER_PRIVKEYUSAGEPERIOD)) {
+    	if (!userAdminSession.existsUser(USER_PRIVKEYUSAGEPERIOD)) {
     		userAdminSession.addUser(admin, USER_PRIVKEYUSAGEPERIOD, "foo123", DN_PRIVKEYUSAGEPERIOD, null, "fooprivkeyusage@example.com", false, SecConst.EMPTY_ENDENTITYPROFILE,
     				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
     		log.debug("created user: " + USER_PRIVKEYUSAGEPERIOD + ", foo123, " + DN_PRIVKEYUSAGEPERIOD);
@@ -690,7 +690,7 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        if (!userAdminSession.existsUser(admin, "swede")) {
+        if (!userAdminSession.existsUser("swede")) {
             // We use unicode encoding for the three swedish character åäö
             userAdminSession.addUser(admin, "swede", "foo123", "C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6", null, "swede@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);

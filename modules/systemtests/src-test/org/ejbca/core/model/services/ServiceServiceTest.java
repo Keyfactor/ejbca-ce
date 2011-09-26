@@ -176,7 +176,7 @@ public class ServiceServiceTest extends CaTestCase {
         super.tearDown();
         log.trace(">test99CleanUp()");
         for (String username : usernames) {
-            if(getUserAdminSession().existsUser(admin, username)) {
+            if(getUserAdminSession().existsUser(username)) {
                 getUserAdminSession().deleteUser(admin, username);            
                 log.debug("Removed user: " + username);
             }

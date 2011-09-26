@@ -239,7 +239,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             }
 
             // Check if username already exists.
-            if (ejb.getUserAdminSession().existsUser(getAdmin(cliUserName, cliPassword), username)) {
+            if (ejb.getUserAdminSession().existsUser(username)) {
                 getLogger().error("User already exists in the database.");
                 error = true;
             }

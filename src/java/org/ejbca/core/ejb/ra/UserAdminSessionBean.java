@@ -1804,7 +1804,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean existsUser(AuthenticationToken admin, String username) {
+    public boolean existsUser(String username) {
         boolean returnval = true;
         if (UserData.findByUsername(entityManager, username) == null) {
             returnval = false;
