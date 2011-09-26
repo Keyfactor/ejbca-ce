@@ -5,6 +5,13 @@ Old log and log configuration is gone.
 
 Approvals. When upgrading from 4.x to 5.x new approval requests created in a 5.x instance can not be read in a 4.x instance. 
 So if you require uptime and roll-back capabilities, only allow to create new approval requests from an 4.x host.
+
+The Command Line Interface now uses authentication. Users are drawn from the standard End Entities list, and have the same respective
+roles. A default CLI user is created as a part of startup/upgrade in order to allow allow the CLI to be used without authentication, 
+and can be turned off from the Administration Interface. This user is defined in ejbca.properties
+
+Additionally, a "Super Administrator Role" is created during either bootstrap or upgrade to create a role for the default CLI user.
+
  
 EJBCA 3.11.3
 ------------

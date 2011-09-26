@@ -61,6 +61,7 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.JBossUnmarshaller;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenData;
 import org.ejbca.core.ejb.hardtoken.HardTokenIssuerData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
@@ -97,15 +98,18 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private SessionContext sessionContext;
 
     @EJB
-    private RoleAccessSessionLocal roleAccessSession;
-    @EJB
-    private CaSessionLocal caSession;
-    @EJB
-    private RoleManagementSessionLocal roleMgmtSession;
+    private AccessControlSessionLocal accessControlSession;
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
     @EJB
-    private AccessControlSessionLocal accessControlSession;
+    private CaSessionLocal caSession;
+    @EJB
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
+    @EJB
+    private RoleAccessSessionLocal roleAccessSession;
+    @EJB
+    private RoleManagementSessionLocal roleMgmtSession;
+   
 
     private UpgradeSessionLocal upgradeSession;
 
@@ -443,6 +447,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     			}
     		}
 		}
+
+    	//Creates a super admin role for ClI usage.
+    	complexAccessControlSession.createSuperAdministrator();
+    	
     	accessTreeUpdateSession.signalForAccessTreeUpdate();
     	accessControlSession.forceCacheExpire();
     	
