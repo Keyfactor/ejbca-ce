@@ -37,9 +37,11 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
@@ -49,24 +51,23 @@ import org.junit.Test;
 /**
  * Tests the global configuration entity bean.
  * 
- * TODO: Remake this test into a mocked unit test, to allow testing of a multiple instance database. 
- * TODO: Add more tests for other remote methods
+ * TODO: Remake this test into a mocked unit test, to allow testing of a
+ * multiple instance database. TODO: Add more tests for other remote methods
  * similar to testNonCLIUser_* and testDisabledCLI_*.
  * 
- * @version $Id$
+ * @version $Id: GlobalConfigurationSessionBeanTest.java 12688 2011-09-23
+ *          08:07:38Z mikekushner $
  */
 public class GlobalConfigurationSessionBeanTest extends CaTestCase {
-
-
 
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
 
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private AccessControlSessionRemote authorizationSession = InterfaceCache.getAccessControlSession();
-
+    private CliAuthenticationProviderRemote cliAuthenticationProviderRemote = JndiHelper.getRemoteSession(CliAuthenticationProviderRemote.class);
     private AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
     private GlobalConfiguration original = null;
-    
+
     private AuthenticationToken[] nonCliAdmins;
 
     private Collection<Integer> caids;
@@ -109,9 +110,11 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     }
 
     /**
-     * Tests adding a global configuration and waiting for the cache to be updated.
+     * Tests adding a global configuration and waiting for the cache to be
+     * updated.
      * 
-     * @throws Exception error
+     * @throws Exception
+     *             error
      */
     @Test
     public void testAddAndReadGlobalConfigurationCache() throws Exception {
@@ -145,7 +148,8 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     }
 
     /**
-     * Tests that we can not pretend to be something other than command line user and call the method getAvailableCAs.
+     * Tests that we can not pretend to be something other than command line
+     * user and call the method getAvailableCAs.
      * 
      * @throws Exception
      */
@@ -157,19 +161,9 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         }
     }
 
-    /**
-     * Tests that we can disable the CLI and then that we can not call the method getAvailableCAs.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testDisabledCLI_getAvailableCAs() throws Exception {
-        enableCLI(false);
-        operationGetAvailabeCAs(administrator);
-    }
-
-    /**
-     * Tests that we can not pretend to be something other than command line user and call the method getAvailableCAs.
+    /**   
+     * Tests that we can not pretend to be something other than command line
+     * user and call the method getAvailableCAs.
      * 
      * @throws Exception
      */
@@ -189,18 +183,8 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     }
 
     /**
-     * Tests that we can disable the CLI and then that we can not call the method getAvailableCAs.
-     * 
-     * @throws Exception
-     */
-    @Test
-    public void testDisabledCLI_getCAInfo() throws Exception {
-        enableCLI(false);
-        operationGetCAInfo(administrator, caids);
-    }
-
-    /**
-     * Enables/disables CLI and flushes caches unless the property does not already have the right value.
+     * Enables/disables CLI and flushes caches unless the property does not
+     * already have the right value.
      * 
      * @param enable
      */
@@ -219,9 +203,11 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     }
 
     /**
-     * Try to get available CAs. Test assumes the CLI is disabled or that the admin is not authorized.
+     * Try to get available CAs. Test assumes the CLI is disabled or that the
+     * admin is not authorized.
      * 
-     * @param admin To perform the operation with.
+     * @param admin
+     *            To perform the operation with.
      */
     private void operationGetAvailabeCAs(final AuthenticationToken admin) {
         // Get some CA ids: should be empty now
@@ -230,10 +216,13 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     }
 
     /**
-     * Try to get CA infos. Test assumes the CLI is disabled or that the admin is not authorized.
+     * Try to get CA infos. Test assumes the CLI is disabled or that the admin
+     * is not authorized.
      * 
-     * @param admin to perform the operation with.
-     * @param knownCaids IDs to test with.
+     * @param admin
+     *            to perform the operation with.
+     * @param knownCaids
+     *            IDs to test with.
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException
      */
