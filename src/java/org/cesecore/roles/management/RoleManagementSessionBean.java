@@ -18,7 +18,6 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -55,6 +54,7 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.CertTools;
+import org.ejbca.util.ProfileID;
 
 /**
  * Implementation of the RoleManagementSession interface.
@@ -70,8 +70,6 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     /** Log4j instance */
     private static final Logger log = Logger.getLogger(RoleManagementSessionBean.class);
-    /** random used to generate unique IDs. */
-    private static final Random RANDOM = new Random();
 
     /** Internal localization of logs and errors */
     private static final InternalResources INTERNAL_RESOURCES = InternalResources.getInstance();
@@ -411,12 +409,13 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     }
 
     private int findFreeRoleId() {
-        int id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
-        // Never generate id's less than 10000
-        while ((id < 10000) || (roleAccessSession.findRole(id) != null)) {
-            id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
-        }
-        return id;
+        final ProfileID.DB db = new ProfileID.DB() {
+            @Override
+            public boolean isFree(Integer i) {
+                return RoleManagementSessionBean.this.roleAccessSession.findRole(i)==null;
+            }
+        };
+        return ProfileID.getNotUsedID(db);
     }
 
     private void authorizedToEditRole(AuthenticationToken authenticationToken, String roleName) throws AuthorizationDeniedException {

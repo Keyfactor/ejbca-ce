@@ -861,7 +861,7 @@
 					<include name="org/ejbca/core/model/hardtoken/**/*.java"/>
 					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/HardTokenEncryptCAService*.java"/>
 					<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
-					<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
+					<include name="org/ejbca/util/ProfileID.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/hardtoken" destdir="${build-temp.dir}/hardtoken" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
