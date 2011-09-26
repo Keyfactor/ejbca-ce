@@ -26,12 +26,19 @@ import org.cesecore.roles.RoleData;
 @Local
 public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSession {
 
+    public static final String SUPERADMIN_ROLE = "Super Administrator Role";
+    
     /**
      * Returns a Collection of role names authorized to the resource,
      * it also only returns only the admin groups the administrator is authorized to edit.
      */
-    public Collection<RoleData> getAuthorizedAdminGroups(AuthenticationToken admin, String resource);
+    Collection<RoleData> getAuthorizedAdminGroups(AuthenticationToken admin, String resource);
 
+    /**
+     * Creates a super administrator role and a default CLI user. 
+     */
+    void createSuperAdministrator();
+    
     void initializeAuthorizationModule();
     
     /**

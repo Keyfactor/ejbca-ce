@@ -82,44 +82,45 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
-    private static final String SUPERADMIN_ROLE = "Super Administrator Role";
-
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void initializeAuthorizationModule() {
         Collection<RoleData> roles = roleAccessSession.getAllRoles();
         List<CAData> cas = CAData.findAll(entityManager);
         if ((roles.size() == 0) && (cas.size() == 0)) {
-            log.info("No roles or CAs exist, intializing Super Administrator Role with caid 0 and superadminCN empty.");
-            log.debug("Creating new role '" + SUPERADMIN_ROLE + "'.");
-            RoleData role = new RoleData(1, SUPERADMIN_ROLE);
-            entityManager.persist(role);
-            log.debug("Adding new rule '/' to " + SUPERADMIN_ROLE + ".");
-
-            AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, "/", AccessRuleState.RULE_ACCEPT, true);
-            Map<Integer, AccessRuleData> newrules = new HashMap<Integer, AccessRuleData>();
-            newrules.put(rule.getPrimaryKey(), rule);
-            role.setAccessRules(newrules);
-
-            log.debug("Adding new AccessUserAspect 'NONE' to " + SUPERADMIN_ROLE + ".");
-            Map<Integer, AccessUserAspectData> newUsers = new HashMap<Integer, AccessUserAspectData>();
-            AccessUserAspectData aua = new AccessUserAspectData(SUPERADMIN_ROLE, 0, AccessMatchValue.NONE, AccessMatchType.TYPE_EQUALCASE, "");
-            newUsers.put(aua.getPrimaryKey(), aua);
-            AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, 0, AccessMatchValue.WITH_UID,
-                    AccessMatchType.TYPE_EQUALCASE, EjbcaConfiguration.getCliDefaultUser());
-            newUsers.put(defaultCliUserAspect.getPrimaryKey(), defaultCliUserAspect);
-            role.setAccessUsers(newUsers);
-
-            UserData defaultCliUserData = new UserData(EjbcaConfiguration.getCliDefaultUser(), EjbcaConfiguration.getCliDefaultPassword(), false, "UID="
-                    + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, 0, 0, 0, 0, null);
-            entityManager.persist(defaultCliUserData);
+            createSuperAdministrator();
         } else {
             log.error("Roles or CAs exist, not intializing " + SUPERADMIN_ROLE);
         }
     }
-
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
+    public void createSuperAdministrator() {
+        log.info("No roles or CAs exist, intializing Super Administrator Role with caid 0 and superadminCN empty.");
+        log.debug("Creating new role '" + SUPERADMIN_ROLE + "'.");
+        RoleData role = new RoleData(1, SUPERADMIN_ROLE);
+        entityManager.persist(role);
+        log.debug("Adding new rule '/' to " + SUPERADMIN_ROLE + ".");
+
+        AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, "/", AccessRuleState.RULE_ACCEPT, true);
+        Map<Integer, AccessRuleData> newrules = new HashMap<Integer, AccessRuleData>();
+        newrules.put(rule.getPrimaryKey(), rule);
+        role.setAccessRules(newrules);
+
+        log.debug("Adding new AccessUserAspect 'NONE' to " + SUPERADMIN_ROLE + ".");
+        Map<Integer, AccessUserAspectData> newUsers = new HashMap<Integer, AccessUserAspectData>();      
+        AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, 0, AccessMatchValue.WITH_UID,
+                AccessMatchType.TYPE_EQUALCASE, EjbcaConfiguration.getCliDefaultUser());
+        newUsers.put(defaultCliUserAspect.getPrimaryKey(), defaultCliUserAspect);
+        role.setAccessUsers(newUsers);
+
+        UserData defaultCliUserData = new UserData(EjbcaConfiguration.getCliDefaultUser(), EjbcaConfiguration.getCliDefaultPassword(), false, "UID="
+                + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, 0, 0, 0, 0, null);
+        entityManager.persist(defaultCliUserData);
+    }
+
+
     public void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException,
             AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException {
         if (log.isTraceEnabled()) {
