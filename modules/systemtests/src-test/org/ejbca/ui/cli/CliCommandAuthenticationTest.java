@@ -20,13 +20,16 @@ import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTestHelperSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.junit.Before;
 import org.junit.Test;
 
 /**
- * This test class tests different aspects of cli authentication using a mock cli command.
+ * This test class tests different aspects of cli authentication using a mock
+ * cli command.
  * 
  * @version $Id$
  * 
@@ -36,6 +39,9 @@ public class CliCommandAuthenticationTest {
     private MockCliCommand mockCliCommand;
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = JndiHelper.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = JndiHelper
+            .getRemoteSession(CliAuthenticationTestHelperSessionRemote.class);
+    private UserAdminSessionRemote userAdminSession = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);
 
     private final TestAlwaysAllowLocalAuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "CliAuthenticationTest"));
@@ -77,6 +83,28 @@ public class CliCommandAuthenticationTest {
     }
 
     @Test
+    public void testWithUnknownUser() throws Exception {
+        try {
+            mockCliCommand.execute(new String[] { "foo", "-u", "TomDickAnd", "-password=harry" });
+            fail("Exception was not thrown when authenticating with unknown user.");
+        } catch (CliTestRuntimeException e) {
+            // All is well.
+        }
+    }
+    
+    @Test 
+    public void testWithKnownUser() throws Exception {
+        cliAuthenticationTestHelperSession.createUser();
+        try {
+            mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME, "-password="+CliAuthenticationTestHelperSessionRemote.PASSWORD });
+        } catch (CliTestRuntimeException e) {
+            fail("Exception was thrown when authenticating with a known user.");
+        } finally {
+            userAdminSession.deleteUser(internalAdmin, CliAuthenticationTestHelperSessionRemote.USERNAME);
+        }
+    }
+
+    @Test
     public void testWithoutSuppliedDefaultUserAndForbidden() throws Exception {
         boolean oldValue = setCliUserEnabled(false);
         try {
@@ -93,15 +121,15 @@ public class CliCommandAuthenticationTest {
     public void testDefaultUserWhenForbidden() throws Exception {
         boolean oldValue = setCliUserEnabled(false);
         try {
-            mockCliCommand.execute(new String[] {"foo", "-u", EjbcaConfiguration.getCliDefaultUser() });
+            mockCliCommand.execute(new String[] { "foo", "-u", EjbcaConfiguration.getCliDefaultUser() });
             fail("Use of default user should not have been allowed");
         } catch (CliTestRuntimeException e) {
-            //Ignore
+            // Ignore
         } finally {
             setCliUserEnabled(oldValue);
         }
     }
-    
+
     private boolean setCliUserEnabled(boolean enabled) {
         GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
         boolean oldValue = config.getEnableCommandLineInterfaceDefaultUser();
@@ -139,6 +167,9 @@ class MockCliCommand extends BaseCommand {
 
 }
 
+/*
+ * This exception is tossed because execute can't pass on a CliUsernameException
+ */
 class CliTestRuntimeException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
