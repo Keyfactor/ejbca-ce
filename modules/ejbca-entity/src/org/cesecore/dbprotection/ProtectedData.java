@@ -154,41 +154,42 @@ public abstract class ProtectedData {
         if (ProtectedDataConfiguration.useDatabaseIntegrityVerification(getTableName())) {
             final String prot = getRowProtection();
             if (prot == null) {
-                final String msg = INTRES.getLocalizedMessage("databaseprotection.errorverify", "non null", "null");
-                log.error(msg);
-                if (ProtectedDataConfiguration.errorOnVerifyFail()) {
-                    throw new DatabaseProtectionError(msg, this);
-                }
-            }
-            final int verindex = prot.indexOf(":");
-            final int rowversion = Integer.parseInt(prot.substring(0, verindex));
-            final String str = getProtectString(rowversion);
-            // calculate expected protection on this, here we need the keyid
-            final int index1 = prot.indexOf(':', verindex + 1);
-            // HMAC or digital signature
-            final Integer protectVersion = Integer.parseInt(prot.substring(verindex + 1, index1));
-            final int index2 = prot.indexOf(':', index1 + 1);
-            final Integer keyid = Integer.parseInt(prot.substring(index1 + 1, index2));
-            if (log.isTraceEnabled()) {
-                log.trace("Verifying row string (" + this.getClass().getName() + "): " + str);
-                log.trace("RowProtection: " + prot);
-                log.trace("ProtectVersion: " + protectVersion);
-                log.trace("KeyId: " + keyid);
-            }
-            final String mustbeprot = calculateProtection(protectVersion, keyid, str);
-            // Strip away the first stuff
-            final int index = prot.lastIndexOf(':');
-            final String realprot = prot.substring(index + 1);
-            if (!mustbeprot.equals(realprot)) {
-                final String msg = INTRES.getLocalizedMessage("databaseprotection.errorverify", mustbeprot, realprot, this.getClass().getName(),
-                        getRowId());
+                final String msg = INTRES.getLocalizedMessage("databaseprotection.errorverify", "non null", "null", getTableName(), getRowId());
                 log.error(msg);
                 if (ProtectedDataConfiguration.errorOnVerifyFail()) {
                     throw new DatabaseProtectionError(msg, this);
                 }
             } else {
+                final int verindex = prot.indexOf(":");
+                final int rowversion = Integer.parseInt(prot.substring(0, verindex));
+                final String str = getProtectString(rowversion);
+                // calculate expected protection on this, here we need the keyid
+                final int index1 = prot.indexOf(':', verindex + 1);
+                // HMAC or digital signature
+                final Integer protectVersion = Integer.parseInt(prot.substring(verindex + 1, index1));
+                final int index2 = prot.indexOf(':', index1 + 1);
+                final Integer keyid = Integer.parseInt(prot.substring(index1 + 1, index2));
                 if (log.isTraceEnabled()) {
-                    log.trace("Verifying row string ok");
+                    log.trace("Verifying row string (" + this.getClass().getName() + "): " + str);
+                    log.trace("RowProtection: " + prot);
+                    log.trace("ProtectVersion: " + protectVersion);
+                    log.trace("KeyId: " + keyid);
+                }
+                final String mustbeprot = calculateProtection(protectVersion, keyid, str);
+                // Strip away the first stuff
+                final int index = prot.lastIndexOf(':');
+                final String realprot = prot.substring(index + 1);
+                if (!mustbeprot.equals(realprot)) {
+                    final String msg = INTRES.getLocalizedMessage("databaseprotection.errorverify", mustbeprot, realprot, this.getClass().getName(),
+                            getRowId());
+                    log.error(msg);
+                    if (ProtectedDataConfiguration.errorOnVerifyFail()) {
+                        throw new DatabaseProtectionError(msg, this);
+                    }
+                } else {
+                    if (log.isTraceEnabled()) {
+                        log.trace("Verifying row string ok");
+                    }
                 }
             }
         }
