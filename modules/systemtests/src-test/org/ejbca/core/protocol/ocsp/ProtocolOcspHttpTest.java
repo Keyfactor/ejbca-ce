@@ -1190,7 +1190,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             WaitingForApprovalException, Exception, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException,
             CADoesntExistsException {
 
-        if (!userAdminSession.existsUser(admin, "ocsptest")) {
+        if (!userAdminSession.existsUser("ocsptest")) {
 
             userAdminSession.addUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, caid);

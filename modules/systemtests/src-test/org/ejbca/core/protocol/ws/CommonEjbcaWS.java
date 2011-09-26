@@ -139,8 +139,6 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
-import org.junit.Before;
-import org.junit.BeforeClass;
 
 /**
  * 
@@ -264,7 +262,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
         user1.setType(65);
 
-        if (!userAdminSession.existsUser(intAdmin, TEST_ADMIN_USERNAME)) {
+        if (!userAdminSession.existsUser(TEST_ADMIN_USERNAME)) {
         	log.info("Adding new user: "+user1.getUsername());
         	userAdminSession.addUser(intAdmin, user1, true);
         } else {
@@ -309,7 +307,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user2.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
         user2.setType(1);
 
-        if (!userAdminSession.existsUser(intAdmin, TEST_NONADMIN_USERNAME)) {
+        if (!userAdminSession.existsUser(TEST_NONADMIN_USERNAME)) {
         	log.debug("Adding new user: "+user2.getUsername());
         	userAdminSession.addUser(intAdmin, user2, true);
         } else {
@@ -2443,16 +2441,16 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     		roleManagementSession.remove(roleMgmgToken, role);
 			accessControlSession.forceCacheExpire();
     	}
-    	if (userAdminSession.existsUser(intAdmin, TEST_ADMIN_USERNAME)) {
+    	if (userAdminSession.existsUser(TEST_ADMIN_USERNAME)) {
     		// Remove user
     		userAdminSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
     	}
     	// Remove role
-    	if (userAdminSession.existsUser(intAdmin, TEST_ADMIN_USERNAME)) {
+    	if (userAdminSession.existsUser(TEST_ADMIN_USERNAME)) {
     		// Remove user
     		userAdminSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
     	}
-        if (userAdminSession.existsUser(intAdmin, TEST_NONADMIN_USERNAME)) {
+        if (userAdminSession.existsUser(TEST_NONADMIN_USERNAME)) {
             userAdminSession.revokeAndDeleteUser(intAdmin, TEST_NONADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         }
         if (new File(TEST_ADMIN_FILE).exists()) {

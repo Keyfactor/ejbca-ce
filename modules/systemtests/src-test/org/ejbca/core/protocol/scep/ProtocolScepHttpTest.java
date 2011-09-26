@@ -428,7 +428,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
     }
 
     private void createScepUser(String userName, String userDN) throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
-        if(!userAdminSession.existsUser(admin, userName)) {
+        if(!userAdminSession.existsUser(userName)) {
             userAdminSession.addUser(admin, getEndEntityInformation(userName, userDN), false);
         } else {
             changeScepUser(userName, userDN);

@@ -284,7 +284,7 @@ public class EjbcaWS implements IEjbcaWS {
         	final AuthenticationToken admin = ejbhelper.getAdmin();
         	logAdminName(admin,logger);
         	final EndEntityInformation userdatavo = ejbhelper.convertUserDataVOWS(admin, userdata);
-            if (userAdminSession.existsUser(admin, userdatavo.getUsername())) {
+            if (userAdminSession.existsUser(userdatavo.getUsername())) {
             	if (log.isDebugEnabled()) {
             		log.debug("User " + userdata.getUsername() + " exists, update the userdata. New status of user '"+userdata.getStatus()+"'." );				  
             	}

@@ -209,7 +209,7 @@ public class UserAdminSessionTest extends CaTestCase {
         genRandomSerialnumber();
         userAdminSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
                 SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
-        assertTrue("User " + thisusername + " was not added to the database.", userAdminSession.existsUser(admin, thisusername));
+        assertTrue("User " + thisusername + " was not added to the database.", userAdminSession.existsUser(thisusername));
         usernames.add(thisusername);
 
         // Set the CA to enforce unique subjectDN serialnumber
@@ -228,14 +228,14 @@ public class UserAdminSessionTest extends CaTestCase {
         } catch (EjbcaException e) {
             assertEquals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, e.getErrorCode());
         }
-        assertFalse(userAdminSession.existsUser(admin, thisusername));
+        assertFalse(userAdminSession.existsUser(thisusername));
 
         // Set the CA to NOT enforcing unique subjectDN serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(false);
         caAdminSession.editCA(admin, cainfo);
         userAdminSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
                 SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
-        assertTrue(userAdminSession.existsUser(admin, thisusername));
+        assertTrue(userAdminSession.existsUser(thisusername));
         usernames.add(thisusername);
 
         // Set the CA back to its original settings of enforcing unique
@@ -302,11 +302,11 @@ public class UserAdminSessionTest extends CaTestCase {
         EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         assertNotNull(data);
         assertEquals(username, data.getUsername());
-        boolean exists = userAdminSession.existsUser(admin, username);
+        boolean exists = userAdminSession.existsUser(username);
         assertTrue(exists);
 
         String notexistusername = genRandomUserName();
-        exists = userAdminSession.existsUser(admin, notexistusername);
+        exists = userAdminSession.existsUser(notexistusername);
         assertFalse(exists);
         data = endEntityAccessSession.findUser(admin, notexistusername);
         assertNull(data);
