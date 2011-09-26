@@ -155,18 +155,6 @@ public abstract class BaseCommand implements CliCommandPlugin {
         return argsList.toArray(new String[argsList.size()]);
     }
 
-    protected void logDefaultCliUserDisabled() {
-        getLogger().info("CLI authentication using default user is disabled.");
-        getLogger().info("Please supply username and password in the command line with the syntax -u <username> -p <password>");
-        getLogger().info("Password may be omitted to prompt.");
-    }
-
-    protected void logNoUserProvided() {
-        getLogger().info("No CLI user was supplied, and use of the default CLI user is disabled.");
-        getLogger().info("Please supply username and password in the command line with the syntax -u <username> -p <password>");
-        getLogger().info("Password may be omitted to prompt.");
-    }
-
     /**
      * This utility method gets an authenticated CliAuthenticationToken from the
      * authentication service.
