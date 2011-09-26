@@ -15,7 +15,7 @@ package org.ejbca.ui.cli.ca;
 
 import java.io.FileOutputStream;
 
-import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -32,7 +32,7 @@ public class CaExportCACommand extends BaseCaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             return;
         }
         

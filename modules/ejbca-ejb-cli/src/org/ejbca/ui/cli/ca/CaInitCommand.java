@@ -45,7 +45,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServ
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
-import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.util.CliTools;
@@ -66,7 +66,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     	CryptoProviderTools.installBCProvider();
         try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             return;
         }
     	// Create new CA.

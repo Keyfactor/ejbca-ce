@@ -23,7 +23,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -40,7 +40,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             return;
         }
         

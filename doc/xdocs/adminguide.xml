@@ -4604,10 +4604,13 @@ bin/ejbca.sh clearcache -all
 <p>By default, the CLI authenticates with using a standard user defined in ejbca.properties. Disabling this user will lead 
 to all CLI operations demanding authentication in the form of the following flags appended to the argument list:</p>
 <source>
--u 	&lt;username&gt; -p &lt;password&gt; 
+-u 	&lt;username&gt; -p; 
 </source>
-<p>If desired, the password (but not the flag) may be omitted and will then be prompted for. Note that the flad must be the final
-	argument in the command line, or any following arguments will be parsed as the password.</p>
+<p>which will cause the console to prompt for the password. If instead the password should be included in the command line (such as)
+	from a script, it can be specified using the following flags:</p>
+<source>
+-u  &lt;username&gt; -password=&lt;password&gt;
+</source>
 <p>Command line users are authenticated from the existing list of End Entities, and are granted the same rights.</p>
 </subsubsection>
 

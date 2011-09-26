@@ -20,7 +20,7 @@ import java.util.Properties;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.ui.cli.BaseCommand;
-import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.ui.cli.hardtoken.importer.IHardTokenImporter;
@@ -47,7 +47,7 @@ public class ImportDataCommand extends BaseCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             return;
         }
         

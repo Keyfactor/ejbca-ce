@@ -40,7 +40,7 @@ public class CreateCert extends BaseCommand {
 	public void execute(String[] args) throws ErrorAdminCommandException {
 	    try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             return;
         }
 

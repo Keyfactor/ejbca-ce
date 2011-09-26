@@ -37,7 +37,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -65,7 +65,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 		CryptoProviderTools.installBCProvider();
         try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             return;
         }
 	        

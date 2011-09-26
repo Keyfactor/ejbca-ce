@@ -16,23 +16,23 @@ package org.ejbca.ui.cli;
  * @version $Id$
  *
  */
-public class CliUserAuthenticationFailedException extends Exception {
+public class CliUsernameException extends Exception {
 
     private static final long serialVersionUID = -390353232257435050L;
 
-    public CliUserAuthenticationFailedException() {
+    public CliUsernameException() {
         super();
     }
 
-    public CliUserAuthenticationFailedException(String message, Throwable cause) {
+    public CliUsernameException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public CliUserAuthenticationFailedException(String message) {
+    public CliUsernameException(String message) {
         super(message);
     }
 
-    public CliUserAuthenticationFailedException(Throwable cause) {
+    public CliUsernameException(Throwable cause) {
         super(cause);
     }
 

@@ -30,7 +30,7 @@ import org.ejbca.core.model.hardtoken.profiles.IPINEnvelopeSettings;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.cli.BaseCommand;
-import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -74,7 +74,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             return;
         }
         

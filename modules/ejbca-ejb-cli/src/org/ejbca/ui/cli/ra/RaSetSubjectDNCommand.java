@@ -17,7 +17,7 @@ import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -47,7 +47,7 @@ public class RaSetSubjectDNCommand extends BaseRaAdminCommand {
 	public void execute(String[] args) throws ErrorAdminCommandException {
 	    try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             return;
         }
 	    

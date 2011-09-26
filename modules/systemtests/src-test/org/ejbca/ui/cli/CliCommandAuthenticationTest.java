@@ -31,7 +31,7 @@ import org.junit.Test;
  * @version $Id$
  * 
  */
-public class CliAuthenticationTest {
+public class CliCommandAuthenticationTest {
 
     private MockCliCommand mockCliCommand;
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
@@ -132,7 +132,7 @@ class MockCliCommand extends BaseCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             throw new CliTestRuntimeException();
         }
     }

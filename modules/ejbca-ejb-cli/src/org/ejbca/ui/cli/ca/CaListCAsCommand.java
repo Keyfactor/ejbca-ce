@@ -20,7 +20,7 @@ import java.util.Iterator;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -37,10 +37,7 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
-            return;
-        }
-        if(cliUserName == null) {
+        } catch (CliUsernameException e) {
             return;
         }
         
