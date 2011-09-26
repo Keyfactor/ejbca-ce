@@ -91,12 +91,13 @@ public class CliCommandAuthenticationTest {
             // All is well.
         }
     }
-    
-    @Test 
+
+    @Test
     public void testWithKnownUser() throws Exception {
         cliAuthenticationTestHelperSession.createUser();
         try {
-            mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME, "-password="+CliAuthenticationTestHelperSessionRemote.PASSWORD });
+            mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
+                    "-password=" + CliAuthenticationTestHelperSessionRemote.PASSWORD });
         } catch (CliTestRuntimeException e) {
             fail("Exception was thrown when authenticating with a known user.");
         } finally {
@@ -128,6 +129,27 @@ public class CliCommandAuthenticationTest {
         } finally {
             setCliUserEnabled(oldValue);
         }
+    }
+
+    @Test
+    public void testDisableCli() throws Exception {
+        boolean oldValue = setCliEnabled(false);
+        try {
+            mockCliCommand.execute(new String[] { "foo", "-u", EjbcaConfiguration.getCliDefaultUser() });
+            fail("CLI should not have been able to have been run when disabled.");
+        } catch (ErrorAdminCommandException e) {
+            // Ignore
+        } finally {
+            setCliEnabled(oldValue);
+        }
+    }
+
+    private boolean setCliEnabled(boolean enabled) {
+        GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
+        boolean oldValue = config.getEnableCommandLineInterface();
+        config.setEnableCommandLineInterface(enabled);
+        globalConfigurationSession.saveGlobalConfigurationRemote(internalAdmin, config);
+        return oldValue;
     }
 
     private boolean setCliUserEnabled(boolean enabled) {
