@@ -20,7 +20,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -41,7 +41,7 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
 		
         try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             return;
         }
 		

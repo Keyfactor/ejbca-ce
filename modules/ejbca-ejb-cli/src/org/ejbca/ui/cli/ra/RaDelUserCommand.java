@@ -17,7 +17,7 @@ import java.util.List;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CliTools;
 
@@ -43,7 +43,7 @@ public class RaDelUserCommand extends BaseRaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             return;
         }
         

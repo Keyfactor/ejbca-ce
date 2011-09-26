@@ -18,7 +18,7 @@ import java.security.cert.Certificate;
 
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -35,7 +35,7 @@ public class RaRevokeCertCommand extends BaseRaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             return;
         }
         

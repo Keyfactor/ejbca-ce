@@ -17,7 +17,7 @@ import java.math.BigInteger;
 import java.security.cert.X509Certificate;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.ui.cli.CliUserAuthenticationFailedException;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -34,7 +34,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
-        } catch (CliUserAuthenticationFailedException e) {
+        } catch (CliUsernameException e) {
             return;
         }
         
