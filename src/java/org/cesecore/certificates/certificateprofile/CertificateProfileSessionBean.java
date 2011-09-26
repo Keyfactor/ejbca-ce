@@ -18,7 +18,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.Map.Entry;
 
 import javax.ejb.EJB;
@@ -43,6 +42,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.ejbca.util.ProfileID;
 
 /**
  * Bean managing certificate profiles, see CertificateProfileSession for Javadoc.
@@ -56,8 +56,6 @@ import org.cesecore.jndi.JndiConstants;
 public class CertificateProfileSessionBean implements CertificateProfileSessionLocal, CertificateProfileSessionRemote {
 
     private static final Logger LOG = Logger.getLogger(CertificateProfileSessionBean.class);
-    /** random used to generate unique IDs. */
-    private static final Random RANDOM = new Random();
     /** Internal localization of logs and errors */
     private static final InternalResources INTRES = InternalResources.getInstance();
 
@@ -464,12 +462,13 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     }
 
     private int findFreeCertificateProfileId() {
-        int id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
-        // Never generate id's less than 10000
-        while ((id < 10000) || (CertificateProfileData.findById(entityManager, id) != null)) {
-            id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
-        }
-        return id;
+        final ProfileID.DB db = new ProfileID.DB() {
+            @Override
+            public boolean isFree(Integer i) {
+                return CertificateProfileData.findById(CertificateProfileSessionBean.this.entityManager, i)==null;
+            }
+        };
+        return ProfileID.getNotUsedID(db);
     }
 
     private boolean isFreeCertificateProfileId(final int id) {

@@ -29,7 +29,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.TreeMap;
 
 import javax.ejb.EJB;
@@ -79,6 +78,7 @@ import org.ejbca.core.model.hardtoken.profiles.TurkishEIDProfile;
 import org.ejbca.core.model.hardtoken.types.EIDHardToken;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.HardToken;
+import org.ejbca.util.ProfileID;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
 import org.ejbca.core.model.log.LogConstants;
@@ -97,8 +97,6 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     private static final Logger log = Logger.getLogger(EjbcaHardTokenBatchJobSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
-    // random used to generate unique IDs.
-    private static final Random ran = new Random();
 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
@@ -1063,21 +1061,23 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     private Integer findFreeHardTokenProfileId() {
-        while ( true ) {
-            final int id = ran.nextInt();
-            if ( id>SecConst.TOKEN_SOFT && HardTokenProfileData.findByPK(entityManager, Integer.valueOf(id))==null ) {
-                return Integer.valueOf(id);
+        final ProfileID.DB db = new ProfileID.DB() {
+            @Override
+            public boolean isFree(Integer i) {
+                return HardTokenProfileData.findByPK(entityManager, i)==null;
             }
-        }
+        };
+        return ProfileID.getNotUsedID(db);
     }
 
     private Integer findFreeHardTokenIssuerId() {
-        while ( true ) {
-            final int id = ran.nextInt();
-            if ( id>1 && org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByPK(entityManager, Integer.valueOf(id))==null ) {
-                return Integer.valueOf(id);
+        final ProfileID.DB db = new ProfileID.DB() {
+            @Override
+            public boolean isFree(Integer i) {
+                return org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByPK(entityManager, i)==null;
             }
-        }
+        };
+        return ProfileID.getNotUsedID(db);
     }
 
     /** Method that returns the hard token data from a hashmap and updates it if necessary. */

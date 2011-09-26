@@ -14,12 +14,10 @@ package org.ejbca.core.ejb.ra.raadmin;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.Map.Entry;
 
 import javax.ejb.EJB;
@@ -43,6 +41,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.util.ProfileID;
 
 /**
  * Session bean for handling EndEntityProfiles
@@ -57,8 +56,6 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
-
-    private static final Random RANDOM = new Random(new Date().getTime());
 
     /** Cache of end entity profiles and id-name mappings */
     private static final EndEntityProfileCache profileCache = new EndEntityProfileCache();
@@ -197,12 +194,13 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @Override
     public int findFreeEndEntityProfileId() {
-    	int id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
-    	// Never generate id's less than 10000
-        while ((id < 10000) || (EndEntityProfileData.findById(entityManager, id) != null)) {
-            id = Math.abs(RANDOM.nextInt(Integer.MAX_VALUE));
-        }
-        return id;
+        final ProfileID.DB db = new ProfileID.DB() {
+            @Override
+            public boolean isFree(Integer i) {
+                return EndEntityProfileData.findById(EndEntityProfileSessionBean.this.entityManager, i.intValue())==null;
+            }
+        };
+        return ProfileID.getNotUsedID(db);
     }
 
     @Override
