@@ -16,13 +16,11 @@ package org.ejbca.core.ejb.ra.userdatasource;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Random;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -41,6 +39,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
+import org.cesecore.util.ProfileID;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -182,7 +181,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     	if (log.isTraceEnabled()) {
             log.trace(">addUserDataSource(name: " + name + ")");
     	}
-        addUserDataSource(admin,findFreeUserDataSourceId().intValue(),name,userdatasource);
+        addUserDataSource(admin,findFreeUserDataSourceId(),name,userdatasource);
         log.trace("<addUserDataSource()");
     }
 
@@ -528,19 +527,14 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         return false;
     }
 
-    private Integer findFreeUserDataSourceId() {
-        Random ran = (new Random((new Date()).getTime()));
-        int id = ran.nextInt();
-        boolean foundfree = false;
-        while (!foundfree) {
-        	if (id > 1) {
-        		if (UserDataSourceData.findById(entityManager, id) == null) {
-        			foundfree = true;
-        		}
-        	}
-        	id = ran.nextInt();
-        }
-        return Integer.valueOf(id);
+    private int findFreeUserDataSourceId() {
+        final ProfileID.DB db = new ProfileID.DB() {
+            @Override
+            public boolean isFree(int i) {
+                return UserDataSourceData.findById(UserDataSourceSessionBean.this.entityManager, i)==null;
+            }
+        };
+        return ProfileID.getNotUsedID(db);
     }
 
     /** Method that returns the UserDataSource data and updates it if necessary. */

@@ -464,7 +464,7 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     private int findFreeCertificateProfileId() {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
-            public boolean isFree(Integer i) {
+            public boolean isFree(int i) {
                 return CertificateProfileData.findById(entityManager, i)==null;
             }
         };

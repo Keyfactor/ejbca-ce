@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -48,6 +47,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.ProfileID;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -500,18 +500,13 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     private Integer findFreeApprovalId() {
-        Random ran = new Random((new Date()).getTime());
-        int id = ran.nextInt();
-        boolean foundfree = false;
-        while (!foundfree) {
-            if (id > 1) {
-                if (ApprovalData.findByApprovalId(entityManager, id).size() == 0) {
-                    foundfree = true;
-                }
+        final ProfileID.DB db = new ProfileID.DB() {
+            @Override
+            public boolean isFree(int i) {
+                return ApprovalData.findByApprovalId(ApprovalSessionBean.this.entityManager, i).size()==0;
             }
-            id = ran.nextInt();
-        }
-        return Integer.valueOf(id);
+        };
+        return Integer.valueOf( ProfileID.getNotUsedID(db) );
     }
 
     /**
