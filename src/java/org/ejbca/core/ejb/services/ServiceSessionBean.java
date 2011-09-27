@@ -26,7 +26,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -55,6 +54,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.ProfileID;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -168,7 +168,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">addService(name: " + name + ")");
         }
-        addService(admin, findFreeServiceId().intValue(), name, serviceConfiguration);
+        addService(admin, findFreeServiceId(), name, serviceConfiguration);
         log.trace("<addService()");
     }
 
@@ -389,19 +389,14 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         log.trace("<activateServiceTimer()");
     }
 
-    private Integer findFreeServiceId() {
-        Random ran = (new Random((new Date()).getTime()));
-        int id = ran.nextInt();
-        boolean foundfree = false;
-        while (!foundfree) {
-            if (id > 1) {
-                if (serviceDataSession.findById(Integer.valueOf(id)) == null) {
-                    foundfree = true;
-                }
+    private int findFreeServiceId() {
+        final ProfileID.DB db = new ProfileID.DB() {
+            @Override
+            public boolean isFree(int i) {
+                return ServiceSessionBean.this.serviceDataSession.findById(Integer.valueOf(i))==null;
             }
-            id = ran.nextInt();
-        }
-        return id;
+        };
+        return ProfileID.getNotUsedID(db);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)

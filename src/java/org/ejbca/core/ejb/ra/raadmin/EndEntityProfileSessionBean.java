@@ -196,8 +196,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     public int findFreeEndEntityProfileId() {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
-            public boolean isFree(Integer i) {
-                return EndEntityProfileData.findById(EndEntityProfileSessionBean.this.entityManager, i.intValue())==null;
+            public boolean isFree(int i) {
+                return EndEntityProfileData.findById(EndEntityProfileSessionBean.this.entityManager, i)==null;
             }
         };
         return ProfileID.getNotUsedID(db);

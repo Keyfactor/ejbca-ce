@@ -34,7 +34,7 @@ public class ProfileID {
 		 * @param i id to test.
 		 * @return true if not already used in DB
 		 */
-		boolean isFree(Integer i);
+		boolean isFree(int i);
 	}
 	/**
 	 * @param db The {@link DB} implementation.
@@ -43,7 +43,7 @@ public class ProfileID {
 	public static int getNotUsedID(final DB db) {
 		for ( int i=0; i<10; i++ ) {
 			final int id = RANDOM.nextInt(Integer.MAX_VALUE-MIN)+MIN;
-			if ( db.isFree(Integer.valueOf(id)) ) {
+			if ( db.isFree(id) ) {
 				return id;
 			}
 			log.info("ID "+id+" already exist in DB generating a new random ID.");

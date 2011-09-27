@@ -35,7 +35,7 @@ public class ProfileIDTest {
 			// do nothing
 		}
 		@Override
-		public boolean isFree(Integer i) {
+		public boolean isFree(int i) {
 			if ( this.triesUntilFree<0 ) {
 				this.triesUntilFree = RANDOM.nextInt(9);
 			}
@@ -51,8 +51,8 @@ public class ProfileIDTest {
 			// do nothing
 		}
 		@Override
-		public boolean isFree(Integer i) {
-			return this.ids.add(i);
+		public boolean isFree(int i) {
+			return this.ids.add(Integer.valueOf(i));
 		}
 	}
 	private class DBTestNeverFree implements ProfileID.DB {
@@ -60,7 +60,7 @@ public class ProfileIDTest {
 			// do nothing
 		}
 		@Override
-		public boolean isFree(Integer i) {
+		public boolean isFree(int i) {
 			return false;
 		}
 	}
