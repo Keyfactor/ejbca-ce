@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.util;
+package org.cesecore.util;
 
 import java.util.Random;
 

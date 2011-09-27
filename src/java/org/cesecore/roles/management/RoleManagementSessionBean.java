@@ -54,7 +54,7 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.util.CertTools;
-import org.ejbca.util.ProfileID;
+import org.cesecore.util.ProfileID;
 
 /**
  * Implementation of the RoleManagementSession interface.

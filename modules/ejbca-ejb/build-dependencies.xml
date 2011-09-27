@@ -262,12 +262,12 @@
 					<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
 					<include name="org/cesecore/certificates/endentity/EndEntityInformation.java"/>
 					<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
+					<include name="org/cesecore/util/ProfileID.java"/>
 					<include name="org/ejbca/core/ejb/authorization/*Cache.java"/>	
 					<include name="org/ejbca/core/model/authorization/*.java"/>
                     <include name="org/ejbca/core/model/ra/NotFoundException*.java"/>
 					<include name="org/ejbca/config/*.java"/>	
 					<include name="org/ejbca/util/crypto/SupportedPasswordHashAlgorithm.java"/>	
-					<include name="org/ejbca/util/ProfileID.java"/>	
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/authorization" destdir="${build-temp.dir}/authorization" debug="on" includeantruntime="no"
@@ -431,8 +431,8 @@
 				</fileset>
 				<fileset dir="${src.dir}">
 					<include name="org/cesecore/certificates/certificateprofile/*.java"/>
+					<include name="org/cesecore/util/ProfileID.java"/>
 					<include name="org/ejbca/config/ExtendedKeyUsageConfiguration.java"/>
-					<include name="org/ejbca/util/ProfileID.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/certprof" destdir="${build-temp.dir}/certprof" debug="on" includeantruntime="no"
@@ -863,7 +863,7 @@
 					<include name="org/ejbca/core/model/hardtoken/**/*.java"/>
 					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/HardTokenEncryptCAService*.java"/>
 					<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
-					<include name="org/ejbca/util/ProfileID.java"/>
+					<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/hardtoken" destdir="${build-temp.dir}/hardtoken" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
