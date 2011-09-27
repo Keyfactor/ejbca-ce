@@ -42,7 +42,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
-import org.ejbca.util.ProfileID;
+import org.cesecore.util.ProfileID;
 
 /**
  * Bean managing certificate profiles, see CertificateProfileSession for Javadoc.
