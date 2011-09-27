@@ -99,7 +99,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
      * 
      */
     @BeforeClass
-    public static void beforeClass(String arg0) throws Exception {
+    public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
     }
     
