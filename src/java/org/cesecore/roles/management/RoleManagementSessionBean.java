@@ -412,7 +412,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
             public boolean isFree(int i) {
-                return RoleManagementSessionBean.this.roleAccessSession.findRole(i)==null;
+                return RoleManagementSessionBean.this.roleAccessSession.findRole(Integer.valueOf(i))==null;
             }
         };
         return ProfileID.getNotUsedID(db);
