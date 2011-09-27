@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,7 +10,6 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.cesecore.util;
 
 import java.util.Random;
@@ -18,9 +17,8 @@ import java.util.Random;
 import org.apache.log4j.Logger;
 
 /**
- * Used to get an ID not allready existing in a DB.
+ * Used to get an ID not already existing in a DB.
  * 
- * @author Lars Silvén
  * @version $Id$
  */
 public class ProfileID {
@@ -28,7 +26,7 @@ public class ProfileID {
     private static final Random RANDOM = new Random();
     private static final int MIN = 1<<16;
 	/**
-	 * Callback.
+	 * Callback that is used from caller to check if the generated id can be used, or if we should generate a new one.
 	 */
 	public static interface DB {
 		/**
@@ -42,13 +40,13 @@ public class ProfileID {
 	 * @param db The {@link DB} implementation.
 	 * @return The ID to be used. Always returning >0xffff. IDs <0x10000 are reserved for constant defined in the code.
 	 */
-	public static int getNotUsedID(DB db) {
+	public static int getNotUsedID(final DB db) {
 		for ( int i=0; i<10; i++ ) {
 			final int id = RANDOM.nextInt(Integer.MAX_VALUE-MIN)+MIN;
 			if ( db.isFree(Integer.valueOf(id)) ) {
 				return id;
 			}
-			log.info("ID "+Integer.toHexString(id)+" already exist in DB generating a new random ID.");
+			log.info("ID "+id+" already exist in DB generating a new random ID.");
 		}
 		// this throw is indicating an implementation error of the DB class and should never occur. If it does the code must be fixed.
 		throw new RuntimeException("Impossible to find a spare ID in the database for the class: "+db.getClass().getCanonicalName());

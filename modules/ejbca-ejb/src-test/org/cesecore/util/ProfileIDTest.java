@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,8 +10,9 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.cesecore.util;
+
+import static org.junit.Assert.assertTrue;
 
 import java.util.HashSet;
 import java.util.Random;
@@ -20,15 +21,12 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.junit.Test;
 
-import junit.framework.TestCase;
-
 /**
  * Test of {@link ProfileID}
  * 
- * @author Lars Silvén
  * @version $Id$
  */
-public class ProfileIDTest extends TestCase {
+public class ProfileIDTest {
 	final static Random RANDOM = new Random();
     private static final Logger log = Logger.getLogger(ProfileIDTest.class);
 	private class DBTestSometimesFree implements ProfileID.DB {
@@ -76,7 +74,7 @@ public class ProfileIDTest extends TestCase {
 			final int i = ProfileID.getNotUsedID( new DBTestNeverFree() );
 			assertTrue("Should not have been possible to generate anything but "+i+" was generated.", false);
 		} catch( RuntimeException e ) {
-			// this is OK in the test
+			// NOPMD: this is OK in the test
 		}
 		log.trace("<testNothingFree()");
 	}
