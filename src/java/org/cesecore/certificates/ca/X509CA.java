@@ -805,7 +805,7 @@ public class X509CA extends CA implements Serializable {
                 if (!eq) {
                     final String akistr = new String(Hex.encode(aki));
                     final String skistr = new String(Hex.encode(ski));
-                    final String msg = intres.getLocalizedMessage("signsession.errorpathverifykeyid", akistr, skistr);
+                    final String msg = intres.getLocalizedMessage("createcert.errorpathverifykeyid", akistr, skistr);
                     log.error(msg);
                     throw new CertificateCreateException(msg);
                 }
@@ -815,7 +815,7 @@ public class X509CA extends CA implements Serializable {
             if ((issuerDN != null) && (subjectDN != null)) {
                 final boolean eq = issuerDN.equals(subjectDN);
                 if (!eq) {
-                	final String msg = intres.getLocalizedMessage("signsession.errorpathverifydn", issuerDN.getName(), subjectDN.getName());
+                	final String msg = intres.getLocalizedMessage("createcert.errorpathverifydn", issuerDN.getName(), subjectDN.getName());
                     log.error(msg);
                     throw new CertificateCreateException(msg);
                 }
