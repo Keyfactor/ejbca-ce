@@ -118,7 +118,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	upgradeSession = sessionContext.getBusinessObject(UpgradeSessionLocal.class);
     }
 
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
     public boolean upgrade( String dbtype, String sOldVersion, boolean isPost) {
 
@@ -446,10 +446,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 					break; // no need to continue with this role
     			}
     		}
-		}
-
-    	//Creates a super admin role for ClI usage.
-    	complexAccessControlSession.createSuperAdministrator();
+    	}
     	
     	accessTreeUpdateSession.signalForAccessTreeUpdate();
     	accessControlSession.forceCacheExpire();
@@ -477,6 +474,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     		ret = migrateDatabase("/400_500/400_500-post-upgrade-"+dbtype+".sql");			
     	}
 
+        //Creates a super admin role for ClI usage.
+        complexAccessControlSession.createSuperAdministrator();
+    	
     	log.error("(this is not an error) Finished post upgrade from ejbca 4.0.x to ejbca 5.0.x with result: "+ret);
         return ret;
     }
