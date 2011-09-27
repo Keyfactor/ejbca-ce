@@ -13,33 +13,33 @@
  
 package org.ejbca.ui.web.admin.rainterface;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
-
-
-
 
 /**
  * A class representing a set of users
  * @author  philip
  * @version $Id$
  */
-public class UsersView implements java.io.Serializable {
+public class UsersView implements Serializable {
         
+    private static final long serialVersionUID = -7382135359016557800L;
     /** Creates a new instance of UsersView */
     public UsersView() {
-      users = new ArrayList();
+      users = new ArrayList<UserView>();
       sortby = new SortBy();
     }
     
     public UsersView(EndEntityInformation importuser, HashMap caidtonamemap){
-      users = new ArrayList();
+      users = new ArrayList<UserView>();
       sortby = new SortBy();        
       users.add(new UserView(importuser, caidtonamemap)); 
       
@@ -47,7 +47,7 @@ public class UsersView implements java.io.Serializable {
     }
     
     public UsersView(Collection importusers, HashMap caidtonamemap){ 
-      users = new ArrayList();
+      users = new ArrayList<UserView>();
       sortby = new SortBy();
       
       setUsers(importusers, caidtonamemap);
@@ -119,10 +119,10 @@ public class UsersView implements java.io.Serializable {
       }
     }
 
-    public void setUsers(Collection importusers, Map caidtonamemap) { 
+    public void setUsers(Collection<EndEntityInformation> importusers, Map caidtonamemap) { 
         
       UserView user;  
-      Iterator i;  
+      Iterator<EndEntityInformation> i;  
       this.users.clear();
       if(importusers!=null && importusers.size() > 0){
         i=importusers.iterator();
@@ -149,7 +149,7 @@ public class UsersView implements java.io.Serializable {
       this.users.clear();   
     }
     // Private fields
-    private ArrayList users;
+    private List<UserView> users;
     private SortBy sortby;
     
 }
