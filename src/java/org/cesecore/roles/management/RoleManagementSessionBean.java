@@ -408,14 +408,14 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     }
 
-    private int findFreeRoleId() {
+    private Integer findFreeRoleId() {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
             public boolean isFree(int i) {
                 return RoleManagementSessionBean.this.roleAccessSession.findRole(Integer.valueOf(i))==null;
             }
         };
-        return ProfileID.getNotUsedID(db);
+        return Integer.valueOf(ProfileID.getNotUsedID(db));
     }
 
     private void authorizedToEditRole(AuthenticationToken authenticationToken, String roleName) throws AuthorizationDeniedException {

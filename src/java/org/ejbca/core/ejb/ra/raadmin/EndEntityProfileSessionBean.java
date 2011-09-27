@@ -125,8 +125,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             boolean success = false;
             if (pdl != null) {
             	try {
-            		int profileid = findFreeEndEntityProfileId();
-            		entityManager.persist(new EndEntityProfileData(Integer.valueOf(profileid), newname, (EndEntityProfile) pdl.getProfile().clone()));
+            		final int profileid = findFreeEndEntityProfileId();
+            		entityManager.persist(new EndEntityProfileData(profileid, newname, (EndEntityProfile) pdl.getProfile().clone()));
             		flushProfileCache();
             		final String msg = INTRES.getLocalizedMessage("ra.clonedprofile", newname, orgname);
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();

@@ -125,7 +125,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenProfile(name: " + name + ")");
         }
-        addHardTokenProfile(admin, findFreeHardTokenProfileId().intValue(), name, profile);
+        addHardTokenProfile(admin, findFreeHardTokenProfileId(), name, profile);
         log.trace("<addHardTokenProfile()");
     }
 
@@ -1060,7 +1060,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return exists;
     }
 
-    private Integer findFreeHardTokenProfileId() {
+    private int findFreeHardTokenProfileId() {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
             public boolean isFree(int i) {
@@ -1070,7 +1070,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return ProfileID.getNotUsedID(db);
     }
 
-    private Integer findFreeHardTokenIssuerId() {
+    private int findFreeHardTokenIssuerId() {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override
             public boolean isFree(int i) {
