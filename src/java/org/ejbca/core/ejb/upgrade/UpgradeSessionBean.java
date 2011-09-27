@@ -118,7 +118,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	upgradeSession = sessionContext.getBusinessObject(UpgradeSessionLocal.class);
     }
 
-    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean upgrade( String dbtype, String sOldVersion, boolean isPost) {
 
