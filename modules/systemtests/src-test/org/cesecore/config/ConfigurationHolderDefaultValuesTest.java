@@ -32,7 +32,7 @@ public class ConfigurationHolderDefaultValuesTest {
     
     @Test
     public void testDefaultValues() {
-        Assert.assertEquals("cesecore", configurationHolderProxySession.getDefaultValue("database.name"));
+        Assert.assertEquals("hsqldb", configurationHolderProxySession.getDefaultValue("database.name"));
     }
 
 }
