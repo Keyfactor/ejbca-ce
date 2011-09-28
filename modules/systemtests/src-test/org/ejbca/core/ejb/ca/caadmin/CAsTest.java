@@ -1984,22 +1984,6 @@ public class CAsTest extends CaTestCase {
             // OK
         }
 
-        // FIXME: How do the following tests apply in the future?
-
-        // Try to get CAInfo pretending to be an privileged user using remote EJB
-        try {
-            CAInfo info = caSession.getCAInfo(admin, getTestCAName());
-            System.out.println("info: " + info);
-            fail("Was able to get CA info from remote EJB/CLI pretending to be INTERNALUSER");
-        } catch (CADoesntExistsException ignored) {
-            // OK
-        }
-        try {
-            caSession.getCAInfo(admin, "CN=TEST".hashCode());
-            fail("Was able to get CA info from remote EJB/CLI pretending to be INTERNALUSER");
-        } catch (CADoesntExistsException ignored) {
-            // OK
-        }
         log.trace("<test18PublicWebCaInfoFetch()");
     }
 
