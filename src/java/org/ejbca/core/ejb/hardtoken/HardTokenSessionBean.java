@@ -820,11 +820,10 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (log.isTraceEnabled()) {
             log.trace("<getHardToken(username :" + username + ")");
         }
-        ArrayList<HardTokenData> returnval = new ArrayList<HardTokenData>();
-        Collection<org.ejbca.core.ejb.hardtoken.HardTokenData> result = org.ejbca.core.ejb.hardtoken.HardTokenData.findByUsername(entityManager, username);
-        Iterator<org.ejbca.core.ejb.hardtoken.HardTokenData> i = result.iterator();
-        while (i.hasNext()) {
-            org.ejbca.core.ejb.hardtoken.HardTokenData htd = i.next();
+        final ArrayList<HardTokenData> returnval = new ArrayList<HardTokenData>();
+        final Collection<org.ejbca.core.ejb.hardtoken.HardTokenData> result = org.ejbca.core.ejb.hardtoken.HardTokenData.findByUsername(entityManager, username);
+        final Iterator<org.ejbca.core.ejb.hardtoken.HardTokenData> i = result.iterator();
+        for (org.ejbca.core.ejb.hardtoken.HardTokenData htd : result) {
             // Find Copyof
             String copyof = null;
             HardTokenPropertyData htpd = HardTokenPropertyData.findByProperty(entityManager, htd.getTokenSN(), HardTokenPropertyData.PROPERTY_COPYOF);
@@ -859,6 +858,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_VIEWEDPUK, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), null, htd.getUsername(), detailspuk);
             }
         }
+        Collections.sort(returnval);
         log.trace("<getHardToken()");
         return returnval;
     }
