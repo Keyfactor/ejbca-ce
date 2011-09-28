@@ -34,7 +34,7 @@ public class HardTokenData implements Serializable, Comparable<HardTokenData> {
     private static final long serialVersionUID = 1L;
     // Public Constructors
 	/** 
-	 * Construtor of a hard token data.
+	 * Constructor of a hard token data.
 	 * 
 	 * @param tokensn the tokensn
 	 * @param username the username owning the token
@@ -44,7 +44,7 @@ public class HardTokenData implements Serializable, Comparable<HardTokenData> {
 	 * @param significantIssuerDN of the CA that the card belongs to
 	 * @param hardtoken the actual hardtoken data
 	 * @param copyof tokenSN of original or null of this is an original
-	 * @param copies Collention of tokensn of tokens copied from this token, null if no copies have been made.
+	 * @param copies Collection of tokensn of tokens copied from this token, null if no copies have been made.
 	 * 
 	 */
     public HardTokenData(String tokensn, String username, Date createtime,  Date modifytime, 
@@ -117,7 +117,7 @@ public class HardTokenData implements Serializable, Comparable<HardTokenData> {
     private    String          copyof;
     private    Collection<String> copies;
 
-	/* 
+	/** 
 	 * When viewing the tokens in the GUI they should come in the order that they were created.
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
