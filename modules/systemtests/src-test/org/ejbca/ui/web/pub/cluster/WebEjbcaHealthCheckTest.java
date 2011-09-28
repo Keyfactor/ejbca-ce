@@ -39,7 +39,7 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
 
     @Before
     public void setUp() throws Exception {
-        httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+        httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
         httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/healthcheck/ejbcahealth";
     }
 

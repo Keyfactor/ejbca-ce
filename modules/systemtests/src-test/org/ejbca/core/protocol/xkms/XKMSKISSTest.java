@@ -96,7 +96,7 @@ public class XKMSKISSTest {
         org.apache.xml.security.Init.init();
     }
     
-    final String HTTPPORT = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+    final String HTTPPORT = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
 
     private XKMSInvoker xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/xkms", null);
 

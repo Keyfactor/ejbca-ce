@@ -285,8 +285,8 @@ public class PublisherTest {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath(ValidationAuthorityPublisher.class.getName());
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-			final String jndiPrefix = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "");
-			final String jndiName = jndiPrefix + configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
+			final String jndiPrefix = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
+			final String jndiName = jndiPrefix + configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
             log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
             publisher.setPropertyData("dataSource " + jndiName);
             publisher.setDescription("Used in Junit Test, Remove this one");
@@ -319,8 +319,8 @@ public class PublisherTest {
 		try {
 			ValidationAuthorityPublisher publisher = new ValidationAuthorityPublisher();
 		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-			final String jndiPrefix = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX, "");
-			final String jndiName = jndiPrefix + configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME, "EjbcaDS");
+			final String jndiPrefix = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
+			final String jndiName = jndiPrefix + configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
             log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
             publisher.setDataSource(jndiName);
             publisher.setDescription("Used in Junit Test, Remove this one");

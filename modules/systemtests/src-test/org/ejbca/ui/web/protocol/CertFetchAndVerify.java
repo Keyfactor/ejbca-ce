@@ -114,7 +114,7 @@ public class CertFetchAndVerify {
 	private String getURL() {
 		if (theURL == null) {
 			try {
-				String port = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+				String port = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
 				theURL = "http://localhost:" + port + "/certificates/search.cgi"; // Fallback, like if we run tests on a stand-alone VA
 			} catch (Exception e) {
 				theURL = "http://localhost:8080/certificates/search.cgi"; // Fallback, like if we run tests on a stand-alone VA

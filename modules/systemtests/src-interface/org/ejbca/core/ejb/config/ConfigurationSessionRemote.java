@@ -50,7 +50,7 @@ public interface ConfigurationSessionRemote {
     public boolean verifyProperty(String key, String value);
 
     /** Returns a property from the current server configuration. */
-    public String getProperty(String key, String defaultValue);
+    public String getProperty(String key);
 
     /** @return all currently used properties */
     public Properties getAllProperties();

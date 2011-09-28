@@ -214,7 +214,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+        httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
         httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
         resourceOcsp = "publicweb/status/ocsp";
         helper = new OcspJunitHelper(httpReqPath, resourceOcsp);

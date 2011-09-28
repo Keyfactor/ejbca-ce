@@ -52,7 +52,7 @@ public class CrlStoreServletTest extends CaTestCase {
     @Test
     public void testCRLStore() throws Exception {
         log.trace(">testCRLStore()");
-        final String HTTP_PORT = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+        final String HTTP_PORT = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
         X509Certificate cacert = (X509Certificate)getTestCACert();
     	final String result = ValidationAuthorityTst.testCRLStore(cacert, this.crlSession, HTTP_PORT);
     	assertNull(result, result);

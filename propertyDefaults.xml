@@ -62,6 +62,7 @@
     <property file="${ejbca.home}/conf/crlstore.properties" />
     <property file="${ejbca.home}/conf/va.properties" />
     <property file="${ejbca.home}/conf/va-publisher.properties" />
+	<property file="${ejbca.home}/src/java/defaultvalues.properties"/>
 
     <!-- httpsserver.hostname must be set cause it's used in preprocess. It will only be set here if not set in any property file -->
     <property name="httpsserver.hostname" value="localhost"/>
@@ -143,26 +144,14 @@
 	<condition property="datasource.jndi-name-prefix" value=""><equals arg1="weblogic" arg2="${appserver.type}"/></condition>
 	<condition property="datasource.jndi-name-prefix" value="jdbc/"><equals arg1="websphere" arg2="${appserver.type}"/></condition>
 
-	<!-- These values are temporarily set here. Remove them when defaultvalues.properties can be used in the build -->
-	<property name="ejbca.cli.defaultusername" value="ejbca"/>
-	<property name="ejbca.cli.defaultpassword" value="ejbca"/>
 	
 	<!-- java.ver is used to select the correct version of bc libraries to include in ear -->   
 	<property name="java.ver" value="16" />
-	<property name="ejbca.productionmode" value="true"/>
 	<property name="ca.tokentype" value="soft"/>
 	<property name="ca.tokenproperties" value=""/>
     <property name="ocspHardTokenClasses" value="${ejbca.home}/ocspHardTokenClasses"/>
     <property name="ocsp.hardToken.classes" location="${ocspHardTokenClasses}"/>
-    <property name="ocsp.defaultresponder" value="CN=AdminCA1,O=EJBCA Sample,C=SE"/>
-    <property name="ocsp.signaturealgorithm" value="SHA1WithRSA;SHA1WithECDSA;SHA1WithDSA"/>
-	<property name="datasource.jndi-name" value="EjbcaDS" />
-	<property name="database.name" value="hsqldb" />
-	<property name="database.url" value="jdbc:hsqldb:$${jboss.server.data.dir}$${/}hypersonic$${/}localDB" />
-	<property name="database.driver" value="org.hsqldb.jdbcDriver" />
-	<property name="database.username" value="sa" />
 	<property name="weblogic-oracle-columntype" value="" />
-	<property name="mail.jndi-name" value="java:/EjbcaMail" />
 	<property name="mail.from" value="ejbca-donotreply@domain.com" />
 	<property name="mail.user" value="ejbca_user" />
 	<property name="mail.password" value="" />
@@ -172,15 +161,9 @@
 	<property name="mail.smtp.auth" value="false" />
 	<property name="mail.smtp.starttls.enable" value="false" />
 	<property name="mail.debug" value="false" />
-	<property name="httpserver.pubhttp" value="8080" />
-	<property name="httpserver.pubhttps" value="8442" />
-	<property name="httpserver.privhttps" value="8443" />
 	<property name="httpsserver.bindaddress.pubhttp" value="0.0.0.0" />
 	<property name="httpsserver.bindaddress.pubhttps" value="0.0.0.0" />
 	<property name="httpsserver.bindaddress.privhttps" value="0.0.0.0" />
-	<property name="web.contentencoding" value="UTF-8" />
-	<property name="web.docbaseuri" value="internal" /> <!-- Default used to determine if to build or not.. -->
-	<property name="web.renewalenabled" value="false" />
 	<condition property="doc.war.enabled">
 		<equals arg1="internal" arg2="${web.docbaseuri}" casesensitive="false" trim="true" />
 	</condition>
@@ -198,32 +181,6 @@
 	<property name="certstore.contextroot" value="/certificates" />
 	<property name="ocsp.contextroot" value="/ejbca/publicweb/status" />
 
-	<!-- CMP settings -->
-	<property name="cmp.allowraverifypopo" value="false" />
-	<property name="cmp.defaultca" value="" />
-	<property name="cmp.extractusernamecomponent" value="" />
-	<property name="cmp.operationmode" value="normal" />
-	<property name="cmp.responseprotection" value="signature" />
-	<property name="cmp.ra.authenticationsecret" value="" />
-	<property name="cmp.ra.namegenerationscheme" value="DN" />
-	<property name="cmp.ra.namegenerationparameters" value="CN" />
-	<property name="cmp.ra.namegenerationprefix" value="" />
-	<property name="cmp.ra.namegenerationpostfix" value="" />
-	<property name="cmp.ra.endentityprofile" value="EMPTY" />
-	<property name="cmp.ra.certificateprofile" value="ENDUSER" />
-	<property name="cmp.ra.caname" value="AdminCA1" />
-	<property name="cmp.tcp.enabled" value="false" />
-	<property name="cmp.tcp.portno" value="829" />
-	<property name="cmp.tcp.logdir" value="./log" />
-	<property name="cmp.tcp.conffile" value="" />
-	
-	<!-- XKMS settings -->
-	<property name="xkms.enabled" value="false" />				
-	<property name="xkms.serviceport" value="8080" />
-
-	<!-- WS settings -->
-	<property name="ejbcaws.enabled" value="true" />
-	
     <target name="display-properties" description="Show current configuration">
         <echo>
 ---------- ${app.version} CONFIGURATION PROPERTIES ----------

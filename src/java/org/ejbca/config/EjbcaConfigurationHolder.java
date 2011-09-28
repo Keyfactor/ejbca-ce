@@ -27,6 +27,7 @@ import org.apache.commons.configuration.PropertiesConfiguration;
 import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.configuration.reloading.FileChangedReloadingStrategy;
 import org.apache.log4j.Logger;
+import org.cesecore.config.ConfigurationHolder;
 
 /**
  * This is a singleton. Used to configure common-configuration with our sources.
@@ -50,7 +51,9 @@ public final class EjbcaConfigurationHolder {
 	private static CompositeConfiguration configBackup = null;
 	
 	/** This is a singleton so it's not allowed to create an instance explicitly */ 
-	private EjbcaConfigurationHolder() {}
+	private EjbcaConfigurationHolder() {
+	    super();
+	}
 	
 	/** ejbca.properties must be first in this file, because CONFIGALLOWEXTERNAL is defined in there. */
 	public static final String[] CONFIG_FILES = {"ejbca.properties", "web.properties", "cmp.properties", "externalra-caservice.properties",
@@ -184,7 +187,7 @@ public final class EjbcaConfigurationHolder {
 	 * @param defaultValue default value to use if property is not found
 	 * @return String configured for property, or default value, if defaultValue is null and property is not found null is returned.
 	 */
-	public static String getString(final String property, final String defaultValue) {
+	public static String getString(final String property) {
 		// Commons configuration interprets ','-separated values as an array of Strings, but we need the whole String for example SubjectDNs.
 		final String ret;
 		final StringBuilder str = new StringBuilder();
@@ -198,7 +201,7 @@ public final class EjbcaConfigurationHolder {
 		if (str.length() != 0) {
 			ret = str.toString();
 		} else {
-			ret = defaultValue;
+			ret = ConfigurationHolder.getDefaultValue(property);
 		}
 		return ret;
 	}
@@ -210,8 +213,8 @@ public final class EjbcaConfigurationHolder {
 	 * would return "foobar" for property2
 	 * @param defaultValue to use if no property of such a name is found
 	 */
-	public static String getExpandedString(final String property, final String defaultValue) {
-		String ret = getString(property, defaultValue);
+	public static String getExpandedString(final String property) {
+		String ret = getString(property);
 		if (ret != null) {
 			while (ret.indexOf("${") != -1) {
 				ret = interpolate(ret);
@@ -228,7 +231,7 @@ public final class EjbcaConfigurationHolder {
 		while (m.find()) {
 			// when the pattern is ${identifier}, group 0 is 'identifier'
 			final String key = m.group(1);
-			final String value = getExpandedString(key, "");
+			final String value = getExpandedString(key);
 			
 			// if the pattern does exists, replace it by its value
 			// otherwise keep the pattern ( it is group(0) )
@@ -280,7 +283,7 @@ public final class EjbcaConfigurationHolder {
 	 */
 	public static boolean updateConfiguration(final Properties properties) {
 		backupConfiguration();	// Only takes a backup if necessary.
-		final Iterator i = properties.keySet().iterator();
+		final Iterator<Object> i = properties.keySet().iterator();
 		while (i.hasNext()) {
 			final String key = (String) i.next();
 			final String value = (String) properties.get(key);
