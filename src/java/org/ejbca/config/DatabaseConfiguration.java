@@ -20,9 +20,9 @@ package org.ejbca.config;
  */
 public class DatabaseConfiguration {
 
-	public static final String CONFIG_DATASOURCENAME             = "datasource.jndi-name";
+	public static final String CONFIG_DATASOURCENAME = "datasource.jndi-name";
 
 	public static String getFullDataSourceJndiName(){
-		return InternalConfiguration.getDataSourceJndiNamePrefix() + EjbcaConfigurationHolder.getString(CONFIG_DATASOURCENAME, "EjbcaDS");
+		return InternalConfiguration.getDataSourceJndiNamePrefix() + EjbcaConfigurationHolder.getString(CONFIG_DATASOURCENAME);
 	}
 }

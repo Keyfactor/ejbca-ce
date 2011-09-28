@@ -40,7 +40,6 @@ import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -129,11 +128,7 @@ public class StartServicesServlet extends HttpServlet {
         //
         // Run all "safe" initializations first, 
         // i.e. those that does not depend on other running beans, components etc
-        //
-        
-    	if (EjbcaConfiguration.getLoggingLog4jConfig() != null) {
-    		log.warn("Property 'logging.log4j.config' is no longer used, but was configured. The value will be ignored.");
-    	}
+    
         
         // Log a startup message
 		String iMsg = intres.getLocalizedMessage("startservice.startup", GlobalConfiguration.EJBCA_VERSION);

@@ -131,8 +131,8 @@ public abstract class CmpTestCase extends CaTestCase {
 
     public void setUp() throws Exception {
         super.setUp();
-        String httpServerPubHttp = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
-        CMP_HOST = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "127.0.0.1");
+        String httpServerPubHttp = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
+        CMP_HOST = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME);
         httpReqPath = "http://" + CMP_HOST + ":" + httpServerPubHttp + "/ejbca";
     }
     

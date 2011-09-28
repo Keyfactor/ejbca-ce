@@ -29,7 +29,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.jndi.JndiHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.util.InterfaceCache;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -56,7 +55,7 @@ public class HttpMethodsTest {
 
     @Before
     public void setUp() {
-        httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+        httpPort = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
         httpBaseUrl = "http://127.0.0.1:" + httpPort;
     }
 

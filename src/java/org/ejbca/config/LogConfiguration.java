@@ -29,18 +29,18 @@ public class LogConfiguration {
 	public static synchronized Map<String, String> getUsedLogDevices() {
 		if (logDeviceMap == null) {
 			logDeviceMap = new HashMap<String, String>();
-			String[] logDevicesList = EjbcaConfigurationHolder.getString("usedLogDevices", "Log4jLogDevice;OldLogDevice").split(";");
+			String[] logDevicesList = EjbcaConfigurationHolder.getString("usedLogDevices").split(";");
 			for (int i=0; i<logDevicesList.length; i++) {
 				String name = logDevicesList[i];
 				String[] logDeviceStrings = null;
 				if ("DummyLogDevice".equalsIgnoreCase(name)) {
-					logDeviceStrings = EjbcaConfigurationHolder.getString(name, "org.ejbca.core.model.log.DummyLogDeviceFactory;").split(";");
+					logDeviceStrings = EjbcaConfigurationHolder.getString(name).split(";");
 				} else if ("Log4jLogDevice".equalsIgnoreCase(name)) {
-					logDeviceStrings = EjbcaConfigurationHolder.getString(name, "org.ejbca.core.model.log.Log4jLogDeviceFactory;logdevices/log4j.properties").split(";");
+					logDeviceStrings = EjbcaConfigurationHolder.getString(name).split(";");
 				} else if ("OldLogDevice".equalsIgnoreCase(name)) {
-					logDeviceStrings = EjbcaConfigurationHolder.getString(name, "org.ejbca.core.model.log.OldLogDeviceFactory;logdevices/oldlog.properties").split(";");
+					logDeviceStrings = EjbcaConfigurationHolder.getString(name).split(";");
 				} else {
-					logDeviceStrings = EjbcaConfigurationHolder.getString(name, "").split(";");
+					logDeviceStrings = EjbcaConfigurationHolder.getString(name).split(";");
 				}
 				if (logDeviceStrings != null && logDeviceStrings.length>0) {
 					logDeviceMap.put(name, logDeviceStrings[0].trim());

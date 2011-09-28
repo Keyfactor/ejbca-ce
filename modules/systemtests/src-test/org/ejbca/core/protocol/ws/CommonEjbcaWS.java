@@ -213,9 +213,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     
     public CommonEjbcaWS() {
 
-        hostname = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
+        hostname = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME);
 
-        httpsPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS, "8443");
+        httpsPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSSERVERPRIVHTTPS);
 
     }
 

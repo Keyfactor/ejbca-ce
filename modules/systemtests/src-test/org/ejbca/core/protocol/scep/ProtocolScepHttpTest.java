@@ -172,7 +172,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+        httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
         httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
         cacert = (X509Certificate) getTestCACert();
 

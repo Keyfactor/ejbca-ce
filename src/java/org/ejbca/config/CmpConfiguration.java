@@ -34,12 +34,12 @@ public class CmpConfiguration {
 	 * If this variable is true, and raVerify is the POPO defined in the message, no POPO check will be done.
 	 */
 	public static boolean getAllowRAVerifyPOPO() {
-		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_ALLOWRAVERIFYPOPO, "false"));
+		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_ALLOWRAVERIFYPOPO));
 	}
 	
 	/** The default CA used for signing requests, if it is not given in the request itself. */
 	public static String getDefaultCA() {
-		return EjbcaConfigurationHolder.getString(CONFIG_DEFAULTCA, null);
+		return EjbcaConfigurationHolder.getString(CONFIG_DEFAULTCA);
 	}
 	
 	/**
@@ -47,78 +47,78 @@ public class CmpConfiguration {
 	 * Nothing means that the DN will be used to look up the user.
 	 */
 	public static String getExtractUsernameComponent() {
-		return EjbcaConfigurationHolder.getString("cmp.extractusernamecomponent", null);
+		return EjbcaConfigurationHolder.getString("cmp.extractusernamecomponent");
 	}
 	
 	public static boolean getRAOperationMode() {
-		return "ra".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_OPERATIONMODE, "normal"));
+		return "ra".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_OPERATIONMODE));
 	}
 	
 	public static String getRANameGenerationScheme() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RA_NAMEGENERATIONSCHEME, "DN");
+		return EjbcaConfigurationHolder.getString(CONFIG_RA_NAMEGENERATIONSCHEME);
 	}
 	
 	public static String getRANameGenerationParameters() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RA_NAMEGENERATIONPARAMS, "CN");
+		return EjbcaConfigurationHolder.getString(CONFIG_RA_NAMEGENERATIONPARAMS);
 	}
 	
 	public static String getRANameGenerationPrefix() {
-		return EjbcaConfigurationHolder.getString("cmp.ra.namegenerationprefix", null);
+		return EjbcaConfigurationHolder.getString("cmp.ra.namegenerationprefix");
 	}
 	
 	public static String getRANameGenerationPostfix() {
-		return EjbcaConfigurationHolder.getString("cmp.ra.namegenerationpostfix", null);
+		return EjbcaConfigurationHolder.getString("cmp.ra.namegenerationpostfix");
 	}
 	
 	public static String getUserPasswordParams() {
-		return EjbcaConfigurationHolder.getString("cmp.ra.passwordgenparams", "random");		
+		return EjbcaConfigurationHolder.getString("cmp.ra.passwordgenparams");		
 	}
 	
 	public static String getRAAuthenticationSecret() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RA_AUTHENTICATIONSECRET, null);
+		return EjbcaConfigurationHolder.getString(CONFIG_RA_AUTHENTICATIONSECRET);
 	}
 	
 	public static String getRAEndEntityProfile() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
+		return EjbcaConfigurationHolder.getString(CONFIG_RA_ENDENTITYPROFILE);
 	}
 	
 	public static String getRACertificateProfile() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
+		return EjbcaConfigurationHolder.getString(CONFIG_RA_CERTIFICATEPROFILE);
 	}
 	
 	public static String getRACAName() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RACANAME, "AdminCA1");
+		return EjbcaConfigurationHolder.getString(CONFIG_RACANAME);
 	}
 	
 	public static String getResponseProtection() {
-		return EjbcaConfigurationHolder.getString(CONFIG_RESPONSEPROTECTION, "signature");
+		return EjbcaConfigurationHolder.getString(CONFIG_RESPONSEPROTECTION);
 	}
 	
 	public static int getTCPPortNumber() {
-		return Integer.valueOf(EjbcaConfigurationHolder.getString("cmp.tcp.portno", "829")).intValue();
+		return Integer.valueOf(EjbcaConfigurationHolder.getString("cmp.tcp.portno")).intValue();
 	}
 	
 	public static String getTCPLogDir() {
-		return EjbcaConfigurationHolder.getString("cmp.tcp.logdir", "./log");
+		return EjbcaConfigurationHolder.getString("cmp.tcp.logdir");
 	}
 	
 	public static String getTCPConfigFile() {
-		return EjbcaConfigurationHolder.getString("cmp.tcp.conffile", "");
+		return EjbcaConfigurationHolder.getString("cmp.tcp.conffile");
 	}
 	
 	public static String getTCPBindAdress() {
-		return EjbcaConfigurationHolder.getString("cmp.tcp.bindadress", "0.0.0.0");
+		return EjbcaConfigurationHolder.getString("cmp.tcp.bindadress");
 	}
 	
 	public static boolean getRAAllowCustomCertSerno() {
-		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_RA_ALLOWCUSTOMCERTSERNO, "false"));
+		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getString(CONFIG_RA_ALLOWCUSTOMCERTSERNO));
 	}
 
 	public static String getUnidDataSource() {
-		return EjbcaConfigurationHolder.getString(CONFIG_UNIDDATASOURCE, null);
+		return EjbcaConfigurationHolder.getString(CONFIG_UNIDDATASOURCE);
 	}
 
 	public static String getCertReqHandlerClass() {
-		return EjbcaConfigurationHolder.getString(CONFIG_CERTREQHANDLER_CLASS, null);
+		return EjbcaConfigurationHolder.getString(CONFIG_CERTREQHANDLER_CLASS);
 	}
 }

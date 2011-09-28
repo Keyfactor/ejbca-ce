@@ -47,7 +47,7 @@ public class WebdistHttpTest {
     
     @Before
     public void setUp() {
-        httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+        httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
     }
 
     @Test

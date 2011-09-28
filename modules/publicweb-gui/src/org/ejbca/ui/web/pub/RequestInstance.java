@@ -482,7 +482,7 @@ public class RequestInstance {
 			log.error(intres.getLocalizedMessage("certreq.ovpntnoruntime"));
 		} else {
 			final String script = EjbcaConfigurationHolder
-			.getString("web.openvpn.createInstallerScript", "/usr/local/ejbca/bin/mk_openvpn_windows_installer.sh");
+			.getString("web.openvpn.createInstallerScript");
 			Process p = rt.exec(script);
 			if (p == null) {
 				log.error(intres.getLocalizedMessage("certreq.ovpntfailedexec", script));

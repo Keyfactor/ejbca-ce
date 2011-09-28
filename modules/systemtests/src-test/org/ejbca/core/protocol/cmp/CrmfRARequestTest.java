@@ -266,7 +266,7 @@ public class CrmfRARequestTest extends CmpTestCase {
                     InternalEjbcaResources.getInstance().getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'AdminCA1'",
                             "'SYSTEMCA'"), null);
 
-            hostname = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME, "localhost");
+            hostname = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME);
 
             crmfHttpUserTest(
                     "CN=" + hostname + ",O=EJBCA Sample,C=SE",

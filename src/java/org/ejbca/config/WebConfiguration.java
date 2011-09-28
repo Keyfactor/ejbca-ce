@@ -31,7 +31,7 @@ public class WebConfiguration {
 	 * The configured server host name
 	 */
 	public static String getHostName() {
-		return EjbcaConfigurationHolder.getExpandedString(CONFIG_HTTPSSERVERHOSTNAME, "localhost");
+		return EjbcaConfigurationHolder.getExpandedString(CONFIG_HTTPSSERVERHOSTNAME);
 	}
 	
 	/**
@@ -40,7 +40,7 @@ public class WebConfiguration {
 	public static int getPublicHttpPort() {
 		int value = 8080;
 		try {
-			value = Integer.parseInt(EjbcaConfigurationHolder.getString(CONFIG_HTTPSERVERPUBHTTP, ""+value));
+			value = Integer.parseInt(EjbcaConfigurationHolder.getString(CONFIG_HTTPSERVERPUBHTTP));
 		} catch( NumberFormatException e ) {
 			log.warn("\"httpserver.pubhttp\" is not a decimal number. Using default value: " + value);
 		}
@@ -53,7 +53,7 @@ public class WebConfiguration {
 	public static int getPrivateHttpsPort() {
 		int value = 8443;
 		try {
-			value = Integer.parseInt(EjbcaConfigurationHolder.getString(CONFIG_HTTPSSERVERPRIVHTTPS, ""+value));
+			value = Integer.parseInt(EjbcaConfigurationHolder.getString(CONFIG_HTTPSSERVERPRIVHTTPS));
 		} catch( NumberFormatException e ) {
 			log.warn("\"httpserver.privhttps\" is not a decimal number. Using default value: " + value);
 		}
@@ -66,7 +66,7 @@ public class WebConfiguration {
 	public static int getExternalPrivateHttpsPort() {
 		int value = 8443;
 		try {
-			value = Integer.parseInt(EjbcaConfigurationHolder.getString(CONFIG_HTTPSSERVEREXTERNALPRIVHTTPS, String.valueOf(getPrivateHttpsPort())));
+			value = Integer.parseInt(EjbcaConfigurationHolder.getString(CONFIG_HTTPSSERVEREXTERNALPRIVHTTPS));
 		} catch( NumberFormatException e ) {
 			log.warn("\"httpserver.external.privhttps\" is not a decimal number. Using default value: " + value);
 		}
@@ -77,7 +77,7 @@ public class WebConfiguration {
 	 * Defines the available languages by language codes separated with a comma
 	 */
 	public static String getAvailableLanguages() {
-		return EjbcaConfigurationHolder.getExpandedString("web.availablelanguages", "EN,DE,ES,FR,IT,PT,PT_BR,SE,ZH");
+		return EjbcaConfigurationHolder.getExpandedString("web.availablelanguages");
 	}
 	
 	/**
@@ -85,7 +85,7 @@ public class WebConfiguration {
 	 * be displayed for the administrators. If false only non-sensitive information is displayed. 
 	 */
 	public static boolean getHardTokenDiplaySensitiveInfo() {
-		String value = EjbcaConfigurationHolder.getString("hardtoken.diplaysensitiveinfo", "true");
+		String value = EjbcaConfigurationHolder.getString("hardtoken.diplaysensitiveinfo");
 		return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
 	}
 
@@ -95,7 +95,7 @@ public class WebConfiguration {
 	public static int getLogMaxQueryRowCount() {
 		int value = 1000;
 		try {
-			value = Integer.parseInt(EjbcaConfigurationHolder.getString("log.maxqueryrowcount", ""+value));
+			value = Integer.parseInt(EjbcaConfigurationHolder.getString("log.maxqueryrowcount"));
 		} catch( NumberFormatException e ) {
 			log.warn("\"log.maxqueryrowcount\" is not a decimal number. Using default value: " + value);
 		}
@@ -107,36 +107,44 @@ public class WebConfiguration {
 	 * @return "disabled", "internal" or and URL
 	 */
 	public static String getDocBaseUri() {
-		return EjbcaConfigurationHolder.getExpandedString("web.docbaseuri", "internal");
+		return EjbcaConfigurationHolder.getExpandedString("web.docbaseuri");
 	}
 	
 	/**
 	 * Require administrator certificates to be available in database for revocation checks.
 	 */
 	public static boolean getRequireAdminCertificateInDatabase() {
-		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString("web.reqcertindb", "true"));
+		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString("web.reqcertindb"));
 	}
 
 	/**
 	 * Default content encoding used to display JSP pages
 	 */
 	public static String getWebContentEncoding() {
-	   	return EjbcaConfigurationHolder.getString ("web.contentencoding", "UTF-8");
+	   	return EjbcaConfigurationHolder.getString ("web.contentencoding");
 	}
 	
 	/**
 	 * The request browser certificate renewal web application is deployed
 	 */
 	public static boolean getRenewalEnabled() {
-		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString("web.renewalenabled", "false"));
+		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString("web.renewalenabled"));
 	}
 
     public static boolean doShowStackTraceOnErrorPage(){
-        final String s=EjbcaConfigurationHolder.getString ("web.errorpage.stacktrace", null);
+        final String s=EjbcaConfigurationHolder.getString ("web.errorpage.stacktrace");
         return s==null || s.toLowerCase().indexOf("true")>=0;
 	}
 
-    public static String notification(String sDefault){
-        return EjbcaConfigurationHolder.getString ("web.errorpage.notification", sDefault);
+    public static String notification(String sDefault){        
+        String result= EjbcaConfigurationHolder.getString ("web.errorpage.notification");
+        if(result == null) {
+           return sDefault;            
+        } else if(result.equals("")) {
+           return sDefault;
+        } else {
+            return result;
+        }
+        
     }
 }

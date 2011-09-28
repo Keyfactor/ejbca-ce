@@ -69,7 +69,7 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
     @Override
     public boolean verifyProperty(String key, String value) {
         assertIsNotInProductionMode();
-        String configValue = EjbcaConfigurationHolder.getString(key, null);
+        String configValue = EjbcaConfigurationHolder.getString(key);
         if ((value == null && configValue != null) || (value != null && configValue == null)) {
             return false;
         }
@@ -80,9 +80,9 @@ public class ConfigurationSessionBean implements ConfigurationSessionRemote {
     }
 
     @Override
-    public String getProperty(String key, String defaultValue) {
+    public String getProperty(String key) {
         assertIsNotInProductionMode();
-        return EjbcaConfigurationHolder.getString(key, defaultValue);
+        return EjbcaConfigurationHolder.getString(key);
     }
 
     @Override

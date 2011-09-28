@@ -20,7 +20,8 @@ package org.ejbca.config;
  */
 public class InternalConfiguration {
 
-	public static final String CONFIG_DATASOURCENAMEPREFIX       = "datasource.jndi-name-prefix";
+    public static final String CONFIG_APPNAME_CAPITAL = "app.name.capital";
+	public static final String CONFIG_DATASOURCENAMEPREFIX = "datasource.jndi-name-prefix";
 
 	/**
 	 * Lower case application name
@@ -40,31 +41,31 @@ public class InternalConfiguration {
 	 * Upper case application name
 	 */
 	public static String getAppNameCapital() {
-		return "EJBCA";
+		return EjbcaConfigurationHolder.getExpandedString(CONFIG_APPNAME_CAPITAL);
 	}
 
 	/**
 	 * Application version number
 	 */
 	public static String getAppVersionNumber() {
-		return EjbcaConfigurationHolder.getExpandedString("app.version.number", "versionNotAvailable");
+		return EjbcaConfigurationHolder.getExpandedString("app.version.number");
 	}
 
 	/**
 	 * SVN revision
 	 */
 	public static String getSvnRevision() {
-		return EjbcaConfigurationHolder.getExpandedString("svn.revision", "revisionNotAvailable");
+		return EjbcaConfigurationHolder.getExpandedString("svn.revision");
 	}
 
 	/**
 	 * Full application version
 	 */
 	public static String getAppVersion() {
-		return EjbcaConfigurationHolder.getExpandedString("app.version", getAppNameCapital() + " " + getAppVersionNumber() + " (" + getSvnRevision() + ")");
+		return EjbcaConfigurationHolder.getExpandedString("app.version");
 	}
 
 	public static String getDataSourceJndiNamePrefix(){
-		return EjbcaConfigurationHolder.getString(CONFIG_DATASOURCENAMEPREFIX, "");	// We need to return an empty string for WebLogic. "java:/" will be set anyway on JBoss.
+		return EjbcaConfigurationHolder.getString(CONFIG_DATASOURCENAMEPREFIX);	// We need to return an empty string for WebLogic. "java:/" will be set anyway on JBoss.
 	}
 }

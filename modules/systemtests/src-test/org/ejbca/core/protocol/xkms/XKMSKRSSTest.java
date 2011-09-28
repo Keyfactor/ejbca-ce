@@ -116,7 +116,7 @@ public class XKMSKRSSTest {
 
     private final static Logger log = Logger.getLogger(XKMSKRSSTest.class);
 
-    private final static String HTTPPORT = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP, "8080");
+    private final static String HTTPPORT = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
 
     private final static XKMSInvoker xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/xkms", null);
 
