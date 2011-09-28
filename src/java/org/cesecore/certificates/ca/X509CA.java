@@ -807,7 +807,7 @@ public class X509CA extends CA implements Serializable {
                     final String skistr = new String(Hex.encode(ski));
                     final String msg = intres.getLocalizedMessage("createcert.errorpathverifykeyid", akistr, skistr);
                     log.error(msg);
-                    throw new CertificateCreateException(msg);
+                    // This will differ if we create link certificates, NewWithOld, therefore we can not throw an exception here.
                 }
             }
             final Principal issuerDN = cert.getIssuerX500Principal();
