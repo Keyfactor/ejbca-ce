@@ -116,12 +116,17 @@ public class HardTokenData implements Serializable, Comparable<HardTokenData> {
     private    HardToken       hardtoken;
     private    String          copyof;
     private    Collection<String> copies;
+
+	/* 
+	 * When viewing the tokens in the GUI they should come in the order that they were created.
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
 	@Override
 	public int compareTo(HardTokenData o) {
-		if ( this.modifytime.equals(o)) {
+		if ( this.createtime.equals(o)) {
 			return 0;
 		}
-		return this.modifytime.after(o.modifytime) ? -1 : 1;
+		return this.createtime.after(o.createtime) ? -1 : 1;
 	}
 
 }
