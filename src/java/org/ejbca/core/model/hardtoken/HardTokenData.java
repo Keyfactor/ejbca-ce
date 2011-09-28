@@ -29,7 +29,7 @@ import org.ejbca.core.model.hardtoken.types.HardToken;
  * @version $Id$
  */
 
-public class HardTokenData implements Serializable {
+public class HardTokenData implements Serializable, Comparable<HardTokenData> {
 
     private static final long serialVersionUID = 1L;
     // Public Constructors
@@ -116,5 +116,12 @@ public class HardTokenData implements Serializable {
     private    HardToken       hardtoken;
     private    String          copyof;
     private    Collection<String> copies;
+	@Override
+	public int compareTo(HardTokenData o) {
+		if ( this.modifytime.equals(o)) {
+			return 0;
+		}
+		return this.modifytime.after(o.modifytime) ? -1 : 1;
+	}
 
 }
