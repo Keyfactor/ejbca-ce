@@ -234,7 +234,17 @@ public class AccessTreeNode {
                     AccessTreeState thisUserState = roleRulePair.getSecondElement().getTreeState();
                     AccessMatchValue thisUserStatePriority = accessUser.getPriority();
                     if (log.isTraceEnabled()) {
-                    	log.trace("accessUser "+accessUser.getMatchWithByValue().name()+" "+accessUser.getMatchTypeAsType().name()+" "+accessUser.getMatchValue()+" matched authenticationToken. thisUserState=" + thisUserState.name() + " thisUserStatePriority=" + thisUserStatePriority.name());
+                        AccessTreeState logState = thisUserState;
+                        if (logState == null) {
+                            log.trace("logState is null");
+                            logState = AccessTreeState.STATE_UNKNOWN;
+                        }
+                        AccessMatchValue logMatchValue = thisUserStatePriority;
+                        if (logMatchValue == null) {
+                            log.trace("logMatchValue is null");
+                            logMatchValue = AccessMatchValue.NONE;                            
+                        }
+                    	log.trace("accessUser "+accessUser.getMatchWithByValue().name()+" "+accessUser.getMatchTypeAsType().name()+" "+accessUser.getMatchValue()+" matched authenticationToken. thisUserState=" + logState.name() + " thisUserStatePriority=" + logMatchValue.name());
                     }
                     // If rule has higher priority, its state is to be used.
                     if (statePriority.getNumericValue() < thisUserStatePriority.getNumericValue()) {
