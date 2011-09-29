@@ -19,10 +19,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
-import java.security.SecureRandom;
 import java.security.cert.X509Certificate;
 import java.util.Date;
-import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
@@ -60,7 +58,6 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
 
     private static final Logger LOG = Logger.getLogger(CmpRAAuthenticationTest.class);
     private static final AuthenticationToken ADMIN = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-    private static final Random RND = new SecureRandom();
 
     private static final String CA_NAME_1 = "CmpRAAuthenticationTestCA1";
     private static final String CA_NAME_2 = "CmpRAAuthenticationTestCA2";

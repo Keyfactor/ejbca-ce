@@ -143,6 +143,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 				LOG.debug("cmp.ra.allowcustomcertserno="+allowCustomCertSerno);
 				LOG.debug("cmp.ra.passwordgenparams="+userPwdParams);
 				LOG.debug("cmp.responseprotection="+responseProt);
+                LOG.debug("cmp.ra.authenticationsecret="+(raAuthSecret == null ? "null" : "not null"));
 			}
 		} else {
 			this.usernameGenParams = null;
