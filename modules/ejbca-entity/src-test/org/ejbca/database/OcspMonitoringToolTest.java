@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
  
-package org.ejbca.ui.cli;
+package org.ejbca.database;
 
 import static org.junit.Assert.assertTrue;
 
@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
 import javax.persistence.Query;
 
@@ -30,17 +31,18 @@ import org.junit.Test;
 /**
  * Injects different kind of errors in the OCSP responder "ocsp1" and tries to detect them
  * by calling the OCSP monitoring tool.
+ * 
+ * @version $Id$
  */
 public class OcspMonitoringToolTest {
 
 	private static final Logger log = Logger.getLogger(OcspMonitoringToolTest.class);
+    private static final String[] args = {"ocspmon", "all", "1000", "60", "1", "9", "-", "ca", "ocsp1"};
 	
 	private final EntityManager ocspEntityManager = Persistence.createEntityManagerFactory("ocsp1").createEntityManager();
-
+	
 	@Before
 	public void setUp() throws Exception { }
-
-	String[] args = {"ocspmon", "all", "1000", "60", "1", "9", "-", "ca", "ocsp1"};
 
 	/**
 	 * 	Run a test to see that the databases made available for testing is equal
@@ -61,7 +63,7 @@ public class OcspMonitoringToolTest {
 	@Test
 	public void test02DetectRemovedEntries() throws Exception {
 		log.trace(">test02DetectRemovedEntries");
-		
+		//ocspEntityManager.setFlushMode(FlushModeType.AUTO);
 		Query query = ocspEntityManager.createQuery("select a from CertificateData a WHERE a.certificateProfileId=:certificateProfileId order by a.fingerprint asc");
 		query.setParameter("certificateProfileId", 1);
 		query.setMaxResults(2);
@@ -73,13 +75,16 @@ public class OcspMonitoringToolTest {
 		query.setMaxResults(1);
 		CertificateData certificateData3 = (CertificateData) query.getSingleResult();
 
-		ocspEntityManager.getTransaction().begin();
+		final EntityTransaction transaction1 = ocspEntityManager.getTransaction();
+		transaction1.begin();
 		ocspEntityManager.remove(certificateData1);
-		ocspEntityManager.getTransaction().commit();
+		transaction1.commit();
+		assertTrue("Failed to remove certificate from OCSP. Test is broken.", ocspEntityManager.find(CertificateData.class, certificateData1.getFingerprint())==null);
 		int result = new OcspMonitoringTool().executeInternal(args);
-		ocspEntityManager.getTransaction().begin();
-		ocspEntityManager.persist(certificateData1);
-		ocspEntityManager.getTransaction().commit();
+        final EntityTransaction transaction2 = ocspEntityManager.getTransaction();
+        transaction2.begin();
+        ocspEntityManager.persist(certificateData1);
+        transaction2.commit();
 		assertTrue("Did not detect missing first cert.", result == -1);
 		
 		ocspEntityManager.getTransaction().begin();

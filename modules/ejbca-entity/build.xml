@@ -212,18 +212,34 @@
 				<pathelement location="${build-test.dir}"/>
 			</classpath>
 			<formatter type="xml" />
-			<test name="org.ejbca.core.ejb.DatabaseSchemaTest" todir="${reports.dir}"/>
-			<!-- batchtest seems to be unable to accept memory arguments..
-			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build-test.dir}">
-					<include name="org/ejbca/core/ejb/DatabaseSchemaTest.class" />
-				</fileset>
-			</batchtest>
-			-->
+			<test name="org.ejbca.database.DatabaseSchemaTest" todir="${reports.dir}"/>
 		</junit>
 		<antcall target="createreport"/>
     	<condition property="databaseschemarest.ok" value="true"><not><isset property="databaseschemarest.failed"/></not></condition>
     	<echounlesstrue unless-true="databaseschemarest.ok" message="If your test runs our of memory (for example during the CRL write), you might want to consider using ANT_OPTS like '-Xms1024m -Xmx2048m'." />
+    </target>
+
+    <target name="test-ocspmon" description="Test ocsp monitoring." depends="compile-test, handlepersistence, handleorm">
+    	<fail unless="jdbc.driver.dir" message="Use -Djdbc.driver.dir=/path-to-jdbc-jars/ to specify the directory with the JDBC driver JARs."/>
+		<available property="database.driver.available" classname="${database.driver}" classpathref="jdbc-jars.classpath"/>
+    	<fail unless="database.driver.available" message="Driver class (${database.driver}) from database.properties can not be found in ${jdbc.driver.dir}."/>
+        <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
+    	<mkdir dir="${build-test.dir}/META-INF"/>
+		<copy file="${resources.dir}/orm-common-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
+		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
+    	<property name="reports.dir" location="${reports.base.dir}/ocspmon"/>
+		<delete dir="${reports.dir}" />
+		<mkdir dir="${reports.dir}/html"/>
+		<junit printsummary="yes" haltonfailure="no" fork="false" failureproperty="databaseschemarest.failed">
+			<classpath>
+        		<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+				<pathelement location="${build-test.dir}"/>
+			</classpath>
+			<formatter type="xml" />
+			<test name="org.ejbca.database.OcspMonitoringToolTest" todir="${reports.dir}"/>
+		</junit>
+		<antcall target="createreport"/>
     </target>
 
 	<target name="test" depends="compile-test" description="Run tests for this module">
@@ -249,8 +265,16 @@
 
     <target name="compile-test" depends="with.clover, ejbca-util, build">
     	<mkdir dir="${build-test.dir}" />
-        <javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath"/>
+        <javac destdir="${build-test.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-test.classpath"
+        	>
+        	<include name="org/ejbca/database/**/*Test.java"/>
+	    	<src path="${src-test.dir}"/>
+	    	<src path="${src-cli.dir}"/>
+	    	<src path="${src.dir}"/>
+        	<src path="${ejbca.home}/src/java"/>
+        	<src path="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
+        </javac>
 		<copy todir="${build-test.dir}" failonerror="true">
 			<fileset dir="${src-test.dir}">
 				<include name="**/*.xml"/>

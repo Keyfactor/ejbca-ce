@@ -32,6 +32,10 @@
 		<priority value="TRACE"/>
 		<appender-ref ref="console"/>
 	</category>
+	<category name="org.cesecore" additivity="false">
+		<priority value="TRACE"/>
+		<appender-ref ref="console"/>
+	</category>
 
 	<category name="org.hibernate.tool.hbm2ddl" additivity="false">
 		<priority value="INFO"/>
@@ -39,7 +43,7 @@
 	</category>
 
 	<category name="org.hibernate" additivity="false">
-		<priority value="WARN"/>
+		<priority value="INFO"/>
 		<appender-ref ref="console"/>
 	</category>
 

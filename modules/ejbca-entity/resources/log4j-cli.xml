@@ -22,24 +22,22 @@
 	</appender> 
 
 	<category name="org.ejbca" additivity="false">
-		<priority value="DEBUG"/>
+		<priority value="TRACE"/>
 		<!-- Change this to 'debug-console' for full debug info -->
 		<appender-ref ref="console"/>
 	</category>
 	<category name="org.cesecore" additivity="false">
-		<priority value="DEBUG"/>
+		<priority value="TRACE"/>
 		<!-- Change this to 'debug-console' for full debug info -->
 		<appender-ref ref="console"/>
 	</category>
 
-
 	<category name="org.hibernate.tool.hbm2ddl" additivity="false">
-		<priority value="INFO"/>
+		<priority value="WARN"/>
 		<appender-ref ref="console"/>
 	</category>
-
 	<category name="org.hibernate" additivity="false">
-		<priority value="INFO"/>
+		<priority value="WARN"/>
 		<appender-ref ref="console"/>
 	</category>
 
