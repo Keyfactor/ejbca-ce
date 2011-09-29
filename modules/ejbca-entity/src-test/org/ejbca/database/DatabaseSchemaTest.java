@@ -11,7 +11,7 @@
  *                                                                       *
  *************************************************************************/
 
-package org.ejbca.core.ejb;
+package org.ejbca.database;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -77,7 +77,7 @@ public class DatabaseSchemaTest extends TestCase {
 		super.setUp();
 		LOG.trace(">setup");
 		if (entityManagerFactory == null) {
-			entityManagerFactory = Persistence.createEntityManagerFactory("ejbca-pu");
+			entityManagerFactory = Persistence.createEntityManagerFactory("ejbca-write");
 		}
 		entityManager = entityManagerFactory.createEntityManager();
 		LOG.trace("<setup");

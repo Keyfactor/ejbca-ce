@@ -62,4 +62,36 @@
             <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
         </properties>
     </persistence-unit>
+
+	<!--
+	    OCSP Monitoring Tool test configurations on MySQL.
+	-->
+    <persistence-unit name="ca" transaction-type="RESOURCE_LOCAL">
+        <mapping-file>META-INF/orm-common-mysql.xml</mapping-file>
+        <class>org.cesecore.certificates.certificate.CertificateData</class>
+        <class>org.cesecore.certificates.crl.CRLData</class>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+            <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
+            <property name="hibernate.connection.username" value="ejbca"/>
+            <property name="hibernate.connection.password" value="ejbca"/>
+            <property name="hibernate.connection.url" value="jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+            <property name="hibernate.cache.use_second_level_cache" value="false"/>
+        </properties>
+    </persistence-unit>
+    <persistence-unit name="ocsp1" transaction-type="RESOURCE_LOCAL">
+        <mapping-file>META-INF/orm-common-mysql.xml</mapping-file>
+        <class>org.cesecore.certificates.certificate.CertificateData</class>
+        <class>org.cesecore.certificates.crl.CRLData</class>
+        <properties>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+            <property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/>
+            <property name="hibernate.connection.username" value="ejbca"/>
+            <property name="hibernate.connection.password" value="ejbca"/>
+            <property name="hibernate.connection.url" value="jdbc:mysql://127.0.0.1:3306/ocsp?characterEncoding=UTF-8"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.cache.use_second_level_cache" value="false"/>
+        </properties>
+    </persistence-unit>
 </persistence>

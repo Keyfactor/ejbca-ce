@@ -534,28 +534,6 @@
 		<antcall target="createreport"/>
 	</target>
 
-	<target name="runctb" depends="build, clientToolBox" description="run JUnit ClientToolBox tests">
-		<echo message="Use ejbca-custom/dist/clientToolBox/lib for your JDBC driver and ejbca-custom/dist/clientToolBox/properties/META-INF/persistence.xml for your modified database config."/>
-		<property name="reports.dir" location="${reports.base.dir}/ctb"/>
-		<delete dir="${reports.dir}" />
-		<mkdir dir="${reports.dir}/html"/>
-		<junit printsummary="yes" haltonfailure="no">
-			<classpath>
-				<path location="${build.test.dir}" />
-				<path refid="lib.clientToolBox.classpath" />
-				<pathelement path="${clover.jar}"/>
-			</classpath>
-			<jvmarg line="${tests.jvmargs}"/>
-			<formatter type="xml" />
-			<batchtest fork="yes" todir="${reports.dir}">
-				<fileset dir="${build.test.dir}">
-					<include name="org/ejbca/ui/cli/OcspMonitoringToolTest.class" />
-				</fileset>
-			</batchtest>
-		</junit>
-		<antcall target="createreport"/>
-	</target>
-
 	<target name="rungfver" depends="build">
 		<condition property="isglassfish">
 			<matches pattern="glassfish" string="${appserver.type}"/>
