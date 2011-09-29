@@ -260,6 +260,7 @@
 		<include name="org/ejbca/util/JAXWSDocAndConvTools.java"/>
 		<!-- For backwards compatiblitiy, replaced by classes in CESeCore -->
 		<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
+		<include name="org/ejbca/core/model/ca/certificateprofiles/CertificatePolicy.java"/>
 		<!-- Tool for tests. -->
 		<include name="org/ejbca/util/NonEjbTestTools.java"/>
 	</fileset>
