@@ -650,6 +650,9 @@ public class LdapPublisher extends BasePublisher {
 		// Try all the listed servers
 		final Iterator<String> servers = getHostnameList().iterator();
 		boolean isConnectionNotDone = true;
+        if (log.isDebugEnabled() && (oldEntry == null)) {
+            log.debug("Not modifying LDAP entry because there is no existing entry.");                      
+        }
 		while ( oldEntry!=null && isConnectionNotDone && servers.hasNext()) {
 			isConnectionNotDone = false;
 			String currentServer = servers.next(); 
