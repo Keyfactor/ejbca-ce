@@ -124,7 +124,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     @Before
     public void setUp() throws Exception {
-    	super.setUp();
+        super.setUp();
     }
 
     @After
@@ -293,30 +293,35 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
             try {
                 getHardTokenData(serialNumber, true);
-                assertTrue(false);
+                fail("should be waiting for approval");
             } catch (WaitingForApprovalException_Exception e) {
+                // NOPMD: desired
             }
 
             try {
                 getHardTokenData(serialNumber, true);
-                assertTrue(false);
+                fail("should be waiting for approval");
             } catch (WaitingForApprovalException_Exception e) {
+                // NOPMD: desired
             }
 
             Approval approval1 = new Approval("ap1test");
             try {
+                System.out.println("ID: "+approvalRequest.generateApprovalId());
                 approvalExecutionSession.approve(admin1, approvalRequest.generateApprovalId(), approval1, gc);
                 getHardTokenData(serialNumber, true);
                 try {
                     getHardTokenData(serialNumber, true);
-                    assertTrue(false);
+                    fail("should be waiting for approval");
                 } catch (WaitingForApprovalException_Exception e) {
+                    // NOPMD: desired
                 }
                 approvalSession.reject(admin1, approvalRequest.generateApprovalId(), approval1, gc);
                 try {
                     getHardTokenData(serialNumber, true);
-                    assertTrue(false);
+                    fail("should not work");
                 } catch (ApprovalRequestExecutionException_Exception e) {
+                    // NOPMD: desired
                 }
             } finally {
                 // Clean up approval requests.
