@@ -46,7 +46,6 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -246,33 +245,31 @@ public class CrmfRARequestTest extends CmpTestCase {
             // check that several certificates could be created for one user and one key.
             crmfHttpUserTest(userDN1, key1, null, null);
             crmfHttpUserTest(userDN2, key2, null, null);
-            // check that the request fails when asking for certificate for another
-            // user with same key.
+            // check that the request fails when asking for certificate for another user with same key.
+            //InternalResources.getInstance().getLocalizedMessage("createcert.key_exists_for_another_user", "'" + userName2 + "'","'" + userName1 + "'")
             crmfHttpUserTest(
                     userDN2,
                     key1,
-                    InternalEjbcaResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'" + userName2 + "'",
-                            "'" + userName1 + "'"), null);
+                    "User 'cmptest2' is not allowed to use same key as the user(s) 'cmptest1' is/are using.", null);
+            // InternalResources.getInstance().getLocalizedMessage("createcert.key_exists_for_another_user", "'" + userName1 + "'","'" + userName2 + "'")
             crmfHttpUserTest(
                     userDN1,
                     key2,
-                    InternalEjbcaResources.getInstance().getLocalizedMessage("signsession.key_exists_for_another_user", "'" + userName1 + "'",
-                            "'" + userName2 + "'"), null);
-            // check that you can not issue a certificate with same DN as another
-            // user.
+                    "User 'cmptest1' is not allowed to use same key as the user(s) 'cmptest2' is/are using.", null);
+            // check that you can not issue a certificate with same DN as another user.
+            //InternalResources.getInstance().getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'AdminCA1'","'SYSTEMCA'")
             crmfHttpUserTest(
                     "CN=AdminCA1,O=EJBCA Sample,C=SE",
                     key3,
-                    InternalEjbcaResources.getInstance().getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'AdminCA1'",
-                            "'SYSTEMCA'"), null);
+                    "User 'AdminCA1' is not allowed to use same subject DN as the user(s) 'SYSTEMCA' is/are using. See setting for 'Enforce unique DN' in Edit Certificate Authorities.", null);
 
             hostname = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME);
 
+            // InternalResources.getInstance().getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'" + hostname + "'","'tomcat'")
             crmfHttpUserTest(
                     "CN=" + hostname + ",O=EJBCA Sample,C=SE",
                     key4,
-                    InternalEjbcaResources.getInstance().getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'" + hostname + "'",
-                            "'tomcat'"), null);
+                    "User 'localhost' is not allowed to use same subject DN as the user(s) 'tomcat' is/are using. See setting for 'Enforce unique DN' in Edit Certificate Authorities.", null);
 
         } finally {
             try {
