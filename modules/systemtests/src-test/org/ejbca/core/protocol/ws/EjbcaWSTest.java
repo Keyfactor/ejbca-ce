@@ -210,8 +210,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @Test
-    public void test09Utf8() throws Exception {
-        utf8();
+    public void test09Utf8EditUser() throws Exception {
+        utf8EditUser();
     }
 
     @Test

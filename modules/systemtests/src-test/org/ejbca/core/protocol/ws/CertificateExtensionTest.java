@@ -16,6 +16,7 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -93,7 +94,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	}
 
 	@Test
-	public void test0() throws Exception {
+	public void test0AddProfiles() throws Exception {
 		super.setupAccessRights(this.wsadminRoleName);
 		if (this.certificateProfileSession.getCertificateProfileId(CERTIFICATE_PROFILE) != 0) {
 			this.certificateProfileSession.removeCertificateProfile(intAdmin, CERTIFICATE_PROFILE);
@@ -118,12 +119,12 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	}
 
 	@Test
-	public void test1() throws Exception {
+	public void test1GetCertSuccess() throws Exception {
 		getCertificateWithExtension(true);
 	}
 
 	@Test
-	public void test2() throws Exception {
+	public void test2GetCertFail() throws Exception {
 		getCertificateWithExtension(false);
 	}
 
@@ -135,7 +136,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 		editUser(values, value[0]);
 		final X509Certificate cert = getMyCertificate();
 		if ( cert==null ) {
-			assertTrue(!isExpectedToWork);
+			assertFalse(isExpectedToWork);
 			return;
 		}
 		assertTrue(isExpectedToWork);
