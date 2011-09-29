@@ -143,6 +143,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
             EjbcaWSService service = new EjbcaWSService(new URL(urlstr), qname);
             ejbcaraws = service.getEjbcaWSPort();
+        } else {
+            log.error("No file '"+TEST_NONADMIN_FILE+"' exists.");
         }
     }
 
