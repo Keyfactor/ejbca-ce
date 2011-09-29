@@ -71,7 +71,6 @@ public interface IEjbcaWS {
 	 * Observe: if the user doesn't already exists, it's status will always be set to 'New'.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/create_end_entity and/or edit_end_entity
 	 * - /endentityprofilesrules/&lt;end entity profile of user&gt;/create_end_entity and/or edit_end_entity
@@ -98,11 +97,10 @@ public interface IEjbcaWS {
 	 * Retrieves information about users in the database.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
-	 * - /endentityprofilesrules/<end entity profile of matching users>/view_end_entity
-	 * - /ca/<ca of matching users>
+	 * - /endentityprofilesrules/&lt;end entity profile of matching users&gt;/view_end_entity
+	 * - /ca/&lt;ca of usermatch&gt; - when matching on CA
 	 * </pre>
 	 * 
 	 * @param usermatch the unique user pattern to search for
@@ -112,7 +110,6 @@ public interface IEjbcaWS {
 	 * @throws EjbcaException 
 	 * @throws CesecoreException 
 	 */
-
 	public abstract List<UserDataVOWS> findUser(UserMatch usermatch)
 			throws AuthorizationDeniedException, IllegalQueryException, EjbcaException;
 
@@ -120,7 +117,6 @@ public interface IEjbcaWS {
 	 * Retrieves a collection of certificates generated for a user.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
@@ -133,7 +129,6 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws EjbcaException 
 	 */
-
 	public abstract List<Certificate> findCerts(String username,
 			boolean onlyValid) throws AuthorizationDeniedException, EjbcaException;
 
@@ -143,7 +138,6 @@ public interface IEjbcaWS {
 	 *  Note: the whole certificate chain is returned.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ca/&lt;ca in question&gt;
 	 * </pre>
@@ -155,7 +149,6 @@ public interface IEjbcaWS {
 	 * @throws CADoesntExistsException 
 	 * @throws EjbcaException
 	 */
-
 	public abstract List<Certificate> getLastCAChain(String caname) 
 	throws AuthorizationDeniedException, CADoesntExistsException, EjbcaException;
 
@@ -165,7 +158,6 @@ public interface IEjbcaWS {
 	 *  Note the whole certificate chain is returned.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
@@ -177,7 +169,6 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws EjbcaException 
 	 */
-
 	public abstract List<Certificate> getLastCertChain(String username) 
 	throws AuthorizationDeniedException, EjbcaException;
 	
@@ -260,7 +251,6 @@ public interface IEjbcaWS {
 	 * activated and used as the CAs operational signature keys.
 	 * 
 	 * Authorization requirements: the client certificate must have the following privileges set<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ca_functionality/renew_ca
 	 * - /ca/&lt;ca to renew&gt;
@@ -289,7 +279,6 @@ public interface IEjbcaWS {
 	 * This can be used to activate a new key pair on the CA. If the certificate does not match the existing key pair, but another key pair on the CAs token, this key pair can be activated and used as the CAs operational signature key pair.
 	 *   
 	 * Authorization requirements: the client certificate must have the following privileges set<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ca_functionality/renew_ca
 	 * - /ca/&lt;ca to import certificate&gt;
@@ -318,7 +307,6 @@ public interface IEjbcaWS {
 	 * Observe, the user must first have added/set the status to new with edituser command
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
@@ -354,7 +342,6 @@ public interface IEjbcaWS {
 	 * the user's token must be set to {@link org.ejbca.core.protocol.ws.client.gen.UserDataVOWS}.TOKEN_TYPE_P12.<br>
 	 * 
 	 * Authorization requirements: <pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
@@ -376,7 +363,6 @@ public interface IEjbcaWS {
 	 * @throws NotFoundException if user cannot be found
 	 * @throws EjbcaException
 	 */
-
 	public abstract KeyStore pkcs12Req(String username, String password,
 			String hardTokenSN, String keyspec, String keyalg)
 			throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
@@ -386,7 +372,6 @@ public interface IEjbcaWS {
 	 * Revokes a user certificate.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/revoke_end_entity
 	 * - /endentityprofilesrules/<end entity profile of the user owning the cert>/revoke_end_entity
@@ -405,7 +390,6 @@ public interface IEjbcaWS {
 	 * @throws AlreadyRevokedException The certificate was already revoked, or you tried to unrevoke a permanently revoked certificate
 	 * @throws EjbcaException
 	 */
-
 	public abstract void revokeCert(String issuerDN, String certificateSN,
 			int reason) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
 			EjbcaException, ApprovalException, WaitingForApprovalException,
@@ -418,7 +402,6 @@ public interface IEjbcaWS {
 	 * a user after all certificates have been revoked.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/revoke_end_entity
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/revoke_end_entity
@@ -446,7 +429,6 @@ public interface IEjbcaWS {
 	 * Marks the user's latest certificate for key recovery.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/keyrecovery
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/keyrecovery
@@ -470,7 +452,6 @@ public interface IEjbcaWS {
 	 * Revokes all certificates mapped to a hardtoken.
 	 *
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/revoke_end_entity
 	 * - /endentityprofilesrules/<end entity profile of the user owning the token>/revoke_end_entity
@@ -487,7 +468,6 @@ public interface IEjbcaWS {
 	 * @throws AlreadyRevokedException The token was already revoked.
 	 * @throws EjbcaException
 	 */
-
 	public abstract void revokeToken(String hardTokenSN, int reason)
 			throws CADoesntExistsException, AuthorizationDeniedException,
 			NotFoundException, EjbcaException, ApprovalException,
@@ -497,7 +477,6 @@ public interface IEjbcaWS {
 	 * Returns revocation status for given user.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ca/&lt;ca of certificate&gt;
 	 * </pre>
@@ -510,7 +489,6 @@ public interface IEjbcaWS {
 	 * @throws EjbcaException
 	 * @see RevokeStatus
 	 */
-
 	public abstract RevokeStatus checkRevokationStatus(String issuerDN,
 			String certificateSN) throws CADoesntExistsException, AuthorizationDeniedException,
 			EjbcaException;
@@ -531,7 +509,6 @@ public interface IEjbcaWS {
 	 * Fetches userdata from an existing UserDataSource.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /userdatasourcesrules/&lt;user data source&gt;/fetch_userdata (for all the given user data sources)
 	 * - /ca/&lt;all cas defined in all the user data sources&gt;
@@ -556,7 +533,6 @@ public interface IEjbcaWS {
 	 * 
 	 * Authorization requirements:<pre>
 	 * If the caller is an administrator
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/create_end_entity and/or edit_end_entity
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/create_end_entity and/or edit_end_entity
@@ -588,7 +564,6 @@ public interface IEjbcaWS {
 	 * @throws UserDoesntFullfillEndEntityProfile
 	 * @throws EjbcaException
 	 */
-
 	public abstract List<TokenCertificateResponseWS> genTokenCertificates(
 			UserDataVOWS userData,
 			List<TokenCertificateRequestWS> tokenRequests,
@@ -615,7 +590,6 @@ public interface IEjbcaWS {
 	 * Fetches information about a hard token.
 	 * 
 	 * If the caller is an administrator<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_hardtoken
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_hardtoken
@@ -647,7 +621,6 @@ public interface IEjbcaWS {
 	 * Fetches all hard tokens for a given user.
 	 * 
 	 * If the caller is an administrator<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_hardtoken
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_hardtoken
@@ -669,7 +642,6 @@ public interface IEjbcaWS {
 	 * Republishes a selected certificate.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/view_end_entity
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/view_end_entity
@@ -705,7 +677,6 @@ public interface IEjbcaWS {
 	 * Generates a Custom Log event in the database.
 	 * 
 	 * Authorization requirements: <pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /log_functionality/log_custom_events (must be configured in advanced mode when editing access rules)
 	 * </pre>
@@ -733,7 +704,6 @@ public interface IEjbcaWS {
 	 * user data source.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /userdatasourcesrules/&lt;user data source&gt;/remove_userdata (for all the given user data sources)
 	 * - /ca/&lt;all cas defined in all the user data sources&gt;
@@ -775,7 +745,6 @@ public interface IEjbcaWS {
 	 * Note: available means not having status "external" or "waiting for certificate response".
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * </pre>
 	 * 
@@ -795,7 +764,6 @@ public interface IEjbcaWS {
 	 * Fetches the end-entity profiles that the administrator is authorized to use.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;
 	 * </pre>
@@ -814,7 +782,6 @@ public interface IEjbcaWS {
 	 * Fetches available certificate profiles in an end entity profile.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;
 	 * </pre>
@@ -833,7 +800,6 @@ public interface IEjbcaWS {
 	 * Fetches the ids and names of available CAs in an end entity profile.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;
 	 * </pre>
@@ -854,7 +820,6 @@ public interface IEjbcaWS {
 	 * Generates a CRL for the given CA.
 	 * 
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ca/&lt;caid&gt;
 	 * </pre>
@@ -887,7 +852,6 @@ public interface IEjbcaWS {
 	 * The user's token type must be set to {@link org.ejbca.core.protocol.ws.client.gen.UserDataVOWS}.TOKEN_TYPE_ (JKS or P12).
 	 * A token password must also be defined.<p>
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/create_end_entity and/or edit_end_entity
 	 * - /endentityprofilesrules/&lt;end entity profile of user&gt;/create_end_entity and/or edit_end_entity
@@ -920,7 +884,6 @@ public interface IEjbcaWS {
 	 * If the user is not already present in the database, the user is added.<br>
 	 * Status is automatically set to STATUS_NEW.<p>
 	 * Authorization requirements:<pre>
-	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/create_end_entity and/or edit_end_entity
 	 * - /endentityprofilesrules/&lt;end entity profile of user&gt;/create_end_entity and/or edit_end_entity
