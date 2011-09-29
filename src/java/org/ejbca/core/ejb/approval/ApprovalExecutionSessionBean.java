@@ -77,7 +77,9 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     @Override
     public void approve(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
             ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, EjbcaException {
-        log.trace(">approve");
+        if (log.isTraceEnabled()) {
+            log.trace(">approve: "+approvalId);
+        }
         ApprovalData adl;
         try {
             adl = approvalSession.isAuthorizedBeforeApproveOrReject(admin, approvalId);
@@ -122,7 +124,9 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
             auditSession.log(EjbcaEventTypes.APPROVAL_APPROVE, EventStatus.FAILURE, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(adl.getCaid()), null, null, details);
             throw e;
         }
-        log.trace("<approve");
+        if (log.isTraceEnabled()) {
+            log.trace(">approve: "+approvalId);
+        }
     }
 
 	/**

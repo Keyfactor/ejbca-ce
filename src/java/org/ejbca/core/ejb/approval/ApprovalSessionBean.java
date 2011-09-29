@@ -285,7 +285,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @Override
     public int isApproved(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
         if (log.isTraceEnabled()) {
-            log.trace(">isApproved, approvalId" + approvalId);
+            log.trace(">isApproved, approvalId: " + approvalId);
         }
         int retval = ApprovalDataVO.STATUS_EXPIREDANDNOTIFIED;
         Collection<ApprovalData> result = ApprovalData.findByApprovalId(entityManager, approvalId);
@@ -302,7 +302,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             }
         }
         if (log.isTraceEnabled()) {
-            log.trace("<isApproved, result" + retval);
+            log.trace("<isApproved, result: " + retval);
         }
         return retval;
     }
@@ -315,7 +315,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     @Override
     public void markAsStepDone(AuthenticationToken admin, int approvalId, int step) throws ApprovalException, ApprovalRequestExpiredException {
         if (log.isTraceEnabled()) {
-            log.trace(">markAsStepDone, approvalId" + approvalId + ", step " + step);
+            log.trace(">markAsStepDone, approvalId: " + approvalId + ", step " + step);
         }
         Collection<ApprovalData> result = ApprovalData.findByApprovalId(entityManager, approvalId);
         Iterator<ApprovalData> iter = result.iterator();
