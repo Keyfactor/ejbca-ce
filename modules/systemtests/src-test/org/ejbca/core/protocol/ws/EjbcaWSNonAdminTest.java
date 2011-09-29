@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.ws;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -161,91 +162,104 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         try {
             editUser();
-            assertTrue(false);
+            fail("should not have been allowed to create users");
         } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
         }
 
         try {
             findUser();
-            assertTrue(false);
+            fail("should not have been allowed to find users");
         } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
         }
 
         try {
             generatePkcs10();
-            assertTrue(false);
+            fail("should not have been allowed to generate pkcs10");
         } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
         }
 
         try {
             generatePkcs12();
-            assertTrue(false);
+            fail("should not have been allowed to generate pkcs12");
         } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
         }
 
         try {
             findCerts();
-            assertTrue(false);
+            fail("should not have been allowed to find certs");
         } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
         }
 
         try {
             revokeCert();
-            assertTrue(false);
+            fail("should not have been allowed to revoke cert");
         } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
         }
 
         try {
             revokeToken();
-            assertTrue(false);
+            fail("should not have been allowed to revoke token");
         } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
         }
 
         try {
             checkRevokeStatus();
-            assertTrue(false);
+            fail("should not have been allowed to check revoke status");
         } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
         }
 
         try {
-            utf8();
-            assertTrue(false);
+            utf8EditUser();
+            fail("should not have been allowed to edit utf8 user");
         } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
         }
 
         try {
             revokeUser();
-            assertTrue(false);
+            fail("should not have been allowed to revoke user");
         } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
         }
 
         try {
             getExistsHardToken();
-            assertTrue(false);
+            fail("should not have been allowed to check hard tokens");
         } catch (EjbcaException_Exception e) {
+            // NOPMD: this is what we want
         }
 
         try {
             getHardTokenDatas();
-            assertTrue(false);
+            fail("should not have been allowed to get hard token");
         } catch (AuthorizationDeniedException_Exception e) {
         }
 
         try {
             customLog();
-            assertTrue(false);
+            fail("should not have been allowed to custom log");
         } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
         }
 
         try {
             getCertificate();
-            assertTrue(false);
+            fail("should not have been allowed to get certificate");
         } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
         }
         try {
             checkQueueLength();
         } catch (AuthorizationDeniedException_Exception e) {
-            assertTrue(false);
+            fail("should have been allowed to check queue length");
         }
     }
 

@@ -1139,7 +1139,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertNotNull(revokestatus.getRevocationDate());
     }
 
-    protected void utf8() throws Exception {
+    protected void utf8EditUser() throws Exception {
 
         // Test to add a user.
         UserDataVOWS user1 = new UserDataVOWS();
