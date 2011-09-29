@@ -663,6 +663,10 @@
     	<ant dir="modules" target="va-entity" />
     </target>
 
+    <target name="ejbca-db-cli" description="Build EJBCA JPA database CLI">
+    	<ant dir="modules" target="ejbca-db-cli" />
+    </target>
+
     <target name="generate-dbscripts" description="Generate create and drop script for the configured database.">
     	<ant dir="modules/ejbca-entity" target="generate-dbscripts" />
     </target>

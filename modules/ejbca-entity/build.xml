@@ -26,9 +26,11 @@
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build-va.dir" location="${this.dir}/build-va"/>
 	<property name="build-test.dir" location="${this.dir}/build-test"/>
+	<property name="build-cli.dir" location="${this.dir}/build-cli"/>
 	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 	<property name="src.dir" location="${this.dir}/src"/>
 	<property name="src-test.dir" location="${this.dir}/src-test"/>
+	<property name="src-cli.dir" location="${this.dir}/src-cli"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
 
 	<path id="common-compile.classpath">
@@ -54,6 +56,11 @@
 		<path refid="lib.junit.classpath"/>
 	</path>
 	
+	<path id="compile-cli.classpath">
+		<path refid="cli.classpath"/>
+		<path refid="lib.javaxejb.classpath"/>
+	</path>
+	
 	<path id="jdbc-jars.classpath">
 		<fileset dir="${jdbc.driver.dir}" includes="*.jar"/>
 	</path>
@@ -73,6 +80,17 @@
 		<path location="${mod.ejbca-util.lib}" />
 	</path>
 
+	<path id="cli.classpath">
+		<path refid="lib.ldap.classpath"/>
+		<path refid="compile.classpath"/>
+		<path location="${build.dir}"/>
+		<!--
+		<path refid="lib.batik.classpath"/>	<!- - we only need xerces - ->
+		<path refid="jdbc-jars.classpath"/>
+		<path location="${build-cli.dir}"/>
+		-->
+	</path>
+
 	<path id="generate.classpath">
 		<path refid="compile.classpath"/>
 		<path refid="lib.batik.classpath"/>	<!-- we only need xerces -->
@@ -84,8 +102,10 @@
 		<delete dir="${build.dir}" />
 		<delete dir="${build-va.dir}" />
 		<delete dir="${build-test.dir}" />
+		<delete dir="${build-cli.dir}" />
 		<delete file="${mod.ejbca-entity.lib}" />
 		<delete file="${mod.va-entity.lib}" />
+		<delete dir="${mod.ejbca-db-cli.dist}" />
     </target>
 	
     <target name="build" description="Build this module" depends="compile, handlepersistence, handleorm">
@@ -132,13 +152,23 @@
 				<expandproperties/>
     		</filterchain>
     	</copy>
+    	<mkdir dir="${build-cli.dir}/META-INF" />
+    	<copy file="${resources.dir}/persistence-cli-template.xml" tofile="${build-cli.dir}/META-INF/persistence.xml" failonerror="true" overwrite="true">
+    		<filterchain>
+				<expandproperties/>
+    		</filterchain>
+    	</copy>
     </target>
 
     <target name="handleorm">
 		<copy file="${resources.dir}/orm-common-${database.name}.xml" todir="${build.dir}/META-INF/" failonerror="true" overwrite="true"/>
 		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build.dir}/META-INF/" failonerror="true" overwrite="true"/>
-		<copy file="${resources.dir}/orm-common-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
-		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
+		<copy todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true">
+			<fileset dir="${resources.dir}" includes="orm-*.xml"/>
+    	</copy>
+		<copy todir="${build-cli.dir}/META-INF/" failonerror="true" overwrite="true">
+			<fileset dir="${resources.dir}" includes="orm-*.xml"/>
+    	</copy>
 	</target>
 
     <target name="handleorm-ocsp">
@@ -230,13 +260,59 @@
 		</copy>
     </target>
 
-    <target name="generate-dbscripts" description="Generate create and drop script for the configured database." depends="compile-test, handlepersistence">
-        <copy file="${resources.dir}/log4j.xml" tofile="${build-test.dir}/log4j.xml" />
-    	<mkdir dir="${build-test.dir}/META-INF"/>
-		<copy file="${resources.dir}/orm-common-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
-		<copy file="${resources.dir}/orm-ejbca-${database.name}.xml" todir="${build-test.dir}/META-INF/" failonerror="true" overwrite="true"/>
-    	<mkdir dir="${ejbca.home}/dist"/>
-		<java classname="org.ejbca.util.DatabaseSchemaScriptCreator" classpathref="generate.classpath" args="${ejbca.home}/doc/sql-scripts ${database.name}"/>
+	<!-- Monolitic build of the EJBCA DB CLI -->
+    <target name="build-cli" depends="with.clover, handlepersistence, handleorm">
+    	<mkdir dir="${build-cli.dir}/META-INF"/>
+    	<!--
+    	<fail unless="jdbc.driver.dir" message="Use -Djdbc.driver.dir=/path-to-jdbc-jars/ to specify the directory with the JDBC driver JARs."/>
+		<available property="database.driver.available" classname="${database.driver}" classpathref="jdbc-jars.classpath"/>
+    	<fail unless="database.driver.available" message="Driver class (${database.driver}) from database.properties can not be found in ${jdbc.driver.dir}."/>
+    	-->
+        <copy file="${resources.dir}/log4j-cli.xml" tofile="${build-cli.dir}/log4j.xml"/>
+        <copy file="${defaultvalues.properties.file}" tofile="${build-cli.dir}/defaultvalues.properties"/>
+		<copy todir="${build-cli.dir}" failonerror="true"><fileset dir="${ejbca.home}/src" includes="intresources/**"/></copy>
+        <javac destdir="${build-cli.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-cli.classpath">
+        	<include name="org/ejbca/database/**/*.java"/>
+        	<!-- Include classes that are instantiated through reflection -->
+        	<include name="org/cesecore/keys/token/SoftCryptoToken.java"/>
+        	<include name="org/cesecore/keys/token/PKCS11CryptoToken.java"/>
+	    	<src path="${src-cli.dir}"/>
+	    	<src path="${src.dir}"/>
+        	<src path="${ejbca.home}/src/java"/>
+        	<src path="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
+        </javac>
+    	<mkdir dir="${mod.ejbca-db-cli.dist}/META-INF"/>
+    	<mkdir dir="${mod.ejbca-db-cli.dist}/lib"/>
+    	<mkdir dir="${mod.ejbca-db-cli.dist}/endorsed"/>
+    	<pathconvert property="cli.classpath.property" pathsep=" ">
+    	    <path refid="cli.classpath" />
+    		<map from="${ejbca.home}/" to=""/>
+    	</pathconvert>
+    	<copy todir="${mod.ejbca-db-cli.dist}/lib" flatten="true">
+    		<fileset dir="${ejbca.home}" includes="${cli.classpath.property}"/>
+    	</copy>
+    	<pathconvert property="ejbca-db-cli.dependencies" pathsep=" ">
+    	    <path>
+	        	<fileset dir="${mod.ejbca-db-cli.dist}" includes="lib/*.jar"/>
+    	    </path>
+    		<map from="${mod.ejbca-db-cli.dist}/" to=""/>
+    	</pathconvert>
+    	<jar destfile="${mod.ejbca-db-cli.lib}" basedir="${build-cli.dir}" includes="**/*.*" excludes="META-INF/persistence.xml">
+            <manifest>
+    			<attribute name="Class-path" value="${ejbca-db-cli.dependencies} ./" />
+				<attribute name="Main-Class" value="org.ejbca.database.DatabaseCli"/>
+            </manifest>
+		</jar>
+        <copy file="${build-cli.dir}/META-INF/persistence.xml" tofile="${mod.ejbca-db-cli.dist}/META-INF/persistence.xml" failonerror="true"/>
+        <copy file="${ejbca.home}/conf/databaseprotection.properties" tofile="${mod.ejbca-db-cli.dist}/conf/databaseprotection.properties" failonerror="true"/>
+        <copy file="${ejbca.home}/conf/log.properties" tofile="${mod.ejbca-db-cli.dist}/conf/log.properties" failonerror="true"/>
+        <copy file="${resources.dir}/run.sh" tofile="${mod.ejbca-db-cli.dist}/run.sh" failonerror="true"/>
+        <chmod file="${mod.ejbca-db-cli.dist}/run.sh" perm="a+rx"/>
+    </target>
+	
+    <target name="generate-dbscripts" description="Generate create and drop script for the configured database." depends="build-cli">
+		<java jar="${mod.ejbca-db-cli.lib}" args="gen ${ejbca.home}/doc/sql-scripts all" fork="true"/>
     </target>
 
 	<target name="runone" depends="compile-test">

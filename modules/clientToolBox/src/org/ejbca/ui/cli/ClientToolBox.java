@@ -55,7 +55,6 @@ public abstract class ClientToolBox {
         		new NCipherHSMKeyTool(), 
         		new Ocsp(), 
         		new OcspMonitoringTool(), 
-        		new DatabaseCopyTool(), 
         		new EjbcaWsRaCli(), 
         		new CvcWsRaCli(), 
         		new CMPTest(),

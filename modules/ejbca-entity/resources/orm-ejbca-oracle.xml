@@ -42,10 +42,10 @@
     	<table name="AccessRulesData"/>
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="NUMBER(10)"/></id>
-            <basic name="accessRuleName"><column name="accessRule" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic name="state"><column name="rule" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="recursiveBool"><column name="isRecursive" column-definition="NUMBER(1)" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="accessRuleName"><column name="accessRule" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="state"><column name="rule" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="recursiveBool"><column name="isRecursive" column-definition="NUMBER(1)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
             <transient name="recursiveInt"/>
         </attributes>
@@ -54,8 +54,8 @@
     	<table name="AuthorizationTreeUpdateData"/>
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="NUMBER(10)"/></id>
-            <basic name="accessTreeUpdateNumber"><column name="authorizationTreeUpdateNumber" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="accessTreeUpdateNumber"><column name="authorizationTreeUpdateNumber" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
@@ -63,11 +63,11 @@
     	<table name="AdminEntityData"/>    
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="NUMBER(10)"/></id>
-            <basic name="matchWith"><column name="matchWith" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="matchType"><column name="matchType" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="matchValue"><column name="matchValue" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="caId"><column name="cAId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="matchWith"><column name="matchWith" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="matchType"><column name="matchType" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="matchValue"><column name="matchValue" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="caId"><column name="cAId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
@@ -75,8 +75,8 @@
     	<table name="AdminGroupData"/>
         <attributes>
             <id name="primaryKey"><column name="pK" column-definition="NUMBER(10)"/></id>
-            <basic name="roleName"><column name="adminGroupName" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="roleName"><column name="adminGroupName" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
             <one-to-many name="accessRules" fetch="EAGER"><map-key name="primaryKey"/><join-column name="AdminGroupData_accessRules" column-definition="NUMBER(10)"/><cascade><cascade-all/></cascade></one-to-many>
             <one-to-many name="accessUsers" fetch="EAGER"><map-key name="primaryKey"/><join-column name="AdminGroupData_adminEntities" column-definition="NUMBER(10)"/><cascade><cascade-all/></cascade></one-to-many>
@@ -85,138 +85,138 @@
     <entity class="org.cesecore.audit.impl.integrityprotected.AuditRecordData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="pk"><column name="pk" column-definition="VARCHAR2(255 byte)"/></id>
-            <basic name="nodeId"><column name="nodeId" column-definition="VARCHAR2(255 byte)" nullable="false" updatable="false"/></basic>
-            <basic name="sequenceNumber"><column name="sequenceNumber" column-definition="NUMBER(19)" nullable="false" updatable="false"/></basic>
-            <basic name="timeStamp"><column name="timeStamp" column-definition="NUMBER(19)" nullable="false" updatable="false"/></basic>
-            <basic name="eventType"><column name="eventType" column-definition="VARCHAR2(255 byte)" nullable="false" updatable="false"/></basic>
-            <basic name="eventStatus"><column name="eventStatus" column-definition="VARCHAR2(255 byte)" nullable="false" updatable="false"/></basic>
-            <basic name="authToken"><column name="authToken" column-definition="VARCHAR2(255 byte)" nullable="false" updatable="false"/></basic>
-            <basic name="service"><column name="service" column-definition="VARCHAR2(255 byte)" nullable="false" updatable="false"/></basic>
-            <basic name="module"><column name="module" column-definition="VARCHAR2(255 byte)" nullable="false" updatable="false"/></basic>
-            <basic name="customId"><column name="customId" column-definition="VARCHAR2(255 byte)" nullable="true" updatable="false"/></basic>
-            <basic name="searchDetail1"><column name="searchDetail1" column-definition="VARCHAR2(255 byte)" nullable="true" updatable="false"/></basic>
-            <basic name="searchDetail2"><column name="searchDetail2" column-definition="VARCHAR2(255 byte)" nullable="true" updatable="false"/></basic>
-            <basic name="additionalDetails"><column name="additionalDetails" column-definition="CLOB" nullable="true" updatable="false"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="nodeId"><column name="nodeId" column-definition="VARCHAR2(255 byte)" nullable="false" updatable="false"/></basic>
+            <basic fetch="EAGER" name="sequenceNumber"><column name="sequenceNumber" column-definition="NUMBER(19)" nullable="false" updatable="false"/></basic>
+            <basic fetch="EAGER" name="timeStamp"><column name="timeStamp" column-definition="NUMBER(19)" nullable="false" updatable="false"/></basic>
+            <basic fetch="EAGER" name="eventType"><column name="eventType" column-definition="VARCHAR2(255 byte)" nullable="false" updatable="false"/></basic>
+            <basic fetch="EAGER" name="eventStatus"><column name="eventStatus" column-definition="VARCHAR2(255 byte)" nullable="false" updatable="false"/></basic>
+            <basic fetch="EAGER" name="authToken"><column name="authToken" column-definition="VARCHAR2(255 byte)" nullable="false" updatable="false"/></basic>
+            <basic fetch="EAGER" name="service"><column name="service" column-definition="VARCHAR2(255 byte)" nullable="false" updatable="false"/></basic>
+            <basic fetch="EAGER" name="module"><column name="module" column-definition="VARCHAR2(255 byte)" nullable="false" updatable="false"/></basic>
+            <basic fetch="EAGER" name="customId"><column name="customId" column-definition="VARCHAR2(255 byte)" nullable="true" updatable="false"/></basic>
+            <basic fetch="EAGER" name="searchDetail1"><column name="searchDetail1" column-definition="VARCHAR2(255 byte)" nullable="true" updatable="false"/></basic>
+            <basic fetch="EAGER" name="searchDetail2"><column name="searchDetail2" column-definition="VARCHAR2(255 byte)" nullable="true" updatable="false"/></basic>
+            <basic fetch="EAGER" name="additionalDetails"><column name="additionalDetails" column-definition="CLOB" nullable="true" updatable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.cesecore.certificates.ca.CAData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="caId"><column name="cAId" column-definition="NUMBER(10)"/></id>
-            <basic name="name"><column name="name" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="subjectDN"><column name="subjectDN" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="status"><column name="status" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="expireTime"><column name="expireTime" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="updateTime"><column name="updateTime" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="data"><column name="data" column-definition="CLOB" nullable="false"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="status"><column name="status" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="expireTime"><column name="expireTime" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="updateTime"><column name="updateTime" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="CLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.cesecore.certificates.certificateprofile.CertificateProfileData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="NUMBER(10)"/></id>
-            <basic name="certificateProfileName"><column name="certificateProfileName" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="certificateProfileName"><column name="certificateProfileName" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.approval.ApprovalData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="NUMBER(10)"/></id>
-            <basic name="approvalid"><column name="approvalId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="approvaltype"><column name="approvalType" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="endentityprofileid"><column name="endEntityProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="caid"><column name="cAId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="reqadmincertissuerdn"><column name="reqAdminCertIssuerDn" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="reqadmincertsn"><column name="reqAdminCertSn" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="status"><column name="status" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="approvaldata"><column name="approvalData" column-definition="CLOB" nullable="false"/><lob/></basic>
-            <basic name="requestdata"><column name="requestData" column-definition="CLOB" nullable="false"/><lob/></basic>
-            <basic name="requestdate"><column name="requestDate" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="expiredate"><column name="expireDate" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="remainingapprovals"><column name="remainingApprovals" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="approvalid"><column name="approvalId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="approvaltype"><column name="approvalType" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="endentityprofileid"><column name="endEntityProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="caid"><column name="cAId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="reqadmincertissuerdn"><column name="reqAdminCertIssuerDn" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="reqadmincertsn"><column name="reqAdminCertSn" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="status"><column name="status" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="approvaldata"><column name="approvalData" column-definition="CLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="requestdata"><column name="requestData" column-definition="CLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="requestdate"><column name="requestDate" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="expiredate"><column name="expireDate" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="remainingapprovals"><column name="remainingApprovals" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ca.publisher.PublisherData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="NUMBER(10)"/></id>
-            <basic name="name"><column name="name" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="updateCounter"><column name="updateCounter" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="data"><column name="data" column-definition="CLOB"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="updateCounter"><column name="updateCounter" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="CLOB"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ca.publisher.PublisherQueueData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="pk"><column name="pk" column-definition="VARCHAR2(255 byte)"/></id>
-            <basic name="timeCreated"><column name="timeCreated" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="lastUpdate"><column name="lastUpdate" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="publishStatus"><column name="publishStatus" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="tryCounter"><column name="tryCounter" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="publishType"><column name="publishType" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="fingerprint"><column name="fingerprint" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="publisherId"><column name="publisherId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="volatileData"><column name="volatileData" column-definition="CLOB"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="timeCreated"><column name="timeCreated" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="lastUpdate"><column name="lastUpdate" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="publishStatus"><column name="publishStatus" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="tryCounter"><column name="tryCounter" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="publishType"><column name="publishType" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="fingerprint"><column name="fingerprint" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="publisherId"><column name="publisherId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="volatileData"><column name="volatileData" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ca.store.CertReqHistoryData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="fingerprint"><column name="fingerprint" column-definition="VARCHAR2(255 byte)"/></id>
-            <basic name="issuerDN"><column name="issuerDN" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic name="serialNumber"><column name="serialNumber" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic name="timestamp"><column name="timestamp" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="userDataVO"><column name="userDataVO" column-definition="CLOB" nullable="false"/><lob/></basic>
-            <basic name="username"><column name="username" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="issuerDN"><column name="issuerDN" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="serialNumber"><column name="serialNumber" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="timestamp"><column name="timestamp" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="userDataVO"><column name="userDataVO" column-definition="CLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="username"><column name="username" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="certificateFingerprint"><column name="certificateFingerprint" column-definition="VARCHAR2(255 byte)"/></id>
-            <basic name="tokenSN"><column name="tokenSN" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="tokenSN"><column name="tokenSN" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.hardtoken.HardTokenData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="tokenSN"><column name="tokenSN" column-definition="VARCHAR2(255 byte)"/></id>
-            <basic name="username"><column name="username" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="ctime"><column name="cTime" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="mtime"><column name="mTime" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="tokenType"><column name="tokenType" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="significantIssuerDN"><column name="significantIssuerDN" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="dataUnsafe"><column name="data" column-definition="BLOB"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="username"><column name="username" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="ctime"><column name="cTime" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="mtime"><column name="mTime" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="significantIssuerDN"><column name="significantIssuerDN" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="dataUnsafe"><column name="data" column-definition="BLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.hardtoken.HardTokenIssuerData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="NUMBER(10)"/></id>
-            <basic name="alias"><column name="alias" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic name="adminGroupId"><column name="adminGroupId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="alias"><column name="alias" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="adminGroupId"><column name="adminGroupId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.hardtoken.HardTokenProfileData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="NUMBER(10)"/></id>
-            <basic name="name"><column name="name" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic name="updateCounter"><column name="updateCounter" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="data"><column name="data" column-definition="CLOB"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="updateCounter"><column name="updateCounter" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
@@ -226,8 +226,8 @@
         		<attribute-override name="id"><column name="id" column-definition="VARCHAR2(255 byte)"/></attribute-override>
         		<attribute-override name="property"><column name="property" column-definition="VARCHAR2(255 byte)"/></attribute-override>
         	</embedded-id>
-            <basic name="value"><column name="value" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="value"><column name="value" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
@@ -238,10 +238,10 @@
         		<attribute-override name="certSN"><column name="certSN" column-definition="VARCHAR2(255 byte)"/></attribute-override>
         		<attribute-override name="issuerDN"><column name="issuerDN" column-definition="VARCHAR2(255 byte)"/></attribute-override>
         	</embedded-id>
-            <basic name="username"><column name="username" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="markedAsRecoverableBool"><column name="markedAsRecoverable" column-definition="NUMBER(1)" nullable="false"/></basic>
-            <basic name="keyData"><column name="keyData" column-definition="CLOB" nullable="false"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="username"><column name="username" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="markedAsRecoverableBool"><column name="markedAsRecoverable" column-definition="NUMBER(1)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="keyData"><column name="keyData" column-definition="CLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
             <transient name="markedAsRecoverableInt"/>
         </attributes>
@@ -249,83 +249,83 @@
     <entity class="org.ejbca.core.ejb.ra.UserData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="username"><column name="username" column-definition="VARCHAR2(255 byte)"/></id>
-            <basic name="subjectDN"><column name="subjectDN" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="caId"><column name="cAId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="subjectEmail"><column name="subjectEmail" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="status"><column name="status" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="type"><column name="type" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="clearPassword"><column name="clearPassword" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="passwordHash"><column name="passwordHash" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="timeCreated"><column name="timeCreated" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="timeModified"><column name="timeModified" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="endEntityProfileId"><column name="endEntityProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="certificateProfileId"><column name="certificateProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="tokenType"><column name="tokenType" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="hardTokenIssuerId"><column name="hardTokenIssuerId" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="extendedInformationData"><column name="extendedInformationData" column-definition="CLOB"/><lob/></basic>
-            <basic name="keyStorePassword"><column name="keyStorePassword" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="cardNumber"><column name="cardNumber" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="caId"><column name="cAId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="subjectAltName"><column name="subjectAltName" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="subjectEmail"><column name="subjectEmail" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="status"><column name="status" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="type"><column name="type" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="clearPassword"><column name="clearPassword" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="passwordHash"><column name="passwordHash" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="timeCreated"><column name="timeCreated" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="timeModified"><column name="timeModified" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="endEntityProfileId"><column name="endEntityProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="certificateProfileId"><column name="certificateProfileId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="hardTokenIssuerId"><column name="hardTokenIssuerId" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="extendedInformationData"><column name="extendedInformationData" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="keyStorePassword"><column name="keyStorePassword" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="cardNumber"><column name="cardNumber" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="VARCHAR2(255 byte)"/></id>
-            <basic name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="NUMBER(10)"/></id>
-            <basic name="profileName"><column name="profileName" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="profileName"><column name="profileName" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="configurationId"><column name="configurationId" column-definition="VARCHAR2(255 byte)"/></id>
-            <basic name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="dataUnsafe"><column name="data" column-definition="BLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="NUMBER(10)"/></id>
-            <basic name="name"><column name="name" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic name="updateCounter"><column name="updateCounter" column-definition="NUMBER(10)" nullable="false"/></basic>
-            <basic name="data"><column name="data" column-definition="CLOB"/><lob/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="updateCounter"><column name="updateCounter" column-definition="NUMBER(10)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
     <entity class="org.ejbca.core.ejb.services.ServiceData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="id"><column name="id" column-definition="NUMBER(10)"/></id>
-            <basic name="name"><column name="name" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
-            <basic name="data"><column name="data" column-definition="CLOB"/><lob/></basic>
-            <basic name="nextRunTimeStamp"><column name="nextRunTimeStamp" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="runTimeStamp"><column name="runTimeStamp" column-definition="NUMBER(19)" nullable="false"/></basic>
-            <basic name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR2(255 byte)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="data"><column name="data" column-definition="CLOB"/><lob/></basic>
+            <basic fetch="EAGER" name="nextRunTimeStamp"><column name="nextRunTimeStamp" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="runTimeStamp"><column name="runTimeStamp" column-definition="NUMBER(19)" nullable="false"/></basic>
+            <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="NUMBER(10)" nullable="false"/></version>
         </attributes>
     </entity>
      <embeddable class="org.ejbca.core.ejb.hardtoken.HardTokenPropertyDataPK">
         <attributes>
-            <basic name="id"><column name="id" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="property"><column name="property" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="id"><column name="id" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="property"><column name="property" column-definition="VARCHAR2(255 byte)"/></basic>
         </attributes>
     </embeddable>
     <embeddable class="org.ejbca.core.ejb.keyrecovery.KeyRecoveryDataPK">
         <attributes>
-            <basic name="certSN"><column name="certSN" column-definition="VARCHAR2(255 byte)"/></basic>
-            <basic name="issuerDN"><column name="issuerDN" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="certSN"><column name="certSN" column-definition="VARCHAR2(255 byte)"/></basic>
+            <basic fetch="EAGER" name="issuerDN"><column name="issuerDN" column-definition="VARCHAR2(255 byte)"/></basic>
         </attributes>
     </embeddable>
 
