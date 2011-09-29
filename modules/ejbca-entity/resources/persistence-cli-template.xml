@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
+ version: $Id$
+ -->
+<!--
+	JPA configuration used from ejbca-db-cli.
+-->
+<persistence version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+    http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd"
+    >
+    <!--
+        Persistence unit for validating and reading an EJBCA database.
+    -->
+    <persistence-unit name="ejbca-read" transaction-type="RESOURCE_LOCAL">
+        <mapping-file>META-INF/orm-common-${database.name}.xml</mapping-file>
+        <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>
+        <class>org.cesecore.authorization.rules.AccessRuleData</class>
+        <class>org.cesecore.authorization.cache.AccessTreeUpdateData</class>
+        <class>org.cesecore.authorization.user.AccessUserAspectData</class>
+        <class>org.cesecore.roles.RoleData</class>
+        <class>org.cesecore.audit.impl.integrityprotected.AuditRecordData</class>
+        <class>org.cesecore.certificates.ca.CAData</class>
+        <class>org.cesecore.certificates.certificate.CertificateData</class>
+        <class>org.cesecore.certificates.certificateprofile.CertificateProfileData</class>
+        <class>org.cesecore.certificates.crl.CRLData</class>
+        <class>org.ejbca.core.ejb.approval.ApprovalData</class>
+        <class>org.ejbca.core.ejb.ca.publisher.PublisherData</class>
+        <class>org.ejbca.core.ejb.ca.publisher.PublisherQueueData</class>
+        <class>org.ejbca.core.ejb.ca.store.CertReqHistoryData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenIssuerData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenProfileData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenPropertyData</class>
+        <class>org.ejbca.core.ejb.keyrecovery.KeyRecoveryData</class>
+        <class>org.ejbca.core.ejb.ra.UserData</class>
+        <class>org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData</class>
+        <class>org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData</class>
+        <class>org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData</class>
+        <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
+        <class>org.ejbca.core.ejb.services.ServiceData</class>
+        <properties>
+            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
+            <property name="hibernate.connection.url" value="${database.url}"/>
+            <property name="hibernate.connection.driver_class" value="${database.driver}"/>
+            <property name="hibernate.connection.username" value="${database.username}"/>
+            <property name="hibernate.connection.password" value="${database.password}"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+            <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
+        </properties>
+    </persistence-unit>
+    <!--
+        Persistence unit for validating and reading a VA database.
+    -->
+    <persistence-unit name="va-read" transaction-type="RESOURCE_LOCAL">
+        <mapping-file>META-INF/orm-common-${database.name}.xml</mapping-file>
+        <class>org.cesecore.certificates.certificate.CertificateData</class>
+        <class>org.cesecore.certificates.crl.CRLData</class>
+        <properties>
+            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
+            <property name="hibernate.connection.url" value="${database.url}"/>
+            <property name="hibernate.connection.driver_class" value="${database.driver}"/>
+            <property name="hibernate.connection.username" value="${database.username}"/>
+            <property name="hibernate.connection.password" value="${database.password}"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
+            <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
+        </properties>
+    </persistence-unit>
+    <!--
+        Persistence unit for creating tables and writing to an EJBCA database.
+    -->
+    <persistence-unit name="ejbca-write" transaction-type="RESOURCE_LOCAL">
+        <mapping-file>META-INF/orm-common-${database.name}.xml</mapping-file>
+        <mapping-file>META-INF/orm-ejbca-${database.name}.xml</mapping-file>
+        <class>org.cesecore.authorization.rules.AccessRuleData</class>
+        <class>org.cesecore.authorization.cache.AccessTreeUpdateData</class>
+        <class>org.cesecore.authorization.user.AccessUserAspectData</class>
+        <class>org.cesecore.roles.RoleData</class>
+        <class>org.cesecore.audit.impl.integrityprotected.AuditRecordData</class>
+        <class>org.cesecore.certificates.ca.CAData</class>
+        <class>org.cesecore.certificates.certificate.CertificateData</class>
+        <class>org.cesecore.certificates.certificateprofile.CertificateProfileData</class>
+        <class>org.cesecore.certificates.crl.CRLData</class>
+        <class>org.ejbca.core.ejb.approval.ApprovalData</class>
+        <class>org.ejbca.core.ejb.ca.publisher.PublisherData</class>
+        <class>org.ejbca.core.ejb.ca.publisher.PublisherQueueData</class>
+        <class>org.ejbca.core.ejb.ca.store.CertReqHistoryData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenCertificateMap</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenIssuerData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenProfileData</class>
+        <class>org.ejbca.core.ejb.hardtoken.HardTokenPropertyData</class>
+        <class>org.ejbca.core.ejb.keyrecovery.KeyRecoveryData</class>
+        <class>org.ejbca.core.ejb.ra.UserData</class>
+        <class>org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData</class>
+        <class>org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData</class>
+        <class>org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData</class>
+        <class>org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData</class>
+        <class>org.ejbca.core.ejb.services.ServiceData</class>
+        <properties>
+            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
+            <property name="hibernate.connection.url" value="${database.url}"/>
+            <property name="hibernate.connection.driver_class" value="${database.driver}"/>
+            <property name="hibernate.connection.username" value="${database.username}"/>
+            <property name="hibernate.connection.password" value="${database.password}"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
+        </properties>
+    </persistence-unit>
+    <!--
+        Persistence unit for creating tables and writing to a VA database.
+    -->
+    <persistence-unit name="va-write" transaction-type="RESOURCE_LOCAL">
+        <mapping-file>META-INF/orm-common-${database.name}.xml</mapping-file>
+        <class>org.cesecore.certificates.certificate.CertificateData</class>
+        <class>org.cesecore.certificates.crl.CRLData</class>
+        <properties>
+            <property name="hibernate.dialect" value="${hibernate.dialect}"/>
+            <property name="hibernate.connection.url" value="${database.url}"/>
+            <property name="hibernate.connection.driver_class" value="${database.driver}"/>
+            <property name="hibernate.connection.username" value="${database.username}"/>
+            <property name="hibernate.connection.password" value="${database.password}"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>

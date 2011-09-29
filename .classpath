@@ -12,6 +12,7 @@
 	<classpathentry kind="src" path="modules/ejbca-ejb-cli/src"/>
 	<classpathentry kind="src" path="modules/ejbca-ejb-interface/src"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src"/>
+	<classpathentry kind="src" path="modules/ejbca-entity/src-cli"/>
 	<classpathentry kind="src" path="modules/ejbca-entity/src-test"/>
 	<classpathentry kind="src" path="modules/ejbca-renew-war/src"/>
 	<classpathentry kind="src" path="modules/ejbca-scep-war/src"/>

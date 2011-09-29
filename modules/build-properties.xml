@@ -22,6 +22,8 @@
     <property name="mod.dist.path" location="${mod.path}/dist" />
     <property name="mod.ejbca-entity.path" location="${mod.path}/ejbca-entity" />
     <property name="mod.ejbca-entity.lib" location="${mod.dist.path}/ejbca-entity.jar" />
+    <property name="mod.ejbca-db-cli.dist" location="${ejbca.dist.path}/ejbca-db-cli" />
+    <property name="mod.ejbca-db-cli.lib" location="${mod.ejbca-db-cli.dist}/ejbca-db-cli.jar" />
     <property name="mod.va-entity.lib" location="${mod.dist.path}/va-entity.jar" />
     <property name="mod.ejbca-ejb.lib" location="${mod.dist.path}/ejbca-ejb.jar" />
     <property name="mod.va-ejb.lib" location="${mod.dist.path}/va-ejb.jar" />
@@ -115,6 +117,7 @@
     <property name="log4j.test.file" location="${mod.common.path}/resources/log4j-test.xml" />
     <property name="log4j.cli.file" location="${mod.common.path}/resources/log4j-cli.xml" />
     <property name="internal.properties.file" location="${ejbca.home}/src/internal.properties" />
+    <property name="defaultvalues.properties.file" location="${ejbca.home}/src/java/defaultvalues.properties" />
     
 	<!-- Define class-paths of global interest -->
 	<path id="lib.cert-cvc.classpath"><fileset dir="${ejbca.home}/lib" includes="cert-cvc.jar"/></path>
