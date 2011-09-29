@@ -153,15 +153,15 @@ public class EjbcaWSHelper {
 	}
 	
 	/**
-	 * Gets an Admin object for a WS-API administrator authenticated with client certificate SSL.
+	 * Gets an AuthenticationToken object for a WS-API administrator authenticated with client certificate SSL.
 	 * Also, optionally (if allowNonAdmin == false), checks that the admin, if it exists in EJCBA, have access to /administrator, i.e. really is an administrator.
 	 * Does not check any other authorization though, other than that it is an administrator.
 	 * Also checks that the admin certificate is not revoked.
 	 * 
 	 * @param allowNonAdmins true if we should verify that it is a real administrator, false only extracts the certificate and checks that it is not revoked.
 	 * @param wsContext web service context that contains the SSL information
-	 * @return Admin object based on the SSL client certificate
-	 * @throws AuthorizationDeniedException if no cleint certificate or allowNonAdmins == false and the cert does not belong to an admin
+	 * @return AuthenticationToken object based on the SSL client certificate
+	 * @throws AuthorizationDeniedException if no client certificate or allowNonAdmins == false and the cert does not belong to an admin
 	 */
 	protected AuthenticationToken getAdmin(boolean allowNonAdmins) throws AuthorizationDeniedException, EjbcaException {
 		AuthenticationToken admin = null;
@@ -179,7 +179,7 @@ public class EjbcaWSHelper {
             credentials.add(certificates[0]);
             AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
             admin = authenticationSession.authenticate(subject);
-            if ((admin == null) && (!allowNonAdmins)) {
+            if ((admin != null) && (!allowNonAdmins)) {
 				userAdminSession.checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
 				if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
 		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
