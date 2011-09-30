@@ -43,7 +43,9 @@ import org.ejbca.util.JDBCUtil.Preparer;
  */
 public class ValidationAuthorityPublisher extends BasePublisher implements ICustomPublisher {
 
-	private static final Logger log = Logger.getLogger(ValidationAuthorityPublisher.class);
+	private static final long serialVersionUID = -8046305645562531532L;
+	
+    private static final Logger log = Logger.getLogger(ValidationAuthorityPublisher.class);
 	/** Internal localization of logs and errors */
 	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
@@ -359,9 +361,10 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 
 	public Object clone() throws CloneNotSupportedException {
 		ValidationAuthorityPublisher clone = new ValidationAuthorityPublisher();
-		HashMap clonedata = (HashMap) clone.saveData();
+		@SuppressWarnings("unchecked")
+        HashMap<Object, Object> clonedata = (HashMap<Object, Object>) clone.saveData();
 
-		Iterator i = (this.data.keySet()).iterator();
+		Iterator<Object> i = (this.data.keySet()).iterator();
 		while(i.hasNext()){
 			Object key = i.next();
 			clonedata.put(key, this.data.get(key));
