@@ -333,10 +333,6 @@
         <copy file="${resources.dir}/run.sh" tofile="${mod.ejbca-db-cli.dist}/run.sh" failonerror="true"/>
         <chmod file="${mod.ejbca-db-cli.dist}/run.sh" perm="a+rx"/>
     </target>
-	
-    <target name="generate-dbscripts" description="Generate create and drop script for the configured database." depends="build-cli">
-		<java jar="${mod.ejbca-db-cli.lib}" args="gen ${ejbca.home}/doc/sql-scripts all" fork="true"/>
-    </target>
 
 	<target name="runone" depends="compile-test">
 		<fail message="'test.runone' is not set. Example -Dtest.runone=ApprovalExecutorUtilTest" unless="test.runone" />
