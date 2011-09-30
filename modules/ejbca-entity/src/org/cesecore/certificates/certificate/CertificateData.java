@@ -867,7 +867,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /** @return return the query results as a List. */
     public static List<Integer> getUsedCertificateProfileIds(EntityManager entityManager) {
-        final Query query = entityManager.createQuery("SELECT DISTINCT a.certificateProfileId FROM a.CertificateData ORDER BY a.certificateProfileId");
+        final Query query = entityManager.createQuery("SELECT DISTINCT a.certificateProfileId FROM CertificateData a ORDER BY a.certificateProfileId");
         return query.getResultList();
     }
 
