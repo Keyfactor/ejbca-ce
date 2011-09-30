@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import javax.faces.model.SelectItem;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -100,6 +101,7 @@ public class AuditorManagedBean implements Serializable {
 	private String conditionColumn = AuditLogEntry.FIELD_SEARCHABLE_DETAIL2;
 	private AuditSearchCondition conditionToAdd;
 	private List<AuditSearchCondition> conditions = new ArrayList<AuditSearchCondition>();
+	private boolean automaticReload = true;
 	
 	public AuditorManagedBean() {
 		final EjbcaWebBean ejbcaWebBean = EjbcaJSFHelper.getBean().getEjbcaWebBean();
@@ -273,11 +275,7 @@ public class AuditorManagedBean implements Serializable {
 	public void clearConditions() {
 		setConditions(new ArrayList<AuditSearchCondition>());
 		setConditionToAdd(null);
-	}
-
-	public void clearConditionsAndReload() {
-		clearConditions();
-		reload();
+		onConditionChanged();
 	}
 
 	public void newCondition() {
@@ -314,14 +312,26 @@ public class AuditorManagedBean implements Serializable {
 	public void addCondition() {
 		getConditions().add(getConditionToAdd());
 		setConditionToAdd(null);
+		onConditionChanged();
 	}
 
-	public void addConditionAndReload() {
-		addCondition();
-		reload();
-	}
+    public void removeCondition(ActionEvent event){
+        getConditions().remove((AuditSearchCondition)event.getComponent().getAttributes().get("removeCondition"));
+        onConditionChanged();
+    }
 
-	public void reload()  {
+    public boolean isAutomaticReload() {
+        return automaticReload;
+    }
+    public void setAutomaticReload(boolean automaticReload) {
+        this.automaticReload = automaticReload;
+    }
+    
+    private void onConditionChanged() {
+        reloadResultsNextView = isAutomaticReload();
+    }
+
+    public void reload()  {
 		reloadResultsNextView = true;
 	}
 
@@ -485,6 +495,8 @@ public class AuditorManagedBean implements Serializable {
 	 * Ugly hack to be able to read the length of the resulting String from JSF EL.
 	 * 
 	 * Example: "#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] > 50}"
+	 * 
+	 * TODO: Use javax.faces.model.DataModel instead
 	 * 
 	 * @return a fake "Map" where the get(Map) returns the length of the output-formatted Map
 	 */
