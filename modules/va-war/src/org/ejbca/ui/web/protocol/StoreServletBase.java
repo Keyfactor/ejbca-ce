@@ -53,9 +53,7 @@ public abstract class StoreServletBase extends HttpServlet {
 	abstract void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
 	abstract void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
 
-	/* (non-Javadoc)
-	 * @see javax.servlet.http.HttpServlet#doGet(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
-	 */
+	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, java.io.IOException {
 		if (log.isTraceEnabled()) {
 			log.trace(">doGet()");			
@@ -69,7 +67,7 @@ public abstract class StoreServletBase extends HttpServlet {
 			if (StringUtils.equals(remote, "127.0.0.1") || (StringUtils.equals(remote, "0:0:0:0:0:0:0:1"))) {
 				log.info("Reloading certificate and CRL caches due to request from "+remote);
 				// Reload CA certificates
-				certCache.forceReload();
+				this.certCache.forceReload();
 			} else {
 				log.info("Got reloadcache command from unauthorized ip: "+remote);
 				resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
@@ -118,6 +116,7 @@ public abstract class StoreServletBase extends HttpServlet {
 
 	private void returnInfoPage(HttpServletResponse response, String info) throws IOException {
 		response.setContentType("text/html");
+		response.setCharacterEncoding("UTF-8");
 		final PrintWriter writer = response.getWriter();
 
 		writer.println("<html>");
@@ -140,6 +139,7 @@ public abstract class StoreServletBase extends HttpServlet {
 
 		writer.println("</body>");
 		writer.println("</html>");
+		writer.flush();
 	}
 	private void printInfo(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		final StringWriter sw = new StringWriter();
@@ -157,12 +157,12 @@ public abstract class StoreServletBase extends HttpServlet {
 		public HtmlPrintWriter(Writer out) {
 			super(out);
 		}
-
+		@Override
 		public void println() {
 			super.print("<br/>");
 			super.println();
 		}
-
+		@Override
 		public void println(String s) {
 			super.print(s);
 			println();
