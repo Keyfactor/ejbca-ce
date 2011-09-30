@@ -89,19 +89,25 @@
 			<h:panelGroup rendered="#{auditor.conditionToAdd != null}">
 				<h:inputText rendered="#{empty auditor.conditionToAdd.options}" value="#{auditor.conditionToAdd.value}"></h:inputText>
 				<h:selectOneMenu rendered="#{not empty auditor.conditionToAdd.options}" value="#{auditor.conditionToAdd.value}"><f:selectItems value="#{auditor.conditionToAdd.options}"/></h:selectOneMenu>
-				<h:commandButton action="#{auditor.addConditionAndReload}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/verify-log-success.png"/>
-				<!-- 
-				<h:commandButton rendered="false" action="#{auditor.addCondition}" styleClass="commandLink" value="#{web.text.CONDITIONS_ADD}"/>
-				 -->
-				<h:commandButton action="#{auditor.cancelCondition}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/verify-log-failed.png"/>
 			</h:panelGroup>
+			</f:facet>
+		</h:column>
+		<h:column>
+			<h:commandButton actionListener="#{auditor.removeCondition}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/verify-log-failed.png">
+				<f:attribute name="removeCondition" value="#{condition}" />
+			</h:commandButton>
+			<f:facet name="footer">
+				<h:panelGroup rendered="#{auditor.conditionToAdd != null}">
+					<h:commandButton action="#{auditor.addCondition}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/verify-log-success.png"/>
+					<h:commandButton action="#{auditor.cancelCondition}" styleClass="commandLink" image="#{web.ejbcaBaseURL}#{web.ejbcaWebBean.globalConfiguration.adminWebPath}images/verify-log-failed.png"/>
+				</h:panelGroup>
 			</f:facet>
 		</h:column>
 	</h:dataTable>
 	</p>
 	<h:panelGroup>
 		<h:commandButton rendered="#{not empty auditor.conditions}" action="#{auditor.clearConditions}" styleClass="commandLink" value="#{web.text.CONDITIONS_CLEAR}"/>
-		<h:commandButton rendered="#{not empty auditor.conditions}" action="#{auditor.clearConditionsAndReload}" styleClass="commandLink" value="#{web.text.CONDITIONS_CLEAR_RELOAD}"/>
+		<h:selectBooleanCheckbox immediate="true" value="#{auditor.automaticReload}"/><h:outputText value="#{web.text.AUDIT_AUTORELOAD}"/>
 	</h:panelGroup>
 	</h:form>
 	<h:form id="search2" rendered="#{auditor.device != null}">
@@ -120,15 +126,15 @@
 		<h:outputText rendered="false" value="Displaying results #{auditor.startIndex} - #{auditor.startIndex + auditor.maxResults - 1}."/>
 		<h:outputText rendered="false" value="Ordered by #{auditor.nameFromColumn[(auditor.sortColumn)]}, asc=#{auditor.sortOrder}."/>
 		 -->
-		<h:outputText value="Displaying results "/>
+		<h:outputText value="#{web.text.AUDIT_DISPRESULTS}"/>
 		<h:inputText id="startIndex2" value="#{auditor.startIndex}" style="width: 6em; text-align:right;"><f:convertNumber type="number"/></h:inputText>
-		<h:outputText value=" to #{auditor.startIndex + auditor.resultSize - 1}."/>
+		<h:outputText value="#{web.text.AUDIT_DISPRESULTSTO} #{auditor.startIndex + auditor.resultSize - 1}."/>
 		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResults}" styleClass="commandLink" value="#{web.text.AUDIT_DOWNLOAD}"/>
 	</p>
 	<h:dataTable value="#{auditor.results}" var="auditLogEntry" captionStyle="text-align: left; background-color: #5B8CCD; color: #FFF;" headerClass="results" styleClass="grid" rowClasses="LogTextRow0,LogTextRow1" rendered="#{not empty auditor.results}">
 		<f:facet name="caption">
 			<h:panelGroup>
-				<h:outputText value="Search results "/>
+				<h:outputText value="#{web.text.AUDIT_SEARCHRESULTS}"/>
 			</h:panelGroup>
 		</f:facet>
 		<h:column>
