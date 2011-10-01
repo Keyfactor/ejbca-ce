@@ -125,7 +125,7 @@ public class KeyToolsTest {
     private static final String pkAlias = "privateKey";
 
     @BeforeClass
-    public static void setUp() throws Exception {
+    public static void beforeClass() throws Exception {
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProvider();
     }

@@ -19,16 +19,12 @@ import org.junit.Test;
 /**
  * Based on EJBCA version: 
  *      InternalResourcesTest.java 8865 2010-04-09 15:14:51Z mikekushner
- * Based on cesecore version:
- *      InternalResourcesTest.java 985 2011-08-10 13:19:09Z tomas
  * 
  * @version $Id$
  */
 public class InternalResourcesTest {
 
-	private static final String TEST_RESOURCE_LOCATION = "/intresources";
-	// Classpath issues, use "src/intresources" when running from within eclipse
-	//private static final String TEST_RESOURCE_PATH = "src/intresources";
+	private static final String TEST_RESOURCE_LOCATION = "src/main/resources/intresources";
 	
     @Test
     public void testGetLocalizedMessageString() {
@@ -50,14 +46,14 @@ public class InternalResourcesTest {
     @Test
     public void testGetLocalizedMessageStringObject() {
         InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
-        String res = intres.getLocalizedMessage("raadmin.testparams", new Long(1), Integer.valueOf(3), "hi", new Boolean(true), "bye");
+        String res = intres.getLocalizedMessage("raadmin.testparams", new Long(1), Integer.valueOf(3), "hi", Boolean.valueOf(true), "bye");
         assertEquals("Test 1 3 hi true bye message 1", res);
     }
 
     @Test
     public void testGetLocalizedMessageStringObjectWithNull() {
         InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
-        String res = intres.getLocalizedMessage("raadmin.testparams", null, Integer.valueOf(3), null, new Boolean(true), "bye");
+        String res = intres.getLocalizedMessage("raadmin.testparams", null, Integer.valueOf(3), null, Boolean.valueOf(true), "bye");
         assertEquals("Test  3  true bye message ", res);
 
         res = intres.getLocalizedMessage("raadmin.testparams");

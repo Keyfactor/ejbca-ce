@@ -409,9 +409,6 @@ public class CertToolsTest {
         CryptoProviderTools.installBCProvider();
     }
 
-    public void tearDown() throws Exception {
-    }
-
     /**
      * DOCUMENT ME!
      * 
