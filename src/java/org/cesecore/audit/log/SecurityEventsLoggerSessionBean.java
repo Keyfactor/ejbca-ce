@@ -42,7 +42,7 @@ import org.cesecore.time.providers.TrustedTimeProviderException;
  * 
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SecurityEventsLoggerSessionRemote")
-@TransactionAttribute(TransactionAttributeType.REQUIRED)
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class SecurityEventsLoggerSessionBean implements SecurityEventsLoggerSessionLocal, SecurityEventsLoggerSessionRemote {
 
     private static final Logger log = Logger.getLogger(SecurityEventsLoggerSessionBean.class);
@@ -75,13 +75,13 @@ public class SecurityEventsLoggerSessionBean implements SecurityEventsLoggerSess
     
     @Override
     public void log(final EventType eventType, final EventStatus eventStatus, final ModuleType module, final ServiceType service, final String authToken, final String customId, final String searchDetail1, final String searchDetail2,
-    		final Map<String, Object> additionalDetails) throws AuditRecordStorageException {
+            final Map<String, Object> additionalDetails) throws AuditRecordStorageException {
         if (log.isTraceEnabled()) {
             log.trace(String.format(">log:%s:%s:%s:%s:%s:%s:%s:%s:%s", eventType, eventStatus, module, service, authToken, customId, searchDetail1, searchDetail2, additionalDetails));
         }
         try {
-        	final TrustedTime tt = trustedTimeWatcherSession.getTrustedTime(false);
-        	internalSecurityEventsLoggerSession.log(tt, eventType, eventStatus, module, service, authToken, customId, searchDetail1, searchDetail2, additionalDetails);
+            final TrustedTime tt = trustedTimeWatcherSession.getTrustedTime(false);
+            internalSecurityEventsLoggerSession.log(tt, eventType, eventStatus, module, service, authToken, customId, searchDetail1, searchDetail2, additionalDetails);
         } catch (TrustedTimeProviderException e) {
             log.error(e.getMessage(), e);
             throw new AuditRecordStorageException(e.getMessage(), e);
