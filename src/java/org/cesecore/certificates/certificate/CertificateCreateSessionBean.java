@@ -152,17 +152,24 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                         .getEncProviderName());
             }
             // Verify the request
-            if (req.verify() == false) {
-                final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-                // logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null,
-                // LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
-                throw new SignRequestSignatureException(msg);
-            }
-
-            PublicKey reqpk = req.getRequestPublicKey();
-            if (reqpk == null) {
-                final String msg = intres.getLocalizedMessage("createcert.nokeyinrequest");
-                throw new InvalidKeyException(msg);
+            final PublicKey reqpk;
+            try {
+                if (req.verify() == false) {
+                    final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
+                    // logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null,
+                    // LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
+                    throw new SignRequestSignatureException(msg);
+                }
+                // Get the public key
+                reqpk = req.getRequestPublicKey();
+                if (reqpk == null) {
+                    final String msg = intres.getLocalizedMessage("createcert.nokeyinrequest");
+                    throw new InvalidKeyException(msg);
+                }
+            } catch (InvalidKeyException e) {
+                // If we get an invalid key exception here, we shoudl throw an IllegalKeyException to the caller
+                // The catch of InvalidKeyException in the end of this method, catches error from the CA crypto token
+                throw new IllegalKeyException(e);
             }
 
             final Date notBefore = req.getRequestValidityNotBefore(); // Optionally requested validity
