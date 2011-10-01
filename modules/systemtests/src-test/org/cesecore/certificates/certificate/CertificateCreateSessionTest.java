@@ -46,6 +46,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.IllegalNameException;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -62,6 +63,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.After;
@@ -522,26 +524,56 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         }
     }
 
+    /** A PKCS#10 request with corrupt public key record, the public key asn.1 "sequence" has been hexedited */
+    private static byte[] invalidp10 = Base64.decode(("MIH0MIGfAgEAMDwxCzAJBgNVBAYTAlNFMREwDwYDVQQKDAhQcmltZUtleTEaMBgG"+
+            "A1UEAwwRcGtjczEwcmVxdWVzdHRlc3QwXDANBgkqhkiG9w0BAQEFAANLAP///0EA"+
+            "lZdRWN6AfWzPggOBeqsX7rMxqHeSH+UhLhq+UjJ+ULizWmKtTAj5BmoLTN81DLS7"+
+            "Vgx//q+Z3ag6llYJclWaWwIDAQABMA0GCSqGSIb3DQEBBQUAA0EAPWa7h5tZF+4x"+
+            "2n8pDGhxbiJmUzFUlXgdUBRpstId0DZ6sWGzSnCPDEnPgsR95qVpYiP+V4vWV2Hu"+
+    "KNIGAvdeeQ==").getBytes());
+
 	@Test
 	public void testPKCS10Request() throws Exception {
-	    String fp1 = null;
-	    try {
-	    	final String dn = "C=SE,O=PrimeKey,CN=pkcs10requesttest";
-	        final EndEntityInformation user = new EndEntityInformation("pkcs10requesttest",dn,testx509ca.getCAId(),null,"foo@anatom.se",EndEntityConstants.USER_ENDUSER,0,CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
-	        user.setStatus(EndEntityConstants.STATUS_NEW);
+        String fp1 = null;
+        try {
+            final String dn = "C=SE,O=PrimeKey,CN=pkcs10requesttest";
+            final EndEntityInformation user = new EndEntityInformation("pkcs10requesttest",dn,testx509ca.getCAId(),null,"foo@anatom.se",EndEntityConstants.USER_ENDUSER,0,CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
 
-	        final KeyPair keyPair = KeyTools.genKeys("512", "RSA"); 
-			final X509Name x509dn = new X509Name(dn);
-			PKCS10CertificationRequest basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", x509dn, 
-	        		keyPair.getPublic(), null, keyPair.getPrivate());
-			PKCS10RequestMessage req = new PKCS10RequestMessage(basicpkcs10);
-			X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
-	        assertNotNull("Creating a cert should have worked", resp);
-	        X509Certificate cert = (X509Certificate)resp.getCertificate();
-	        fp1 = CertTools.getFingerprintAsString(cert);
-	    } finally {
-	    	internalCertStoreSession.removeCertificate(fp1);
-	    }
+            final KeyPair keyPair = KeyTools.genKeys("512", "RSA"); 
+            final X509Name x509dn = new X509Name(dn);
+            PKCS10CertificationRequest basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", x509dn, 
+                    keyPair.getPublic(), null, keyPair.getPrivate());
+            PKCS10RequestMessage req = new PKCS10RequestMessage(basicpkcs10);
+            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+            assertNotNull("Creating a cert should have worked", resp);
+            X509Certificate cert = (X509Certificate)resp.getCertificate();
+            fp1 = CertTools.getFingerprintAsString(cert);
+            
+            // Create a request with invalid PoP
+            final KeyPair keyPair2 = KeyTools.genKeys("512", "RSA"); 
+            PKCS10CertificationRequest invalidpoppkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", x509dn, 
+                    keyPair.getPublic(), null, keyPair2.getPrivate());
+            req = new PKCS10RequestMessage(invalidpoppkcs10);
+            try {
+                resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+                fail("Creating a cert from a request with invalid PoP (proof of possession) should not work");
+            } catch (SignRequestSignatureException e) {
+                // NOPMD: this is what we want
+            }
+            
+            // Try with a PKCS#10 request with a asn.1 corrupt public key entry
+            req = new PKCS10RequestMessage(invalidp10);
+            try {
+                resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+                fail("Creating a cert from a request with invalid PoP (proof of possession) should not work");
+            } catch (IllegalKeyException e) {
+                // NOPMD: this is what we want
+            }
+            
+        } finally {
+            internalCertStoreSession.removeCertificate(fp1);
+        }
 	}
 
     @Test
