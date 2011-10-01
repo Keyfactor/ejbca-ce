@@ -20,19 +20,14 @@ import org.junit.Test;
 /**
  * Unit tests for the AccessRule class
  * 
- * Based on cesecore version:
- *      AccessRuleTest.java 191 2011-01-28 15:12:56Z mikek
- * 
  * @version $Id$
  *
  */
 public class AccessRuleTest {
 
-    private AccessRuleData accessRule;
-    
     @Test
     public void testSetState() {
-        accessRule = new AccessRuleData(AccessRuleData.generatePrimaryKey("Ape", "Monkey"), "Monkey", AccessRuleState.RULE_NOTUSED, false);
+        AccessRuleData accessRule = new AccessRuleData(AccessRuleData.generatePrimaryKey("Ape", "Monkey"), "Monkey", AccessRuleState.RULE_NOTUSED, false);
         assertEquals(AccessTreeState.STATE_UNKNOWN, accessRule.getTreeState());
         accessRule.setInternalState(AccessRuleState.RULE_ACCEPT);
         assertEquals(AccessTreeState.STATE_ACCEPT, accessRule.getTreeState());

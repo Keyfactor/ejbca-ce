@@ -276,9 +276,6 @@ public class Base64Test {
         log.trace("<setUp()");
     }
 
-    public void tearDown() throws Exception {
-    }
-
     @Test
     public void testBase64Small() throws Exception {
         // Testcert is on long line of base 64 encoded stuff
