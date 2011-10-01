@@ -90,7 +90,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     	this.testcvcca = cvcca;
     }
     
-    public void setUp() throws Exception {    	
+    public void setUp() throws Exception {  //NOPMD: this is not a test case    	
     	// Set up base role that can edit roles
     	setUpAuthTokenAndRole("CaSessionTest");
 
@@ -116,7 +116,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         }
     }
 
-    public void tearDown() throws Exception {
+    public void tearDown() throws Exception { //NOPMD: this is not a test case
         // Remove any testca before exiting tests
     	try {
             if (testx509ca != null) {
