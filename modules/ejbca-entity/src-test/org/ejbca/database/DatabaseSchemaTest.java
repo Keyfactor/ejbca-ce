@@ -13,6 +13,8 @@
 
 package org.ejbca.database;
 
+import static org.junit.Assert.assertTrue;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
@@ -21,8 +23,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.EntityTransaction;
 import javax.persistence.Persistence;
-
-import junit.framework.TestCase;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Arrays;
@@ -48,6 +48,9 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileData;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceData;
 import org.ejbca.core.ejb.services.ServiceData;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
  * Simple class to trigger Hibernate's JPA schema validation.
@@ -56,7 +59,7 @@ import org.ejbca.core.ejb.services.ServiceData;
  * 
  * @version $Id$
  */
-public class DatabaseSchemaTest extends TestCase {
+public class DatabaseSchemaTest {
 	
 	private static final Logger LOG = Logger.getLogger(DatabaseSchemaTest.class);
 
@@ -65,16 +68,15 @@ public class DatabaseSchemaTest extends TestCase {
 	private static String CLOB_10KiB;
 	private static String CLOB_100KiB;
 	private static String CLOB_1MiB;
-	private static final LinkedHashMap HASHMAP_200K = new LinkedHashMap();
-	private static final LinkedHashMap HASHMAP_1M = new LinkedHashMap();
+	private static final LinkedHashMap<String, byte[]> HASHMAP_200K = new LinkedHashMap<String, byte[]>();
+	private static final LinkedHashMap<String, byte[]> HASHMAP_1M = new LinkedHashMap<String, byte[]>();
 	private static final int BOGUS_INT = -32;	// Very random..
 	private static final Integer BOGUS_INTEGER = Integer.valueOf(BOGUS_INT);
 	private static EntityManagerFactory entityManagerFactory;
 	private static EntityManager entityManager;
 	
-	@Override
+	@Before
 	public void setUp() throws Exception {
-		super.setUp();
 		LOG.trace(">setup");
 		if (entityManagerFactory == null) {
 			entityManagerFactory = Persistence.createEntityManagerFactory("ejbca-write");
@@ -83,14 +85,14 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<setup");
 	}
 	
-	@Override
+	@After
 	public void tearDown() throws Exception {
-		super.tearDown();
 		LOG.trace(">tearDown");
 		entityManager.close();
 		LOG.trace("<tearDown");
 	}
 
+	@Test
 	public void test000Setup() throws Exception {
 		LOG.trace(">test000Setup");
 		logMemStats();
@@ -117,6 +119,7 @@ public class DatabaseSchemaTest extends TestCase {
 		return new String(getLob(size));
 	}
 
+    @Test
 	public void testApprovalData() {
 		LOG.trace(">testApprovalData");
 		logMemStats();
@@ -140,6 +143,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testApprovalData");
 	}
 /*
+    @Test
 	public void testAccessRulesData() {
 		LOG.trace(">testAccessRulesData");
 		logMemStats();
@@ -155,6 +159,7 @@ public class DatabaseSchemaTest extends TestCase {
 	}
 */
 	/*
+    @Test
 	public void testAdminEntityData() {
 		LOG.trace(">testAdminEntityData");
 		logMemStats();
@@ -171,6 +176,7 @@ public class DatabaseSchemaTest extends TestCase {
 	}
 */
 	/*
+    @Test
 	public void testAdminGroupData() {
 		LOG.trace(">testAdminGroupData");
 		logMemStats();
@@ -184,6 +190,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testAdminGroupData");
 	}
 */
+    @Test
 	public void testCAData() {
 		LOG.trace(">testCAData");
 		logMemStats();
@@ -201,6 +208,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testCAData");
 	}
 
+    @Test
 	public void testCertificateProfileData() {
 		LOG.trace(">testCertificateProfileData");
 		logMemStats();
@@ -214,6 +222,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testCertificateProfileData");
 	}
 
+    @Test
 	public void testPublisherData() {
 		LOG.trace(">testPublisherData");
 		logMemStats();
@@ -228,6 +237,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testPublisherData");
 	}
 
+    @Test
 	public void testPublisherQueueData() {
 		LOG.trace(">testPublisherQueueData");
 		logMemStats();
@@ -247,6 +257,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testPublisherQueueData");
 	}
 
+    @Test
 	public void testCertificateData() {
 		LOG.trace(">testCertificateData");
 		logMemStats();
@@ -275,6 +286,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testCertificateData");
 	}
 
+    @Test
 	public void testCertReqHistoryData() {
 		LOG.trace(">testCertReqHistoryData");
 		logMemStats();
@@ -296,6 +308,7 @@ public class DatabaseSchemaTest extends TestCase {
 	}
 
 	// ZZ to run this test last, since we often run out of memory here and mess up the database connection.
+    @Test
 	public void testZZCRLData() {
 		LOG.trace(">testCRLData");
 		logMemStats();
@@ -318,6 +331,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testCRLData");
 	}
 
+    @Test
 	public void testHardTokenCertificateMap() {
 		LOG.trace(">testHardTokenCertificateMap");
 		logMemStats();
@@ -330,6 +344,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testHardTokenCertificateMap");
 	}
 
+    @Test
 	public void testHardTokenData() {
 		LOG.trace(">testHardTokenData");
 		logMemStats();
@@ -347,6 +362,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testHardTokenData");
 	}
 
+    @Test
 	public void testHardTokenIssuerData() {
 		LOG.trace(">testHardTokenIssuerData");
 		logMemStats();
@@ -361,6 +377,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testHardTokenIssuerData");
 	}
 
+    @Test
 	public void testHardTokenProfileData() {
 		LOG.trace(">testHardTokenProfileData");
 		logMemStats();
@@ -375,6 +392,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testHardTokenProfileData");
 	}
 
+    @Test
 	public void testHardTokenPropertyData() {
 		LOG.trace(">testHardTokenPropertyData");
 		logMemStats();
@@ -388,6 +406,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testHardTokenPropertyData");
 	}
 
+    @Test
 	public void testKeyRecoveryData() {
 		LOG.trace(">testKeyRecoveryData");
 		logMemStats();
@@ -402,6 +421,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testKeyRecoveryData");
 	}
 
+    @Test
 	public void testUserData() {
 		LOG.trace(">testUserData");
 		logMemStats();
@@ -430,6 +450,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testUserData");
 	}
 
+    @Test
 	public void testAdminPreferencesData() {
 		LOG.trace(">testAdminPreferencesData");
 		logMemStats();
@@ -442,6 +463,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testAdminPreferencesData");
 	}
 
+    @Test
 	public void testEndEntityProfileData() {
 		LOG.trace(">testEndEntityProfileData");
 		logMemStats();
@@ -455,6 +477,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testEndEntityProfileData");
 	}
 
+    @Test
 	public void testGlobalConfigurationData() {
 		LOG.trace(">testGlobalConfigurationData");
 		logMemStats();
@@ -467,6 +490,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testGlobalConfigurationData");
 	}
 
+    @Test
 	public void testUserDataSourceData() {
 		LOG.trace(">testUserDataSourceData");
 		logMemStats();
@@ -481,6 +505,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testUserDataSourceData");
 	}
 
+    @Test
 	public void testServiceData() {
 		LOG.trace(">testServiceData");
 		logMemStats();
@@ -496,6 +521,7 @@ public class DatabaseSchemaTest extends TestCase {
 		LOG.trace("<testServiceData");
 	}
 	
+    @Test
 	public void testZZZCleanUp() throws Exception {
 		LOG.trace(">testZZZCleanUp");
 		entityManagerFactory.close();
