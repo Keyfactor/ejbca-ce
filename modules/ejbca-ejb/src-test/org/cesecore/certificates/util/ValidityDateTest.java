@@ -81,7 +81,7 @@ public class ValidityDateTest {
         // Test absolute time (==Integer.MAX_VALUE)
         getStringInternalAbs(Integer.MAX_VALUE, "1970-01-25 20:31:23+00:00");
         // Test absolute times (>Integer.MAX_VALUE)
-        getStringInternalAbs(Integer.MAX_VALUE+1, "1970-01-25 20:31:23+00:00");
+        getStringInternalAbs(Long.valueOf(Integer.MAX_VALUE)+1, "1970-01-25 20:31:23+00:00");
         getStringInternalAbs(1304960280000L, "2011-05-09 16:58:00+00:00");
         LOG.trace("<testGetString");
     }
@@ -107,7 +107,7 @@ public class ValidityDateTest {
         // Test absolute time (==Integer.MAX_VALUE)
         getDateInternal(Integer.MAX_VALUE, now, new Date(Integer.MAX_VALUE));
         // Test absolute times (>Integer.MAX_VALUE)
-        getDateInternal(Integer.MAX_VALUE+1, now, new Date(Integer.MAX_VALUE+1));
+        getDateInternal(Long.valueOf(Integer.MAX_VALUE)+1, now, new Date(Long.valueOf(Integer.MAX_VALUE)+1));
         LOG.trace("<testGetDate");
     }
 
