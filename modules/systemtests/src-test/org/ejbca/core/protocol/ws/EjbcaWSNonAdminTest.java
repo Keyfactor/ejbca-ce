@@ -485,11 +485,15 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(admincert1.getSubjectX500Principal());
-        admin1 = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        credentials.add(admincert1);
+        admin1 = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, credentials));
 
         Set<Principal> reqprincipals = new HashSet<Principal>();
         principals.add(reqadmincert.getSubjectX500Principal());
-        reqadmin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(reqprincipals, null));
+        Set<X509Certificate> reqcredentials = new HashSet<X509Certificate>();
+        credentials.add(reqadmincert);
+        reqadmin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(reqprincipals, reqcredentials));
       
     }
 
