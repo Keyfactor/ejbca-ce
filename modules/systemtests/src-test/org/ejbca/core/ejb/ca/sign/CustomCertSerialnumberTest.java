@@ -22,7 +22,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.CesecoreException;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -41,6 +40,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.EjbcaException;
@@ -67,7 +67,8 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CustomCertSerialnumberTest.class);
 
-    private final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CustomCertSerialnumberTest"));
+
     private static int rsacaid = 0;
 
     int fooCertProfileId;
@@ -88,17 +89,17 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        CAInfo inforsa = caSession.getCAInfo(admin, "TEST");
+        CAInfo inforsa = caSession.getCAInfo(internalAdmin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
 
-        certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
-        endEntityProfileSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "FOOCERTPROFILE");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "FOOEEPROFILE");
 
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certprof.setAllowKeyUsageOverride(true);
         certprof.setAllowCertSerialNumberOverride(true);
-        certificateProfileSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
+        certificateProfileSession.addCertificateProfile(internalAdmin, "FOOCERTPROFILE", certprof);
         fooCertProfileId = certificateProfileSession.getCertificateProfileId("FOOCERTPROFILE");
 
         final EndEntityProfile profile = new EndEntityProfile(true);
@@ -106,30 +107,31 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfileId));
         profile.setValue(EndEntityProfile.AVAILKEYSTORE, 0, Integer.toString(SecConst.TOKEN_SOFT_BROWSERGEN));
         assertTrue(profile.getUse(EndEntityProfile.CERTSERIALNR, 0));
-        endEntityProfileSession.addEndEntityProfile(admin, "FOOEEPROFILE", profile);
-        fooEEProfileId = endEntityProfileSession.getEndEntityProfileId(admin, "FOOEEPROFILE");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "FOOEEPROFILE", profile);
+        fooEEProfileId = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "FOOEEPROFILE");
+      
     }
 
     @After
     public void tearDown() throws Exception {
-      super.tearDown();
+        super.tearDown();
         try {
-            userAdminSession.deleteUser(admin, "foo");
+            userAdminSession.deleteUser(internalAdmin, "foo");
             log.debug("deleted user: foo");
         } catch (Exception e) {
         }
         try {
-            userAdminSession.deleteUser(admin, "foo2");
+            userAdminSession.deleteUser(internalAdmin, "foo2");
             log.debug("deleted user: foo2");
         } catch (Exception e) {
         }
         try {
-            userAdminSession.deleteUser(admin, "foo3");
+            userAdminSession.deleteUser(internalAdmin, "foo3");
             log.debug("deleted user: foo3");
         } catch (Exception e) {
         }
 
-        certificateStoreSession.revokeAllCertByCA(admin, caSession.getCAInfo(admin, rsacaid).getSubjectDN(),
+        certificateStoreSession.revokeAllCertByCA(internalAdmin, caSession.getCAInfo(internalAdmin, rsacaid).getSubjectDN(),
                 RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
     }
 
@@ -158,7 +160,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         ExtendedInformation ei = new ExtendedInformation();
         ei.setCertificateSerialNumber(serno);
         user.setExtendedinformation(ei);
-        ResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, X509ResponseMessage.class);
+        ResponseMessage resp = certificateRequestSession.processCertReq(internalAdmin, user, p10, X509ResponseMessage.class);
 
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
@@ -193,7 +195,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
                 fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         user.setPassword("foo123");
 
-        ResponseMessage resp = certificateRequestSession.processCertReq(admin, user, p10, X509ResponseMessage.class);
+        ResponseMessage resp = certificateRequestSession.processCertReq(internalAdmin, user, p10, X509ResponseMessage.class);
 
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
@@ -232,7 +234,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
         ResponseMessage resp = null;
         try {
-            resp = certificateRequestSession.processCertReq(admin, user, p10, X509ResponseMessage.class);
+            resp = certificateRequestSession.processCertReq(internalAdmin, user, p10, X509ResponseMessage.class);
         } catch (CesecoreException e) {
             log.debug(e.getMessage());
             assertTrue("Unexpected exception.",
@@ -261,7 +263,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
 
         CertificateProfile fooCertProfile = certificateProfileSession.getCertificateProfile("FOOCERTPROFILE");
         fooCertProfile.setAllowCertSerialNumberOverride(false);
-        certificateProfileSession.changeCertificateProfile(admin, "FOOCERTPROFILE", fooCertProfile);
+        certificateProfileSession.changeCertificateProfile(internalAdmin, "FOOCERTPROFILE", fooCertProfile);
 
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", SecConst.USER_ENDUSER,
                 fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
@@ -270,7 +272,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         ei.setCertificateSerialNumber(serno);
         user.setExtendedinformation(ei);
         try {
-            certificateRequestSession.processCertReq(admin, user, p10, X509ResponseMessage.class);
+            certificateRequestSession.processCertReq(internalAdmin, user, p10, X509ResponseMessage.class);
             assertTrue("This method should throw exception", false);
         } catch (CesecoreException e) {
             assertTrue(e.getMessage().contains("not allowing certificate serial number override"));
@@ -279,6 +281,6 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     }
 
     public String getRoleName() {
-        return ""; 
+        return "";
     }
 }

@@ -432,8 +432,9 @@ public interface CAAdminSession {
      * @param usedpublishers   a collection if publisher id's (Integer) indicating which publisher that should be used.
      * @param caDataDN         DN from CA data. If a the CA certificate does not have a DN object to be used by the publisher this DN could be searched for the object.
      * @param doPublishDeltaCRL should delta CRLs be published?
+     * @throws AuthorizationDeniedException 
      */
-    public void publishCRL(AuthenticationToken admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN, boolean doPublishDeltaCRL);
+    public void publishCRL(AuthenticationToken admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN, boolean doPublishDeltaCRL) throws AuthorizationDeniedException;
 
     /** @return a Collection of id:s (Integer) to authorized publishers. */
     public Collection<Integer> getAuthorizedPublisherIds(AuthenticationToken admin);

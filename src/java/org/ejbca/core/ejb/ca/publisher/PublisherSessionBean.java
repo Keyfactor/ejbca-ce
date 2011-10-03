@@ -39,6 +39,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
@@ -90,16 +91,21 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     @Override
     public boolean storeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate incert, String username, String password, String userDN, String cafp,
             int status, int type, long revocationDate, int revocationReason, String tag, int certificateProfileId, long lastUpdate,
-            ExtendedInformation extendedinformation) {
-    	if (publisherids == null) {
+            ExtendedInformation extendedinformation) throws AuthorizationDeniedException {
+        int caid = CertTools.getIssuerDN(incert).hashCode();
+        if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
+            final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
+            throw new AuthorizationDeniedException(msg);
+        }
+        
+        
+        if (publisherids == null) {
     		return true;
     	}
         String certSerno = CertTools.getSerialNumberAsString(incert);
-        Iterator<Integer> iter = publisherids.iterator();
         boolean returnval = true;
-        while (iter.hasNext()) {
+        for (Integer id : publisherids) {
             int publishStatus = PublisherConst.STATUS_PENDING;
-            Integer id = iter.next();
             PublisherData pdl = PublisherData.findById(entityManager, Integer.valueOf(id));
             if (pdl != null) {
                 String fingerprint = CertTools.getFingerprintAsString(incert);
@@ -166,20 +172,23 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         return returnval;
     }
 
-    /**
-     * The same basic method is be used for both store and revoke
-     * @return true if publishing was successful for all publishers (or no publishers were given as publisherids), false if not or if was queued for any of the publishers
-     */
     @Override
     public void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate cert, String username, String userDN, String cafp, int type, int reason,
-            long revocationDate, String tag, int certificateProfileId, long lastUpdate) {
+            long revocationDate, String tag, int certificateProfileId, long lastUpdate) throws AuthorizationDeniedException  {
         storeCertificate(admin, publisherids, cert, username, null, userDN, cafp,
                 SecConst.CERT_REVOKED, type, revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
     }
 
     @Override
-    public boolean storeCRL(AuthenticationToken admin, Collection<Integer> publisherids, byte[] incrl, String cafp, int number, String userDN) {
+    public boolean storeCRL(AuthenticationToken admin, Collection<Integer> publisherids, byte[] incrl, String cafp, int number, String issuerDn) throws AuthorizationDeniedException {
         log.trace(">storeCRL");
+       
+        int caid = CertTools.stringToBCDNString(issuerDn).hashCode();
+        if (!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
+            final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
+            throw new AuthorizationDeniedException(msg);
+        }
+        
         Iterator<Integer> iter = publisherids.iterator();
         boolean returnval = true;
         while (iter.hasNext()) {
@@ -190,7 +199,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 // If it should be published directly
                 if (!getPublisher(pdl).getOnlyUseQueue()) {
                     try {
-                    	if (publisherQueueSession.storeCRLNonTransactional(getPublisher(pdl), admin, incrl, cafp, number, userDN)) {
+                    	if (publisherQueueSession.storeCRLNonTransactional(getPublisher(pdl), admin, incrl, cafp, number, issuerDn)) {
                             publishStatus = PublisherConst.STATUS_SUCCESS;
                         }
                         String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());
@@ -217,7 +226,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     // Write to the publisher queue either for audit reasons or
                     // to be able try again
                     final PublisherQueueVolatileData pqvd = new PublisherQueueVolatileData();
-                    pqvd.setUserDN(userDN);
+                    pqvd.setUserDN(issuerDn);
                     String fp = CertTools.getFingerprintAsString(incrl);
                     try {
                         publisherQueueSession.addQueueData(id.intValue(), PublisherConst.PUBLISH_TYPE_CRL, fp, pqvd, PublisherConst.STATUS_PENDING);
@@ -443,7 +452,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public BasePublisher getPublisher(AuthenticationToken admin, String name) {
+    public BasePublisher getPublisher(String name) {
         BasePublisher returnval = null;
         PublisherData pd = PublisherData.findByName(entityManager, name);
         if (pd != null) {
@@ -454,7 +463,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public BasePublisher getPublisher(AuthenticationToken admin, int id) {
+    public BasePublisher getPublisher(int id) {
         BasePublisher returnval = null;
         PublisherData pd = PublisherData.findById(entityManager, Integer.valueOf(id));
         if (pd != null) {

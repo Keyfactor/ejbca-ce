@@ -20,7 +20,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.publisher.PublisherSession;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
@@ -37,7 +37,7 @@ public class PublisherDataHandler implements Serializable {
 	   
     private static final long serialVersionUID = -5646053740072121787L;
     
-    private PublisherSession publishersession; 
+    private PublisherSessionLocal publishersession; 
     private AccessControlSessionLocal authorizationsession;
     private CAAdminSession caadminsession;
     private CertificateProfileSession certificateProfileSession;
@@ -45,7 +45,7 @@ public class PublisherDataHandler implements Serializable {
     private InformationMemory info;
 
     /** Creates a new instance of PublisherDataHandler */
-    public PublisherDataHandler(AuthenticationToken administrator, PublisherSession publishersession, AccessControlSessionLocal authorizationsession, 
+    public PublisherDataHandler(AuthenticationToken administrator, PublisherSessionLocal publishersession, AccessControlSessionLocal authorizationsession, 
                                 CAAdminSession caadminsession, CertificateProfileSession certificateProfileSession, InformationMemory info) {
        this.publishersession = publishersession;           
        this.authorizationsession = authorizationsession;
@@ -127,7 +127,7 @@ public class PublisherDataHandler implements Serializable {
         throw new AuthorizationDeniedException("Not authorized to publisher");
       }
       
-      return publishersession.getPublisher(administrator, id); 
+      return publishersession.getPublisher(id); 
     }      
           
     public BasePublisher getPublisher(String name) throws AuthorizationDeniedException{
@@ -135,7 +135,7 @@ public class PublisherDataHandler implements Serializable {
         throw new AuthorizationDeniedException("Not authorized to publisher");
      }
          
-      return publishersession.getPublisher(administrator, name);
+      return publishersession.getPublisher(name);
     }
    
       

@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
@@ -33,6 +32,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -60,6 +60,8 @@ public class CAKeystoreExportRemoveRestoreTest {
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private CAAdminTestSessionRemote catestsession = JndiHelper.getRemoteSession(CAAdminTestSessionRemote.class);
+    
+    private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CAKeystoreExportRemoveRestoreTest"));
 
     @BeforeClass
     public static void installProvider() {
@@ -160,7 +162,6 @@ public class CAKeystoreExportRemoveRestoreTest {
     public void test05RestoreWrong() throws Exception {
         log.trace(">test05RestoreWrong()");
 
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         String capassword = "foo123";
         byte[] keystorebytes1 = null;
         byte[] keystorebytes2 = null;
@@ -183,33 +184,33 @@ public class CAKeystoreExportRemoveRestoreTest {
 
         // Remove CAs if they already exists
         try {
-            caSession.removeCA(admin, cainfo1.getCAId());
+            caSession.removeCA(internalAdmin, cainfo1.getCAId());
         } catch (Exception ignored) {
         }
         try {
-            caSession.removeCA(admin, cainfo2.getCAId());
+            caSession.removeCA(internalAdmin, cainfo2.getCAId());
         } catch (Exception ignored) {
         }
         try {
-            caSession.removeCA(admin, cainfo3.getCAId());
+            caSession.removeCA(internalAdmin, cainfo3.getCAId());
         } catch (Exception ignored) {
         }
 
         // Create CAs
         try {
-            caAdminSession.createCA(admin, cainfo1);
+            caAdminSession.createCA(internalAdmin, cainfo1);
         } catch (Exception e) {
             log.error("createCA", e);
             fail("createCA: " + e.getMessage());
         }
         try {
-            caAdminSession.createCA(admin, cainfo2);
+            caAdminSession.createCA(internalAdmin, cainfo2);
         } catch (Exception e) {
             log.error("createCA", e);
             fail("createCA: " + e.getMessage());
         }
         try {
-            caAdminSession.createCA(admin, cainfo3);
+            caAdminSession.createCA(internalAdmin, cainfo3);
         } catch (Exception e) {
             log.error("createCA", e);
             fail("createCA: " + e.getMessage());
@@ -217,19 +218,19 @@ public class CAKeystoreExportRemoveRestoreTest {
 
         // Export keystores
         try {
-            keystorebytes1 = caAdminSession.exportCAKeyStore(admin, caname1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            keystorebytes1 = caAdminSession.exportCAKeyStore(internalAdmin, caname1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
         } catch (Exception e) {
             log.error("exportCAKeyStore", e);
             fail("exportCAKeyStore: " + e.getMessage());
         }
         try {
-            keystorebytes2 = caAdminSession.exportCAKeyStore(admin, caname2, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            keystorebytes2 = caAdminSession.exportCAKeyStore(internalAdmin, caname2, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
         } catch (Exception e) {
             log.error("exportCAKeyStore", e);
             fail("exportCAKeyStore: " + e.getMessage());
         }
         try {
-            keystorebytes3 = caAdminSession.exportCAKeyStore(admin, caname3, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            keystorebytes3 = caAdminSession.exportCAKeyStore(internalAdmin, caname3, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
         } catch (Exception e) {
             log.error("exportCAKeyStore", e);
             fail("exportCAKeyStore: " + e.getMessage());
@@ -237,7 +238,7 @@ public class CAKeystoreExportRemoveRestoreTest {
 
         // Remove keystore from CA1
         try {
-            caAdminSession.removeCAKeyStore(admin, caname1);
+            caAdminSession.removeCAKeyStore(internalAdmin, caname1);
         } catch (Exception e) {
             log.error("removeKeyStores", e);
             fail("removeKeyStores: " + e.getMessage());
@@ -245,13 +246,13 @@ public class CAKeystoreExportRemoveRestoreTest {
 
         // Try to restore with wrong keystore
         try {
-            caAdminSession.restoreCAKeyStore(admin, caname1, keystorebytes2, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            caAdminSession.restoreCAKeyStore(internalAdmin, caname1, keystorebytes2, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
             fail("Should not be possible to restore with a keystore with different parameters");
         } catch (Exception e) {
             // OK
         }
         try {
-            caAdminSession.restoreCAKeyStore(admin, caname1, keystorebytes3, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            caAdminSession.restoreCAKeyStore(internalAdmin, caname1, keystorebytes3, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
             fail("Should not be possible to restore with a keystore with different parameters");
         } catch (Exception e) {
             // OK
@@ -259,7 +260,7 @@ public class CAKeystoreExportRemoveRestoreTest {
 
         // Finally try with the right keystore to see that it works
         try {
-            caAdminSession.restoreCAKeyStore(admin, caname1, keystorebytes1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            caAdminSession.restoreCAKeyStore(internalAdmin, caname1, keystorebytes1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
         } catch (Exception e) {
             log.error("restoreCAKeyStore", e);
             fail("restoreCAKeyStore: " + e.getMessage());
@@ -267,19 +268,19 @@ public class CAKeystoreExportRemoveRestoreTest {
 
         // Clean up
         try {
-            caSession.removeCA(admin, cainfo1.getCAId());
+            caSession.removeCA(internalAdmin, cainfo1.getCAId());
         } catch (Exception e) {
             log.error("removeCA", e);
             fail("removeCA: " + e.getMessage());
         }
         try {
-            caSession.removeCA(admin, cainfo2.getCAId());
+            caSession.removeCA(internalAdmin, cainfo2.getCAId());
         } catch (Exception e) {
             log.error("removeCA", e);
             fail("removeCA: " + e.getMessage());
         }
         try {
-            caSession.removeCA(admin, cainfo3.getCAId());
+            caSession.removeCA(internalAdmin, cainfo3.getCAId());
         } catch (Exception e) {
             log.error("removeCA", e);
             fail("removeCA: " + e.getMessage());
@@ -298,7 +299,6 @@ public class CAKeystoreExportRemoveRestoreTest {
     public void test06RestoreNotRemoved() throws Exception {
         log.trace(">test06RestoreNotRemoved()");
 
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         String capassword = "foo123";
         byte[] keystorebytes1 = null;
 
@@ -309,13 +309,13 @@ public class CAKeystoreExportRemoveRestoreTest {
 
         // Remove if they already exists
         try {
-            caSession.removeCA(admin, cainfo1.getCAId());
+            caSession.removeCA(internalAdmin, cainfo1.getCAId());
         } catch (Exception ignored) {
         }
 
         // Create CAs
         try {
-            caAdminSession.createCA(admin, cainfo1);
+            caAdminSession.createCA(internalAdmin, cainfo1);
         } catch (Exception e) {
             log.error("createCA", e);
             fail("createCA: " + e.getMessage());
@@ -323,19 +323,19 @@ public class CAKeystoreExportRemoveRestoreTest {
 
         // Export keystore
         try {
-            keystorebytes1 = caAdminSession.exportCAKeyStore(admin, caname1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            keystorebytes1 = caAdminSession.exportCAKeyStore(internalAdmin, caname1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
         } catch (Exception e) {
             log.error("exportCAKeyStore", e);
             fail("exportCAKeyStore: " + e.getMessage());
         }
 
         // Just created CA should be active
-        CAInfo info = caSession.getCAInfo(admin, caname1);
+        CAInfo info = caSession.getCAInfo(internalAdmin, caname1);
         assertEquals("active token", CryptoToken.STATUS_ACTIVE, info.getCATokenInfo().getTokenStatus());
 
         // Try to restore the first CA even do it has not been removed
         try {
-            caAdminSession.restoreCAKeyStore(admin, caname1, keystorebytes1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            caAdminSession.restoreCAKeyStore(internalAdmin, caname1, keystorebytes1, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
             fail("Should fail when trying to restore an online CA");
         } catch (Exception e) {
             // OK
@@ -343,7 +343,7 @@ public class CAKeystoreExportRemoveRestoreTest {
 
         // Clean up
         try {
-            caSession.removeCA(admin, cainfo1.getCAId());
+            caSession.removeCA(internalAdmin, cainfo1.getCAId());
         } catch (Exception e) {
             log.error("removeCA", e);
             fail("removeCA: " + e.getMessage());
@@ -366,17 +366,16 @@ public class CAKeystoreExportRemoveRestoreTest {
         String keyFingerPrint = null;
 
         X509CAInfo cainfo = getNewCAInfo(caname, catokeninfo);
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-
+      
         // Remove if it already exists
         try {
-            caSession.removeCA(admin, cainfo.getCAId());
+            caSession.removeCA(internalAdmin, cainfo.getCAId());
         } catch (Exception ignored) {
         }
 
         // Create CA
         try {
-            caAdminSession.createCA(admin, cainfo);
+            caAdminSession.createCA(internalAdmin, cainfo);
         } catch (Exception e) {
             log.error("createCA", e);
             fail("createCA: " + e.getMessage());
@@ -390,7 +389,7 @@ public class CAKeystoreExportRemoveRestoreTest {
         }
 
         try {
-            keystorebytes = caAdminSession.exportCAKeyStore(admin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            keystorebytes = caAdminSession.exportCAKeyStore(internalAdmin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
 
         } catch (Exception e) {
             log.error("exportCAKeyStore", e);
@@ -399,24 +398,24 @@ public class CAKeystoreExportRemoveRestoreTest {
 
         // Remove the ca token soft keystore
         try {
-            caAdminSession.removeCAKeyStore(admin, caname);
+            caAdminSession.removeCAKeyStore(internalAdmin, caname);
         } catch (Exception e) {
             log.error("removeKeyStores", e);
             fail("removeKeyStores: " + e.getMessage());
         }
 
         // The token should now be offline
-        CAInfo info = caSession.getCAInfo(admin, caname);
+        CAInfo info = caSession.getCAInfo(internalAdmin, caname);
         assertEquals("offline token", CryptoToken.STATUS_OFFLINE, info.getCATokenInfo().getTokenStatus());
 
         // Should not be possible to activate
-        caAdminSession.activateCAToken(admin, cainfo.getCAId(), capassword, globalConfigurationSession.getCachedGlobalConfiguration());
-        info = caSession.getCAInfo(admin, caname);
+        caAdminSession.activateCAToken(internalAdmin, cainfo.getCAId(), capassword, globalConfigurationSession.getCachedGlobalConfiguration());
+        info = caSession.getCAInfo(internalAdmin, caname);
         assertEquals("offline token", CryptoToken.STATUS_OFFLINE, info.getCATokenInfo().getTokenStatus());
 
         // Should not be possible to export
         try {
-            byte[] emptyBytes = caAdminSession.exportCAKeyStore(admin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            byte[] emptyBytes = caAdminSession.exportCAKeyStore(internalAdmin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
             assertEquals("empty keystore", 0, emptyBytes.length);
         } catch (Exception ignored) {
             // OK
@@ -441,7 +440,7 @@ public class CAKeystoreExportRemoveRestoreTest {
 
         // Restore keystore
         try {
-            caAdminSession.restoreCAKeyStore(admin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            caAdminSession.restoreCAKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
         } catch (Exception e) {
             log.error("restoreKeyStores", e);
             fail("restoreKeyStores: " + e.getMessage());
@@ -458,7 +457,7 @@ public class CAKeystoreExportRemoveRestoreTest {
 
         // Clean up
         try {
-            caSession.removeCA(admin, cainfo.getCAId());
+            caSession.removeCA(internalAdmin, cainfo.getCAId());
         } catch (Exception e) {
             log.error("removeCA", e);
             fail("removeCA: " + e.getMessage());

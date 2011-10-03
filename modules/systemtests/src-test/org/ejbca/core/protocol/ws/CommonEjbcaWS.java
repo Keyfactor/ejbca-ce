@@ -88,8 +88,8 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -204,7 +204,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected final CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     protected final EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private final GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
-    private final PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
+    private final PublisherProxySessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
     private final PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
     private final RoleAccessSessionRemote roleAccessSession = InterfaceCache.getRoleAccessSession();
     private final RoleManagementSessionRemote roleManagementSession = InterfaceCache.getRoleManagementSession();

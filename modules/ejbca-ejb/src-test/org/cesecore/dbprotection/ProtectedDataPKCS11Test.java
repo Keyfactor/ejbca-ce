@@ -1,5 +1,6 @@
 /*************************************************************************
  *                                                                       *
+
  *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
@@ -111,6 +112,7 @@ public class ProtectedDataPKCS11Test extends ProtectedData {
         return build.toString();
     }
 
+    @Override
     protected int getProtectVersion() {
         return 1;
     }

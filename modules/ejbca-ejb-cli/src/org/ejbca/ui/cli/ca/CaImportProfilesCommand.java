@@ -247,7 +247,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         for (Integer publisher : publishers) {
                                         	BasePublisher pub = null;
                                         	try {
-                                        		pub = ejb.getPublisherSession().getPublisher(getAdmin(cliUserName, cliPassword), publisher);
+                                        		pub = ejb.getPublisherSession().getPublisher(publisher);
                                         	} catch (Exception e) {
                                         		String msg = e.getMessage();
                                         		if (e.getCause() != null) {

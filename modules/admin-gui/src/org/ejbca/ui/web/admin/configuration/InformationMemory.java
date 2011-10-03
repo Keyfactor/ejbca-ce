@@ -40,7 +40,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.publisher.PublisherSession;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
@@ -69,7 +69,7 @@ public class InformationMemory implements Serializable {
     // Session Bean interfaces (was *Local originally)
     private CAAdminSession caadminsession;
     private EndEntityProfileSession endEntityProfileSession;
-    private PublisherSession publishersession;
+    private PublisherSessionLocal publishersession;
     private UserDataSourceSession userdatasourcesession = null;
     private CertificateProfileSession certificateProfileSession;
     private ComplexAccessControlSession complexAccessControlSession;
@@ -96,7 +96,7 @@ public class InformationMemory implements Serializable {
     /** Creates a new instance of ProfileNameProxy */
     public InformationMemory(AuthenticationToken administrator, CAAdminSession caadminsession, CaSession caSession, AccessControlSessionLocal authorizationsession,
             ComplexAccessControlSessionLocal complexAccessControlSession, EndEntityProfileSession endEntityProfileSession,
-            HardTokenSession hardtokensession, PublisherSession publishersession, UserDataSourceSession userdatasourcesession,
+            HardTokenSession hardtokensession, PublisherSessionLocal publishersession, UserDataSourceSession userdatasourcesession,
             CertificateProfileSession certificateProfileSession, GlobalConfigurationSession globalConfigurationSession,
             GlobalConfiguration globalconfiguration) {
         this.caadminsession = caadminsession;

@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -37,6 +36,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRem
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -65,7 +65,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
 
     private static KeyPair rsakeys = null;
     private static int rsacaid = 0;
-    private final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ExtendedKeyUsageTest"));
 
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
@@ -87,7 +87,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
             rsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         }
         // Add this again since it will be removed by the other tests in the batch..
-        CAInfo inforsa = caSession.getCAInfo(admin, "TEST");
+        CAInfo inforsa = caSession.getCAInfo(internalAdmin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
     }
@@ -96,11 +96,11 @@ public class ExtendedKeyUsageTest extends CaTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
         // Delete test end entity profile
-        endEntityProfileSession.removeEndEntityProfile(admin, "EXTKEYUSAGECERTPROFILE");
-        certificateProfileSession.removeCertificateProfile(admin, "EXTKEYUSAGEEEPROFILE");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "EXTKEYUSAGECERTPROFILE");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE");
         // delete users that we know...
         try {
-            userAdminSession.deleteUser(admin, "extkeyusagefoo");
+            userAdminSession.deleteUser(internalAdmin, "extkeyusagefoo");
             log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=extkeyusagefoo");
         } catch (Exception e) { /* ignore */
         }
@@ -115,24 +115,24 @@ public class ExtendedKeyUsageTest extends CaTestCase {
      */
     @Test
     public void test01CodeSigning() throws Exception {
-        certificateProfileSession.removeCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "EXTKEYUSAGECERTPROFILE");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ArrayList<String> list = new ArrayList<String>();
         list.add("1.3.6.1.4.1.311.2.1.21"); // MS individual code signing
         list.add("1.3.6.1.4.1.311.2.1.22"); // MS commercial code signing
         certprof.setExtendedKeyUsage(list);
-        certificateProfileSession.addCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE", certprof);
+        certificateProfileSession.addCertificateProfile(internalAdmin, "EXTKEYUSAGECERTPROFILE", certprof);
         final int fooCertProfile = certificateProfileSession.getCertificateProfileId("EXTKEYUSAGECERTPROFILE");
 
-        endEntityProfileSession.removeEndEntityProfile(admin, "EXTKEYUSAGEEEPROFILE");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE");
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfile));
-        endEntityProfileSession.addEndEntityProfile(admin, "EXTKEYUSAGEEEPROFILE", profile);
-        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(admin, "EXTKEYUSAGEEEPROFILE");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE", profile);
+        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "EXTKEYUSAGEEEPROFILE");
 
         createOrEditUser(fooCertProfile, fooEEProfile);
 
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         // log.debug("Cert=" + cert.toString());
         List<String> ku = cert.getExtendedKeyUsage();
@@ -146,22 +146,22 @@ public class ExtendedKeyUsageTest extends CaTestCase {
      */
     @Test
     public void test02SSH() throws Exception {
-        certificateProfileSession.removeCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "EXTKEYUSAGECERTPROFILE");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         ArrayList<String> list = new ArrayList<String>();
         certprof.setExtendedKeyUsage(list);
-        certificateProfileSession.addCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE", certprof);
+        certificateProfileSession.addCertificateProfile(internalAdmin, "EXTKEYUSAGECERTPROFILE", certprof);
         final int fooCertProfile = certificateProfileSession.getCertificateProfileId("EXTKEYUSAGECERTPROFILE");
 
-        endEntityProfileSession.removeEndEntityProfile(admin, "EXTKEYUSAGEEEPROFILE");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE");
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfile));
-        endEntityProfileSession.addEndEntityProfile(admin, "EXTKEYUSAGEEEPROFILE", profile);
-        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(admin, "EXTKEYUSAGEEEPROFILE");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE", profile);
+        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "EXTKEYUSAGEEEPROFILE");
 
         createOrEditUser(fooCertProfile, fooEEProfile);
 
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         // log.debug("Cert=" + cert.toString());
         List<String> ku = cert.getExtendedKeyUsage();
@@ -171,9 +171,9 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         list.add("1.3.6.1.5.5.7.3.21"); // SSH client
         list.add("1.3.6.1.5.5.7.3.22"); // SSH server
         certprof.setExtendedKeyUsage(list);
-        certificateProfileSession.changeCertificateProfile(admin, "EXTKEYUSAGECERTPROFILE", certprof);
+        certificateProfileSession.changeCertificateProfile(internalAdmin, "EXTKEYUSAGECERTPROFILE", certprof);
         createOrEditUser(fooCertProfile, fooEEProfile);
-        cert = (X509Certificate) signSession.createCertificate(admin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, "extkeyusagefoo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         // log.debug("Cert=" + cert.toString());
         ku = cert.getExtendedKeyUsage();
@@ -191,14 +191,14 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         user.setStatus(UserDataConstants.STATUS_NEW);
         user.setPassword("foo123");
         try {
-            userAdminSession.addUser(admin, user, false);
+            userAdminSession.addUser(internalAdmin, user, false);
             log.debug("created user: extkeyusagefoo, foo123, C=SE, O=AnaTom, CN=extkeyusagefoo");
         } catch (Exception re) {
             userExists = true;
         }
         if (userExists) {
             log.info("User extkeyusagefoo already exists, resetting status.");
-            userAdminSession.changeUser(admin, user, false);
+            userAdminSession.changeUser(internalAdmin, user, false);
             log.debug("Reset status to NEW");
         }
     }

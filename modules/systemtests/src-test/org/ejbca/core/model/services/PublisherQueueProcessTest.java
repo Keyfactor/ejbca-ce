@@ -25,10 +25,11 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
-import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
@@ -62,7 +63,7 @@ public class PublisherQueueProcessTest {
 
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
-    private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
+    private PublisherProxySessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
     private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
 
 
