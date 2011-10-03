@@ -101,7 +101,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     @EJB
     private CertificateCreateSessionLocal certificateCreateSession;
     @EJB
-    private EndEntityAuthenticationSessionLocal authenticationSession;
+    private EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
     @EJB
     private UserAdminSessionLocal userAdminSession;
     @EJB
@@ -577,7 +577,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     private EndEntityInformation authUser(AuthenticationToken admin, String username, String password) throws ObjectNotFoundException,
             AuthStatusException, AuthLoginException {
         // Authorize user and get DN
-        return authenticationSession.authenticateUser(admin, username, password);
+        return endEntityAuthenticationSession.authenticateUser(admin, username, password);
     }
 
     /** Finishes user, i.e. set status to generated, if it should do so.
@@ -591,7 +591,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             return;
         }
         try {
-            authenticationSession.finishUser(data);
+            endEntityAuthenticationSession.finishUser(data);
         } catch (ObjectNotFoundException e) {
             String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
             log.info(msg);
