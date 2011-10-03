@@ -380,7 +380,12 @@ public class AuditorManagedBean implements Serializable {
 		}
 
 		AuthenticationToken token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Reload action from AuditorManagedBean"));
-		results = securityEventsAuditorSession.selectAuditLogs(token, startIndex, maxResults, criteria.order(sortColumn, sortOrder), device);
+		try {
+	        results = securityEventsAuditorSession.selectAuditLogs(token, startIndex, maxResults, criteria.order(sortColumn, sortOrder), device);
+		} catch (Exception e) {
+		    results.clear();
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Invalid search conditions."));
+		}
 		updateCaIdToNameMap();
 		renderNext = results!=null && !results.isEmpty() && results.size()==maxResults;
 	}
@@ -561,8 +566,7 @@ public class AuditorManagedBean implements Serializable {
             FacesContext.getCurrentInstance().responseComplete();   // No further JSF navigation
         } catch (IOException e) {
             log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-            final FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error during export.", "Error during export.");
-            FacesContext.getCurrentInstance().addMessage(null, message);
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Error during export."));
         }
     }
 

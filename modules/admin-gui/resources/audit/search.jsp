@@ -46,8 +46,6 @@
 %>
 
 <div id="home" class="app">
-	<p><h:messages layout="table" errorClass="alert"/></p>
-
 	<h:outputText value="#{web.text.NO_SEARCHABLE_AUDIT}" rendered="#{auditor.device == null}"/>
 	<h:form id="search" rendered="#{auditor.device != null}">
 	<h:outputLabel for="device" value="Audit Log Device" rendered="#{auditor.oneLogDevice == false}"/>
@@ -262,6 +260,7 @@
 			<h:outputText rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] <= 50}" value="#{auditLogEntry.mapAdditionalDetails}"><f:converter converterId="mapToStringConverter"/></h:outputText>
 		</h:column>
 	</h:dataTable>
+	<p><h:messages layout="table" styleClass="alert"/></p>
 	<p>
 		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value="First"/>
 		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value="#{web.text.PREVIOUS}"/>
