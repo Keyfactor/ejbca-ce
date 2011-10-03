@@ -21,7 +21,6 @@ import java.security.PrivateKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
 
 import org.cesecore.certificates.ca.SignRequestException;
 

@@ -134,10 +134,6 @@ public class InterfaceCache {
 		return getEjb().getPublisherQueueSession();
     }
     
-    public static PublisherSessionRemote getPublisherSession() {
-		return getEjb().getPublisherSession();
-    }
-    
 	public static CrlStoreSessionRemote getCrlStoreSession() {
 		return getEjb().getCrlStoreSession();
 	}

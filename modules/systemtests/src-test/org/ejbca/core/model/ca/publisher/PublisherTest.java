@@ -16,29 +16,47 @@ package org.ejbca.core.model.ca.publisher;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.security.Principal;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.InternalConfiguration;
+import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 
@@ -97,19 +115,53 @@ public class PublisherTest {
     
     private static final Logger log = Logger.getLogger(PublisherTest.class);
 
-    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("PublisherTest"));
+    
+    private final String commonname = this.getClass().getCanonicalName();
     
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
-    private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
+    private PublisherSessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherSessionRemote.class);
+    private PublisherProxySessionRemote publisherProxySession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
+    
+    private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
+    
+    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
 
+    private AuthenticationToken admin;
+    
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProvider();
+    }
+    
     @Before
-    public void setUp() throws Exception {        
-    	CryptoProviderTools.installBCProvider();
+    public void setUp() throws Exception {       
+        Certificate cert = CertTools.getCertfromByteArray(testcert);
+        int caid = CertTools.getIssuerDN(cert).hashCode();
+        String subjectDn = CertTools.getSubjectDN(cert);
+        String cN = CertTools.getPartsFromDN(subjectDn, "CN").get(0);  
+        
+        Set<Principal> principals = new HashSet<Principal>();
+        Set<Certificate> credentials = new HashSet<Certificate>();
+        credentials.add(cert);
+        X500Principal p = new X500Principal(subjectDn);
+        principals.add(p);
+        AuthenticationSubject subject = new AuthenticationSubject(principals, credentials);
+    	admin = simpleAuthenticationProvider.authenticate(subject);
+    	
+    	RoleData role = roleManagementSession.create(internalAdmin, commonname);   
+    	Collection<AccessRuleData> rules = new ArrayList<AccessRuleData>();
+    	rules.add(new AccessRuleData(commonname, StandardRules.CAACCESS.resource() + caid, AccessRuleState.RULE_ACCEPT, false));
+    	role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, rules);
+    	Collection<AccessUserAspectData> users = new ArrayList<AccessUserAspectData>();
+    	users.add(new AccessUserAspectData(commonname, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
+    	role = roleManagementSession.addSubjectsToRole(internalAdmin, role, users);
     }
     
     @After
     public void tearDown() throws Exception {
+        roleManagementSession.remove(internalAdmin, commonname);
     }
     
     
@@ -126,7 +178,7 @@ public class PublisherTest {
             LdapPublisher publisher = new LdapPublisher();
             publisher.setHostnames("localhost");
             publisher.setDescription("Used in Junit Test, Remove this one");
-            publisherSession.addPublisher(admin, "TESTLDAP", publisher);
+            publisherProxySession.addPublisher(internalAdmin, "TESTLDAP", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
         }
@@ -148,7 +200,7 @@ public class PublisherTest {
             ActiveDirectoryPublisher publisher = new ActiveDirectoryPublisher();
             publisher.setHostnames("localhost");
             publisher.setDescription("Used in Junit Test, Remove this one");
-            publisherSession.addPublisher(admin, "TESTAD", publisher);
+            publisherProxySession.addPublisher(internalAdmin, "TESTAD", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
         }
@@ -170,7 +222,7 @@ public class PublisherTest {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath("org.ejbca.core.model.ca.publisher.DummyCustomPublisher");
             publisher.setDescription("Used in Junit Test, Remove this one");
-            publisherSession.addPublisher(admin, "TESTDUMMYCUSTOM", publisher);
+            publisherProxySession.addPublisher(internalAdmin, "TESTDUMMYCUSTOM", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
         }
@@ -191,7 +243,7 @@ public class PublisherTest {
         
         boolean ret = false;
         try {
-        	publisherSession.renamePublisher(admin, "TESTDUMMYCUSTOM", "TESTNEWDUMMYCUSTOM");
+        	publisherProxySession.renamePublisher(internalAdmin, "TESTDUMMYCUSTOM", "TESTNEWDUMMYCUSTOM");
             ret = true;
         } catch (PublisherExistsException pee) {
         }
@@ -211,7 +263,7 @@ public class PublisherTest {
         log.trace(">test05ClonePublisher()");
         
         boolean ret = false;
-        publisherSession.clonePublisher(admin, "TESTNEWDUMMYCUSTOM", "TESTCLONEDUMMYCUSTOM");
+        publisherProxySession.clonePublisher(internalAdmin, "TESTNEWDUMMYCUSTOM", "TESTCLONEDUMMYCUSTOM");
         ret = true;
         assertTrue("Cloning Custom Publisher failed", ret);
         
@@ -230,9 +282,9 @@ public class PublisherTest {
         
         boolean ret = false;
         
-        BasePublisher publisher = publisherSession.getPublisher(admin, "TESTCLONEDUMMYCUSTOM");
+        BasePublisher publisher = publisherSession.getPublisher("TESTCLONEDUMMYCUSTOM");
         publisher.setDescription(publisher.getDescription().toUpperCase());
-        publisherSession.changePublisher(admin, "TESTCLONEDUMMYCUSTOM", publisher);
+        publisherProxySession.changePublisher(internalAdmin, "TESTCLONEDUMMYCUSTOM", publisher);
         ret = true;
         
         assertTrue("Editing Custom Publisher failed", ret);
@@ -251,7 +303,7 @@ public class PublisherTest {
         log.trace(">test07StoreCertToDummy()");
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTNEWDUMMYCUSTOM")));
 
         boolean ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Storing certificate to dummy publisher failed", ret);
@@ -266,10 +318,10 @@ public class PublisherTest {
     @Test
     public void test08storeCRLToDummy() throws Exception {
         log.trace(">test08storeCRLToDummy()");
-        
+       String issuerDn = CertTools.getIssuerDN(CertTools.getCRLfromByteArray(testcrl));
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTNEWDUMMYCUSTOM")));
-        boolean ret = publisherSession.storeCRL(admin, publishers, testcrl, null, 1, null);
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTNEWDUMMYCUSTOM")));
+        boolean ret = publisherSession.storeCRL(admin, publishers, testcrl, null, 1, issuerDn);
         assertTrue("Storing CRL to dummy publisher failed", ret);
         
         log.trace("<test08storeCRLToDummy()");
@@ -290,23 +342,23 @@ public class PublisherTest {
             log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
             publisher.setPropertyData("dataSource " + jndiName);
             publisher.setDescription("Used in Junit Test, Remove this one");
-            publisherSession.addPublisher(admin, "TESTEXTOCSP", publisher);
+            publisherProxySession.addPublisher(internalAdmin, "TESTEXTOCSP", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
         	log.error(pee);
         }        
         assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = publisherSession.getPublisherId(admin, "TESTEXTOCSP");
-        publisherSession.testConnection(admin, id);
+        int id = publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSP");
+        publisherProxySession.testConnection(internalAdmin, id);
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSP")));
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSP")));
 
         ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Error storing certificate to external ocsp publisher", ret);
 
-        publisherSession.revokeCertificate(admin, publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime());
+        publisherProxySession.revokeCertificate(internalAdmin, publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime());
 	    log.trace("<test14ExternalOCSPPublisherCustom()");
     }
     
@@ -324,18 +376,18 @@ public class PublisherTest {
             log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
             publisher.setDataSource(jndiName);
             publisher.setDescription("Used in Junit Test, Remove this one");
-            publisherSession.addPublisher(admin, "TESTEXTOCSP2", publisher);
+            publisherProxySession.addPublisher(internalAdmin, "TESTEXTOCSP2", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
         	log.error(pee);
         }        
         assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = publisherSession.getPublisherId(admin, "TESTEXTOCSP2");
-        publisherSession.testConnection(admin, id);
+        int id = publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSP2");
+        publisherProxySession.testConnection(internalAdmin, id);
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSP2")));
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSP2")));
         
         long date = new Date().getTime();
         ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, date, null);
@@ -347,16 +399,17 @@ public class PublisherTest {
         assertEquals(date, info.getUpdateTime().getTime());
 
         date = date + 12345;
-        publisherSession.revokeCertificate(admin, publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foobar", 12345, date);
+        publisherProxySession.revokeCertificate(internalAdmin, publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foobar", 12345, date);
 
         info = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
         assertEquals(12345, info.getCertificateProfileId());
         assertEquals("foobar", info.getTag());
         assertEquals(date, info.getUpdateTime().getTime());
 
+        String issuerDn = CertTools.getIssuerDN(CertTools.getCRLfromByteArray(testcrl));
         // Test storing and updating CRLs as well
-        publisherSession.storeCRL(admin, publishers, testcrl, "test05", 1, null);
-        publisherSession.storeCRL(admin, publishers, testcrl, "test05", 1, null);
+        publisherSession.storeCRL(admin, publishers, testcrl, "test05", 1, issuerDn);
+        publisherSession.storeCRL(admin, publishers, testcrl, "test05", 1, issuerDn);
         
         log.trace("<test15ExternalOCSPPublisher()");
     }
@@ -371,22 +424,22 @@ public class PublisherTest {
         log.trace(">test99removePublishers()");
         boolean ret = true;
         try {
-        	publisherSession.removePublisher(admin, "TESTLDAP");            
+        	publisherProxySession.removePublisher(internalAdmin, "TESTLDAP");            
         } catch (Exception pee) {ret = false;}
         try {
-        	publisherSession.removePublisher(admin, "TESTAD");
+        	publisherProxySession.removePublisher(internalAdmin, "TESTAD");
         } catch (Exception pee) {ret = false;}
         try {
-        	publisherSession.removePublisher(admin, "TESTNEWDUMMYCUSTOM");
+        	publisherProxySession.removePublisher(internalAdmin, "TESTNEWDUMMYCUSTOM");
         } catch (Exception pee) {ret = false;}
         try {
-        	publisherSession.removePublisher(admin, "TESTCLONEDUMMYCUSTOM");
+        	publisherProxySession.removePublisher(internalAdmin, "TESTCLONEDUMMYCUSTOM");
         } catch (Exception pee) {ret = false;}
         try {
-        	publisherSession.removePublisher(admin, "TESTEXTOCSP");            
+        	publisherProxySession.removePublisher(internalAdmin, "TESTEXTOCSP");            
         } catch (Exception pee) {ret = false;}
         try {
-        	publisherSession.removePublisher(admin, "TESTEXTOCSP2");            
+        	publisherProxySession.removePublisher(internalAdmin, "TESTEXTOCSP2");            
         } catch (Exception pee) {ret = false;}
         assertTrue("Removing Publisher failed", ret);
         

@@ -53,7 +53,7 @@ import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
-import org.ejbca.core.ejb.ca.publisher.PublisherSession;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySession;
@@ -98,7 +98,7 @@ public class CAInterfaceBean implements Serializable {
     private SignSession signsession;
     private CertificateCreateSessionLocal certcreatesession;
     private HardTokenSession hardtokensession;
-    private PublisherSession publishersession;
+    private PublisherSessionLocal publishersession;
     private PublisherQueueSession publisherqueuesession;
     private CertificateProfileDataHandler certificateprofiles;
     private CADataHandler cadatahandler;
@@ -381,7 +381,7 @@ public class CAInterfaceBean implements Serializable {
 		return returnval;
 	}
 
-	public String republish(CertificateView certificatedata) {
+	public String republish(CertificateView certificatedata) throws AuthorizationDeniedException {
 		String returnval = "CERTREPUBLISHFAILED";
 		int certificateProfileId = CertificateProfileConstants.CERTPROFILE_NO_PROFILE;
 		String username = null;

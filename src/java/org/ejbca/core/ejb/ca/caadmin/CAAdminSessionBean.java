@@ -2480,7 +2480,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void publishCRL(AuthenticationToken admin, Certificate caCert, Collection<Integer> usedpublishers, String caDataDN,
-            boolean doPublishDeltaCRL) {
+            boolean doPublishDeltaCRL) throws AuthorizationDeniedException {
         if (usedpublishers == null) {
             return;
         }

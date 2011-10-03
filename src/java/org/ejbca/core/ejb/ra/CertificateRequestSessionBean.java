@@ -246,7 +246,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     }
 
     @Override
-    public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class responseClass)
+    public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends ResponseMessage> responseClass)
             throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException {
         // Check tokentype
         if (userdata.getTokenType() != SecConst.TOKEN_SOFT_BROWSERGEN) {
@@ -325,7 +325,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             EndEntityInformation userData) throws EjbcaException, CesecoreException, CertificateEncodingException, CertificateException, IOException,
             AuthorizationDeniedException {
         byte[] retval = null;
-        Class respClass = X509ResponseMessage.class;
+        Class<X509ResponseMessage> respClass = X509ResponseMessage.class;
         ResponseMessage resp = signSession.createCertificate(admin, msg, respClass, userData);
         java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         if (responseType == SecConst.CERT_RES_TYPE_CERTIFICATE) {

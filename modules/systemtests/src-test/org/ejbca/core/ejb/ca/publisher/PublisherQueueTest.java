@@ -28,12 +28,12 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.DatabaseConfiguration;
@@ -53,34 +53,31 @@ import org.junit.Test;
 
 /**
  * Tests Publisher Queue Data.
- *
- * @version $Id$
+ * 
+ * @version $Id: PublisherQueueTest.java 12742 2011-09-28 08:20:40Z mikekushner
+ *          $
  */
 public class PublisherQueueTest {
 
     private static byte[] testcert = Base64.decode(("MIICWzCCAcSgAwIBAgIIJND6Haa3NoAwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
-            + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw"
-            + "ODA5MTE1MloXDTA0MDEwODA5MjE1MlowLzEPMA0GA1UEAxMGMjUxMzQ3MQ8wDQYD"
-            + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB"
-            + "hwKBgQCQ3UA+nIHECJ79S5VwI8WFLJbAByAnn1k/JEX2/a0nsc2/K3GYzHFItPjy"
-            + "Bv5zUccPLbRmkdMlCD1rOcgcR9mmmjMQrbWbWp+iRg0WyCktWb/wUS8uNNuGQYQe"
-            + "ACl11SAHFX+u9JUUfSppg7SpqFhSgMlvyU/FiGLVEHDchJEdGQIBEaOBgTB/MA8G"
-            + "A1UdEwEB/wQFMAMBAQAwDwYDVR0PAQH/BAUDAwegADAdBgNVHQ4EFgQUyxKILxFM"
-            + "MNujjNnbeFpnPgB76UYwHwYDVR0jBBgwFoAUy5k/bKQ6TtpTWhsPWFzafOFgLmsw"
-            + "GwYDVR0RBBQwEoEQMjUxMzQ3QGFuYXRvbS5zZTANBgkqhkiG9w0BAQUFAAOBgQAS"
-            + "5wSOJhoVJSaEGHMPw6t3e+CbnEL9Yh5GlgxVAJCmIqhoScTMiov3QpDRHOZlZ15c"
-            + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+"
-            + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
+            + "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDEw" + "ODA5MTE1MloXDTA0MDEwODA5MjE1MlowLzEPMA0GA1UEAxMGMjUxMzQ3MQ8wDQYD"
+            + "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" + "hwKBgQCQ3UA+nIHECJ79S5VwI8WFLJbAByAnn1k/JEX2/a0nsc2/K3GYzHFItPjy"
+            + "Bv5zUccPLbRmkdMlCD1rOcgcR9mmmjMQrbWbWp+iRg0WyCktWb/wUS8uNNuGQYQe" + "ACl11SAHFX+u9JUUfSppg7SpqFhSgMlvyU/FiGLVEHDchJEdGQIBEaOBgTB/MA8G"
+            + "A1UdEwEB/wQFMAMBAQAwDwYDVR0PAQH/BAUDAwegADAdBgNVHQ4EFgQUyxKILxFM" + "MNujjNnbeFpnPgB76UYwHwYDVR0jBBgwFoAUy5k/bKQ6TtpTWhsPWFzafOFgLmsw"
+            + "GwYDVR0RBBQwEoEQMjUxMzQ3QGFuYXRvbS5zZTANBgkqhkiG9w0BAQUFAAOBgQAS" + "5wSOJhoVJSaEGHMPw6t3e+CbnEL9Yh5GlgxVAJCmIqhoScTMiov3QpDRHOZlZ15c"
+            + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+" + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
 
     private static final Logger log = Logger.getLogger(PublisherQueueTest.class);
-    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("PublisherQueueTest"));
 
     private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
-    private PublisherSessionRemote publisherSession = InterfaceCache.getPublisherSession();
+    private PublisherSessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherSessionRemote.class);
+    private PublisherProxySessionRemote publisherProxySession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
     private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
 
     @Before
     public void setUp() throws Exception {
+
     }
 
     @After
@@ -89,290 +86,296 @@ public class PublisherQueueTest {
 
     @Test
     public void test01QueueData() throws Exception {
-    	publisherQueueSession.addQueueData(123456, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
-    	Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(12345);
-    	assertEquals(0, c.size());
-    	c = publisherQueueSession.getPendingEntriesForPublisher(123456);
-    	assertEquals(1, c.size());
-    	Iterator<PublisherQueueData> i = c.iterator();
-    	PublisherQueueData d = i.next();
-    	assertEquals("XX", d.getFingerprint());
-    	Date lastUpdate1 = d.getLastUpdate();
-    	assertNotNull(lastUpdate1);
-    	assertNotNull(d.getTimeCreated());
-    	assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
-    	assertEquals(0,d.getTryCounter());
-    	assertNull(d.getVolatileData());
-    	
-    	String xxpk = d.getPk(); // Keep for later so we can set to success
-    	
-    	PublisherQueueVolatileData vd = new PublisherQueueVolatileData();
-    	vd.setUsername("foo");
-    	vd.setPassword("bar");
-    	ExtendedInformation ei = new ExtendedInformation();
-    	ei.setSubjectDirectoryAttributes("directoryAttr");
-    	vd.setExtendedInformation(ei);
-    	publisherQueueSession.addQueueData(123456, PublisherConst.PUBLISH_TYPE_CRL, "YY", vd, PublisherConst.STATUS_PENDING);
-    	
-    	c = publisherQueueSession.getPendingEntriesForPublisher(123456);
-    	assertEquals(2, c.size());
-    	boolean testedXX = false;
-    	boolean testedYY = false;
-    	i = c.iterator();
-    	while (i.hasNext()) {
-        	d = i.next();
-        	if (d.getFingerprint().equals("XX")) {
-        		assertEquals(PublisherConst.PUBLISH_TYPE_CERT, d.getPublishType());
-            	assertNotNull(d.getLastUpdate());
-            	assertNotNull(d.getTimeCreated());
-            	assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
-            	assertEquals(0,d.getTryCounter());
-            	testedXX = true;
-        	}
-        	if (d.getFingerprint().equals("YY")) {
-        		assertEquals(PublisherConst.PUBLISH_TYPE_CRL, d.getPublishType());
-            	assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
-            	assertEquals(0,d.getTryCounter());
-            	PublisherQueueVolatileData v = d.getVolatileData();
-            	assertEquals("bar", v.getPassword());
-            	assertEquals("foo", v.getUsername());
-            	ExtendedInformation e = v.getExtendedInformation();
-            	assertNotNull(e);
-            	assertEquals("directoryAttr", e.getSubjectDirectoryAttributes());
-            	testedYY = true;
-        	}
-    	}
-    	assertTrue(testedXX);
-    	assertTrue(testedYY);
-    	
-    	publisherQueueSession.updateData(xxpk, PublisherConst.STATUS_SUCCESS, 4);
-    	c = publisherQueueSession.getEntriesByFingerprint("XX");
-    	assertEquals(1, c.size());
-    	i = c.iterator();
-    	d = i.next();
-    	assertEquals("XX", d.getFingerprint());
-    	Date lastUpdate2 = d.getLastUpdate();
-    	assertTrue(lastUpdate2.after(lastUpdate1));
-    	assertNotNull(d.getTimeCreated());
-    	assertEquals(PublisherConst.STATUS_SUCCESS, d.getPublishStatus());
-    	assertEquals(4,d.getTryCounter());    	
+        publisherQueueSession.addQueueData(123456, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
+        Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(12345);
+        assertEquals(0, c.size());
+        c = publisherQueueSession.getPendingEntriesForPublisher(123456);
+        assertEquals(1, c.size());
+        Iterator<PublisherQueueData> i = c.iterator();
+        PublisherQueueData d = i.next();
+        assertEquals("XX", d.getFingerprint());
+        Date lastUpdate1 = d.getLastUpdate();
+        assertNotNull(lastUpdate1);
+        assertNotNull(d.getTimeCreated());
+        assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
+        assertEquals(0, d.getTryCounter());
+        assertNull(d.getVolatileData());
+
+        String xxpk = d.getPk(); // Keep for later so we can set to success
+
+        PublisherQueueVolatileData vd = new PublisherQueueVolatileData();
+        vd.setUsername("foo");
+        vd.setPassword("bar");
+        ExtendedInformation ei = new ExtendedInformation();
+        ei.setSubjectDirectoryAttributes("directoryAttr");
+        vd.setExtendedInformation(ei);
+        publisherQueueSession.addQueueData(123456, PublisherConst.PUBLISH_TYPE_CRL, "YY", vd, PublisherConst.STATUS_PENDING);
+
+        c = publisherQueueSession.getPendingEntriesForPublisher(123456);
+        assertEquals(2, c.size());
+        boolean testedXX = false;
+        boolean testedYY = false;
+        i = c.iterator();
+        while (i.hasNext()) {
+            d = i.next();
+            if (d.getFingerprint().equals("XX")) {
+                assertEquals(PublisherConst.PUBLISH_TYPE_CERT, d.getPublishType());
+                assertNotNull(d.getLastUpdate());
+                assertNotNull(d.getTimeCreated());
+                assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
+                assertEquals(0, d.getTryCounter());
+                testedXX = true;
+            }
+            if (d.getFingerprint().equals("YY")) {
+                assertEquals(PublisherConst.PUBLISH_TYPE_CRL, d.getPublishType());
+                assertEquals(PublisherConst.STATUS_PENDING, d.getPublishStatus());
+                assertEquals(0, d.getTryCounter());
+                PublisherQueueVolatileData v = d.getVolatileData();
+                assertEquals("bar", v.getPassword());
+                assertEquals("foo", v.getUsername());
+                ExtendedInformation e = v.getExtendedInformation();
+                assertNotNull(e);
+                assertEquals("directoryAttr", e.getSubjectDirectoryAttributes());
+                testedYY = true;
+            }
+        }
+        assertTrue(testedXX);
+        assertTrue(testedYY);
+
+        publisherQueueSession.updateData(xxpk, PublisherConst.STATUS_SUCCESS, 4);
+        c = publisherQueueSession.getEntriesByFingerprint("XX");
+        assertEquals(1, c.size());
+        i = c.iterator();
+        d = i.next();
+        assertEquals("XX", d.getFingerprint());
+        Date lastUpdate2 = d.getLastUpdate();
+        assertTrue(lastUpdate2.after(lastUpdate1));
+        assertNotNull(d.getTimeCreated());
+        assertEquals(PublisherConst.STATUS_SUCCESS, d.getPublishStatus());
+        assertEquals(4, d.getTryCounter());
     }
 
     @Test
     public void test02ExternalOCSPPublisherFail() throws Exception {
-    	log.trace(">test02ExternalOCSPPublisherFail");
+        log.trace(">test02ExternalOCSPPublisherFail");
         boolean ret = false;
 
         ret = false;
-		try {
+        try {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath(ValidationAuthorityPublisher.class.getName());
-		    // We use a datasource that we know don't exist, so we know publishing will fail
+            // We use a datasource that we know don't exist, so we know publishing will fail
             String jndiNamePrefix = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
             log.debug("jndiNamePrefix=" + jndiNamePrefix);
             publisher.setPropertyData("dataSource " + jndiNamePrefix + "NoExist234DS");
             publisher.setDescription("Used in Junit Test, Remove this one");
-            publisherSession.addPublisher(admin, "TESTEXTOCSPQUEUE", publisher);
+            publisherProxySession.addPublisher(internalAdmin, "TESTEXTOCSPQUEUE", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
-        	// Do nothing
-        }        
+            // Do nothing
+        }
         assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE");
-        
+        int id = publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSPQUEUE");
+
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
-        
-        ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSPQUEUE")));
+
+        ret = publisherSession.storeCertificate(internalAdmin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE,
+                SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertFalse("Storing certificate to external ocsp publisher should fail.", ret);
-        
+
         // Now this certificate fingerprint should be in the queue
-    	Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(id);
-    	assertEquals(1, c.size());
-    	Iterator<PublisherQueueData> i = c.iterator();
-    	PublisherQueueData d = i.next();
-    	assertEquals(CertTools.getFingerprintAsString(cert), d.getFingerprint());
-    	log.trace("<test02ExternalOCSPPublisherFail");
+        Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(id);
+        assertEquals(1, c.size());
+        Iterator<PublisherQueueData> i = c.iterator();
+        PublisherQueueData d = i.next();
+        assertEquals(CertTools.getFingerprintAsString(cert), d.getFingerprint());
+        log.trace("<test02ExternalOCSPPublisherFail");
     }
 
     @Test
     public void test03ExternalOCSPPublisherOk() throws Exception {
-    	log.trace(">test03ExternalOCSPPublisherOk");
+        log.trace(">test03ExternalOCSPPublisherOk");
         boolean ret = false;
 
         // Remove publisher since we probably have one from the test above
-    	try {
-    		publisherSession.removePublisher(admin, "TESTEXTOCSPQUEUE");            
-    	} catch (Exception pee) {}
+        try {
+            publisherProxySession.removePublisher(internalAdmin, "TESTEXTOCSPQUEUE");
+        } catch (Exception pee) {
+        }
 
         ret = false;
-		try {
+        try {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath(ValidationAuthorityPublisher.class.getName());
-		    // We use a datasource that we know don't exist, so we know publishing will be successful
+            // We use a datasource that we know don't exist, so we know publishing will be successful
             String jndiName = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX)
-            	+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
+                    + configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
             log.debug("jndiName=" + jndiName);
             publisher.setPropertyData("dataSource " + jndiName);
             publisher.setDescription("Used in Junit Test, Remove this one");
-            publisherSession.addPublisher(admin, "TESTEXTOCSPQUEUE", publisher);
+            publisherProxySession.addPublisher(internalAdmin, "TESTEXTOCSPQUEUE", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
-        	// Do nothing
-        }        
+            // Do nothing
+        }
         assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE");
-        
+        int id = publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSPQUEUE");
+
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
-        
-        ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSPQUEUE")));
+
+        ret = publisherSession.storeCertificate(internalAdmin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE,
+                SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Storing certificate to external ocsp publisher should succeed.", ret);
-        
+
         // Now this certificate fingerprint should NOT be in the queue
-    	Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(id);
-    	assertEquals(0, c.size());
-    	log.trace("<test03ExternalOCSPPublisherOk");
+        Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(id);
+        assertEquals(0, c.size());
+        log.trace("<test03ExternalOCSPPublisherOk");
     }
-    
+
     @Test
     public void test04ExternalOCSPPublisherOnlyUseQueue() throws Exception {
-    	log.trace(">test04ExternalOCSPPublisherOnlyUseQueue");
+        log.trace(">test04ExternalOCSPPublisherOnlyUseQueue");
         boolean ret = false;
 
         // Remove publisher since we probably have one from the test above
-    	try {
-    		publisherSession.removePublisher(admin, "TESTEXTOCSPQUEUE");            
-    	} catch (Exception pee) {}
-        
+        try {
+            publisherProxySession.removePublisher(internalAdmin, "TESTEXTOCSPQUEUE");
+        } catch (Exception pee) {
+        }
+
         ret = false;
-		try {
-			CustomPublisherContainer publisher = new CustomPublisherContainer();
+        try {
+            CustomPublisherContainer publisher = new CustomPublisherContainer();
             publisher.setClassPath(ValidationAuthorityPublisher.class.getName());
-		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
+            // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
             String jndiName = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX)
-        		+ configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
+                    + configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
             log.debug("jndiName=" + jndiName);
             publisher.setPropertyData("dataSource " + jndiName);
             publisher.setDescription("Used in Junit Test, Remove this one");
-            
+
             // Set to only use the publisher queue instead of publish directly
             publisher.setOnlyUseQueue(true);
-            
-            publisherSession.addPublisher(admin, "TESTEXTOCSPQUEUE", publisher);
+
+            publisherProxySession.addPublisher(internalAdmin, "TESTEXTOCSPQUEUE", publisher);
             ret = true;
         } catch (PublisherExistsException pee) {
-        	// Do nothing
-        }        
+            // Do nothing
+        }
         assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE");
-        
+        int id = publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSPQUEUE");
+
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherSession.getPublisherId(admin, "TESTEXTOCSPQUEUE")));
-        
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSPQUEUE")));
+
         // storeCertificate should return false as we have not published to all publishers but instead only pushed to the queue
-        ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
+        ret = publisherSession.storeCertificate(internalAdmin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE,
+                SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertFalse("Storing certificate to all external ocsp publisher should return false.", ret);
-        
+
         // Now this certificate fingerprint should be in the queue
-    	Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(id);
-    	assertEquals(1, c.size());
-    	Iterator<PublisherQueueData> i = c.iterator();
-    	PublisherQueueData d = i.next();
-    	assertEquals(CertTools.getFingerprintAsString(cert), d.getFingerprint());
-    	log.trace("<test04ExternalOCSPPublisherOnlyUseQueue");
+        Collection<PublisherQueueData> c = publisherQueueSession.getPendingEntriesForPublisher(id);
+        assertEquals(1, c.size());
+        Iterator<PublisherQueueData> i = c.iterator();
+        PublisherQueueData d = i.next();
+        assertEquals(CertTools.getFingerprintAsString(cert), d.getFingerprint());
+        log.trace("<test04ExternalOCSPPublisherOnlyUseQueue");
     }
-    
+
     @Test
     public void test05PublisherQueueCountInInterval1() throws Exception {
-    	// Nothing in the queue from the beginning
-    	assertEquals(0, publisherQueueSession.getPendingEntriesCountForPublisher(56789));
-    	assertEquals(0, publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(56789, new int[]{0}, new int[]{-1})[0]);
-    	
-    	// Add data
-    	publisherQueueSession.addQueueData(56789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
-    	
-    	// One entry in the queue
-    	assertEquals(1, publisherQueueSession.getPendingEntriesCountForPublisher(56789));
-    	int[] actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(56789, new int[]{0}, new int[]{-1});
-    	assertEquals(1, actual.length);
-    	assertEquals(1, actual[0]);
-    	
-    	// Wait a while and then add some more data
-    	try {
-    		Thread.sleep(2000);
-    	} catch(InterruptedException ex) {
-    		fail(ex.getMessage());
-    	}
-    	// Another entry in the queue, atleast 1s after the first one
-    	publisherQueueSession.addQueueData(56789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
-    	 
-    	actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(56789, new int[]{0, 1, 10}, new int[]{-1, -1, -1});
-    	assertEquals(3, actual.length);
-    	assertEquals(2, actual[0]); // 0s old = 2
-    	assertEquals(1, actual[1]); // 1s old = 1
-    	assertEquals(0, actual[2]); // 10s old = 0
+        // Nothing in the queue from the beginning
+        assertEquals(0, publisherQueueSession.getPendingEntriesCountForPublisher(56789));
+        assertEquals(0, publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(56789, new int[] { 0 }, new int[] { -1 })[0]);
+
+        // Add data
+        publisherQueueSession.addQueueData(56789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
+
+        // One entry in the queue
+        assertEquals(1, publisherQueueSession.getPendingEntriesCountForPublisher(56789));
+        int[] actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(56789, new int[] { 0 }, new int[] { -1 });
+        assertEquals(1, actual.length);
+        assertEquals(1, actual[0]);
+
+        // Wait a while and then add some more data
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException ex) {
+            fail(ex.getMessage());
+        }
+        // Another entry in the queue, atleast 1s after the first one
+        publisherQueueSession.addQueueData(56789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
+
+        actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(56789, new int[] { 0, 1, 10 }, new int[] { -1, -1, -1 });
+        assertEquals(3, actual.length);
+        assertEquals(2, actual[0]); // 0s old = 2
+        assertEquals(1, actual[1]); // 1s old = 1
+        assertEquals(0, actual[2]); // 10s old = 0
     }
-    
+
     @Test
     public void test06PublisherQueueCountInInterval2() throws Exception {
-    	// Nothing in the queue from the beginning
-    	assertEquals(0, publisherQueueSession.getPendingEntriesCountForPublisher(456789));
-    	assertEquals(0, publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(456789, new int[]{0}, new int[]{-1})[0]);
-    	
-    	// Add data
-    	publisherQueueSession.addQueueData(456789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
-    	
-    	// One entry in the queue
-    	assertEquals(1, publisherQueueSession.getPendingEntriesCountForPublisher(456789));
-    	int[] actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(456789, new int[]{0}, new int[]{-1});
-    	assertEquals(1, actual.length);
-    	assertEquals(1, actual[0]);
-    	
-    	// Wait a while and then add some more data
-    	try {
-    		Thread.sleep(2000);
-    	} catch(InterruptedException ex) {
-    		fail(ex.getMessage());
-    	}
-    	// Another entry in the queue, at least 1s after the first one
-    	publisherQueueSession.addQueueData(456789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
-    	 
-    	actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(456789, new int[]{0, 1, 10, 0}, new int[]{1, 10, -1, -1}); //new int[]{0, 1, 10});
-    	log.debug("actual=" + Arrays.toString(actual));
-    	assertEquals(4, actual.length);
-    	assertEquals(1, actual[0]); // (0, 1) s  = 1
-    	assertEquals(1, actual[1]); // (1, 10) s = 1
-    	assertEquals(0, actual[2]); // (10, ~) s = 0
-    	assertEquals(2, actual[3]); // (0, ~) s = 2
+        // Nothing in the queue from the beginning
+        assertEquals(0, publisherQueueSession.getPendingEntriesCountForPublisher(456789));
+        assertEquals(0, publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(456789, new int[] { 0 }, new int[] { -1 })[0]);
+
+        // Add data
+        publisherQueueSession.addQueueData(456789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
+
+        // One entry in the queue
+        assertEquals(1, publisherQueueSession.getPendingEntriesCountForPublisher(456789));
+        int[] actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(456789, new int[] { 0 }, new int[] { -1 });
+        assertEquals(1, actual.length);
+        assertEquals(1, actual[0]);
+
+        // Wait a while and then add some more data
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException ex) {
+            fail(ex.getMessage());
+        }
+        // Another entry in the queue, at least 1s after the first one
+        publisherQueueSession.addQueueData(456789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
+
+        actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(456789, new int[] { 0, 1, 10, 0 }, new int[] { 1, 10, -1, -1 }); //new int[]{0, 1, 10});
+        log.debug("actual=" + Arrays.toString(actual));
+        assertEquals(4, actual.length);
+        assertEquals(1, actual[0]); // (0, 1) s  = 1
+        assertEquals(1, actual[1]); // (1, 10) s = 1
+        assertEquals(0, actual[2]); // (10, ~) s = 0
+        assertEquals(2, actual[3]); // (0, ~) s = 2
     }
-    
+
     @Test
     public void test99CleanUp() throws Exception {
-    	Collection<PublisherQueueData> c = publisherQueueSession.getEntriesByFingerprint("XX");
-    	Iterator<PublisherQueueData> i = c.iterator();
-    	while (i.hasNext()) {
-    		PublisherQueueData d = i.next();
-    		publisherQueueSession.removeQueueData(d.getPk());
-    	}    
-    	c = publisherQueueSession.getEntriesByFingerprint("YY");
-    	i = c.iterator();
-    	while (i.hasNext()) {
-    		PublisherQueueData d = i.next();
-    		publisherQueueSession.removeQueueData(d.getPk());
-    	}    
-    	c = publisherQueueSession.getEntriesByFingerprint(CertTools.getFingerprintAsString(testcert));
-    	i = c.iterator();
-    	while (i.hasNext()) {
-    		PublisherQueueData d = i.next();
-    		publisherQueueSession.removeQueueData(d.getPk());
-    	}    
+        Collection<PublisherQueueData> c = publisherQueueSession.getEntriesByFingerprint("XX");
+        Iterator<PublisherQueueData> i = c.iterator();
+        while (i.hasNext()) {
+            PublisherQueueData d = i.next();
+            publisherQueueSession.removeQueueData(d.getPk());
+        }
+        c = publisherQueueSession.getEntriesByFingerprint("YY");
+        i = c.iterator();
+        while (i.hasNext()) {
+            PublisherQueueData d = i.next();
+            publisherQueueSession.removeQueueData(d.getPk());
+        }
+        c = publisherQueueSession.getEntriesByFingerprint(CertTools.getFingerprintAsString(testcert));
+        i = c.iterator();
+        while (i.hasNext()) {
+            PublisherQueueData d = i.next();
+            publisherQueueSession.removeQueueData(d.getPk());
+        }
 
-    	try {
-    		publisherSession.removePublisher(admin, "TESTEXTOCSPQUEUE");            
-    	} catch (Exception pee) {}
+        try {
+            publisherProxySession.removePublisher(internalAdmin, "TESTEXTOCSPQUEUE");
+        } catch (Exception pee) {
+        }
     }
 }

@@ -622,8 +622,9 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param endEntity the end entity involved
      * @param ca the relevant CA
      * @param certificate the newly created Certificate
+     * @throws AuthorizationDeniedException if access is denied to the CA issuing certificate
      */
-    private void postCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, CA ca, Certificate certificate) {
+    private void postCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, CA ca, Certificate certificate) throws AuthorizationDeniedException {
         // Store the request data in history table.
         if (ca.isUseCertReqHistory()) {
             certreqHistorySession.addCertReqHistoryData(authenticationToken, certificate, endEntity);

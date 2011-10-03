@@ -30,7 +30,6 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -63,6 +62,7 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -88,7 +88,8 @@ import org.ejbca.util.query.Query;
 import org.junit.Assert;
 
 /**
- * This class represents an abstract class for all tests which require testing CAs.
+ * This class represents an abstract class for all tests which require testing
+ * CAs.
  * 
  * @version $Id$
  */
@@ -96,7 +97,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     public static final String TEST_RSA_REVERSE_CA_NAME = "TESTRSAREVERSE";
     public static final String TEST_RSA_REVSERSE_CA_DN = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
-    
+
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
     private CAAdminSessionRemote caAdminSession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
@@ -109,12 +110,13 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
     private AccessControlSessionRemote accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
 
-    private String roleName; 
+    private String roleName;
 
+    private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
     protected TestX509CertificateAuthenticationToken caAdmin;
 
     public abstract String getRoleName();
-    
+
     public void setUp() throws Exception {
         roleName = getRoleName();
         super.setUpAuthTokenAndRole(getRoleName());
@@ -125,21 +127,21 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         principals.add(new X500Principal("C=SE,O=CaUser,CN=CaUser"));
         caAdmin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
         final X509Certificate certificate = caAdmin.getCertificate();
-        
+
         RoleData role = roleAccessSession.findRole(roleName);
         if (role == null) {
-        	log.error("Role should not be null here.");
+            log.error("Role should not be null here.");
             role = roleManagementSession.create(roleMgmgToken, roleName);
         }
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(roleName, "/", AccessRuleState.RULE_ACCEPT, true));
         role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
-        
+
         final List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
         accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(certificate).hashCode(), AccessMatchValue.WITH_COMMONNAME,
                 AccessMatchType.TYPE_EQUALCASE, CertTools.getPartFromDN(CertTools.getSubjectDN(certificate), "CN")));
         roleManagementSession.addSubjectsToRole(roleMgmgToken, role, accessUsers);
-        
+
         accessControlSession.forceCacheExpire();
     }
 
@@ -158,8 +160,13 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @return true if successful
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException
+     * @throws InvalidAlgorithmException
+     * @throws CryptoTokenAuthenticationFailedException
+     * @throws CryptoTokenOfflineException
+     * @throws CAExistsException
      */
-    private boolean createTestCA() throws CADoesntExistsException, AuthorizationDeniedException {
+    private boolean createTestCA() throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         return createTestCA(getTestCAName(), 1024);
     }
 
@@ -169,8 +176,13 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @return true if successful
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException
+     * @throws InvalidAlgorithmException
+     * @throws CryptoTokenAuthenticationFailedException
+     * @throws CryptoTokenOfflineException
+     * @throws CAExistsException
      */
-    public boolean createTestCA(int keyStrength) throws CADoesntExistsException, AuthorizationDeniedException {
+    public boolean createTestCA(int keyStrength) throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         return createTestCA(getTestCAName(), keyStrength);
     }
 
@@ -180,8 +192,13 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @return true if successful
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException
+     * @throws InvalidAlgorithmException
+     * @throws CryptoTokenAuthenticationFailedException
+     * @throws CryptoTokenOfflineException
+     * @throws CAExistsException
      */
-    public boolean createTestCA(String caName) throws CADoesntExistsException, AuthorizationDeniedException {
+    public boolean createTestCA(String caName) throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         return createTestCA(caName, 1024);
     }
 
@@ -191,30 +208,42 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @return true if successful
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException
+     * @throws InvalidAlgorithmException
+     * @throws CryptoTokenAuthenticationFailedException
+     * @throws CryptoTokenOfflineException
+     * @throws CAExistsException
      */
-    public boolean createTestCA(String caName, int keyStrength) throws CADoesntExistsException, AuthorizationDeniedException {
+    public boolean createTestCA(String caName, int keyStrength) throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         return createTestCA(caName, keyStrength, "CN=" + caName, CAInfo.SELFSIGNED, null);
     }
 
     /**
      * Make sure testCA exist.
      * 
-     * @param caName The CA name
+     * @param caName
+     *            The CA name
      * @param keyStrength
-     * @param dn DN of the CA
-     * @param signedBy id of the signing CA
+     * @param dn
+     *            DN of the CA
+     * @param signedBy
+     *            id of the signing CA
      * @return
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException
+     * @throws InvalidAlgorithmException
+     * @throws CryptoTokenAuthenticationFailedException
+     * @throws CryptoTokenOfflineException
+     * @throws CAExistsException
      */
     public boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain)
-            throws CADoesntExistsException, AuthorizationDeniedException {
+            throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         log.trace(">createTestCA");
-        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
         // Search for requested CA
         try {
-            this.caSession.getCAInfo(admin, caName);
+            this.caSession.getCAInfo(internalAdmin, caName);
             return true;
         } catch (CADoesntExistsException e) {
             // Ignore this state, continue instead. This is due to a lack of an exists-method in CaSession
@@ -250,8 +279,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE, "CN=XKMSCertificate, " + dn, "", "" + keyStrength,
                 AlgorithmConstants.KEYALGORITHM_RSA));
         // Set the CMS service non-active by default
-        extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
-        		"CN=CMSCertificate, " + dn,"",""+keyStrength,AlgorithmConstants.KEYALGORITHM_RSA));
+        extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + dn, "", "" + keyStrength,
+                AlgorithmConstants.KEYALGORITHM_RSA));
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         X509CAInfo cainfo = new X509CAInfo(dn, caName, SecConst.CA_ACTIVE, new Date(), "",
@@ -286,13 +315,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 null // cmpRaAuthSecret
         );
 
-        try {
-            this.caAdminSession.createCA(admin, cainfo);
-        } catch (Exception e) {
-            log.error("", e);
-            return false;
-        }
-        final CAInfo info = this.caSession.getCAInfo(admin, caName);
+        this.caAdminSession.createCA(internalAdmin, cainfo);
+
+        final CAInfo info = this.caSession.getCAInfo(internalAdmin, caName);
         final String normalizedDN = CertTools.stringToBCDNString(dn);
         final X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
         final String normalizedCertDN = CertTools.stringToBCDNString(cert.getSubjectDN().toString());
@@ -335,7 +360,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      */
     public Certificate getTestCACert(String caName) throws CADoesntExistsException, AuthorizationDeniedException {
         Certificate cacert = null;
-        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         CAInfo cainfo = caSession.getCAInfo(admin, getTestCAId(caName));
         Collection<Certificate> certs = cainfo.getCertificateChain();
         if (certs.size() > 0) {
@@ -366,8 +391,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * Removes the Test-CA if it exists.
      * 
      * @return true if successful
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException 
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
      */
     private void removeTestCA() throws AuthorizationDeniedException {
         removeTestCA(getTestCAName());
@@ -377,17 +402,16 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * Removes the Test-CA if it exists.
      * 
      * @return true if successful
-     * @throws AuthorizationDeniedException 
-     * @throws CADoesntExistsException 
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException
      */
     public void removeTestCA(String caName) throws AuthorizationDeniedException {
         // Search for requested CA
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
         try {
-            CA ca = caTestSession.getCA(admin, caName);
-            caSession.removeCA(admin, ca.getCAId());
-        } catch( CADoesntExistsException e) {
+            CA ca = caTestSession.getCA(internalAdmin, caName);
+            caSession.removeCA(internalAdmin, ca.getCAId());
+        } catch (CADoesntExistsException e) {
             //Ignore
         }
     }
@@ -444,8 +468,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId=" + approvalCAID,
                         "(endEntityProfileId=" + SecConst.EMPTY_ENDENTITYPROFILE + ")").get(0));
                 Approval approval = new Approval("Approved during testing.");
-                approvalExecutionSession.approve(approvingAdmin, approvalID, approval,
-                        globalConfigurationSession.getCachedGlobalConfiguration());
+                approvalExecutionSession.approve(approvingAdmin, approvalID, approval, globalConfigurationSession.getCachedGlobalConfiguration());
                 approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                 Assert.assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                 CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
@@ -460,8 +483,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public CAInfo getCAInfo(AuthenticationToken admin, String name) throws CADoesntExistsException, AuthorizationDeniedException {
         return this.caSession.getCAInfo(admin, name);
     }
-    
-    protected void createTestRSAReverseCa(AuthenticationToken admin) throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, AuthorizationDeniedException, InvalidAlgorithmException {
+
+    protected void createTestRSAReverseCa(AuthenticationToken admin) throws CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, AuthorizationDeniedException, InvalidAlgorithmException {
         String dn = TEST_RSA_REVSERSE_CA_DN;
         String name = TEST_RSA_REVERSE_CA_NAME;
 

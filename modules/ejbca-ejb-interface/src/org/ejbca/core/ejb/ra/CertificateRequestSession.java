@@ -73,7 +73,7 @@ public interface CertificateRequestSession {
      * @return a encoded certificate of the type specified in responseType 
 	 * @throws CesecoreException 
 	 */
-    public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class responseClass) throws PersistenceException,
+    public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends ResponseMessage> responseClass) throws PersistenceException,
             AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, CesecoreException;
 
 	/**
