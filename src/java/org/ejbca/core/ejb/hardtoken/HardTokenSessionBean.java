@@ -770,7 +770,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     @Override
     public HardTokenData getHardToken(AuthenticationToken admin, String tokensn, boolean includePUK) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
-            log.trace("<getHardToken(tokensn :" + tokensn + ")");
+            log.trace(">getHardToken(tokensn :" + tokensn + ")");
         }
         HardTokenData returnval = null;
         org.ejbca.core.ejb.hardtoken.HardTokenData htd = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
