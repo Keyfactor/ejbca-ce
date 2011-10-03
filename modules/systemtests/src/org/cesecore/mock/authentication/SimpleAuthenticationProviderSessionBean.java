@@ -30,6 +30,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
@@ -51,6 +52,8 @@ import org.cesecore.util.CryptoProviderTools;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class SimpleAuthenticationProviderSessionBean implements SimpleAuthenticationProviderRemote, SimpleAuthenticationProviderLocal {
 
+    private static final Logger log = Logger.getLogger(SimpleAuthenticationProviderSessionBean.class);
+
     private static final long serialVersionUID = -5788194519235705323L;
 
     static {
@@ -71,6 +74,9 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
     		if (o instanceof String) {
 				String str = (String) o;
 				if (StringUtils.equals("fail", str)) {
+				    if (log.isDebugEnabled()) {
+				        log.debug("Found a 'fail' credential, returning null");
+				    }
 					return null;
 				}
 			}
@@ -78,18 +84,23 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
     	
         X509Certificate certificate = null;
         // If we have a certificate as input, use that, otherwise generate a self signed certificate
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
         Set<?> inputcreds = subject.getCredentials();
         if (inputcreds != null) {
             for (Object object : inputcreds) {
     			if (object instanceof X509Certificate) {
     				certificate = (X509Certificate) object;
+                    if (log.isDebugEnabled()) {
+                        log.debug("Found a certificate credential that we will use, fp="+CertTools.getFingerprintAsString(certificate));
+                    }
     			}
     		}        	
         }
         
         // If there was no certificate input, create a self signed
         if (certificate == null) {
+            if (log.isDebugEnabled()) {
+                log.debug("No certificate input, will create a self-signed one");
+            }
             String dn = "C=SE,O=Test,CN=Test"; // default
             // If we have created a subject with an X500Principal we will use this DN to create the dummy certificate.
             if (subject != null) {
@@ -128,8 +139,12 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
             } catch (NoSuchProviderException e) {
                 throw new CertificateCreationException("Error encountered when creating certificate", e);
             }        	
+            if (log.isDebugEnabled()) {
+                log.debug("Creates a self signed authentication certificate, fp="+CertTools.getFingerprintAsString(certificate));
+            }
         }
         // Add the credentials and new principal
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
         credentials.add(certificate);
         Set<X500Principal> principals = new HashSet<X500Principal>();
         principals.add(certificate.getSubjectX500Principal());
