@@ -111,7 +111,7 @@ public class CertFetchAndVerify {
 		}
 	}
 	private static String theURL;	// = "http://localhost:8080/certificates/search.cgi";
-	private String getURL() {
+	static String getURL() {
 		if (theURL == null) {
 			try {
 				String port = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);

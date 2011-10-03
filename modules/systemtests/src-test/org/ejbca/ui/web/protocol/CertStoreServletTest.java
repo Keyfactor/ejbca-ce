@@ -16,15 +16,24 @@ package org.ejbca.ui.web.protocol;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.mail.MessagingException;
+
+import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -43,11 +52,13 @@ import org.junit.Test;
 public class CertStoreServletTest extends CaTestCase {
     private final static Logger log = Logger.getLogger(CertStoreServletTest.class);
 
+    @Override
     @Before
     public void setUp() throws Exception{
         super.setUp();
     }
     
+    @Override
     @After
     public void tearDown() throws Exception {
         super.tearDown();
@@ -89,7 +100,33 @@ public class CertStoreServletTest extends CaTestCase {
             ca1.deleteCA();
         }
     }
-
+    @Test
+    public void testDisplayPage() throws MalformedURLException, IOException, URISyntaxException {
+        final String sURI = CertFetchAndVerify.getURL();
+        log.debug("URL: '"+sURI+"'.");
+        final HttpURLConnection connection = (HttpURLConnection)new URI(sURI).toURL().openConnection();
+        connection.connect();
+        Assert.assertTrue( "Fetching CRL with '"+sURI+"' is not working.", HttpURLConnection.HTTP_OK==connection.getResponseCode() );
+        {
+            final Map<String, List<String>> mheaders = connection.getHeaderFields();
+            Assert.assertNotNull(mheaders);
+            final StringWriter sw = new StringWriter();
+            final PrintWriter pw = new PrintWriter(sw);
+            pw.println("Header of page with valid links to certificates");
+            for ( Entry<String, List<String>> e : mheaders.entrySet() ) {
+                Assert.assertNotNull(e);
+                Assert.assertNotNull(e.getValue());
+                pw.println("\t"+e.getKey());
+                for ( String s : e.getValue()) {
+                    pw.println("\t\t"+s);
+                }
+            }
+            pw.close();
+            log.debug(sw);
+        }
+        Assert.assertEquals("text/html;charset=UTF-8", connection.getContentType());
+    }
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName();
     }
