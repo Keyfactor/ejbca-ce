@@ -70,9 +70,11 @@ import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
+import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
@@ -306,6 +308,15 @@ public class ApprovalSessionTest extends CaTestCase {
             approvalSessionRemote.removeApprovalRequest(admin1, expired.getId());
 
             result = approvalSessionRemote.findApprovalDataVO(admin1, nonExecutableRequest.generateApprovalId());
+            
+            // Test approvalId generation with a "real" approval request with a requestAdmin
+            ViewHardTokenDataApprovalRequest ar = new ViewHardTokenDataApprovalRequest("APPROVALREQTESTTOKENUSER1", "CN=APPROVALREQTESTTOKENUSER1", "12345678", true, reqadmin, null, 1, 0, 0);
+            log.debug("Adding approval with approvalId: "+ar.generateApprovalId());
+            approvalSessionRemote.addApprovalRequest(admin1, ar, gc);
+            result = approvalSessionRemote.findApprovalDataVO(admin1, ar.generateApprovalId());
+            assertTrue(result.size() == 1);
+            next = (ApprovalDataVO) result.iterator().next();
+            cleanUpList.add(next.getId());      
         } finally {
             for (Integer next : cleanUpList) {
                 approvalSessionRemote.removeApprovalRequest(admin1, next);
