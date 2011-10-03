@@ -58,15 +58,17 @@ My Preferences.
 The publish queue status shows the current number of publish events that is stored in the publisher queue.
 Events can be stored in the publisher queue either because publishing failed, or because publishing goes to 
 the queue directly. 
-<br/>See also <a href="#Publisher Queue and failures">Publisher Queue and failures</a>.
+<br/>See also <a href="adminguide.html#Publisher Queue and failures">Publisher Queue and failures</a>.
 </p>
 </subsection>
 <subsection name="CA Status">
 <p>The CA status overview shows ok or error if CAs are off line and if CRLs are not valid.
-<br/>
-CA Status shows a red error if the CA is not on-line or the CA token is not in line. External CAs are always show as ok.
-<br/>
+</p><p>
+CA Status shows a red error if the CA is not on-line or the CA token is not on-line. External CAs are always show as ok. 
+If the CA or CA token is not on-line, you should check the CA activation page, to see if the CA can be activated. 
+</p><p>
 CRL status show a red error is a CRL or delta CRL has expired without a new one being created. Delta CRLs are only monitored if used.
+If CRLs have expired you can generate new CRLs. See <a href="adminguide.html#CRL generation">CRL generation</a> for more information.
 </p>
 </subsection>
 </section>

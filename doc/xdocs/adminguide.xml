@@ -192,15 +192,17 @@ You have to give several parameters to the command. Running the command without 
 
 <section name="CRL generation">
 <p>
-A new CA should always issue an (empty) CRL. This is done when the ca is created
-and can also be done by running:
+A new CA should always issue an (empty) CRL. This is done when the ca is created.
+</p><p>
+
+CRLs can be generated using 'Basic functions' in the Admin GUI, or using the CLI by running:
 </p>
 <source>
 bin/ejbca.sh ca createcrl &lt;CA name&gt;
 </source>
-<p>See also the User Guide for details how to configure CRL periods, CRL Distribution Points and CRL Issuers.</p>
+<p>See also the <a href="userguide.html">User Guide</a> for details how to configure CRL periods, CRL Distribution Points and CRL Issuers.</p>
 <p>
-There are at least two ways to have EJBCA to periodically create updated CRLs.
+There are, at least, two ways to have EJBCA automatically create updated CRLs.
 </p>
 
 <subsection name="CRL Update service worker">
