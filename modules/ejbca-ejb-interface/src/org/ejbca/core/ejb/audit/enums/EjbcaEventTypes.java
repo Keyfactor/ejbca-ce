@@ -38,6 +38,7 @@ public enum EjbcaEventTypes implements EventType {
     CA_RESTORETOKEN,
     CA_VALIDITY,
     CA_USERAUTH,
+    CA_EXTENDEDSERVICE,
     RA_ADDENDENTITY,
     RA_EDITENDENTITY,
     RA_DELETEENDENTITY,

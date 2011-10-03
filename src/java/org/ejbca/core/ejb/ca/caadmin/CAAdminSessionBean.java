@@ -133,6 +133,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -2568,7 +2569,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (log.isDebugEnabled()) {
             log.debug("Extended service with request class '" + request.getClass().getName() + "' called for CA '" + ca.getName() + "'");
         }
-        return ca.extendedService(request);
+        ExtendedCAServiceResponse resp = ca.extendedService(request);
+        String msg = intres.getLocalizedMessage("caadmin.extendedserviceexecuted", request.getClass().getName(), ca.getName());
+        Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", msg);
+        auditSession.log(EjbcaEventTypes.CA_EXTENDEDSERVICE, EventStatus.SUCCESS, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(),
+                String.valueOf(caid), null, null, details);
+        return resp;
     }
 
     //
