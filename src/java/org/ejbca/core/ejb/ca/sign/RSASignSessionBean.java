@@ -89,7 +89,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     private static final Logger log = Logger.getLogger(RSASignSessionBean.class);
-    
+
     @EJB
     private CaSessionLocal caSession;
     @EJB
@@ -113,45 +113,46 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     /** Default create for SessionBean without any creation Arguments. */
-	@PostConstruct
+    @PostConstruct
     public void ejbCreate() {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">ejbCreate()");
-    	}
+        if (log.isTraceEnabled()) {
+            log.trace(">ejbCreate()");
+        }
         try {
             // Install BouncyCastle provider
-        	CryptoProviderTools.installBCProviderIfNotAvailable();
+            CryptoProviderTools.installBCProviderIfNotAvailable();
         } catch (Exception e) {
             log.debug("Caught exception in ejbCreate(): ", e);
             throw new EJBException(e);
         }
-    	if (log.isTraceEnabled()) {
-    		log.trace("<ejbCreate()");
-    	}
+        if (log.isTraceEnabled()) {
+            log.trace("<ejbCreate()");
+        }
     }
 
-	@TransactionAttribute(TransactionAttributeType.SUPPORTS)
-	@Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
     public Collection<Certificate> getCertificateChain(AuthenticationToken admin, int caid) throws AuthorizationDeniedException {
-    	try {
-    		return caSession.getCA(admin, caid).getCertificateChain();
-    	} catch (CADoesntExistsException e) {
-    		throw new EJBException(e);
-    	}
+        try {
+            return caSession.getCA(admin, caid).getCertificateChain();
+        } catch (CADoesntExistsException e) {
+            throw new EJBException(e);
+        }
     }
 
-	@Override
-    public byte[] createPKCS7(AuthenticationToken admin, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
+    @Override
+    public byte[] createPKCS7(AuthenticationToken admin, Certificate cert, boolean includeChain) throws CADoesntExistsException,
+            SignRequestSignatureException, AuthorizationDeniedException {
         Integer caid = Integer.valueOf(CertTools.getIssuerDN(cert).hashCode());
         return createPKCS7(admin, caid.intValue(), cert, includeChain);
     }
 
-	@Override
+    @Override
     public byte[] createPKCS7(AuthenticationToken admin, int caId, boolean includeChain) throws CADoesntExistsException, AuthorizationDeniedException {
         try {
             return createPKCS7(admin, caId, null, includeChain);
         } catch (SignRequestSignatureException e) {
-        	String msg = intres.getLocalizedMessage("error.unknown");
+            String msg = intres.getLocalizedMessage("error.unknown");
             log.error(msg, e);
             throw new EJBException(e);
         }
@@ -168,33 +169,39 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws CADoesntExistsException if the CA does not exist or is expired, or has an invalid certificate
      * @throws AuthorizationDeniedException 
      */
-    private byte[] createPKCS7(AuthenticationToken admin, int caId, Certificate cert, boolean includeChain) throws CADoesntExistsException, SignRequestSignatureException, AuthorizationDeniedException {
-    	if (log.isTraceEnabled()) {
+    private byte[] createPKCS7(AuthenticationToken admin, int caId, Certificate cert, boolean includeChain) throws CADoesntExistsException,
+            SignRequestSignatureException, AuthorizationDeniedException {
+        if (log.isTraceEnabled()) {
             log.trace(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
-    	}
+        }
         CA ca = caSession.getCA(admin, caId);
         byte[] returnval = ca.createPKCS7(cert, includeChain);
-    	if (log.isTraceEnabled()) {
-    		log.trace("<createPKCS7()");
-    	}
+        if (log.isTraceEnabled()) {
+            log.trace("<createPKCS7()");
+        }
         return returnval;
     }
 
     @Override
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk) throws EjbcaException, ObjectNotFoundException, AuthorizationDeniedException, CesecoreException {
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk) throws EjbcaException,
+            ObjectNotFoundException, AuthorizationDeniedException, CesecoreException {
         // Default key usage is defined in certificate profiles
-        return createCertificate(admin, username, password, pk, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
+        return createCertificate(admin, username, password, pk, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
+                SecConst.CAID_USEUSERDEFINED);
     }
 
     @Override
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter) throws ObjectNotFoundException, AuthorizationDeniedException, EjbcaException, CesecoreException {
-        return createCertificate(admin, username, password, pk, keyusage, notBefore, notAfter, CertificateProfileConstants.CERTPROFILE_NO_PROFILE, SecConst.CAID_USEUSERDEFINED);
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore,
+            Date notAfter) throws ObjectNotFoundException, AuthorizationDeniedException, EjbcaException, CesecoreException {
+        return createCertificate(admin, username, password, pk, keyusage, notBefore, notAfter, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
+                SecConst.CAID_USEUSERDEFINED);
     }
 
     @Override
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, Certificate incert) throws CesecoreException, ObjectNotFoundException, AuthorizationDeniedException, EjbcaException {
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, Certificate incert) throws CesecoreException,
+            ObjectNotFoundException, AuthorizationDeniedException, EjbcaException {
         if (log.isTraceEnabled()) {
-        	log.trace(">createCertificate(cert)");
+            log.trace(">createCertificate(cert)");
         }
         X509Certificate cert = (X509Certificate) incert;
         try {
@@ -202,82 +209,84 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             Certificate bccert = CertTools.getCertfromByteArray(incert.getEncoded());
             bccert.verify(cert.getPublicKey());
         } catch (Exception e) {
-        	log.debug("Exception verify POPO: ", e);
-        	String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
+            log.debug("Exception verify POPO: ", e);
+            String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
             throw new SignRequestSignatureException(msg);
         }
         Certificate ret = createCertificate(admin, username, password, cert.getPublicKey(), CertTools.sunKeyUsageToBC(cert.getKeyUsage()), null, null);
         if (log.isTraceEnabled()) {
-        	log.trace("<createCertificate(cert)");
+            log.trace("<createCertificate(cert)");
         }
         return ret;
     }
 
     @Override
-    public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class responseClass, EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException, AuthorizationDeniedException {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">createCertificate(IRequestMessage)");
-    	}
+    public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class responseClass, EndEntityInformation suppliedUserData)
+            throws EjbcaException, CesecoreException, AuthorizationDeniedException {
+        if (log.isTraceEnabled()) {
+            log.trace(">createCertificate(IRequestMessage)");
+        }
         // Get CA that will receive request
-    	EndEntityInformation data = null;
+        EndEntityInformation data = null;
         CertificateResponseMessage ret = null;
         CA ca;
         if (suppliedUserData == null) {
-        	ca = getCAFromRequest(admin, req);
+            ca = getCAFromRequest(admin, req);
         } else {
-        	ca = caSession.getCA(admin, suppliedUserData.getCAId()); // Take the CAId from the supplied userdata, if any
+            ca = caSession.getCA(admin, suppliedUserData.getCAId()); // Take the CAId from the supplied userdata, if any
         }
         try {
             // See if we need some key material to decrypt request
-        	decryptAndVerify(req, ca);
+            decryptAndVerify(req, ca);
             if (ca.isUseUserStorage() && req.getUsername() == null) {
-            	String msg = intres.getLocalizedMessage("signsession.nouserinrequest", req.getRequestDN());
+                String msg = intres.getLocalizedMessage("signsession.nouserinrequest", req.getRequestDN());
                 throw new SignRequestException(msg);
             } else if (ca.isUseUserStorage() && req.getPassword() == null) {
-            	String msg = intres.getLocalizedMessage("signsession.nopasswordinrequest");
+                String msg = intres.getLocalizedMessage("signsession.nopasswordinrequest");
                 throw new SignRequestException(msg);
-            } else {        
-            	try {
-    				// If we haven't done so yet, authenticate user. (Only if we store UserData for this CA.)
-            		if (ca.isUseUserStorage()) {
-                		data = authUser(admin, req.getUsername(), req.getPassword());
-            		} else {
-            			data = suppliedUserData;
-            		}
+            } else {
+                try {
+                    // If we haven't done so yet, authenticate user. (Only if we store UserData for this CA.)
+                    if (ca.isUseUserStorage()) {
+                        data = authUser(admin, req.getUsername(), req.getPassword());
+                    } else {
+                        data = suppliedUserData;
+                    }
                     // We need to make sure we use the users registered CA here
                     if (data.getCAId() != ca.getCAId()) {
-                    	final String failText = intres.getLocalizedMessage("signsession.wrongauthority", Integer.valueOf(ca.getCAId()), Integer.valueOf(data.getCAId()));
-                		log.info(failText);
-                		ret = createRequestFailedResponse(admin, req, responseClass, FailInfo.WRONG_AUTHORITY, failText);
+                        final String failText = intres.getLocalizedMessage("signsession.wrongauthority", Integer.valueOf(ca.getCAId()),
+                                Integer.valueOf(data.getCAId()));
+                        log.info(failText);
+                        ret = createRequestFailedResponse(admin, req, responseClass, FailInfo.WRONG_AUTHORITY, failText);
                     } else {
 
-                    	// Issue the certificate from the request
-                    	ret = certificateCreateSession.createCertificate(admin, data, req, responseClass);
-                    	postCreateCertificate(admin, data, ca, ret.getCertificate());
+                        // Issue the certificate from the request
+                        ret = certificateCreateSession.createCertificate(admin, data, req, responseClass);
+                        postCreateCertificate(admin, data, ca, ret.getCertificate());
                     }
-            	} catch (ObjectNotFoundException oe) {
-            		// If we didn't find the entity return error message
-                	final String failText = intres.getLocalizedMessage("signsession.nosuchuser", req.getUsername());
-            		log.info(failText, oe);
-            		ret = createRequestFailedResponse(admin, req, responseClass, FailInfo.INCORRECT_DATA, failText);
-            	}
+                } catch (ObjectNotFoundException oe) {
+                    // If we didn't find the entity return error message
+                    final String failText = intres.getLocalizedMessage("signsession.nosuchuser", req.getUsername());
+                    log.info(failText, oe);
+                    ret = createRequestFailedResponse(admin, req, responseClass, FailInfo.INCORRECT_DATA, failText);
+                }
             }
             ret.create();
             // Call authentication session and tell that we are finished with this user. (Only if we store UserData for this CA.)
-            if (ca.isUseUserStorage() && data!=null) {
-        		finishUser(ca, data);
-            }            	
+            if (ca.isUseUserStorage() && data != null) {
+                finishUser(ca, data);
+            }
         } catch (CustomCertSerialNumberException e) {
-    		cleanUserCertDataSN(data);
-    		throw e;
+            cleanUserCertDataSN(data);
+            throw e;
         } catch (IllegalKeyException ke) {
             log.error("Key is of unknown type: ", ke);
             throw ke;
         } catch (CryptoTokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
-        	CryptoTokenOfflineException ex = new CryptoTokenOfflineException(msg);
-        	ex.initCause(ctoe);
-        	throw ex;
+            String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
+            CryptoTokenOfflineException ex = new CryptoTokenOfflineException(msg);
+            ex.initCause(ctoe);
+            throw ex;
         } catch (EjbcaException e) {
             throw e;
         } catch (NoSuchProviderException e) {
@@ -289,74 +298,79 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
         }
-    	if (log.isTraceEnabled()) {
-    		log.trace("<createCertificate(IRequestMessage)");
-    	}
+        if (log.isTraceEnabled()) {
+            log.trace("<createCertificate(IRequestMessage)");
+        }
         return ret;
     }
-    
-    @Override
-	public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore, Date notAfter, int certificateprofileid, int caid) throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException, EjbcaException, CesecoreException {
-		if (log.isTraceEnabled()) {
-			log.trace(">createCertificate(pk, ku, date)");
-		}
-	    // Authorize user and get DN
-		final EndEntityInformation data = authUser(admin, username, password);
-		if (log.isDebugEnabled()) {
-			log.debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
-		}
-	    if (certificateprofileid != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
-	    	if (log.isDebugEnabled()) {
-	    		log.debug("Overriding user certificate profile with :" + certificateprofileid);
-	    	}
-	    	data.setCertificateProfileId(certificateprofileid);
-	    }
-	    // Check if we should override the CAId
-	    if (caid != SecConst.CAID_USEUSERDEFINED) {
-	    	if (log.isDebugEnabled()) {
-	        	log.debug("Overriding user caid with :" + caid);
-	    	}
-	    	data.setCAId(caid);
-	    }
-		if (log.isDebugEnabled()) {
-	        log.debug("User type=" + data.getType());
-		}
-	    // Get CA object and make sure it's active
-	    CA ca = caSession.getCA(admin, data.getCAId());
-	    if (ca.getStatus() != SecConst.CA_ACTIVE) {
-	    	String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
-	    	throw new EJBException(msg);
-	    }
-	    Certificate cert;
-	    try {
-	    	// Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
-	    	cert = createCertificate(admin, data, null, ca, pk, keyusage, notBefore, notAfter, null, null);
-	    	// Call authentication session and tell that we are finished with this user
-			finishUser(ca, data);
-	    } catch (CustomCertSerialNumberException e) {
-	    	cleanUserCertDataSN(data);
-	    	throw e;
-	    }
-		if (log.isTraceEnabled()) {
-			log.trace("<createCertificate(pk, ku, date)");
-		}
-	    return cert;
-	}
 
     @Override
-    public CertificateResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req,  Class responseClass, FailInfo failInfo, String failText) throws  AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">createRequestFailedResponse(IRequestMessage)");
-    	}
-    	CertificateResponseMessage ret = null;            
+    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore,
+            Date notAfter, int certificateprofileid, int caid) throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException,
+            EjbcaException, CesecoreException {
+        if (log.isTraceEnabled()) {
+            log.trace(">createCertificate(pk, ku, date)");
+        }
+        // Authorize user and get DN
+        final EndEntityInformation data = authUser(admin, username, password);
+        if (log.isDebugEnabled()) {
+            log.debug("Authorized user " + username + " with DN='" + data.getDN() + "'." + " with CA=" + data.getCAId());
+        }
+        if (certificateprofileid != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
+            if (log.isDebugEnabled()) {
+                log.debug("Overriding user certificate profile with :" + certificateprofileid);
+            }
+            data.setCertificateProfileId(certificateprofileid);
+        }
+        // Check if we should override the CAId
+        if (caid != SecConst.CAID_USEUSERDEFINED) {
+            if (log.isDebugEnabled()) {
+                log.debug("Overriding user caid with :" + caid);
+            }
+            data.setCAId(caid);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("User type=" + data.getType());
+        }
+        // Get CA object and make sure it's active
+        CA ca = caSession.getCA(admin, data.getCAId());
+        if (ca.getStatus() != SecConst.CA_ACTIVE) {
+            String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+            throw new EJBException(msg);
+        }
+        Certificate cert;
+        try {
+            // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
+            cert = createCertificate(admin, data, null, ca, pk, keyusage, notBefore, notAfter, null, null);
+            // Call authentication session and tell that we are finished with this user
+            finishUser(ca, data);
+        } catch (CustomCertSerialNumberException e) {
+            cleanUserCertDataSN(data);
+            throw e;
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<createCertificate(pk, ku, date)");
+        }
+        return cert;
+    }
+
+    @Override
+    public CertificateResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class responseClass,
+            FailInfo failInfo, String failText) throws AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException,
+            SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException {
+        if (log.isTraceEnabled()) {
+            log.trace(">createRequestFailedResponse(IRequestMessage)");
+        }
+        CertificateResponseMessage ret = null;
         CA ca = getCAFromRequest(admin, req);
         try {
             CAToken catoken = ca.getCAToken();
             decryptAndVerify(req, ca);
             //Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());
+            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken
+                    .getCryptoToken().getSignProviderName());
             ret.setStatus(ResponseStatus.FAILURE);
-            ret.setFailInfo(failInfo); 
+            ret.setFailInfo(failInfo);
             ret.setFailText(failText);
             ret.create();
         } catch (IllegalCryptoTokenException e) {
@@ -370,21 +384,23 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
         } catch (CryptoTokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
+            String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             log.warn(msg, ctoe);
             throw ctoe;
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<createRequestFailedResponse(IRequestMessage)");
+            log.trace("<createRequestFailedResponse(IRequestMessage)");
         }
         return ret;
     }
 
     @Override
-    public RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req) throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, CryptoTokenOfflineException, AuthorizationDeniedException {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">decryptAndVerifyRequest(IRequestMessage)");
-    	}
+    public RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req) throws AuthStatusException, AuthLoginException,
+            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, CryptoTokenOfflineException,
+            AuthorizationDeniedException {
+        if (log.isTraceEnabled()) {
+            log.trace(">decryptAndVerifyRequest(IRequestMessage)");
+        }
         // Get CA that will receive request
         CA ca = getCAFromRequest(admin, req);
         try {
@@ -398,66 +414,69 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.error("Invalid key in request: ", e);
         } catch (NoSuchAlgorithmException e) {
             log.error("No such algorithm: ", e);
-        }  catch (CryptoTokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
+        } catch (CryptoTokenOfflineException ctoe) {
+            String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
             log.error(msg, ctoe);
             throw ctoe;
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<decryptAndVerifyRequest(IRequestMessage)");
+            log.trace("<decryptAndVerifyRequest(IRequestMessage)");
         }
         return req;
     }
 
-	/**
-	 * @param req
-	 * @param ca
-	 * @param catoken
-	 * @throws CryptoTokenOfflineException
-	 * @throws InvalidKeyException
-	 * @throws NoSuchAlgorithmException
-	 * @throws NoSuchProviderException
-	 * @throws SignRequestSignatureException
-	 * @throws IllegalCryptoTokenException 
-	 */
-	private void decryptAndVerify(RequestMessage req, final CA ca)
-			throws CryptoTokenOfflineException, InvalidKeyException,
-			NoSuchAlgorithmException, NoSuchProviderException,
-			SignRequestSignatureException, IllegalCryptoTokenException {
-		CAToken catoken = ca.getCAToken();
-		if (req.requireKeyInfo()) {
-		    // You go figure...scep encrypts message with the public CA-cert
-		    req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());
-		}
-		// Verify the request
-		if (req.verify() == false) {
-			String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
-		    throw new SignRequestSignatureException(msg);
-		}
-	}
-    
+    /**
+     * @param req
+     * @param ca
+     * @param catoken
+     * @throws CryptoTokenOfflineException
+     * @throws InvalidKeyException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws SignRequestSignatureException
+     * @throws IllegalCryptoTokenException 
+     */
+    private void decryptAndVerify(RequestMessage req, final CA ca) throws CryptoTokenOfflineException, InvalidKeyException, NoSuchAlgorithmException,
+            NoSuchProviderException, SignRequestSignatureException, IllegalCryptoTokenException {
+        CAToken catoken = ca.getCAToken();
+        if (req.requireKeyInfo()) {
+            // You go figure...scep encrypts message with the public CA-cert
+            req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken()
+                    .getSignProviderName());
+        }
+        // Verify the request
+        if (req.verify() == false) {
+            String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
+            throw new SignRequestSignatureException(msg);
+        }
+    }
+
     @Override
-    public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class responseClass) throws AuthStatusException, AuthLoginException, IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException, CryptoTokenOfflineException, AuthorizationDeniedException {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">getCRL(IRequestMessage)");
-    	}
+    public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class responseClass) throws AuthStatusException, AuthLoginException,
+            IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException,
+            CryptoTokenOfflineException, AuthorizationDeniedException {
+        if (log.isTraceEnabled()) {
+            log.trace(">getCRL(IRequestMessage)");
+        }
         ResponseMessage ret = null;
         // Get CA that will receive request
         CA ca = getCAFromRequest(admin, req);
         try {
             CAToken catoken = ca.getCAToken();
             if (ca.getStatus() != SecConst.CA_ACTIVE) {
-            	String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+                String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
                 throw new EJBException(msg);
             }
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());
+                req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken()
+                        .getSignProviderName());
             }
             //Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());
-            
+            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken
+                    .getCryptoToken().getSignProviderName());
+
             // Get the Full CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already
             // know that we are the CA (SCEP is soooo stupid!)
             final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
@@ -485,112 +504,115 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         } catch (IOException e) {
             log.error("Cannot create response message: ", e);
         } catch (CryptoTokenOfflineException ctoe) {
-        	String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
-        	log.error(msg, ctoe);
+            String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getSubjectDN());
+            log.error(msg, ctoe);
             throw ctoe;
         }
-    	if (log.isTraceEnabled()) {
-    		log.trace("<getCRL(IRequestMessage)");
-    	}
+        if (log.isTraceEnabled()) {
+            log.trace("<getCRL(IRequestMessage)");
+        }
         return ret;
     }
-    
+
     /** Help Method that extracts the CA specified in the request. 
      * @throws AuthorizationDeniedException */
-    private CA getCAFromRequest(AuthenticationToken admin, RequestMessage req) throws AuthStatusException, AuthLoginException, CADoesntExistsException, AuthorizationDeniedException {
+    private CA getCAFromRequest(AuthenticationToken admin, RequestMessage req) throws AuthStatusException, AuthLoginException,
+            CADoesntExistsException, AuthorizationDeniedException {
         CA ca = null;
         try {
             // See if we can get issuerDN directly from request
             if (req.getIssuerDN() != null) {
                 String dn = CertificateCreateSessionBean.getCADnFromRequest(req, certificateStoreSession);
-            	try {
-            		ca = caSession.getCA(admin, dn.hashCode());
-            		if (log.isDebugEnabled()) {
-            			log.debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
-            		}
-            	} catch (CADoesntExistsException e) {
-            		// We could not find a CA from that DN, so it might not be a CA. Try to get from username instead
-            		if (req.getUsername() != null) {
-            			ca = getCAFromUsername(admin, req);
-                    	if (log.isDebugEnabled()) {
-                    		log.debug("Using CA from username: "+req.getUsername());
-                    	}
+                try {
+                    ca = caSession.getCA(admin, dn.hashCode());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Using CA (from issuerDN) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
+                    }
+                } catch (CADoesntExistsException e) {
+                    // We could not find a CA from that DN, so it might not be a CA. Try to get from username instead
+                    if (req.getUsername() != null) {
+                        ca = getCAFromUsername(admin, req);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Using CA from username: " + req.getUsername());
+                        }
                     } else {
-                        String msg = intres.getLocalizedMessage("signsession.canotfoundissuerusername", dn, "null");        	
+                        String msg = intres.getLocalizedMessage("signsession.canotfoundissuerusername", dn, "null");
                         throw new CADoesntExistsException(msg);
                     }
-            	}
+                }
             } else if (req.getUsername() != null) {
                 ca = getCAFromUsername(admin, req);
-            	if (log.isDebugEnabled()) {
-            		log.debug("Using CA from username: "+req.getUsername());
-            	}
+                if (log.isDebugEnabled()) {
+                    log.debug("Using CA from username: " + req.getUsername());
+                }
             } else {
-                throw new CADoesntExistsException(intres.getLocalizedMessage("signsession.canotfoundissuerusername", req.getIssuerDN(), req.getUsername()));
+                throw new CADoesntExistsException(intres.getLocalizedMessage("signsession.canotfoundissuerusername", req.getIssuerDN(),
+                        req.getUsername()));
             }
         } catch (ObjectNotFoundException e) {
-            throw new CADoesntExistsException(intres.getLocalizedMessage("signsession.canotfoundissuerusername", req.getIssuerDN(), req.getUsername()));
-		}
-        
+            throw new CADoesntExistsException(
+                    intres.getLocalizedMessage("signsession.canotfoundissuerusername", req.getIssuerDN(), req.getUsername()));
+        }
+
         if (ca.getStatus() != SecConst.CA_ACTIVE) {
-        	String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
-        	throw new EJBException(msg);
+            String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+            throw new EJBException(msg);
         }
         return ca;
     }
 
-	private CA getCAFromUsername(AuthenticationToken admin, RequestMessage req)
-			throws ObjectNotFoundException, AuthStatusException, AuthLoginException, CADoesntExistsException, AuthorizationDeniedException {
-		// See if we can get username and password directly from request
-		String username = req.getUsername();
-		String password = req.getPassword();
-		EndEntityInformation data = authUser(admin, username, password);
-		CA ca = caSession.getCA(admin, data.getCAId());
-		if (log.isDebugEnabled()) {
-			log.debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
-		}
-		return ca;
-	}
+    private CA getCAFromUsername(AuthenticationToken admin, RequestMessage req) throws ObjectNotFoundException, AuthStatusException,
+            AuthLoginException, CADoesntExistsException, AuthorizationDeniedException {
+        // See if we can get username and password directly from request
+        String username = req.getUsername();
+        String password = req.getPassword();
+        EndEntityInformation data = authUser(admin, username, password);
+        CA ca = caSession.getCA(admin, data.getCAId());
+        if (log.isDebugEnabled()) {
+            log.debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
+        }
+        return ca;
+    }
 
-    private EndEntityInformation authUser(AuthenticationToken admin, String username, String password) throws ObjectNotFoundException, AuthStatusException, AuthLoginException {
-    	// Authorize user and get DN
-    	return authenticationSession.authenticateUser(admin, username, password);
+    private EndEntityInformation authUser(AuthenticationToken admin, String username, String password) throws ObjectNotFoundException,
+            AuthStatusException, AuthLoginException {
+        // Authorize user and get DN
+        return authenticationSession.authenticateUser(admin, username, password);
     }
 
     /** Finishes user, i.e. set status to generated, if it should do so.
-     * The authentication session is responsible for determining if this should be done or not */ 
-	private void finishUser(CA ca, EndEntityInformation data) {
-		if ( data==null ) {
-			return;
-		}
-		if ( !ca.getCAInfo().getFinishUser()  ) {
-			cleanUserCertDataSN(data);
-			return;
-		}
+     * The authentication session is responsible for determining if this should be done or not */
+    private void finishUser(CA ca, EndEntityInformation data) {
+        if (data == null) {
+            return;
+        }
+        if (!ca.getCAInfo().getFinishUser()) {
+            cleanUserCertDataSN(data);
+            return;
+        }
         try {
             authenticationSession.finishUser(data);
         } catch (ObjectNotFoundException e) {
             String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
-        	log.info(msg);
+            log.info(msg);
         }
     }
 
-	/**
-	 * Clean the custom certificate serial number of user from database
-	 * @param data of user
-	 */
-	private void cleanUserCertDataSN(EndEntityInformation data) {
-		if ( data==null || data.getExtendedinformation()==null ||
-				data.getExtendedinformation().certificateSerialNumber()==null ) {
-			return;
-		}
-		try {
-			userAdminSession.cleanUserCertDataSN(data);
-		} catch (ObjectNotFoundException e) {
-			String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
-			log.info(msg);
-		}
-	}
+    /**
+     * Clean the custom certificate serial number of user from database
+     * @param data of user
+     */
+    private void cleanUserCertDataSN(EndEntityInformation data) {
+        if (data == null || data.getExtendedinformation() == null || data.getExtendedinformation().certificateSerialNumber() == null) {
+            return;
+        }
+        try {
+            userAdminSession.cleanUserCertDataSN(data);
+        } catch (ObjectNotFoundException e) {
+            String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
+            log.info(msg);
+        }
+    }
 
     /**
      * Creates the certificate, uses the cesecore method with the same signature but in addition to that calls certreqsession and publishers
@@ -600,21 +622,24 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws IllegalKeyException 
      * @see org.cesecore.certificates.certificate.CertificateCreateSessionLocal#createCertificate(AuthenticationToken, EndEntityInformation, CA, X509Name, PublicKey, int, Date, Date, X509Extensions, String)
      */
-    private Certificate createCertificate(AuthenticationToken admin, EndEntityInformation data, X509Name requestX509Name, CA ca, PublicKey pk, int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws IllegalKeyException, CertificateCreateException, AuthorizationDeniedException, CesecoreException {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">createCertificate(pk, ku, notAfter)");
-    	}
+    private Certificate createCertificate(AuthenticationToken admin, EndEntityInformation data, X509Name requestX509Name, CA ca, PublicKey pk,
+            int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws IllegalKeyException,
+            CertificateCreateException, AuthorizationDeniedException, CesecoreException {
+        if (log.isTraceEnabled()) {
+            log.trace(">createCertificate(pk, ku, notAfter)");
+        }
 
-    	Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, requestX509Name, pk, keyusage, notBefore, notAfter, extensions, sequence);
+        Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, requestX509Name, pk, keyusage, notBefore, notAfter,
+                extensions, sequence);
 
-    	postCreateCertificate(admin, data, ca, cert);
-    	
-    	if (log.isTraceEnabled()) {
-    		log.trace("<createCertificate(pk, ku, notAfter)");
-    	}
-    	return cert;
+        postCreateCertificate(admin, data, ca, cert);
+
+        if (log.isTraceEnabled()) {
+            log.trace("<createCertificate(pk, ku, notAfter)");
+        }
+        return cert;
     }
-    
+
     /**
      * Perform a set of actions post certificate creation
      * 
@@ -624,7 +649,8 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param certificate the newly created Certificate
      * @throws AuthorizationDeniedException if access is denied to the CA issuing certificate
      */
-    private void postCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, CA ca, Certificate certificate) throws AuthorizationDeniedException {
+    private void postCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, CA ca, Certificate certificate)
+            throws AuthorizationDeniedException {
         // Store the request data in history table.
         if (ca.isUseCertReqHistory()) {
             certreqHistorySession.addCertReqHistoryData(authenticationToken, certificate, endEntity);
@@ -653,8 +679,9 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             if (ei != null) {
                 revreason = ei.getIssuanceRevocationReason();
             }
-            publisherSession.storeCertificate(authenticationToken, publishers, certificate, username, endEntity.getPassword(), endEntity.getCertificateDN(), cafingerprint,
-                    certstatus, certProfile.getType(), revocationDate, revreason, tag, certProfileId, updateTime, endEntity.getExtendedinformation());
+            publisherSession.storeCertificate(authenticationToken, publishers, certificate, username, endEntity.getPassword(),
+                    endEntity.getCertificateDN(), cafingerprint, certstatus, certProfile.getType(), revocationDate, revreason, tag, certProfileId,
+                    updateTime, endEntity.getExtendedinformation());
         }
     }
 
