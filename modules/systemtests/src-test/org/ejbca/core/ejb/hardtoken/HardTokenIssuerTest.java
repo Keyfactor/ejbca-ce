@@ -17,10 +17,25 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.jndi.JndiHelper;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 import org.ejbca.util.InterfaceCache;
@@ -38,8 +53,10 @@ public class HardTokenIssuerTest {
     private static Logger log = Logger.getLogger(HardTokenIssuerTest.class);
     
     private HardTokenSessionRemote hardTokenSession = InterfaceCache.getHardTokenSession();
-
-    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
+    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
+    
+    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("HardTokenIssuerTest"));
 
 
     @Before
@@ -56,9 +73,9 @@ public class HardTokenIssuerTest {
         boolean ret = false;
         HardTokenIssuer issuer = new HardTokenIssuer();
         issuer.setDescription("TEST");
-        ret = hardTokenSession.addHardTokenIssuer(admin, "TEST", 3, issuer);
+        ret = hardTokenSession.addHardTokenIssuer(internalAdmin, "TEST", 3, issuer);
         assertTrue("Creating Hard Token Issuer failed", ret);
-        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(admin, "TEST");
+        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST");
         assertEquals("TEST", data.getHardTokenIssuer().getDescription());
         log.trace("<test01AddHardTokenIssuer()");
     }
@@ -67,11 +84,11 @@ public class HardTokenIssuerTest {
     public void test02RenameHardTokenIssuer() throws Exception {
         log.trace(">test02RenameHardTokenIssuer()");
         boolean ret = false;
-        ret = hardTokenSession.renameHardTokenIssuer(admin, "TEST", "TEST2", 4);
+        ret = hardTokenSession.renameHardTokenIssuer(internalAdmin, "TEST", "TEST2", 4);
         assertTrue("Renaming Hard Token Issuer failed", ret);
-        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(admin, "TEST2");
+        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST2");
         assertEquals("TEST", data.getHardTokenIssuer().getDescription());
-        data = hardTokenSession.getHardTokenIssuerData(admin, "TEST");
+        data = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST");
         assertNull(data);
         log.trace("<test02RenameHardTokenIssuer()");
     }
@@ -90,11 +107,11 @@ public class HardTokenIssuerTest {
         assertEquals("TEST", issuer2.getDescription());
         // Next do the test using the session bean
         boolean ret = false;
-        ret = hardTokenSession.cloneHardTokenIssuer(admin, "TEST2", "TEST", 4);
+        ret = hardTokenSession.cloneHardTokenIssuer(internalAdmin, "TEST2", "TEST", 4);
         assertTrue("Cloning hard token issuer failed", ret);
-        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(admin, "TEST2");
+        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST2");
         assertEquals("TEST", data.getHardTokenIssuer().getDescription());
-        data = hardTokenSession.getHardTokenIssuerData(admin, "TEST");
+        data = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST");
         assertEquals("TEST", data.getHardTokenIssuer().getDescription());
 
         log.trace("<test03CloneHardTokenIssuer()");
@@ -105,12 +122,12 @@ public class HardTokenIssuerTest {
     public void test04EditHardTokenIssuer() throws Exception {
         log.trace(">test04EditHardTokenIssuer()");
         boolean ret = false;
-        HardTokenIssuerData issuerdata = hardTokenSession.getHardTokenIssuerData(admin, "TEST");
+        HardTokenIssuerData issuerdata = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST");
         assertTrue("Retrieving HardTokenIssuer failed", issuerdata.getHardTokenIssuer().getDescription().equals("TEST"));
         issuerdata.getHardTokenIssuer().setDescription("TEST2");
-        ret = hardTokenSession.changeHardTokenIssuer(admin, "TEST", issuerdata.getHardTokenIssuer());
+        ret = hardTokenSession.changeHardTokenIssuer(internalAdmin, "TEST", issuerdata.getHardTokenIssuer());
         assertTrue("Editing HardTokenIssuer failed", ret);
-        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(admin, "TEST");
+        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST");
         assertEquals("TEST2", data.getHardTokenIssuer().getDescription());
         log.trace("<test04EditHardTokenIssuer()");
     }
@@ -120,13 +137,45 @@ public class HardTokenIssuerTest {
         log.trace(">test05removeHardTokenIssuers()");
         boolean ret = false;
         try {
-            hardTokenSession.removeHardTokenIssuer(admin, "TEST");
-            hardTokenSession.removeHardTokenIssuer(admin, "TEST2");
+            hardTokenSession.removeHardTokenIssuer(internalAdmin, "TEST");
+            hardTokenSession.removeHardTokenIssuer(internalAdmin, "TEST2");
             ret = true;
         } catch (Exception pee) {
         }
         assertTrue("Removing Certificate Profile failed", ret);
         log.trace("<test05removeHardTokenIssuers()");
+    }
+
+    @Test
+    public void testIsAuthorizedToHardTokenIssuer() throws Exception {
+        TestX509CertificateAuthenticationToken admin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
+                .authenticate(new AuthenticationSubject(null, null));
+
+        int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
+        String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
+        String rolename = "testGetAuthorizedToHardTokenIssuer";
+        RoleData role = roleManagementSession.create(internalAdmin, rolename);
+        try {
+            Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
+            subjects.add(new AccessUserAspectData(rolename, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
+            role = roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);
+            Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+            accessRules.add(new AccessRuleData(rolename, "/hardtoken_functionality/issue_hardtokens", AccessRuleState.RULE_ACCEPT, false));
+            role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
+            String alias = "spacemonkeys";
+            HardTokenIssuer issuer = new HardTokenIssuer();
+            issuer.setDescription(alias);
+            if (!hardTokenSession.addHardTokenIssuer(internalAdmin, alias, 0, issuer)) {
+                throw new Exception("Could add hard token issuer, test can't continue");
+            }
+            try {
+                assertTrue(hardTokenSession.isAuthorizedToHardTokenIssuer(admin, alias));
+            } finally {
+                hardTokenSession.removeHardTokenIssuer(internalAdmin, alias);
+            }
+        } finally {
+            roleManagementSession.remove(internalAdmin, rolename);
+        }
     }
 
 

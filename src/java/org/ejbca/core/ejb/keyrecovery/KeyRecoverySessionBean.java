@@ -75,15 +75,15 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     private EntityManager entityManager;
 
     @EJB
-    private CertificateStoreSessionLocal certificateStoreSession;
+    private AccessControlSessionLocal authorizationSession;
+    @EJB
+    private ApprovalSessionLocal approvalSession;  
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
-    private ApprovalSessionLocal approvalSession;
+    private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
-    @EJB
-    private AccessControlSessionLocal authorizationSession;
 	
 	/**
 	 * Method checking the following authorizations:
@@ -289,6 +289,8 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.KEYRECOVERY_SENT, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), caidString, certSerialNumber, username, details);
+        	} catch (AuthorizationDeniedException e) {
+        	    throw e;
         	} catch (Exception e) {
         		String msg = intres.getLocalizedMessage("keyrecovery.errorsenddata", username);            	
         		log.error(msg, e);

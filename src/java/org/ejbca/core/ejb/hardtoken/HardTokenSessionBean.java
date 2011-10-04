@@ -1,5 +1,6 @@
 /*************************************************************************
  *                                                                       *
+
  *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
@@ -497,9 +498,9 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public boolean getAuthorizedToHardTokenIssuer(AuthenticationToken admin, String alias) {
+    public boolean isAuthorizedToHardTokenIssuer(AuthenticationToken admin, String alias) {
         if (log.isTraceEnabled()) {
-            log.trace(">getAuthorizedToHardTokenIssuer(" + alias + ")");
+            log.trace(">isAuthorizedToHardTokenIssuer(" + alias + ")");
         }
         boolean returnval = false;
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
@@ -507,7 +508,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             returnval = authorizationSession.isAuthorizedNoLogging(admin, "/hardtoken_functionality/issue_hardtokens");
         }
         if (log.isTraceEnabled()) {
-        	log.trace("<getAuthorizedToHardTokenIssuer(" + returnval + ")");
+        	log.trace("<isAuthorizedToHardTokenIssuer(" + returnval + ")");
         }
         return returnval;
     }
@@ -630,6 +631,11 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
 
+    /*
+     * TODO: Somebody please clean the hell out of this method =) -mikek
+     * 
+     * getIs? srsly? and then toss an exception? orly?
+     */
     @Override
     public void getIsHardTokenProfileAvailableToIssuer(AuthenticationToken admin, int issuerid, EndEntityInformation userdata) throws UnavailableTokenException {
         if (log.isTraceEnabled()) {

@@ -100,15 +100,15 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
+    private AccessControlSessionRemote accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
     private CAAdminSessionRemote caAdminSession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = JndiHelper.getRemoteSession(CaSessionRemote.class);
     private CaTestSessionRemote caTestSession = JndiHelper.getRemoteSession(CaTestSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);
-    private GlobalConfigurationSessionRemote globalConfigurationSession = JndiHelper.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    protected SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = JndiHelper.getRemoteSession(GlobalConfigurationSessionRemote.class);  
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
-    private AccessControlSessionRemote accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
+    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
 
     private String roleName;
 
@@ -563,5 +563,21 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         );
 
         caAdminSession.createCA(admin, cainfo);
+    }
+    
+    /**
+     * 
+     * @return an AuthenticationToken which matches the default test CA
+     * @throws AuthorizationDeniedException 
+     * @throws CADoesntExistsException 
+     */
+    public AuthenticationToken createCaAuthenticatedToken() throws CADoesntExistsException, AuthorizationDeniedException {
+        String subjectDn = CertTools.getSubjectDN(getTestCACert());
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new X500Principal(subjectDn));
+        Set<Certificate> credentials = new HashSet<Certificate>();
+        credentials.add(getTestCACert());
+        AuthenticationSubject subject = new AuthenticationSubject(principals, credentials);
+        return simpleAuthenticationProvider.authenticate(subject);
     }
 }
