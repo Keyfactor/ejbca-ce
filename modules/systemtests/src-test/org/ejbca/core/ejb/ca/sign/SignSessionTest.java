@@ -58,7 +58,6 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.x509.extension.X509ExtensionUtil;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -82,6 +81,7 @@ import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.certificates.util.cert.QCStatementExtension;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -175,7 +175,7 @@ public class SignSessionTest extends CaTestCase {
     private Certificate cvcaeccert = null;
     private X509Certificate dsacacert = null;
     
-    private final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SignSessionTest"));
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
@@ -223,35 +223,35 @@ public class SignSessionTest extends CaTestCase {
         // Add this again since it will be removed by the other tests in the
         // batch..
        
-        inforsa = caSession.getCAInfo(admin, "TEST");
+        inforsa = caSession.getCAInfo(internalAdmin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
 
         CAInfo inforsareverse = null;
         try {
-            inforsareverse = caSession.getCAInfo(admin, "TESTRSAREVERSE");
+            inforsareverse = caSession.getCAInfo(internalAdmin, "TESTRSAREVERSE");
         } catch (CADoesntExistsException e) {
-            createTestRSAReverseCa(admin);
+            createTestRSAReverseCa(internalAdmin);
         }
         assertTrue("No active RSA Reverse CA! Must have at least one active reverse CA to run tests!", inforsareverse != null);
         rsareversecaid = inforsareverse.getCAId();
        
-        CAInfo infoecdsa = caSession.getCAInfo(admin, "TESTECDSA");
+        CAInfo infoecdsa = caSession.getCAInfo(internalAdmin, "TESTECDSA");
         assertTrue("No active ECDSA CA! Must have at least one active CA to run tests!", infoecdsa != null);
         ecdsacaid = infoecdsa.getCAId();
-        CAInfo infoecdsaimplicitlyca = caSession.getCAInfo(admin, "TESTECDSAImplicitlyCA");
+        CAInfo infoecdsaimplicitlyca = caSession.getCAInfo(internalAdmin, "TESTECDSAImplicitlyCA");
         assertTrue("No active ECDSA ImplicitlyCA CA! Must have at least one active CA to run tests!", infoecdsaimplicitlyca != null);
         ecdsaimplicitlycacaid = infoecdsaimplicitlyca.getCAId();
-        CAInfo inforsamgf1ca = caSession.getCAInfo(admin, "TESTSha256WithMGF1");
+        CAInfo inforsamgf1ca = caSession.getCAInfo(internalAdmin, "TESTSha256WithMGF1");
         assertTrue("No active RSA MGF1 CA! Must have at least one active CA to run tests!", inforsamgf1ca != null);
         rsamgf1cacaid = inforsamgf1ca.getCAId();
-        CAInfo infocvcca = caSession.getCAInfo(admin, "TESTDV-D");
+        CAInfo infocvcca = caSession.getCAInfo(internalAdmin, "TESTDV-D");
         assertTrue("No active CVC CA! Must have at least one active CA to run tests!", infocvcca != null);
         cvccaid = infocvcca.getCAId();
-        CAInfo infocvccaec = caSession.getCAInfo(admin, "TESTDVECC-D");
+        CAInfo infocvccaec = caSession.getCAInfo(internalAdmin, "TESTDVECC-D");
         assertTrue("No active CVC EC CA! Must have at least one active CA to run tests!", infocvccaec != null);
         cvccaecid = infocvccaec.getCAId();
-        CAInfo infodsa = caSession.getCAInfo(admin, "TESTDSA");
+        CAInfo infodsa = caSession.getCAInfo(internalAdmin, "TESTDSA");
         assertTrue("No active DSA CA! Must have at least one active CA to run tests!", infodsa != null);
         dsacaid = infodsa.getCAId();
         Collection<Certificate> coll = inforsa.getCertificateChain();
@@ -286,80 +286,80 @@ public class SignSessionTest extends CaTestCase {
         super.tearDown();
         // Delete test end entity profile
         try {
-            endEntityProfileSession.removeEndEntityProfile(admin, "TESTREQUESTCOUNTER");
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTREQUESTCOUNTER");
         } catch (Exception e) { /* ignore */
         }
         try {
-            endEntityProfileSession.removeEndEntityProfile(admin, "TESTISSUANCEREVREASON");
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTISSUANCEREVREASON");
         } catch (Exception e) { /* ignore */
         }
         try {
-            endEntityProfileSession.removeEndEntityProfile(admin, "TESTDNOVERRIDE");
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTDNOVERRIDE");
         } catch (Exception e) { /* ignore */
         }
         try {
-            endEntityProfileSession.removeEndEntityProfile(admin, EEPROFILE_PRIVKEYUSAGEPERIOD);
+            endEntityProfileSession.removeEndEntityProfile(internalAdmin, EEPROFILE_PRIVKEYUSAGEPERIOD);
         } catch (Exception ignored) { /* ignore */
         }
         try {
-            certificateProfileSession.removeCertificateProfile(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
+            certificateProfileSession.removeCertificateProfile(internalAdmin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
         } catch (Exception e) { /* ignore */
         }
         try {
-            certificateProfileSession.removeCertificateProfile(admin, "TESTDNOVERRIDE ");
+            certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTDNOVERRIDE ");
         } catch (Exception e) { /* ignore */
         }
         try {
-        	endEntityProfileSession.removeEndEntityProfile(admin, "FOOEEPROFILE");
+        	endEntityProfileSession.removeEndEntityProfile(internalAdmin, "FOOEEPROFILE");
         } catch (Exception e) { /* ignore */
         }
         try {
-        	certificateProfileSession.removeCertificateProfile(admin, "FOOCERTPROFILE");
+        	certificateProfileSession.removeCertificateProfile(internalAdmin, "FOOCERTPROFILE");
         } catch (Exception e) { /* ignore */
         }
         // delete users that we know...
         try {
-            userAdminSession.deleteUser(admin, "foo");
+            userAdminSession.deleteUser(internalAdmin, "foo");
             log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (Exception e) { /* ignore */
         }
         try {
-            userAdminSession.deleteUser(admin, "fooecdsa");
+            userAdminSession.deleteUser(internalAdmin, "fooecdsa");
             log.debug("deleted user: fooecdsa, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (Exception e) { /* ignore */
         }
         try {
-            userAdminSession.deleteUser(admin, "foorev");
+            userAdminSession.deleteUser(internalAdmin, "foorev");
             log.debug("deleted user: fooecdsa, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (Exception e) { /* ignore */
         }
         try {
-            userAdminSession.deleteUser(admin, "fooecdsaimpca");
+            userAdminSession.deleteUser(internalAdmin, "fooecdsaimpca");
             log.debug("deleted user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (Exception e) { /* ignore */
         }
         try {
-            userAdminSession.deleteUser(admin, "foorsamgf1ca");
+            userAdminSession.deleteUser(internalAdmin, "foorsamgf1ca");
             log.debug("deleted user: fooecdsa, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (Exception e) { /* ignore */
         }
         try {
-            userAdminSession.deleteUser(admin, "cvc");
+            userAdminSession.deleteUser(internalAdmin, "cvc");
             log.debug("deleted user: cvc, foo123, C=SE,CN=TESTCVC");
         } catch (Exception e) { /* ignore */
         }
         try {
-            userAdminSession.deleteUser(admin, "cvcec");
+            userAdminSession.deleteUser(internalAdmin, "cvcec");
             log.debug("deleted user: cvcec, foo123, C=SE,CN=TCVCEC");
         } catch (Exception e) { /* ignore */
         }
         try {
-            userAdminSession.deleteUser(admin, "foodsa");
+            userAdminSession.deleteUser(internalAdmin, "foodsa");
             log.debug("deleted user: foodsa, foo123, C=SE, O=AnaTom, CN=foo");
         } catch (Exception e) { /* ignore */
         }
         try {
-            userAdminSession.deleteUser(admin, USER_PRIVKEYUSAGEPERIOD);
+            userAdminSession.deleteUser(internalAdmin, USER_PRIVKEYUSAGEPERIOD);
             log.debug("deleted user: " + USER_PRIVKEYUSAGEPERIOD + ", foo123, " + DN_PRIVKEYUSAGEPERIOD);
         } catch (Exception e) { /* ignore */
         }
@@ -372,24 +372,24 @@ public class SignSessionTest extends CaTestCase {
     private void createUsers() throws CertificateProfileExistsException, AuthorizationDeniedException, EndEntityProfileExistsException, PersistenceException, CADoesntExistsException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, FinderException {
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certprof.setAllowKeyUsageOverride(true);
-        certificateProfileSession.addCertificateProfile(admin, "FOOCERTPROFILE", certprof);
+        certificateProfileSession.addCertificateProfile(internalAdmin, "FOOCERTPROFILE", certprof);
         final int fooCertProfile = certificateProfileSession.getCertificateProfileId("FOOCERTPROFILE");
 
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfile));
-        endEntityProfileSession.addEndEntityProfile(admin, "FOOEEPROFILE", profile);
-        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(admin, "FOOEEPROFILE");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "FOOEEPROFILE", profile);
+        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "FOOEEPROFILE");
 
     	// Make user that we know...
     	if (!userAdminSession.existsUser("foo")) {
-    		userAdminSession.addUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo", null, "foo@anatom.se", false, fooEEProfile, fooCertProfile,
+    		userAdminSession.addUser(internalAdmin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo", null, "foo@anatom.se", false, fooEEProfile, fooCertProfile,
     				SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
     		if (log.isDebugEnabled()) {
     			log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
     		}
     	} else {
     		log.info("User foo already exists, resetting status.");
-    		userAdminSession.changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo", null, "foo@anatom.se", false, fooEEProfile, fooCertProfile,
+    		userAdminSession.changeUser(internalAdmin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo", null, "foo@anatom.se", false, fooEEProfile, fooCertProfile,
     				SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
     		if (log.isDebugEnabled()) {
     			log.debug("Reset status to NEW");
@@ -397,64 +397,64 @@ public class SignSessionTest extends CaTestCase {
     	}
 
     	if (!userAdminSession.existsUser("foorev")) {
-    		userAdminSession.addUser(admin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+    		userAdminSession.addUser(internalAdmin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
     				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsareversecaid);
     		log.debug("created user: foorev, foo123, C=SE, O=AnaTom, CN=foorev");
     	} else {
     		log.info("User foorev already exists, resetting status.");
-    		userAdminSession.changeUser(admin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+    		userAdminSession.changeUser(internalAdmin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
     				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsareversecaid);
     		log.debug("Reset status to NEW");
     	}
 
     	if (!userAdminSession.existsUser("fooecdsa")) {
-    		userAdminSession.addUser(admin, "fooecdsa", "foo123", "C=SE,O=AnaTom,CN=fooecdsa", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+    		userAdminSession.addUser(internalAdmin, "fooecdsa", "foo123", "C=SE,O=AnaTom,CN=fooecdsa", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
     				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ecdsacaid);
     		log.debug("created user: fooecdsa, foo123, C=SE, O=AnaTom, CN=fooecdsa");
     	} else {
     		log.info("User fooecdsa already exists, resetting status.");
-    		userAdminSession.setUserStatus(admin, "fooecdsa", UserDataConstants.STATUS_NEW);
+    		userAdminSession.setUserStatus(internalAdmin, "fooecdsa", UserDataConstants.STATUS_NEW);
     		log.debug("Reset status to NEW");
     	}
 
     	if (!userAdminSession.existsUser("fooecdsaimpca")) {
-    		userAdminSession.addUser(admin, "fooecdsaimpca", "foo123", "C=SE,O=AnaTom,CN=fooecdsaimpca", null, "foo@anatom.se", false,
+    		userAdminSession.addUser(internalAdmin, "fooecdsaimpca", "foo123", "C=SE,O=AnaTom,CN=fooecdsaimpca", null, "foo@anatom.se", false,
     				SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
     				ecdsaimplicitlycacaid);
     		log.debug("created user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=fooecdsaimpca");
     	} else {
     		log.info("User fooecdsaimpca already exists, resetting status.");
-    		userAdminSession.setUserStatus(admin, "fooecdsaimpca", UserDataConstants.STATUS_NEW);
+    		userAdminSession.setUserStatus(internalAdmin, "fooecdsaimpca", UserDataConstants.STATUS_NEW);
     		log.debug("Reset status to NEW");
     	}
 
     	if (!userAdminSession.existsUser("foorsamgf1ca")) {
-    		userAdminSession.addUser(admin, "foorsamgf1ca", "foo123", "C=SE,O=AnaTom,CN=foorsamgf1ca", null, "foo@anatom.se", false,
+    		userAdminSession.addUser(internalAdmin, "foorsamgf1ca", "foo123", "C=SE,O=AnaTom,CN=foorsamgf1ca", null, "foo@anatom.se", false,
     				SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsamgf1cacaid);
     		log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
     	} else {
     		log.info("User foorsamgf1ca already exists, resetting status.");
-    		userAdminSession.setUserStatus(admin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
+    		userAdminSession.setUserStatus(internalAdmin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
     		log.debug("Reset status to NEW");
     	}
 
     	if (!userAdminSession.existsUser("foodsa")) {
-    		userAdminSession.addUser(admin, "foodsa", "foo123", "C=SE,O=AnaTom,CN=foodsa", null, "foodsa@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+    		userAdminSession.addUser(internalAdmin, "foodsa", "foo123", "C=SE,O=AnaTom,CN=foodsa", null, "foodsa@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
     				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, dsacaid);
     		log.debug("created user: foodsa, foo123, C=SE, O=AnaTom, CN=foodsa");
     	} else {
     		log.info("User foodsa already exists, resetting status.");
-    		userAdminSession.setUserStatus(admin, "foodsa", UserDataConstants.STATUS_NEW);
+    		userAdminSession.setUserStatus(internalAdmin, "foodsa", UserDataConstants.STATUS_NEW);
     		log.debug("Reset status to NEW");
     	}
 
     	if (!userAdminSession.existsUser(USER_PRIVKEYUSAGEPERIOD)) {
-    		userAdminSession.addUser(admin, USER_PRIVKEYUSAGEPERIOD, "foo123", DN_PRIVKEYUSAGEPERIOD, null, "fooprivkeyusage@example.com", false, SecConst.EMPTY_ENDENTITYPROFILE,
+    		userAdminSession.addUser(internalAdmin, USER_PRIVKEYUSAGEPERIOD, "foo123", DN_PRIVKEYUSAGEPERIOD, null, "fooprivkeyusage@example.com", false, SecConst.EMPTY_ENDENTITYPROFILE,
     				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
     		log.debug("created user: " + USER_PRIVKEYUSAGEPERIOD + ", foo123, " + DN_PRIVKEYUSAGEPERIOD);
     	} else {
     		log.info("User " + USER_PRIVKEYUSAGEPERIOD + " already exists, resetting status.");
-    		userAdminSession.setUserStatus(admin, USER_PRIVKEYUSAGEPERIOD, UserDataConstants.STATUS_NEW);
+    		userAdminSession.setUserStatus(internalAdmin, USER_PRIVKEYUSAGEPERIOD, UserDataConstants.STATUS_NEW);
     		log.debug("Reset status to NEW");
     	}
     } // createUsers
@@ -479,7 +479,7 @@ public class SignSessionTest extends CaTestCase {
         createUsers();
 
         // user that we know exists...
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -491,7 +491,7 @@ public class SignSessionTest extends CaTestCase {
         // FileOutputStream fos = new FileOutputStream("testcert.crt");
         // fos.write(cert.getEncoded());
         // fos.close();
-        cert = (X509Certificate) signSession.createCertificate(admin, "foorev", "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foorev", "foo123", rsakeys.getPublic());
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         // Reverse DN order
@@ -519,7 +519,7 @@ public class SignSessionTest extends CaTestCase {
         
         createUsers();
         
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), rsakeys
@@ -538,7 +538,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -548,7 +548,7 @@ public class SignSessionTest extends CaTestCase {
         badUserData.setCAId(rsacaid);
         p10 = new PKCS10RequestMessage(bcp10);
         try {
-        	signSession.createCertificate(admin, p10, X509ResponseMessage.class, badUserData);
+        	signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, badUserData);
             assertFalse("Was able to create certificate when it should have failed.", true);
         } catch (SignRequestException e) {
         	log.info("Expected exception caught (no password supplied): " + e.getMessage());
@@ -568,13 +568,13 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytoolp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -593,13 +593,13 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(iep10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -617,12 +617,12 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         int keyusage1 = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment;
 
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), keyusage1, null, null);
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic(), keyusage1, null, null);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         boolean[] retKU = cert.getKeyUsage();
@@ -630,12 +630,12 @@ public class SignSessionTest extends CaTestCase {
         assertTrue("Fel KeyUsage, keyEncipherment finns ej!", retKU[2]);
         assertTrue("Fel KeyUsage, cRLSign finns!", !retKU[6]);
 
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         int keyusage2 = X509KeyUsage.keyCertSign | X509KeyUsage.cRLSign;
         
-        X509Certificate cert1 = (X509Certificate)signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), keyusage2, null, null);
+        X509Certificate cert1 = (X509Certificate)signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic(), keyusage2, null, null);
         
         assertNotNull("Misslyckades skapa cert", cert1);
         retKU = cert1.getKeyUsage();
@@ -659,14 +659,14 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         try {
             PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytooldsa);
             p10.setUsername("foo");
             p10.setPassword("foo123");
-            ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+            ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
             Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
             log.info("cert with DN '" + CertTools.getSubjectDN(cert) + "' should not be issued?");
         } catch (Exception e) {
@@ -692,12 +692,12 @@ public class SignSessionTest extends CaTestCase {
 
         if (!userAdminSession.existsUser("swede")) {
             // We use unicode encoding for the three swedish character åäö
-            userAdminSession.addUser(admin, "swede", "foo123", "C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6", null, "swede@anatom.se", false,
+            userAdminSession.addUser(internalAdmin, "swede", "foo123", "C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6", null, "swede@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
             log.debug("created user: swede, foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
         } else {
             log.debug("user swede already exists: swede, foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
-            userAdminSession.setUserStatus(admin, "swede", UserDataConstants.STATUS_NEW);
+            userAdminSession.setUserStatus(internalAdmin, "swede", UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
@@ -705,13 +705,13 @@ public class SignSessionTest extends CaTestCase {
             // user that we know exists...; use new key so that the check that
             // two
             // don't prevent the creation of the certificate.
-            X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "swede", "foo123", rsakeys2.getPublic());
+            X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "swede", "foo123", rsakeys2.getPublic());
             assertNotNull("Failed to create certificate", cert);
             log.debug("Cert=" + cert.toString());
             assertEquals("Wrong DN med swedechars", CertTools.stringToBCDNString("C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6"), CertTools
                     .getSubjectDN(cert));
         } finally {
-            userAdminSession.deleteUser(admin, "swede");
+            userAdminSession.deleteUser(internalAdmin, "swede");
         }
         log.trace("<test08SwedeChars()");
     }
@@ -728,7 +728,7 @@ public class SignSessionTest extends CaTestCase {
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTMULALTNAME");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTMULALTNAME");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.ORGANIZATION);
         profile.addField(DnComponents.COUNTRY);
@@ -741,17 +741,17 @@ public class SignSessionTest extends CaTestCase {
         profile.addField(DnComponents.UPN);
         profile.addField(DnComponents.UPN);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        endEntityProfileSession.addEndEntityProfile(admin, "TESTMULALTNAME", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTMULALTNAME");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTMULALTNAME", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTMULALTNAME");
 
         // Change a user that we know...
-        userAdminSession.changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
+        userAdminSession.changeUser(internalAdmin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
                 "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1",
                 "foo@anatom.se", false, eeprofile, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
                 UserDataConstants.STATUS_NEW, rsacaid);
         log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
 
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
 
         String altNames = CertTools.getSubjectAlternativeName(cert);
@@ -772,12 +772,12 @@ public class SignSessionTest extends CaTestCase {
         assertEquals("10.1.1.1", name);
 
         // Change a user that we know...
-        userAdminSession.changeUser(admin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
+        userAdminSession.changeUser(internalAdmin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
                 "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1", "foo@anatom.se",
                 false, eeprofile, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
         log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
 
-        cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
 
         altNames = CertTools.getSubjectAlternativeName(cert);
@@ -798,7 +798,7 @@ public class SignSessionTest extends CaTestCase {
         assertEquals("10.1.1.1", name);
 
         // Clean up
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTMULALTNAME");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTMULALTNAME");
 
         log.trace("<test09TestMultipleAltNames()");
     }
@@ -811,7 +811,7 @@ public class SignSessionTest extends CaTestCase {
         createUsers();
 
         // Create a good certificate profile (good enough), using QC statement
-        certificateProfileSession.removeCertificateProfile(admin, "TESTQC");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTQC");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certprof.setUseQCStatement(true);
         certprof.setQCStatementRAName("rfc822Name=qc@primekey.se");
@@ -820,26 +820,26 @@ public class SignSessionTest extends CaTestCase {
         certprof.setUseQCEtsiValueLimit(true);
         certprof.setQCEtsiValueLimit(50000);
         certprof.setQCEtsiValueLimitCurrency("SEK");
-        certificateProfileSession.addCertificateProfile(admin, "TESTQC", certprof);
+        certificateProfileSession.addCertificateProfile(internalAdmin, "TESTQC", certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId( "TESTQC");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTQC");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTQC");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        endEntityProfileSession.addEndEntityProfile(admin, "TESTQC", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTQC");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTQC", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTQC");
 
         // Change a user that we know...
-        userAdminSession.changeUser(admin, "foo", "foo123", "C=SE,CN=qc", null, "foo@anatom.nu", false, eeprofile, cprofile, SecConst.USER_ENDUSER,
+        userAdminSession.changeUser(internalAdmin, "foo", "foo123", "C=SE,CN=qc", null, "foo@anatom.nu", false, eeprofile, cprofile, SecConst.USER_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
         log.debug("created user: foo, foo123, C=SE, CN=qc");
 
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         // FileOutputStream fos = new FileOutputStream("cert.crt");
         // fos.write(cert.getEncoded());
@@ -856,8 +856,8 @@ public class SignSessionTest extends CaTestCase {
         assertEquals("50000 SEK", limit);
 
         // Clean up
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTQC");
-        certificateProfileSession.removeCertificateProfile(admin, "TESTQC");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTQC");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTQC");
 
         log.trace("<test10TestQcCert()");
     }
@@ -873,32 +873,32 @@ public class SignSessionTest extends CaTestCase {
         createUsers();
 
         // Create a good certificate profile (good enough), using QC statement
-        certificateProfileSession.removeCertificateProfile(admin, "TESTVALOVERRIDE");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTVALOVERRIDE");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         certprof.setAllowValidityOverride(false);
         certprof.setValidity(298);
         certprof.setUseCardNumber(true);
-        certificateProfileSession.addCertificateProfile(admin, "TESTVALOVERRIDE", certprof);
+        certificateProfileSession.addCertificateProfile(internalAdmin, "TESTVALOVERRIDE", certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId("TESTVALOVERRIDE");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTVALOVERRIDE");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
         profile.setUse(EndEntityProfile.CARDNUMBER, 0, true);
-        endEntityProfileSession.addEndEntityProfile(admin, "TESTVALOVERRIDE", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTVALOVERRIDE");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTVALOVERRIDE", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTVALOVERRIDE");
         // Change a user that we know...
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,CN=validityoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
         user.setCardNumber("123456789");
-        userAdminSession.changeUser(admin, user, false);
+        userAdminSession.changeUser(internalAdmin, user, false);
         // userAdminSession.changeUser(admin, "foo", "foo123",
         // "C=SE,CN=validityoverride",
         // null,
@@ -911,7 +911,7 @@ public class SignSessionTest extends CaTestCase {
         log.debug("created user: foo, foo123, C=SE, CN=validityoverride");
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 10);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, null, cal.getTime());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic(), -1, null, cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         String dn = cert.getSubjectDN().getName();
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
@@ -935,13 +935,13 @@ public class SignSessionTest extends CaTestCase {
         prof.setAllowValidityOverride(true);
         prof.setValidity(3065);
         prof.setUseCardNumber(false);
-        certificateProfileSession.changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
+        certificateProfileSession.changeCertificateProfile(internalAdmin, "TESTVALOVERRIDE", prof);
         cal = Calendar.getInstance();
         Calendar notBefore = Calendar.getInstance();
         notBefore.add(Calendar.DAY_OF_MONTH, 2);
         cal.add(Calendar.DAY_OF_MONTH, 10);
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-        cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(), cal.getTime());
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(), cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
         notAfter = cert.getNotAfter();
@@ -969,13 +969,13 @@ public class SignSessionTest extends CaTestCase {
         // certificate profile allows.
         prof = certificateProfileSession.getCertificateProfile(cprofile);
         prof.setValidity(50);
-        certificateProfileSession.changeCertificateProfile(admin, "TESTVALOVERRIDE", prof);
+        certificateProfileSession.changeCertificateProfile(internalAdmin, "TESTVALOVERRIDE", prof);
         notBefore = Calendar.getInstance();
         notBefore.add(Calendar.DAY_OF_MONTH, -2);
         cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, 200);
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-        cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(), cal.getTime());
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic(), -1, notBefore.getTime(), cal.getTime());
         assertNotNull("Failed to create certificate", cert);
         assertEquals(CertTools.stringToBCDNString("cn=validityoverride,c=SE"), CertTools.stringToBCDNString(dn));
         Date certNotBefore = cert.getNotBefore();
@@ -1002,8 +1002,8 @@ public class SignSessionTest extends CaTestCase {
         assertTrue(notAfter.compareTo(cal.getTime()) < 0);
 
         // Clean up
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTVALOVERRIDE");
-        certificateProfileSession.removeCertificateProfile(admin, "TESTVALOVERRIDE");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTVALOVERRIDE");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTVALOVERRIDE");
 
         log.trace("<test11TestValidityOverride()");
     }
@@ -1020,12 +1020,12 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, false);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", selfcert);
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -1061,7 +1061,7 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), ecdsakeys
@@ -1080,7 +1080,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -1113,12 +1113,12 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "fooecdsa", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "fooecdsa", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'fooecdsa' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, false);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "fooecdsa", "foo123", selfcert);
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "fooecdsa", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -1154,7 +1154,7 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "fooecdsa", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "fooecdsa", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=fooecdsa"),
@@ -1173,7 +1173,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("fooecdsa");
         p10.setPassword("foo123");
-        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -1206,12 +1206,12 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "fooecdsaimpca", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "fooecdsaimpca", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'fooecdsaimpca' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, false);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "fooecdsaimpca", "foo123", selfcert);
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "fooecdsaimpca", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -1247,7 +1247,7 @@ public class SignSessionTest extends CaTestCase {
         
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "fooecdsaimpca", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "fooecdsaimpca", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=fooecdsaimpca"),
@@ -1266,7 +1266,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("fooecdsaimpca");
         p10.setPassword("foo123");
-        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -1299,7 +1299,7 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsakeys.getPrivate(), rsakeys.getPublic(),
@@ -1310,7 +1310,7 @@ public class SignSessionTest extends CaTestCase {
             e.printStackTrace();
             assertTrue(false);
         }
-        X509Certificate retcert = (X509Certificate) signSession.createCertificate(admin, "foorsamgf1ca", "foo123", selfcert);
+        X509Certificate retcert = (X509Certificate) signSession.createCertificate(internalAdmin, "foorsamgf1ca", "foo123", selfcert);
         // RSA with MGF1 is not supported by sun, so we must transfer this
         // (serialized) cert to a BC cert
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(retcert.getEncoded());
@@ -1353,7 +1353,7 @@ public class SignSessionTest extends CaTestCase {
         
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1, CertTools
@@ -1372,7 +1372,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foorsamgf1ca");
         p10.setPassword("foo123");
-        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         // X509Certificate cert =
         // CertTools.getCertfromByteArray(retcert.getEncoded());
@@ -1425,16 +1425,16 @@ public class SignSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + rsacaid);
         profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         profile.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
-        endEntityProfileSession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
-        pid = endEntityProfileSession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTREQUESTCOUNTER", profile);
+        pid = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTREQUESTCOUNTER");
 
         // Change already existing user
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
-        userAdminSession.changeUser(admin, user, false);
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.changeUser(internalAdmin, user, false);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         // create first cert
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create cert", cert);
         // log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -1447,7 +1447,7 @@ public class SignSessionTest extends CaTestCase {
         // It should only work once, not twice times
         boolean authstatus = false;
         try {
-            cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         } catch (AuthStatusException e) {
             authstatus = true;
         }
@@ -1459,10 +1459,10 @@ public class SignSessionTest extends CaTestCase {
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user.setExtendedinformation(ei);
         user.setStatus(UserDataConstants.STATUS_NEW);
-        userAdminSession.changeUser(admin, user, false);
+        userAdminSession.changeUser(internalAdmin, user, false);
 
         // create first cert
-        cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create cert", cert);
         // log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -1475,7 +1475,7 @@ public class SignSessionTest extends CaTestCase {
         String serno = cert.getSerialNumber().toString(16);
 
         // It should work to get two certificates
-        cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create cert", cert);
         // log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -1491,7 +1491,7 @@ public class SignSessionTest extends CaTestCase {
         // It should only work twice, not three times
         authstatus = false;
         try {
-            cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         } catch (AuthStatusException e) {
             authstatus = true;
         }
@@ -1508,12 +1508,12 @@ public class SignSessionTest extends CaTestCase {
         EndEntityInformation user = new EndEntityInformation("cvc", "C=SE,CN=TESTCVC", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("cvc");
-        userAdminSession.addUser(admin, user, false);
-        userAdminSession.setUserStatus(admin, "cvc", UserDataConstants.STATUS_NEW);
-        userAdminSession.setPassword(admin, "cvc", "foo123");
+        userAdminSession.addUser(internalAdmin, user, false);
+        userAdminSession.setUserStatus(internalAdmin, "cvc", UserDataConstants.STATUS_NEW);
+        userAdminSession.setPassword(internalAdmin, "cvc", "foo123");
         log.debug("Reset status of 'cvc' to NEW");
         // user that we know exists...
-        Certificate cert = (Certificate) signSession.createCertificate(admin, "cvc", "foo123", rsakeys.getPublic());
+        Certificate cert = (Certificate) signSession.createCertificate(internalAdmin, "cvc", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create cert", cert);
         log.debug("Cert=" + cert.toString());
         // Normal DN order
@@ -1548,12 +1548,12 @@ public class SignSessionTest extends CaTestCase {
         EndEntityInformation userec = new EndEntityInformation("cvcec", "C=SE,CN=TCVCEC", cvccaecid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         userec.setPassword("cvc");
-        userAdminSession.addUser(admin, userec, false);
-        userAdminSession.setUserStatus(admin, "cvcec", UserDataConstants.STATUS_NEW);
-        userAdminSession.setPassword(admin, "cvcec", "foo123");
+        userAdminSession.addUser(internalAdmin, userec, false);
+        userAdminSession.setUserStatus(internalAdmin, "cvcec", UserDataConstants.STATUS_NEW);
+        userAdminSession.setPassword(internalAdmin, "cvcec", "foo123");
         log.debug("Reset status of 'cvcec' to NEW");
         // user that we know exists...
-        Certificate certec = (Certificate) signSession.createCertificate(admin, "cvcec", "foo123", ecdsasecpkeys.getPublic());
+        Certificate certec = (Certificate) signSession.createCertificate(internalAdmin, "cvcec", "foo123", ecdsasecpkeys.getPublic());
         assertNotNull("Failed to create cert", certec);
         log.debug("Cert=" + certec.toString());
         // Normal DN order
@@ -1594,30 +1594,30 @@ public class SignSessionTest extends CaTestCase {
         createUsers();
 
         // Create a good certificate profile (good enough), using QC statement
-        certificateProfileSession.removeCertificateProfile(admin, "TESTDNORDER");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTDNORDER");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        certificateProfileSession.addCertificateProfile(admin, "TESTDNORDER", certprof);
+        certificateProfileSession.addCertificateProfile(internalAdmin, "TESTDNORDER", certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId("TESTDNORDER");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTDNORDER");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTDNORDER");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.ORGANIZATION);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        endEntityProfileSession.addEndEntityProfile(admin, "TESTDNORDER", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTDNORDER");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTDNORDER", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTDNORDER");
 
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=PrimeKey,CN=dnorder", rsacaid, null, "foo@primekey.se", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setStatus(UserDataConstants.STATUS_NEW);
         // Change a user that we know...
-        userAdminSession.changeUser(admin, user, false);
+        userAdminSession.changeUser(internalAdmin, user, false);
         log.debug("created user: foo, foo123, C=SE,O=PrimeKey,CN=dnorder");
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         String dn = cert.getSubjectDN().getName();
         // This is the reverse order than what is displayed by openssl
@@ -1625,17 +1625,17 @@ public class SignSessionTest extends CaTestCase {
 
         // Change to X509 DN order
         certprof.setUseLdapDnOrder(false);
-        certificateProfileSession.changeCertificateProfile(admin, "TESTDNORDER", certprof);
-        userAdminSession.changeUser(admin, user, false);
-        cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        certificateProfileSession.changeCertificateProfile(internalAdmin, "TESTDNORDER", certprof);
+        userAdminSession.changeUser(internalAdmin, user, false);
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         dn = cert.getSubjectDN().getName();
         // This is the reverse order than what is displayed by openssl
         assertEquals("CN=dnorder, O=PrimeKey, C=SE", dn);
 
         // Clean up
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTDNORDER");
-        certificateProfileSession.removeCertificateProfile(admin, "TESTDNORDER");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTDNORDER");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTDNORDER");
 
         log.trace("<test22DnOrder()");
     }
@@ -1652,12 +1652,12 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, dsakeys.getPrivate(), dsakeys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_DSA, false);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", selfcert);
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -1691,7 +1691,7 @@ public class SignSessionTest extends CaTestCase {
         
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), dsakeys
@@ -1710,7 +1710,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -1741,12 +1741,12 @@ public class SignSessionTest extends CaTestCase {
 
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "foodsa", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foodsa", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foodsa' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, dsakeys.getPrivate(), dsakeys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_DSA, false);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foodsa", "foo123", selfcert);
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foodsa", "foo123", selfcert);
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
@@ -1780,7 +1780,7 @@ public class SignSessionTest extends CaTestCase {
         
         createUsers();
 
-        userAdminSession.setUserStatus(admin, "foodsa", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foodsa", UserDataConstants.STATUS_NEW);
         log.debug("Reset status of 'foodsa' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foodsa"), dsakeys
@@ -1799,7 +1799,7 @@ public class SignSessionTest extends CaTestCase {
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(bcp10);
         p10.setUsername("foodsa");
         p10.setPassword("foo123");
-        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
@@ -1824,29 +1824,29 @@ public class SignSessionTest extends CaTestCase {
         createUsers();
 
         // Create a good certificate profile (good enough), using QC statement
-        certificateProfileSession.removeCertificateProfile(admin, "TESTDNOVERRIDE");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTDNOVERRIDE");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Default profile does not allow DN override
         certprof.setValidity(298);
-        certificateProfileSession.addCertificateProfile(admin, "TESTDNOVERRIDE", certprof);
+        certificateProfileSession.addCertificateProfile(internalAdmin, "TESTDNOVERRIDE", certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId("TESTDNOVERRIDE");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTDNOVERRIDE");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTDNOVERRIDE");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        endEntityProfileSession.addEndEntityProfile(admin, "TESTDNOVERRIDE", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTDNOVERRIDE");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTDNOVERRIDE", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTDNOVERRIDE");
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,CN=dnoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
         // Change a user that we know...
-        userAdminSession.changeUser(admin, user, false);
+        userAdminSession.changeUser(internalAdmin, user, false);
 
         // Create a P10 with strange order DN
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", new X509Name("CN=foo,C=SE, Name=AnaTom, O=My org"), rsakeys.getPublic(),
@@ -1867,7 +1867,7 @@ public class SignSessionTest extends CaTestCase {
         // PKCS10RequestMessage p10 = new PKCS10RequestMessage(iep10);
         p10.setUsername("foo");
         p10.setPassword("foo123");
-        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=dnoverride,C=SE", cert.getSubjectDN().getName());
@@ -1875,10 +1875,10 @@ public class SignSessionTest extends CaTestCase {
         // Change so that we allow override of validity time
         CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
         prof.setAllowDNOverride(true);
-        certificateProfileSession.changeCertificateProfile(admin, "TESTDNOVERRIDE", prof);
+        certificateProfileSession.changeCertificateProfile(internalAdmin, "TESTDNOVERRIDE", prof);
 
-        userAdminSession.changeUser(admin, user, false);
-        resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        userAdminSession.changeUser(internalAdmin, user, false);
+        resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=foo,C=SE,Name=AnaTom,O=My org", cert.getSubjectDN().getName());
@@ -1892,29 +1892,29 @@ public class SignSessionTest extends CaTestCase {
 
         final String altnames = "dNSName=foo1.bar.com,dNSName=foo2.bar.com,dNSName=foo3.bar.com,dNSName=foo4.bar.com,dNSName=foo5.bar.com,dNSName=foo6.bar.com,dNSName=foo7.bar.com,dNSName=foo8.bar.com,dNSName=foo9.bar.com,dNSName=foo10.bar.com,dNSName=foo11.bar.com,dNSName=foo12.bar.com,dNSName=foo13.bar.com,dNSName=foo14.bar.com,dNSName=foo15.bar.com,dNSName=foo16.bar.com,dNSName=foo17.bar.com,dNSName=foo18.bar.com,dNSName=foo19.bar.com,dNSName=foo20.bar.com,dNSName=foo21.bar.com";
         // Create a good certificate profile (good enough), using QC statement
-        certificateProfileSession.removeCertificateProfile(admin, "TESTEXTENSIONOVERRIDE");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTEXTENSIONOVERRIDE");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Default profile does not allow Extension override
         certprof.setValidity(298);
-        certificateProfileSession.addCertificateProfile(admin, "TESTEXTENSIONOVERRIDE", certprof);
+        certificateProfileSession.addCertificateProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId("TESTEXTENSIONOVERRIDE");
 
         // Create a good end entity profile (good enough), allowing multiple UPN
         // names
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTEXTENSIONOVERRIDE");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTEXTENSIONOVERRIDE");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        endEntityProfileSession.addEndEntityProfile(admin, "TESTEXTENSIONOVERRIDE", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTEXTENSIONOVERRIDE");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTEXTENSIONOVERRIDE");
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
         // Change a user that we know...
-        userAdminSession.changeUser(admin, user, false);
+        userAdminSession.changeUser(internalAdmin, user, false);
 
         // Create a P10 with extensions, in this case altNames with a lot of DNS
         // names
@@ -1963,7 +1963,7 @@ public class SignSessionTest extends CaTestCase {
         // See if the request message works...
         X509Extensions p10exts = p10.getRequestExtensions();
         assertNotNull(p10exts);
-        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
@@ -1974,10 +1974,10 @@ public class SignSessionTest extends CaTestCase {
         // Change so that we allow override of validity time
         CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
         prof.setAllowExtensionOverride(true);
-        certificateProfileSession.changeCertificateProfile(admin, "TESTEXTENSIONOVERRIDE", prof);
+        certificateProfileSession.changeCertificateProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", prof);
 
-        userAdminSession.changeUser(admin, user, false);
-        resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        userAdminSession.changeUser(internalAdmin, user, false);
+        resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=extoverride,C=SE", cert.getSubjectDN().getName());
@@ -1996,25 +1996,25 @@ public class SignSessionTest extends CaTestCase {
         createUsers();
 
         // user that we know exists...
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         // Set CA to offline
-        CAInfo inforsa = caSession.getCAInfo(admin, rsacaid);
+        CAInfo inforsa = caSession.getCAInfo(internalAdmin, rsacaid);
         inforsa.setStatus(SecConst.CA_OFFLINE);
-        caAdminSession.editCA(admin, inforsa);
+        caAdminSession.editCA(internalAdmin, inforsa);
 
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         boolean thrown = false;
         try {
-            cert = (X509Certificate) signSession.createCertificate(admin, "foo", "foo123", rsakeys.getPublic());
+            cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
         } catch (Exception e) {
             thrown = true;
         }
         assertTrue(thrown);
 
         inforsa.setStatus(SecConst.CA_ACTIVE);
-        caAdminSession.editCA(admin, inforsa);
+        caAdminSession.editCA(internalAdmin, inforsa);
     }
 
     @Test
@@ -2023,27 +2023,27 @@ public class SignSessionTest extends CaTestCase {
         createUsers();
 
         // Create a good certificate profile (good enough), using QC statement
-        certificateProfileSession.removeCertificateProfile(admin, "TESTSIGALG");
+        certificateProfileSession.removeCertificateProfile(internalAdmin, "TESTSIGALG");
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         // Default profile uses "inherit from CA"
-        certificateProfileSession.addCertificateProfile(admin, "TESTSIGALG", certprof);
+        certificateProfileSession.addCertificateProfile(internalAdmin, "TESTSIGALG", certprof);
         int cprofile = certificateProfileSession.getCertificateProfileId("TESTSIGALG");
 
         // Create a good end entity profile (good enough)
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTSIGALG");
+        endEntityProfileSession.removeEndEntityProfile(internalAdmin, "TESTSIGALG");
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COUNTRY);
         profile.addField(DnComponents.COMMONNAME);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
-        endEntityProfileSession.addEndEntityProfile(admin, "TESTSIGALG", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(admin, "TESTSIGALG");
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTSIGALG", profile);
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTSIGALG");
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,CN=testsigalg", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
         // Change a user that we know...
-        userAdminSession.changeUser(admin, user, false);
+        userAdminSession.changeUser(internalAdmin, user, false);
 
         // Create a P10
         // Create PKCS#10 certificate request
@@ -2058,7 +2058,7 @@ public class SignSessionTest extends CaTestCase {
         p10.setUsername("foo");
         p10.setPassword("foo123");
         // See if the request message works...
-        ResponseMessage resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
@@ -2067,10 +2067,10 @@ public class SignSessionTest extends CaTestCase {
         // Change so that we can override signature algorithm
         CertificateProfile prof = certificateProfileSession.getCertificateProfile(cprofile);
         prof.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-        certificateProfileSession.changeCertificateProfile(admin, "TESTSIGALG", prof);
+        certificateProfileSession.changeCertificateProfile(internalAdmin, "TESTSIGALG", prof);
 
-        userAdminSession.changeUser(admin, user, false);
-        resp = signSession.createCertificate(admin, p10, X509ResponseMessage.class, null);
+        userAdminSession.changeUser(internalAdmin, user, false);
+        resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
         assertNotNull("Failed to create certificate", cert);
         assertEquals("CN=testsigalg,C=SE", cert.getSubjectDN().getName());
@@ -2083,43 +2083,43 @@ public class SignSessionTest extends CaTestCase {
         createUsers();
 
         // Configure CA not to store certreq history
-        CAInfo cainfo = caSession.getCAInfo(admin, rsacaid);
+        CAInfo cainfo = caSession.getCAInfo(internalAdmin, rsacaid);
         cainfo.setUseCertReqHistory(true);
         cainfo.setDoEnforceUniquePublicKeys(false);
-        caAdminSession.editCA(admin, cainfo);
+        caAdminSession.editCA(internalAdmin, cainfo);
 
         // New random username and create cert
         String username = genRandomUserName();
-        userAdminSession.addUser(admin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+        userAdminSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", rsakeys.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
 
         // Check that certreq history was created
-        List<CertReqHistory> history = certReqHistorySession.retrieveCertReqHistory(admin, username);
+        List<CertReqHistory> history = certReqHistorySession.retrieveCertReqHistory(internalAdmin, username);
         assertEquals(1, history.size());
 
-        userAdminSession.deleteUser(admin, username);
+        userAdminSession.deleteUser(internalAdmin, username);
 
         // Configure CA not to store certreq history
         cainfo.setUseCertReqHistory(false);
-        caAdminSession.editCA(admin, cainfo);
+        caAdminSession.editCA(internalAdmin, cainfo);
         // New random username and create cert
         username = genRandomUserName();
-        userAdminSession.addUser(admin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+        userAdminSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
-        cert = (X509Certificate) signSession.createCertificate(admin, username, "foo123", rsakeys.getPublic());
+        cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
 
         // Check that certreq history was not created
-        history = certReqHistorySession.retrieveCertReqHistory(admin, username);
+        history = certReqHistorySession.retrieveCertReqHistory(internalAdmin, username);
         assertEquals(0, history.size());
 
-        userAdminSession.deleteUser(admin, username);
+        userAdminSession.deleteUser(internalAdmin, username);
 
         // Reset CA info
         cainfo.setUseCertReqHistory(true);
-        caAdminSession.editCA(admin, cainfo);
+        caAdminSession.editCA(internalAdmin, cainfo);
     } // test32TestCertReqHistory
 
     /**
@@ -2132,11 +2132,11 @@ public class SignSessionTest extends CaTestCase {
         createUsers();
 
         log.debug("Trying to use a certificate that isn't selfsigned for certificate renewal.");
-        userAdminSession.setUserStatus(admin, "foo", UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
         final X509Certificate notSelfSignedCert = CertTools.genSelfCert("CN=notSelfSigned", 1, null, rsakeys.getPrivate(), rsakeys2.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         try {
-            signSession.createCertificate(admin, "foo", "foo123", notSelfSignedCert);
+            signSession.createCertificate(internalAdmin, "foo", "foo123", notSelfSignedCert);
             assertFalse("Tried to create cert from old certificate that wasn't self signed! Did not throw SignRequestSignatureException.", true);
         } catch (SignRequestSignatureException e) {
         	log.info("Got expected exception: " + e.getMessage());
@@ -2291,29 +2291,29 @@ public class SignSessionTest extends CaTestCase {
     
     private X509Certificate privateKeyUsageGetCertificate(final boolean useStartOffset, final long startOffset, final boolean usePeriod, final long period) throws Exception {
     	
-    	certificateProfileSession.removeCertificateProfile(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
+    	certificateProfileSession.removeCertificateProfile(internalAdmin, CERTPROFILE_PRIVKEYUSAGEPERIOD);
     	final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
     	certProfile.setUsePrivateKeyUsagePeriodNotBefore(useStartOffset);
     	certProfile.setPrivateKeyUsagePeriodStartOffset(startOffset);
     	certProfile.setUsePrivateKeyUsagePeriodNotAfter(usePeriod);
     	certProfile.setPrivateKeyUsagePeriodLength(period);
-    	certificateProfileSession.addCertificateProfile(admin, CERTPROFILE_PRIVKEYUSAGEPERIOD, certProfile);
+    	certificateProfileSession.addCertificateProfile(internalAdmin, CERTPROFILE_PRIVKEYUSAGEPERIOD, certProfile);
     	final int certProfileId = certificateProfileSession.getCertificateProfileId(CERTPROFILE_PRIVKEYUSAGEPERIOD);
-    	endEntityProfileSession.removeEndEntityProfile(admin, EEPROFILE_PRIVKEYUSAGEPERIOD);
+    	endEntityProfileSession.removeEndEntityProfile(internalAdmin, EEPROFILE_PRIVKEYUSAGEPERIOD);
         final EndEntityProfile eeProfile = new EndEntityProfile();
         eeProfile.addField(DnComponents.COUNTRY);
         eeProfile.addField(DnComponents.COMMONNAME);
         eeProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         eeProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certProfileId));
-        endEntityProfileSession.addEndEntityProfile(admin, EEPROFILE_PRIVKEYUSAGEPERIOD, eeProfile);
-        final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(admin, EEPROFILE_PRIVKEYUSAGEPERIOD);
+        endEntityProfileSession.addEndEntityProfile(internalAdmin, EEPROFILE_PRIVKEYUSAGEPERIOD, eeProfile);
+        final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(internalAdmin, EEPROFILE_PRIVKEYUSAGEPERIOD);
         final EndEntityInformation user = new EndEntityInformation(USER_PRIVKEYUSAGEPERIOD, DN_PRIVKEYUSAGEPERIOD, rsacaid, null, "fooprivatekeyusae@example.com", SecConst.USER_ENDUSER, eeProfileId, certProfileId,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
-        userAdminSession.changeUser(admin, user, false);
+        userAdminSession.changeUser(internalAdmin, user, false);
         
-        X509Certificate cert = (X509Certificate) signSession.createCertificate(admin, USER_PRIVKEYUSAGEPERIOD, "foo123", rsakeyPrivKeyUsagePeriod.getPublic());
+        X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, USER_PRIVKEYUSAGEPERIOD, "foo123", rsakeyPrivKeyUsagePeriod.getPublic());
         assertNotNull("Failed to create certificate", cert);
         String dn = cert.getSubjectDN().getName();
         assertEquals(CertTools.stringToBCDNString(DN_PRIVKEYUSAGEPERIOD), CertTools.stringToBCDNString(dn));

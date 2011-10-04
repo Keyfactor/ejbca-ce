@@ -21,11 +21,11 @@ import java.util.ArrayList;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -50,7 +50,7 @@ import org.junit.Test;
  */
 public class HardTokenTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(HardTokenTest.class);
-    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("HardTokenTest"));
 
     private static int orgEncryptCAId;
 
@@ -95,7 +95,7 @@ public class HardTokenTest extends CaTestCase {
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
         orgEncryptCAId = gc.getHardTokenEncryptCA();
         gc.setHardTokenEncryptCA(0);
-        globalConfigurationSession.saveGlobalConfigurationRemote(admin, gc);
+        globalConfigurationSession.saveGlobalConfigurationRemote(internalAdmin, gc);
 
         SwedishEIDHardToken token = new SwedishEIDHardToken("1234", "1234", "123456", "123456", 1);
 
@@ -103,11 +103,11 @@ public class HardTokenTest extends CaTestCase {
 
         certs.add(CertTools.getCertfromByteArray(testcert));
 
-        hardTokenSessionRemote.addHardToken(admin, "1234", "TESTUSER", "CN=TEST", SecConst.TOKEN_SWEDISHEID, token, certs, null);
+        hardTokenSessionRemote.addHardToken(internalAdmin, "1234", "TESTUSER", "CN=TEST", SecConst.TOKEN_SWEDISHEID, token, certs, null);
 
         TurkishEIDHardToken token2 = new TurkishEIDHardToken("1234", "123456", 1);
 
-        hardTokenSessionRemote.addHardToken(admin, "2345", "TESTUSER", "CN=TEST", SecConst.TOKEN_TURKISHEID, token2, certs, null);
+        hardTokenSessionRemote.addHardToken(internalAdmin, "2345", "TESTUSER", "CN=TEST", SecConst.TOKEN_TURKISHEID, token2, certs, null);
 
         log.trace("<test01AddHardToken()");
     }
@@ -118,7 +118,7 @@ public class HardTokenTest extends CaTestCase {
 
         boolean ret = false;
 
-        HardTokenData token = hardTokenSessionRemote.getHardToken(admin, "1234", true);
+        HardTokenData token = hardTokenSessionRemote.getHardToken(internalAdmin, "1234", true);
 
         SwedishEIDHardToken swe = (SwedishEIDHardToken) token.getHardToken();
 
@@ -126,7 +126,7 @@ public class HardTokenTest extends CaTestCase {
 
         swe.setInitialAuthEncPIN("5678");
 
-        hardTokenSessionRemote.changeHardToken(admin, "1234", SecConst.TOKEN_SWEDISHEID, token.getHardToken());
+        hardTokenSessionRemote.changeHardToken(internalAdmin, "1234", SecConst.TOKEN_SWEDISHEID, token.getHardToken());
         ret = true;
 
         assertTrue("Editing HardToken failed", ret);
@@ -140,10 +140,10 @@ public class HardTokenTest extends CaTestCase {
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         // Store the dummy cert for test.
         if (certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) == null) {
-            certificateStoreSession.storeCertificate(admin, cert, "DUMMYUSER", CertTools.getFingerprintAsString(cert), SecConst.CERT_ACTIVE,
+            certificateStoreSession.storeCertificate(internalAdmin, cert, "DUMMYUSER", CertTools.getFingerprintAsString(cert), SecConst.CERT_ACTIVE,
                     SecConst.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
         }
-        String tokensn = hardTokenSessionRemote.findHardTokenByCertificateSNIssuerDN(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
+        String tokensn = hardTokenSessionRemote.findHardTokenByCertificateSNIssuerDN(internalAdmin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
 
         assertTrue("Couldn't find right hardtokensn", tokensn.equals("1234"));
 
@@ -156,11 +156,11 @@ public class HardTokenTest extends CaTestCase {
 
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
         gc.setHardTokenEncryptCA(getTestCAId());
-        globalConfigurationSession.saveGlobalConfigurationRemote(admin, gc);
+        globalConfigurationSession.saveGlobalConfigurationRemote(internalAdmin, gc);
         boolean ret = false;
 
         // Make sure the old data can be read
-        HardTokenData token = hardTokenSessionRemote.getHardToken(admin, "1234", true);
+        HardTokenData token = hardTokenSessionRemote.getHardToken(internalAdmin, "1234", true);
 
         SwedishEIDHardToken swe = (SwedishEIDHardToken) token.getHardToken();
 
@@ -169,13 +169,13 @@ public class HardTokenTest extends CaTestCase {
         swe.setInitialAuthEncPIN("5678");
 
         // Store the new data as encrypted
-        hardTokenSessionRemote.changeHardToken(admin, "1234", SecConst.TOKEN_SWEDISHEID, token.getHardToken());
+        hardTokenSessionRemote.changeHardToken(internalAdmin, "1234", SecConst.TOKEN_SWEDISHEID, token.getHardToken());
         ret = true;
 
         assertTrue("Saving encrypted HardToken failed", ret);
 
         // Make sure the encrypted data can be read
-        token = hardTokenSessionRemote.getHardToken(admin, "1234", true);
+        token = hardTokenSessionRemote.getHardToken(internalAdmin, "1234", true);
 
         swe = (SwedishEIDHardToken) token.getHardToken();
 
@@ -188,17 +188,17 @@ public class HardTokenTest extends CaTestCase {
     public void test05removeHardTokens() throws AuthorizationDeniedException {
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
         gc.setHardTokenEncryptCA(orgEncryptCAId);
-        globalConfigurationSession.saveGlobalConfigurationRemote(admin, gc);
+        globalConfigurationSession.saveGlobalConfigurationRemote(internalAdmin, gc);
     
         try {
-            hardTokenSessionRemote.removeHardToken(admin, "1234");
-            hardTokenSessionRemote.removeHardToken(admin, "2345");
+            hardTokenSessionRemote.removeHardToken(internalAdmin, "1234");
+            hardTokenSessionRemote.removeHardToken(internalAdmin, "2345");
         } catch (HardTokenDoesntExistsException e) {
             e.printStackTrace();        
         }
         
-        assertFalse("Removing hard token with tokensn 1234 failed.", hardTokenSessionRemote.existsHardToken(admin, "1234"));
-        assertFalse("Removing hard token with tokensn 2345 failed.", hardTokenSessionRemote.existsHardToken(admin, "2345"));
+        assertFalse("Removing hard token with tokensn 1234 failed.", hardTokenSessionRemote.existsHardToken(internalAdmin, "1234"));
+        assertFalse("Removing hard token with tokensn 2345 failed.", hardTokenSessionRemote.existsHardToken(internalAdmin, "2345"));
     }
 
 }

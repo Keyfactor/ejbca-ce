@@ -139,7 +139,7 @@ public interface HardTokenSession {
      * @return true if administrator is authorized to issue hardtoken with given
      *         alias.
      */
-    public boolean getAuthorizedToHardTokenIssuer(AuthenticationToken admin, String alias);
+    public boolean isAuthorizedToHardTokenIssuer(AuthenticationToken admin, String alias);
 
     /**
      * Returns the available hard token issuers authorized to the administrator.

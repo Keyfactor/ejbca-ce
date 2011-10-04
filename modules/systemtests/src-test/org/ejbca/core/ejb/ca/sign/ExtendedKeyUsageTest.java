@@ -66,13 +66,13 @@ public class ExtendedKeyUsageTest extends CaTestCase {
     private static KeyPair rsakeys = null;
     private static int rsacaid = 0;
     private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ExtendedKeyUsageTest"));
-
+    
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-
+    
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();
@@ -90,6 +90,8 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         CAInfo inforsa = caSession.getCAInfo(internalAdmin, "TEST");
         assertTrue("No active RSA CA! Must have at least one active CA to run tests!", inforsa != null);
         rsacaid = inforsa.getCAId();
+        
+
     }
 
     @After

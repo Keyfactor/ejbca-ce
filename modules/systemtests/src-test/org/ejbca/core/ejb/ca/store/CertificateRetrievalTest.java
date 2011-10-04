@@ -26,11 +26,11 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -43,7 +43,7 @@ import org.junit.Test;
 /**
  * @version $Id$
  */
-public class CertificateRetrivalTest {
+public class CertificateRetrievalTest {
 
     static byte[] testrootcert = Base64.decode(("MIICnTCCAgagAwIBAgIBADANBgkqhkiG9w0BAQQFADBEMQswCQYDVQQGEwJTRTET"
             + "MBEGA1UECBMKU29tZS1TdGF0ZTEPMA0GA1UEChMGQW5hdG9tMQ8wDQYDVQQDEwZU"
@@ -85,7 +85,7 @@ public class CertificateRetrivalTest {
             + "V5Oqx2lLsdn9CXxAwT/AsqwZ0ZFOJY1V2BgLTPH+vxnPOm0Xu61fl2XLtRBAycva"
             + "9iknwKZ3PCILvA5qjL9VedxiFhcG/p83SnPOrIOdsHykMTvO8/j8mA==").getBytes());
 
-    private static final Logger log = Logger.getLogger(CertificateRetrivalTest.class);
+    private static final Logger log = Logger.getLogger(CertificateRetrievalTest.class);
 
     private HashSet<Certificate> m_certs;
     private HashSet<String> m_certfps;
@@ -117,7 +117,7 @@ public class CertificateRetrivalTest {
         log.trace(">setUp()");
         CryptoProviderTools.installBCProvider();
         Certificate cert;
-        AuthenticationToken adm = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        AuthenticationToken adm = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         m_certs = new HashSet<Certificate>();
         m_certfps = new HashSet<String>();
         cert = CertTools.getCertfromByteArray(testrootcert);
