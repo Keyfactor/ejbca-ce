@@ -128,7 +128,14 @@
 		<h:inputText id="startIndex2" value="#{auditor.startIndex}" style="width: 6em; text-align:right;"><f:convertNumber type="number"/></h:inputText>
 		<h:outputText value="#{web.text.AUDIT_DISPRESULTSTO} #{auditor.startIndex + auditor.resultSize - 1}."/>
 		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResults}" styleClass="commandLink" value="#{web.text.AUDIT_DOWNLOAD}"/>
+		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResultsCms}" styleClass="commandLink" value="#{web.text.AUDIT_DOWNLOADASCMS}"/>
+		<h:outputLabel for="signedByCa" value="#{web.text.AUDIT_DOWNLOADASCMSCA} "/>
+		<h:selectOneMenu disabled="#{empty auditor.results}" id="signedByCa" value="#{auditor.cmsSigningCa}">
+			<f:selectItems value="#{auditor.cmsSigningCas}" />
+		</h:selectOneMenu>
 	</p>
+	<%/* Note! h:messages requires that auditor.results has been fetched at least ones to display error messages from that method. */%>
+	<p><h:messages layout="table" styleClass="alert"/></p>
 	<h:dataTable value="#{auditor.results}" var="auditLogEntry" captionStyle="text-align: left; background-color: #5B8CCD; color: #FFF;" headerClass="results" styleClass="grid" rowClasses="LogTextRow0,LogTextRow1" rendered="#{not empty auditor.results}">
 		<f:facet name="caption">
 			<h:panelGroup>
@@ -260,7 +267,6 @@
 			<h:outputText rendered="#{auditor.stringTooLong[(auditLogEntry.mapAdditionalDetails)] <= 50}" value="#{auditLogEntry.mapAdditionalDetails}"><f:converter converterId="mapToStringConverter"/></h:outputText>
 		</h:column>
 	</h:dataTable>
-	<p><h:messages layout="table" styleClass="alert"/></p>
 	<p>
 		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.first}" styleClass="commandLink" value="First"/>
 		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value="#{web.text.PREVIOUS}"/>

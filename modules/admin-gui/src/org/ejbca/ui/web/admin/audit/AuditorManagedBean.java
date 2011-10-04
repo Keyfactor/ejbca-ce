@@ -55,7 +55,10 @@ import org.cesecore.util.ValidityDate;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
@@ -98,6 +101,8 @@ public class AuditorManagedBean implements Serializable {
 	private final List<SelectItem> serviceTypeOptions = new ArrayList<SelectItem>();
 	private final List<SelectItem> operationsOptions = new ArrayList<SelectItem>();
 	private final List<SelectItem> conditionsOptions = new ArrayList<SelectItem>();
+    private final List<SelectItem> cmsSigningCaOptions = new ArrayList<SelectItem>();
+    private Integer cmsSigningCa = null;
 	private String conditionColumn = AuditLogEntry.FIELD_SEARCHABLE_DETAIL2;
 	private AuditSearchCondition conditionToAdd;
 	private List<AuditSearchCondition> conditions = new ArrayList<AuditSearchCondition>();
@@ -172,6 +177,7 @@ public class AuditorManagedBean implements Serializable {
 		}
 		// By default, don't show the authorized to resource events
 		conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_EVENTTYPE, Condition.NOT_EQUALS, EventTypes.ACCESS_CONTROL.name()));
+		updateCmsSigningCas();
 	}
 
 	public List<SelectItem> getDevices() {
@@ -524,17 +530,68 @@ public class AuditorManagedBean implements Serializable {
 		};
 	}
 
+    private void updateCmsSigningCas() {
+        final Map<Integer, String> map = caAdminSession.getCAIdToNameMap(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("INTERNAL")));
+        cmsSigningCaOptions.clear();
+        for (final Entry<Integer,String> entry : map.entrySet()) {
+            // TODO: Would be nice to check if the CMS signer service is activated here before we add it
+            cmsSigningCaOptions.add(new SelectItem(entry.getKey(), entry.getValue()));
+        }
+        if (cmsSigningCa == null && !cmsSigningCaOptions.isEmpty()) {
+            cmsSigningCa = (Integer) cmsSigningCaOptions.get(0).getValue();
+        }
+    }
+	public List<SelectItem> getCmsSigningCas() {
+	    return cmsSigningCaOptions;
+	}
+	public Integer getCmsSigningCa() {
+	    return cmsSigningCa;
+	}
+	public void setCmsSigningCa(Integer cmsSigningCa) {
+	    this.cmsSigningCa = cmsSigningCa;
+	}
+	public void downloadResultsCms() {
+        try {
+            if (cmsSigningCa == null) {
+                FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Invalid or no CMS signing CA."));
+            } else {
+                final CmsCAServiceRequest request = new CmsCAServiceRequest(exportToByteArray(), CmsCAServiceRequest.MODE_SIGN);
+                final CAAdminSession caAdminSession = new EjbLocalHelper().getCaAdminSession();
+                final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getAdmin();
+                final CmsCAServiceResponse resp = (CmsCAServiceResponse) caAdminSession.extendedService(authenticationToken, cmsSigningCa, request);
+                try {
+                    downloadResults(resp.getCmsDocument(), "application/octet-stream", "export-"+results.get(0).getTimeStamp()+".p7m");
+                } catch (IOException e) {
+                    log.info("Administration tried to export audit log, but failed. " + e.getMessage());
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Error during export."));
+                }
+            }
+        } catch (Exception e) {
+            log.info("Administration tried to export audit log, but failed. " + e.getMessage());
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Error during export."));
+        }
+	}
+
     public void downloadResults() {
+        try {
+            downloadResults(exportToByteArray(), "text/xml", "export-"+results.get(0).getTimeStamp()+".xml"); // "application/force-download" is an alternative here..
+        } catch (IOException e) {
+            log.info("Administration tried to export audit log, but failed. " + e.getMessage());
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Error during export."));
+        }
+    }
+    
+    private byte[] exportToByteArray() throws IOException {
         // We could extend this without too much problems to allow the admin to choose between different formats.
         // By reading it from the config we could drop a custom exporter in the class-path and use it if configured
-        Class<? extends AuditExporter> exporterClass = AuditDevicesConfig.getExporter(getDevice());
+        final Class<? extends AuditExporter> exporterClass = AuditDevicesConfig.getExporter(getDevice());
         AuditExporter auditExporter = null;
         if (exporterClass != null) {
             try {
-				auditExporter = exporterClass.newInstance();
-			} catch (Exception e) {
-			    log.warn("AuditExporter for " + getDevice() + " is not configured correctly.", e);
-			}
+                auditExporter = exporterClass.newInstance();
+            } catch (Exception e) {
+                log.warn("AuditExporter for " + getDevice() + " is not configured correctly.", e);
+            }
         }
         if (auditExporter==null) {
             if (log.isDebugEnabled()) {
@@ -542,20 +599,17 @@ public class AuditorManagedBean implements Serializable {
             }
             auditExporter = new AuditExporterXml(); // Use Java-friendly XML as default
         }
-        downloadResults(auditExporter, "text/xml", "export-"+results.get(0).getTimeStamp()+".xml"); // "application/force-download" is an alternative here..
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        auditExporter.setOutputStream(baos);
+        for (final AuditLogEntry auditLogEntry : results) {
+            writeToExport(auditExporter, (AuditRecordData) auditLogEntry);
+        }
+        auditExporter.close();
+        return baos.toByteArray();
     }
 
     /** Uses the provided exporter to generate export data in memory. Responds with the data instead of rendering a new page. */
-    private void downloadResults(AuditExporter auditExporter, String contentType, String filename) {
-        try {
-            final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            auditExporter.setOutputStream(baos);
-            for (final AuditLogEntry auditLogEntry : results) {
-                writeToExport(auditExporter, (AuditRecordData) auditLogEntry);
-            }
-            auditExporter.close();
-            final byte[] b = baos.toByteArray();
-            //ServletContext servletContext = (ServletContext) FacesContext.getCurrentInstance().getExternalContext();
+    private void downloadResults(byte[] b, String contentType, String filename) throws IOException {
             final HttpServletResponse response = (HttpServletResponse) FacesContext.getCurrentInstance().getExternalContext().getResponse();
             response.setContentType(contentType);
             response.addHeader("Content-Disposition", "attachment; filename=\""+filename+"\"");
@@ -564,10 +618,6 @@ public class AuditorManagedBean implements Serializable {
             out.write(b);
             out.close();
             FacesContext.getCurrentInstance().responseComplete();   // No further JSF navigation
-        } catch (IOException e) {
-            log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Error during export."));
-        }
     }
 
     // Duplicate of code from org.cesecore.audit.impl.integrityprotected.IntegrityProtectedAuditorSessionBean.writeToExport
