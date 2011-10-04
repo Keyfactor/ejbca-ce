@@ -6,8 +6,8 @@
 #     ejbca.total.plugin.classpath    Holds a path to all .jar files
 
 # Mandatory: where the ANT file is
-plugin.ejbca.ant.file /home/demo/waterfall-publisher/waterfall-publisher/build.xml
+plugin.ejbca.ant.file /home/demo/myplugin/build.xml
 
 # Optional: where plugin's LIB (jar) distribution is
-plugin.ejbca.lib.dir /home/demo/waterfall-publisher/waterfall-publisher/dist
+plugin.ejbca.lib.dir /home/demo/myplugin/dist
 
