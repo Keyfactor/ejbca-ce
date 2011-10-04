@@ -52,7 +52,9 @@ import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -131,6 +133,8 @@ public class ApprovalSessionTest extends CaTestCase {
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
+    private final SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
+    
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProvider();

@@ -54,6 +54,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -110,6 +111,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private final EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private final HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
     private final GlobalConfigurationSessionRemote raAdminSession = InterfaceCache.getGlobalConfigurationSession();
+    
+    private final SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
 
     private final String wsadminRoleName = "WsTEstRole";
     
