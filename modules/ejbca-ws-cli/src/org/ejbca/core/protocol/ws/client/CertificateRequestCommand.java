@@ -88,7 +88,7 @@ public class CertificateRequestCommand extends EJBCAWSRABaseCommand implements I
             String hardtokensn = getHardTokenSN(args[ARG_HARDTOKENSN]);
 
             String outputPath = null;
-            if(args.length > 11){
+            if(args.length > ARG_OUTPUTPATH){
               outputPath = getOutputPath(args[ARG_OUTPUTPATH]);
             }
             
