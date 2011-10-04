@@ -44,6 +44,34 @@
    		</fileset>
 	</copy>
 
+	<!--
+		Prepare for possible EJBCA plugins that should built and merged into the EAR
+		file.
+	-->
+	<available file="${ejbca.home}/conf/plugin.properties" property="plugin.ejbca.present" />
+    <property file="${ejbca.home}/conf/plugin.properties" />
+	<fail message="File 'plugin.properties' lacks a property setting for 'plugin.ejbca.ant.file'!">
+	    <condition>
+	    	<and>
+		        <isset property="plugin.ejbca.present"/>
+	            <not>
+		    	  <isset property="plugin.ejbca.ant.file"/>
+	            </not>
+	    	</and>
+	    </condition>
+	</fail>
+	<fail message="File specified in 'plugin.properties' is not available!">
+	    <condition>
+	    	<and>
+		        <isset property="plugin.ejbca.present"/>
+	            <not>
+	            	<available file="${plugin.ejbca.ant.file}"/>
+	            </not>
+	    	</and>
+	    </condition>
+	</fail>
+	<property name="plugin.ejbca.lib.dir" value="${ejbca.home}/doesnotexist"/>
+
 	<!-- Load property files -->	
     <property file="${ejbca.home}/conf/ejbca.properties" />
     <property file="${ejbca.home}/conf/install.properties"/>

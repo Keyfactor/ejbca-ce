@@ -25,6 +25,8 @@
 	<import file="bin/${appserver.type}.xml" optional="true"/><!-- We might just want to build the clientToolBox with an appserver. -->
 	<import file="./test.xmli" />
 	<import file="./docs.xmli" />
+	<!-- this import is only used by the plugin scheme-->
+    <import file="${ejbca.home}/modules/build-properties.xml"/>
 	
     <!-- =================================================================== -->
     <!-- Clean ALL                                                           -->
@@ -178,6 +180,25 @@
 		</sequential>
 	</macrodef>
 
+	<target name="plugin-bootstrap-build" if="plugin.ejbca.present">
+    	<echo message="Plugin build found"/>
+		<path id="ejbca.total.plugin.classpath">
+		   <fileset dir="${lib}">
+			   <include name="*.jar"/>
+		     </fileset>
+			 <fileset dir="${ejbca.home}/modules/dist">
+			   <include name="*.jar"/>
+			 </fileset>
+			 <fileset dir="${dist.dir}">
+			   <include name="*.jar"/>
+			 </fileset>
+			 <path refid="lib.jee.classpath"/>
+		  </path>
+		<ant antfile="${plugin.ejbca.ant.file}" inheritAll="false" inheritrefs="false">
+			<property name="ejbca.total.plugin.classpath" refid="ejbca.total.plugin.classpath"/>
+		</ant>
+	</target>
+
 	<target name="va_replacings_in_application.xml">
 		<war-replacement-in-module
 			replacement-tag="!--@status.war@-->"
@@ -280,11 +301,16 @@
 		</condition>
 		<!-- Do we need special WebSphere handling? -->
     	<condition property="websphere-specials" value="true"><equals arg1="websphere" arg2="${appserver.type}"/></condition>
+        <!-- Plugin build starts here... -->
+	    <antcall target="plugin-bootstrap-build"/>
 		<!-- Build the EAR -->
         <ear destfile="${caear}" appxml="${eardd.src}/META-INF/application.xml">
     		<!-- Specify that we will use a specific WS implementation -->
             <zipfileset prefix="META-INF/services" dir="${ejbca.home}/src/deploy/ear/META-INF/services/" includes="javax.xml.soap.MetaFactory"/>
             <zipfileset prefix="META-INF" dir="${ejbca.home}/src/deploy/ear/META-INF" includes="weblogic-application.xml"/>
+		    <zipfileset prefix="lib" dir="${plugin.ejbca.lib.dir}" erroronmissingdir="false">
+	    	    <include name="*.jar" if="plugin.ejbca.present"/>
+		    </zipfileset>
             <zipfileset prefix="lib" dir="${lib}">
             	<!-- Since WepSphere 7's "special" tools can't handle the signature of these objects, we will add them later. -->
                 <include name="bcmail-jdk${java.ver}-145.jar" unless="websphere-specials"/>
