@@ -18,12 +18,26 @@ import static org.junit.Assert.assertTrue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.CertTools;
+import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
@@ -38,23 +52,38 @@ import org.junit.Test;
  *
  * @version $Id$
  */
-public class UserDataSourceTest {
-        
+public class UserDataSourceTest extends CaTestCase {
+
     private static final Logger log = Logger.getLogger(UserDataSourceTest.class);
-    private static AuthenticationToken admin;
-    
+    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserDataSourceTest"));
+    private static TestX509CertificateAuthenticationToken admin;
+
+    private static final String ROLENAME = "USERDATASOURCE_EDITOR";
+
+    private RoleManagementSessionRemote roleManagementSessionRemote = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
     private UserDataSourceSessionRemote userDataSourceSession = InterfaceCache.getUserDataSourceSession();
 
     @Before
     public void setUp() throws Exception {
-        admin = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(null, null));
+        admin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(null, null));
+        RoleData role = roleManagementSessionRemote.create(internalAdmin, ROLENAME);
+        Collection<AccessUserAspectData> subjects = new LinkedList<AccessUserAspectData>();
+        subjects.add(new AccessUserAspectData(ROLENAME, CertTools.getIssuerDN(admin.getCertificate()).hashCode(), AccessMatchValue.WITH_COMMONNAME,
+                AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(SimpleAuthenticationProviderRemote.DEFAULT_DN, "CN")));
+        role = roleManagementSessionRemote.addSubjectsToRole(internalAdmin, role, subjects);
+        Collection<AccessRuleData> accessRules = new LinkedList<AccessRuleData>();
+        accessRules.add(new AccessRuleData(ROLENAME, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false));
+        accessRules.add(new AccessRuleData(ROLENAME, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES, AccessRuleState.RULE_ACCEPT, false));
+        accessRules.add(new AccessRuleData(ROLENAME, AccessRulesConstants.USERDATASOURCEPREFIX + Integer.valueOf(userDataSourceSession.getUserDataSourceId(admin, "TESTNEWDUMMYCUSTOM")) + AccessRulesConstants.UDS_FETCH_RIGHTS, AccessRuleState.RULE_ACCEPT, false));
+        role = roleManagementSessionRemote.addAccessRulesToRole(internalAdmin, role, accessRules);
     }
-    
+
     @After
     public void tearDown() throws Exception {
+        roleManagementSessionRemote.remove(internalAdmin, ROLENAME);
     }
-    
+
     @Test
     public void test01AddCustomUserDataSource() throws Exception {
         log.trace(">test01AddCustomUserDataSource()");
@@ -136,5 +165,11 @@ public class UserDataSourceTest {
         }
         assertTrue("Removing UserDataSource failed", ret);
         log.trace("<test06removeUserDataSources()");
+    }
+
+    @Override
+    public String getRoleName() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }
