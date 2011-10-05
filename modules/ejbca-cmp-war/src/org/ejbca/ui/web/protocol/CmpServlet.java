@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.protocol;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.ejb.EJB;
@@ -80,13 +81,23 @@ public class CmpServlet extends HttpServlet {
         byte[] ba = new byte[Math.min(LimitLengthASN1Reader.MAX_REQUEST_SIZE, request.getContentLength())];
         try {
             final ServletInputStream sin = request.getInputStream();
-            sin.read(ba);
+            // This small code snippet is inspired/copied by apache IO utils to Tomas Gustavsson...
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            byte[] buf = new byte[1024];
+            int n = 0;
+            int bytesRead = 0;
+            while (-1 != (n = sin.read(buf))) {
+                bytesRead += n;
+                if (bytesRead > LimitLengthASN1Reader.MAX_REQUEST_SIZE) {
+                    throw new IllegalArgumentException("Request is larger than "+LimitLengthASN1Reader.MAX_REQUEST_SIZE+" bytes.");
+                }
+                output.write(buf, 0, n);
+            }
+            service(output.toByteArray(), request.getRemoteAddr(), response);
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
             log.error(intres.getLocalizedMessage("cmp.errornoasn1"), e);
-            return;
         }
-        service(ba, request.getRemoteAddr(), response);
         if (log.isTraceEnabled()) {
             log.trace("<doPost()");
         }
