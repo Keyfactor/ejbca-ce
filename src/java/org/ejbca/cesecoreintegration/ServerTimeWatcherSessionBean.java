@@ -11,7 +11,6 @@ import org.cesecore.time.providers.TrustedTimeProviderException;
 /**
  * This is the trusted time watcher implementation.
  * 
- * TODO: Move this to an EJBCA package, since it isn't a CESeCore class..
  *
  * @version $Id$
  */
