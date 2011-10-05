@@ -1,3 +1,46 @@
+EJBCA 4.0.4, 2011-10-05
+---
+New Feature
+    [ECA-2105] - Add support for Signature protection of CMP confirm messages
+    [ECA-2161] - EJBCA add-on build option
+    [ECA-2194] - Add CMP Client mode using HMAC protection for user pwd
+    [ECA-2195] - Add modular authentication facility for CMP
+    [ECA-2196] - Add certificate authentication, by external cert, to CMP client mode
+    [ECA-2202] - Certreq WS CLI command support for altName
+    [ECA-2209] - Add new CMP client mode authentication methods
+    [ECA-2242] - Add certificate authentication, by external cert, to CMP RA mode
+    [ECA-2243] - Support multiple protection in CMP RA mode
+    [ECA-2264] - Support for certificate extensions with raw and/or dynamic value
+    [ECA-2267] - Support for adding/editing certificate extension data for an end entity in Admin Web
+    [ECA-2269] - Certificate extension value from WS and WSCLI. Certificate serial number from WSCLI.
+    [ECA-2275] - Add CMP tests in ClientToolBox
+
+Improvement
+    [ECA-2192] - Support other than DN in CMP recipient field
+    [ECA-2205] - Link to French installation guide contributed by asyd
+    [ECA-2285] - Allow getCA from CaSessionBean without requiring a transaction
+
+Task
+    [ECA-2253] - Add classes from cesecore to EJBCA sources to allow downgrade from 5.0 to 4.0
+    
+Bug
+    [ECA-2145] - EJBCA is not prepared to receive signature protected CMP Confirm messages
+    [ECA-2199] - Certreq WS CLI command ignores outputpath
+    [ECA-2213] - Enforce unique subject DN does not work with unused fields in EE profile
+    [ECA-2224] - Create Browser Certificate, Create Keystore pages have incorrect titles
+    [ECA-2231] - SCEP enrollment with CA-name containing spaces fails
+    [ECA-2235] - External VA doesn't correctly publish CRLs from CAs with X.509 naming order
+    [ECA-2254] - Way to indicate that a certificate should not be generated and stored on a HW token
+    [ECA-2256] - cmpHttpProxy does not build
+    [ECA-2257] - When a certificate is revoked and this certificate is not in LDAP it is logged as an error that the cert can not be removed and a task to remove is queued.
+    [ECA-2260] - CRL file name returned from VA differs from public web, should be .crl
+    [ECA-2270] - MSIE enrollment fails under certain conditions
+    [ECA-2276] - Approvals are denied because requestAdmin is not local admin token
+    [ECA-2278] - Finding free ids checks the id incorrectly
+    [ECA-2283] - Hard tokens are listed in wrong order in the GUI
+    [ECA-2286] - The VA page listing URLs to to CA certificates and the VA page listing URLs to CRLs is blank for some installations.
+    [ECA-2299] - Reading CMP messages over http1/1 with chunked encoding can fail
+
 EJBCA 3.11.3, 2011-07-08
 ---
 ** Bug
