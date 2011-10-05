@@ -27,7 +27,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -53,6 +52,7 @@ import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -84,7 +84,7 @@ public class RevocationApprovalTest extends CaTestCase {
     private static String requestingAdminUsername = null;
     private static String adminUsername = null;
 
-    private static final AuthenticationToken internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RevocationApprovalTest"));
     private static AuthenticationToken requestingAdmin = null;
     private static AuthenticationToken approvingAdmin = null;
     private static ArrayList<AccessUserAspectData> adminentities;

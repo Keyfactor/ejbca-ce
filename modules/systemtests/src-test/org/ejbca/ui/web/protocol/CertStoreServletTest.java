@@ -31,15 +31,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.mail.MessagingException;
 
 import junit.framework.Assert;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -49,6 +48,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.junit.After;
@@ -149,7 +149,7 @@ public class CertStoreServletTest extends CaTestCase {
 }
 
 class CAInHierarchy {
-    private final static AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private final static AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertStoreServletTest"));
     final String name;
     final Set<CAInHierarchy> subs;
     final CaTestCase testCase;

@@ -18,11 +18,11 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
@@ -77,7 +77,7 @@ public class AddLotsofUsersTest extends CaTestCase {
     @Test
     public void test01Create2000Users() throws Exception {
         log.trace(">test01Create2000Users()");
-        final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        final AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AddLotsofUsersTest"));
         final String baseUsername = "lotsausers" + System.currentTimeMillis() + "-";
         for (int i = 0; i < 2000; i++) {
             String username = genUserName(baseUsername);

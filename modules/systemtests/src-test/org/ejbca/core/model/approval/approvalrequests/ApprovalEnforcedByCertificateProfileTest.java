@@ -33,7 +33,6 @@ import java.util.Random;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -54,6 +53,7 @@ import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.EjbcaConfiguration;
@@ -112,7 +112,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private static int anotherCAID1;
     private static int anotherCAID2;
 
-    private static final AuthenticationToken admin1 = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private static final AuthenticationToken admin1 = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ApprovalEnforcedByCertificateProfileTest"));
 
     private static String adminUsername;
     
