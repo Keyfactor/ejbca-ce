@@ -45,7 +45,6 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
@@ -77,6 +76,7 @@ import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -160,7 +160,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     
     protected EjbcaWS ejbcaraws;
 
-    protected final static AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    protected final static AuthenticationToken intAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CommonEjbcaWS"));
     protected final String hostname;
     protected final String httpsPort;
 
@@ -640,7 +640,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void enforcementOfUniquePublicKeys() throws Exception {
 
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         final UserDataVOWS ca1userData1 = getUserData(CA1_WSTESTUSER1);
         final UserDataVOWS ca1userData2 = getUserData(CA1_WSTESTUSER2);
         final UserDataVOWS ca2userData1 = getUserData(CA2_WSTESTUSER1);
@@ -687,7 +687,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void enforcementOfUniqueSubjectDN() throws Exception {
         log.trace(">enforcementOfUniqueSubjectDN");
-        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         final UserDataVOWS ca1userData1 = getUserData(CA1_WSTESTUSER1);
         final UserDataVOWS ca1userData2 = getUserData(CA1_WSTESTUSER2);
         final UserDataVOWS ca2userData1 = getUserData(CA2_WSTESTUSER1);
@@ -2088,7 +2088,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void checkQueueLength() throws Exception {
 
         final String PUBLISHER_NAME = "myPublisher";
-        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         try {
             assertEquals(-4, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
             final CustomPublisherContainer publisher = new CustomPublisherContainer();
