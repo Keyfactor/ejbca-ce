@@ -29,10 +29,9 @@ import org.cesecore.internal.UpgradeableDataHashMap;
  *
  * @version $Id$
  */
-public abstract class BasePublisher extends UpgradeableDataHashMap implements Serializable, Cloneable {
-    // Default Values
-    
+public abstract class BasePublisher extends UpgradeableDataHashMap implements Serializable, Cloneable {    
 
+    private static final long serialVersionUID = -735659148394853025L;
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
 
