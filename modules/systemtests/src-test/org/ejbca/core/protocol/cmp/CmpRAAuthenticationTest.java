@@ -24,7 +24,6 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -33,6 +32,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
@@ -57,7 +57,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
 public class CmpRAAuthenticationTest extends CmpTestCase {
 
     private static final Logger LOG = Logger.getLogger(CmpRAAuthenticationTest.class);
-    private static final AuthenticationToken ADMIN = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private static final AuthenticationToken ADMIN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpRAAuthenticationTest"));
 
     private static final String CA_NAME_1 = "CmpRAAuthenticationTestCA1";
     private static final String CA_NAME_2 = "CmpRAAuthenticationTestCA2";

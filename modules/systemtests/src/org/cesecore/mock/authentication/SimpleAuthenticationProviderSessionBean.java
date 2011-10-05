@@ -101,7 +101,7 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
             if (log.isDebugEnabled()) {
                 log.debug("No certificate input, will create a self-signed one");
             }
-            String dn = "C=SE,O=Test,CN=Test"; // default
+            String dn = DEFAULT_DN;
             // If we have created a subject with an X500Principal we will use this DN to create the dummy certificate.
             if (subject != null) {
             	Set<Principal> principals = subject.getPrincipals();

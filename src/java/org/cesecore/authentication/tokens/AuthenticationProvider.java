@@ -26,6 +26,8 @@ import java.io.Serializable;
  */
 public interface AuthenticationProvider extends Serializable {
 
+    static final String DEFAULT_DN = "C=SE,O=Test,CN=Test"; // default
+    
     /**
      * Implement this method to authenticate a subject using its principals and credentials. The method of doing this operation is entirely up to
      * whoever implements this API. The returned AuthenticationToken should only contain those principals and credentials which were actually used in

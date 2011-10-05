@@ -33,7 +33,6 @@ import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.ErrorCode;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -46,6 +45,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.EjbcaException;
@@ -75,7 +75,7 @@ import org.junit.Test;
 public class UserAdminSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(UserAdminSessionTest.class);
-    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserAdminSessionTest"));
     private int caid = getTestCAId();
 
     private static String username;

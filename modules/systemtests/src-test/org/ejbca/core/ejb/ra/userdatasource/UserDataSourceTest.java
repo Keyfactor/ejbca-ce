@@ -20,9 +20,10 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.jndi.JndiHelper;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
@@ -40,12 +41,14 @@ import org.junit.Test;
 public class UserDataSourceTest {
         
     private static final Logger log = Logger.getLogger(UserDataSourceTest.class);
-    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private static AuthenticationToken admin;
     
+    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
     private UserDataSourceSessionRemote userDataSourceSession = InterfaceCache.getUserDataSourceSession();
 
     @Before
     public void setUp() throws Exception {
+        admin = simpleAuthenticationProvider.authenticate(new AuthenticationSubject(null, null));
     }
     
     @After

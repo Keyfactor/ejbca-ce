@@ -34,7 +34,6 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -44,6 +43,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileExistsExce
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -145,7 +145,7 @@ public class XKMSKISSTest {
 
 	@Test
     public void test00SetupDatabase() throws Exception {
-    	AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    	AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
         // Setup with two new Certificate profiles.
         CertificateProfile profile1 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -1123,7 +1123,7 @@ public class XKMSKISSTest {
         assertTrue(validateResultType.getResultMinor().equals(XKMSConstants.RESULTMINOR_NOMATCH));
 
         // Revoke certificate
-        AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         revocationSession.revokeCertificate(administrator, cert1, new ArrayList<Integer>(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
         // Validate with revoked certificate
         validateRequestType = xKMSObjectFactory.createValidateRequestType();
@@ -1155,7 +1155,7 @@ public class XKMSKISSTest {
     }
 
     public void test99CleanDatabase() throws Exception {
-    	AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    	AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         userAdminSession.deleteUser(administrator, username1);
         userAdminSession.deleteUser(administrator, username2);
         userAdminSession.deleteUser(administrator, username3);

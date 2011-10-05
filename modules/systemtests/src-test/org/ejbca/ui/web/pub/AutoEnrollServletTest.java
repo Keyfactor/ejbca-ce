@@ -14,8 +14,8 @@ package org.ejbca.ui.web.pub;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
@@ -32,12 +32,12 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -121,7 +121,7 @@ public class AutoEnrollServletTest {
 		"k/yUS9D7wZQ+vMw1zbz/mnAX3F38eMmurUKMayRNmORXvJwq" +
 		"-----END NEW CERTIFICATE REQUEST-----";
 
-	private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+	private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AutoEnrollServletTest"));
 
 	boolean installedBCProvider = false;
 

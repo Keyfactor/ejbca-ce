@@ -18,9 +18,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.util.InterfaceCache;
@@ -40,6 +40,8 @@ public class AdminPreferenceTest extends CaTestCase {
      * beans concurrently
      */
 
+    AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AdminPreferenceTest"));
+    
     private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     
     private static final String user = genRandomUserName();
@@ -67,13 +69,12 @@ public class AdminPreferenceTest extends CaTestCase {
     @Test
     public void test01AddAdminPreference() throws Exception {
         log.trace(">test01AddAdminPreference()");
-        AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
-        boolean ret = this.raAdminSession.addAdminPreference(administrator, user, pref);
+        boolean ret = this.raAdminSession.addAdminPreference(internalAdmin, user, pref);
         assertTrue("Adminpref for " + user + " should not exist", ret);
-        ret = this.raAdminSession.addAdminPreference(administrator, user, pref);
+        ret = this.raAdminSession.addAdminPreference(internalAdmin, user, pref);
         assertFalse("Adminpref for " + user + " should exist", ret);
         log.trace("<test01AddAdminPreference()");
     }
@@ -87,17 +88,16 @@ public class AdminPreferenceTest extends CaTestCase {
     @Test
     public void test02ModifyAdminPreference() throws Exception {
         log.trace(">test02ModifyAdminPreference()");
-        AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-        AdminPreference pref = this.raAdminSession.getAdminPreference(administrator, user);
+        AdminPreference pref = this.raAdminSession.getAdminPreference(internalAdmin, user);
         assertTrue("Error Retreiving Administrator Preference.", pref.getPreferedLanguage() == 1);
         assertTrue("Error Retreiving Administrator Preference.", pref.getTheme().equals("TEST"));
         pref.setPreferedLanguage(2);
-        boolean ret = this.raAdminSession.changeAdminPreference(administrator, user, pref);
+        boolean ret = this.raAdminSession.changeAdminPreference(internalAdmin, user, pref);
         assertTrue("Adminpref for " + user + " should exist", ret);
-        pref = this.raAdminSession.getAdminPreference(administrator, user);
+        pref = this.raAdminSession.getAdminPreference(internalAdmin, user);
         assertEquals(pref.getPreferedLanguage(), 2);
         String newuser = genRandomUserName();
-        ret = this.raAdminSession.changeAdminPreference(administrator, newuser, pref);
+        ret = this.raAdminSession.changeAdminPreference(internalAdmin, newuser, pref);
         assertFalse("Adminpref for " + newuser + " should not exist", ret);
         log.trace("<test02ModifyAdminPreference()");
     }

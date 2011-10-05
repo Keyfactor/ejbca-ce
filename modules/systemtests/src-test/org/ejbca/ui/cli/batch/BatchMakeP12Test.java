@@ -18,9 +18,9 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -37,7 +37,7 @@ import org.junit.Test;
 
 public class BatchMakeP12Test extends CaTestCase {
     private static final Logger log = Logger.getLogger(BatchMakeP12Test.class);
-    private static final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("BatchMakeP12Test"));
     private int caid = getTestCAId();
 
     private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
