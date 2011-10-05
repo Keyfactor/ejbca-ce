@@ -159,8 +159,8 @@ public abstract class BaseCommand implements CliCommandPlugin {
 
         if (!ejb.getUserAdminSession().existsUser(cliUserName)) {
             //We only check for username here, but it's needless to give too much info. 
-            getLogger().info("CLI authentication failed. username/password combination does not exist.");
-            throw new CliUsernameException("Authentication failed. User does not exist.");
+            getLogger().info("CLI authentication failed. The user '" + cliUserName +"' with the given password does not exist.");
+            throw new CliUsernameException("Authentication failed. User " + cliUserName + " not exist.");
         }
 
         return argsList.toArray(new String[argsList.size()]);
