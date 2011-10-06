@@ -12,6 +12,8 @@ and can be turned off from the Administration Interface. This user is defined in
 
 Additionally, a "Super Administrator Role" is created during either bootstrap or upgrade to create a role for the default CLI user.
 
+'Admin Groups' have been renamed 'Roles'. Relevant database tables remain unchanged.
+
 EJBCA 4.0.4
 -----------
 This is a maintenance release with a few new features and bug fixes. In all 33 issues have been resolved.
