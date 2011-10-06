@@ -218,17 +218,15 @@
 		/>
 	</target>
 
-	<target name="check-intest">
-		<condition property="in-test-mode">
-			<equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
-		</condition>
-	</target>
-
     <!-- =================================================================== -->
     <!-- Build CA-ear                                                        -->
     <!-- =================================================================== -->
-	<target name="ejbca.ear" depends="display-properties, ejbca.ear.module-dependencies, create-log4config-bundle, check-intest">
+	<target name="ejbca.ear" depends="display-properties, ejbca.ear.module-dependencies, create-log4config-bundle">
 		<antcall target="doc.war"><param name="external-deps-satfisfied" value="isset"/></antcall>
+        <condition property="in-test-mode" else="false">
+            <equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
+        </condition>
+        <echo message="in-test-mode: ${in-test-mode}"/>
 	    <property name="caear" value="${dist.dir}/ejbca.ear" />
 		<property name="eardd.src" value="${tmp}/ear" />
 		<!-- Make sure we have an application.xml since we want to specify base URLs. Configure enabled modules. -->
