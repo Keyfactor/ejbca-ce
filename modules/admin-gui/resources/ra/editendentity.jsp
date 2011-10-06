@@ -1673,7 +1673,8 @@ function checkUseInBatch(){
   	<% if(usekeyrecovery){ %>
     <tr  id="Row<%=(row++)%2%>"> 
       <td  align="right"> 
-        <%= ejbcawebbean.getText("KEYRECOVERABLE") %> 
+        <c:out value="<%= ejbcawebbean.getText(\"KEYRECOVERABLE\") %>"/> 
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20recovery") %>
       </td>
       <td> 
         <input type="checkbox" name="<%=CHECKBOX_KEYRECOVERABLE%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>" <% 

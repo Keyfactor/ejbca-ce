@@ -1864,7 +1864,8 @@ function checkallfields(){
     <tr  id="Row<%=(row++)%2%>"> 
       <td>&nbsp;</td>
       <td  align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"KEYRECOVERABLE\") %>"/> 
+        <c:out value="<%= ejbcawebbean.getText(\"KEYRECOVERABLE\") %>"/>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20recovery") %>
       </td>
       <td> 
         <input type="checkbox" name="<%=CHECKBOX_KEYRECOVERABLE%>" value="<%=CHECKBOX_VALUE %>" tabindex="<%=tabindex++%>"<% if(profile.getValue(EndEntityProfile.KEYRECOVERABLE,0).equals(EndEntityProfile.TRUE))

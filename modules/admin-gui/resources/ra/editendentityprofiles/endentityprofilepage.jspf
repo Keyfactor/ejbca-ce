@@ -1283,6 +1283,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="40%" valign="top" align="right"> 
         <%= ejbcawebbean.getText("KEYRECOVERABLE") %>
+        <%= ejbcawebbean.getHelpReference("/adminguide.html#Key%20recovery") %>
       </td>
       <td width="50%"> 
         <% used = profiledata.getUse(EndEntityProfile.KEYRECOVERABLE,0); %>
