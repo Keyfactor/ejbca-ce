@@ -98,7 +98,7 @@ public class OCSPCAService extends ExtendedCAService implements Serializable {
 	public ExtendedCAServiceResponse extendedService(final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
         log.trace(">extendedService");
         if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
-			String msg = intres.getLocalizedMessage("caservice.notactive");
+			String msg = intres.getLocalizedMessage("caservice.notactive", "OCSP");
 			log.error(msg);
 			throw new ExtendedCAServiceNotActiveException(msg);                            
         }

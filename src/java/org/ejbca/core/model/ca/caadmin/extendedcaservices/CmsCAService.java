@@ -217,7 +217,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 			throw new IllegalExtendedCAServiceRequestException();            
 		}
 		if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
-			String msg = intres.getLocalizedMessage("caservice.notactive");
+			String msg = intres.getLocalizedMessage("caservice.notactive", "CMS");
 			m_log.error(msg);
 			throw new ExtendedCAServiceNotActiveException(msg);                            
 		}
