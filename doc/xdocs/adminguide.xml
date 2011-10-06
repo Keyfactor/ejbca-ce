@@ -1508,12 +1508,24 @@ Information on how to use the External RA API is available <a href="externalra.h
 
 <section name="Key recovery">
 <p>
-Key Recovery can be used to re-use or restore a users private key. To enable key recovery use the Admin GUI:
+Key Recovery can be used to re-use or restore a users private key.
+Key recovery means that <i>server generated</i> keys (and the certificate) of a user is stored, encrypted, in the CAs database.
+The purpose of this is to be able to recover an encryption key if the user looses the key. Without possibility of key recovery
+encrypted data will be lost forever if the encryption key is lost.
+<br/>
+Key recovery should only be used for encryption keys and not authentication or signature keys, where this need for recovery does not exist.  
+</p>
+<p>
+To enable key recovery, use the Admin GUI:
+</p>
 <ol>
 <li>Set 'Enable Key Recovery' in 'System Configuration'.</li>
-<li>Create a new End Entity Profile and set to use 'Key Recoverable'.</li>
+<li>Create a new End Entity Profile and set to use 'Key Recoverable'. Do not use the 'user generated' keystore type.</li>
 <li>Add users with this End Entity Profile.</li>
 </ol>
+<p>
+Key recovery can <strong>not</strong> be used with 'user generated' keys. this is because the CA does not have access to the 
+private key in this case, and can thus not store it.
 </p><p>
 The following is an example of a sequence of commands that can be used to generate a new certificate for a user using the
 same key pair:
