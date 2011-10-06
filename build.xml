@@ -148,14 +148,10 @@
 				<istrue value="@{replacement-enabled}"/>
 			</condition>
 			<replace file="@{replacement-file}" token="@{replacement-tag}" value="${replacement-string-@{replacement-ejb}}"/>
-			<script language="javascript"> <![CDATA[
-				if ("@{replacement-enabled}" == "true") {
-					echo = project.createTask("echo");
-					echo.setMessage("Enabled module @{replacement-ejb}");
-					echo.perform();
-				}
-				]]>
-			</script>
+            <condition property="didwhat-@{replacement-ejb}" else="Disabled" value="Enabled">
+                <istrue value="@{replacement-enabled}"/>
+            </condition>
+		    <echo message="${didwhat-@{replacement-ejb}} module @{replacement-ejb}"/>
 		</sequential>
 	</macrodef>
 	<macrodef name="war-replacement-in-module" description="Optionally enable and configure a WAR module in the EAR">
@@ -172,14 +168,10 @@
 				<istrue value="@{replacement-enabled}"/>
 			</condition>
 			<replace file="@{replacement-file}" token="@{replacement-tag}" value="${replacement-string-@{replacement-web-uri}}"/>
-			<script language="javascript"> <![CDATA[
-				if ("@{replacement-enabled}" == "true") {
-					echo = project.createTask("echo");
-					echo.setMessage("Enabled module @{replacement-web-uri}");
-					echo.perform();
-				}
-				]]>
-			</script>
+            <condition property="didwhat-@{replacement-web-uri}" else="Disabled" value="Enabled">
+                <istrue value="@{replacement-enabled}"/>
+            </condition>
+            <echo message="${didwhat-@{replacement-web-uri}} module @{replacement-web-uri}"/>
 		</sequential>
 	</macrodef>
 
