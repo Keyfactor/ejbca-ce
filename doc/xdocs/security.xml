@@ -221,7 +221,7 @@ http://dev.mysql.com/doc/refman/5.1/en/secure-using-ssl.html</a>
 <section name="Other precautions">
 <subsection name="Switching to production mode">
 <p>
-Switching to production mode by setting ejbca.productionmode in conf/ejbca.properties
+Switching to production mode (default) by setting ejbca.productionmode in conf/ejbca.properties
 will prevent ant from starting JUnit tests and deploying the CA build on an OCSP responder
 and vice versa.   
 </p>
