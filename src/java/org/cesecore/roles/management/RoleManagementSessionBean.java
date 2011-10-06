@@ -291,7 +291,10 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
             throws RoleNotFoundException, AuthorizationDeniedException {
         Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         for (String accessRuleName : accessRuleNames) {
-            accessRules.add(accessRuleManagement.find(AccessRuleData.generatePrimaryKey(role.getRoleName(), accessRuleName)));
+            AccessRuleData rule = accessRuleManagement.find(AccessRuleData.generatePrimaryKey(role.getRoleName(), accessRuleName));
+            if (rule != null) {
+                accessRules.add(rule);
+            }
         }
         return removeAccessRulesFromRole(authenticationToken, role, accessRules);
     }
