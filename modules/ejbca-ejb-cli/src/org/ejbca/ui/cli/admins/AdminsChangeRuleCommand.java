@@ -84,7 +84,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
             String groupName = args[1];
             RoleData role = ejb.getRoleAccessSession().findRole(groupName);
             if (role == null) {
-                getLogger().error("No such group \"" + groupName + "\" .");
+                getLogger().error("No such role \"" + groupName + "\" .");
                 return;
             }
             String accessRule = getOriginalAccessRule(getAdmin(cliUserName, cliPassword), args[2]);
