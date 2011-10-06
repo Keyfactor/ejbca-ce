@@ -80,7 +80,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	public ExtendedCAServiceResponse extendedService(final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
 		log.trace(">extendedService");
 		if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
-			String msg = intres.getLocalizedMessage("caservice.notactive");
+			String msg = intres.getLocalizedMessage("caservice.notactive", "KeyRecovery");
 			log.error(msg);
 			throw new ExtendedCAServiceNotActiveException(msg);                            
 		}

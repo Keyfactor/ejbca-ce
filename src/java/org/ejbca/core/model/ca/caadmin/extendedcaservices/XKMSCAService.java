@@ -205,7 +205,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
             throw new IllegalExtendedCAServiceRequestException();            
         }
         if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
-			String msg = intres.getLocalizedMessage("caservice.notactive");
+			String msg = intres.getLocalizedMessage("caservice.notactive", "XKMS");
 			m_log.error(msg);
 			throw new ExtendedCAServiceNotActiveException(msg);                            
         }

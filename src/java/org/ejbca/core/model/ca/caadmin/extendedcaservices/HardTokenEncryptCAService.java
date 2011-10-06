@@ -82,7 +82,7 @@ public class HardTokenEncryptCAService extends ExtendedCAService implements Seri
 	public ExtendedCAServiceResponse extendedService(final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
 		log.trace(">extendedService");
 		if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
-			String msg = intres.getLocalizedMessage("caservice.notactive");
+			String msg = intres.getLocalizedMessage("caservice.notactive", "HardTokenEncrypt");
 			log.error(msg);
 			throw new ExtendedCAServiceNotActiveException(msg);                            
 		}
