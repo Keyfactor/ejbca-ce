@@ -223,7 +223,13 @@
     <!-- =================================================================== -->
 	<target name="ejbca.ear" depends="display-properties, ejbca.ear.module-dependencies, create-log4config-bundle">
 		<antcall target="doc.war"><param name="external-deps-satfisfied" value="isset"/></antcall>
+		<!-- This is quite ugly, we use two variables in order to decide if the systemtest files will be 
+		     included in the ear file or not. In ant 1.8 we could us an "if" to the "include" directive,
+		     and only need one variable, but that does not work in ant 1.7 so... --> 
         <condition property="in-test-mode" else="false">
+            <equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
+        </condition>
+        <condition property="in-test-mode-include" value="" else="dontinclude/">
             <equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
         </condition>
         <echo message="in-test-mode: ${in-test-mode}"/>
@@ -334,7 +340,7 @@
                 <include name="crlstore.war" />
                 <include name="renew.war" />
                 <include name="ejbca-cmp-tcp.war" />
-				<include name="systemtests-ejb.jar" if="${in-test-mode}"/>
+				<include name="${in-test-mode-include}systemtests-ejb.jar"/>
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="externalra-service.jar" />
@@ -343,7 +349,7 @@
                 <include name="ejbca-entity.jar" />
                 <include name="ejbca-properties.jar" />
                 <include name="log4jconfig.jar" />
-        		<include name="systemtests-interfaces.jar" if="${in-test-mode}"/>
+        		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
         	</zipfileset>
         	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
         	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>
