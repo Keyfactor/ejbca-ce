@@ -99,9 +99,12 @@
 	<!-- Dont allow deploy of the wrong thing in production                   -->
     <!-- =================================================================== -->
     <target name="failinproduction-ca">
-		<fail message="You cannot deploy EJBCA as a CA reponder in a OCSP production environment.">
+		<fail message="You cannot deploy EJBCA as a CA in a OCSP production environment.">
 			<condition>
-				<equals arg1="${ejbca.productionmode}" arg2="va" casesensitive="false"/>
+				<or>
+				    <equals arg1="${ejbca.productionmode}" arg2="va" casesensitive="false"/>
+				    <equals arg1="${ejbca.productionmode}" arg2="ocsp" casesensitive="false"/>
+				</or>
 			</condition>
 		</fail>
     </target>
@@ -238,7 +241,7 @@
 		<property name="eardd.src" value="${tmp}/ear" />
 		<!-- Make sure we have an application.xml since we want to specify base URLs. Configure enabled modules. -->
 		<mkdir dir="${eardd.src}/META-INF"/>
-		<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" flatten="true" failonerror="true"/>
+		<copy todir="${eardd.src}/META-INF" file="src/deploy/ear/META-INF/application.xml" overwrite="true" flatten="true" failonerror="true"/>
 		<war-replacement-in-module
 			replacement-tag="!--@doc.war@-->"
 			replacement-file="${eardd.src}/META-INF/application.xml"
@@ -341,7 +344,7 @@
                 <include name="crlstore.war" />
                 <include name="renew.war" />
                 <include name="ejbca-cmp-tcp.war" />
-				<include name="systemtests-ejb.jar" />
+				<include name="systemtests-ejb.jar" if="${in-test-mode}"/>
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="externalra-service.jar" />
@@ -350,7 +353,7 @@
                 <include name="ejbca-entity.jar" />
                 <include name="ejbca-properties.jar" />
                 <include name="log4jconfig.jar" />
-        		<include name="systemtests-interfaces.jar" />
+        		<include name="systemtests-interfaces.jar" if="${in-test-mode}"/>
         	</zipfileset>
         	<zipfileset prefix="lib" dir="${lib}/hibernate" excludes="${bundle-hibernate-exclude}"/>
         	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>
