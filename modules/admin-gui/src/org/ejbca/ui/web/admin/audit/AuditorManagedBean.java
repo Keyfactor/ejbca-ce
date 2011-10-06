@@ -563,12 +563,12 @@ public class AuditorManagedBean implements Serializable {
                     downloadResults(resp.getCmsDocument(), "application/octet-stream", "export-"+results.get(0).getTimeStamp()+".p7m");
                 } catch (IOException e) {
                     log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Error during export."));
+                    FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
                 }
             }
         } catch (Exception e) {
             log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Error during export."));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
         }
 	}
 
@@ -577,7 +577,7 @@ public class AuditorManagedBean implements Serializable {
             downloadResults(exportToByteArray(), "text/xml", "export-"+results.get(0).getTimeStamp()+".xml"); // "application/force-download" is an alternative here..
         } catch (IOException e) {
             log.info("Administration tried to export audit log, but failed. " + e.getMessage());
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Error during export."));
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage(e.getMessage()));
         }
     }
     
