@@ -856,10 +856,11 @@ ProtectedPKIMessage message = pbuilder.build(msgsigner);
 <subsubsection name="CMP for OpenSSL">
 <p>CMP has been tested with <a href="http://cmpforopenssl.sourceforge.net/">cmpforopenssl</a>.</p>
 <p>
-Cmpforopenssl works with EJBCA. The current client tool, cmpclient, works with EJBCA CMP in RA mode. 
-Using the cmpforopenssl API everything is possible and you can also use EJBCA CMP in client mode, not only RA mode.
-</p><p>
-Cmpforopenssl works with with EJBCA with the following EJBCA configuration (cmp.properties, unset properties = default):</p>
+Cmpforopenssl works with EJBCA. The current client tool, cmpclient, works with EJBCA CMP in RA mode and client mode. 
+</p>
+<p><strong>RA mode</strong></p>
+<p>
+Cmpforopenssl works with with EJBCA in RA mode with the following EJBCA configuration (cmp.properties, unset properties = default):</p>
 <source>
 cmp.operationmode=ra
 cmp.responseprotection=pbe
@@ -868,14 +869,30 @@ cmp.ra.authenticationsecret=password
 <p>
 You can then use cmpclient (as an RA):</p>
 <source>
-./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.pem --ir --user mykeyid --password password --clcert clcert.pem --key key.pem --subject "CN=User Name;O=My Organization;C=SE"
+./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.der --ir --user mykeyid --password password --clcert clcert.der --key key.pem --subject "CN=User Name;O=My Organization;C=SE"
 </source>
 <p>This requests a certificate, defining the subject DN that will be used. The CA used to sign the certificate is specified in the EJBCA cmp configuration, and can be taken from the keyid.
-EJBCA authenticated the request using the HMAC protection with the password, and accepts any request upon correct authentication. See the CMP documentation above for more advanced configuration.</p>
-<p>
-EJBCA currently does not work with cmpforopenssl in client mode. In client mode cmpforopenssl currently uses the keyid in a request as the requested username, and uses HMAC protection with the client password. 
-EJBCA uses the keyid for other purposes and tries to get the requested user from the actual certificate request, and EJBCA CMP in client mode does not currently work using HMAC protection with the client password.
+EJBCA authenticated the request using the HMAC protection with the password, and accepts any request upon correct authentication. See the CMP documentation above for more advanced configuration.
 </p>
+<p><strong>Client mode</strong></p>
+<p>
+Cmpforopenssl works with with EJBCA in client mode with the following EJBCA configuration (cmp.properties, unset properties = default):</p>
+<source>
+cmp.authenticationmodule=HMAC
+cmp.extractusernamecomponent=CN
+</source>
+<p>You can now add a new user in EJBCA:</p>
+<source>
+bin/ejbca.sh ra adduser user1 password "CN=user1,O=My Organization,C=SE" null AdminCA1 null 1 USERGENERATED
+bin/ejbca.sh ra setclearpwd user1 password
+</source>
+<p>
+You can then use cmpclient (as a client):</p>
+<source>
+./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.der --ir --user mykeyid --password password --clcert clcert.der --key key.pem --subject "CN=user1;O=My Organization;C=SE"
+</source>
+<p>This requests a certificate, and the requested subject DN must match the registered subject DN.
+EJBCA authenticates the request using the HMAC protection with the password of the registered user. See the CMP documentation above for more advanced configuration.</p>
 </subsubsection>
 </subsection>
 <subsection name="Custom handling of certificate request">
