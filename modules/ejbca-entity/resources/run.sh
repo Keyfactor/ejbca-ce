@@ -1,6 +1,7 @@
 #!/bin/sh
 
-java -Djava.endorsed.dirs=`dirname "$0"`/endorsed -jar `dirname "$0"`/ejbca-db-cli.jar "$@"
+# Memeory settings can be specified using parameters like: -Xms20480m -Xmx20480m -XX:MaxPermSize=384m
+java -server -XX:+UseConcMarkSweepGC -XX:+CMSIncrementalMode -XX:+ExplicitGCInvokesConcurrent -XX:-UseGCOverheadLimit -Djava.endorsed.dirs=`dirname "$0"`/endorsed -jar `dirname "$0"`/ejbca-db-cli.jar "$@"
 
 ERRORLEVEL="$?"
 if [ "x${ERRORLEVEL}" = "x1" ] ; then
