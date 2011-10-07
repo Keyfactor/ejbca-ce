@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
@@ -29,6 +30,7 @@ import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSession;
 import org.cesecore.roles.management.RoleManagementSession;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
+import org.ejbca.core.ejb.roles.ComplexRoleManagementSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 
@@ -49,6 +51,7 @@ public class AuthorizationDataHandler implements Serializable {
 
     private AccessControlSessionLocal authorizationsession;
     private ComplexAccessControlSessionLocal complexAccessControlSession;
+    private ComplexRoleManagementSessionLocal complexRoleManagementSession;
     private RoleAccessSession roleAccessSession;
     private RoleManagementSession roleManagementSession;
     private AuthenticationToken administrator;
@@ -57,13 +60,14 @@ public class AuthorizationDataHandler implements Serializable {
 
     /** Creates a new instance of ProfileDataHandler */
     public AuthorizationDataHandler(AuthenticationToken administrator, InformationMemory informationmemory, RoleAccessSession roleAccessSession,
-            RoleManagementSession roleManagementSession, AccessControlSessionLocal authorizationsession, ComplexAccessControlSessionLocal complexAccessControlSession) {
+            RoleManagementSession roleManagementSession, ComplexRoleManagementSessionLocal complexRoleManagementSession, AccessControlSessionLocal authorizationsession, ComplexAccessControlSessionLocal complexAccessControlSession) {
         this.roleManagementSession = roleManagementSession;
         this.roleAccessSession = roleAccessSession;
         this.authorizationsession = authorizationsession;
         this.administrator = administrator;
         this.informationmemory = informationmemory;
         this.complexAccessControlSession = complexAccessControlSession;
+        this.complexRoleManagementSession = complexRoleManagementSession;
     }
 
     /**
@@ -177,8 +181,15 @@ public class AuthorizationDataHandler implements Serializable {
      * @throws RoleNotFoundException
      */
     public void removeAccessRules(String roleName, Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
-        authorizedToEditAdministratorPrivileges(roleAccessSession.findRole(roleName));
-        roleManagementSession.removeAccessRulesFromRole(administrator, roleAccessSession.findRole(roleName), accessRules);
+        RoleData role = roleAccessSession.findRole(roleName);
+        authorizedToEditAdministratorPrivileges(role);
+        Collection<AccessRuleData> rulesToRemove = new ArrayList<AccessRuleData>();
+        for(AccessRuleData rule : accessRules) {
+            if(role.getAccessRules().containsKey(rule.getPrimaryKey())) {
+                rulesToRemove.add(rule);
+            }
+        }
+        roleManagementSession.removeAccessRulesFromRole(administrator, role, rulesToRemove);
         informationmemory.administrativePriviledgesEdited();
     }
 
@@ -191,7 +202,7 @@ public class AuthorizationDataHandler implements Serializable {
      */
     public void replaceAccessRules(String rolename, Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
         authorizedToEditAdministratorPrivileges(roleAccessSession.findRole(rolename));
-        roleManagementSession.replaceAccessRulesInRole(administrator, roleAccessSession.findRole(rolename), accessRules);
+        complexRoleManagementSession.replaceAccessRulesInRole(administrator, roleAccessSession.findRole(rolename), accessRules);
         informationmemory.administrativePriviledgesEdited();
     }
 
