@@ -202,7 +202,7 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
         switch (internalState) {
         case RULE_ACCEPT:
 
-            result = (recursiveBool ? AccessTreeState.STATE_ACCEPT_RECURSIVE : AccessTreeState.STATE_ACCEPT);
+            result = (getRecursive() ? AccessTreeState.STATE_ACCEPT_RECURSIVE : AccessTreeState.STATE_ACCEPT);
             break;
         case RULE_DECLINE:
             result = AccessTreeState.STATE_DECLINE;
