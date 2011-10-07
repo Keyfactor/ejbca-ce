@@ -49,6 +49,7 @@ import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.ejb.roles.ComplexRoleManagementSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
@@ -78,6 +79,7 @@ public interface EjbBridgeSessionLocal {
 	CertificateStoreSessionLocal getCertificateStoreSession();
 	CertReqHistorySessionLocal getCertReqHistorySession();
 	ComplexAccessControlSessionLocal getComplexAccessControlSession();
+	ComplexRoleManagementSessionLocal getComplexRoleManagementSession();
 	RevocationSessionLocal getRevocationSession();
 	CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession();
 	CrlStoreSessionLocal getCrlStoreSession();

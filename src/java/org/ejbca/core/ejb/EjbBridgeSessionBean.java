@@ -52,6 +52,7 @@ import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.ejb.roles.ComplexRoleManagementSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionLocal;
 
@@ -82,6 +83,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB CertReqHistorySessionLocal certReqHistorySession;
 	@EJB CmpMessageDispatcherSessionLocal cmpMessageDispatcherSession;
 	@EJB ComplexAccessControlSessionLocal complexAccessControlSession;
+	@EJB ComplexRoleManagementSessionLocal complexRoleManagementSession;
 	@EJB CrlStoreSessionLocal crlStoreSession;
 	@EJB CrlCreateSessionLocal crlCreateSession;
 	@EJB CertificateCreateSessionLocal certificateCreateSession;
@@ -119,6 +121,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public CertReqHistorySessionLocal getCertReqHistorySession() { return certReqHistorySession; }
 	@Override public CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession() { return cmpMessageDispatcherSession; }
 	@Override public ComplexAccessControlSessionLocal getComplexAccessControlSession() { return complexAccessControlSession; }
+	@Override public ComplexRoleManagementSessionLocal getComplexRoleManagementSession() { return complexRoleManagementSession; }
 	@Override public CrlStoreSessionLocal getCrlStoreSession() { return crlStoreSession; }
 	@Override public CrlCreateSessionLocal getCrlCreateSession() { return crlCreateSession; }
 	@Override public CertificateCreateSessionLocal getCertificateCreateSession() { return certificateCreateSession; }

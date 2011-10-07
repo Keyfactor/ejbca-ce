@@ -98,19 +98,6 @@ public interface RoleManagementSession {
             AuthorizationDeniedException;
 
     /**
-     * Replaces the existing access rules in the given role by removing the old ones and adding the list of new ones.
-     * 
-     * @param authenticationToken for authorization purposes.
-     * @param role the role in question.
-     * @param accessRules A Collection of access rules to replace with.
-     * @return the same role.
-     * @throws AuthorizationDeniedException if authorization was denied.
-     * @throws RoleNotFoundException if the supplied role was not found in persistence. 
-     */
-    RoleData replaceAccessRulesInRole(AuthenticationToken authenticationToken, final RoleData role, final Collection<AccessRuleData> accessRules)
-            throws AuthorizationDeniedException, RoleNotFoundException;
-
-    /**
      * Associates a list of access rules to a role. If the given role already exists, replace it.
      * 
      * @param role The role
