@@ -15,6 +15,10 @@
 		<priority value="TRACE"/>
 		<appender-ref ref="console"/>
 	</category>
+	<category name="org.cesecore" additivity="false">
+		<priority value="TRACE"/>
+		<appender-ref ref="console"/>
+	</category>
 
 	<root> 
 		<!-- Set basic limit for console -->
