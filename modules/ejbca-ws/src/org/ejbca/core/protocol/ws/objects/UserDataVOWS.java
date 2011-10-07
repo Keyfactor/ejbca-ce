@@ -80,6 +80,7 @@ public class UserDataVOWS implements Serializable{
     private java.lang.String endTime = null;
     private BigInteger certificateSerialNumber;
     private List<ExtendedInformationWS> extendedInformation = null;
+    private String cardNumber;
 
     /**
      * Emtpy constructor used by internally by web services
@@ -409,5 +410,21 @@ public class UserDataVOWS implements Serializable{
 	public void setExtendedInformation(List<ExtendedInformationWS> extendedInformation) {
 		this.extendedInformation = extendedInformation;
 	}
+	
+    /**
+     * @return card number
+     */
+    public String getCardNumber() {
+        return cardNumber;
+    }
+
+    /**
+     * Sets the card number for the cardnumber extension. 
+     * Only used if 'Card Number Extension' in used certificate profile is enabled.
+     * @param cardNumber The card number to set
+     */
+    public void setCardNumber(String cardNumber) {
+        this.cardNumber = cardNumber;
+    }
 
 }

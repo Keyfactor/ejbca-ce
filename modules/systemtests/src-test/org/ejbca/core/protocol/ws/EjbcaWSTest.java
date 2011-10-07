@@ -55,6 +55,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -72,6 +73,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
@@ -82,6 +84,7 @@ import org.ejbca.core.protocol.ws.client.gen.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
+import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
@@ -652,6 +655,56 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         testCertificateRequestWithSpecialChars("CN=test" + rnd + ", O=\\\"foo+b\\+ar\\, C=SE\\\"", "CN=test" + rnd + ",O=\\\"foo\\+b\\+ar\\, C\\=SE\\\"");
     }
 
+    /**
+     * Tests that the provided cardnumber is stored in the EndEntityInformation 
+     * and that when querying for EndEntityInformation the cardnumber is 
+     * returned.
+     * @throws Exception in case of error
+     */
+    @Test
+    public void testCertificateRequestWithCardNumber() throws Exception {
+    	String userName = "wsRequestCardNumber" + new SecureRandom().nextLong();
+    	
+    	// Generate a CSR
+    	KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
+        PKCS10CertificationRequest pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"),
+                keys.getPublic(), new DERSet(), keys.getPrivate());
+        final String csr = new String(Base64.encode(pkcs10.getEncoded()));
+        
+        // Set some user data
+        final UserDataVOWS userData = new UserDataVOWS();
+        userData.setUsername(userName);
+        userData.setPassword(PASSWORD);
+        userData.setClearPwd(true);
+        userData.setSubjectDN("CN=test" + new SecureRandom().nextLong() + ", UID=" + userName + ", O=Test, C=SE");
+        userData.setCaName(getAdminCAName());
+        userData.setEmail(null);
+        userData.setSubjectAltName(null);
+        userData.setStatus(UserDataVOWS.STATUS_NEW);
+        userData.setTokenType(UserDataVOWS.TOKEN_TYPE_P12);
+        userData.setEndEntityProfileName("EMPTY");
+        userData.setCertificateProfileName("ENDUSER");
+
+        // Set the card number
+        userData.setCardNumber("1234fa");
+        
+        // Issue a certificate
+        CertificateResponse response = ejbcaraws.certificateRequest(userData, csr, CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+        assertNotNull("null response", response);
+        
+        // Check that the cardnumber was stored in the EndEntityInformation
+        EndEntityInformation endEntity = endEntityAccessSession.findUser(intAdmin, userName);
+        assertEquals("stored cardnumber ejb", "1234fa", endEntity.getCardNumber());
+        
+        // Check that the cardnumber is also available when querying using WS
+        UserMatch criteria = new UserMatch();
+        criteria.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
+        criteria.setMatchwith(UserMatch.MATCH_WITH_USERNAME);
+        criteria.setMatchvalue(userName);
+        UserDataVOWS user = ejbcaraws.findUser(criteria).get(0);
+        assertEquals("stored cardnumber ws", "1234fa", user.getCardNumber());
+    }
+    
     @Test
     public void test99cleanUpAdmins() throws Exception {
         super.cleanUpAdmins(wsadminRoleName);
