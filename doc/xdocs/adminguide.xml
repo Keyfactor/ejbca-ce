@@ -1110,7 +1110,7 @@ Some programming examples:
 To initialize the web service:
 </p>
 <source>
-  CertTools.installBCProvider();	
+  CryptoProviderTools.installBCProvider();	
   String urlstr = "https://localhost:8443/ejbca/ejbcaws/ejbcaws?wsdl";
 	
   System.setProperty("javax.net.ssl.trustStore","p12/wstest.jks");
