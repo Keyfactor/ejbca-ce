@@ -34,7 +34,7 @@ import org.cesecore.config.CesecoreConfiguration;
  * Based on EJBCA version: 
  *      InternalResources.java 11076 2011-01-07 07:54:16Z anatom
  * CESeCore version:
- *      InternalResources.java 985 2011-08-10 13:19:09Z tomas
+ *      InternalResources.java 1203 2011-10-07 16:11:57Z johane
  * 
  * @version $Id$
  */
@@ -57,6 +57,7 @@ public class InternalResources implements Serializable {
 
     protected Properties primaryResource = new Properties();
     protected Properties secondaryResource = new Properties();
+    private String[] placeHolders = null;
 
     private static final String RESOURCE_PATH = "/intresources";
     private static final String RESOURCE_NAME = "/intresources.";
@@ -131,10 +132,7 @@ public class InternalResources implements Serializable {
         }
     }
 
-    /**
-     * Metod that returs a instance of the InternalResources might be null if
-     * load() haven't been called before this method.
-     */
+    /** @return an instance of the InternalResources. */
     public static synchronized InternalResources getInstance() {
         if (instance == null) {
             instance = new InternalResources();
@@ -146,23 +144,11 @@ public class InternalResources implements Serializable {
      * Method returning the localized message for the given resource key.
      * 
      * It first looks up in the primary language then in the secondary If not
-     * found in any of the resource file "key" is returned.
-     * 
-     */
-    public String getLocalizedMessage(final String key) {
-    	final Object[] params = {};
-        return getLocalizedMessage(key, params, 0);
-    }
-
-    /**
-     * Method returning the localized message for the given resource key.
-     * 
-     * It first looks up in the primary language then in the secondary If not
      * found in any of the resource file "no text" is returned.
      * 
      * @param key
      *            is the key searched for in the resource files
-     * @param paramX
+     * @param params
      *            indicates the parameter that will be replaced by {X} in the
      *            language resource, a maximum of 10 parameters can be given.
      * 
@@ -170,10 +156,11 @@ public class InternalResources implements Serializable {
      *            and the resource file have "TEST = messages is {0}" will
      *            result in the string "message is hi".
      * 
+     * @return The message as a String. Use getLocalizedMessageCs to keep down the memory footprint.
      */
-    public String getLocalizedMessage(final String key, final Object param0) {
-    	final Object[] params = { param0 };
-        return getLocalizedMessage(key, params, 1);
+    @Deprecated
+    public String getLocalizedMessage(final String key, final Object... params) {
+        return getLocalizedMessageCs(key, params).toString();
     }
 
     /**
@@ -184,7 +171,7 @@ public class InternalResources implements Serializable {
      * 
      * @param key
      *            is the key searched for in the resource files
-     * @param paramX
+     * @param params
      *            indicates the parameter that will be replaced by {X} in the
      *            language resource, a maximum of 10 parameters can be given.
      * 
@@ -192,233 +179,115 @@ public class InternalResources implements Serializable {
      *            and the resource file have "TEST = messages is {0}" will
      *            result in the string "message is hi".
      * 
+     * @return The message as a CharSequence. Avoid using this as a String to keep down the memory footprint. 
      */
-    public String getLocalizedMessage(final String key, final Object param0, final Object param1) {
-    	final Object[] params = { param0, param1 };
-        return getLocalizedMessage(key, params, 2);
+    public CharSequence getLocalizedMessageCs(final String key, final Object... params) {
+        final StringBuilder sb = new StringBuilder();
+        return getLocalizedMessageInternal(sb, key, params);
     }
 
-    /**
-     * Method returning the localized message for the given resource key.
-     * 
-     * It first looks up in the primary language then in the secondary If not
-     * found in any of the resource file "no text" is returned.
-     * 
-     * @param key
-     *            is the key searched for in the resource files
-     * @param paramX
-     *            indicates the parameter that will be replaced by {X} in the
-     *            language resource, a maximum of 10 parameters can be given.
-     * 
-     *            Ex Calling the method with key = TEST and param0 set to "hi"
-     *            and the resource file have "TEST = messages is {1}" will
-     *            result in the string "message is hi".
-     * 
-     */
-    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2) {
-    	final Object[] params = { param0, param1, param2 };
-        return getLocalizedMessage(key, params, 3);
-    }
-
-    /**
-     * Method returning the localized message for the given resource key.
-     * 
-     * It first looks up in the primary language then in the secondary If not
-     * found in any of the resource file "no text" is returned.
-     * 
-     * @param key
-     *            is the key searched for in the resource files
-     * @param paramX
-     *            indicates the parameter that will be replaced by {X} in the
-     *            language resource, a maximum of 10 parameters can be given.
-     * 
-     *            Ex Calling the method with key = TEST and param0 set to "hi"
-     *            and the resource file have "TEST = messages is {1}" will
-     *            result in the string "message is hi".
-     * 
-     */
-    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3) {
-    	final Object[] params = { param0, param1, param2, param3 };
-        return getLocalizedMessage(key, params, 4);
-    }
-
-    /**
-     * Method returning the localized message for the given resource key.
-     * 
-     * It first looks up in the primary language then in the secondary If not
-     * found in any of the resource file "no text" is returned.
-     * 
-     * @param key
-     *            is the key searched for in the resource files
-     * @param paramX
-     *            indicates the parameter that will be replaced by {X} in the
-     *            language resource, a maximum of 10 parameters can be given.
-     * 
-     *            Ex Calling the method with key = TEST and param0 set to "hi"
-     *            and the resource file have "TEST = messages is {1}" will
-     *            result in the string "message is hi".
-     * 
-     */
-    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3, final Object param4) {
-    	final Object[] params = { param0, param1, param2, param3, param4 };
-        return getLocalizedMessage(key, params, 5);
-    }
-
-    /**
-     * Method returning the localized message for the given resource key.
-     * 
-     * It first looks up in the primary language then in the secondary If not
-     * found in any of the resource file "no text" is returned.
-     * 
-     * @param key
-     *            is the key searched for in the resource files
-     * @param paramX
-     *            indicates the parameter that will be replaced by {X} in the
-     *            language resource, a maximum of 10 parameters can be given.
-     * 
-     *            Ex Calling the method with key = TEST and param0 set to "hi"
-     *            and the resource file have "TEST = messages is {1}" will
-     *            result in the string "message is hi".
-     * 
-     */
-    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3, final Object param4, final Object param5) {
-    	final Object[] params = { param0, param1, param2, param3, param4, param5 };
-        return getLocalizedMessage(key, params, 6);
-    }
-
-    /**
-     * Method returning the localized message for the given resource key.
-     * 
-     * It first looks up in the primary language then in the secondary If not
-     * found in any of the resource file "no text" is returned.
-     * 
-     * @param key
-     *            is the key searched for in the resource files
-     * @param paramX
-     *            indicates the parameter that will be replaced by {X} in the
-     *            language resource, a maximum of 10 parameters can be given.
-     * 
-     *            Ex Calling the method with key = TEST and param0 set to "hi"
-     *            and the resource file have "TEST = messages is {1}" will
-     *            result in the string "message is hi".
-     * 
-     */
-    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3, final Object param4, final Object param5, final Object param6) {
-    	final Object[] params = { param0, param1, param2, param3, param4, param5, param6 };
-        return getLocalizedMessage(key, params, 7);
-    }
-
-    /**
-     * Method returning the localized message for the given resource key.
-     * 
-     * It first looks up in the primary language then in the secondary If not
-     * found in any of the resource file "no text" is returned.
-     * 
-     * @param key
-     *            is the key searched for in the resource files
-     * @param paramX
-     *            indicates the parameter that will be replaced by {X} in the
-     *            language resource, a maximum of 10 parameters can be given.
-     * 
-     *            Ex Calling the method with key = TEST and param0 set to "hi"
-     *            and the resource file have "TEST = messages is {1}" will
-     *            result in the string "message is hi".
-     * 
-     */
-    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3, final Object param4, final Object param5, final Object param6,
-    		final Object param7) {
-    	final Object[] params = { param0, param1, param2, param3, param4, param5, param6, param7 };
-        return getLocalizedMessage(key, params, 8);
-    }
-
-    /**
-     * Method returning the localized message for the given resource key.
-     * 
-     * It first looks up in the primary language then in the secondary If not
-     * found in any of the resource file "no text" is returned.
-     * 
-     * @param key
-     *            is the key searched for in the resource files
-     * @param paramX
-     *            indicates the parameter that will be replaced by {X} in the
-     *            language resource, a maximum of 10 parameters can be given.
-     * 
-     *            Ex Calling the method with key = TEST and param0 set to "hi"
-     *            and the resource file have "TEST = messages is {1}" will
-     *            result in the string "message is hi".
-     * 
-     */
-    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3, final Object param4, final Object param5, final Object param6,
-    		final Object param7, final Object param8) {
-    	final Object[] params = { param0, param1, param2, param3, param4, param5, param6, param7, param8 };
-        return getLocalizedMessage(key, params, 9);
-    }
-
-    /**
-     * Method returning the localized message for the given resource key.
-     * 
-     * It first looks up in the primary language then in the secondary If not
-     * found in any of the resource file "no text" is returned.
-     * 
-     * @param key
-     *            is the key searched for in the resource files
-     * @param paramX
-     *            indicates the parameter that will be replaced by {X} in the
-     *            language resource, a maximum of 10 parameters can be given.
-     * 
-     *            Ex Calling the method with key = TEST and param0 set to "hi"
-     *            and the resource file have "TEST = messages is {0}" will
-     *            result in the string "message is hi".
-     * 
-     */
-    public String getLocalizedMessage(final String key, final Object param0, final Object param1, final Object param2, final Object param3, final Object param4, final Object param5, final Object param6,
-    		final Object param7, final Object param8, final Object param9) {
-    	final Object[] params = { param0, param1, param2, param3, param4, param5, param6, param7, param8, param9 };
-        return getLocalizedMessage(key, params, 10);
-    }
-
-    /**
-     * Method returning the message from the resource file for the given
-     * resource key.
-     * 
-     * It first looks up in the primary language then in the secondary If not
-     * found in any of the resource file "key" is returned.
-     * 
-     */
-    protected String getMessageString(final String key) {
-        String retval = primaryResource.getProperty(key);
-        if (retval == null) {
-            retval = secondaryResource.getProperty(key);
-        }
-        if (retval == null) {
-            retval = key;
-        }
-        return retval.trim();
-    }
-
-    private String getLocalizedMessage(final String key, final Object[] params, final int numOfParams) {
-        String localizedString = getMessageString(key);
-        for (int i = 0; i < numOfParams; i++) {
-        	final Object obj = params[i];
-            String param = "";
-            if (obj != null) {
-                param = obj.toString();
-            }
-            try {
-                localizedString = localizedString.replaceAll("\\{" + i + "\\}", param);
-            } catch (IllegalArgumentException e) {
-                // If "param" contains some specific things, regexp may fail
-                // under some circumstances
-                try {
-                    localizedString = localizedString.replaceAll("\\{" + i + "\\}", e.getMessage());
-                } catch (IllegalArgumentException e1) {
-                    localizedString = localizedString.replaceAll("\\{" + i + "\\}", "IllegalArgumentException");
-                }
+    /** Lookup the default string if the StringBuilder is empty. Perform place holder replacement processing. */
+    protected CharSequence getLocalizedMessageInternal(final StringBuilder sb, final String key, final Object... params) {
+        if (sb.length()==0) {
+            if (primaryResource.containsKey(key)) {
+                sb.append(primaryResource.getProperty(key));
+            } else if (secondaryResource.containsKey(key)) {
+                sb.append(secondaryResource.getProperty(key));
+            } else {
+                sb.append(key);
             }
         }
-        // Remove all remaining {} if any
-        localizedString = localizedString.replaceAll("\\{\\d\\}", "");
+        trim(sb);
+        // sb.trim()    no such method.. this was present in the old memory consuming version
+        if (log.isDebugEnabled()) {
+            log.debug(key + "=" + sb.toString());
+        }
+        for (int i=0; i<params.length; i++) {
+            replaceAll(sb, i, params[i]);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug(key + "=" + sb.toString());
+        }
+        removeUnusedPlaceHolders(sb, params.length);
+        if (log.isDebugEnabled()) {
+            log.debug(key + "=" + sb.toString());
+        }
+        return sb;
+    }
+    
+    /** @return a lazily instantiated array of place holders like "{number}". */
+    private String[] getPlaceHolders() {
+        if (placeHolders==null) {
+            placeHolders = new String[100];
+            for (int i=0; i<placeHolders.length; i++) {
+                placeHolders[i] = new StringBuilder('{').append(i).append('}').toString();
+            }
+        }
+        return placeHolders;
+    }
+    
+    /** Remove whitespace chars from the beginning and the end of the buffer.*/
+    private void trim(final StringBuilder sb) {
+        for (int i=0; i<sb.length(); i++) {
+            if (sb.charAt(i) != ' ') {  // It would be nice to check for other chars too..
+                sb.delete(0, i);
+                break;
+            }
+        }
+        for (int i=sb.length()-1; i>=0; i--) {
+            if (sb.charAt(i) != ' ') {
+                sb.delete(i+1, sb.length());
+                break;
+            }
+        }
+    }
 
-        return localizedString;
+    /** Replace any "{placeHolderIndex}" String that is present in the StringBuilder with 'replacementObject'. */
+    protected void replaceAll(final StringBuilder sb, final int placeHolderIndex, final Object replacementObject) {
+        if (sb==null) {
+            log.error("No StringBuilder. Unable to create localized message.");
+            return;
+        }
+        final String[] placeHolders = getPlaceHolders();
+        if (placeHolderIndex<0 || placeHolderIndex>(placeHolders.length-1)) {
+            log.error("Place holder index out of range. Unable to create localized message.");
+            return;
+        }
+        final String placeHolder = placeHolders[placeHolderIndex];
+        final int placeHolderLength = placeHolder.length();
+        int currentIndex = -placeHolderLength;
+        if (replacementObject==null) {
+            while ((currentIndex=sb.indexOf(placeHolder, currentIndex+placeHolderLength))!=-1) {
+                sb.delete(currentIndex-1, currentIndex+placeHolderLength);
+            }
+        } else {
+            final String replacement = replacementObject.toString();
+            while ((currentIndex=sb.indexOf(placeHolder, currentIndex+placeHolderLength))!=-1) {
+                sb.replace(currentIndex-1, currentIndex+placeHolderLength, replacement);
+            }
+        }
+    }
+
+    /** Remove any "{number}" string that is still present in the StringBuilder where number starts with 'startPlaceHolderIndex'. */
+    protected void removeUnusedPlaceHolders(final StringBuilder sb, final int startPlaceHolderIndex) {
+        final String[] placeHolders = getPlaceHolders();
+        if (startPlaceHolderIndex<0 || startPlaceHolderIndex>(placeHolders.length-1)) {
+            log.error("Place holder index out of range. Unable to create localized message.");
+            return;
+        }
+        for (int i=startPlaceHolderIndex; i<placeHolders.length; i++) {
+            final String placeHolder = placeHolders[i];
+            final int placeHolderLength = placeHolder.length();
+            int currentIndex = -placeHolderLength;
+            boolean someThingRemoved = false;
+            while ((currentIndex=sb.indexOf(placeHolder, currentIndex+placeHolderLength))!=-1) {
+                sb.delete(currentIndex-1, currentIndex+placeHolderLength);
+                someThingRemoved = true;
+            }
+            if (!someThingRemoved) {
+                // If a place holder with the current number didn't exist, we assume that the ones with higher doesn't either..
+                break;
+            }
+        }
     }
 }
