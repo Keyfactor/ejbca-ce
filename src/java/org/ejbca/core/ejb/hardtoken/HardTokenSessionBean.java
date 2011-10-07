@@ -769,7 +769,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn) != null) {
             ret = true;
         }
-        log.trace("<existsHardToken()");
+        log.trace("<existsHardToken(): "+ret);
         return ret;
     }
 
