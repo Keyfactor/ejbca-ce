@@ -61,11 +61,15 @@ public class GenerateToken {
     public KeyStore generateOrKeyRecoverToken(AuthenticationToken administrator, String username, String password, int caid, String keyspec, 
     		String keyalg, boolean createJKS, boolean loadkeys, boolean savekeys, boolean reusecertificate, int endEntityProfileId)
     throws Exception {
-    	log.trace(">generateOrKeyRecoverToken");
+        if (log.isTraceEnabled()) {
+            log.trace(">generateOrKeyRecoverToken");
+        }
     	KeyRecoveryData keyData = null;
     	KeyPair rsaKeys = null;
     	if (loadkeys) {
-    		log.debug("Recovering keys for user: "+ username);
+    	    if (log.isDebugEnabled()) {
+    	        log.debug("Recovering keys for user: "+ username);
+    	    }
             // used saved keys.
 			keyData = keyRecoverySession.keyRecovery(administrator, username, endEntityProfileId);
     		if (keyData == null) {
@@ -74,11 +78,15 @@ public class GenerateToken {
     		rsaKeys = keyData.getKeyPair();
     		if (reusecertificate) {
     			// TODO: Why is this only done is reusecertificate == true ??
-        		log.debug("Re-using old certificate for user: "+ username);
+                if (log.isDebugEnabled()) {
+                    log.debug("Re-using old certificate for user: "+ username);
+                }
     			keyRecoverySession.unmarkUser(administrator,username);
     		}
     	} else {
-    		log.debug("Generating new keys for user: "+ username);
+            if (log.isDebugEnabled()) {
+                log.debug("Generating new keys for user: "+ username);
+            }
             // generate new keys.
     		rsaKeys = KeyTools.genKeys(keyspec, keyalg);
     	}
@@ -92,7 +100,9 @@ public class GenerateToken {
 				authenticationSession.finishUser(userdata);    				
     		}
     	} else {
-    		log.debug("Generating new certificate for user: "+ username);
+            if (log.isDebugEnabled()) {
+                log.debug("Generating new certificate for user: "+ username);
+            }
 			cert = (X509Certificate)signSession.createCertificate(administrator, username, password, rsaKeys.getPublic());
     	}
         // Make a certificate chain from the certificate and the CA-certificate
@@ -118,7 +128,9 @@ public class GenerateToken {
     	}
     	if (savekeys) {
             // Save generated keys to database.
-    		log.debug("Saving generated keys for recovery for user: "+ username);
+            if (log.isDebugEnabled()) {
+                log.debug("Saving generated keys for recovery for user: "+ username);
+            }
 			keyRecoverySession.addKeyRecoveryData(administrator, cert, username, rsaKeys);
     	}
         //  Use CN if as alias in the keystore, if CN is not present use username
@@ -129,13 +141,19 @@ public class GenerateToken {
         // Store keys and certificates in keystore.
     	KeyStore ks = null;
     	if (createJKS) {
-    		log.debug("Generating JKS for user: "+ username);
+            if (log.isDebugEnabled()) {
+                log.debug("Generating JKS for user: "+ username);
+            }
     		ks = KeyTools.createJKS(alias, rsaKeys.getPrivate(), password, cert, cachain);
     	} else {
-    		log.debug("Generating PKCS12 for user: "+ username);
+            if (log.isDebugEnabled()) {
+                log.debug("Generating PKCS12 for user: "+ username);
+            }
     		ks = KeyTools.createP12(alias, rsaKeys.getPrivate(), cert, cachain);
     	}
-    	log.trace("<generateOrKeyRecoverToken");
+        if (log.isTraceEnabled()) {
+            log.trace("<generateOrKeyRecoverToken");
+        }
     	return ks;
     }
 }
