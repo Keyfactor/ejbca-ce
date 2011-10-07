@@ -83,6 +83,7 @@
 		<path refid="lib.xmlsec.classpath" />
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.ejbca-common-web.classpath" />
+		<pathelement location="${mod.ejbca-ejb.lib}"/>
 		<path location="${mod.ejbca-entity.lib}" />
 		<path refid="lib.quickserver.classpath" />
 		<path location="${build.interface.dir}" />
