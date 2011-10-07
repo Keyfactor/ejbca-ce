@@ -1249,7 +1249,7 @@ public class CertToolsTest {
     		// NOPMD
     	}    	
 
-        // Serialization, CVC provider is installed by CertTools.installBCProvider
+        // Serialization, CVC provider is installed by CryptoProviderTools.installBCProvider
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream oos = new ObjectOutputStream(baos);
         oos.writeObject(cert);
