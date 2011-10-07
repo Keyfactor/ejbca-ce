@@ -66,11 +66,9 @@ public interface CertificateRequestSession {
      * 
 	 * @param admin is the requesting administrator
 	 * @param userdata contains information about the user that is about to get a certificate
-	 * @param req is the certificate request, base64 encoded binary request, in the format specified in the reqType parameter
-	 * @param reqType is one of SecConst.CERT_REQ_TYPE_..
-	 * @param hardTokenSN is the hard token to associate this or null
-	 * @param responseType is one of SecConst.CERT_RES_TYPE_...
-     * @return a encoded certificate of the type specified in responseType 
+	 * @param req is the certificate request
+	 * @param responseClass the class of the response message that should be returned back
+     * @return a response message of the type specified in responseClass 
 	 * @throws CesecoreException 
 	 */
     public ResponseMessage processCertReq(AuthenticationToken admin, EndEntityInformation userdata, RequestMessage req, Class<? extends ResponseMessage> responseClass) throws PersistenceException,
