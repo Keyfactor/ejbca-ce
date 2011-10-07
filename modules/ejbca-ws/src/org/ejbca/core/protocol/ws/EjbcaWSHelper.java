@@ -393,6 +393,7 @@ public class EjbcaWSHelper {
 				useEI ? ei : null);
 		
 		userdatavo.setPassword(userdata.getPassword());
+		userdatavo.setCardNumber(userdata.getCardNumber());
 		
 		return userdatavo;
 	}
@@ -485,6 +486,7 @@ public class EjbcaWSHelper {
 		dataWS.setSubjectAltName(userdata.getSubjectAltName());
 		dataWS.setEmail(userdata.getEmail());
 		dataWS.setStatus(userdata.getStatus());
+		dataWS.setCardNumber(userdata.getCardNumber());
 
 		ExtendedInformation ei = userdata.getExtendedinformation();
 		if(ei != null) {
