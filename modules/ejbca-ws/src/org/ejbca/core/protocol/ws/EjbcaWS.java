@@ -22,6 +22,7 @@ import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.Principal;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertPathValidatorException;
@@ -42,6 +43,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.annotation.Resource;
@@ -55,6 +57,7 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 import javax.jws.WebService;
 import javax.persistence.PersistenceException;
+import javax.security.auth.x500.X500Principal;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.ws.WebServiceContext;
 
@@ -1492,16 +1495,19 @@ public class EjbcaWS implements IEjbcaWS {
 		boolean hardTokenExists = false;
 		boolean userExists = false;
 		
+		boolean approvalSuccessfullStep1 = false;
+		boolean isRejectedStep1 = false;
+
 		// Get Significant user Id
 		final CAInfo significantcAInfo;
 		final ArrayList<java.security.cert.Certificate> genCertificates = new ArrayList<java.security.cert.Certificate>();
 		final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
-		final AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EJBCAWS.getnTokenCertificates"));
+		final AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EJBCAWS.genTokenCertificates"));
 		try {
 			significantcAInfo = caSession.getCAInfo(intAdmin, userDataWS.getCaName());
 		if(significantcAInfo == null){
-			throw EjbcaWSHelper.getEjbcaException("Error the given CA : " + userDataWS.getCaName() + " couldn't be found.",
+			throw EjbcaWSHelper.getEjbcaException("Error the given CA : " + userDataWS.getCaName() + " could not be found.",
 					logger, ErrorCode.CA_NOT_EXISTS, null);
 		}
 		
@@ -1512,7 +1518,7 @@ public class EjbcaWS implements IEjbcaWS {
 		}else{
 			endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(intAdmin, userDataWS.getEndEntityProfileName());	    	  
 			if(endEntityProfileId == 0){
-				throw EjbcaWSHelper.getEjbcaException("Error given end entity profile : " + userDataWS.getEndEntityProfileName() +" couldn't be found",
+				throw EjbcaWSHelper.getEjbcaException("Error given end entity profile : " + userDataWS.getEndEntityProfileName() +" could not be found",
 						logger, ErrorCode.EE_PROFILE_NOT_EXISTS, null);
 			}
 		}
@@ -1589,6 +1595,8 @@ public class EjbcaWS implements IEjbcaWS {
 				int status = ApprovalDataVO.STATUS_REJECTED; 					
 				try{
 					status = approvalSession.isApproved(admin, ar.generateApprovalId(), 1);
+                    approvalSuccessfullStep1 = (status == ApprovalDataVO.STATUS_APPROVED);
+                    isRejectedStep1 = (status == ApprovalDataVO.STATUS_REJECTED);
 					if(status == ApprovalDataVO.STATUS_APPROVED){
 						ApprovalDataVO approvalDataVO = approvalSession.findNonExpiredApprovalRequest(intAdmin, ar.generateApprovalId());
 						String originalDN = ((GenerateTokenApprovalRequest) approvalDataVO.getApprovalRequest()).getDN();
@@ -1609,6 +1617,37 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 		}
 		
+		if (ar != null && isRejectedStep1) {
+		    throw new ApprovalRequestExecutionException("The approval for id " + ar.generateApprovalId() + " has been rejected.");
+		}
+
+		if (ar != null && !approvalSuccessfullStep1) {
+		    throw new WaitingForApprovalException("The approval for id " + ar.generateApprovalId() + " has not yet been approved", ar.generateApprovalId());
+		}
+
+		if (ar != null) {
+		    // We need to create a new AuthenticationToken here that has the "name" of the admin making the request, but that 
+		    // behaves like an "AlwaysAllowedAuthenticationToken". This is because the request admin does not have privileges, 
+		    // but we want to log as if the requesting admin performed actions below.
+		    final Set<? extends Principal> principals = admin.getPrincipals();
+		    Principal p = null;
+		    if (!principals.isEmpty()) {
+		        p = principals.iterator().next();
+		    } else {
+		        final Set<?> credentials = admin.getCredentials();
+		        if (!credentials.isEmpty()) {
+		            final Object o = credentials.iterator().next();
+		            if (o instanceof X509Certificate) {
+                        final X509Certificate cert = (X509Certificate) o;
+                        p = new X500Principal(cert.getSubjectDN().getName());
+                    }
+		        } else {
+		            log.error("Admin does not have neither Principals nor Credentials");
+		        }
+		    }
+		    admin = new AlwaysAllowLocalAuthenticationToken(p);
+		}
+
 			hardTokenExists = hardTokenSession.existsHardToken(admin, hardTokenDataWS.getHardTokenSN());
 			if(hardTokenExists){
 				if(overwriteExistingSN){
@@ -1745,11 +1784,11 @@ public class EjbcaWS implements IEjbcaWS {
 						userData.setStatus(UserDataConstants.STATUS_NEW);
 						userAdminSession.changeUser(admin, userData, true);
 						X509Certificate cert;
-						if(eDate == null){
-						    cert =  (X509Certificate) signSession.createCertificate(admin,userData.getUsername(),password, keys.getPublic());
-						}else{
-							cert =  (X509Certificate) signSession.createCertificate(admin,userData.getUsername(),password, keys.getPublic(), -1, bDate, eDate);
-						}
+                        if(eDate == null){
+                            cert =  (X509Certificate) signSession.createCertificate(admin,userData.getUsername(),password, keys.getPublic());
+                        }else{
+                            cert =  (X509Certificate) signSession.createCertificate(admin,userData.getUsername(),password, keys.getPublic(), -1, bDate, eDate);
+                        }
 						
 						genCertificates.add(cert);      
 						// Generate Keystore
@@ -1768,10 +1807,10 @@ public class EjbcaWS implements IEjbcaWS {
 					}
 			}
 
-		} catch(Exception e){
+        } catch(Exception e){
             throw EjbcaWSHelper.getInternalException(e, logger);
-		} finally{
-			userAdminSession.setUserStatus(admin, userDataWS.getUsername(), UserDataConstants.STATUS_GENERATED);
+        } finally{
+            userAdminSession.setUserStatus(admin, userDataWS.getUsername(), UserDataConstants.STATUS_GENERATED);
 		}
 
 		// Add hard token data
