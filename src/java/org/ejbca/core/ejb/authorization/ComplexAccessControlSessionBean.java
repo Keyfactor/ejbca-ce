@@ -380,7 +380,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         }
         final String whereClause = "accessRule = '" + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "' OR accessRule LIKE '"
                 + AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + "/%'";
-        Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRuleData a WHERE " + whereClause);
+        Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRulesData a WHERE " + whereClause);
         long count = ValueExtractor.extractLongValue(query.getSingleResult());
         if (log.isTraceEnabled()) {
             log.trace("<existsEndEntityProfileInRules(" + profileid + "): " + count);
@@ -395,7 +395,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         }
         String whereClause = "accessRule = '" + StandardRules.CAACCESSBASE.resource() + "/" + caid + "' OR accessRule LIKE '"
                 + StandardRules.CAACCESSBASE.resource() + "/" + caid + "/%'";
-        Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRuleData a WHERE " + whereClause);
+        Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRulesData a WHERE " + whereClause);
         long count = ValueExtractor.extractLongValue(query.getSingleResult());
         if (log.isTraceEnabled()) {
             log.trace("<existsCAInAccessRules(" + caid + "): " + count);
