@@ -799,10 +799,22 @@ function checkallfields(){
       </td>
       <td width="50%">
          <% if(editca) {
-              if(x509cainfo.getPolicies() == null || (x509cainfo.getPolicies().size() == 0) || (((CertificatePolicy) x509cainfo.getPolicies().get(0)).getPolicyID() == null)) {
+              if(x509cainfo.getPolicies() == null || (x509cainfo.getPolicies().size() == 0)) {
                  out.write(ejbcawebbean.getText("NONE")); 
               } else {
-                out.write(((CertificatePolicy) x509cainfo.getPolicies().get(0)).getPolicyID());
+                // Some special handling to handle the upgrade case after CertificatePolicy changed classname
+                String policyId = null;
+                Object o = x509cainfo.getPolicies().get(0);
+                if (o instanceof CertificatePolicy) {
+                  policyId = ((CertificatePolicy)o).getPolicyID(); 
+                } else {
+                  policyId = ((org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy)o).getPolicyID();
+                }
+                if (policyId == null) {
+                  out.write(ejbcawebbean.getText("NONE")); 
+                } else { 
+                  out.write(policyId);
+                }
               }
             } else {  %>  
          <input type="text" name="<%=TEXTFIELD_POLICYID%>" size="20" maxlength="255">

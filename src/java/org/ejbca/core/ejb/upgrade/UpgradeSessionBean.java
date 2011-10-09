@@ -466,6 +466,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private boolean postMigrateDatabase500(String dbtype) {
     	
     	// TODO: post-upgrade "change CertificatePolicy from ejbca class to cesecore class in certificate profiles that have that defined.
+        // TODO: post-upgrade "change CertificatePolicy from ejbca class to cesecore class in CAs profiles that have that defined?
 
     	log.error("(this is not an error) Starting post upgrade from ejbca 4.0.x to ejbca 5.0.x");
     	boolean ret = true;
