@@ -84,7 +84,7 @@ public class AccessRuleManagementSessionBean implements AccessRuleManagementSess
             result = new AccessRuleData(primaryKey, accessRuleName, state, isRecursive);
             entityManager.persist(result);
         } else {
-            throw new AccessRuleExistsException("Access rule of name " + accessRuleName + "belonging to role " + roleName + " already exists.");
+            throw new AccessRuleExistsException("Access rule of name '" + accessRuleName + "' belonging to role '" + roleName + "' already exists.");
         }
 
         return result;
