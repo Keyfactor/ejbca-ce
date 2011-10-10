@@ -140,7 +140,6 @@ public class InternalEjbcaResources extends InternalResources {
     }
 
     @Override
-    @Deprecated
     public String getLocalizedMessage(final String key, final Object... params) {
         return getLocalizedMessageCs(key, params).toString();
     }

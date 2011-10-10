@@ -145,6 +145,11 @@ public class InternalResources implements Serializable {
      * 
      * It first looks up in the primary language then in the secondary If not
      * found in any of the resource file "no text" is returned.
+     * <br/><br/>
+     * NOTE: String is immutable and you will get a copy of the String instead
+     * of a reference to it. This is more memory consuming than using
+     * getLocalizedMessageCs(..) if you pass on the result to Log4J.
+     * @see #getLocalizedMessageCs(String, Object...)
      * 
      * @param key
      *            is the key searched for in the resource files
@@ -156,9 +161,8 @@ public class InternalResources implements Serializable {
      *            and the resource file have "TEST = messages is {0}" will
      *            result in the string "message is hi".
      * 
-     * @return The message as a String. Use getLocalizedMessageCs to keep down the memory footprint.
+     * @return The message as a String.
      */
-    @Deprecated
     public String getLocalizedMessage(final String key, final Object... params) {
         return getLocalizedMessageCs(key, params).toString();
     }
@@ -179,7 +183,7 @@ public class InternalResources implements Serializable {
      *            and the resource file have "TEST = messages is {0}" will
      *            result in the string "message is hi".
      * 
-     * @return The message as a CharSequence. Avoid using this as a String to keep down the memory footprint. 
+     * @return The message as a CharSequence. 
      */
     public CharSequence getLocalizedMessageCs(final String key, final Object... params) {
         final StringBuilder sb = new StringBuilder();
