@@ -634,7 +634,31 @@ When re-deploying EJBCA this will start a TCP listener on the default port for C
 See the documentation in conf/cmp.properties for information about configuration options for TCP. We recommend using a non standard port > 1024.
 </p>
 </subsection>
-
+<subsection name="CMP Message Authentication">
+<p>EJBCA supports 4 modules for message authentication. Which modules to use can be set in the properties file in the option "cmp.authenticationmodule" and the parameters required by each module are
+set in the option "cmp.authenticationparameters".</p>
+<p>The four supported modules are either password extractors or PKIMessage verifiers:</p>
+<p>The password extractors are:</p>
+<ul>
+<li>RegTokenPwd: Extracts the password from the CMP request. </li>
+<li>DnPartPwd: Extracts the password from the subjectDN of the user the request concerns.</li>
+</ul>
+<p>The PKIMessage verifiers are:</p>
+<ul>
+<li>HMAC: To authenticate the message, this module uses:</li>
+<ul>
+<li>A global shared secret specified in the properties file under cmp.ra.authenticationsecret</li>
+<li>If there was no global shared secret, it will extract the CMP authentication secret specified in the CA</li>
+<li>In client mode, the pre-registered end entity, that sent the request, will be looked up in the database, and if there was a clear text password there,
+this password will be used to authenticate the message</li>
+</ul>
+<li>EndEntityCertificate: When this module is used, the request sender should attach his certificate to the extraCert parameter in the PKIMessage and then 
+sign the message with his private key. EJBCA will then check if the certificate in extraCert does exist in its database and verifies the message signature. 
+If "cmp.checkadminauthorization" in cmp.properties file is set to "true", the certificate in extraCert is checked to determin that it belongs to a registerd 
+administrator in EJBCA with the right authorizations to perform the operations required in the request</li>
+</ul>
+<p>For details about how to set which modules to use and their parameters, see the documentation in the properties file.</p>
+</subsection>
 <subsection name="Client mode for CMP">
 <p>
 Client mode is used when the CMP client will act as an End Entity to EJBCA. this means that the End Entity must be pre-registered in EJBCA and that the client request is authenticated
