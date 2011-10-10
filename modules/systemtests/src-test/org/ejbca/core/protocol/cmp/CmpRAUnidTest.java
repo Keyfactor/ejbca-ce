@@ -156,6 +156,8 @@ public class CmpRAUnidTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "KeyId");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "KeyId");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, cainfo.getName());
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
         updatePropertyOnServer(CmpConfiguration.CONFIG_CERTREQHANDLER_CLASS, UnidFnrHandler.class.getName());
         // Configure a Certificate profile (CmpRA) using ENDUSER as template
         if (this.certificateProfileSession.getCertificateProfile(CPNAME) == null) {

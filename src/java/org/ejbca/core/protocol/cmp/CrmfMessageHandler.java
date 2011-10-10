@@ -14,9 +14,6 @@
 package org.ejbca.core.protocol.cmp;
 
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
 import java.util.List;
 
 import javax.ejb.EJBException;
@@ -28,12 +25,13 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSession;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
-import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -45,6 +43,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ra.CertificateRequestSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
@@ -58,6 +57,9 @@ import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
+import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
+import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
+import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
@@ -92,11 +94,23 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	private final SignSession signSession;
 	private final EndEntityAccessSession endEntityAccessSession;
 	private final CertificateRequestSession certificateRequestSession;
-	
+    private final CertificateStoreSession certStoreSession;
+    private final AccessControlSession authorizationSession;
+    private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
+
+    private int caId;       // The CA to user when adding users in RA mode
+    private int eeProfileId;        // The endEntityProfile to be used when adding users in RA mode.
+    private String certProfileName;  // The certificate profile to use when adding users in RA mode.
+    private int certProfileId;
+    private String keyId;
+    private int requestId;
+    private int requestType;
+
+    
 	/**
 	 * Used only by unit test.
 	 */
-	public CrmfMessageHandler () {
+	public CrmfMessageHandler() {
 		super();
 		this.usernameGenParams = null;
 		this.userPwdParams = "random";
@@ -107,6 +121,9 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		this.certificateRequestSession = null;
 		this.extendedUserDataHandler = null;
 		this.endEntityAccessSession = null;
+		this.certStoreSession = null;
+		this.authorizationSession = null;
+		this.authenticationProviderSession = null;
 	}
 	
 	/**
@@ -120,12 +137,16 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @param userAdminSession
 	 */
 	public CrmfMessageHandler(final AuthenticationToken admin, CaSession caSession, CertificateProfileSession certificateProfileSession, CertificateRequestSession certificateRequestSession,
-			EndEntityAccessSession endEntityAccessSession, EndEntityProfileSession endEntityProfileSession, SignSession signSession) {
+			EndEntityAccessSession endEntityAccessSession, EndEntityProfileSession endEntityProfileSession, SignSession signSession, CertificateStoreSession certStoreSession, 
+			AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		// Get EJB beans, we can not use local beans here because the TCP listener does not work with that
 		this.signSession = signSession;
 		this.certificateRequestSession = certificateRequestSession;
 		this.endEntityAccessSession = endEntityAccessSession;
+		this.certStoreSession = certStoreSession;
+		this.authorizationSession = authSession;
+		this.authenticationProviderSession = authProviderSession;
 
 		if (CmpConfiguration.getRAOperationMode()) {
 			// create UsernameGeneratorParams
@@ -181,10 +202,42 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			if (msg instanceof CrmfRequestMessage) {
 				crmfreq = (CrmfRequestMessage) msg;
 				crmfreq.getMessage();
+				
+		        requestId = crmfreq.getRequestId();
+		        requestType = crmfreq.getRequestType();
+		        keyId = getSenderKeyId(crmfreq.getHeader());
+		        if (keyId == null) {            // No keyId found in message so we can not authenticate it.
+		            final String errMsg = INTRES.getLocalizedMessage("cmp.errorunauthmessagera");
+		            LOG.info(errMsg); // info because this is something we should expect and we handle it
+		            //return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+		        }
+
+		        try {
+		            eeProfileId = getUsedEndEntityProfileId(keyId);
+		            caId = getUsedCaId(keyId, eeProfileId);
+		            certProfileName = getUsedCertProfileName(keyId);
+		            certProfileId = getUsedCertProfileId(certProfileName);
+		        } catch (CADoesntExistsException e) {
+		            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
+		            //if (this.raAuthSecret == null) {
+		            //  return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
+		            //}
+		            return CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, null, keyId, this.responseProt);
+		        }
+
+		        //Check the request's authenticity
+                ICMPAuthenticationModule authenticationModule = null;
+                Object verified = verifyAndGetAuthModule(msg, crmfreq);
+                if(verified instanceof ResponseMessage) {
+                    return (ResponseMessage) verified;
+                } else {
+                    authenticationModule = (ICMPAuthenticationModule) verified;
+                }
+				
 				// If we have usernameGeneratorParams we want to generate usernames automagically for requests
 				// If we are not in RA mode, usernameGeneratorParams will be null
 				if (usernameGenParams != null) {
-					resp = handleRaMessage(msg, crmfreq);
+					resp = handleRaMessage(msg, crmfreq, authenticationModule);
 				} else {
 					// Try to find the user that is the subject for the request
 					// if extractUsernameComponent is null, we have to find the user from the DN
@@ -213,6 +266,8 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 							LOG.debug("Found username: "+data.getUsername());
 						}
 						crmfreq.setUsername(data.getUsername());
+                        crmfreq.setPassword(authenticationModule.getAuthenticationString());
+
 					} else {
 						final String errMsg = INTRES.getLocalizedMessage("cmp.infonouserfordn", dn);
 						LOG.info(errMsg);
@@ -283,69 +338,11 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @throws ClassNotFoundException
 	 * @throws CesecoreException 
 	 */
-	private ResponseMessage handleRaMessage(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq) throws AuthorizationDeniedException, EjbcaException, ClassNotFoundException, CesecoreException {
-		final int eeProfileId;        // The endEntityProfile to be used when adding users in RA mode.
-		final int caId;           // The CA to user when adding users in RA mode
-		final String certProfileName;  // The certificate profile to use when adding users in RA mode.
-		final int certProfileId;
-		// Try to find a HMAC/SHA1 protection key
-		final int requestId = crmfreq.getRequestId();
-		final int requestType = crmfreq.getRequestType();
-		ResponseMessage resp = null; // The CMP response message to be sent back to the client
-		final String keyId = getSenderKeyId(crmfreq.getHeader());
-		if (keyId == null) {			// No keyId found in message so we can not authenticate it.
-			final String errMsg = INTRES.getLocalizedMessage("cmp.errorunauthmessagera");
-			LOG.info(errMsg); // info because this is something we should expect and we handle it
-			return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
-		}
-		try {
-			final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
-			// If we use a globally configured shared secret for all CAs we check it right away
-			if (this.raAuthSecret != null && !verifyer.verify(this.raAuthSecret)) {
-				String errMsg = INTRES.getLocalizedMessage("cmp.errorauthmessage", "Global auth secret");
-				LOG.info(errMsg); // info because this is something we should expect and we handle it
-				if (verifyer.getErrMsg() != null) {
-					errMsg = verifyer.getErrMsg();
-				}
-				return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
-			}
-			try {
-				eeProfileId = getUsedEndEntityProfileId(keyId);
-				caId = getUsedCaId(keyId, eeProfileId);
-				certProfileName = getUsedCertProfileName(keyId);
-				certProfileId = getUsedCertProfileId(certProfileName);
-			} catch (CADoesntExistsException e) {
-				LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
-				if (this.raAuthSecret == null) {
-					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-				}
-				return CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
-			}
-			// Now we know which CA the request is for, if we didn't use a global shared secret we can check it now!
-			if (this.raAuthSecret == null) {
-				try {
-					CAInfo caInfo = this.caSession.getCAInfo(this.admin, caId);
-					String cmpRaAuthSecret = null;  
-					if (caInfo instanceof X509CAInfo) {
-						cmpRaAuthSecret = ((X509CAInfo) caInfo).getCmpRaAuthSecret();
-					}
-					if (StringUtils.isEmpty(cmpRaAuthSecret) || !verifyer.verify(cmpRaAuthSecret)) {
-						String errMsg = INTRES.getLocalizedMessage("cmp.errorauthmessage", "Auth secret for CAId="+caId);
-						if (StringUtils.isEmpty(cmpRaAuthSecret)) {
-							errMsg += " Secret is empty";
-						} else {
-							errMsg += " Secret fails verify";
-						}
-						LOG.info(errMsg); // info because this is something we should expect and we handle it
-						if (verifyer.getErrMsg() != null) {
-							errMsg = verifyer.getErrMsg();
-						}
-						return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
-					}					
-				} catch (CADoesntExistsException e) {
-					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-				}
-			}
+	private ResponseMessage handleRaMessage(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq, ICMPAuthenticationModule authenticationModule) throws AuthorizationDeniedException, EjbcaException, ClassNotFoundException, CesecoreException {
+
+	    ResponseMessage resp = null; // The CMP response message to be sent back to the client
+
+        try {
 			// Create a username and password and register the new user in EJBCA
 			final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);
 			// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
@@ -356,17 +353,26 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			}
 			final String username = gen.generateUsername(dnname.toString());
 			final String pwd;
-			if (StringUtils.equals(this.userPwdParams, "random")) {
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("Setting 12 char random user password.");
-				}
+            if(StringUtils.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
+                pwd = authenticationModule.getAuthenticationString();
+            } else if(StringUtils.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_HMAC)) {
+                if (StringUtils.equals(this.userPwdParams, "random")) {
+				    if (LOG.isDebugEnabled()) {
+					    LOG.debug("Setting 12 char random user password.");
+                    }
 				final IPasswordGenerator pwdgen = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_ALLPRINTABLE);
 				pwd = pwdgen.getNewPassword(12, 12);                                                                    
-			} else {
-				if (LOG.isDebugEnabled()) {
-					LOG.debug("Setting fixed user password from config.");
-				}
-				pwd = this.userPwdParams;                                                                    
+                } else {
+				    if (LOG.isDebugEnabled()) {
+					    LOG.debug("Setting fixed user password from config.");
+				    }
+				    pwd = this.userPwdParams;
+                }
+            } else {
+                //This should not run since an error would have occurred earlier if the authentication module was unknown 
+                final String errMsg = "Unknown authentication module.";
+                LOG.error(errMsg);
+                return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
 			}
 			// AltNames may be in the request template
 			final String altNames = req.getRequestAltNames();
@@ -402,15 +408,20 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			crmfreq.setUsername(username);
 			crmfreq.setPassword(pwd);
 			// Set all protection parameters
-			final String pbeDigestAlg = verifyer.getOwfOid();
-			final String pbeMacAlg = verifyer.getMacOid();
-			final int pbeIterationCount = verifyer.getIterationCount();
-			final String raSecret = verifyer.getLastUsedRaSecret();
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("responseProt="+this.responseProt+", pbeDigestAlg="+pbeDigestAlg+", pbeMacAlg="+pbeMacAlg+", keyId="+keyId+", raSecret="+(raSecret == null ? "null":"not null"));
-			}
-			if (StringUtils.equals(this.responseProt, "pbe")) {
-				crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+			CmpPbeVerifyer verifyer = null;
+			if(StringUtils.equals(authenticationModule.getName(), CmpConfiguration.AUTHMODULE_HMAC)) {
+			    final HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
+			    verifyer = hmacmodule.getCmpPbeVerifyer();
+                final String pbeDigestAlg = verifyer.getOwfOid();
+                final String pbeMacAlg = verifyer.getMacOid();
+                final int pbeIterationCount = verifyer.getIterationCount();
+                final String raSecret = verifyer.getLastUsedRaSecret();
+			    if (LOG.isDebugEnabled()) {
+				    LOG.debug("responseProt="+this.responseProt+", pbeDigestAlg="+pbeDigestAlg+", pbeMacAlg="+pbeMacAlg+", keyId="+keyId+", raSecret="+(raSecret == null ? "null":"not null"));
+			    }
+			    if (StringUtils.equals(this.responseProt, "pbe")) {
+				    crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+                }
 			}
 			try {
 				try {
@@ -437,19 +448,32 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 				LOG.error(INTRES.getLocalizedMessage(CMP_ERRORADDUSER, username), e);
 				resp = CmpMessageHelper.createErrorMessage(msg, FailInfo.NOT_AUTHORIZED, e.getMessage(), requestId, requestType, verifyer, keyId, this.responseProt);
 			}
-		} catch (NoSuchAlgorithmException e) {
-			LOG.info(INTRES.getLocalizedMessage("cmp.errorcalcprotection"), e);
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
-		} catch (NoSuchProviderException e) {
-			LOG.error(INTRES.getLocalizedMessage("cmp.errorcalcprotection"), e);
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
-		} catch (InvalidKeyException e) {
-			LOG.info(INTRES.getLocalizedMessage("cmp.errorcalcprotection"), e);
-			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 		} catch (HandlerException e) {
 			LOG.error(INTRES.getLocalizedMessage("cmp.errorexthandlerexec"), e);
 			resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, e.getMessage());
 		}
 		return resp;
 	}
+	
+	private Object verifyAndGetAuthModule(BaseCmpMessage msg, CrmfRequestMessage crmfreq) throws CADoesntExistsException, AuthorizationDeniedException {
+		final CAInfo caInfo = this.caSession.getCAInfo(this.admin, caId);
+		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, admin, caSession, endEntityAccessSession, certStoreSession, authorizationSession, 
+		                endEntityProfileSession, authenticationProviderSession);
+		ICMPAuthenticationModule authenticationModule = null;
+		if(messageVerifyer.verify(crmfreq.getPKIMessage())) {
+			authenticationModule = messageVerifyer.getUsedAuthenticationModule();
+		}
+		if(authenticationModule == null) {
+			String errMsg = "";
+			if(messageVerifyer.getErrorMessage() != null) {
+				errMsg = messageVerifyer.getErrorMessage();
+			} else {
+				errMsg = "Unrecognized authentication modules";
+			}
+			LOG.error(errMsg);
+			return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+		}
+		return authenticationModule;
+	}
+
 }

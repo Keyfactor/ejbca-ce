@@ -135,6 +135,8 @@ public class CrmfRequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
         updatePropertyOnServer(CmpConfiguration.CONFIG_DEFAULTCA, issuerDN);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
 
         if (keys == null) {
             keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);

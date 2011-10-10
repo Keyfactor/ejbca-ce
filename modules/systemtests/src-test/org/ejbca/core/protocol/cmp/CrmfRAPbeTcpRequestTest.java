@@ -141,6 +141,8 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, "password");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, CPNAME);
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEPNAME);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
         // Configure a Certificate profile (CmpRA) using ENDUSER as template and check "Allow validity override".
         if (certificateProfileSession.getCertificateProfile(CPNAME) == null) {
             CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);

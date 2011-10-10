@@ -93,6 +93,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "KeyId");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
     }
 
     private X509Certificate setupCA(String caName, String pbeSecret) throws Exception {

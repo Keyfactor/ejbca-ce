@@ -119,6 +119,8 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "DN");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS, "CN");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ALLOWCUSTOMCERTSERNO, "false");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
 
         CryptoProviderTools.installBCProvider();
         // Try to use AdminCA1 if it exists
