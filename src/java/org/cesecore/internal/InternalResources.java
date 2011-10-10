@@ -203,14 +203,8 @@ public class InternalResources implements Serializable {
         }
         trim(sb);
         // sb.trim()    no such method.. this was present in the old memory consuming version
-        if (log.isDebugEnabled()) {
-            log.debug(key + "=" + sb.toString());
-        }
         for (int i=0; i<params.length; i++) {
             replaceAll(sb, i, params[i]);
-        }
-        if (log.isDebugEnabled()) {
-            log.debug(key + "=" + sb.toString());
         }
         removeUnusedPlaceHolders(sb, params.length);
         if (log.isDebugEnabled()) {
