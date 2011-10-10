@@ -25,7 +25,9 @@ import javax.ejb.TransactionAttributeType;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERObject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
@@ -33,6 +35,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLoc
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
@@ -86,6 +89,12 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	private CertificateProfileSessionLocal certificateProfileSession;
 	@EJB
 	private CertificateRequestSessionLocal certificateRequestSession;
+	@EJB
+	private CertificateStoreSessionLocal certificateStoreSession;
+	@EJB
+	private AccessControlSessionLocal authSession;
+	@EJB
+	private WebAuthenticationProviderSessionLocal authenticationProviderSession;
 	
 	@PostConstruct
 	public void postConstruct() {
@@ -139,11 +148,11 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			switch (tagno) {
 			case 0:
 				// 0 (ir, Initialization Request) and 2 (cr, Certification Req) are both certificate requests
-				handler = new CrmfMessageHandler(admin, caSession,  certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession);
+				handler = new CrmfMessageHandler(admin, caSession,  certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession);
 				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(), CmpConfiguration.getAllowRAVerifyPOPO(), CmpConfiguration.getExtractUsernameComponent());
 				break;
 			case 2:
-				handler = new CrmfMessageHandler(admin, caSession, certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession);
+				handler = new CrmfMessageHandler(admin, caSession, certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession);
 				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(), CmpConfiguration.getAllowRAVerifyPOPO(), CmpConfiguration.getExtractUsernameComponent());
 				break;
 			case 19:
@@ -151,12 +160,12 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			case 24:
 				// Certificate confirmation (certConf, Certificate confirm)
 				//handler = new ConfirmationMessageHandler(admin, caAdminSession, endEntityProfileSession, certificateProfileSession);
-				handler = new ConfirmationMessageHandler(admin, caSession, endEntityProfileSession, certificateProfileSession);
+				handler = new ConfirmationMessageHandler(admin, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 11:
 				// Revocation request (rr, Revocation Request)
-				handler = new RevocationMessageHandler(admin, userAdminSession, caSession, endEntityProfileSession, certificateProfileSession);
+				handler = new RevocationMessageHandler(admin, userAdminSession, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			default:

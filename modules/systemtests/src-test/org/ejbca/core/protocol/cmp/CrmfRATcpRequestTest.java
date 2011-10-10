@@ -136,6 +136,8 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
         
         if (keys == null) {
             keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -249,7 +251,8 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Received an unathenticated message in RA mode.");
+        //TODO the error message should be changed back to "Received an unathenticated message in RA mode." when VerifyPKIMessage is fixed to return better error messages.
+        checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Unrecognized authentication module 'RegTokenPwd'");
     }
 
     @Test
