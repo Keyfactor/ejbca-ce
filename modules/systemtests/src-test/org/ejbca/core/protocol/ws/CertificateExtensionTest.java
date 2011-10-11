@@ -91,6 +91,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	@After
 	public void tearDown() throws Exception {
 		super.tearDown();
+		cleanUpAdmins(getRoleName());
 	}
 
 	@Test
