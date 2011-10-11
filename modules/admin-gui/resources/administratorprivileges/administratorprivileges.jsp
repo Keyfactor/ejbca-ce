@@ -73,7 +73,7 @@
 			</h:outputLink>
 		</h:column>
 		<h:column>
-			<h:commandLink action="#{adminGroupsManagedBean.renameGroup}"
+			<h:commandLink action="#{adminGroupsManagedBean.renameRole}"
 				onclick="return getInputToField('groupList:newGroupName','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}') && getInsertIntoField('groupList:currentAdminGroup','#{adminGroup.roleName}', '#{web.text.ONLYCHARACTERS}');"
 				styleClass="commandLink" title="#{web.text.RENAMEADMINGROUP}">
 				<h:outputText value="#{web.text.RENAME}"/>
