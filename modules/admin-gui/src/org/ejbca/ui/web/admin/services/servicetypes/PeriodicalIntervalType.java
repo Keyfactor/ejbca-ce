@@ -31,7 +31,9 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
  */
 public class PeriodicalIntervalType extends IntervalType {
 	
-	public static final String NAME = "PERIODICALINTERVAL";
+	private static final long serialVersionUID = -1076212040665563240L;
+
+    public static final String NAME = "PERIODICALINTERVAL";
 	
 	public static final String DEFAULT_UNIT = PeriodicalInterval.UNIT_MINUTES;
 	public static final String DEFAULT_VALUE = "5";
@@ -50,7 +52,7 @@ public class PeriodicalIntervalType extends IntervalType {
 		return org.ejbca.core.model.services.intervals.PeriodicalInterval.class.getName();
 	}
 
-	public Properties getProperties(ArrayList errorMessages) throws IOException{
+	public Properties getProperties(ArrayList<String> errorMessages) throws IOException{
 		Properties retval = new Properties();
 		
 		
@@ -84,8 +86,8 @@ public class PeriodicalIntervalType extends IntervalType {
 		this.unit = unit;
 	}
 	
-	public List getAvailableUnits(){
-		ArrayList retval = new ArrayList();
+	public List<SelectItem> getAvailableUnits(){
+		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
 		for(int i = 0 ; i<PeriodicalInterval.AVAILABLE_UNITS.length; i++){
 			retval.add(new SelectItem(PeriodicalInterval.AVAILABLE_UNITS[i],(String) EjbcaJSFHelper.getBean().getText().get(PeriodicalInterval.AVAILABLE_UNITS[i])));
 		}

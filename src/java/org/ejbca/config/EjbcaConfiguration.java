@@ -175,7 +175,7 @@ public final class EjbcaConfiguration {
     }
 
     /**
-     * Parameter to specify if retrieving endEntity profiles in RAAdminSession should be cached, and in that case for how long.
+     * Parameter to specify if retrieving endEntity profiles in EndEntityProfileSessionBean should be cached, and in that case for how long.
      */
     public static long getCacheEndEntityProfileTime() {
         long time = 1000; // cache 1 second is the default
@@ -188,7 +188,7 @@ public final class EjbcaConfiguration {
     }
 
     /**
-     * Parameter to specify if retrieving GlobalConfiguration (in RAAdminSession) should be cached, and in that case for how long.
+     * Parameter to specify if retrieving GlobalConfiguration (in GlobalConfigurationSessionBean) should be cached, and in that case for how long.
      */
     public static long getCacheGlobalConfigurationTime() {
         long time = 30000; // cache 30 seconds is the default

@@ -30,8 +30,14 @@ import java.util.Properties;
  */
 public class CustomWorkerType extends WorkerType {
 	
-	public static final String NAME = "CUSTOMWORKER";
+	private static final long serialVersionUID = 1790314768357040269L;
+    public static final String NAME = "CUSTOMWORKER";
 	
+    private String classPath;   
+    private String propertyText;
+    private Collection<String> compatibleActionTypeNames = new ArrayList<String>();
+    private Collection<String> compatibleIntervalTypeNames = new ArrayList<String>();
+    
 	public CustomWorkerType() {
 		super("customworker.jsp", NAME, true);
 		
@@ -42,11 +48,6 @@ public class CustomWorkerType extends WorkerType {
 		compatibleIntervalTypeNames.add(CustomIntervalType.NAME);
 		compatibleIntervalTypeNames.add(PeriodicalIntervalType.NAME);
 	}
-
-	private String classPath;	
-	private String propertyText;
-	private Collection compatibleActionTypeNames = new ArrayList();
-	private Collection compatibleIntervalTypeNames = new ArrayList();
 
 	/**
 	 * @return the propertyText
@@ -73,7 +74,7 @@ public class CustomWorkerType extends WorkerType {
 		return classPath;
 	}
 
-	public Properties getProperties(ArrayList errorMessages) throws IOException{
+	public Properties getProperties(ArrayList<String> errorMessages) throws IOException{
 		Properties retval = new Properties();
 	    retval.load(new ByteArrayInputStream(getPropertyText().getBytes()));		
 		return retval;
@@ -88,14 +89,14 @@ public class CustomWorkerType extends WorkerType {
 	/**
 	 * @return the names of the Compatible Action Types
 	 */
-	public Collection getCompatibleActionTypeNames() {
+	public Collection<String> getCompatibleActionTypeNames() {
 		return compatibleActionTypeNames;
 	}
 
 	/**
 	 * @return the names of the Compatible Interval Types
 	 */
-	public Collection getCompatibleIntervalTypeNames() {
+	public Collection<String> getCompatibleIntervalTypeNames() {
 		return compatibleIntervalTypeNames;
 	}
 	

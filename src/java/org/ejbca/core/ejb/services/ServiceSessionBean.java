@@ -71,7 +71,7 @@ import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.services.IInterval;
@@ -139,7 +139,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private KeyRecoverySessionLocal keyRecoverySession;
     @EJB
-    private RaAdminSessionLocal raAdminSession;
+    private AdminPreferenceSessionLocal raAdminSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
@@ -594,7 +594,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(HardTokenSessionLocal.class, hardTokenSession);
             ejbs.put(InternalSecurityEventsLoggerSessionLocal.class, auditSession);
             ejbs.put(KeyRecoverySessionLocal.class, keyRecoverySession);
-            ejbs.put(RaAdminSessionLocal.class, raAdminSession);
+            ejbs.put(AdminPreferenceSessionLocal.class, raAdminSession);
             ejbs.put(GlobalConfigurationSessionLocal.class, globalConfigurationSession);
             ejbs.put(SignSessionLocal.class, signSession);
             ejbs.put(UserAdminSessionLocal.class, userAdminSession);

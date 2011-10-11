@@ -47,7 +47,7 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.roles.ComplexRoleManagementSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
@@ -93,7 +93,7 @@ public interface EjbBridgeSessionLocal {
 	KeyRecoverySessionLocal getKeyRecoverySession();
 	PublisherQueueSessionLocal getPublisherQueueSession();
 	PublisherSessionLocal getPublisherSession();
-	RaAdminSessionLocal getRaAdminSession();
+	AdminPreferenceSessionLocal getRaAdminSession();
 	RoleAccessSessionLocal getRoleAccessSession();
 	RoleManagementSessionLocal getRoleManagementSession();
 	SecurityEventsAuditorSessionLocal getSecurityEventsAuditorSession();

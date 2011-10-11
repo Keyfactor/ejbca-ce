@@ -80,9 +80,6 @@ public class BaseCmpMessageHandler {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Found a sender keyId: "+keyId);
 			}
-			if (keyId == null) {
-				LOG.error("No KeyId contained in CMP request.");
-			}
 		}
 		return keyId;
 	}

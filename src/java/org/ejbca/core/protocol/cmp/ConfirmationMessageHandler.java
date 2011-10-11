@@ -142,11 +142,9 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
                 }
                 if(authenticationModule == null) {
                     String errMsg = "";
-                    if(errMsg != null) {
-                        errMsg = messageVerifyer.getErrorMessage();
-                    } else {
-                        errMsg = "Unrecognized authentication modules";
-                    }
+
+                    errMsg = messageVerifyer.getErrorMessage();
+                    
                     LOG.error(errMsg);
                     return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
                 } else {

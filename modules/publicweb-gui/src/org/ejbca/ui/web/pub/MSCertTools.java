@@ -29,7 +29,7 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSession;
+import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSession;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 
@@ -216,7 +216,7 @@ public class MSCertTools {
 	}
 
     public static int getOrCreateEndEndtityProfile(AuthenticationToken admin, int templateIndex, int certProfileId, int caid, String usernameShort,
-            String fetchedSubjectDN, RaAdminSession raAdminSession, EndEntityProfileSession endEntityProfileSession) {
+            String fetchedSubjectDN, AdminPreferenceSession raAdminSession, EndEntityProfileSession endEntityProfileSession) {
 		// Create end endity profile if neccesary
 		String endEntityProfileName = "Autoenroll-" + SUPPORTEDCERTIFICATETEMPLATES[templateIndex];
 

@@ -50,7 +50,7 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.ejb.roles.ComplexRoleManagementSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
@@ -95,7 +95,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB KeyRecoverySessionLocal keyRecoverySession;
 	@EJB PublisherQueueSessionLocal publisherQueueSession;
 	@EJB PublisherSessionLocal publisherSession;
-	@EJB RaAdminSessionLocal raSession;
+	@EJB AdminPreferenceSessionLocal raSession;
 	@EJB RevocationSessionLocal revocationSession;
 	@EJB RoleAccessSessionLocal roleAccessSession;
 	@EJB RoleManagementSessionLocal roleManagementSession;
@@ -132,7 +132,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public KeyRecoverySessionLocal getKeyRecoverySession() { return keyRecoverySession; }
 	@Override public PublisherQueueSessionLocal getPublisherQueueSession() { return publisherQueueSession; }
 	@Override public PublisherSessionLocal getPublisherSession() { return publisherSession; }
-	@Override public RaAdminSessionLocal getRaAdminSession() { return raSession; }
+	@Override public AdminPreferenceSessionLocal getRaAdminSession() { return raSession; }
 	@Override public RevocationSessionLocal getRevocationSession() { return revocationSession; }
 	@Override public RoleAccessSessionLocal getRoleAccessSession() { return roleAccessSession; }
 	@Override public RoleManagementSessionLocal getRoleManagementSession() { return roleManagementSession; }

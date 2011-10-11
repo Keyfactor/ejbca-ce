@@ -30,7 +30,9 @@ public class EnhancedEIDProfile extends EIDProfile {
 						
 	// Public Constants
 	
-	public static final int TYPE_ENHANCEDEID = HardTokenConstants.TOKENTYPE_ENHANCEDEID;
+	private static final long serialVersionUID = 3655193301302470381L;
+
+    public static final int TYPE_ENHANCEDEID = HardTokenConstants.TOKENTYPE_ENHANCEDEID;
 	
 	public static final float LATEST_VERSION = 4;
 
@@ -62,55 +64,55 @@ public class EnhancedEIDProfile extends EIDProfile {
     private void init(){
 	  data.put(TYPE, Integer.valueOf(TYPE_ENHANCEDEID));
       
-      ArrayList certprofileids = new ArrayList(NUMBEROFCERTIFICATES);
+      ArrayList<Integer> certprofileids = new ArrayList<Integer>(NUMBEROFCERTIFICATES);
 	  certprofileids.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN)); 
 	  certprofileids.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH)); 
 	  certprofileids.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENENC)); 
 	  data.put(CERTIFICATEPROFILEID, certprofileids);
 	  
-	  ArrayList certWritable = new ArrayList(NUMBEROFCERTIFICATES);
+	  ArrayList<Boolean> certWritable = new ArrayList<Boolean>(NUMBEROFCERTIFICATES);
 	  certWritable.add(Boolean.FALSE);
 	  certWritable.add(Boolean.FALSE);
 	  certWritable.add(Boolean.FALSE);
 	  data.put(CERTWRITABLE, certWritable);
 	  	  
-	  ArrayList caids = new ArrayList(NUMBEROFCERTIFICATES);
+	  ArrayList<Integer> caids = new ArrayList<Integer>(NUMBEROFCERTIFICATES);
 	  caids.add(Integer.valueOf(CAID_USEUSERDEFINED)); 
 	  caids.add(Integer.valueOf(CAID_USEUSERDEFINED)); 
 	  caids.add(Integer.valueOf(CAID_USEUSERDEFINED)); 
 	  data.put(CAID, caids);
 	  
-	  ArrayList pintypes = new ArrayList(NUMBEROFCERTIFICATES);
+	  ArrayList<Integer> pintypes = new ArrayList<Integer>(NUMBEROFCERTIFICATES);
 	  pintypes.add(Integer.valueOf(PINTYPE_ASCII_NUMERIC));
 	  pintypes.add(Integer.valueOf(PINTYPE_ASCII_NUMERIC));
 	  pintypes.add(Integer.valueOf(PINTYPE_ENC_SAME_AS_AUTH));
 	  data.put(PINTYPE, pintypes);
 	  
-	  ArrayList minpinlength = new ArrayList(NUMBEROFCERTIFICATES);
+	  ArrayList<Integer> minpinlength = new ArrayList<Integer>(NUMBEROFCERTIFICATES);
 	  minpinlength.add(Integer.valueOf(4));
 	  minpinlength.add(Integer.valueOf(4));
 	  minpinlength.add(Integer.valueOf(0));
 	  data.put(MINIMUMPINLENGTH, minpinlength);
 	  
-	  ArrayList iskeyrecoverable = new ArrayList(NUMBEROFCERTIFICATES);
+	  ArrayList<Boolean> iskeyrecoverable = new ArrayList<Boolean>(NUMBEROFCERTIFICATES);
 	  iskeyrecoverable.add(Boolean.FALSE);
 	  iskeyrecoverable.add(Boolean.FALSE);
 	  iskeyrecoverable.add(Boolean.TRUE);
 	  data.put(ISKEYRECOVERABLE, iskeyrecoverable);
 	  
-	  ArrayList reuseoldcertificate = new ArrayList(NUMBEROFCERTIFICATES);
+	  ArrayList<Boolean> reuseoldcertificate = new ArrayList<Boolean>(NUMBEROFCERTIFICATES);
 	  reuseoldcertificate.add(Boolean.FALSE);
 	  reuseoldcertificate.add(Boolean.FALSE);
 	  reuseoldcertificate.add(Boolean.FALSE);
 	  data.put(REUSEOLDCERTIFICATE, reuseoldcertificate);
 
-	  ArrayList minimumkeylength = new ArrayList(NUMBEROFCERTIFICATES);
+	  ArrayList<Integer> minimumkeylength = new ArrayList<Integer>(NUMBEROFCERTIFICATES);
 	  minimumkeylength.add(Integer.valueOf(2048));
 	  minimumkeylength.add(Integer.valueOf(2048));
 	  minimumkeylength.add(Integer.valueOf(2048));
 	  data.put(MINIMUMKEYLENGTH, minimumkeylength);	  
 
-	  ArrayList keytypes = new ArrayList(NUMBEROFCERTIFICATES);
+	  ArrayList<String> keytypes = new ArrayList<String>(NUMBEROFCERTIFICATES);
 	  keytypes.add(KEYTYPE_RSA);
 	  keytypes.add(KEYTYPE_RSA);
 	  keytypes.add(KEYTYPE_RSA);
@@ -155,7 +157,7 @@ public class EnhancedEIDProfile extends EIDProfile {
 			super.upgrade();
 			
 			if(data.get(MINIMUMPINLENGTH) == null){
-				ArrayList minpinlength = new ArrayList(NUMBEROFCERTIFICATES);
+				ArrayList<Integer> minpinlength = new ArrayList<Integer>(NUMBEROFCERTIFICATES);
 				minpinlength.add(Integer.valueOf(4));
 				minpinlength.add(Integer.valueOf(4));
 				minpinlength.add(Integer.valueOf(0));
@@ -163,7 +165,7 @@ public class EnhancedEIDProfile extends EIDProfile {
 			}
 			
 			if(data.get(REUSEOLDCERTIFICATE) == null){
-				ArrayList reuseoldcertificate = new ArrayList(NUMBEROFCERTIFICATES);
+				ArrayList<Boolean> reuseoldcertificate = new ArrayList<Boolean>(NUMBEROFCERTIFICATES);
 				reuseoldcertificate.add(Boolean.FALSE);
 				reuseoldcertificate.add(Boolean.FALSE);
 				reuseoldcertificate.add(Boolean.FALSE);
@@ -171,7 +173,7 @@ public class EnhancedEIDProfile extends EIDProfile {
 			}
 			
 			if(data.get(CERTWRITABLE) == null){
-				ArrayList certWritable = new ArrayList(NUMBEROFCERTIFICATES);
+				ArrayList<Boolean> certWritable = new ArrayList<Boolean>(NUMBEROFCERTIFICATES);
 				certWritable.add(Boolean.FALSE);
 				certWritable.add(Boolean.FALSE);
 				certWritable.add(Boolean.FALSE);
