@@ -721,16 +721,8 @@ public class ProtocolScepHttpTest extends CaTestCase {
                 secondaryStream = new FileInputStream("src/intresources/intresources." + secondaryLanguage + ".properties");
 
                 try {
-                    if (primaryStream != null) {
-                        primaryEjbcaResource.load(primaryStream);
-                    } else {
-                        log.error("primaryResourse == null");
-                    }
-                    if (secondaryStream != null) {
-                        secondaryEjbcaResource.load(secondaryStream);
-                    } else {
-                        log.error("secondaryResource == null");
-                    }
+                    primaryEjbcaResource.load(primaryStream);
+                    secondaryEjbcaResource.load(secondaryStream);
                 } catch (IOException e) {
                     log.error("Error reading internal resourcefile", e);
                 }

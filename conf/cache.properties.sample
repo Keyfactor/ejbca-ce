@@ -28,8 +28,8 @@
 #cainfo.cachetime=157680000000
 #cainfo.cachetime=-1
 
-# Set to a value for caching calls to getEndEntityProfile and getEndEntityProfileId/Name in RAAdminSession. This means that for EndEntity profiles to be updated
-# the cache time expires, an "Edit profile" or server restart is done, or flushProfileCache is called on RAAdminSession. 
+# Set to a value for caching calls to getEndEntityProfile and getEndEntityProfileId/Name in EndEntityProfileSessionBean. This means that for EndEntity profiles to be updated
+# the cache time expires, an "Edit profile" or server restart is done, or flushProfileCache is called on EndEntityProfileSessionBean. 
 # This cache works fine in a single server environment. In a multi server (clustered) environment, 
 # this can be used to disable the check if a profile has been edited on another node, so the profile must be edited on all nodes, 
 # or nodes caches flushed after editing on one node.

@@ -42,7 +42,8 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
  */
 public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
 	
-	private static final Logger log = Logger.getLogger(MSPKCS10RequestMessage.class);
+	private static final long serialVersionUID = 2936342787428871121L;
+    private static final Logger log = Logger.getLogger(MSPKCS10RequestMessage.class);
 
 	public MSPKCS10RequestMessage() {
 		super();
@@ -89,9 +90,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
         // Get attributes
         CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
         AttributeTable attributes = new AttributeTable(info.getAttributes());
-        if (attributes == null) {
-            return ret;
-        }
+
         Attribute attr = attributes.get(new DERObjectIdentifier(szOID_REQUEST_CLIENT_INFO));
         if (attr == null) {
                 return ret;                

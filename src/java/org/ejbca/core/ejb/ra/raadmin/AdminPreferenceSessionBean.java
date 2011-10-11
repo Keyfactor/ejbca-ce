@@ -42,11 +42,11 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RaAdminSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class RaAdminSessionBean implements RaAdminSessionLocal, RaAdminSessionRemote {
+public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, AdminPreferenceSessionRemote {
 
     private static final String DEFAULTUSERPREFERENCE = "default";
 
-    private static final Logger log = Logger.getLogger(RaAdminSessionBean.class);
+    private static final Logger log = Logger.getLogger(AdminPreferenceSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 

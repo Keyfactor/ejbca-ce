@@ -36,7 +36,9 @@ import org.ejbca.core.model.SecConst;
  */
 public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	
-	public static final String KEYTYPE_RSA = "RSA";
+	private static final long serialVersionUID = 5516097629038242905L;
+
+    public static final String KEYTYPE_RSA = "RSA";
 	
 	public static final int CAID_USEUSERDEFINED = SecConst.CAID_USEUSERDEFINED;
 	

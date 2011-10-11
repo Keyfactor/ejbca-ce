@@ -41,7 +41,7 @@ import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.ejb.services.ServiceDataSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
@@ -77,7 +77,7 @@ public class EjbRemoteHelper {
     private KeyRecoverySessionRemote keyRecoverySession = null;
     private PublisherQueueSessionRemote publisherQueueSession = null;
     private PublisherSessionRemote publisherSession = null;
-    private RaAdminSessionRemote raAdminSession = null;  
+    private AdminPreferenceSessionRemote raAdminSession = null;  
     private RevocationSessionRemote revocationSession = null;
     private RoleAccessSessionRemote roleAccessSession = null;
     private RoleManagementSessionRemote roleManagementSession = null;
@@ -154,9 +154,9 @@ public class EjbRemoteHelper {
         return endEntityProfileSession;
     }
 
-    public RaAdminSessionRemote getRAAdminSession() {
+    public AdminPreferenceSessionRemote getRAAdminSession() {
         if (raAdminSession == null) {
-            raAdminSession = JndiHelper.getRemoteSession(RaAdminSessionRemote.class);
+            raAdminSession = JndiHelper.getRemoteSession(AdminPreferenceSessionRemote.class);
         }
         return raAdminSession;
     }

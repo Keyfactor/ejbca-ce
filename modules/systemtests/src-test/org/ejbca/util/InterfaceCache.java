@@ -39,7 +39,7 @@ import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.ejb.services.ServiceDataSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
@@ -82,7 +82,7 @@ public class InterfaceCache {
 	    return getEjb().getCrlCreateSession();
 	}
 	
-	public static RaAdminSessionRemote getRAAdminSession() {
+	public static AdminPreferenceSessionRemote getRAAdminSession() {
 		return getEjb().getRAAdminSession();
 	}
 

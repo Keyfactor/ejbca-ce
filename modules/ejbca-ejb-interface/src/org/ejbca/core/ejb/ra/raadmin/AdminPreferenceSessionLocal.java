@@ -12,12 +12,12 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra.raadmin;
 
-import javax.ejb.Remote;
+import javax.ejb.Local;
 
 /**
- * Remote interface for RaAdminSession.
+ * Local interface for RaAdminSession.
  */
-@Remote
-public interface RaAdminSessionRemote extends RaAdminSession {
+@Local
+public interface AdminPreferenceSessionLocal extends AdminPreferenceSession {
 
 }

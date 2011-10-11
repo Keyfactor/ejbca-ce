@@ -50,7 +50,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.RaAdminSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.MSPKCS10RequestMessage;
@@ -75,7 +75,7 @@ public class AutoEnrollServlet extends HttpServlet {
 	@EJB
 	private EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB
-	private RaAdminSessionLocal raAdminSession;
+	private AdminPreferenceSessionLocal raAdminSession;
 	@EJB
 	private SignSessionLocal signSession;
 	@EJB

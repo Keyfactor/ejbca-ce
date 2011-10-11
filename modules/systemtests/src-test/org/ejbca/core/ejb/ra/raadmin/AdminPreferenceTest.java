@@ -42,7 +42,7 @@ public class AdminPreferenceTest extends CaTestCase {
 
     AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AdminPreferenceTest"));
     
-    private RaAdminSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private AdminPreferenceSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
     
     private static final String user = genRandomUserName();
 

@@ -15,11 +15,11 @@ package org.ejbca.core.ejb.ra.raadmin;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
-/** Session bean to handle RA administration, which means admin preferences, global configuration and such.
+/** Session bean to handle admin preference administration
  * 
  * @version $Id$
  */
-public interface RaAdminSession {
+public interface AdminPreferenceSession {
     
     /**
      * Finds the admin preference belonging to a certificate serialnumber.
