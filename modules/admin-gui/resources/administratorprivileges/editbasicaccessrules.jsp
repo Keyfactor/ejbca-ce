@@ -226,8 +226,8 @@ function checkallfields(){
  	<h:form id="basicRules">
 	<h:inputHidden id="currentAdminGroup" value="#{adminGroupsManagedBean.currentAdminGroup}" />
 	<h:panelGrid columns="2" rowClasses="listRow1,listRow2" columnClasses="leftColumn,rightColumn" width="100%">
-		<h:outputText value="#{web.text.ROLE}"/>
-		<h:selectOneMenu id="selectrole" value="#{adminGroupsManagedBean.currentRole}" onchange='roleupdated()'>
+		<h:outputText value="#{web.text.ROLETEMPLATE}"/>
+		<h:selectOneMenu id="selectrole" value="#{adminGroupsManagedBean.currentRoleTemplate}" onchange='roleupdated()'>
 			<f:selectItems value="#{adminGroupsManagedBean.availableRoles}" />
 		</h:selectOneMenu> 
 		

@@ -36,7 +36,6 @@ public class BasicAccessRuleSetEncoder implements Serializable {
 
     private boolean forceadvanced = false;
 
-    private String currentRoleName = null;
     private Collection<String> namesOfAvailableRoles = new ArrayList<String>();
     private HashSet<Integer> currentcas = new HashSet<Integer>();
     private HashSet<Integer> availablecas = new HashSet<Integer>();
@@ -60,7 +59,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
         initAvailableRoles(aar);
         initAvailableRules(usehardtokens, usekeyrecovery, aar);
 
-        initCurrentRole(currentaccessrules);
+        //initCurrentRole(currentaccessrules);
         initCurrentRules(currentaccessrules);
 
     }
@@ -70,15 +69,6 @@ public class BasicAccessRuleSetEncoder implements Serializable {
      */
     public boolean getForceAdvanced() {
         return forceadvanced;
-    }
-
-    /**
-     * Returns the current role of the administrator group.
-     * 
-     * @return one of the BasicAccessRuleSet ROLE_constants
-     */
-    public String getCurrentRole() {
-        return currentRoleName;
     }
 
     /**
@@ -155,223 +145,6 @@ public class BasicAccessRuleSetEncoder implements Serializable {
             namesOfAvailableRoles.add(DefaultRoles.SUPERADMINISTRATOR.getName());
         }
 
-    }
-
-    private void initCurrentRole(Collection<AccessRuleData> currentaccessrules) {
-        // Check if administrator is superadministrator
-
-        if (currentaccessrules.size() > 0) {
-            if (isSuperAdministrator(currentaccessrules)) {
-                this.currentRoleName = DefaultRoles.SUPERADMINISTRATOR.getName();
-            } else
-            // Check if administrator is caadministrator
-            if (isCAAdministrator(currentaccessrules)) {
-                this.currentRoleName = DefaultRoles.CAADMINISTRATOR.getName();
-            } else
-            // Check if administrator is raadministrator
-            if (isRAAdministrator(currentaccessrules)) {
-                this.currentRoleName = DefaultRoles.RAADMINISTRATOR.getName();
-            } else
-            // Check if administrator is supervisor
-            if (isSupervisor(currentaccessrules)) {
-                this.currentRoleName = DefaultRoles.SUPERVISOR.getName();
-            } else {
-                this.forceadvanced = true;
-            }
-        } else {
-            this.currentRoleName = null;
-        }
-    }
-
-    private boolean isSuperAdministrator(Collection<AccessRuleData> currentaccessrules) {
-
-        boolean returnval = false;
-        if (currentaccessrules.size() == 1) {
-            AccessRuleData ar = currentaccessrules.iterator().next();
-            if (ar.getAccessRuleName().equals(AccessRulesConstants.ROLE_SUPERADMINISTRATOR) && ar.getInternalState() == AccessRuleState.RULE_ACCEPT
-                    && !ar.getRecursive()) {
-                returnval = true;
-            }
-        }
-
-        return returnval;
-    }
-
-    private boolean isCAAdministrator(Collection<AccessRuleData> currentaccessrules) {
-        boolean returnval = false;
-
-        if (currentaccessrules.size() >= 7) {
-            HashSet<String> requiredacceptrecrules = new HashSet<String>();
-            requiredacceptrecrules.add(AccessRulesConstants.REGULAR_CAFUNCTIONALTY);
-            requiredacceptrecrules.add(AccessRulesConstants.REGULAR_LOGFUNCTIONALITY);
-            requiredacceptrecrules.add(AccessRulesConstants.REGULAR_RAFUNCTIONALITY);
-            requiredacceptrecrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
-            HashSet<String> requiredacceptnonrecrules = new HashSet<String>();
-            requiredacceptnonrecrules.add(AccessRulesConstants.ROLE_ADMINISTRATOR);
-            requiredacceptnonrecrules.add(AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY);
-            requiredacceptnonrecrules.add(AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES);
-            requiredacceptnonrecrules.add(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS);
-            requiredacceptnonrecrules.add(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES);
-
-            boolean illegal = false;
-            for (AccessRuleData ar : currentaccessrules) {
-                if (!isAllowedCAAdministratorRule(ar)) {
-                    if (ar.getInternalState() == AccessRuleState.RULE_ACCEPT && ar.getRecursive() && requiredacceptrecrules.contains(ar.getAccessRuleName())) {
-                        requiredacceptrecrules.remove(ar.getAccessRuleName());
-                    } else if (ar.getInternalState() == AccessRuleState.RULE_ACCEPT && !ar.getRecursive() && requiredacceptnonrecrules.contains(ar.getAccessRuleName())) {
-                        requiredacceptnonrecrules.remove(ar.getAccessRuleName());
-                    } else {
-                        illegal = true;
-                        break;
-                    }
-                }
-            }
-            if (!illegal && requiredacceptrecrules.size() == 0 && requiredacceptnonrecrules.size() == 0) {
-                returnval = true;
-            }
-        }
-
-        return returnval;
-    }
-
-    private boolean isAllowedCAAdministratorRule(AccessRuleData ar) {
-        boolean returnval = false;
-
-        if (ar.getAccessRuleName().equals(StandardRules.CAACCESSBASE.resource()) && ar.getInternalState() == AccessRuleState.RULE_ACCEPT && ar.getRecursive()) {
-            returnval = true;
-        }
-
-        if (ar.getAccessRuleName().startsWith(StandardRules.CAACCESS.resource()) && ar.getInternalState() == AccessRuleState.RULE_ACCEPT && !ar.getRecursive()) {
-            returnval = true;
-        }
-
-        if (ar.getAccessRuleName().startsWith(AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS) && ar.getInternalState() == AccessRuleState.RULE_ACCEPT) {
-            returnval = true;
-        }
-
-        if (ar.getAccessRuleName().equals(AccessRulesConstants.REGULAR_VIEWLOG) && ar.getInternalState() == AccessRuleState.RULE_ACCEPT && ar.getRecursive()) {
-            returnval = true;
-        }
-
-        return returnval;
-    }
-
-    private boolean isRAAdministrator(Collection<AccessRuleData> currentaccessrules) {
-        boolean returnval = false;
-
-        if (currentaccessrules.size() >= 4) {
-            HashSet<String> requiredaccepnonrecrules = new HashSet<String>();
-            requiredaccepnonrecrules.add(AccessRulesConstants.ROLE_ADMINISTRATOR);
-            requiredaccepnonrecrules.add(AccessRulesConstants.REGULAR_CREATECERTIFICATE);
-            requiredaccepnonrecrules.add(AccessRulesConstants.REGULAR_STORECERTIFICATE);
-            requiredaccepnonrecrules.add(AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
-
-            boolean illegal = false;
-            for(AccessRuleData ar : currentaccessrules) {                
-                if (!isAllowedRAAdministratorRule(ar)) {
-                    if (ar.getInternalState() == AccessRuleState.RULE_ACCEPT && !ar.getRecursive() && requiredaccepnonrecrules.contains(ar.getAccessRuleName())) {
-                        requiredaccepnonrecrules.remove(ar.getAccessRuleName());
-                    } else {
-                        illegal = true;
-                        break;
-                    }
-                }
-            }
-            if (!illegal && requiredaccepnonrecrules.size() == 0) {
-                returnval = true;
-            }
-        }
-
-        return returnval;
-    }
-
-    private boolean isAllowedRAAdministratorRule(AccessRuleData ar) {
-        boolean returnval = false;
-
-        if (ar.getInternalState() == AccessRuleState.RULE_ACCEPT) {
-            if (ar.getAccessRuleName().equals(AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS)) {
-                returnval = true;
-            }
-            if (ar.getRecursive()) {
-                if (ar.getAccessRuleName().equals(AccessRulesConstants.REGULAR_VIEWLOG)) {
-                    returnval = true;
-                }
-                if (ar.getAccessRuleName().equals(AccessRulesConstants.ENDENTITYPROFILEBASE) || ar.getAccessRuleName().equals(StandardRules.CAACCESSBASE.resource())) {
-                    returnval = true;
-                }
-            } else {
-                if (ar.getAccessRuleName().startsWith(AccessRulesConstants.REGULAR_RAFUNCTIONALITY + "/")
-                        && !ar.getAccessRuleName().equals(AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES)) {
-                    returnval = true;
-                }
-                if (ar.getAccessRuleName().startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
-                    returnval = true;
-                }
-                if (ar.getAccessRuleName().startsWith(StandardRules.CAACCESS.resource())) {
-                    returnval = true;
-                }
-            }
-        }
-        return returnval;
-    }
-
-    private boolean isSupervisor(Collection<AccessRuleData> currentaccessrules) {
-        boolean returnval = false;
-
-        if (currentaccessrules.size() >= 2) {
-            HashSet<String> requiredacceptrecrules = new HashSet<String>();
-            requiredacceptrecrules.add(AccessRulesConstants.REGULAR_VIEWLOG);
-            HashSet<String> requiredacceptnonrecrules = new HashSet<String>();
-            requiredacceptnonrecrules.add(AccessRulesConstants.ROLE_ADMINISTRATOR);
-            requiredacceptnonrecrules.add(AccessRulesConstants.REGULAR_VIEWCERTIFICATE);
-            
-            boolean illegal = false;
-            for(AccessRuleData ar : currentaccessrules) {    
-                if (!isAllowedSupervisorRule(ar)) {
-                    if (ar.getInternalState() == AccessRuleState.RULE_ACCEPT && ar.getRecursive() && requiredacceptrecrules.contains(ar.getAccessRuleName())) {
-                        requiredacceptrecrules.remove(ar.getAccessRuleName());
-                    } else {
-                        if (ar.getInternalState() == AccessRuleState.RULE_ACCEPT && !ar.getRecursive() && requiredacceptnonrecrules.contains(ar.getAccessRuleName())) {
-                            requiredacceptnonrecrules.remove(ar.getAccessRuleName());
-                        } else {
-                            illegal = true;
-                            break;
-                        }
-                    }
-                }
-            }
-            if (!illegal && requiredacceptrecrules.size() == 0 && requiredacceptnonrecrules.size() == 0) {
-                returnval = true;
-            }
-
-        }
-
-        return returnval;
-    }
-
-    private boolean isAllowedSupervisorRule(AccessRuleData ar) {
-        boolean returnval = false;
-
-        if (ar.getInternalState() == AccessRuleState.RULE_ACCEPT) {
-            if (ar.getRecursive()) {
-                if (ar.getAccessRuleName().equals(AccessRulesConstants.ENDENTITYPROFILEBASE) || ar.getAccessRuleName().equals(StandardRules.CAACCESSBASE.resource())) {
-                    returnval = true;
-                }
-            } else {
-                if (ar.getAccessRuleName().equals(AccessRulesConstants.REGULAR_VIEWENDENTITY)
-                        || ar.getAccessRuleName().equals(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY)
-                        || ar.getAccessRuleName().equals(AccessRulesConstants.REGULAR_VIEWHARDTOKENS)) {
-                    returnval = true;
-                }
-                if (ar.getAccessRuleName().startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
-                    returnval = true;
-                }
-                if (ar.getAccessRuleName().startsWith(StandardRules.CAACCESS.resource())) {
-                    returnval = true;
-                }
-            }
-        }
-        return returnval;
     }
 
     private void initAvailableRules(boolean usehardtokens, boolean usekeyrecovery, Collection<String> availableaccessrules) {

@@ -20,9 +20,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.roles.RoleData;
 
 /**
  * A class used as a help class for displaying and configuring basic access rules
@@ -33,59 +31,58 @@ public class BasicAccessRuleSetDecoder implements Serializable {
 
     private static final long serialVersionUID = -5005027426714699357L;
 
-    private ArrayList<AccessRuleData> currentruleset = new ArrayList<AccessRuleData>();
+    private ArrayList<AccessRuleTemplate> currentruleset = new ArrayList<AccessRuleTemplate>();
 
     /**
      * Tries to encode a advanced rule set into basic ones. Sets the forceadvanced flag if encoding isn't possible.
      */
-    public BasicAccessRuleSetDecoder(RoleData currentrole, Collection<Integer> currentcas, Collection<Integer> currentendentityrules,
+    public BasicAccessRuleSetDecoder(String currentRoleTemplate, Collection<Integer> currentcas, Collection<Integer> currentendentityrules,
             Collection<Integer> currentendentityprofiles, Collection<Integer> currentotherrules) {
 
-        if (DefaultRoles.SUPERADMINISTRATOR.getName().equals(currentrole.getRoleName())) {
-            currentruleset.add(new AccessRuleData(DefaultRoles.SUPERADMINISTRATOR.getName(), AccessRulesConstants.ROLE_SUPERADMINISTRATOR,
+        if (DefaultRoles.SUPERADMINISTRATOR.getName().equals(currentRoleTemplate)) {
+            currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.ROLE_SUPERADMINISTRATOR,
                     AccessRuleState.RULE_ACCEPT, false));
         } else {
-            addCARules(currentrole.getRoleName(), currentcas);
-            addOtherRules(currentrole.getRoleName(), currentotherrules);
-            if (DefaultRoles.CAADMINISTRATOR.equals(currentrole)) {
-                currentruleset.add(new AccessRuleData(DefaultRoles.CAADMINISTRATOR.getName(), AccessRulesConstants.ROLE_ADMINISTRATOR,
+            addCARules(currentRoleTemplate, currentcas);
+            addOtherRules(currentRoleTemplate, currentotherrules);
+            if (DefaultRoles.CAADMINISTRATOR.equals(currentRoleTemplate)) {
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR,
                         AccessRuleState.RULE_ACCEPT, false));
 
-                currentruleset.add(new AccessRuleData(DefaultRoles.CAADMINISTRATOR.getName(), AccessRulesConstants.REGULAR_CAFUNCTIONALTY,
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_CAFUNCTIONALTY,
                         AccessRuleState.RULE_ACCEPT, true));
-                currentruleset.add(new AccessRuleData(DefaultRoles.CAADMINISTRATOR.getName(), AccessRulesConstants.REGULAR_LOGFUNCTIONALITY,
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_LOGFUNCTIONALITY,
                         AccessRuleState.RULE_ACCEPT, true));
-                currentruleset.add(new AccessRuleData(DefaultRoles.CAADMINISTRATOR.getName(), AccessRulesConstants.REGULAR_RAFUNCTIONALITY,
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_RAFUNCTIONALITY,
                         AccessRuleState.RULE_ACCEPT, true));
-                currentruleset.add(new AccessRuleData(DefaultRoles.CAADMINISTRATOR.getName(), AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY,
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY,
                         AccessRuleState.RULE_ACCEPT, false));
-                currentruleset.add(new AccessRuleData(DefaultRoles.CAADMINISTRATOR.getName(),
-                        AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, AccessRuleState.RULE_ACCEPT, false));
-                currentruleset.add(new AccessRuleData(DefaultRoles.CAADMINISTRATOR.getName(), AccessRulesConstants.ENDENTITYPROFILEBASE,
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, AccessRuleState.RULE_ACCEPT, false));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.ENDENTITYPROFILEBASE,
                         AccessRuleState.RULE_ACCEPT, true));
-                currentruleset.add(new AccessRuleData(DefaultRoles.CAADMINISTRATOR.getName(), AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS,
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS,
                         AccessRuleState.RULE_ACCEPT, false));
-                currentruleset.add(new AccessRuleData(DefaultRoles.CAADMINISTRATOR.getName(), AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES,
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES,
                         AccessRuleState.RULE_ACCEPT, false));
 
             } else {
-                addEndEntityRules(currentrole.getRoleName(), currentendentityprofiles, currentendentityrules);
-                if (DefaultRoles.RAADMINISTRATOR.equals(currentrole)) {
-                    currentruleset.add(new AccessRuleData(DefaultRoles.RAADMINISTRATOR.name(), AccessRulesConstants.ROLE_ADMINISTRATOR,
+                addEndEntityRules(currentendentityprofiles, currentendentityrules);
+                if (DefaultRoles.RAADMINISTRATOR.equals(currentRoleTemplate)) {
+                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR,
                             AccessRuleState.RULE_ACCEPT, false));
-                    currentruleset.add(new AccessRuleData(DefaultRoles.RAADMINISTRATOR.name(), AccessRulesConstants.REGULAR_CREATECERTIFICATE,
+                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_CREATECERTIFICATE,
                             AccessRuleState.RULE_ACCEPT, false));
-                    currentruleset.add(new AccessRuleData(DefaultRoles.RAADMINISTRATOR.name(), AccessRulesConstants.REGULAR_STORECERTIFICATE,
+                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_STORECERTIFICATE,
                             AccessRuleState.RULE_ACCEPT, false));
-                    currentruleset.add(new AccessRuleData(DefaultRoles.RAADMINISTRATOR.name(), AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
+                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
                             AccessRuleState.RULE_ACCEPT, false));
                 }
-                if (DefaultRoles.SUPERVISOR.equals(currentrole)) {
-                    currentruleset.add(new AccessRuleData(DefaultRoles.SUPERVISOR.name(), AccessRulesConstants.ROLE_ADMINISTRATOR,
+                if (DefaultRoles.SUPERVISOR.equals(currentRoleTemplate)) {
+                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR,
                             AccessRuleState.RULE_ACCEPT, false));
-                    currentruleset.add(new AccessRuleData(DefaultRoles.SUPERVISOR.name(), AccessRulesConstants.REGULAR_VIEWLOG,
+                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWLOG,
                             AccessRuleState.RULE_ACCEPT, true));
-                    currentruleset.add(new AccessRuleData(DefaultRoles.SUPERVISOR.name(), AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
+                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
                             AccessRuleState.RULE_ACCEPT, false));
                 }
             }
@@ -98,25 +95,25 @@ public class BasicAccessRuleSetDecoder implements Serializable {
      * 
      * @return a Collection of AccessRule
      */
-    public Collection<AccessRuleData> getCurrentAdvancedRuleSet() {
+    public Collection<AccessRuleTemplate> getCurrentAdvancedRuleSet() {
         return currentruleset;
     }
 
     private void addCARules(String roleName, Collection<Integer> currentcas) {
         boolean allcafound = false;
 
-       List<AccessRuleData> carules = new ArrayList<AccessRuleData>();
+       List<AccessRuleTemplate> carules = new ArrayList<AccessRuleTemplate>();
         for(Integer caId : currentcas) {
             if (caId.equals(Integer.valueOf(BasicAccessRuleSet.CA_ALL))) {
                 allcafound = true;
                 break;
             }
-            carules.add(new AccessRuleData(roleName, StandardRules.CAACCESS.resource() + caId.toString(), AccessRuleState.RULE_ACCEPT, false));
+            carules.add(new AccessRuleTemplate(StandardRules.CAACCESS.resource() + caId.toString(), AccessRuleState.RULE_ACCEPT, false));
         }
 
         if (allcafound) {
             carules.clear();
-            carules.add(new AccessRuleData(roleName, StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
+            carules.add(new AccessRuleTemplate( StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         }
 
         this.currentruleset.addAll(carules);
@@ -129,57 +126,57 @@ public class BasicAccessRuleSetDecoder implements Serializable {
             Integer next = (Integer) iter.next();
 
             if (next.equals(Integer.valueOf(BasicAccessRuleSet.OTHER_VIEWLOG))) {
-                currentruleset.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_VIEWLOG, AccessRuleState.RULE_ACCEPT, true));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWLOG, AccessRuleState.RULE_ACCEPT, true));
             } else if (next.equals(Integer.valueOf(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS))) {
-                currentruleset.add(new AccessRuleData(roleName, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, AccessRuleState.RULE_ACCEPT, false));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, AccessRuleState.RULE_ACCEPT, false));
             }
         }
     }
 
-    private void addEndEntityRules(String roleName, Collection<Integer> currentendentityprofiles, Collection<Integer> currentendentityrules) {
+    private void addEndEntityRules(Collection<Integer> currentendentityprofiles, Collection<Integer> currentendentityrules) {
         ArrayList<String> endentityrules = new ArrayList<String>();
 
         for (Integer next : currentendentityrules) {
             if (next == BasicAccessRuleSet.ENDENTITY_VIEW) {
-                currentruleset.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.VIEW_RIGHTS);
             } else if (next == BasicAccessRuleSet.ENDENTITY_VIEWHISTORY) {
-                currentruleset.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, AccessRuleState.RULE_ACCEPT, false));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.HISTORY_RIGHTS);
             } else if (next == BasicAccessRuleSet.ENDENTITY_VIEWHARDTOKENS) {
-                currentruleset.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_VIEWHARDTOKENS, AccessRuleState.RULE_ACCEPT, false));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWHARDTOKENS, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.HARDTOKEN_RIGHTS);
             } else if (next == BasicAccessRuleSet.ENDENTITY_CREATE) {
-                currentruleset.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_CREATEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_CREATEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.CREATE_RIGHTS);
             } else if (next == BasicAccessRuleSet.ENDENTITY_DELETE) {
-                currentruleset.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_DELETEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_DELETEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.DELETE_RIGHTS);
             } else if (next == BasicAccessRuleSet.ENDENTITY_EDIT) {
-                currentruleset.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_EDITENDENTITY, AccessRuleState.RULE_ACCEPT, false));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_EDITENDENTITY, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.EDIT_RIGHTS);
             } else if (next == BasicAccessRuleSet.ENDENTITY_REVOKE) {
-                currentruleset.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_REVOKEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_REVOKEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.REVOKE_RIGHTS);
             } else if (next == BasicAccessRuleSet.ENDENTITY_KEYRECOVER) {
-                currentruleset.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_KEYRECOVERY, AccessRuleState.RULE_ACCEPT, false));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_KEYRECOVERY, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.KEYRECOVERY_RIGHTS);
             } else if (next == BasicAccessRuleSet.ENDENTITY_APPROVE) {
-                currentruleset.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.APPROVAL_RIGHTS);
             } else if (next == BasicAccessRuleSet.ENDENTITY_VIEWPUK) {
-                currentruleset.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_VIEWPUKS, AccessRuleState.RULE_ACCEPT, false));
+                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWPUKS, AccessRuleState.RULE_ACCEPT, false));
                 endentityrules.add(AccessRulesConstants.HARDTOKEN_PUKDATA_RIGHTS);
             }
         }
 
-        addEndEntityProfiles(roleName, currentendentityprofiles, endentityrules);
+        addEndEntityProfiles(currentendentityprofiles, endentityrules);
     }
 
-    private void addEndEntityProfiles(String ruleName, Collection<Integer> currentendentityprofiles, Collection<String> endentityrules) {
+    private void addEndEntityProfiles(Collection<Integer> currentendentityprofiles, Collection<String> endentityrules) {
         boolean allexists = false;
         Iterator<Integer> iter = currentendentityprofiles.iterator();
-        ArrayList<AccessRuleData> profilerules = new ArrayList<AccessRuleData>();
+        ArrayList<AccessRuleTemplate> profilerules = new ArrayList<AccessRuleTemplate>();
         while (iter.hasNext() && !allexists) {
             Integer next = (Integer) iter.next();
             if (next.intValue() == BasicAccessRuleSet.ENDENTITYPROFILE_ALL) {
@@ -190,13 +187,13 @@ public class BasicAccessRuleSetDecoder implements Serializable {
             String profilerule = AccessRulesConstants.ENDENTITYPROFILEPREFIX + next.toString();
             while (iter2.hasNext()) {
                 String nextrule = (String) iter2.next();
-                profilerules.add(new AccessRuleData(ruleName, profilerule + nextrule, AccessRuleState.RULE_ACCEPT, false));
+                profilerules.add(new AccessRuleTemplate(profilerule + nextrule, AccessRuleState.RULE_ACCEPT, false));
             }
         }
 
         if (allexists) {
             profilerules.clear();
-            profilerules.add(new AccessRuleData(ruleName, AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true));
+            profilerules.add(new AccessRuleTemplate(AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true));
         }
         currentruleset.addAll(profilerules);
     }

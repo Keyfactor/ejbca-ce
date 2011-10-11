@@ -49,14 +49,15 @@ public class ComplexRoleManagementSessionBean implements ComplexRoleManagementSe
     /** Internal localization of logs and errors */
     private static final InternalResources INTERNAL_RESOURCES = InternalResources.getInstance();
     
+    @EJB 
+    private AccessRuleManagementSessionLocal accessRuleManagementSession;
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
     @EJB
     private AccessControlSessionLocal accessControlSession;
     @EJB
     private RoleAccessSessionRemote roleAccessSession;
-    @EJB 
-    private AccessRuleManagementSessionLocal accessRuleManagementSession;
+  
       
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
@@ -75,6 +76,9 @@ public class ComplexRoleManagementSessionBean implements ComplexRoleManagementSe
         Map<Integer, AccessRuleData> rulesFromResult = result.getAccessRules();
         Map<Integer, AccessRuleData> rulesToResult = new HashMap<Integer, AccessRuleData>();
         for(AccessRuleData rule : accessRules) {
+            if(AccessRuleData.generatePrimaryKey(role.getRoleName(), rule.getAccessRuleName()) != rule.getPrimaryKey()) {
+                throw new Error("Role " + role.getRoleName() + " did not match up with the role that created this rule.");
+            }
            Integer ruleKey = rule.getPrimaryKey();
             if(rulesFromResult.containsKey(ruleKey)) {
                 AccessRuleData newRule = accessRuleManagementSession.setState(rule, rule.getInternalState(), rule.getRecursive());
@@ -82,7 +86,7 @@ public class ComplexRoleManagementSessionBean implements ComplexRoleManagementSe
                 rulesToResult.put(newRule.getPrimaryKey(), newRule);
             } else {
                 try {
-                    accessRuleManagementSession.createRule(rule.getAccessRuleName(), result.getRoleName(), rule.getInternalState(), rule.getRecursive());
+                    accessRuleManagementSession.createRule(rule.getAccessRuleName(), result.getRoleName(), rule.getInternalState(), rule.getRecursive());                   
                 } catch (AccessRuleExistsException e) {
                     throw new Error("Access rule exists, but wasn't found in persistence in previous call.", e);
                 }

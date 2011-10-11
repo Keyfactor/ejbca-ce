@@ -12,43 +12,20 @@
  *************************************************************************/
 package org.ejbca.core.model.authorization;
 
+import static org.junit.Assert.assertTrue;
+
+import org.junit.Test;
 
 /**
- * Represents a set of predefined roles.
- * 
- * 
  * @version $Id$
- * 
+ *
  */
-public enum DefaultRoles {
-    SUPERADMINISTRATOR(1, "SUPERADMINISTRATOR"), 
-    CAADMINISTRATOR(2, "CAADMINISTRATOR"), 
-    RAADMINISTRATOR(3, "RAADMINISTRATOR"), 
-    SUPERVISOR(4, "SUPERVISOR"), 
-    HARDTOKENISSUER(5, "HARDTOKENISSUER");
-
-    private int numericalValue;
-    private String name;
-
-    private DefaultRoles(int numericalValue, String name) {
-        this.numericalValue = numericalValue;
-        this.name = name;
-    }
-
-    public int getNumericalValue() {
-        return numericalValue;
-    }
-
-    public String getName() {
-        return name;
-    }
+public class DefaultRolesTest {
     
-    public boolean equals(String roleName) {
-        if(roleName == null) {
-            return false;
-        } else {
-            return name.equals(roleName);
-        }
+    @Test
+    public void testEquals() {
+        String roleName = DefaultRoles.SUPERADMINISTRATOR.getName();
+        assertTrue(DefaultRoles.SUPERADMINISTRATOR.equals(roleName));
     }
-    
+
 }
