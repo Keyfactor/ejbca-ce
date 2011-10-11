@@ -159,7 +159,6 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				// PKI confirm (pkiconf, Confirmation)
 			case 24:
 				// Certificate confirmation (certConf, Certificate confirm)
-				//handler = new ConfirmationMessageHandler(admin, caAdminSession, endEntityProfileSession, certificateProfileSession);
 				handler = new ConfirmationMessageHandler(admin, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
@@ -168,6 +167,25 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				handler = new RevocationMessageHandler(admin, userAdminSession, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
+            case 20:
+                // NestedMessageContent (nested)
+                if(log.isDebugEnabled()) {
+                    log.debug("Received a NestedMessageContent");
+                }
+                final NestedMessageContent nestedMessage = new NestedMessageContent(req);
+                if(nestedMessage.verify()) {
+                    if(log.isDebugEnabled()) {
+                        log.debug("The NestedMessageContent was verifies successfully");
+                    }
+                    final PKIMessage nested = nestedMessage.getPKIMessage().getBody().getNested();
+                    return dispatch(admin, nested.getDERObject().getDEREncoded());
+                } else {
+                    final String errMsg = "Could not verify the RA";
+                    log.error(errMsg);
+                    cmpMessage = new NestedMessageContent(req);
+                    return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg);
+                }
+
 			default:
 				unknownMessageType = tagno;
 				log.info("Received an unknown message type, tagno="+tagno);

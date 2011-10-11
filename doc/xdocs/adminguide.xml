@@ -598,6 +598,7 @@ The following CMP messages are supported:
 <li>Certification request (cr)</li>
 <li>Certification confirm (certConf)</li>
 <li>Revocation request (rr)</li>
+<li>NestedMessageContent (nested)</li>
 </ul>
 Certificate requests use the CRMF (RFC4211).
 </p>
@@ -710,6 +711,59 @@ the existing user will be modified with new values for profile etc, and a new ce
 <p>
 To allow requests with different KeyId to be mapped to different CAs and profiles in EJBCA, see the documentation for the options in conf/cmp.properties.sample.
 </p>
+<subsubsection name="Multiprotection support">
+<p>
+In RA mode, it is also possible to send a CMP request with multiple signatures. Ejbca implements this feature following the specifications 
+in RFC4210. In cases where an end entity sends a protected PKI message to an RA, the RA forwards that message to a CA, attaching its own signature for protection. 
+This is accomplished by nesting the entire message sent by the end entity within a new PKI message.
+</p> 
+<p>Sample code for a signature protected NestedMessageContent message:</p>
+<source>
+String subjectDN = "CN=bogusSubjectNested";
+final byte[] nonce = "sendernonce".getBytes();
+final byte[] transid = "trandis".getBytes();
+
+PKIMessage crmfMsg = createCrmfReq();
+//Signing crmfMsg
+KeyPair eeKeys = getAdminKeys();
+Certificate adminCert = getAdminCertificate();
+ByteArrayInputStream    bIn = new ByteArrayInputStream(adminCert.getEncoded());
+ASN1InputStream         dIn = new ASN1InputStream(bIn);
+ASN1Sequence extraAdminCertSeq = (ASN1Sequence)dIn.readObject();
+X509CertificateStructure extraCert = new X509CertificateStructure(ASN1Sequence.getInstance(extraAdminCertSeq));
+crmfMsg.addExtraCert(extraCert);
+
+final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
+sig.initSign(eekeys.getPrivate());
+sig.update(crmfMsg.getProtectedBytes());
+byte[] eeSignature = sig.sign();
+crmfMsg.setProtection(new DERBitString(eeSignature));
+
+PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(subjectDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN().getName())));
+myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
+// senderNonce
+myPKIHeader.setSenderNonce(new DEROctetString(nonce));
+// TransactionId
+myPKIHeader.setTransactionID(new DEROctetString(transid));
+
+PKIBody myPKIBody = new PKIBody(crmfMsg, 20); // NestedMessageContent
+PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
+//Signing myPKIMessage
+KeyPair raKeys = getRAKeys();
+final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
+sig.initSign(rakeys.getPrivate());
+sig.update(myPKIMessage.getProtectedBytes());
+byte[] eeSignature = sig.sign();
+myPKIMessage.setProtection(new DERBitString(eeSignature));
+
+final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+final DEROutputStream out = new DEROutputStream(bao);
+out.writeObject(myPKIMessage);
+final byte[] ba = bao.toByteArray();
+// Send request and receive response
+final byte[] resp = sendCmpHttp(ba, 200);
+</source>
+</subsubsection>
 <subsubsection name="Sample config">
 <p>
 A sample config of EJBCA to allow an RA to request certificates for users. 

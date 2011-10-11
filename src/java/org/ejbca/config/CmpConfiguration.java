@@ -32,6 +32,8 @@ public class CmpConfiguration {
 	public static final String CONFIG_CERTREQHANDLER_CLASS    = "cmp.certreqhandler.class";
 	public static final String CONFIG_UNIDDATASOURCE		  = "cmp.uniddatasource";
 
+    public static final String CONFIG_RACERT_PATH             = "cmp.racertificatepath";
+
 	public static final String AUTHMODULE_REG_TOKEN_PWD         = "RegTokenPwd";
 	public static final String AUTHMODULE_DN_PART_PWD           = "DnPartPwd";
 	public static final String AUTHMODULE_HMAC                  = "HMAC";
@@ -43,6 +45,10 @@ public class CmpConfiguration {
 	 */
 	public static boolean getAllowRAVerifyPOPO() {
 		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString(CONFIG_ALLOWRAVERIFYPOPO));
+    }
+
+    public static String getRaCertificatePath() {
+        return EjbcaConfigurationHolder.getString(CONFIG_RACERT_PATH);
 	}
 	
 	/** The default CA used for signing requests, if it is not given in the request itself. */
