@@ -44,7 +44,7 @@
 	<p><h:messages layout="table" errorClass="alert"/></p>
 
 	<h:form id="groupList">
-	<h:inputHidden id="newGroupName" value="#{adminGroupsManagedBean.newAdminGroupName}">
+	<h:inputHidden id="newGroupName" value="#{adminGroupsManagedBean.newRoleName}">
 		 <f:validator validatorId="legalCharsValidator" />
 	</h:inputHidden>
 	<h:inputHidden id="currentAdminGroup" value="#{adminGroupsManagedBean.currentAdminGroup}">

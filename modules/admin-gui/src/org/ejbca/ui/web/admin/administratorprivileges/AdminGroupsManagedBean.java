@@ -36,6 +36,7 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.model.authorization.AccessRuleTemplate;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.BasicAccessRuleSet;
 import org.ejbca.core.model.authorization.BasicAccessRuleSetDecoder;
@@ -57,23 +58,29 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     private static final Logger log = Logger.getLogger(AdminGroupsManagedBean.class);
 
     private final EjbLocalHelper ejb = new EjbLocalHelper();
+    private BasicAccessRuleSetEncoder basicAccessRuleSetEncoderCache = null;
 
-    public AdminGroupsManagedBean() {
-    }
+    private String currentRoleTemplate = null;
+    private List<Integer> currentCAs = null;
+    private List<Integer> currentEndEntityProfiles = null;
+    private List<Integer> currentOtherRules = null;
+    private List<Integer> currentEndEntityRules = null;
+    
+    private String currentAdminGroupName = null;
+    private String matchCaId = null;
+    private AccessMatchValue matchWith = AccessMatchValue.WITH_SERIALNUMBER;
+    private AccessMatchType matchType = null;
+    private String matchValue = null;
 
-    //
-    // Edit groups (mostly used by administratorprivileges.jsp)
-    //
-
-    private String newAdminGroupName = "new";
+    private String newRoleName = "new";
 
     // Simple from backing
-    public String getNewAdminGroupName() {
-        return this.newAdminGroupName;
+    public String getNewRoleName() {
+        return this.newRoleName;
     }
 
-    public void setNewAdminGroupName(String newAdminGroupName) {
-        this.newAdminGroupName = newAdminGroupName;
+    public void setNewRoleName(String newRoleName) {
+        this.newRoleName = newRoleName;
     }
 
     /** @return a List of authorized AdminGroups */
@@ -85,11 +92,11 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     }
 
     /** Renames a role */
-    public void renameGroup() {
-        String newGroupName = getNewAdminGroupName();
+    public void renameRole() {
+        String newRoleName = getNewRoleName();
         try {
-            getAuthorizationDataHandler().renameRole(getCurrentAdminGroup(), newGroupName);
-            setCurrentAdminGroup(newGroupName);
+            getAuthorizationDataHandler().renameRole(getCurrentAdminGroup(), newRoleName);
+            setCurrentAdminGroup(newRoleName);
         } catch (RoleExistsException e) {
             addErrorMessage("ADMINGROUPEXISTS");
         } catch (AuthorizationDeniedException e) {
@@ -114,7 +121,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     /** Adds a new admin group */
     public void addGroup() {
         try {
-            getAuthorizationDataHandler().addRole(getNewAdminGroupName());
+            getAuthorizationDataHandler().addRole(getNewRoleName());
         } catch (RoleExistsException e) {
             addErrorMessage("ADMINGROUPEXISTS");
         } catch (AuthorizationDeniedException e) {
@@ -126,16 +133,6 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     public BasicAccessRuleSetEncoder getBasicRuleSetForEach() {
         return getBasicRuleSetInternal(getCurrentAdminGroupObjectForEach());
     }
-
-    //
-    // Edit administrators in a group (mostly used by editadminentities.jsp)
-    //
-
-    private String currentAdminGroupName = null;
-    private String matchCaId = null;
-    private AccessMatchValue matchWith = AccessMatchValue.WITH_SERIALNUMBER;
-    private AccessMatchType matchType = null;
-    private String matchValue = null;
 
     /** @return a List of (SelectItem<String, String>) authorized CA */
     public List<SelectItem> getAvailableCaIds() {
@@ -296,9 +293,6 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     /** @return the 'match type'-text for the admin in the current row of the datatable */
     public String getAdminsMatchType() {
         AccessUserAspectData adminEntity = getAdminForEach();
-        // if (adminEntity.getMatchType() < AdminEntity.SPECIALADMIN_PUBLICWEBUSER) { wtf...
-        // return getEjbcaWebBean().getText( AdminEntity.MATCHTYPETEXTS[adminEntity.getMatchType()-1000] );
-        // }
         return "" + adminEntity.getMatchType();
     }
 
@@ -311,21 +305,15 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     // Edit basic access rules (mostly used by editbasicaccessrules.jsp)
     //
 
-    private BasicAccessRuleSetEncoder basicAccessRuleSetEncoderCache = null;
 
-    private RoleData currentRole = null;
-    private List<Integer> currentCAs = null;
-    private List<Integer> currentEndEntityProfiles = null;
-    private List<Integer> currentOtherRules = null;
-    private List<Integer> currentEndEntityRules = null;
 
     // Stores the value from request, but always reads the value directly from the saved data
-    public String getCurrentRole() {
-        return getBasicRuleSet().getCurrentRole();
+    public String getCurrentRoleTemplate() {      
+        return currentRoleTemplate;
     }
 
-    public void setCurrentRole(RoleData currentRole) {
-        this.currentRole = currentRole;
+    public void setCurrentRoleTemplate(String currentRoleTemplate) {
+        this.currentRoleTemplate = currentRoleTemplate;
     }
 
     public List<String> getCurrentCAs() {
@@ -440,10 +428,14 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
      * @throws RoleNotFoundException
      */
     public void saveAccessRules() throws RoleNotFoundException {
-        BasicAccessRuleSetDecoder barsd = new BasicAccessRuleSetDecoder(currentRole, currentCAs, currentEndEntityRules, currentEndEntityProfiles,
+        BasicAccessRuleSetDecoder barsd = new BasicAccessRuleSetDecoder(currentRoleTemplate, currentCAs, currentEndEntityRules, currentEndEntityProfiles,
                 currentOtherRules);
         try {
-            getAuthorizationDataHandler().replaceAccessRules(getCurrentAdminGroup(), barsd.getCurrentAdvancedRuleSet());
+            Collection<AccessRuleData> rulesToReplaceWith = new ArrayList<AccessRuleData>();
+            for(AccessRuleTemplate template :  barsd.getCurrentAdvancedRuleSet()) {
+                rulesToReplaceWith.add(template.createAccessRuleData(currentAdminGroupName));
+            }
+            getAuthorizationDataHandler().replaceAccessRules(getCurrentAdminGroup(), rulesToReplaceWith);
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
@@ -451,9 +443,9 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
         getEjbcaWebBean().getInformationMemory().administrativePriviledgesEdited();
     }
 
-    private BasicAccessRuleSetEncoder getBasicRuleSetInternal(RoleData adminGroup) {
+    private BasicAccessRuleSetEncoder getBasicRuleSetInternal(RoleData role) {
         GlobalConfiguration globalConfiguration = getEjbcaWebBean().getGlobalConfiguration();
-        return new BasicAccessRuleSetEncoder(adminGroup.getAccessRules().values(), getAuthorizationDataHandler().getAvailableAccessRules(),
+        return new BasicAccessRuleSetEncoder(role.getAccessRules().values(), getAuthorizationDataHandler().getAvailableAccessRules(),
                 globalConfiguration.getIssueHardwareTokens(), globalConfiguration.getEnableKeyRecovery());
     }
 
@@ -569,7 +561,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
         allRules.addAll(getAccessRules().getEndEntityProfileAccessRules());
         allRules.addAll(getAccessRules().getCAAccessRules());
         allRules.addAll(getAccessRules().getUserDataSourceAccessRules());
-        // TODO: Remove all access rules marked as UNUSED and replace the others
+        // Remove all access rules marked as UNUSED and replace the others
         for (AccessRuleData ar : allRules) {
             if (ar.getInternalState() == AccessRuleState.RULE_NOTUSED) {
                 toRemove.add(ar);

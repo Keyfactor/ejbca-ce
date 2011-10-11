@@ -197,6 +197,10 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
      * FIXME: Test this method! 
      */
     public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
+        if(role==null) {
+            return false;
+        }
+        
         // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
         for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
             if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {
