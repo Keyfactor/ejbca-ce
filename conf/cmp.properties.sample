@@ -34,6 +34,62 @@
 #
 # Default normal (empty value means the same)
 #cmp.operationmode=normal
+#cmp.operationmode=ra
+
+# Specify authentication module for the client mode. More than one module can be specified by separating them with a ";".
+# In case of more than one module specified, the first module will be used to for authentication testing. If the first
+# module fails, the second module will be used for authentication testing, and so on.
+#
+# There are two type of authentication modules: Password extractors and PKIMessage verifyers.
+# 
+# The password extractors are:
+# - RegTokenPwd - does not require parameters
+# - DnPartPwd - The DN part that should contain the password is given in cmp.authenticationparameters. For example, if the 
+#   subjectDN is "CN=Name,C=SE,UID=password", cmp.authenticationparameters should be set to "UID".
+# These methods extract the password from the CMP request and authenticate the sender using the extracted password
+#
+# The PKIMessage verifiers are:
+# - HMAC - an RA authentication secret can be set in cmp.authenticationparameters. If nothing was set there, the authentication secret
+#   that will be used is the one specified in cmp.ra.authenticationsecret. For client mode no authentication parameters are needed.
+# - EndEntityCertificate - requires the name of the CA that issued the EndEntity certificate to be specified in cmp.authenticationparameters.
+#
+# Default: RegTokenPwd;HMAC
+#cmp.authenticationmodule=RegTokenPwd
+#cmp.authenticationmodule=DnPartPwd
+#cmp.authenticationmodule=HMAC
+#cmp.authenticationmodule=EndEntityCertificate
+#cmp.authenticationmodule=DnPartPwd;EndEntityCertificate
+#cmp.authenticationmodule=RegTokenPwd;DnPartPwd;HMAC
+
+# Specify the parameters for the authentication module specified in cmp.authenticationmodule. In case of more than one
+# module specified, the corresponding parameters are separated with a ";". The number and order of the parameters should match
+# the number and order of the authentication modules specified. If an authentication module does not require any parameters,
+# "-" should be specified.
+# 
+# Default:-;-
+#cmp.authenticationparameters=-
+#cmp.authenticationparameters=UID
+#cmp.authenticationparameters=foo123
+#cmp.authenticationparameters=AdminCA1
+#cmp.authenticationparameters=UID;AdminCA1
+#cmp.authenticationparameters=-;O;-
+
+# Shared secret between the CA and the RA used to authenticate valid RA messages.
+# Leave this commented out to be able to use a separate secret for each CA (see Edit Certificate Authorities configuration).
+#
+# Note that the cmp.authenticationparameters should be set to - (not specified) for the HMAC authentication module to fall 
+# back to this setting. 
+#
+# Default: empty
+#cmp.ra.authenticationsecret=
+
+# When the cmp.authenticationmodule is set to 'EndEntityCertificate', Ejbca can be set to check if the certificate in question 
+# belongs to a registered administrator who has the right authorizations. If this action is set to 'false', no such check will be
+# performed.
+#
+# Default: true
+#cmp.checkadminauthorization=true
+#cmp.checkadminauthorization=false
 
 # Allow the client/RA to specify that the CA should not verify POP, 
 # set to true to allow no POP (raVerify in the rfc). 
@@ -64,6 +120,13 @@
 #
 # Default: DN
 #cmp.ra.namegenerationscheme=DN
+
+# The path to the catalog where the RA-certificate is stored. The RA certificate is used to verify
+# the RA signature in the NestedMessageContent
+
+# Default:
+#cmp.racertificatepath=/tmp/racerts
+
 
 # Parameters for name generation, for DN it can be for example CN, UID or SN. 
 # Either the CN or the UID from the request can be used. 
