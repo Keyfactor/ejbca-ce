@@ -56,7 +56,7 @@ import org.junit.Test;
  */
 public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
 
-    private SecurityEventsAuditorSession securityEventsAuditor = JndiHelper.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
+    private final SecurityEventsAuditorSession securityEventsAuditor = JndiHelper.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
 
     private static KeyPair keys;
 
@@ -109,29 +109,29 @@ public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
     public void test05ExportLogs() throws Exception {
         final CryptoToken cryptoToken = createTokenWithKeyPair();
         for (final String logDeviceId : securityEventsAuditor.getQuerySupportingLogDevices()) {
-            String file0 = securityEventsAuditor.exportAuditLogs(roleMgmgToken, cryptoToken, new Date(), false, keyAlias, keyPairSignAlgorithm,
+            final String file0 = securityEventsAuditor.exportAuditLogs(roleMgmgToken, cryptoToken, new Date(), false, keyAlias, keyPairSignAlgorithm,
                     logDeviceId).getExportedFile();
-            File f0 = new File(file0);
-            long length0 = f0.length();
+            final File f0 = new File(file0);
+            final long length0 = f0.length();
             // System.out.println(length0);
             assertTrue("file does not exist, " + f0.getAbsolutePath(), f0.exists());
             assertTrue("file length is not > 0, " + f0.getAbsolutePath(), length0 > 0);
             assertTrue("file can not be deleted, " + f0.getAbsolutePath(), f0.delete());
             // Doing it again, but deleting logs after export this time
-            String file1 = securityEventsAuditor.exportAuditLogs(roleMgmgToken, cryptoToken, new Date(), true, keyAlias, keyPairSignAlgorithm,
+            final String file1 = securityEventsAuditor.exportAuditLogs(roleMgmgToken, cryptoToken, new Date(), true, keyAlias, keyPairSignAlgorithm,
                     logDeviceId).getExportedFile();
-            File f1 = new File(file1);
-            long length1 = f1.length();
+            final File f1 = new File(file1);
+            final long length1 = f1.length();
             // System.out.println(length1);
             assertTrue("file does not exist, " + f1.getAbsolutePath(), f1.exists());
             assertTrue("file length is not > 0, " + f1.getAbsolutePath(), length1 > 0);
             assertTrue("f1 length is not >= f0 length", length1 >= length0);
             assertTrue("file can not be deleted, " + f1.getAbsolutePath(), f1.delete());
             // Doing it again should give less result, since logs have been deleted
-            String file2 = securityEventsAuditor.exportAuditLogs(roleMgmgToken, cryptoToken, new Date(), true, keyAlias, keyPairSignAlgorithm,
+            final String file2 = securityEventsAuditor.exportAuditLogs(roleMgmgToken, cryptoToken, new Date(), true, keyAlias, keyPairSignAlgorithm,
                     logDeviceId).getExportedFile();
-            File f2 = new File(file2);
-            long length2 = f2.length();
+            final File f2 = new File(file2);
+            final long length2 = f2.length();
             // System.out.println(length2);
 
             assertTrue("file does not exist, " + f2.getAbsolutePath(), f2.exists());
@@ -156,22 +156,22 @@ public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
                 securityEventsAuditor.selectAuditLogs(adminTokenNoAuth, 1, 10,
                         QueryCriteria.where().order(AuditLogEntry.FIELD_TIMESTAMP, QueryCriteria.ORDER_DESC), logDeviceId);
                 assertTrue("should throw", false);
-            } catch (AuthorizationDeniedException e) {
+            } catch (final AuthorizationDeniedException e) {
                 // NOPMD
             }
             // AuditLogsValidation
             try {
                 securityEventsAuditor.verifyLogsIntegrity(adminTokenNoAuth, new Date(), logDeviceId);
                 assertTrue("should throw", false);
-            } catch (AuthorizationDeniedException e) {
+            } catch (final AuthorizationDeniedException e) {
                 // NOPMD
             }
             // ExportLogs
             try {
-                CryptoToken cryptoToken = createTokenWithKeyPair();
+                final CryptoToken cryptoToken = createTokenWithKeyPair();
                 securityEventsAuditor.exportAuditLogs(adminTokenNoAuth, cryptoToken, new Date(), true, keyAlias, keyPairSignAlgorithm, logDeviceId);
                 assertTrue("should throw", false);
-            } catch (AuthorizationDeniedException e) {
+            } catch (final AuthorizationDeniedException e) {
                 // NOPMD
             }
         }

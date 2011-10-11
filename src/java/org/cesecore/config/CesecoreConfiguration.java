@@ -191,6 +191,9 @@ public final class CesecoreConfiguration {
 
     public static Class<?> getTrustedTimeProvider() throws ClassNotFoundException {
         String providerClass = ConfigurationHolder.getString("time.provider");
+        if(log.isDebugEnabled()) {
+            log.debug("TrustedTimeProvider class: "+providerClass);
+        }
         return Class.forName(providerClass);
     }
 
