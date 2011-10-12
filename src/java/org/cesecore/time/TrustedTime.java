@@ -37,7 +37,7 @@ public class TrustedTime implements Serializable {
     private Long nextUpdate; //seconds
     private boolean sync = false;
 
-    public TrustedTime() { super(); }
+    public TrustedTime() { }
 
     public Integer getStratum() { return stratum; }
     public void setStratum(final Integer stratum) { this.stratum = stratum; }
@@ -69,7 +69,6 @@ public class TrustedTime implements Serializable {
     public void setAccuracy(final Double accuracy) { this.accuracy = accuracy; }
 
     public TrustedTime(final Double accuracy) {
-        super();
         this.accuracy = accuracy;
     }
 
