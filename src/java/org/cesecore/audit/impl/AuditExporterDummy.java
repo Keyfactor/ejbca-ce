@@ -50,4 +50,12 @@ public class AuditExporterDummy implements AuditExporter {
 	@Override
 	public void writeField(String key, String value) throws IOException {
 	}
+	
+    @Override
+    public void startObjectLabel(String label) throws IOException {
+    }
+
+    @Override
+    public void endObjectLabel() throws IOException {
+    }
 }

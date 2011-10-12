@@ -63,4 +63,12 @@ public class AuditExporterXml implements AuditExporter {
 	public void writeField(String key, String value) throws IOException {
 		currentObject.put(key, value);
 	}
+	
+    @Override
+    public void startObjectLabel(String label) throws IOException {
+    }
+
+    @Override
+    public void endObjectLabel() throws IOException {
+    }
 }
