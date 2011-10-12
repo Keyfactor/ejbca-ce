@@ -181,12 +181,11 @@ public class X509CertificateAuthenticationTokenTest {
      * 
      */
     @Test
-    public void testMatchWithAllValue() {
+    public void testMatchWithAllValues() {
         X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
         int caid = (CertTools.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
-
-        X500PrincipalAccessMatchValue[] allValues = X500PrincipalAccessMatchValue.values();
         AccessUserAspect accessUser;
+        X500PrincipalAccessMatchValue[] allValues = X500PrincipalAccessMatchValue.values();
         for (X500PrincipalAccessMatchValue matchValue : allValues) {
             switch (matchValue) {
             case WITH_SERIALNUMBER:
@@ -202,6 +201,8 @@ public class X509CertificateAuthenticationTokenTest {
                 // Try again for TYPE_NOT_EQUALCASE/TYPE_NOT_EQUALCASEINS
                 assertFalse(authenticationToken.matches(accessUser));
                 EasyMock.verify(accessUser);
+                break;
+            case WITH_FULLDN:
                 break;
             case WITH_RFC822NAME:
                 break;
