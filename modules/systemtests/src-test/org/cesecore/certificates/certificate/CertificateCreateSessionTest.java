@@ -524,6 +524,28 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         }
     }
 
+    @Test
+    public void testXssInjection() throws Exception {
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        certprof.setAllowDNOverride(true);
+        String fp1 = null;
+        try {
+            int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
+            EndEntityInformation user = new EndEntityInformation("<script>foo</script>","CN=<script>alert('cesecore')</script>",testx509ca.getCAId(),null,"foo@anatom.se",EndEntityConstants.USER_ENDUSER,0,cpId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
+            user.setPassword("foo123");
+
+            SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
+            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
+            X509Certificate cert = (X509Certificate)resp.getCertificate();
+            fp1 = CertTools.getFingerprintAsString(cert);
+            assertEquals("The DN should have escaped < and >", "CN=\\<script\\>alert('cesecore')\\</script\\>", cert.getSubjectDN().toString());
+        } finally {
+            certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
+            internalCertStoreSession.removeCertificate(fp1);
+        }
+    }
+
     /** A PKCS#10 request with corrupt public key record, the public key asn.1 "sequence" has been hexedited */
     private static byte[] invalidp10 = Base64.decode(("MIH0MIGfAgEAMDwxCzAJBgNVBAYTAlNFMREwDwYDVQQKDAhQcmltZUtleTEaMBgG"+
             "A1UEAwwRcGtjczEwcmVxdWVzdHRlc3QwXDANBgkqhkiG9w0BAQEFAANLAP///0EA"+
