@@ -40,14 +40,14 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     private static final long serialVersionUID = 5560742096462018744L;
     private int primaryKey;
-    private AccessMatchValue matchWith;
+    private X500PrincipalAccessMatchValue matchWith;
     private AccessMatchType matchType;
     private String matchValue;
     private Integer caId;
     private int rowVersion = 0;
     private String rowProtection;
 
-    public AccessUserAspectData(final String roleName, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
+    public AccessUserAspectData(final String roleName, final int caId, final X500PrincipalAccessMatchValue matchWith, final AccessMatchType matchType,
             final String matchValue) {
 
         this.primaryKey = generatePrimaryKey(roleName, caId, matchWith, matchType, matchValue);
@@ -82,17 +82,17 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     @Transient
-    public AccessMatchValue getMatchWithByValue() {
+    public X500PrincipalAccessMatchValue getMatchWithByValue() {
         return matchWith;
     }
 
     @Override
     public void setMatchWith(Integer matchWith) {
-        this.matchWith = AccessMatchValue.matchFromDatabase(matchWith);
+        this.matchWith = X500PrincipalAccessMatchValue.matchFromDatabase(matchWith);
     }
     
     @Override
-    public void setMatchWithAsValue(AccessMatchValue matchWith) {
+    public void setMatchWithAsValue(X500PrincipalAccessMatchValue matchWith) {
         this.matchWith = matchWith;
     }
 
@@ -158,7 +158,7 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
         this.rowProtection = rowProtection;
     }
 
-    public static int generatePrimaryKey(final String roleName, final int caId, final AccessMatchValue matchWith,
+    public static int generatePrimaryKey(final String roleName, final int caId, final X500PrincipalAccessMatchValue matchWith,
             final AccessMatchType matchType, final String matchValue) {
         final int roleNameHash = roleName == null ? 0 : roleName.hashCode();
         final int matchValueHash = matchValue == null ? 0 : matchValue.hashCode();
@@ -167,7 +167,7 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     @Transient
-    public AccessMatchValue getPriority() {
+    public X500PrincipalAccessMatchValue getPriority() {
         return matchWith;
     }
 

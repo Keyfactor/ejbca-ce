@@ -51,7 +51,7 @@ public class AccessUserAspectManagerSessionBean implements AccessUserAspectManag
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public AccessUserAspectData create(final RoleData role, final int caId,
-            final AccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException {
+            final X500PrincipalAccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException {
         AccessUserAspectData result = null;
 
         if (find(AccessUserAspectData.generatePrimaryKey(role.getRoleName(), caId, matchWith, matchType, matchValue)) == null) {

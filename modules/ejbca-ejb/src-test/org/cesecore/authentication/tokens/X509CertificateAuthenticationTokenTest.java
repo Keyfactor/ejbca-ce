@@ -35,7 +35,7 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -157,6 +157,25 @@ public class X509CertificateAuthenticationTokenTest {
         EasyMock.verify(accessUser);
     }
 
+    @Test
+    public void testMatchWithFullDN() {
+        AccessUserAspect accessUser;
+        X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
+        int caid = (CertTools.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
+        
+        accessUser = EasyMock.createMock(AccessUserAspectData.class);
+        
+        EasyMock.expect(accessUser.getCaId()).andReturn(caid);
+        EasyMock.expect(accessUser.getMatchWithByValue()).andReturn(X500PrincipalAccessMatchValue.WITH_FULLDN);
+        EasyMock.expect(accessUser.getMatchValue()).andReturn(CertTools.getSubjectDN(certificate));
+        EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASEINS);
+        EasyMock.replay(accessUser);
+        
+        assertTrue(authenticationToken.matches(accessUser));
+        
+        EasyMock.verify(accessUser);
+    }
+    
     /**
      * Test matching with the rest of the vile lot.
      * 
@@ -166,14 +185,14 @@ public class X509CertificateAuthenticationTokenTest {
         X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
         int caid = (CertTools.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
 
-        AccessMatchValue[] allValues = AccessMatchValue.values();
+        X500PrincipalAccessMatchValue[] allValues = X500PrincipalAccessMatchValue.values();
         AccessUserAspect accessUser;
-        for (AccessMatchValue matchValue : allValues) {
+        for (X500PrincipalAccessMatchValue matchValue : allValues) {
             switch (matchValue) {
             case WITH_SERIALNUMBER:
                 accessUser = EasyMock.createMock(AccessUserAspectData.class);
                 EasyMock.expect(accessUser.getCaId()).andReturn(caid).times(2);
-                EasyMock.expect(accessUser.getMatchWithByValue()).andReturn(AccessMatchValue.WITH_SERIALNUMBER).times(2);
+                EasyMock.expect(accessUser.getMatchWithByValue()).andReturn(X500PrincipalAccessMatchValue.WITH_SERIALNUMBER).times(2);
                 EasyMock.expect(accessUser.getMatchValue()).andReturn(certificate.getSerialNumber().toString(16)).times(2);
                 EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASEINS);
                 EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_NOT_EQUALCASEINS);
@@ -214,7 +233,7 @@ public class X509CertificateAuthenticationTokenTest {
     public void testAuthFailAfterSerialization() throws IOException, ClassNotFoundException {
         final X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
         int caid = (CertTools.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
-        final AccessUserAspect accessUser = new AccessUserAspectData("testRole", caid, AccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, CertTools.getSerialNumberAsString(certificate));
+        final AccessUserAspect accessUser = new AccessUserAspectData("testRole", caid, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, CertTools.getSerialNumberAsString(certificate));
         // Verify happy path first
         assertTrue("Regular matching was not successful.", authenticationToken.matches(accessUser));
         // Simulate remote EJB call using serialization. This should destroy the "transient" shared secret.

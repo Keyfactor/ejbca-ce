@@ -51,7 +51,7 @@ import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -286,7 +286,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         if (!adminExists) {
         	log.info("Adding admin to role: "+wsadminRoleName);
         	List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
-        	list.add(new AccessUserAspectData(wsadminRoleName, cainfo.getCAId(), AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
+        	list.add(new AccessUserAspectData(wsadminRoleName, cainfo.getCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
         			TEST_ADMIN_USERNAME));
         	roleManagementSession.addSubjectsToRole(intAdmin, role, list);
         	accessControlSession.forceCacheExpire();

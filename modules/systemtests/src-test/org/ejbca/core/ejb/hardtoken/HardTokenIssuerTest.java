@@ -27,7 +27,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
@@ -157,7 +157,7 @@ public class HardTokenIssuerTest {
         RoleData role = roleManagementSession.create(internalAdmin, rolename);
         try {
             Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-            subjects.add(new AccessUserAspectData(rolename, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
+            subjects.add(new AccessUserAspectData(rolename, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
             role = roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);
             Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
             accessRules.add(new AccessRuleData(rolename, "/hardtoken_functionality/issue_hardtokens", AccessRuleState.RULE_ACCEPT, false));

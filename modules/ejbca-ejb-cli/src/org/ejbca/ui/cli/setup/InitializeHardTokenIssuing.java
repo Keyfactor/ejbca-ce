@@ -20,7 +20,7 @@ import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
 import org.ejbca.core.model.SecConst;
@@ -229,7 +229,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
     private void addSuperAdminTokenUserToTemporarySuperAdminGroup(String cliUserName, String cliPassword, int caid) throws Exception {
         String roleName = "Temporary Super Administrator Group";
         List<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-        subjects.add(new AccessUserAspectData(roleName, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS,
+        subjects.add(new AccessUserAspectData(roleName, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS,
                 SUPERADMINTOKENNAME));
         RoleData role = ejb.getRoleAccessSession().findRole(roleName);
         ejb.getRoleManagementSession().addSubjectsToRole(getAdmin(cliUserName, cliPassword), role, subjects);

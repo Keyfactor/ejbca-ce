@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.roles.RoleData;
@@ -73,7 +73,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 }
                 getLogger().info("Available CAs: " + availableCas);
                 String availableMatchers = "";
-                for (AccessMatchValue currentMatchWith : AccessMatchValue.values()) {
+                for (X500PrincipalAccessMatchValue currentMatchWith : X500PrincipalAccessMatchValue.values()) {
                     availableMatchers += (availableMatchers.length() == 0 ? "" : ", ") + currentMatchWith;
                 }
                 getLogger().info("Match with is one of: " + availableMatchers);
@@ -96,7 +96,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 return;
             }
             int caid = caInfo.getCAId();
-            AccessMatchValue matchWith = AccessMatchValue.matchFromName(args[3]);
+            X500PrincipalAccessMatchValue matchWith = X500PrincipalAccessMatchValue.matchFromName(args[3]);
             if (matchWith == null) {
                 getLogger().error("No such thing to match with as \"" + args[3] + "\" .");
                 return;

@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.roles.RoleData;
@@ -67,7 +67,7 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                 getLogger().error("No such CA \"" + caName + "\" .");
                 return;
             }
-            AccessMatchValue matchWith = AccessMatchValue.matchFromName(args[3]);
+            X500PrincipalAccessMatchValue matchWith = X500PrincipalAccessMatchValue.matchFromName(args[3]);
             if (matchWith == null) {
                 getLogger().error("No such thing to match with as \"" + args[3] + "\" .");
                 return;

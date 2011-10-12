@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.CertTools;
@@ -108,8 +108,8 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
         if (accessUser.getCaId() == adminCaId) {
             // Determine part of certificate to match with.
             DNFieldExtractor usedExtractor = dnExtractor;
-            AccessMatchValue matchValue = accessUser.getMatchWithByValue();
-            if (matchValue == AccessMatchValue.WITH_SERIALNUMBER) {
+            X500PrincipalAccessMatchValue matchValue = accessUser.getMatchWithByValue();
+            if (matchValue == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER) {
                 BigInteger matchValueAsBigInteger = new BigInteger(accessUser.getMatchValue(), 16);
                 switch (accessUser.getMatchTypeAsType()) {
                 case TYPE_EQUALCASE:
@@ -128,6 +128,21 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
                     break;
                 default:
                 }
+            } else if (matchValue == X500PrincipalAccessMatchValue.WITH_FULLDN) {
+                    String value = accessUser.getMatchValue();
+                    switch (accessUser.getMatchTypeAsType()) {
+                    case TYPE_EQUALCASE:
+                        returnvalue = value.equals(CertTools.getSubjectDN(certificate));
+                    case TYPE_EQUALCASEINS:
+                        returnvalue = value.equalsIgnoreCase(CertTools.getSubjectDN(certificate));
+                        break;
+                    case TYPE_NOT_EQUALCASE:
+                        returnvalue = !value.equals(CertTools.getSubjectDN(certificate));
+                    case TYPE_NOT_EQUALCASEINS:
+                        returnvalue = !value.equalsIgnoreCase(CertTools.getSubjectDN(certificate));
+                        break;
+                    default:
+                    }
             } else {
                 parameter = DNFieldExtractor.CN;
                 switch (matchValue) {

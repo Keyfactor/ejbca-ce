@@ -29,11 +29,11 @@ public interface AccessUserAspect extends Serializable {
 
     int getMatchWith();
 
-    AccessMatchValue getMatchWithByValue();
+    X500PrincipalAccessMatchValue getMatchWithByValue();
 
     void setMatchWith(Integer matchWith);
 
-    void setMatchWithAsValue(AccessMatchValue matchWith);
+    void setMatchWithAsValue(X500PrincipalAccessMatchValue matchWith);
 
     int getMatchType();
 
@@ -56,6 +56,6 @@ public interface AccessUserAspect extends Serializable {
      * 
      * @return the matchWith value for the AccessUserData instance.
      */
-    AccessMatchValue getPriority();
+    X500PrincipalAccessMatchValue getPriority();
 
 }

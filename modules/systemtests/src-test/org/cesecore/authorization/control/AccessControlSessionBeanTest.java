@@ -24,7 +24,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.roles.RoleData;
@@ -74,7 +74,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
         try {
 
             List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-            accessUsers.add(new AccessUserAspectData(nerfHerder.getRoleName(), caId, AccessMatchValue.WITH_COUNTRY, AccessMatchType.TYPE_EQUALCASE, "SE"));
+            accessUsers.add(new AccessUserAspectData(nerfHerder.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COUNTRY, AccessMatchType.TYPE_EQUALCASE, "SE"));
             roleManagementSession.addSubjectsToRole(roleMgmgToken, nerfHerder, accessUsers);
             
             List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
