@@ -34,6 +34,8 @@ import java.io.OutputStream;
 public interface AuditExporter {
 
 	void setOutputStream(OutputStream outputStream) throws IOException;
+	void startObjectLabel(String label) throws IOException;
+    void endObjectLabel() throws IOException;
 	void writeStartObject() throws IOException;
 	void writeField(String key, long value) throws IOException;
 	void writeField(String key, String value) throws IOException;

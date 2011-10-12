@@ -72,4 +72,12 @@ public class AuditExportCsv implements AuditExporter {
 			pw.print('\t');
 		}
 	}
+	
+    @Override
+    public void startObjectLabel(String label) throws IOException {
+    }
+
+    @Override
+    public void endObjectLabel() throws IOException {
+    }
 }
