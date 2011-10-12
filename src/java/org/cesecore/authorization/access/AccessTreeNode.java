@@ -18,7 +18,7 @@ import java.util.HashMap;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
@@ -218,7 +218,7 @@ public class AccessTreeNode {
      */
     private AccessTreeState findPreferredRule(AuthenticationToken authenticationToken) {
         AccessTreeState state = AccessTreeState.STATE_UNKNOWN;
-        AccessMatchValue statePriority = AccessMatchValue.NONE;
+        X500PrincipalAccessMatchValue statePriority = X500PrincipalAccessMatchValue.NONE;
         Collection<AccessUserAspectData> accessUsers;
         if (log.isTraceEnabled()) {
         	log.trace("AccessTreeNode " + resource + " has " + roleRulePairs.size() + " roleRulePairs");
@@ -232,17 +232,17 @@ public class AccessTreeNode {
                 // If two principals match.
                 if (authenticationToken.matches(accessUser)) {
                     AccessTreeState thisUserState = roleRulePair.getSecondElement().getTreeState();
-                    AccessMatchValue thisUserStatePriority = accessUser.getPriority();
+                    X500PrincipalAccessMatchValue thisUserStatePriority = accessUser.getPriority();
                     if (log.isTraceEnabled()) {
                         AccessTreeState logState = thisUserState;
                         if (logState == null) {
                             log.trace("logState is null");
                             logState = AccessTreeState.STATE_UNKNOWN;
                         }
-                        AccessMatchValue logMatchValue = thisUserStatePriority;
+                        X500PrincipalAccessMatchValue logMatchValue = thisUserStatePriority;
                         if (logMatchValue == null) {
                             log.trace("logMatchValue is null");
-                            logMatchValue = AccessMatchValue.NONE;                            
+                            logMatchValue = X500PrincipalAccessMatchValue.NONE;                            
                         }
                     	log.trace("accessUser "+accessUser.getMatchWithByValue().name()+" "+accessUser.getMatchTypeAsType().name()+" "+accessUser.getMatchValue()+" matched authenticationToken. thisUserState=" + logState.name() + " thisUserStatePriority=" + logMatchValue.name());
                     }

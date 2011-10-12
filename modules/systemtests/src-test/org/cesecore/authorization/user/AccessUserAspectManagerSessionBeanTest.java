@@ -43,14 +43,14 @@ public class AccessUserAspectManagerSessionBeanTest {
         final int caId = 4711;
 
         AccessUserAspectData result = null;
-        Integer primaryKey = AccessUserAspectData.generatePrimaryKey(role.getRoleName(), caId, AccessMatchValue.WITH_COUNTRY,
+        Integer primaryKey = AccessUserAspectData.generatePrimaryKey(role.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COUNTRY,
                 AccessMatchType.TYPE_EQUALCASE, "SE");
 
         assertNull("accessUserAspectManagerSession.find did not return null for a non existing object.",
                 accessUserAspectManagerSession.find(primaryKey));
 
         try {
-            result = accessUserAspectManagerSession.create(role, caId, AccessMatchValue.WITH_COUNTRY,
+            result = accessUserAspectManagerSession.create(role, caId, X500PrincipalAccessMatchValue.WITH_COUNTRY,
                     AccessMatchType.TYPE_EQUALCASE, "SE");
         } catch (AccessUserAspectExistsException e) {
             fail("You're probably running this test from a dirty database.");

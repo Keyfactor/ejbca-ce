@@ -144,7 +144,7 @@
 					<include name="org/cesecore/authentication/tokens/UsernamePrincipal.java"/>
 					<include name="org/cesecore/authentication/tokens/X509CertificateAuthenticationToken.java"/>
 					<include name="org/cesecore/authorization/user/AccessUserAspect.java"/>
-					<include name="org/cesecore/authorization/user/AccessMatchValue.java"/>
+					<include name="org/cesecore/authorization/user/X500PrincipalAccessMatchValue.java"/>
 					<include name="org/cesecore/authorization/user/AccessMatchType.java"/>
 					<include name="org/ejbca/core/model/log/Admin.java"/>
 					<include name="org/ejbca/core/model/authorization/AdminInformation.java"/>

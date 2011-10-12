@@ -14,7 +14,7 @@
 package org.ejbca.ui.cli.admins;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -62,7 +62,7 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
                 if (caName == null) {
                     caName = "Unknown CA with id " + userAspect.getCaId();
                 }
-                AccessMatchValue matchWith = userAspect.getMatchWithByValue();
+                X500PrincipalAccessMatchValue matchWith = userAspect.getMatchWithByValue();
                 AccessMatchType matchType = userAspect.getMatchTypeAsType();     
                 String matchValue = userAspect.getMatchValue();
                 getLogger().info("\"" + caName + "\" " + matchWith + " " + matchType + " \"" + matchValue + "\"");

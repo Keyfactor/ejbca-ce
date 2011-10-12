@@ -31,7 +31,7 @@ import org.cesecore.authorization.rules.AccessRuleManagementTestSessionRemote;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.AccessUserAspectExistsException;
 import org.cesecore.authorization.user.AccessUserAspectManagerTestSessionRemote;
@@ -168,16 +168,16 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
     public void testAddAndRemoveAccessUsersToRole() throws RoleExistsException, AccessUserAspectExistsException, AuthorizationDeniedException, RoleNotFoundException {
         RoleData role = roleManagementSession.create(authenticationToken, "Zoidberg");
         final int caId = 1337;
-        final int benderPrimaryKey = AccessUserAspectData.generatePrimaryKey(role.getRoleName(), caId, AccessMatchValue.WITH_COUNTRY,
+        final int benderPrimaryKey = AccessUserAspectData.generatePrimaryKey(role.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COUNTRY,
                 AccessMatchType.TYPE_EQUALCASE, "SE");
-        final int zappPrimaryKey = AccessUserAspectData.generatePrimaryKey(role.getRoleName(), caId, AccessMatchValue.WITH_COMMONNAME,
+        final int zappPrimaryKey = AccessUserAspectData.generatePrimaryKey(role.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
                 AccessMatchType.TYPE_EQUALCASE, "Test");
 
         try {
-            AccessUserAspectData bender = accessUserAspectManagerSession.create(role, caId, AccessMatchValue.WITH_COUNTRY,
+            AccessUserAspectData bender = accessUserAspectManagerSession.create(role, caId, X500PrincipalAccessMatchValue.WITH_COUNTRY,
                     AccessMatchType.TYPE_EQUALCASE, "SE");
             // Also create a user without going via the session bean:
-            AccessUserAspectData zapp = new AccessUserAspectData(role.getRoleName(), caId, AccessMatchValue.WITH_COMMONNAME,
+            AccessUserAspectData zapp = new AccessUserAspectData(role.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
                     AccessMatchType.TYPE_EQUALCASE, "Test");
             Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
             subjects.add(bender);

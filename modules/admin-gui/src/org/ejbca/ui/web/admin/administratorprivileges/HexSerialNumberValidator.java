@@ -23,7 +23,7 @@ import javax.faces.validator.Validator;
 import javax.faces.validator.ValidatorException;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /** Validates hexadecimal serial numbers entered in the admin-GUI. Does it by constructing a biginteger.
@@ -39,7 +39,7 @@ public class HexSerialNumberValidator implements Validator{
 		}
 		Map<String, String> map = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
 		for(String key :  map.keySet()) {
-			if (key.contains("matchWith") && map.get(key).equals(AccessMatchValue.WITH_SERIALNUMBER)) {
+			if (key.contains("matchWith") && map.get(key).equals(X500PrincipalAccessMatchValue.WITH_SERIALNUMBER)) {
 				try {
 					new BigInteger((String) object, 16);
 				} catch (NumberFormatException e) {

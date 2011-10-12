@@ -35,7 +35,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -144,8 +144,8 @@ public class RevocationApprovalTest extends CaTestCase {
         accessRules.add(new AccessRuleData(getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
         adminentities = new ArrayList<AccessUserAspectData>();
-        adminentities.add(new AccessUserAspectData(getRoleName(), caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminUsername));
-        adminentities.add(new AccessUserAspectData(getRoleName(), caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, requestingAdminUsername));
+        adminentities.add(new AccessUserAspectData(getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, adminUsername));
+        adminentities.add(new AccessUserAspectData(getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS, requestingAdminUsername));
         roleManagementSession.addSubjectsToRole(internalAdmin, role, adminentities);
         accessControlSession.forceCacheExpire();
      

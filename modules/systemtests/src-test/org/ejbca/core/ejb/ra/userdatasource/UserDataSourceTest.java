@@ -27,7 +27,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
@@ -69,7 +69,7 @@ public class UserDataSourceTest extends CaTestCase {
         admin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(null, null));
         RoleData role = roleManagementSessionRemote.create(internalAdmin, ROLENAME);
         Collection<AccessUserAspectData> subjects = new LinkedList<AccessUserAspectData>();
-        subjects.add(new AccessUserAspectData(ROLENAME, CertTools.getIssuerDN(admin.getCertificate()).hashCode(), AccessMatchValue.WITH_COMMONNAME,
+        subjects.add(new AccessUserAspectData(ROLENAME, CertTools.getIssuerDN(admin.getCertificate()).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
                 AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(SimpleAuthenticationProviderRemote.DEFAULT_DN, "CN")));
         role = roleManagementSessionRemote.addSubjectsToRole(internalAdmin, role, subjects);
         Collection<AccessRuleData> accessRules = new LinkedList<AccessRuleData>();

@@ -34,7 +34,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -155,7 +155,7 @@ public class PublisherTest {
     	rules.add(new AccessRuleData(commonname, StandardRules.CAACCESS.resource() + caid, AccessRuleState.RULE_ACCEPT, false));
     	role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, rules);
     	Collection<AccessUserAspectData> users = new ArrayList<AccessUserAspectData>();
-    	users.add(new AccessUserAspectData(commonname, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
+    	users.add(new AccessUserAspectData(commonname, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
     	role = roleManagementSession.addSubjectsToRole(internalAdmin, role, users);
     }
     

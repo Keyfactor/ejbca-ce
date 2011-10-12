@@ -40,7 +40,7 @@ import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -110,7 +110,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
 
         log.debug("Adding new AccessUserAspect 'NONE' to " + SUPERADMIN_ROLE + ".");
         Map<Integer, AccessUserAspectData> newUsers = new HashMap<Integer, AccessUserAspectData>();      
-        AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, 0, AccessMatchValue.WITH_UID,
+        AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, 0, X500PrincipalAccessMatchValue.WITH_UID,
                 AccessMatchType.TYPE_EQUALCASE, EjbcaConfiguration.getCliDefaultUser());
         newUsers.put(defaultCliUserAspect.getPrimaryKey(), defaultCliUserAspect);
         role.setAccessUsers(newUsers);
@@ -143,7 +143,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
             roleMgmtSession.addAccessRulesToRole(admin, role, newrules);
         }
         Map<Integer, AccessUserAspectData> users = role.getAccessUsers();
-        AccessUserAspectData aua = new AccessUserAspectData(SUPERADMIN_ROLE, caid, AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
+        AccessUserAspectData aua = new AccessUserAspectData(SUPERADMIN_ROLE, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
                 superAdminCN);
         if (!users.containsKey(aua.getPrimaryKey())) {
             log.debug("Adding new AccessUserAspect for '" + superAdminCN + "' to " + SUPERADMIN_ROLE + ".");

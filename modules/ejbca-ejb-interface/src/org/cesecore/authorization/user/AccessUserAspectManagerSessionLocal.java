@@ -55,7 +55,7 @@ public interface AccessUserAspectManagerSessionLocal {
      *             if a user with this primary key already is persisted.
      */
     public AccessUserAspectData create(final RoleData role, final int caId,
-            final AccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException;
+            final X500PrincipalAccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException;
 
     /**
      * Finds an AccessUserAspectData by its primary key. A primary key can be generated statically from AccessUserAspectData.

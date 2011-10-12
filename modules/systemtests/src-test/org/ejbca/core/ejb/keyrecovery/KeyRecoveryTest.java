@@ -31,7 +31,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
@@ -89,7 +89,7 @@ public class KeyRecoveryTest extends CaTestCase {
 
         RoleData role = roleManagementSession.create(internalAdmin, KEYRECOVERY_ROLE);
         Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-        subjects.add(new AccessUserAspectData(KEYRECOVERY_ROLE, getTestCAId(), AccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
+        subjects.add(new AccessUserAspectData(KEYRECOVERY_ROLE, getTestCAId(), X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE,
                 CertTools.getPartFromDN(CertTools.getSubjectDN(getTestCACert()), "CN")));
         role = roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);
         Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();

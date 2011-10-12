@@ -39,7 +39,7 @@ import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -139,7 +139,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
 
         final List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-        accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(certificate).hashCode(), AccessMatchValue.WITH_COMMONNAME,
+        accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(certificate).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
                 AccessMatchType.TYPE_EQUALCASE, CertTools.getPartFromDN(CertTools.getSubjectDN(certificate), "CN")));
         roleManagementSession.addSubjectsToRole(roleMgmgToken, role, accessUsers);
 

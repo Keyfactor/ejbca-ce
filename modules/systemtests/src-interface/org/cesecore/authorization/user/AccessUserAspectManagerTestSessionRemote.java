@@ -33,7 +33,7 @@ public interface AccessUserAspectManagerTestSessionRemote {
     void persistAccessUserAspect(AccessUserAspect accessUserAspectData);
     
     public AccessUserAspectData create(final RoleData role, final int caId,
-            final AccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException;
+            final X500PrincipalAccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException;
 
     AccessUserAspect find(int primaryKey);
 

@@ -24,11 +24,11 @@ import java.util.Map;
  * @version $Id$
  * 
  */
-public enum AccessMatchValue {
+public enum X500PrincipalAccessMatchValue {
     NONE(0), WITH_COUNTRY(1), WITH_DOMAINCOMPONENT(2), WITH_STATEORPROVINCE(3), WITH_LOCALITY(4), WITH_ORGANIZATION(5), WITH_ORGANIZATIONALUNIT(6), WITH_TITLE(7), WITH_COMMONNAME(
-            8), WITH_UID(9), WITH_DNSERIALNUMBER(10), WITH_SERIALNUMBER(11), WITH_DNEMAILADDRESS(12), WITH_RFC822NAME(13), WITH_UPN(14);
+            8), WITH_UID(9), WITH_DNSERIALNUMBER(10), WITH_SERIALNUMBER(11), WITH_DNEMAILADDRESS(12), WITH_RFC822NAME(13), WITH_UPN(14), WITH_FULLDN(15);
 
-    private AccessMatchValue(int numericValue) {
+    private X500PrincipalAccessMatchValue(int numericValue) {
         this.numericValue = numericValue;
     }
 
@@ -36,22 +36,22 @@ public enum AccessMatchValue {
         return numericValue;
     }
     
-    public static AccessMatchValue matchFromDatabase(Integer numericValue) {
+    public static X500PrincipalAccessMatchValue matchFromDatabase(Integer numericValue) {
         return databaseLookup.get(numericValue);
     }
     
-    public static AccessMatchValue matchFromName(String name) {
+    public static X500PrincipalAccessMatchValue matchFromName(String name) {
         return nameLookup.get(name);
     }
 
-    private static Map<Integer, AccessMatchValue> databaseLookup;
-    private static Map<String, AccessMatchValue> nameLookup;
+    private static Map<Integer, X500PrincipalAccessMatchValue> databaseLookup;
+    private static Map<String, X500PrincipalAccessMatchValue> nameLookup;
     private int numericValue;
     
     static {
-        databaseLookup = new HashMap<Integer, AccessMatchValue>();
-        nameLookup = new HashMap<String, AccessMatchValue>();
-        for(AccessMatchValue value : AccessMatchValue.values()) {
+        databaseLookup = new HashMap<Integer, X500PrincipalAccessMatchValue>();
+        nameLookup = new HashMap<String, X500PrincipalAccessMatchValue>();
+        for(X500PrincipalAccessMatchValue value : X500PrincipalAccessMatchValue.values()) {
             databaseLookup.put(value.numericValue, value);
             nameLookup.put(value.name(), value);
         }

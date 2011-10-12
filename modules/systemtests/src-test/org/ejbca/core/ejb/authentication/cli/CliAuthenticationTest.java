@@ -32,7 +32,7 @@ import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.jndi.JndiHelper;
@@ -77,7 +77,7 @@ public class CliAuthenticationTest {
     public void setUp() throws Exception {
         RoleData role = roleManagementSession.create(internalToken, CLI_TEST_ROLENAME);
         List<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-        AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(CLI_TEST_ROLENAME, 0, AccessMatchValue.WITH_UID,
+        AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(CLI_TEST_ROLENAME, 0, X500PrincipalAccessMatchValue.WITH_UID,
                 AccessMatchType.TYPE_EQUALCASE, CliAuthenticationTestHelperSessionRemote.USERNAME);
         subjects.add(defaultCliUserAspect);
         roleManagementSession.addSubjectsToRole(internalToken, role, subjects);

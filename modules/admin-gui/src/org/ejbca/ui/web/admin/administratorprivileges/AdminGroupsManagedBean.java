@@ -30,7 +30,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
@@ -68,7 +68,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     
     private String currentAdminGroupName = null;
     private String matchCaId = null;
-    private AccessMatchValue matchWith = AccessMatchValue.WITH_SERIALNUMBER;
+    private X500PrincipalAccessMatchValue matchWith = X500PrincipalAccessMatchValue.WITH_SERIALNUMBER;
     private AccessMatchType matchType = null;
     private String matchValue = null;
 
@@ -151,7 +151,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     /** @return a viewable list of 'match with'-texts */
     public List<SelectItem> getMatchWithTexts() {
         List<SelectItem> list = new ArrayList<SelectItem>();
-        for (AccessMatchValue current : AccessMatchValue.values()) {
+        for (X500PrincipalAccessMatchValue current : X500PrincipalAccessMatchValue.values()) {
             if (!"".equals(current)) {
                 list.add(new SelectItem(current, getEjbcaWebBean().getText(current.toString())));
             }
@@ -170,7 +170,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 
     public Map<String, Integer> getAccessMatchValuesAsMap() {
         Map<String, Integer> result = new HashMap<String, Integer>();
-        for (AccessMatchValue value : AccessMatchValue.values()) {
+        for (X500PrincipalAccessMatchValue value : X500PrincipalAccessMatchValue.values()) {
             result.put(value.name(), value.getNumericValue());
         }
         return result;
@@ -185,11 +185,11 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
         this.matchCaId = matchCaId;
     }
 
-    public AccessMatchValue getMatchWith() {
+    public X500PrincipalAccessMatchValue getMatchWith() {
         return matchWith;
     }
 
-    public void setMatchWith(AccessMatchValue matchWith) {
+    public void setMatchWith(X500PrincipalAccessMatchValue matchWith) {
         this.matchWith = matchWith;
     }
 
@@ -215,7 +215,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
      * @throws RoleNotFoundException
      */
     public void addAdmin() throws RoleNotFoundException {
-        AccessMatchValue matchWith = getMatchWith();
+        X500PrincipalAccessMatchValue matchWith = getMatchWith();
         AccessMatchType matchType = getMatchType();
         String matchValue = getMatchValue();
         if (matchValue == null || "".equals(matchValue)) {

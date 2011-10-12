@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
-import org.cesecore.authorization.user.AccessMatchValue;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.CertTools;
@@ -79,8 +79,8 @@ public class TestX509CertificateAuthenticationToken extends AuthenticationToken 
             DNFieldExtractor dn = new DNFieldExtractor(certstring, DNFieldExtractor.TYPE_SUBJECTDN);
             DNFieldExtractor an = new DNFieldExtractor(anString, DNFieldExtractor.TYPE_SUBJECTALTNAME);
             DNFieldExtractor usedExtractor = dn;
-            AccessMatchValue matchValue = accessUser.getMatchWithByValue();
-            if (matchValue == AccessMatchValue.WITH_SERIALNUMBER) {
+            X500PrincipalAccessMatchValue matchValue = accessUser.getMatchWithByValue();
+            if (matchValue == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER) {
                 BigInteger matchValueAsBigInteger = new BigInteger(accessUser.getMatchValue(), 16);
                 switch (accessUser.getMatchTypeAsType()) {
                 case TYPE_EQUALCASE:
