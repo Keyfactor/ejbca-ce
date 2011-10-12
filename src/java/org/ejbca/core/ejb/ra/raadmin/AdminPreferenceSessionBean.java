@@ -40,7 +40,7 @@ import org.ejbca.core.model.ra.raadmin.AdminPreference;
  * 
  * @version $Id: RaAdminSessionBean.java 9579 2010-07-30 18:07:23Z jeklund$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "RaAdminSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "AdminPreferenceSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, AdminPreferenceSessionRemote {
 
