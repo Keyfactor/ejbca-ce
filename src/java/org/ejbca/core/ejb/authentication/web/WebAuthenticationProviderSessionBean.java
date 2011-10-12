@@ -26,6 +26,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
@@ -62,21 +64,24 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             try {
                 certificate.checkValidity();
             } catch (Exception e) {
-            	String msg = intres.getLocalizedMessage("authentication.certexpired", CertTools.getSubjectDN(certificate), CertTools.getNotAfter(certificate).toString());
-            	LOG.info(msg);
+            	LOG.info(intres.getLocalizedMessageCs("authentication.certexpired", CertTools.getSubjectDN(certificate), CertTools.getNotAfter(certificate).toString()));
             	return null;
             }
-            if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
-                // TODO: Verify Signature on cert? Not really needed since it's one of our certs in the database.
-                // Check if certificate is revoked.
-                boolean isRevoked = certificateStoreSession.isRevoked(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
-                if (isRevoked) {
-                    // Certificate revoked or missing in the database
-                    String msg = intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
-                    LOG.info(msg);
+            // Find out if this is a certificate present in the local database (even if we don't require a cert to be present there we still want to allow a mix)
+            final CertificateInfo certificateInfo = certificateStoreSession.findFirstCertificateInfo(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
+            if (certificateInfo != null) {
+                // The certificate is present in the database.
+                if (certificateInfo.getStatus() != CertificateConstants.CERT_ACTIVE) {
+                    // The certificate is revoked, archived or similar
+                    LOG.info(intres.getLocalizedMessageCs("authentication.revokedormissing", CertTools.getSubjectDN(certificate)));
                     return null;
                 }
             } else {
+                // The certificate is not present in the database.
+                if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
+                    LOG.info(intres.getLocalizedMessageCs("authentication.revokedormissing", CertTools.getSubjectDN(certificate)));
+                    return null;
+                }
                 // TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status
             }
             final Set<X500Principal> principals = new HashSet<X500Principal>();
