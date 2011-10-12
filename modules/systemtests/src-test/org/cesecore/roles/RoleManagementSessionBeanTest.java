@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.cesecore.RoleUsingTestCase;
@@ -31,10 +32,10 @@ import org.cesecore.authorization.rules.AccessRuleManagementTestSessionRemote;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.AccessUserAspectExistsException;
 import org.cesecore.authorization.user.AccessUserAspectManagerTestSessionRemote;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -265,6 +266,29 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
         } finally {
             roleManagementSession.remove(authenticationToken, role);
             assertNull("All rules where not removed when their attendant roles were.", accessRuleManagementSession.find(futureWorldPrimaryKey));
+        }
+    }
+    
+    @Test
+    public void testRemoveRulesByName() throws Exception {
+        String roleName = "Skippy";
+        String ruleName = "/planet/mercury";
+        RoleData role = roleManagementSession.create(authenticationToken, roleName);      
+
+        try {
+            Collection<AccessRuleData> rules = new ArrayList<AccessRuleData>();
+            rules.add(new AccessRuleData(roleName, ruleName, AccessRuleState.RULE_ACCEPT, false));
+            roleManagementSession.addAccessRulesToRole(authenticationToken, role, rules);
+            if(accessRuleManagementSession.find(AccessRuleData.generatePrimaryKey(roleName, ruleName)) == null) {
+                throw new Exception("Rule was not created, can not continue test.");
+            }
+            List<String> accessRulesToRemove = new ArrayList<String>();
+            accessRulesToRemove.add(null);
+            accessRulesToRemove.add(ruleName);
+            roleManagementSession.removeAccessRulesFromRole(authenticationToken, role, accessRulesToRemove);
+            assertTrue(accessRuleManagementSession.find(AccessRuleData.generatePrimaryKey(roleName, ruleName)) == null);
+        } finally {
+            roleManagementSession.remove(authenticationToken, role);
         }
     }
 
