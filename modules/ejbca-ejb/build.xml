@@ -202,7 +202,7 @@
 		<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
 		<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/PublisherQueueData.java"/>
-		<include name="org/ejbca/core/model/ca/publisher/PublisherExistsException.java"/>
+		<include name="org/ejbca/core/model/ca/publisher/Publisher*Exception.java"/>
 		<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
 		<include name="org/ejbca/core/model/authorization/AuthenticationFailedException.java"/>
 		<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerData.java"/>
@@ -228,6 +228,8 @@
 		<include name="org/cesecore/certificates/certificateprofile/*.java"/>
 		<include name="org/cesecore/certificates/util/cert/CrlExtensions.java"/>
 		<include name="org/ejbca/core/model/authorization/DefaultRoles.java"/>
+       	<include name="org/ejbca/core/model/ca/publisher/*Publisher.java"/>
+       	<exclude name="org/ejbca/core/model/ca/publisher/ExternalOCSPPublisher.java"/> <!-- But not this one, is has EJB dependencies -->
 		<!-- Dependecies from EJB CLI, AdminWeb, PublicWeb -->
 		<include name="org/ejbca/core/model/hardtoken/profiles/SwedishEIDProfile.java"/>
 		<!-- Dependecies from EJB CLI, EJBCA WS -->
