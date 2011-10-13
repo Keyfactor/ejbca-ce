@@ -25,6 +25,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
+import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 
 /**
@@ -40,19 +41,19 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     private PublisherSessionLocal publisherSession;
     
     @Override
-    public void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException {
+    public void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException {
         publisherSession.addPublisher(admin, name, publisher);
 
     }
 
     @Override
-    public void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) {
+    public void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException {
         publisherSession.changePublisher(admin, name, publisher);
 
     }
 
     @Override
-    public void clonePublisher(AuthenticationToken admin, String oldname, String newname) {
+    public void clonePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherDoesntExistsException, AuthorizationDeniedException, PublisherExistsException {
         publisherSession.clonePublisher(admin, oldname, newname);
     }
 
@@ -62,13 +63,13 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     }
 
     @Override
-    public void removePublisher(AuthenticationToken admin, String name) {
+    public void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException {
        publisherSession.removePublisher(admin, name);
 
     }
 
     @Override
-    public void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException {
+    public void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException {
         publisherSession.renamePublisher(admin, oldname, newname);
 
     }

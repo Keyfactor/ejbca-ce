@@ -22,6 +22,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
+import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 
 /**
@@ -56,35 +57,39 @@ public interface PublisherSessionLocal extends PublisherSession {
 
     /**
      * Adds a publisher to the database.
-     * @throws PublisherExistsException if hard token already exists.
+     * @throws PublisherExistsException if publisher already exists.
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
      */
-    void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException;
+    void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
 
     /**
      * Adds a publisher to the database. Used for importing and exporting
      * profiles from xml-files.
      * 
      * @throws PublisherExistsException if publisher already exists.
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
      */
-    void addPublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws PublisherExistsException;
-
-    /** Updates publisher data. */
-    void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher);
+    void addPublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
 
     /**
      * Adds a publisher with the same content as the original.
+     * @throws PublisherDoesntExistsException if publisher does not exist
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
      * @throws PublisherExistsException if publisher already exists.
      */
-    void clonePublisher(AuthenticationToken admin, String oldname, String newname);
+    void clonePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherDoesntExistsException, AuthorizationDeniedException, PublisherExistsException;
 
-    /** Removes a publisher from the database. */
-    void removePublisher(AuthenticationToken admin, String name);
+    /** Removes a publisher from the database. 
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
+     */
+    void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
 
     /**
      * Renames a publisher.
      * @throws PublisherExistsException if publisher already exists.
+     * @throws AuthorizationDeniedException required access rights are ca_functionality/edit_publisher
      */
-    void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException;
+    void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException;
 
     /**
      * Retrieves a Collection of id:s (Integer) for all authorized publishers if

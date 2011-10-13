@@ -21,6 +21,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
+import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 
 /**
@@ -33,17 +34,22 @@ public interface PublisherProxySessionRemote {
     /**
      * Adds a publisher to the database.
      * @throws PublisherExistsException if hard token already exists.
+     * @throws AuthorizationDeniedException 
      */
-    void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException;
+    void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
     
-    /** Updates publisher data. */
-    void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher);
+    /** Updates publisher data. 
+     * @throws AuthorizationDeniedException */
+    void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException;
     
     /**
      * Adds a publisher with the same content as the original.
+     * @throws PublisherExistsException 
+     * @throws AuthorizationDeniedException 
+     * @throws PublisherDoesntExistsException 
      * @throws PublisherExistsException if publisher already exists.
      */
-    void clonePublisher(AuthenticationToken admin, String oldname, String newname);
+    void clonePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherDoesntExistsException, AuthorizationDeniedException, PublisherExistsException;
     
     /**
      * Returns a publisher id, given it's publishers name
@@ -51,14 +57,16 @@ public interface PublisherProxySessionRemote {
      */
     int getPublisherId(AuthenticationToken admin, String name);
     
-    /** Removes a publisher from the database. */
-    void removePublisher(AuthenticationToken admin, String name);
+    /** Removes a publisher from the database. 
+     * @throws AuthorizationDeniedException */
+    void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
     
     /**
      * Renames a publisher.
      * @throws PublisherExistsException if publisher already exists.
+     * @throws AuthorizationDeniedException 
      */
-    void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException;
+    void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException;
     
     /**
      * Revokes the certificate in the given collection of publishers. See

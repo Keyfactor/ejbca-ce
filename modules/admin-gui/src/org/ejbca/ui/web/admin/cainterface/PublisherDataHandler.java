@@ -24,6 +24,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
+import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
@@ -104,7 +105,7 @@ public class PublisherDataHandler implements Serializable {
     }
     
 
-    public void clonePublisher(String originalname, String newname) throws AuthorizationDeniedException{         
+    public void clonePublisher(String originalname, String newname) throws AuthorizationDeniedException, PublisherDoesntExistsException, PublisherExistsException{         
       if(authorizedToEditPublishers()){
         publishersession.clonePublisher(administrator, originalname,newname);
         this.info.publishersEdited();

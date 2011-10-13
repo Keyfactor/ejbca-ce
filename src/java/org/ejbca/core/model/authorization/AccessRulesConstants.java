@@ -13,6 +13,8 @@
  
 package org.ejbca.core.model.authorization;
 
+import org.cesecore.authorization.control.StandardRules;
+
 /**
  * @version $Id$
  */
@@ -58,16 +60,17 @@ public abstract class AccessRulesConstants {
     public static final String ROLE_ROOT                    = "/";
     
     
-    public static final String REGULAR_CAFUNCTIONALTY                     = "/ca_functionality";
-    public static final String REGULAR_CABASICFUNCTIONS                   = "/ca_functionality/basic_functions";
-    public static final String REGULAR_ACTIVATECA                         = "/ca_functionality/basic_functions/activate_ca";    
-    public static final String REGULAR_RENEWCA                            = "/ca_functionality/renew_ca";    
-    public static final String REGULAR_VIEWCERTIFICATE                    = "/ca_functionality/view_certificate";    
-    public static final String REGULAR_APPROVECAACTION                    = "/ca_functionality/approve_caaction";
-    public static final String REGULAR_CREATECRL                          = "/ca_functionality/create_crl";    
-    public static final String REGULAR_EDITCERTIFICATEPROFILES            = "/ca_functionality/edit_certificate_profiles";    
-    public static final String REGULAR_CREATECERTIFICATE                  = "/ca_functionality/create_certificate";
-    public static final String REGULAR_STORECERTIFICATE                   = "/ca_functionality/store_certificate";    
+    public static final String REGULAR_CAFUNCTIONALTY                     = StandardRules.CAFUNCTIONALITY.resource();
+    public static final String REGULAR_CABASICFUNCTIONS                   = StandardRules.CAFUNCTIONALITY.resource()+"/basic_functions";
+    public static final String REGULAR_ACTIVATECA                         = REGULAR_CABASICFUNCTIONS+"/activate_ca";    
+    public static final String REGULAR_RENEWCA                            = StandardRules.CAFUNCTIONALITY.resource()+"/renew_ca";    
+    public static final String REGULAR_VIEWCERTIFICATE                    = StandardRules.CAFUNCTIONALITY.resource()+"/view_certificate";    
+    public static final String REGULAR_APPROVECAACTION                    = StandardRules.CAFUNCTIONALITY.resource()+"/approve_caaction";
+    public static final String REGULAR_CREATECRL                          = StandardRules.CREATECRL.resource();    
+    public static final String REGULAR_EDITCERTIFICATEPROFILES            = StandardRules.EDITCERTIFICATEPROFILE.resource();    
+    public static final String REGULAR_CREATECERTIFICATE                  = StandardRules.CREATECERT.resource();
+    public static final String REGULAR_STORECERTIFICATE                   = StandardRules.CAFUNCTIONALITY.resource()+"/store_certificate";    
+    public static final String REGULAR_EDITPUBLISHER                      = StandardRules.CAFUNCTIONALITY.resource()+"/edit_publisher";    
     public static final String REGULAR_RAFUNCTIONALITY                    = "/ra_functionality";
     public static final String REGULAR_EDITENDENTITYPROFILES              = "/ra_functionality/edit_end_entity_profiles";
     public static final String REGULAR_EDITUSERDATASOURCES                = "/ra_functionality/edit_user_data_sources";
