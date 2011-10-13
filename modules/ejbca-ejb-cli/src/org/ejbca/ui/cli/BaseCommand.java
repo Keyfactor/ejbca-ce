@@ -44,6 +44,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 
@@ -94,8 +95,12 @@ public abstract class BaseCommand implements CliCommandPlugin {
     protected String[] parseUsernameAndPasswordFromArgs(String[] args) throws CliUsernameException, ErrorAdminCommandException {
         List<String> argsList = new ArrayList<String>(Arrays.asList(args));
 
-        GlobalConfiguration configuration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration();
-        
+        GlobalConfigurationSessionRemote gcsession = ejb.getGlobalConfigurationSession();
+        if (gcsession == null) {
+            throw new ErrorAdminCommandException("Can not get configuration from server. Is server started and communicationn working?");
+        }
+        GlobalConfiguration configuration = gcsession.getCachedGlobalConfiguration();
+
         //Check if ClI is enabled
         if(!configuration.getEnableCommandLineInterface()) {
             getLogger().info("Command line interface is disabled");
