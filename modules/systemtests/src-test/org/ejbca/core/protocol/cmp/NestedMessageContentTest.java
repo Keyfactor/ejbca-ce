@@ -140,7 +140,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * This will the the different kind of CMP messages that can be sent as NestedMessageContent and if 
  * they are verified correctly
  * 
- * @version $Id: NestedMessageContentTest.java 12806 2011-10-04 09:26:33Z anatom $
+ * @version $Id$
  *
  */
 public class NestedMessageContentTest extends CmpTestCase {
