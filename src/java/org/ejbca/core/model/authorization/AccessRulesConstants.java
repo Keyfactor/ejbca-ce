@@ -109,6 +109,7 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_EDITCERTIFICATEPROFILES,                                                           
                                                            REGULAR_CREATECERTIFICATE,
                                                            REGULAR_STORECERTIFICATE,
+                                                           REGULAR_EDITPUBLISHER,
                                                            REGULAR_APPROVECAACTION,
                                                            REGULAR_RAFUNCTIONALITY, 
                                                            REGULAR_EDITENDENTITYPROFILES,
