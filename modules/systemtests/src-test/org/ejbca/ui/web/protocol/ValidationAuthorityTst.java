@@ -32,7 +32,7 @@ import org.junit.Assert;
  * The junit framework can't stand these extra classes if they have "Test" in the name.
  * 
  * @author Lars Silven PrimeKey
- * @version $Id: ValidationAuthorityTst.java 12583 2011-09-15 08:46:19Z anatom $
+ * @version $Id$
  */
 class ValidationAuthorityTst {
 	private final static Logger log = Logger.getLogger(ValidationAuthorityTst.class);

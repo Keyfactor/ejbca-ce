@@ -50,7 +50,7 @@ import com.novosec.pkix.asn1.cmp.PKIMessage;
  * Nested Message Content according to RFC4210. The PKI message is signed by an RA authority.
  * The PKIMessage body is another PKIMessage containing the request to be processed. 
  * 
- * @version $Id: NestedMessageContent.java 12744 2011-09-28 08:48:48Z aveen4711 $
+ * @version $Id$
  *
  */
 public class NestedMessageContent extends BaseCmpMessage implements RequestMessage {
