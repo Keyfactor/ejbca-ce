@@ -300,7 +300,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		while(iter.hasNext()){
 			int next = iter.next().intValue();
 			// Display it in the list as "PublisherName (publisherId)" with publisherId as the value sent
-			availablePublisherNames.add(new SelectItem(Integer.valueOf(next).toString(), ejb.getPublisherSession().getPublisherName(getAdmin(), next)+" ("+next+")"));
+			availablePublisherNames.add(new SelectItem(Integer.valueOf(next).toString(), ejb.getPublisherSession().getPublisherName(next)+" ("+next+")"));
 		}
 		return availablePublisherNames;		
 	}

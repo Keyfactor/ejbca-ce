@@ -140,7 +140,7 @@ public class PublisherQueueProcessTest {
             publisherSession.addPublisher(admin, "TestPublishQueueProcessService", publisher);
         } catch (PublisherExistsException pee) {
         }
-        int publisherId = publisherSession.getPublisherId(admin, "TestPublishQueueProcessService");
+        int publisherId = publisherSession.getPublisherId("TestPublishQueueProcessService");
 
         // We must add new entries to the queue, since we could not know the
         // publisherId before

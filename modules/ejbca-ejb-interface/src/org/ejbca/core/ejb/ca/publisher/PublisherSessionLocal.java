@@ -98,33 +98,32 @@ public interface PublisherSessionLocal extends PublisherSession {
      * Use CAAdminSession.getAuthorizedPublisherIds to get the list for any
      * administrator.
      * 
-     * @param admin Should be an Admin with superadmin credentials
      * @return Collection of id:s (Integer)
      * @throws AuthorizationDeniedException
      *             if the admin does not have superadmin credentials
      */
-    Collection<Integer> getAllPublisherIds(AuthenticationToken admin) throws AuthorizationDeniedException;
+    Collection<Integer> getAllPublisherIds() throws AuthorizationDeniedException;
 
     /** @return mapping of publisher id (Integer) to publisher name (String). */
-    HashMap<Integer,String> getPublisherIdToNameMap(AuthenticationToken admin);
+    HashMap<Integer,String> getPublisherIdToNameMap();
 
     /**
      * Help method used by publisher proxys to indicate if it is time to update
      * it's data.
      */
-    int getPublisherUpdateCount(AuthenticationToken admin, int publisherid);
+    int getPublisherUpdateCount(int publisherid);
 
     /**
      * Returns a publisher id, given it's publishers name
      * @return the id or 0 if the publisher cannot be found.
      */
-    int getPublisherId(AuthenticationToken admin, String name);
+    int getPublisherId(String name);
 
     /**
      * Returns a publishers name given its id.
      * @return the name or null if id does not exist
      */
-    String getPublisherName(AuthenticationToken admin, int id);
+    String getPublisherName(int id);
 
     /**
      * Use from Healtcheck only! Test connection for all publishers. No

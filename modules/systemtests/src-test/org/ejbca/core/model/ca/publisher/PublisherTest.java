@@ -303,7 +303,7 @@ public class PublisherTest {
         log.trace(">test07StoreCertToDummy()");
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTNEWDUMMYCUSTOM")));
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId("TESTNEWDUMMYCUSTOM")));
 
         boolean ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Storing certificate to dummy publisher failed", ret);
@@ -320,7 +320,7 @@ public class PublisherTest {
         log.trace(">test08storeCRLToDummy()");
        String issuerDn = CertTools.getIssuerDN(CertTools.getCRLfromByteArray(testcrl));
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTNEWDUMMYCUSTOM")));
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId("TESTNEWDUMMYCUSTOM")));
         boolean ret = publisherSession.storeCRL(admin, publishers, testcrl, null, 1, issuerDn);
         assertTrue("Storing CRL to dummy publisher failed", ret);
         
@@ -348,12 +348,12 @@ public class PublisherTest {
         	log.error(pee);
         }        
         assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSP");
+        int id = publisherProxySession.getPublisherId("TESTEXTOCSP");
         publisherProxySession.testConnection(internalAdmin, id);
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSP")));
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId("TESTEXTOCSP")));
 
         ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Error storing certificate to external ocsp publisher", ret);
@@ -382,12 +382,12 @@ public class PublisherTest {
         	log.error(pee);
         }        
         assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSP2");
+        int id = publisherProxySession.getPublisherId("TESTEXTOCSP2");
         publisherProxySession.testConnection(internalAdmin, id);
         
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSP2")));
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId("TESTEXTOCSP2")));
         
         long date = new Date().getTime();
         ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, date, null);

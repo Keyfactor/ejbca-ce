@@ -2096,7 +2096,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             publisher.setDescription("Used in Junit Test, Remove this one");
             publisherSession.addPublisher(admin, PUBLISHER_NAME, publisher);
             assertEquals(0, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
-            final int publisherID = publisherSession.getPublisherId(admin, PUBLISHER_NAME);
+            final int publisherID = publisherSession.getPublisherId(PUBLISHER_NAME);
             publisherQueueSession.addQueueData(publisherID, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
             assertEquals(1, ejbcaraws.getPublisherQueueLength(PUBLISHER_NAME));
             publisherQueueSession.addQueueData(publisherID, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);

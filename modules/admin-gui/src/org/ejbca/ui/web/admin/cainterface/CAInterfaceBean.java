@@ -309,7 +309,7 @@ public class CAInterfaceBean implements Serializable {
     }
     
     public HashMap<Integer, String> getAvailablePublishers() {
-      return publishersession.getPublisherIdToNameMap(administrator);
+      return publishersession.getPublisherIdToNameMap();
     }
     
     public int getPublisherQueueLength(int publisherId) {

@@ -259,7 +259,7 @@ public class InformationMemory implements Serializable {
      */
     public Map<Integer, String> getPublisherIdToNameMap() {
         if (publisheridtonamemap == null) {
-            publisheridtonamemap = publishersession.getPublisherIdToNameMap(administrator);
+            publisheridtonamemap = publishersession.getPublisherIdToNameMap();
         }
         return publisheridtonamemap;
     }

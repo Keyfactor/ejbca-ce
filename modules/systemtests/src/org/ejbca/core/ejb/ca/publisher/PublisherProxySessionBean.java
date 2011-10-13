@@ -58,8 +58,8 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     }
 
     @Override
-    public int getPublisherId(AuthenticationToken admin, String name) {
-        return publisherSession.getPublisherId(admin, name);
+    public int getPublisherId(String name) {
+        return publisherSession.getPublisherId(name);
     }
 
     @Override

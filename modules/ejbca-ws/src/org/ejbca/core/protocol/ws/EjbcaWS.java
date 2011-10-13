@@ -2444,7 +2444,7 @@ public class EjbcaWS implements IEjbcaWS {
             final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, userAdminSession, webAuthenticationSession);
             final AuthenticationToken admin = ejbhelper.getAdmin(true);
             logAdminName(admin,logger);
-            final int id = publisherSession.getPublisherId(admin, name);
+            final int id = publisherSession.getPublisherId(name);
             if ( id==0 ) {
                 return -4;// no publisher with this name
             }

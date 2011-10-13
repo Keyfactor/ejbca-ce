@@ -428,12 +428,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public Collection<Integer> getAllPublisherIds(AuthenticationToken admin) throws AuthorizationDeniedException {
+    public Collection<Integer> getAllPublisherIds() throws AuthorizationDeniedException {
         HashSet<Integer> returnval = new HashSet<Integer>();
-        if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
-            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_SUPERADMINISTRATOR, null);
-	        throw new AuthorizationDeniedException(msg);
-        }
         Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
         while (i.hasNext()) {
         	returnval.add(i.next().getId());
@@ -443,7 +439,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public HashMap<Integer,String> getPublisherIdToNameMap(AuthenticationToken admin) {
+    public HashMap<Integer,String> getPublisherIdToNameMap() {
         HashMap<Integer,String> returnval = new HashMap<Integer,String>();
         Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
         while (i.hasNext()) {
@@ -477,7 +473,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public int getPublisherUpdateCount(AuthenticationToken admin, int publisherid) {
+    public int getPublisherUpdateCount(int publisherid) {
         int returnval = 0;
         PublisherData pd = PublisherData.findById(entityManager, Integer.valueOf(publisherid));
         if (pd != null) {
@@ -488,7 +484,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public int getPublisherId(AuthenticationToken admin, String name) {
+    public int getPublisherId(String name) {
         int returnval = 0;
         PublisherData pd = PublisherData.findByName(entityManager, name);
         if (pd != null) {
@@ -499,7 +495,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public String getPublisherName(AuthenticationToken admin, int id) {
+    public String getPublisherName(int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getPublisherName(id: " + id + ")");
         }

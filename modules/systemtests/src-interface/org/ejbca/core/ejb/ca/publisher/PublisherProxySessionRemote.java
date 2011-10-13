@@ -55,7 +55,7 @@ public interface PublisherProxySessionRemote {
      * Returns a publisher id, given it's publishers name
      * @return the id or 0 if the publisher cannot be found.
      */
-    int getPublisherId(AuthenticationToken admin, String name);
+    int getPublisherId(String name);
     
     /** Removes a publisher from the database. 
      * @throws AuthorizationDeniedException */
