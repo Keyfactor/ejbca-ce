@@ -63,14 +63,13 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSession;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.CertificateCreationException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -83,7 +82,6 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleInitializationSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -137,11 +135,11 @@ public class AuthenticationModulesTest extends CmpTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private EndEntityProfileSession eeProfileSession = InterfaceCache.getEndEntityProfileSession();
-    private CertificateProfileSession certProfSession = InterfaceCache.getCertificateProfileSession();
+    //private CertificateProfileSession certProfSession = InterfaceCache.getCertificateProfileSession();
     private ConfigurationSessionRemote confSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class); //InterfaceCache.getConfigurationSession();
     private CertificateStoreSession certStoreSession = InterfaceCache.getCertificateStoreSession();
     private AccessControlSession authorizationSession = InterfaceCache.getAccessControlSession();
-    private RoleInitializationSessionRemote roleInitSession = JndiHelper.getRemoteSession(RoleInitializationSessionRemote.class);
+    //private RoleInitializationSessionRemote roleInitSession = JndiHelper.getRemoteSession(RoleInitializationSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSessionRemote = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
     
@@ -330,7 +328,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         Certificate cert2 = checkCmpCertRepMessage(userDN, cacert, resp, msg.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue());
         assertNotNull("CrmfRequest did not return a certificate", cert2);
         
-        removeAuthenticationToken(adminName, admToken);
+        removeAuthenticationToken(admToken, admCert, adminName);
     }
     
     @Test
@@ -388,7 +386,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
         assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         
-        removeAuthenticationToken(adminName, adminToken);
+        removeAuthenticationToken(adminToken, admCert, adminName);
     }
     
     @Test
@@ -463,7 +461,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         Certificate cert2 = checkCmpCertRepMessage(userDN, cacert, resp, msg.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue());
         assertNotNull("CrmfRequest did not return a certificate", cert2);
         
-        removeAuthenticationToken(adminName, adminToken);
+        removeAuthenticationToken(adminToken, admCert, adminName);
     }
     
     @Test
@@ -1041,14 +1039,23 @@ public class AuthenticationModulesTest extends CmpTestCase {
         return result;
     }
     
-    private void removeAuthenticationToken(String roleName, AuthenticationToken authToken) throws RoleNotFoundException, AuthorizationDeniedException, ApprovalException, NotFoundException, WaitingForApprovalException, RemoveException {
-        //Set<X509Certificate> credentials = (Set<X509Certificate>) authToken.getCredentials();
-        //Certificate cert = credentials.iterator().next();
-        userAdminSession.revokeAndDeleteUser(ADMIN, roleName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+    private void removeAuthenticationToken(AuthenticationToken authToken, Certificate cert, String adminName) throws RoleNotFoundException, AuthorizationDeniedException, ApprovalException, NotFoundException, WaitingForApprovalException, RemoveException {
+        String rolename = "Super Administrator Role";
         
-        if (roleAccessSessionRemote.findRole(roleName) != null) {
-            roleManagementSession.remove(authToken, roleName);
+        RoleData roledata = roleAccessSessionRemote.findRole("Super Administrator Role");
+        if (roledata != null) {            
+
+            //Set<X509Certificate> credentials = (Set<X509Certificate>) authToken.getCredentials();
+            //Certificate cert = credentials.iterator().next();
+
+            List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
+            accessUsers.add(new AccessUserAspectData(rolename, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                    AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN")));
+            
+            roleManagementSession.removeSubjectsFromRole(ADMIN, roledata, accessUsers);
         }
+        
+        userAdminSession.revokeAndDeleteUser(ADMIN, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);        
     }
 
     @Override

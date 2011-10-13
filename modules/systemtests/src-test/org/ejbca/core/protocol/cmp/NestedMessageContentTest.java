@@ -217,8 +217,8 @@ public class NestedMessageContentTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONSCHEME, "DN");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_NAMEGENERATIONPARAMS, "CN");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACERT_PATH, raCertsPath);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE + ";" + CmpConfiguration.AUTHMODULE_HMAC);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1;foo123");
         // Also update raCerts path locally to be able to verify locally
         EjbcaConfigurationHolder.instance().setProperty(CmpConfiguration.CONFIG_RACERT_PATH, raCertsPath);
         
@@ -276,13 +276,37 @@ public class NestedMessageContentTest extends CmpTestCase {
     @Test
     public void test01CrmfReq() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
+        //-----------------Creating CRMF reguest
+        //PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
+        byte[] senderNonce = CmpMessageHelper.createSenderNonce();
+        byte[] transactionID = CmpMessageHelper.createSenderNonce();
+        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
+        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        assertNotNull(nb);
+        assertNotNull(na);
+        
+        KeyPair keys = null;
+        keys = KeyTools.genKeys("1024", "RSA");
+        PKIMessage crmfMsg = genCertReq(issuerDN, subjectDN, keys, cacert, senderNonce, transactionID, false, null, nb.getDate(), na.getDate(), null);
+        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        crmfMsg.getHeader().setProtectionAlg(pAlg);
+        crmfMsg.getHeader().setSenderKID(new DEROctetString(senderNonce));
+
+        String adminName = "cmpTestAdmin";
+        //createUser("cmpTestAdmin", "CN=cmpTestAdmin,C=SE", "foo123");
+        KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
+        AuthenticationToken adminToken = createAdminToken(admkeys, adminName, "CN=" + adminName + ",C=SE");
+        Certificate admCert = getCertFromCredentials(adminToken);
+        addExtraCert(crmfMsg, admCert);
+        signPKIMessage(crmfMsg, admkeys);
+        assertNotNull(crmfMsg);
+        int reqID = crmfMsg.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        
+        
+        //------------------Creating NestedMessageContent
         String reqSubjectDN = "CN=bogusSubjectNested";
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
-        
-        PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
-        assertNotNull("Failed to create crmfMsg.", crmfMsg);
-        int reqID = crmfMsg.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
         
         PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(reqSubjectDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
                    .getName())));
@@ -315,18 +339,33 @@ public class NestedMessageContentTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), crmfMsg.getHeader().getTransactionID().getOctets(), false, null);
         Certificate cert = checkCmpCertRepMessage(subjectDN, cacert, resp, reqID);
         assertNotNull("CrmfRequest did not return a certificate", cert);
+        
+        removeAuthenticationToken(adminToken, admCert, adminName);
     }
     
     @Test
     public void test02Verify() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
+        //------------------- Creating Certificate Request ---------------
+        //PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
+        byte[] senderNonce = CmpMessageHelper.createSenderNonce();
+        byte[] transactionID = CmpMessageHelper.createSenderNonce();
+        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
+        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        assertNotNull(nb);
+        assertNotNull(na);
+        
+        KeyPair keys = null;
+        keys = KeyTools.genKeys("1024", "RSA");
+        PKIMessage crmfMsg = genCertReq(issuerDN, subjectDN, keys, cacert, senderNonce, transactionID, false, null, nb.getDate(), na.getDate(), null);
+        assertNotNull("Failed to create crmfMsg.", crmfMsg);
+        
+        
+        // ---------------- Creating the NestedMessageContent ----------------------
         String reqSubjectDN = "CN=bogusSubjectNested";
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
-        PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
-        assertNotNull("Failed to create crmfMsg.", crmfMsg);
-            
         PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(reqSubjectDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
                    .getName())));
         myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
@@ -422,19 +461,33 @@ public class NestedMessageContentTest extends CmpTestCase {
         int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
         assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         
-        removeAuthenticationToken(adminName, adminToken);
+        removeAuthenticationToken(adminToken, admCert, adminName);
     }
 
     @Test
     public void test04CrmfRACertExist() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
+        //------------------- Creating Certificate Request ---------------
+        //PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
+        byte[] senderNonce = CmpMessageHelper.createSenderNonce();
+        byte[] transactionID = CmpMessageHelper.createSenderNonce();
+        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
+        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        assertNotNull(nb);
+        assertNotNull(na);
+        
+        KeyPair keys = null;
+        keys = KeyTools.genKeys("1024", "RSA");
+        PKIMessage crmfReqMsg = genCertReq(issuerDN, subjectDN, keys, cacert, senderNonce, transactionID, false, null, nb.getDate(), na.getDate(), null);
+        assertNotNull("Failed to create crmfMsg.", crmfReqMsg);
+        PKIMessage crmfMsg = protectPKIMessage(crmfReqMsg, false, "foo123", 567);
+        int reqID = crmfMsg.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        
+        
+        // ---------------- Creating the NestedMessageContent ----------------------
         String reqSubjectDN = "CN=bogusSubjectNested";
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
-        
-        PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
-        assertNotNull("Failed to create crmfMsg.", crmfMsg);
-        int reqID = crmfMsg.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
         
         PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(reqSubjectDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
                    .getName())));
@@ -476,13 +529,29 @@ public class NestedMessageContentTest extends CmpTestCase {
 
     @Test
     public void test05CrmfRACertDoesNotExist() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
+
+        
+        //------------------- Creating Certificate Request ---------------
+        //PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
+        byte[] senderNonce = CmpMessageHelper.createSenderNonce();
+        byte[] transactionID = CmpMessageHelper.createSenderNonce();
+        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
+        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        assertNotNull(nb);
+        assertNotNull(na);
+        
+        KeyPair keys = null;
+        keys = KeyTools.genKeys("1024", "RSA");
+        PKIMessage crmfMsg = genCertReq(issuerDN, subjectDN, keys, cacert, senderNonce, transactionID, false, null, nb.getDate(), na.getDate(), null);
+        assertNotNull("Failed to create crmfMsg.", crmfMsg);        
+        
+        
+        
+        // ---------------- Creating the NestedMessageContent ----------------------
         
         String reqSubjectDN = "CN=bogusSubjectNested";
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
-        
-        PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
-        assertNotNull("Failed to create crmfMsg.", crmfMsg);
         
         PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(reqSubjectDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
                    .getName())));
@@ -613,12 +682,28 @@ public class NestedMessageContentTest extends CmpTestCase {
     @Test
     public void test07ExpiredRACert() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         log.info(">test07ExpiredRACert()");
+        
+        //------------------- Creating Certificate Request ---------------
+        //PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
+        byte[] senderNonce = CmpMessageHelper.createSenderNonce();
+        byte[] transactionID = CmpMessageHelper.createSenderNonce();
+        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
+        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        assertNotNull(nb);
+        assertNotNull(na);
+        
+        KeyPair keys = null;
+        keys = KeyTools.genKeys("1024", "RSA");
+        PKIMessage crmfMsg = genCertReq(issuerDN, subjectDN, keys, cacert, senderNonce, transactionID, false, null, nb.getDate(), na.getDate(), null);
+        assertNotNull("Failed to create crmfMsg.", crmfMsg);        
+        
+        
+        
+        // ---------------- Creating the NestedMessageContent ----------------------
+        
         String reqSubjectDN = "CN=bogusSubjectNested";
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
-        
-        PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
-        assertNotNull("Failed to create crmfMsg.", crmfMsg);
         
         PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(reqSubjectDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
                    .getName())));
@@ -635,8 +720,8 @@ public class NestedMessageContentTest extends CmpTestCase {
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         
         long nbTime = (new Date()).getTime() - 1000000L;
-        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new Date(nbTime));
-        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date());
+        nb = new org.bouncycastle.asn1.x509.Time(new Date(nbTime));
+        na = new org.bouncycastle.asn1.x509.Time(new Date());
         createRACertificate("raExpiredSignerTest07", "foo123", raKeys, nb.getDate(), na.getDate());
         Thread.sleep(5000);
         signPKIMessage(myPKIMessage, raKeys);
@@ -669,12 +754,29 @@ public class NestedMessageContentTest extends CmpTestCase {
     @Test
     public void test08MissingSignature() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         log.info(">test07ExpiredRACert()");
+
+        
+        //------------------- Creating Certificate Request ---------------
+        //PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
+        byte[] senderNonce = CmpMessageHelper.createSenderNonce();
+        byte[] transactionID = CmpMessageHelper.createSenderNonce();
+        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
+        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        assertNotNull(nb);
+        assertNotNull(na);
+        
+        KeyPair keys = null;
+        keys = KeyTools.genKeys("1024", "RSA");
+        PKIMessage crmfMsg = genCertReq(issuerDN, subjectDN, keys, cacert, senderNonce, transactionID, false, null, nb.getDate(), na.getDate(), null);
+        assertNotNull("Failed to create crmfMsg.", crmfMsg);        
+        
+        
+        
+        // ---------------- Creating the NestedMessageContent ----------------------
+        
         String reqSubjectDN = "CN=bogusSubjectNested";
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
-        
-        PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
-        assertNotNull("Failed to create crmfMsg.", crmfMsg);
         
         PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(reqSubjectDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
                    .getName())));
@@ -741,36 +843,11 @@ public class NestedMessageContentTest extends CmpTestCase {
         super.tearDown();
     }
     
-    private PKIMessage createEESignedCrmfReq(String userSubjectDN) throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
-        
-        //createUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest", "foo123");
-        
-        byte[] senderNonce = CmpMessageHelper.createSenderNonce();
-        byte[] transactionID = CmpMessageHelper.createSenderNonce();
-        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
-        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
-        assertNotNull(nb);
-        assertNotNull(na);
-        
-        KeyPair keys = null;
-        keys = KeyTools.genKeys("1024", "RSA");
-        PKIMessage req = genCertReq(issuerDN, userSubjectDN, keys, cacert, senderNonce, transactionID, false, null, nb.getDate(), na.getDate(), null);
-        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        req.getHeader().setProtectionAlg(pAlg);
-        req.getHeader().setSenderKID(new DEROctetString(senderNonce));
-
-        String adminName = "cmpTestAdmin";
-        //createUser("cmpTestAdmin", "CN=cmpTestAdmin,C=SE", "foo123");
-        KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
-        AuthenticationToken adminToken = createAdminToken(admkeys, adminName, "CN=" + adminName + ",C=SE");
-        Certificate admCert = getCertFromCredentials(adminToken);
-        addExtraCert(req, admCert);
-        signPKIMessage(req, admkeys);
-        assertNotNull(req);
-        
-        return req;
-    }
     
+    
+    
+    
+
     private Certificate createRACertificate(String username, String password, KeyPair keys, Date notBefore, 
             Date notAfter) throws AuthorizationDeniedException, EjbcaException, CertificateException, FileNotFoundException,
             IOException, UserDoesntFullfillEndEntityProfile, ObjectNotFoundException, Exception {
@@ -856,7 +933,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         // Create a user aspect that matches the authentication token, and add that to the role.
         List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
         accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                    AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN")));
+                AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN")));
         roleManagementSession.addSubjectsToRole(admin, roledata, accessUsers);
 
         return token;
@@ -936,16 +1013,25 @@ public class NestedMessageContentTest extends CmpTestCase {
         return result;
     }
     
-    private void removeAuthenticationToken(String roleName, AuthenticationToken authToken) throws RoleNotFoundException, AuthorizationDeniedException, ApprovalException, NotFoundException, WaitingForApprovalException, RemoveException {
-        //Set<X509Certificate> credentials = (Set<X509Certificate>) authToken.getCredentials();
-        //Certificate cert = credentials.iterator().next();
-        userAdminSession.revokeAndDeleteUser(admin, roleName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+    private void removeAuthenticationToken(AuthenticationToken authToken, Certificate cert, String adminName) throws RoleNotFoundException, AuthorizationDeniedException, ApprovalException, NotFoundException, WaitingForApprovalException, RemoveException {
+        String rolename = "Super Administrator Role";
         
-        if (roleAccessSessionRemote.findRole(roleName) != null) {
-            roleManagementSession.remove(authToken, roleName);
-        }
-    }
+        RoleData roledata = roleAccessSessionRemote.findRole("Super Administrator Role");
+        if (roledata != null) {            
 
+            //Set<X509Certificate> credentials = (Set<X509Certificate>) authToken.getCredentials();
+            //Certificate cert = credentials.iterator().next();
+
+            List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
+            accessUsers.add(new AccessUserAspectData(rolename, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                    AccessMatchType.TYPE_EQUALCASEINS, CertTools.getPartFromDN(CertTools.getSubjectDN(cert), "CN")));
+            
+            roleManagementSession.removeSubjectsFromRole(admin, roledata, accessUsers);
+        }
+        
+        userAdminSession.revokeAndDeleteUser(admin, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);        
+    }
+    
 
     private void addExtraCert(PKIMessage msg, Certificate cert) throws CertificateEncodingException, IOException{
         ByteArrayInputStream    bIn = new ByteArrayInputStream(cert.getEncoded());
