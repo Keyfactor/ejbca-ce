@@ -224,20 +224,26 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 		log.trace("<updateData()");
     }
     
+    @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     @Override
-	public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
-		int successcount = 0;
-		// Repeat this process as long as we actually manage to publish something
-		// this is because when publishing starts to work we want to publish everything in one go, if possible.
-		// However we don't want to publish more than 5000 certificates each time, because we want to commit to the database some time as well.
-		int totalcount = 0;
-		
-		do {
-			Collection<PublisherQueueData> c = getPendingEntriesForPublisherWithLimit(publisherId, 100, 60, "order by timeCreated");
-			successcount = doPublish(admin, publisherId, publisher, c);
-			totalcount += successcount;
-		} while ( (successcount > 0) && (totalcount < 20000) );
-	}
+    public void plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
+        int successcount = 0;
+        // Repeat this process as long as we actually manage to publish something
+        // this is because when publishing starts to work we want to publish everything in one go, if possible.
+        // However we don't want to publish more than 20000 certificates each time, because we want to commit to the database some time as well.
+        int totalcount = 0;
+        do {
+            successcount = publisherQueueSession.doChunk(admin, publisherId, publisher);
+            totalcount += successcount;
+        } while ( (successcount > 0) && (totalcount < 20000) );
+    }
+
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @Override
+    public int doChunk(AuthenticationToken admin, int publisherId, BasePublisher publisher) {
+        final Collection<PublisherQueueData> c = getPendingEntriesForPublisherWithLimit(publisherId, 100, 60, "order by timeCreated");
+        return doPublish(admin, publisherId, publisher, c);
+    }
 
     /** @return how many publishes that succeeded */
     private int doPublish(AuthenticationToken admin, int publisherId, BasePublisher publisher, Collection<PublisherQueueData> c) {

@@ -35,4 +35,7 @@ public interface PublisherQueueSessionLocal extends PublisherQueueSession {
 
     /** Publishers do not run a part of regular transactions and expect to run in auto-commit mode. */
 	public boolean storeCRLNonTransactional(BasePublisher publisher, AuthenticationToken admin, byte[] incrl, String cafp, int number, String userDN) throws PublisherException;
+
+    /** Publishers digest queues in transaction-based "chunks". */
+	int doChunk(AuthenticationToken admin, int publisherId, BasePublisher publisher);
 }
