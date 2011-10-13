@@ -81,7 +81,7 @@ public class PublisherDataHandler implements Serializable {
       boolean returnval = true;  
 
       if(authorizedToEditPublishers()){
-      	int publisherid = publishersession.getPublisherId(administrator, name);
+      	int publisherid = publishersession.getPublisherId(name);
         if(!caadminsession.exitsPublisherInCAs(administrator, publisherid) && !certificateProfileSession.existsPublisherIdInCertificateProfiles(publisherid)){      	
 		  publishersession.removePublisher(administrator, name);
 		  this.info.publishersEdited();
@@ -116,7 +116,7 @@ public class PublisherDataHandler implements Serializable {
     
     public void testConnection(String name) throws PublisherConnectionException, AuthorizationDeniedException{         
     	if(authorizedToPublisherName(name)){
-    		publishersession.testConnection(administrator, publishersession.getPublisherId(administrator, name));    		
+    		publishersession.testConnection(administrator, publishersession.getPublisherId(name));    		
     	}else {
     		throw new AuthorizationDeniedException("Not authorized to clone publisher");
     	}
@@ -141,7 +141,7 @@ public class PublisherDataHandler implements Serializable {
    
       
     public int getPublisherId(String name){
-      return publishersession.getPublisherId(administrator, name);  
+      return publishersession.getPublisherId(name);  
     }
     
     
@@ -149,7 +149,7 @@ public class PublisherDataHandler implements Serializable {
      * Help function that checks if administrator is authorized to edit publisher with given name.
      */
     private boolean authorizedToPublisherName(String name){
-	  int id = publishersession.getPublisherId(administrator, name);
+	  int id = publishersession.getPublisherId(name);
       return authorizedToPublisherId(id);
     }
      

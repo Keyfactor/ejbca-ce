@@ -175,11 +175,11 @@ public class PublisherQueueTest {
             // Do nothing
         }
         assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSPQUEUE");
+        int id = publisherProxySession.getPublisherId("TESTEXTOCSPQUEUE");
 
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSPQUEUE")));
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId("TESTEXTOCSPQUEUE")));
 
         ret = publisherSession.storeCertificate(internalAdmin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE,
                 SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
@@ -221,11 +221,11 @@ public class PublisherQueueTest {
             // Do nothing
         }
         assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSPQUEUE");
+        int id = publisherProxySession.getPublisherId("TESTEXTOCSPQUEUE");
 
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSPQUEUE")));
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId("TESTEXTOCSPQUEUE")));
 
         ret = publisherSession.storeCertificate(internalAdmin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE,
                 SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
@@ -268,11 +268,11 @@ public class PublisherQueueTest {
             // Do nothing
         }
         assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSPQUEUE");
+        int id = publisherProxySession.getPublisherId("TESTEXTOCSPQUEUE");
 
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId(internalAdmin, "TESTEXTOCSPQUEUE")));
+        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId("TESTEXTOCSPQUEUE")));
 
         // storeCertificate should return false as we have not published to all publishers but instead only pushed to the queue
         ret = publisherSession.storeCertificate(internalAdmin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE,
