@@ -88,16 +88,16 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         Collection<RoleData> roles = roleAccessSession.getAllRoles();
         List<CAData> cas = CAData.findAll(entityManager);
         if ((roles.size() == 0) && (cas.size() == 0)) {
+            log.info("No roles or CAs exist, intializing Super Administrator Role with caid 0 and superadminCN empty.");
             createSuperAdministrator();
         } else {
-            log.error("Roles or CAs exist, not intializing " + SUPERADMIN_ROLE);
+            log.info("Roles or CAs exist, not intializing " + SUPERADMIN_ROLE);
         }
     }
     
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void createSuperAdministrator() {
-        log.info("No roles or CAs exist, intializing Super Administrator Role with caid 0 and superadminCN empty.");
         log.debug("Creating new role '" + SUPERADMIN_ROLE + "'.");
         RoleData role = new RoleData(1, SUPERADMIN_ROLE);
         entityManager.persist(role);

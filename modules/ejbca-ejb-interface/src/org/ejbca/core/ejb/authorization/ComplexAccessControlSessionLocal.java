@@ -35,10 +35,16 @@ public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSe
     Collection<RoleData> getAuthorizedAdminGroups(AuthenticationToken admin, String resource);
 
     /**
-     * Creates a super administrator role and a default CLI user. 
+     * Creates a super administrator role and a default CLI user. A role and default CLI user is needed in order
+     * to do operations with the CLI (command line interface).  
      */
     void createSuperAdministrator();
     
+    /** 
+     * initializes the authorization module, if no roles or CAs exists in the system. This is done during startup 
+     * so that we can use the CLI after this to install and configure the system further.
+     * This method only performs any operation of RoleData and CAData both have no entries. 
+     */
     void initializeAuthorizationModule();
     
     /**
