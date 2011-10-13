@@ -27,6 +27,7 @@ import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
+import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.ui.web.RequestHelper;
@@ -159,7 +160,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
         }
     }
 
-    public String parseRequest(HttpServletRequest request) throws AuthorizationDeniedException{
+    public String parseRequest(HttpServletRequest request) throws AuthorizationDeniedException, PublisherDoesntExistsException, PublisherExistsException{
         String includefile = PAGE_PUBLISHERS;
         String publisher = null;
         PublisherDataHandler handler  = cabean.getPublisherDataHandler();

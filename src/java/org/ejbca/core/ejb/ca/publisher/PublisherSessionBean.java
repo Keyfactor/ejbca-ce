@@ -58,6 +58,7 @@ import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.LdapSearchPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
+import org.ejbca.core.model.ca.publisher.PublisherDoesntExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherException;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
@@ -274,7 +275,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException {
+    public void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">addPublisher(name: " + name + ")");
         }
@@ -283,10 +284,11 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void addPublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws PublisherExistsException {
+    public void addPublisher(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">addPublisher(name: " + name + ", id: " + id + ")");
         }
+        authorizedToEditPublisher(admin, name);
         boolean success = false;
         if (PublisherData.findByName(entityManager, name) == null) {
             if (PublisherData.findById(entityManager, Integer.valueOf(id)) == null) {
@@ -315,10 +317,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) {
+    public void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">changePublisher(name: " + name + ")");
         }
+        authorizedToEditPublisher(admin, name);
+        
         PublisherData htp = PublisherData.findByName(entityManager, name);
         if (htp != null) {
             htp.setPublisher(publisher);
@@ -336,18 +340,17 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void clonePublisher(AuthenticationToken admin, String oldname, String newname) {
+    public void clonePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherDoesntExistsException, AuthorizationDeniedException, PublisherExistsException {
         if (log.isTraceEnabled()) {
             log.trace(">clonePublisher(name: " + oldname + ")");
         }
         BasePublisher publisherdata = null;
-        try {
         	PublisherData htp = PublisherData.findByName(entityManager, oldname);
         	if (htp == null) {
-        		throw new Exception("Could not find publisher " + oldname);
+        		throw new PublisherDoesntExistsException("Could not find publisher " + oldname);
         	}
-            publisherdata = (BasePublisher) getPublisher(htp).clone();
             try {
+                publisherdata = (BasePublisher) getPublisher(htp).clone();
                 addPublisher(admin, newname, publisherdata);
                 String msg = intres.getLocalizedMessage("publisher.clonedpublisher", newname, oldname);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -359,20 +362,19 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.PUBLISHER_CLONE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
                 throw f;
+            } catch (CloneNotSupportedException e) {
+                // Severe error, should never happen
+                throw new EJBException(e);
             }
-        } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("publisher.errorclonepublisher", newname, oldname);
-            log.error(msg, e);
-            throw new EJBException(e);	// TODO: This might be a bit too much...
-        }
         log.trace("<clonePublisher()");
     }
 
     @Override
-    public void removePublisher(AuthenticationToken admin, String name) {
+    public void removePublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">removePublisher(name: " + name + ")");
         }
+        authorizedToEditPublisher(admin, name);
         try {
             PublisherData htp = PublisherData.findByName(entityManager, name);
             if (htp == null) {
@@ -397,10 +399,11 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException {
+    public void renamePublisher(AuthenticationToken admin, String oldname, String newname) throws PublisherExistsException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">renamePublisher(from " + oldname + " to " + newname + ")");
         }
+        authorizedToEditPublisher(admin, oldname);
         boolean success = false;
         if (PublisherData.findByName(entityManager, newname) == null) {
         	PublisherData htp = PublisherData.findByName(entityManager, oldname);
@@ -577,4 +580,13 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         }
         return publisher;
     }
+    
+    private void authorizedToEditPublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException {
+        // We need to check that admin also have rights to edit certificate profiles
+        if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_EDITPUBLISHER)) {
+            final CharSequence msg = intres.getLocalizedMessageCs("store.editpublishernotauthorized", admin.toString(), name);
+            throw new AuthorizationDeniedException(msg.toString());
+        }
+    }
+
 }

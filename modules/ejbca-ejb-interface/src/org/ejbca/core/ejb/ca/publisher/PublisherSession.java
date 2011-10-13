@@ -39,7 +39,11 @@ public interface PublisherSession {
      *         not exist
      */
     BasePublisher getPublisher(String name);
-    
+
+    /** Updates publisher data. 
+     * @throws AuthorizationDeniedException */
+    void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException;
+
     /**
      * Stores the certificate to the given collection of publishers. See
      * BasePublisher class for further documentation about function
