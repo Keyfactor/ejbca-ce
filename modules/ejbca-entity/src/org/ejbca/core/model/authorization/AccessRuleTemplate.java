@@ -22,11 +22,11 @@ import org.cesecore.authorization.rules.AccessRuleState;
  *
  */
 public class AccessRuleTemplate {
-    
+
     private String accessRuleName;
     private AccessRuleState state;
     private Boolean recursive;
-    
+
     public AccessRuleTemplate(String accessRuleName, AccessRuleState state, Boolean recursive) {
         super();
         this.accessRuleName = accessRuleName;
@@ -54,9 +54,25 @@ public class AccessRuleTemplate {
     public Boolean isRecursive() {
         return recursive;
     }
-    
+
+    /**
+     * Creates a new AccessRuleData object using the given rolename
+     * 
+     * @param roleName the name of the role that this AccessRuleData belongs to. Required to generate primary key
+     * @return a new AccessRuleData object
+     */
     public AccessRuleData createAccessRuleData(String roleName) {
         return new AccessRuleData(roleName, accessRuleName, state, recursive);
+    }
+
+    /**
+     * This method compares to a AccessRuleData object, and returns true if rule, state and recursive value are the same.
+     * 
+     * @param rule the rule to check against
+     * @return true if rule, state and recursive value are the same.
+     */
+    public boolean compareToAccessRuleData(AccessRuleData rule) {
+        return accessRuleName.equals(rule.getAccessRuleName()) && state == rule.getInternalState() && recursive == rule.getRecursive();
     }
 
 }
