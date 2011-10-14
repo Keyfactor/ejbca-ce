@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="echo">
+
+	<target name="customejbca.message" unless="runoncesetup.hasrun">
+		<echo message="${customejbca.message}"/>
+	</target>
+
+	<target name="appserver.error.message" unless="appserver.type">
+		<echo message="${appserver.type.detected.errormessage}"/>
+	</target>
+	
+</project>
