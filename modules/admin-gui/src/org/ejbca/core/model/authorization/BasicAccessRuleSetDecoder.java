@@ -40,50 +40,19 @@ public class BasicAccessRuleSetDecoder implements Serializable {
             Collection<Integer> currentendentityprofiles, Collection<Integer> currentotherrules) {
 
         if (DefaultRoles.SUPERADMINISTRATOR.getName().equals(currentRoleTemplate)) {
-            currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.ROLE_SUPERADMINISTRATOR,
-                    AccessRuleState.RULE_ACCEPT, false));
+            currentruleset.addAll(DefaultRoles.SUPERADMINISTRATOR.getRuleSet());
         } else {
             addCARules(currentRoleTemplate, currentcas);
             addOtherRules(currentRoleTemplate, currentotherrules);
             if (DefaultRoles.CAADMINISTRATOR.equals(currentRoleTemplate)) {
-                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR,
-                        AccessRuleState.RULE_ACCEPT, false));
-
-                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_CAFUNCTIONALTY,
-                        AccessRuleState.RULE_ACCEPT, true));
-                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_LOGFUNCTIONALITY,
-                        AccessRuleState.RULE_ACCEPT, true));
-                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_RAFUNCTIONALITY,
-                        AccessRuleState.RULE_ACCEPT, true));
-                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY,
-                        AccessRuleState.RULE_ACCEPT, false));
-                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, AccessRuleState.RULE_ACCEPT, false));
-                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.ENDENTITYPROFILEBASE,
-                        AccessRuleState.RULE_ACCEPT, true));
-                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS,
-                        AccessRuleState.RULE_ACCEPT, false));
-                currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES,
-                        AccessRuleState.RULE_ACCEPT, false));
-
+                currentruleset.addAll(DefaultRoles.CAADMINISTRATOR.getRuleSet());
             } else {
                 addEndEntityRules(currentendentityprofiles, currentendentityrules);
                 if (DefaultRoles.RAADMINISTRATOR.equals(currentRoleTemplate)) {
-                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR,
-                            AccessRuleState.RULE_ACCEPT, false));
-                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_CREATECERTIFICATE,
-                            AccessRuleState.RULE_ACCEPT, false));
-                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_STORECERTIFICATE,
-                            AccessRuleState.RULE_ACCEPT, false));
-                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
-                            AccessRuleState.RULE_ACCEPT, false));
+                    currentruleset.addAll(DefaultRoles.RAADMINISTRATOR.getRuleSet());
                 }
                 if (DefaultRoles.SUPERVISOR.equals(currentRoleTemplate)) {
-                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR,
-                            AccessRuleState.RULE_ACCEPT, false));
-                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWLOG,
-                            AccessRuleState.RULE_ACCEPT, true));
-                    currentruleset.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
-                            AccessRuleState.RULE_ACCEPT, false));
+                    currentruleset.addAll(DefaultRoles.SUPERVISOR.getRuleSet());
                 }
             }
         }
@@ -102,8 +71,8 @@ public class BasicAccessRuleSetDecoder implements Serializable {
     private void addCARules(String roleName, Collection<Integer> currentcas) {
         boolean allcafound = false;
 
-       List<AccessRuleTemplate> carules = new ArrayList<AccessRuleTemplate>();
-        for(Integer caId : currentcas) {
+        List<AccessRuleTemplate> carules = new ArrayList<AccessRuleTemplate>();
+        for (Integer caId : currentcas) {
             if (caId.equals(Integer.valueOf(BasicAccessRuleSet.CA_ALL))) {
                 allcafound = true;
                 break;
@@ -113,7 +82,7 @@ public class BasicAccessRuleSetDecoder implements Serializable {
 
         if (allcafound) {
             carules.clear();
-            carules.add(new AccessRuleTemplate( StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
+            carules.add(new AccessRuleTemplate(StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         }
 
         this.currentruleset.addAll(carules);
