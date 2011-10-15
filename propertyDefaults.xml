@@ -78,7 +78,6 @@
     <property file="${ejbca.home}/conf/crlstore.properties" />
     <property file="${ejbca.home}/conf/va.properties" />
     <property file="${ejbca.home}/conf/va-publisher.properties" />
-	<property file="${ejbca.home}/src/java/defaultvalues.properties"/>
 
     <!-- httpsserver.hostname must be set cause it's used in preprocess. It will only be set here if not set in any property file -->
     <property name="httpsserver.hostname" value="localhost"/>
@@ -188,6 +187,10 @@
 	<property name="crlstore.contextroot" value="/crls" />
 	<property name="certstore.contextroot" value="/certificates" />
 	<property name="ocsp.contextroot" value="/ejbca/publicweb/status" />
+
+	<!-- Finally we read in default properties from file. This should be done last since a few settings above
+		 are automagically detected based on appserver-type for instance -->
+	<property file="${ejbca.home}/src/java/defaultvalues.properties"/>
 
     <target name="display-properties" description="Show current configuration">
         <echo>
