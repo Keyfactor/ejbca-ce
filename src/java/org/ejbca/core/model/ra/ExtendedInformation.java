@@ -269,7 +269,7 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade
-			String msg = intres.getLocalizedMessage("ra.extendedinfoupgrade", new Float(getVersion()));
+			String msg = intres.getLocalizedMessage("endentity.extendedinfoupgrade", new Float(getVersion()));
             log.info(msg);
     		
             if(data.get(SUBJECTDIRATTRIBUTES) == null){
