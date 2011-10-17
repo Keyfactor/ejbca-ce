@@ -167,7 +167,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             {
             	final BigInteger bi = userdata.getCertificateSerialNumber();
             	if ( bi!=null ) {
-            		getPrintStream().println(ParseUserData.certificateSerialNumber+"="+bi.toString());
+                    getPrintStream().println(ParseUserData.certificateSerialNumber+"=0x"+bi.toString(16));
             	}
             }
             

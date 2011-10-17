@@ -140,7 +140,7 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
             getPrintStream().println("Status: "+userdata.getStatus());
             getPrintStream().println("End entity profile: "+userdata.getEndEntityProfileName());
             getPrintStream().println("Certificate profile: "+userdata.getCertificateProfileName());
-            getPrintStream().println("Hard Token Issuer Alias: "+userdata.getHardTokenIssuerName()!=null ? userdata.getHardTokenIssuerName() :"NONE");
+            getPrintStream().println("Hard Token Issuer Alias: "+(userdata.getHardTokenIssuerName()!=null ? userdata.getHardTokenIssuerName() :"NONE"));
             {
             	final List<ExtendedInformationWS> eil = userdata.getExtendedInformation();
             	if ( eil!=null ) {
@@ -153,7 +153,7 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
             {
             	final BigInteger bi = userdata.getCertificateSerialNumber();
             	if ( bi!=null ) {
-            		getPrintStream().println(ParseUserData.certificateSerialNumber+"="+bi.toString());
+            		getPrintStream().println(ParseUserData.certificateSerialNumber+"=0x"+bi.toString(16));
             	}
             }
             
