@@ -147,4 +147,9 @@ public class WebConfiguration {
         }
         
     }
+
+    /** @return true if we allow proxied authentication to the Admin GUI. */
+    public static boolean isProxiedAuthenticationEnabled(){
+        return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.enableproxiedauth"));
+    }
 }
