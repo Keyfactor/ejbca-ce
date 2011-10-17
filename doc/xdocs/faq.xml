@@ -241,12 +241,13 @@ fi
   	  <answer>
 	  <p>
 	  This can happen if you have specified  one or more fields of the "Subject Alternative Name" with a total length exceeding 255 characters.
-	  To avoid this problem you can safely extend the size of the column SUBJECTALTNAME of the table USERDATA.
+	  To avoid this problem you can safely extend the size of the column SUBJECTALTNAME and SUBJECTDN of the table USERDATA and SUBJECTDN of CERTIFICATEDATA.
 	  </p>
-	  <p>An example for extending the subjectDN column in MySQL is;</p>
+	  <p>An example for extending the subjectDN and altName columns in MySQL (version > 5.0.3) is;</p>
 	  <source>
-mysql> alter table CertificateData modify subjectDN text;
-mysql> alter table UserData modify subjectDN text;
+mysql> alter table CertificateData modify subjectDN varchar(2048);
+mysql> alter table UserData modify subjectDN varchar(2048);
+mysql> alter table UserData modify subjectAltName varchar(2048);
       </source>
 	  </answer>  
 	</faq>
