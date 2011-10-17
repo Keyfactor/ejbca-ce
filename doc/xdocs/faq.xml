@@ -258,10 +258,7 @@ mysql> alter table UserData modify subjectDN text;
 	      <br></br>
 	      <a href="http://community.jboss.org/wiki/RunJBossAsAServiceOnWIndows">http://community.jboss.org/wiki/RunJBossAsAServiceOnWIndows</a>
 	      </p>
-	      <p>In short summary there are a couple of tools: <br></br>
-	      <a href="http://javaservice.objectweb.org/">JavaService</a>
-	      <br></br>       
-	      <a href="http://wrapper.tanukisoftware.org/doc/english/integrate-simple-win.html">Java Service Wrapper</a>
+	      <p>In short summary you should download <i>JBoss Native</i>, that has a script for installing JBoss as a windows service.
 	      </p>
       </answer>
     </faq>
