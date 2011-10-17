@@ -151,7 +151,11 @@
 	<condition property="datasource.jndi-name-prefix" value=""><equals arg1="weblogic" arg2="${appserver.type}"/></condition>
 	<condition property="datasource.jndi-name-prefix" value="jdbc/"><equals arg1="websphere" arg2="${appserver.type}"/></condition>
 
-	
+   <!-- Finally we read in default properties from file. This should be done last since a few settings above
+         are automagically detected based on appserver-type for instance -->
+    <property file="${ejbca.home}/src/java/defaultvalues.properties"/>
+
+	<!-- set some hard coded defaults, if they have not been set before -->
 	<!-- java.ver is used to select the correct version of bc libraries to include in ear -->   
 	<property name="java.ver" value="16" />
 	<property name="ca.tokentype" value="soft"/>
@@ -187,10 +191,6 @@
 	<property name="crlstore.contextroot" value="/crls" />
 	<property name="certstore.contextroot" value="/certificates" />
 	<property name="ocsp.contextroot" value="/ejbca/publicweb/status" />
-
-	<!-- Finally we read in default properties from file. This should be done last since a few settings above
-		 are automagically detected based on appserver-type for instance -->
-	<property file="${ejbca.home}/src/java/defaultvalues.properties"/>
 
     <target name="display-properties" description="Show current configuration">
         <echo>
