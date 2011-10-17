@@ -7,8 +7,7 @@
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee 
     http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
 
-
-   <description><![CDATA[EJBCA Administration web]]></description>
+    <description><![CDATA[EJBCA Administration web]]></description>
 
     <!-- TODO: Disable this when EJBCA 4 is fully stable. -->
     <context-param>
@@ -21,6 +20,15 @@
     	<param-name>org.jboss.jbossfaces.JSF_CONFIG_NAME</param-name>
     	<param-value>Mojarra-1.2</param-value>
  	</context-param>
+
+    <filter>
+        <filter-name>ProxiedAuthenticationFilter</filter-name>
+        <filter-class>org.ejbca.ui.web.admin.ProxiedAuthenticationFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>ProxiedAuthenticationFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
    <servlet>
       <description><![CDATA[Returns the specified CA certificate]]></description>
