@@ -106,7 +106,7 @@ public class BaseCmpMessageHandler {
 	/** @return the CA id to use for a request based on the current configuration, used end entity profile and keyId. 
 	 * @throws AuthorizationDeniedException 
 	 * @throws CADoesntExistsException */
-	protected int getUsedCaId(String keyId, int eeProfileId) throws CADoesntExistsException, AuthorizationDeniedException {
+	protected int getUsedCaId(final String keyId, final int eeProfileId) throws CADoesntExistsException, AuthorizationDeniedException {
 		int ret = 0;
 		final String caName = CmpConfiguration.getRACAName();
 		if (StringUtils.equals(caName, "ProfileDefault")) {
