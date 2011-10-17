@@ -236,13 +236,18 @@ fi
 	
 	<faq id="subjectAltNameSize">
 	  <question>
-	  I get an exception reporting an SQL error like "Value too large for column USERDATA.SUBJECTALTNAME" when adding a new user.
+	  I get an exception with an SQL error like "Value too large for column USERDATA.SUBJECTALTNAME" (or SUBJECTDN) when adding a new user.
 	  </question>
   	  <answer>
 	  <p>
 	  This can happen if you have specified  one or more fields of the "Subject Alternative Name" with a total length exceeding 255 characters.
 	  To avoid this problem you can safely extend the size of the column SUBJECTALTNAME of the table USERDATA.
 	  </p>
+	  <p>An example for extending the subjectDN column in MySQL is;</p>
+	  <source>
+mysql> alter table CertificateData modify subjectDN text;
+mysql> alter table UserData modify subjectDN text;
+      </source>
 	  </answer>  
 	</faq>
 
