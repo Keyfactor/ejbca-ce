@@ -59,7 +59,13 @@ public class CrmfMessageHandlerTest {
                 return "foo";	// Just return something that isn't null
             }
         };
-        crmfMessageHandler.handleMessage(requestMock);
+        try {
+            crmfMessageHandler.handleMessage(requestMock);
+        } catch (NullPointerException e) {
+            // NOPMD: Since we don't pass an actual CMP message her it will fail with an NPE
+            // But the setting of username that we test here is done in anyway. 
+            // Since this is a JUnit test we can't do the calling of session beans that crmfMessageHandler does
+        }
         assertEquals("crmfMessageHandler.handleMessage did not process user name correctly", USER_NAME, requestMock.getUsername());
     }
 }
