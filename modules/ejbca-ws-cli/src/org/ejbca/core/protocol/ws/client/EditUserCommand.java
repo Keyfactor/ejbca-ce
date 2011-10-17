@@ -59,8 +59,6 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 
 	private static final int NR_OF_MANDATORY_ARGS = ARG_CERTIFICATEPROFILE+1;
 	private static final int MAX_NR_OF_ARGS = ARG_ENDTIME+1;
-	private static final String certificateSerialNumber="CERTIFICATESERIALNUMBER";
-	private static final String hexPrefix = "0x";
     /**
      * Creates a new instance of RaAddUserCommand
      *
@@ -79,18 +77,12 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
     	
         final UserDataVOWS userdata = new UserDataVOWS();
-        final String[] myArgs = setExtensionData(this.args, userdata);
-        if ( myArgs==null ) {
-        	System.exit(-1);// problem with extension data. User info printed by setExtensionData
+        final String[] myArgs = ParseUserData.getDataFromArgs(this.args, userdata, getPrintStream());
+    	if(myArgs.length < NR_OF_MANDATORY_ARGS || myArgs.length > MAX_NR_OF_ARGS){
+        	usage();
+        	System.exit(-1); // NOPMD, this is not a JEE app
         }
         try {
-        	
-        	if(myArgs.length < NR_OF_MANDATORY_ARGS || myArgs.length > MAX_NR_OF_ARGS){
-            	usage();
-            	System.exit(-1); // NOPMD, this is not a JEE app
-            }
-            
-
             userdata.setUsername(myArgs[ARG_USERNAME]);
             String pwd = myArgs[ARG_PASSWORD];
             if (StringUtils.equalsIgnoreCase("null", pwd)) {
@@ -175,7 +167,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             {
             	final BigInteger bi = userdata.getCertificateSerialNumber();
             	if ( bi!=null ) {
-            		getPrintStream().println(certificateSerialNumber+"="+bi.toString());
+            		getPrintStream().println(ParseUserData.certificateSerialNumber+"="+bi.toString());
             	}
             }
             
@@ -195,41 +187,6 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             throw new ErrorAdminCommandException(e);
         }
     }
-	private String[] setExtensionData(String args[], UserDataVOWS userData) {
-		final List<ExtendedInformationWS> lei = new LinkedList<ExtendedInformationWS>();
-		final List<String> lArgs = new LinkedList<String>();
-		for ( int i=0; i<args.length; i++ ) {
-			final String arg = args[i];
-			final int equalPos = arg.indexOf('=');
-			if ( equalPos<0 || equalPos+1>arg.length() ) {
-				lArgs.add(arg);
-				continue;
-			}
-			final String key = arg.substring(0, equalPos).trim();
-			final String value = arg.substring(equalPos+1,arg.length()).trim();
-			if ( key.equalsIgnoreCase(certificateSerialNumber) ) {
-				final boolean isHex = value.substring(0, hexPrefix.length()).equalsIgnoreCase(hexPrefix);
-				final BigInteger nr;
-				try {
-					nr = isHex ? new BigInteger(value.substring(hexPrefix.length()), 16) : new BigInteger(value);
-				} catch( NumberFormatException e ) {
-					getPrintStream().println(certificateSerialNumber+" '"+value+"' is not a valid number");
-					return null;
-				}
-				userData.setCertificateSerialNumber(nr);
-				continue;
-			}
-			if ( OID.isStartingWithValidOID(key) ) {
-				lei.add(new ExtendedInformationWS(key, value));
-				continue;				
-			}
-			lArgs.add(arg);
-		}
-		if ( lei.size()>0 ) {
-			userData.setExtendedInformation(lei);
-		}
-		return lArgs.toArray(new String[0]);
-	}
     private int getStatus(String status) {
 		if(status.equalsIgnoreCase("NEW")){
 			return UserDataConstants.STATUS_NEW;
@@ -260,9 +217,7 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
         getPrintStream().println("Existing statuses (new users will always be set as NEW) : NEW, INPROCESS, FAILED, HISTORICAL");
         getPrintStream().println("Start time and end time is of form \"May 26, 2009 9:52 AM\" or \"days:hours:minutes\"");
         getPrintStream().println();
-        getPrintStream().println("Certificate serial number and certificate extension may be added as extra parameters. These parameters may be inserted at any position since they are removed before the other parameters (above) are parsed.");
-        getPrintStream().println("For certificate serial number the parameter looks like this '"+certificateSerialNumber+"=<serial number>'. Start the number with '"+hexPrefix+"' to indicated that it is hexadecimal. Example: "+certificateSerialNumber+"=8642378462375036 "+certificateSerialNumber+"=0x5a53875acdaf24");
-        getPrintStream().println("For certificate extension the parameter look like this '<oid>[.<type>]=value'. The key '1.2.3.4' is same as '1.2.3.4.value'. Example: 1.2.840.113634.100.6.1.1=00aa00bb 1.2.3.4.value1=1234 1.2.3.4.value2=abcdef");
+        ParseUserData.printCliHelp(getPrintStream());
 	}
 
 

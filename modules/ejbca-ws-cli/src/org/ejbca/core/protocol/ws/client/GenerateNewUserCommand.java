@@ -18,13 +18,16 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
+import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
@@ -61,8 +64,11 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
 	private static final int ARG_ENCODING           = 15;
 	private static final int ARG_HARDTOKENSN        = 16;
 	private static final int ARG_OUTPUTPATH         = 17;
-	
-    /**
+
+	private static final int NR_OF_MANDATORY_ARGS = ARG_HARDTOKENSN+1;
+	private static final int MAX_NR_OF_ARGS = ARG_OUTPUTPATH+1;
+
+	/**
      * Creates a new instance of RaAddUserCommand
      *
      * @param args command line arguments
@@ -79,31 +85,31 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
      */
     public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
-        try {   
-           
-            if(args.length < 17 || args.length > 18){
-            	usage();
-            	System.exit(-1); // NOPMD, it's not a JEE app
+    	final UserDataVOWS userdata = new UserDataVOWS();
+    	final String[] myArgs = ParseUserData.getDataFromArgs(this.args, userdata, getPrintStream());
+    	if(myArgs.length < NR_OF_MANDATORY_ARGS || myArgs.length > MAX_NR_OF_ARGS){
+    		usage();
+    		System.exit(-1); // NOPMD, it's not a JEE app
+    	}
+
+    	try {
+            userdata.setUsername(myArgs[ARG_USERNAME]);
+            userdata.setPassword(myArgs[ARG_PASSWORD]);
+            userdata.setClearPwd(myArgs[ARG_CLEARPWD].equalsIgnoreCase("true"));
+            userdata.setSubjectDN(myArgs[ARG_SUBJECTDN]);
+            if(!myArgs[ARG_SUBJECTALTNAME].equalsIgnoreCase("NULL")){                        
+            	userdata.setSubjectAltName(myArgs[ARG_SUBJECTALTNAME]);
             }
+            if(!myArgs[ARG_EMAIL].equalsIgnoreCase("NULL")){
+            	userdata.setEmail(myArgs[ARG_EMAIL]);
+            }
+            userdata.setCaName(myArgs[ARG_CA]);
+            userdata.setTokenType(myArgs[ARG_TOKEN]);
+            userdata.setStatus(getStatus(myArgs[ARG_STATUS]));
+            userdata.setEndEntityProfileName(myArgs[ARG_ENDENTITYPROFILE]);
+            userdata.setCertificateProfileName(myArgs[ARG_CERTIFICATEPROFILE]);
             
-            UserDataVOWS userdata = new UserDataVOWS();
-            userdata.setUsername(args[ARG_USERNAME]);
-            userdata.setPassword(args[ARG_PASSWORD]);
-            userdata.setClearPwd(args[ARG_CLEARPWD].equalsIgnoreCase("true"));
-            userdata.setSubjectDN(args[ARG_SUBJECTDN]);
-            if(!args[ARG_SUBJECTALTNAME].equalsIgnoreCase("NULL")){                        
-            	userdata.setSubjectAltName(args[ARG_SUBJECTALTNAME]);
-            }
-            if(!args[ARG_EMAIL].equalsIgnoreCase("NULL")){
-            	userdata.setEmail(args[ARG_EMAIL]);
-            }
-            userdata.setCaName(args[ARG_CA]);
-            userdata.setTokenType(args[ARG_TOKEN]);
-            userdata.setStatus(getStatus(args[ARG_STATUS]));
-            userdata.setEndEntityProfileName(args[ARG_ENDENTITYPROFILE]);
-            userdata.setCertificateProfileName(args[ARG_CERTIFICATEPROFILE]);
-            
-            int type = Integer.parseInt(args[ARG_TYPE]);
+            int type = Integer.parseInt(myArgs[ARG_TYPE]);
             
             if((type & SecConst.USER_SENDNOTIFICATION) != 0){
             	userdata.setSendNotification(true);
@@ -112,19 +118,16 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
             	userdata.setKeyRecoverable(true);
             }
 
-            if(!args[ARG_ISSUERALIAS].equalsIgnoreCase("NONE")){
-            	userdata.setEmail(args[ARG_ISSUERALIAS]);
+            if(!myArgs[ARG_ISSUERALIAS].equalsIgnoreCase("NONE")){
+            	userdata.setEmail(myArgs[ARG_ISSUERALIAS]);
             }
             
-            String username = args[ARG_USERNAME];
-            String password = args[ARG_PASSWORD];
-            String pkcs10 = getPKCS10(args[ARG_PKCS10]);
-            String encoding = getEncoding(args[ARG_ENCODING]);
-            String hardtokensn = getHardTokenSN(args[ARG_HARDTOKENSN]);
-            String outputPath = null;           
-            if(args.length == 18){
-                outputPath = getOutputPath(args[ARG_OUTPUTPATH]);
-            }
+            final String username = myArgs[ARG_USERNAME];
+            final String password = myArgs[ARG_PASSWORD];
+            final String pkcs10 = getPKCS10(myArgs[ARG_PKCS10]);
+            final String encoding = getEncoding(myArgs[ARG_ENCODING]);
+            final String hardtokensn = getHardTokenSN(myArgs[ARG_HARDTOKENSN]);
+            final String outputPath = myArgs.length>ARG_OUTPUTPATH ? getOutputPath(myArgs[ARG_OUTPUTPATH]) : null;
             
             getPrintStream().println("Trying to add user:");
             getPrintStream().println("Username: "+userdata.getUsername());
@@ -137,11 +140,21 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
             getPrintStream().println("Status: "+userdata.getStatus());
             getPrintStream().println("End entity profile: "+userdata.getEndEntityProfileName());
             getPrintStream().println("Certificate profile: "+userdata.getCertificateProfileName());
-
-            if(userdata.getHardTokenIssuerName() == null){
-            	getPrintStream().println("Hard Token Issuer Alias: NONE");
-            }else{
-            	getPrintStream().println("Hard Token Issuer Alias: " + userdata.getHardTokenIssuerName());
+            getPrintStream().println("Hard Token Issuer Alias: "+userdata.getHardTokenIssuerName()!=null ? userdata.getHardTokenIssuerName() :"NONE");
+            {
+            	final List<ExtendedInformationWS> eil = userdata.getExtendedInformation();
+            	if ( eil!=null ) {
+            		getPrintStream().println("Extended information:");
+            		for ( ExtendedInformationWS ei : eil ) {
+            			getPrintStream().println("	'"+ei.getName()+"' = '"+ei.getValue()+"'");
+            		}
+            	}
+            }
+            {
+            	final BigInteger bi = userdata.getCertificateSerialNumber();
+            	if ( bi!=null ) {
+            		getPrintStream().println(ParseUserData.certificateSerialNumber+"="+bi.toString());
+            	}
             }
             
             
@@ -278,6 +291,8 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
         		"P12" + ", "+ "JKS" + ", "  + "PEM");
         getPrintStream().println("Existing statuses (new users will always be set as NEW) : NEW, INPROCESS, FAILED, HISTORICAL");
         getPrintStream().println("outputpath : directory where certificate is written in form username+.cer|.pem ");
+        getPrintStream().println();
+        ParseUserData.printCliHelp(getPrintStream());
 	}
 
 
