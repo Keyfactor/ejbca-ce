@@ -266,14 +266,17 @@ mysql> alter table UserData modify subjectDN text;
       <question>Enroll manually for a server - why are my PKCS10  DN fields Ignored?</question>
       <answer>
         <p>
+		PKCS#10 is a standard format for sending the public key (self signed
+		to provide proof-of-possession) to a CA.
+        </p><p>
 		EJBCA does not trust the DN parts the user enters when he creates the
 		PKCS10 request.
 		The only way to match the certificate with what you enter in the
 		pkcs10 is to enter the same thing in the end entity in EJBCA.
-		</p><p>
-		PKCS#10 is the standard format for sending the public key (self signed
-		to provide proof-of-possession) to a CA.
-        </p>
+		</p>
+		<p>
+		If you really trust your RAs that send certificate requests, there is an option "Allow DN Override" in Certificate Profiles that can be used.
+		This is described more in detail in the docs.</p>
       </answer>
     </faq>
     <faq id="logFileLocation">
@@ -282,6 +285,8 @@ mysql> alter table UserData modify subjectDN text;
         <p>
         JBOSS_HOME/server/default/log/server.log or where you configured conf/log4j-<i>appserver</i>.xml to store them.
         </p>
+        <p>Note that JBoss 6 and Glassfish does not use Log4j natively. For thos application servers you configure where EJBCA should 
+        log in ejbca/conf/log4j-<i>appserver</i>.xml</p>
       </answer>
     </faq>
     <faq id="logLevelJBoss">
@@ -313,6 +318,7 @@ debug messages that will not be printed, enhancing performance some.
 You can here enable DEBUG logging for EJBCA by changing INFO to DEBUG. By doing all of the above (and playing around a little) 
 you can get nice logging with only the things you are interested in logged to the log file.
 </p>
+<p>For JBoss 6 you configure the log level in the file described in the previous FAQ entry.</p>
       </answer>
     </faq>
     
@@ -380,6 +386,7 @@ ant -Dca.name="My CA" javatruststore
       <question>When running 'ant install' or creating JKS or PKCS12 files you can't use longer 
 password than 7 characters. Anything longer gives an error?</question>
       <answer>
+        <p>Note, this is only relevant to OracleJDK. OpenJDK does not have this restriction.</p>
         <p>
 		If you want to use strong crypto and/or password longer than 7 characters 
 		in keystores you must install the 'Unlimited Strength Jurisdiction Policy Files' for JDK.
@@ -448,9 +455,9 @@ This will fire up a rudimentary database interface. Only works on the same machi
 	</answer>
 	</faq>
     <faq id="manipulateKeystore">
-      <question>How do I manipulate EJBCA-keystores using Oracle's 'keytool'?</question>
+      <question>How do I manipulate EJBCA-keystores using Java's 'keytool'?</question>
 	  <answer><p>EJBCA supports the PKCS12 format for the keystore because it is a standard, and we like standards.
-	  Normally keytool (e.g. Oracle's) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
+	  Normally keytool (e.g. Java's) can read PKCS12 file but not write, so the BouncyCastle JCE is needed to handle PKCS12 keystores.
 	  </p>
 	  <source>
 keytool -list -alias privateKey -keystore server.p12 -storetype PKCS12 -storepass foo123 -provider org.bouncycastle.jce.provider.BouncyCastleProvider -providerpath $EJBCA_HOME/lib/bcprov-jdk16-145.jar
@@ -517,7 +524,7 @@ not just for CAs.
       <question>When a new end entity is created, where and how is the password stored?</question>
 	  <answer>
 	    <p>
-		A one-time password is stored hashed with SHA-1 in the UserData table
+		A one-time password is stored hashed with BCrypt in the UserData table
 		in the database. If the checkbox 'clear text password' is checked when
 		adding the user the password is stored in clear text, to be used for
 		server side generation.
@@ -551,7 +558,7 @@ not just for CAs.
   <answer>
   <p>
   This issue affects Glassfishv2 Enterprise Edition (open source admin console is slightly different and doesn't have this features).
-If you are experiencing errors when doing “ant install”, do the following:
+If you are experiencing errors when doing <i>ant install</i>, do the following:
 <ul>
 <li>Open up glassfish admin console in your browser (https://&lt;host-name>:4848/)</li>
 <li>On the left hand side, expand Stand-Alone Instances node</li>
