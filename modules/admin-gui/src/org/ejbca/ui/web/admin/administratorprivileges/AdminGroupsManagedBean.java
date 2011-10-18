@@ -41,6 +41,7 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.authorization.BasicAccessRuleSet;
 import org.ejbca.core.model.authorization.BasicAccessRuleSetDecoder;
 import org.ejbca.core.model.authorization.BasicAccessRuleSetEncoder;
+import org.ejbca.core.model.authorization.DefaultRoles;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.AccessRulesView;
@@ -60,7 +61,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     private final EjbLocalHelper ejb = new EjbLocalHelper();
     private BasicAccessRuleSetEncoder basicAccessRuleSetEncoderCache = null;
 
-    private String currentRoleTemplate = null;
+    private DefaultRoles currentRoleTemplate = null;
     private List<Integer> currentCAs = null;
     private List<Integer> currentEndEntityProfiles = null;
     private List<Integer> currentOtherRules = null;
@@ -309,11 +310,19 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 
     // Stores the value from request, but always reads the value directly from the saved data
     public String getCurrentRoleTemplate() {      
-        return currentRoleTemplate;
+        final RoleData currentRole = getCurrentAdminGroupObject();
+        final String roleName = currentRole.getRoleName();
+        //Strip out all external rules until only the template remains.
+        Collection<AccessRuleTemplate> externalRules = new ArrayList<AccessRuleTemplate>();
+        externalRules.addAll(BasicAccessRuleSetDecoder.getCaRules(roleName, getBasicRuleSet().getCurrentCAs()));
+        externalRules.addAll(BasicAccessRuleSetDecoder.getEndEntityRules(getBasicRuleSet().getCurrentEndEntityProfiles(), getBasicRuleSet().getCurrentEndEntityRules()));
+        externalRules.addAll(BasicAccessRuleSetDecoder.getOtherRules(roleName, getBasicRuleSet().getCurrentOtherRules()));        
+        DefaultRoles result = DefaultRoles.identifyFromRuleSet(currentRole.getAccessRules().values(), externalRules);        
+        return result.getName();
     }
 
     public void setCurrentRoleTemplate(String currentRoleTemplate) {
-        this.currentRoleTemplate = currentRoleTemplate;
+        this.currentRoleTemplate = DefaultRoles.getDefaultRoleFromName(currentRoleTemplate);
     }
 
     public List<String> getCurrentCAs() {
@@ -347,16 +356,6 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     public void setCurrentEndEntityRules(List<String> currentEndEntityRules) {
         this.currentEndEntityRules = stringListToIntegerList(currentEndEntityRules);
     }
-
-    /**
-     * @return a new access rules view public AccessRulesView getAdminGroupAccessRules() { return new
-     *         AccessRulesView(getCurrentAdminGroupObject().getAccessRules()); }
-     */
-
-    /**
-     * @return a new access rules view public AccessRulesView getUnusedAdminGroupAccessRules() { return new
-     *         AccessRulesView(getCurrentAdminGroupObject().nonUsedAccessRules(getAuthorizationDataHandler().getAvailableAccessRules())); }
-     */
 
     /** @return a cached BasicAccessRuleSet */
     public BasicAccessRuleSetEncoder getBasicRuleSet() {
@@ -428,14 +427,24 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
      * @throws RoleNotFoundException
      */
     public void saveAccessRules() throws RoleNotFoundException {
-        BasicAccessRuleSetDecoder barsd = new BasicAccessRuleSetDecoder(currentRoleTemplate, currentCAs, currentEndEntityRules, currentEndEntityProfiles,
-                currentOtherRules);
+        BasicAccessRuleSetDecoder barsd = new BasicAccessRuleSetDecoder(currentRoleTemplate.getName(), currentCAs, currentEndEntityRules,
+                currentEndEntityProfiles, currentOtherRules);
         try {
-            Collection<AccessRuleData> rulesToReplaceWith = new ArrayList<AccessRuleData>();
-            for(AccessRuleTemplate template :  barsd.getCurrentAdvancedRuleSet()) {
-                rulesToReplaceWith.add(template.createAccessRuleData(currentAdminGroupName));
+            //Using a map in order to weed out duplicates. 
+            Map<Integer, AccessRuleData> rulesToReplaceWith = new HashMap<Integer, AccessRuleData>();
+            for (AccessRuleTemplate template : barsd.getCurrentAdvancedRuleSet()) {
+                AccessRuleData rule = template.createAccessRuleData(currentAdminGroupName);
+                if (!rulesToReplaceWith.containsKey(rule.getPrimaryKey())) {
+                    rulesToReplaceWith.put(rule.getPrimaryKey(), rule);
+                } else {
+                    //Examine if we're trying to submit two rules which aren't the exact same.
+                    if (!rule.equals(rulesToReplaceWith.get(rule.getPrimaryKey()))) {
+                        throw new Error("AdminGroupsManagedBean tried to save two overlapping rules (" + rule.getAccessRuleName()
+                                + ") with different values.");
+                    }
+                }
             }
-            getAuthorizationDataHandler().replaceAccessRules(getCurrentAdminGroup(), rulesToReplaceWith);
+            getAuthorizationDataHandler().replaceAccessRules(getCurrentAdminGroup(), rulesToReplaceWith.values());
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }

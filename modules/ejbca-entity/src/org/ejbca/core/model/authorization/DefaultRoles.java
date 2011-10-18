@@ -14,6 +14,8 @@ package org.ejbca.core.model.authorization;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
@@ -27,9 +29,8 @@ import org.cesecore.authorization.rules.AccessRuleState;
 public enum DefaultRoles {
     CUSTOM("CUSTOM"), 
     SUPERADMINISTRATOR("SUPERADMINISTRATOR", 
-            new AccessRuleTemplate(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false)
-    ),
-   CAADMINISTRATOR("CAADMINISTRATOR", 
+            new AccessRuleTemplate(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false)), 
+    CAADMINISTRATOR("CAADMINISTRATOR", 
             new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_CAFUNCTIONALTY, AccessRuleState.RULE_ACCEPT, true), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_LOGFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true), 
@@ -38,22 +39,27 @@ public enum DefaultRoles {
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true), 
             new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS, AccessRuleState.RULE_ACCEPT, false), 
-            new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES, AccessRuleState.RULE_ACCEPT, false)
-   ), 
-   RAADMINISTRATOR("RAADMINISTRATOR",
+            new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES, AccessRuleState.RULE_ACCEPT, false)),
+    RAADMINISTRATOR("RAADMINISTRATOR",
             new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_CREATECERTIFICATE, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_STORECERTIFICATE, AccessRuleState.RULE_ACCEPT, false), 
-            new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false)), 
-   SUPERVISOR("SUPERVISOR",
+            new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false)),
+    SUPERVISOR("SUPERVISOR",
             new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWLOG, AccessRuleState.RULE_ACCEPT, true), 
-            new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false)
-   ),
-   HARDTOKENISSUER("HARDTOKENISSUER");
+            new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false)), 
+    HARDTOKENISSUER("HARDTOKENISSUER");
 
+    private static Map<String, DefaultRoles> nameToObjectMap = new HashMap<String, DefaultRoles>();
     private String name;
     private Collection<AccessRuleTemplate> ruleSet = new ArrayList<AccessRuleTemplate>();
+
+    static {
+        for (DefaultRoles defaultRole : DefaultRoles.values()) {
+            nameToObjectMap.put(defaultRole.getName(), defaultRole);
+        }
+    }
 
     private DefaultRoles(String name, AccessRuleTemplate... templates) {
         this.name = name;
@@ -78,38 +84,44 @@ public enum DefaultRoles {
         }
     }
 
-    private boolean matchesRuleSet(Collection<AccessRuleData> rules) {
-        if (ruleSet.size() == rules.size()) {
+    private boolean matchesRuleSet(final Collection<AccessRuleData> rules, final Collection<AccessRuleTemplate> externalRules) {
+        Map<String, AccessRuleTemplate> combinedRules = new HashMap<String, AccessRuleTemplate>();
+        for (AccessRuleTemplate template : ruleSet) {
+            combinedRules.put(template.getAccessRuleName(), template);
+        }
+        for (AccessRuleTemplate template : externalRules) {
+            combinedRules.put(template.getAccessRuleName(), template);
+        }
+        if (combinedRules.size() != rules.size()) {
+            return false;
+        } else {
             for (AccessRuleData rule : rules) {
-                boolean foundMatch = false;
-                for (AccessRuleTemplate template : ruleSet) {
-                    if (template.compareToAccessRuleData(rule)) {
-                        foundMatch = true;
-                    }
-                }
-                if (!foundMatch) {
+                if (!combinedRules.containsKey(rule.getAccessRuleName())) {
                     return false;
                 }
             }
             return true;
-        } else {
-            return false;
         }
     }
 
     /**
      * Identifies if the given rules match 
      * 
-     * @param rules a set of rules
+     * @param rules a map of rules
+     * @param a list of rule templates that define rules that won't disqualify a match
      * @return the matching default role, or DefaultRoles.CUSTOM if no match is found
      * 
      */
-    public static DefaultRoles identifyFromRuleSet(Collection<AccessRuleData> rules) {
-        for(DefaultRoles defaultRole : DefaultRoles.values()) {
-            if(defaultRole.matchesRuleSet(rules)) {
+    public static DefaultRoles identifyFromRuleSet(final Collection<AccessRuleData> rules, final Collection<AccessRuleTemplate> externalRules) {
+        for (DefaultRoles defaultRole : DefaultRoles.values()) {
+            if (defaultRole.matchesRuleSet(rules, externalRules)) {
                 return defaultRole;
             }
         }
         return DefaultRoles.CUSTOM;
+    }
+
+    public static DefaultRoles getDefaultRoleFromName(String name) {
+        return nameToObjectMap.get(name);
     }
 }
