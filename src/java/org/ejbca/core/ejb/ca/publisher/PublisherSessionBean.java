@@ -109,10 +109,11 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             if (pdl != null) {
                 String fingerprint = CertTools.getFingerprintAsString(incert);
                 // If it should be published directly
-                if (!getPublisher(pdl).getOnlyUseQueue()) {
+                BasePublisher pub = getPublisher(pdl);
+                if (!pub.getOnlyUseQueue()) {
                     try {
                     	try {
-                    		if (publisherQueueSession.storeCertificateNonTransactional(getPublisher(pdl), admin, incert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
+                    		if (publisherQueueSession.storeCertificateNonTransactional(pub, admin, incert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
                     				tag, certificateProfileId, lastUpdate, extendedinformation)) {
                     			publishStatus = PublisherConst.STATUS_SUCCESS;
                     		}
