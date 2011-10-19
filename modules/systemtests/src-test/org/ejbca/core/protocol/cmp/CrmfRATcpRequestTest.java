@@ -251,8 +251,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        //TODO the error message should be changed back to "Received an unathenticated message in RA mode." when VerifyPKIMessage is fixed to return better error messages.
-        checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Unrecognized authentication module 'RegTokenPwd'");
+        checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Received an unathenticated message in RA mode.");
     }
 
     @Test

@@ -164,7 +164,9 @@ public abstract class CmpTestCase extends CaTestCase {
 
         CertTemplate myCertTemplate = new CertTemplate();
         myCertTemplate.setValidity(myOptionalValidity);
-        myCertTemplate.setIssuer(new X509Name(issuerDN));
+        if(issuerDN != null) {
+            myCertTemplate.setIssuer(new X509Name(issuerDN));
+        }
         myCertTemplate.setSubject(new X509Name(userDN));
         byte[] bytes = keys.getPublic().getEncoded();
         ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
@@ -693,7 +695,7 @@ public abstract class CmpTestCase extends CaTestCase {
         X509Name name = X509Name.getInstance(header.getSender().getName());
         assertEquals(name.toString(), ((X509Certificate) cacert).getSubjectDN().getName());
         name = X509Name.getInstance(header.getRecipient().getName());
-        assertEquals(name.toString(), userDN);
+        assertEquals(userDN, name.toString());
 
         PKIBody body = respObject.getBody();
         int tag = body.getTagNo();
