@@ -37,11 +37,7 @@ public interface PublisherProxySessionRemote {
      * @throws AuthorizationDeniedException 
      */
     void addPublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws PublisherExistsException, AuthorizationDeniedException;
-    
-    /** Updates publisher data. 
-     * @throws AuthorizationDeniedException */
-    void changePublisher(AuthenticationToken admin, String name, BasePublisher publisher) throws AuthorizationDeniedException;
-    
+     
     /**
      * Adds a publisher with the same content as the original.
      * @throws PublisherExistsException 
