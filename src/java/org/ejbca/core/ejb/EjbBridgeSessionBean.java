@@ -34,6 +34,7 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.audit.EjbcaAuditorSessionLocal;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
@@ -87,6 +88,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB CrlStoreSessionLocal crlStoreSession;
 	@EJB CrlCreateSessionLocal crlCreateSession;
 	@EJB CertificateCreateSessionLocal certificateCreateSession;
+	@EJB EjbcaAuditorSessionLocal ejbcaAuditorSession;
 	@EJB EndEntityAccessSessionLocal endEntityAccessSession;
 	@EJB EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB GlobalConfigurationSessionLocal globalConfigurationSession;
@@ -125,6 +127,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public CrlStoreSessionLocal getCrlStoreSession() { return crlStoreSession; }
 	@Override public CrlCreateSessionLocal getCrlCreateSession() { return crlCreateSession; }
 	@Override public CertificateCreateSessionLocal getCertificateCreateSession() { return certificateCreateSession; }
+	@Override public EjbcaAuditorSessionLocal getEjbcaAuditorSession() { return ejbcaAuditorSession; }
 	@Override public EndEntityProfileSessionLocal getEndEntityProfileSession() { return endEntityProfileSession; }
 	@Override public GlobalConfigurationSessionLocal getGlobalConfigurationSession() { return globalConfigurationSession; }
 	@Override public HardTokenBatchJobSessionLocal getHardTokenBatchJobSession() { return hardTokenBatchJobSession; }
