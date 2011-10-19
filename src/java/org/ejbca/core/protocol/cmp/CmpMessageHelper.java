@@ -325,12 +325,14 @@ public class CmpMessageHelper {
 		cresp.setRequestId(requestId);
 		cresp.setRequestType(requestType);
 		// Set all protection parameters, this is another message than if we generated a cert above
-		final String pbeDigestAlg = verifyer.getOwfOid();
-		final String pbeMacAlg = verifyer.getMacOid();
-		final int pbeIterationCount = verifyer.getIterationCount();
-		final String raAuthSecret = verifyer.getLastUsedRaSecret();
-		if (StringUtils.equals(responseProt, "pbe") && (pbeDigestAlg != null) && (pbeMacAlg != null) && (keyId != null) && (raAuthSecret != null) ) {
-			cresp.setPbeParameters(keyId, raAuthSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+        if(verifyer != null) {
+		    final String pbeDigestAlg = verifyer.getOwfOid();
+		    final String pbeMacAlg = verifyer.getMacOid();
+		    final int pbeIterationCount = verifyer.getIterationCount();
+		    final String raAuthSecret = verifyer.getLastUsedRaSecret();
+		    if (StringUtils.equals(responseProt, "pbe") && (pbeDigestAlg != null) && (pbeMacAlg != null) && (keyId != null) && (raAuthSecret != null) ) {
+			    cresp.setPbeParameters(keyId, raAuthSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
+            }
 		}
 		resp = cresp;
 		try {

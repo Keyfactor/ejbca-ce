@@ -111,7 +111,10 @@ public class VerifyPKIMessage {
      * @return True if verification is successful. False otherwise
      */
     public boolean verify(final PKIMessage msg) {
-
+        if (log.isTraceEnabled()) {
+            log.trace(">verify");
+        }
+        boolean ret = false;
         final String authModules = CmpConfiguration.getAuthenticationModule();
         final String authparameters = CmpConfiguration.getAuthenticationParameters();
         final String modules[] = authModules.split(";");
@@ -121,21 +124,24 @@ public class VerifyPKIMessage {
         int i=0;
         while(i<modules.length) {
             if(log.isDebugEnabled()) {
-                log.debug("Trying to verify the message authentication by using '" + modules[i] + "' authentication module and authentication parameter '" + params[i] + "'");
+                log.debug("Trying to verify the message authentication by using '" + modules[i] + "' authentication module and authentication parameter '" + ((params[i]==null)?"null":"not null")+"'."); 
             }
 
             module = getAuthModule(modules[i].trim(), params[i].trim(), msg);
             if((module != null) && module.verifyOrExtract(msg)) {
                 this.authModule = module;
-                return true;
+                ret = true;
+                break;
             }
             if((module != null) && (module.getErrorMessage() != null)) {
                 errMsg = module.getErrorMessage();
             }
             i++;
         }
-        return false;
-        
+        if (log.isTraceEnabled()) {
+            log.trace("<verify: "+ret);
+        }
+        return ret;
     }
     
     /**
@@ -149,7 +155,7 @@ public class VerifyPKIMessage {
     private ICMPAuthenticationModule getAuthModule(final String module, final String parameter, final PKIMessage pkimsg) {
         if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_HMAC)) {
             final HMACAuthenticationModule hmacmodule = new HMACAuthenticationModule(parameter);
-            hmacmodule.setSession(this.admin, this.eeAccessSession);
+            hmacmodule.setSession(this.admin, this.eeAccessSession, this.certificateStoreSession);
             hmacmodule.setCaInfo(this.cainfo);
             return hmacmodule;
         } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {

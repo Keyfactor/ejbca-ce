@@ -56,6 +56,7 @@ import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.asn1.x509.X509CertificateStructure;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -151,7 +152,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         super.setUp();
 
         username = "authModuleTestUser";
-        userDN = "CN="+username+", O=PrimeKey Solutions AB, C=SE, UID=foo123";
+        userDN = "CN="+username+",O=PrimeKey Solutions AB,C=SE,UID=foo123";
         issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
         nonce = CmpMessageHelper.createSenderNonce();
         transid = CmpMessageHelper.createSenderNonce();
@@ -191,18 +192,18 @@ public class AuthenticationModulesTest extends CmpTestCase {
         PKIMessage msg = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null); 
         assertNotNull("Generating CrmfRequest failed." + msg);
         PKIMessage req = protectPKIMessage(msg, false, "foo123", "mykeyid", 567);
-        assertNotNull("Protecting PKIMessage with HMACPbe failed." + req);
+        assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
 
         HMACAuthenticationModule hmac = new HMACAuthenticationModule("foo123");
         hmac.setCaInfo(caSession.getCAInfo(ADMIN, caid));
-        hmac.setSession(ADMIN, eeAccessSession);
+        hmac.setSession(ADMIN, eeAccessSession, certStoreSession);
         boolean res = hmac.verifyOrExtract(req);
         assertTrue("Verifying the message authenticity using HMAC failed.", res);
         assertNotNull("HMAC returned null password." + hmac.getAuthenticationString());
         assertEquals("HMAC returned the wrong password", "foo123", hmac.getAuthenticationString());
 
-    }    
-    
+    }
+
     @Test
     public void test02HMACCrmfReq() throws Exception {
         assertFalse("Configurations have not been backed up before starting testing.", confSession.backupConfiguration());
@@ -267,7 +268,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         PKIMessage msg = genRevReq(issuerDN, userDN, CertTools.getSerialNumber(cert), cacert, nonce, transid, false);
         assertNotNull("Generating RevocationRequest failed." + msg);
         PKIMessage req = protectPKIMessage(msg, false, "foo123", "mykeyid", 567);
-        assertNotNull("Protecting PKIMessage with HMACPbe failed." + req);
+        assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
         
         final ByteArrayOutputStream bao = new ByteArrayOutputStream();
         final DEROutputStream out = new DEROutputStream(bao);
@@ -278,7 +279,6 @@ public class AuthenticationModulesTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader().getTransactionID().getOctets(), false, null);
         int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
         assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
-        
     }
     
     @Test
@@ -600,28 +600,33 @@ public class AuthenticationModulesTest extends CmpTestCase {
     @Test
     public void test10CrmfReqClientModeHMAC() throws Exception {
         assertFalse("Configurations have not been backed up before starting testing.", confSession.backupConfiguration());
-        
+
+        String clientPassword = "foo123client";
+
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_HMAC);
         assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_HMAC));
-        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "foo123client");
-        assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "foo123client"));        
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, clientPassword);
+        assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, clientPassword));        
         confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
         assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal"));
         EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
         assertFalse("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+        confSession.updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
         
         String clientUsername = "clientTestUser";
         String clientDN = "CN=" + clientUsername + ",C=SE";
-        String clientPassword = "foo123client";
-        try{
-            userAdminSession.revokeAndDeleteUser(ADMIN, clientUsername, ReasonFlags.unused);
-        } catch(Exception e) {}
+        //try{
+        //    userAdminSession.revokeAndDeleteUser(ADMIN, clientUsername, ReasonFlags.unused);
+        //} catch(Exception e) {}
         createUser(clientUsername, clientDN, clientPassword);
         
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         
-        PKIMessage msg = genCertReq(issuerDN, clientDN, keys, cacert, nonce, transid, false, null, null, null, null);
+        PKIMessage msg = genCertReq(issuerDN, clientDN, keys, cacert, nonce, transid, true, null, null, null, null);
         assertNotNull("Generating CrmfRequest failed." + msg);
+        X509Name reqissuer = msg.getBody().getIr().getCertReqMsg(0).getCertReq().getCertTemplate().getIssuer();
+        assertNotNull("reqissuer is null", reqissuer);
+
         PKIMessage req = protectPKIMessage(msg, false, clientPassword, "mykeyid", 567);
         assertNotNull("Protecting PKIMessage with HMACPbe failed.");
         
@@ -634,6 +639,38 @@ public class AuthenticationModulesTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, clientDN, cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader().getTransactionID().getOctets(), false, null);
         Certificate cert1 = checkCmpCertRepMessage(clientDN, cacert, resp, req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue());
         assertNotNull("Crmf request did not return a certificate", cert1);
+
+        // 
+        // Try a request with no issuerDN in the certTemplate
+        createUser(clientUsername, clientDN, clientPassword);
+        PKIMessage msgNoIssuer = genCertReq(null, clientDN, keys, cacert, nonce, transid, true, null, null, null, null);
+        assertNotNull("Generating CrmfRequest with no issuer failed." + msgNoIssuer);
+        PKIMessage reqNoIssuer = protectPKIMessage(msgNoIssuer, false, clientPassword, "mykeyid", 567);
+        assertNotNull("Protecting PKIMessage with HMACPbe failed.", req);
+        ByteArrayOutputStream bao2 = new ByteArrayOutputStream();
+        DEROutputStream out2 = new DEROutputStream(bao2);
+        out2.writeObject(reqNoIssuer);
+        byte[] ba2 = bao2.toByteArray();
+        // Send request and receive response
+        byte[] respNoIssuer = sendCmpHttp(ba2, 200);        
+        checkCmpResponseGeneral(respNoIssuer, issuerDN, clientDN, cacert, reqNoIssuer.getHeader().getSenderNonce().getOctets(), reqNoIssuer.getHeader().getTransactionID().getOctets(), false, null);
+        Certificate cert2 = checkCmpCertRepMessage(clientDN, cacert, respNoIssuer, reqNoIssuer.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue());
+        assertNotNull("Crmf request did not return a certificate", cert2);
+
+        // Send a confirm message to the CA
+        String hash = CertTools.getFingerprintAsString(cert2);
+        int reqId = reqNoIssuer.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, reqId);
+        assertNotNull(confirm);
+        ByteArrayOutputStream bao3 = new ByteArrayOutputStream();
+        DEROutputStream out3 = new DEROutputStream(bao3);
+        out3.writeObject(confirm);
+        byte[] ba3 = bao3.toByteArray();
+        // Send request and receive response
+        byte[] resp3 = sendCmpHttp(ba3, 200);
+        checkCmpResponseGeneral(resp3, issuerDN, userDN, cacert, nonce, transid, false, null);
+        checkCmpPKIConfirmMessage(userDN, cacert, resp3);
+
     }
     
     @Test
@@ -662,10 +699,20 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
         HMACAuthenticationModule hmac = new HMACAuthenticationModule("foo123");
         hmac.setCaInfo(caSession.getCAInfo(ADMIN, caid));
-        hmac.setSession(ADMIN, eeAccessSession);
+        hmac.setSession(ADMIN, eeAccessSession, certStoreSession);
         boolean res = hmac.verifyOrExtract(req);
         assertTrue("Verifying the message authenticity using HMAC failed.", res);
         assertNotNull("HMAC returned null password." + hmac.getAuthenticationString());
+        assertEquals("HMAC returned the wrong password", clientPassword, hmac.getAuthenticationString());
+
+        // Test the same but without issuerDN in the request
+        msg = genCertReq(null, clientDN, keys, cacert, nonce, transid, false, null, null, null, null);
+        assertNotNull("Generating CrmfRequest failed.", msg);
+        req = protectPKIMessage(msg, false, clientPassword, "mykeyid", 567);
+        assertNotNull("Protecting PKIMessage failed", req);
+        res = hmac.verifyOrExtract(req);
+        assertTrue("Verifying the message authenticity using HMAC failed.", res);
+        assertNotNull("HMAC returned null password.", hmac.getAuthenticationString());
         assertEquals("HMAC returned the wrong password", clientPassword, hmac.getAuthenticationString());
     }
     
@@ -797,7 +844,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         PKIBody body = respObject.getBody();
         assertEquals(23, body.getTagNo());
         String errMsg = body.getError().getPKIStatus().getStatusString().getString(0).getString();
-        String expectedErrMsg = "Unrecognized authentication modules";
+        String expectedErrMsg = "Authentication failed for message. clientTestUser.";
         assertEquals(expectedErrMsg, errMsg);
     }
     
@@ -918,12 +965,14 @@ public class AuthenticationModulesTest extends CmpTestCase {
         SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword(password);
         try {
-            userAdminSession. addUser(ADMIN, user, true);
-            // usersession.addUser(admin,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,SecConst.CERTPROFILE_FIXED_ENDUSER,SecConst.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
+            //userAdminSession. addUser(ADMIN, user, true);
+            userAdminSession.addUser(ADMIN, username, password, subjectDN, "rfc822name=" + username + "@primekey.se", username + "@primekey.se",
+                    true, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
+                    caid);
             log.debug("created user: " + username);
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
-            userAdminSession.changeUser(ADMIN, user, false);
+            userAdminSession.changeUser(ADMIN, user, true);
             userAdminSession.setUserStatus(ADMIN, username, UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
