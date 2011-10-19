@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.ca.caadmin;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 
 import javax.ejb.EJBException;
@@ -175,7 +176,8 @@ public interface CAAdminSession {
 
     /**
      * Renews a existing CA certificate using the same keys as before, or
-     * generating new keys. Data about new CA is taken from database. This
+     * generating new keys. The specified notBefore date will be used. 
+     * Other data about the new CA is taken from database. This
      * method is used for renewing CAs internally in EJBCA. For renewing CAs
      * signed by external CAs, makeRequest is used to generate a certificate
      * request.
@@ -187,8 +189,12 @@ public interface CAAdminSession {
      * @param regenerateKeys
      *            if true and the CA have a soft CAToken the keys are
      *            regenerated before the certificate request.
+     * @param customNotBefore 
+     *            date to use as notBefore date in the new certificate
+     *            or null if not custom date should be used which means 
+     *            that the current time will be used (normal case).
      */
-    public void renewCA(AuthenticationToken admin, int caid, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException,
+    public void renewCA(AuthenticationToken admin, int caid, String keystorepass, boolean regenerateKeys, Date customNotBefore) throws CADoesntExistsException,
             AuthorizationDeniedException, java.security.cert.CertPathValidatorException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
 
     /**

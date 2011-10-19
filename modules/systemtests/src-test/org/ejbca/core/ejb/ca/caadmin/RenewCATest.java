@@ -68,7 +68,7 @@ public class RenewCATest extends CaTestCase {
         X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
         // Sleep at least for one second so we are not so fast that we create a new cert with the same time
         Thread.sleep(2000);
-        caAdminSession.renewCA(internalAdmin, info.getCAId(), null, false);
+        caAdminSession.renewCA(internalAdmin, info.getCAId(), null, false, null);
         X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
         X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
@@ -80,7 +80,7 @@ public class RenewCATest extends CaTestCase {
                 newcertsamekeys.getNotAfter().after(orgcert.getNotAfter()));
 
         // This assumes that the default system keystore password is not changed from foo123
-        caAdminSession.renewCA(internalAdmin, info.getCAId(), "foo123", true);
+        caAdminSession.renewCA(internalAdmin, info.getCAId(), "foo123", true, null);
         X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
         X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertnewkeys.getSerialNumber()));

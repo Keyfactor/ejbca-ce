@@ -176,6 +176,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 			ca.generateCertificate(new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,0,0,0, null,null,0,0,null),
 					cmskeys.getPublic(),
 					-1, // KeyUsage
+                    null, // Custom not before date
 					ca.getValidity(),
 					certProfile, 
 					null // sequence
