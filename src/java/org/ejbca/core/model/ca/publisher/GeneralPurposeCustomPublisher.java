@@ -233,12 +233,9 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
     /**
      * Check if the specified external excutable file(s) exist.
      * 
-     * @param admin
-     *            Ignored
-     * 
-     * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#testConnection(org.ejbca.core.model.log.Admin)
+     * @see org.ejbca.core.model.ca.publisher.ICustomPublisher#testConnection()
      */
-    public void testConnection(AuthenticationToken admin) throws PublisherConnectionException {
+    public void testConnection() throws PublisherConnectionException {
         if (log.isTraceEnabled()) {
         	log.trace("testConnection, Testing connection");
         }

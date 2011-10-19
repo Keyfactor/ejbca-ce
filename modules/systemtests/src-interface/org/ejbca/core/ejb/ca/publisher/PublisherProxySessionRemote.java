@@ -86,5 +86,5 @@ public interface PublisherProxySessionRemote {
      * @throws PublisherConnectionException if connection test with publisher fails.
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    void testConnection(AuthenticationToken admin, int publisherid) throws PublisherConnectionException;
+    void testConnection(int publisherid) throws PublisherConnectionException;
 }
