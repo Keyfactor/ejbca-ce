@@ -346,9 +346,9 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 		}
 	}
 	/* (non-Javadoc)
-	 * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#testConnection(se.anatom.ejbca.log.Admin)
+	 * @see se.anatom.ejbca.ca.publisher.ICustomPublisher#testConnection()
 	 */
-	public void testConnection(AuthenticationToken admin) throws PublisherConnectionException {
+	public void testConnection() throws PublisherConnectionException {
 		try {
 			JDBCUtil.execute("select 1 from CertificateData where fingerprint='XX'", new DoNothingPreparer(), getDataSource());
 		} catch (Exception e) {

@@ -116,7 +116,7 @@ public class PublisherDataHandler implements Serializable {
     
     public void testConnection(String name) throws PublisherConnectionException, AuthorizationDeniedException{         
     	if(authorizedToPublisherName(name)){
-    		publishersession.testConnection(administrator, publishersession.getPublisherId(name));    		
+    		publishersession.testConnection(publishersession.getPublisherId(name));    		
     	}else {
     		throw new AuthorizationDeniedException("Not authorized to clone publisher");
     	}

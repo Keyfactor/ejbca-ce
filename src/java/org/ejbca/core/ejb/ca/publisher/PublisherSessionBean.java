@@ -34,9 +34,7 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -249,7 +247,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void testConnection(AuthenticationToken admin, int publisherid) throws PublisherConnectionException {
+    public void testConnection(int publisherid) throws PublisherConnectionException {
         if (log.isTraceEnabled()) {
             log.trace(">testConnection(id: " + publisherid + ")");
         }
@@ -257,7 +255,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (pdl != null) {
             String name = pdl.getName();
             try {
-                getPublisher(pdl).testConnection(admin);
+                getPublisher(pdl).testConnection();
                 String msg = intres.getLocalizedMessage("publisher.testedpublisher", name);
                 log.info(msg);
             } catch (PublisherConnectionException pe) {
@@ -513,13 +511,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     public String testAllConnections() {
         log.trace(">testAllPublishers");
         String returnval = "";
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("PublisherSessionBean.testAllConnections"));
         Iterator<PublisherData> i = PublisherData.findAll(entityManager).iterator();
         while (i.hasNext()) {
         	PublisherData pdl = i.next();
         	String name = pdl.getName();
         	try {
-        		getPublisher(pdl).testConnection(admin);
+        		getPublisher(pdl).testConnection();
         	} catch (PublisherConnectionException pe) {
         		String msg = intres.getLocalizedMessage("publisher.errortestpublisher", name);
         		log.info(msg);

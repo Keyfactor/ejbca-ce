@@ -53,7 +53,7 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @throws PublisherConnectionException if connection test with publisher fails.
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    void testConnection(AuthenticationToken admin, int publisherid) throws PublisherConnectionException;
+    void testConnection(int publisherid) throws PublisherConnectionException;
 
     /**
      * Adds a publisher to the database.

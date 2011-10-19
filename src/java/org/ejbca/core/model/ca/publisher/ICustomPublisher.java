@@ -51,7 +51,7 @@ public interface ICustomPublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#testConnection
 	 */    
-	public abstract void testConnection(AuthenticationToken admin) throws PublisherConnectionException;
+	public abstract void testConnection() throws PublisherConnectionException;
 	
 
 }

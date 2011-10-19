@@ -274,12 +274,12 @@ public class GeneralPurposeCustomPublisherTest {
     public void testExternalExecutableDoesNotExist() throws Exception {
         Properties props = new Properties();
 
-        // Test connection separatly for all publishers with invalid filename
+        // Test connection separately for all publishers with invalid filename
         boolean ret = false;
         try {
             props.setProperty(GeneralPurposeCustomPublisher.crlExternalCommandPropertyName, "randomfilenamethatdoesnotexistandneverwill8998752");
             gpcPublisher.init(props);
-            gpcPublisher.testConnection(admin);
+            gpcPublisher.testConnection();
             ret = true;
         } catch (PublisherConnectionException e) {
         }
@@ -288,7 +288,7 @@ public class GeneralPurposeCustomPublisherTest {
         try {
             props.setProperty(GeneralPurposeCustomPublisher.certExternalCommandPropertyName, "randomfilenamethatdoesnotexistandneverwill8998752");
             gpcPublisher.init(props);
-            gpcPublisher.testConnection(admin);
+            gpcPublisher.testConnection();
             ret = true;
         } catch (PublisherConnectionException e) {
         }
@@ -297,7 +297,7 @@ public class GeneralPurposeCustomPublisherTest {
         try {
             props.setProperty(GeneralPurposeCustomPublisher.revokeExternalCommandPropertyName, "randomfilenamethatdoesnotexistandneverwill8998752");
             gpcPublisher.init(props);
-            gpcPublisher.testConnection(admin);
+            gpcPublisher.testConnection();
             ret = true;
         } catch (PublisherConnectionException e) {
         }

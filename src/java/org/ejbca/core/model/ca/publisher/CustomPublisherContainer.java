@@ -108,8 +108,8 @@ public class CustomPublisherContainer extends BasePublisher{
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher
 	 */    
-	public void testConnection(AuthenticationToken admin) throws PublisherConnectionException{
-        this.getCustomPublisher().testConnection(admin);
+	public void testConnection() throws PublisherConnectionException{
+        this.getCustomPublisher().testConnection();
 	} 
     
     // Private methods

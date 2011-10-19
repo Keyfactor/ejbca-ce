@@ -171,10 +171,9 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
     /**
      * Method used to test the connection to a publisher.
      * 
-     * @param admin the administrator performing the test
      * @throws PublisherConnectionException when couldn't be set up correctly in any way.
      */
-    public abstract void testConnection(AuthenticationToken admin) throws PublisherConnectionException;
+    public abstract void testConnection() throws PublisherConnectionException;
     
 
     public abstract Object clone() throws CloneNotSupportedException;

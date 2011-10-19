@@ -76,8 +76,8 @@ public class PublisherProxySessionBean implements PublisherProxySessionRemote {
     }
 
     @Override
-    public void testConnection(AuthenticationToken admin, int publisherid) throws PublisherConnectionException {
-        publisherSession.testConnection(admin, publisherid);
+    public void testConnection(int publisherid) throws PublisherConnectionException {
+        publisherSession.testConnection(publisherid);
     }
 
 }
