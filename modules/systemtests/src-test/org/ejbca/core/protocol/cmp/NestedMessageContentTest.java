@@ -841,6 +841,13 @@ public class NestedMessageContentTest extends CmpTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        
+        File createdFolder = new File(raCertsPath);
+        File[] certs = createdFolder.listFiles();
+        for(int i=0; i<certs.length; i++) {
+            certs[i].delete();
+        }
+        createdFolder.delete();
     }
     
     
@@ -852,7 +859,7 @@ public class NestedMessageContentTest extends CmpTestCase {
             Date notAfter) throws AuthorizationDeniedException, EjbcaException, CertificateException, FileNotFoundException,
             IOException, UserDoesntFullfillEndEntityProfile, ObjectNotFoundException, Exception {
         
-        assertTrue("RACertPath is suppose to be \"" + raCertsPath + "\", instead it is \"" + configurationSession.getProperty(CmpConfiguration.CONFIG_RACERT_PATH) + "\".", configurationSession.verifyProperty(CmpConfiguration.CONFIG_RACERT_PATH, raCertsPath));
+        assertTrue("RACertPath is suppose to be '" + raCertsPath + "', instead it is '" + configurationSession.getProperty(CmpConfiguration.CONFIG_RACERT_PATH) + "'.", configurationSession.verifyProperty(CmpConfiguration.CONFIG_RACERT_PATH, raCertsPath));
         
         createUser(username, "CN="+username, password);
         Certificate racert = signSession.createCertificate(admin, username, password, keys.getPublic(), X509KeyUsage.digitalSignature|X509KeyUsage.keyCertSign, notBefore, notAfter, certProfileSession.getCertificateProfileId("CMPTESTPROFILE"), caid);
