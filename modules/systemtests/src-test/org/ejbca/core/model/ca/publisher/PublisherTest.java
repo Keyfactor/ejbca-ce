@@ -284,7 +284,7 @@ public class PublisherTest {
         
         BasePublisher publisher = publisherSession.getPublisher("TESTCLONEDUMMYCUSTOM");
         publisher.setDescription(publisher.getDescription().toUpperCase());
-        publisherProxySession.changePublisher(internalAdmin, "TESTCLONEDUMMYCUSTOM", publisher);
+        publisherSession.changePublisher(internalAdmin, "TESTCLONEDUMMYCUSTOM", publisher);
         ret = true;
         
         assertTrue("Editing Custom Publisher failed", ret);
