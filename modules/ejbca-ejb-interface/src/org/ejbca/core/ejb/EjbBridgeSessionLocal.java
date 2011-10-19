@@ -31,6 +31,7 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
+import org.ejbca.core.ejb.audit.EjbcaAuditorSessionLocal;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
@@ -84,6 +85,7 @@ public interface EjbBridgeSessionLocal {
 	CmpMessageDispatcherSessionLocal getCmpMessageDispatcherSession();
 	CrlStoreSessionLocal getCrlStoreSession();
 	CrlCreateSessionLocal getCrlCreateSession();
+    EjbcaAuditorSessionLocal getEjbcaAuditorSession();
 	EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession();
 	EndEntityAccessSessionLocal getEndEntityAccessSession();
 	EndEntityProfileSessionLocal getEndEntityProfileSession();

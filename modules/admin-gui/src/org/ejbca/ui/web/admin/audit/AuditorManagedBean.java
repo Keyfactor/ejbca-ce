@@ -15,7 +15,6 @@ package org.ejbca.ui.web.admin.audit;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -341,56 +340,21 @@ public class AuditorManagedBean implements Serializable {
 		reloadResultsNextView = true;
 	}
 
-	// TODO: Not the safest way to send user input to the database..
 	private void reloadResults() throws AuthorizationDeniedException {
 		if (log.isDebugEnabled()) {
 			log.debug("Reloading audit load. selectedDevice=" + device);
 		}
-		QueryCriteria criteria = QueryCriteria.where();
-		boolean first = true;
-		for (final AuditSearchCondition condition : getConditions()) {
-			if (!first) {
-				switch (condition.getOperation()) {
-				case AND:
-					criteria = criteria.and(); break;
-				case OR:
-					criteria = criteria.or(); break;
-				}
-			}
-			first = false;
-			Object conditionValue = condition.getValue();
-			if (AuditLogEntry.FIELD_TIMESTAMP.equals(condition.getColumn())) {
-				try {
-					conditionValue = Long.valueOf(ValidityDate.parseAsIso8601(conditionValue.toString()).getTime());
-				} catch (ParseException e) {
-					log.debug("Admin entered invalid date for audit log search: " + condition.getValue());
-					continue;
-				}
-			}
-			switch (Condition.valueOf(condition.getCondition())) {
-			case EQUALS:
-				criteria = criteria.eq(condition.getColumn(), conditionValue); break;
-			case NOT_EQUALS:
-				criteria = criteria.neq(condition.getColumn(), conditionValue); break;
-			case CONTAINS:
-				criteria = criteria.like(condition.getColumn(), "%" + conditionValue + "%"); break;
-			case ENDS_WITH:
-				criteria = criteria.like(condition.getColumn(), "%" + conditionValue); break;
-			case STARTS_WITH:
-				criteria = criteria.like(condition.getColumn(), conditionValue + "%"); break;
-			case GREATER_THAN:
-				criteria = criteria.grt(condition.getColumn(), conditionValue); break;
-			case LESS_THAN:
-				criteria = criteria.lsr(condition.getColumn(), conditionValue); break;
-			}
-		}
-
-		AuthenticationToken token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Reload action from AuditorManagedBean"));
 		try {
-	        results = securityEventsAuditorSession.selectAuditLogs(token, startIndex, maxResults, criteria.order(sortColumn, sortOrder), device);
+	        final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
+	        results = AuditorQueryHelper.getResults(authenticationToken, columnNameMap.keySet(), device, getConditions(), sortColumn, sortOrder, startIndex-1, maxResults);
 		} catch (Exception e) {
-		    results.clear();
-            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Invalid search conditions."));
+		    if (results!=null) {
+	            results.clear();
+		    }
+		    if (log.isDebugEnabled()) {
+		        log.debug(e.getMessage(), e);
+		    }
+            FacesContext.getCurrentInstance().addMessage(null, new FacesMessage("Invalid search conditions: " + e.getMessage()));
 		}
 		updateCaIdToNameMap();
 		renderNext = results!=null && !results.isEmpty() && results.size()==maxResults;
