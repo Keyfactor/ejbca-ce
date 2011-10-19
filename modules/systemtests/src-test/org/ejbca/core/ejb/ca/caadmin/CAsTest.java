@@ -1012,7 +1012,7 @@ public class CAsTest extends CaTestCase {
         certificateProfileSession.changeCertificateProfile(admin, "TESTCVCDV", profile);
 
         int caid = dvdcainfo.getCAId();
-        caAdminSession.renewCA(admin, caid, null, false);
+        caAdminSession.renewCA(admin, caid, null, false, null);
         dvdcainfo = caSession.getCAInfo(admin, dvdcaname);
         assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
         Certificate cert = (Certificate) dvdcainfo.getCertificateChain().iterator().next();
@@ -1086,7 +1086,7 @@ public class CAsTest extends CaTestCase {
         // Renew again but regenerate keys this time to make sure sequence is
         // updated
         caid = dvdcainfo.getCAId();
-        caAdminSession.renewCA(admin, caid, "foo123", true);
+        caAdminSession.renewCA(admin, caid, "foo123", true, null);
         dvdcainfo = caSession.getCAInfo(admin, dvdcaname);
         assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
         cert = (Certificate) dvdcainfo.getCertificateChain().iterator().next();
@@ -1331,7 +1331,7 @@ public class CAsTest extends CaTestCase {
         CertificateInfo certInfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
         assertFalse(certInfo.getFingerprint().equals(certInfo.getCAFingerprint()));
         int caid = dvdcainfo.getCAId();
-        caAdminSession.renewCA(admin, caid, null, false);
+        caAdminSession.renewCA(admin, caid, null, false, null);
         dvdcainfo = caSession.getCAInfo(admin, dvdcaname);
         assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
         cert = (Certificate) dvdcainfo.getCertificateChain().iterator().next();
@@ -1394,7 +1394,7 @@ public class CAsTest extends CaTestCase {
         // Renew again but regenerate keys this time to make sure sequence is
         // updated
         caid = dvdcainfo.getCAId();
-        caAdminSession.renewCA(admin, caid, "foo123", true);
+        caAdminSession.renewCA(admin, caid, "foo123", true, null);
         dvdcainfo = caSession.getCAInfo(admin, dvdcaname);
         assertEquals(CAInfo.CATYPE_CVC, dvdcainfo.getCAType());
         cert = (Certificate) dvdcainfo.getCertificateChain().iterator().next();
@@ -1424,7 +1424,7 @@ public class CAsTest extends CaTestCase {
         assertEquals("SETCVCAEC00001", cvcertreq.getCertificateBody().getAuthorityReference().getConcatenated());
 
         // Renew the CVCA, generating new keys
-        caAdminSession.renewCA(admin, cvcainfo.getCAId(), "foo123", true);
+        caAdminSession.renewCA(admin, cvcainfo.getCAId(), "foo123", true, null);
 
         // Make a certificate request from a CVCA again
         cvcainfo = caSession.getCAInfo(admin, rootcaname);
@@ -1704,7 +1704,7 @@ public class CAsTest extends CaTestCase {
         CAInfo info = caSession.getCAInfo(admin, getTestCAId());
         Collection<Certificate> certs = info.getCertificateChain();
         X509Certificate cacert1 = (X509Certificate) certs.iterator().next();
-        caAdminSession.renewCA(admin, getTestCAId(), "foo123", false);
+        caAdminSession.renewCA(admin, getTestCAId(), "foo123", false, null);
         info = caSession.getCAInfo(admin, getTestCAId());
         certs = info.getCertificateChain();
         X509Certificate cacert2 = (X509Certificate) certs.iterator().next();
@@ -1713,7 +1713,7 @@ public class CAsTest extends CaTestCase {
         cacert2.verify(cacert1.getPublicKey()); // throws if it fails
 
         // Test renew CA keys
-        caAdminSession.renewCA(admin, getTestCAId(), "foo123", true);
+        caAdminSession.renewCA(admin, getTestCAId(), "foo123", true, null);
         info = caSession.getCAInfo(admin, getTestCAId());
         certs = info.getCertificateChain();
         X509Certificate cacert3 = (X509Certificate) certs.iterator().next();
@@ -1770,7 +1770,7 @@ public class CAsTest extends CaTestCase {
         info.setStatus(SecConst.CA_ACTIVE);
         caAdminSession.editCA(admin, info); // need active status in order
         // to do renew
-        caAdminSession.renewCA(admin, getTestCAId(), "foo123", false);
+        caAdminSession.renewCA(admin, getTestCAId(), "foo123", false, null);
     } // test13RenewCA
 
     @Test

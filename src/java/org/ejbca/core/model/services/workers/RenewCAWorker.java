@@ -86,7 +86,7 @@ public class RenewCAWorker extends BaseWorker {
 						CATokenInfo tokeninfo = info.getCATokenInfo();
 						log.debug("CA status is "+info.getStatus()+", CA token status is "+tokeninfo.getTokenStatus());
 						if ( (info.getStatus() == SecConst.CA_ACTIVE) && (tokeninfo.getTokenStatus() == CryptoToken.STATUS_ACTIVE) ) {
-							caAdminSession.renewCA(getAdmin(), info.getCAId(), null, isRenewKeys());					
+							caAdminSession.renewCA(getAdmin(), info.getCAId(), null, isRenewKeys(), null);					
 						} else {
 							log.debug("Not trying to renew CA because CA and token status are not on-line.");
 						}

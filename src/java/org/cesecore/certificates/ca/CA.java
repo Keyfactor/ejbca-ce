@@ -693,6 +693,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * 
      * @param subject
      * @param publicKey
+     * @param notBefore null or a custom date to use as notBefore date
      * @param keyusage BouncyCastle key usage {@link X509KeyUsage}, e.g. X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment
      * @param validity requested validity in days if less than Integer.MAX_VALUE, otherwise it's milliseconds since epoc.
      * @param certProfile
@@ -701,10 +702,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @return
      * @throws Exception
      */
-    public Certificate generateCertificate(EndEntityInformation subject, PublicKey publicKey, int keyusage, long validity,
+    public Certificate generateCertificate(EndEntityInformation subject, PublicKey publicKey, int keyusage, Date notBefore, long validity,
             CertificateProfile certProfile, String sequence) throws Exception {
         // Calculate the notAfter date
-        final Date notBefore = new Date();
+        if (notBefore == null) {
+            notBefore = new Date(); 
+        }
         final Date notAfter;
         if (validity != -1) {
             notAfter = ValidityDate.getDate(validity, notBefore);

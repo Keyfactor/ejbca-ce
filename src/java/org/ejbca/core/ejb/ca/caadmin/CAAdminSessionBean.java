@@ -383,7 +383,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
                 EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName,
                         null, 0, 0, 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
-                cacertificate = ca.generateCertificate(cadata, catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1, cainfo.getValidity(),
+                cacertificate = ca.generateCertificate(cadata, catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1, null, cainfo.getValidity(),
                         certprofile, sequence);
                 log.debug("CAAdminSessionBean : " + CertTools.getSubjectDN(cacertificate));
                 // Build Certificate Chain
@@ -427,7 +427,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName,
                         null, 0, 0, 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
 
-                cacertificate = signca.generateCertificate(cadata, catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1, cainfo.getValidity(),
+                cacertificate = signca.generateCertificate(cadata, catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1, null, cainfo.getValidity(),
                         certprofile, sequence);
 
                 // Build Certificate Chain
@@ -1148,7 +1148,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     if ((ki != null) && (ki.length > 0)) {
                         sequence = new String(ki);
                     }
-                    cacertificate = signca.generateCertificate(cadata, publickey, -1, cainfo.getValidity(), certprofile, sequence);
+                    cacertificate = signca.generateCertificate(cadata, publickey, -1, null, cainfo.getValidity(), certprofile, sequence);
                     // X509ResponseMessage works for both X509 CAs and CVC CAs, should really be called CertificateResponsMessage
                     returnval = new X509ResponseMessage();
                     returnval.setCertificate(cacertificate);
@@ -1358,7 +1358,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void renewCA(AuthenticationToken admin, int caid, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException,
+    public void renewCA(AuthenticationToken admin, int caid, String keystorepass, boolean regenerateKeys, Date customNotBefore) throws CADoesntExistsException,
             AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
         if (log.isTraceEnabled()) {
             log.trace(">CAAdminSession, renewCA(), caid=" + caid);
@@ -1409,7 +1409,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     // get from CAtoken to make sure it is fresh
                     String sequence = caToken.getTokenInfo().getKeySequence();
                     cacertificate = ca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1,
-                            ca.getValidity(), certprofile, sequence);
+                            customNotBefore, ca.getValidity(), certprofile, sequence);
                     // Build Certificate Chain
                     cachain = new ArrayList<Certificate>();
                     cachain.add(cacertificate);
@@ -1434,7 +1434,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
                         String sequence = caToken.getTokenInfo().getKeySequence(); // get from CAtoken to make sure it is fresh
                         cacertificate = signca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1,
-                                ca.getValidity(), certprofile, sequence);
+                                customNotBefore, ca.getValidity(), certprofile, sequence);
                         // Build Certificate Chain
                         Collection<Certificate> rootcachain = signca.getCertificateChain();
                         cachain = new ArrayList<Certificate>();

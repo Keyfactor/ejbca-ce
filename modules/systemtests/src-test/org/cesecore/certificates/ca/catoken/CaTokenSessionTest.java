@@ -129,14 +129,14 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
     			0, EndEntityConstants.TOKEN_USERGEN, 0, null);
     	KeyPair keypair = KeyTools.genKeys("512", "RSA");
     	CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-    	Certificate usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, 10L, cp, "00000");
+    	Certificate usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
     	usercert1.verify(cert.getPublicKey());
 
     	caTokenSession.generateKeys(roleMgmgToken, caid, "foo123".toCharArray(), true, false);
     	// Still old keys
     	CATokenCacheManager.instance().removeAll();
     	ca = caTestSession.getCA(roleMgmgToken, testx509ca.getName());
-    	usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, 10L, cp, "00000");
+    	usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
     	PublicKey pubK = ca.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN); 
     	usercert1.verify(cert.getPublicKey());
     	usercert1.verify(pubK);
@@ -145,7 +145,7 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
     	// Now new keys
     	CATokenCacheManager.instance().removeAll();
     	ca = caTestSession.getCA(roleMgmgToken, testx509ca.getName());
-    	usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, 10L, cp, "00000");
+    	usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
     	try {
     		usercert1.verify(cert.getPublicKey());
     		assertTrue("Should throw", false);

@@ -159,9 +159,9 @@ public class CaSessionTestBase extends RoleUsingTestCase {
                 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        Certificate usercert1 = ca1.generateCertificate(user, keypair.getPublic(), 0, 10L, cp, "00000");
+        Certificate usercert1 = ca1.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
         assertEquals("CN=User", CertTools.getSubjectDN(usercert1));
-        Certificate usercert2 = ca2.generateCertificate(user, keypair.getPublic(), 0, 10L, cp, "00000");
+        Certificate usercert2 = ca2.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
         assertEquals("CN=User", CertTools.getSubjectDN(usercert2));
 
         caSession.renameCA(roleMgmgToken, testx509ca.getName(), "TEST1");
@@ -293,9 +293,9 @@ public class CaSessionTestBase extends RoleUsingTestCase {
                 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        Certificate usercert1 = ca1.generateCertificate(user, keypair.getPublic(), 0, 10L, cp, "00000");
+        Certificate usercert1 = ca1.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
         assertEquals("CN=User001,C=SE", CertTools.getSubjectDN(usercert1));
-        Certificate usercert2 = ca2.generateCertificate(user, keypair.getPublic(), 0, 10L, cp, "00000");
+        Certificate usercert2 = ca2.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
         assertEquals("CN=User001,C=SE", CertTools.getSubjectDN(usercert2));
 
         caSession.renameCA(roleMgmgToken, testcvcca.getName(), "TESTCVC1");

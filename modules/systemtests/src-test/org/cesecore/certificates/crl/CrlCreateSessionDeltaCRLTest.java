@@ -377,7 +377,7 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
         // user that we know exists...
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         int keyusage = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment;
-        X509Certificate cert = (X509Certificate)testx509ca.generateCertificate(user, keys.getPublic(), keyusage, 10, cp, "00001");
+        X509Certificate cert = (X509Certificate)testx509ca.generateCertificate(user, keys.getPublic(), keyusage, null, 10, cp, "00001");
 
         certificateStoreSession.storeCertificate(roleMgmgToken, cert, USERNAME, "1234", CertificateConstants.CERT_ACTIVE, 
         		CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", System.currentTimeMillis());

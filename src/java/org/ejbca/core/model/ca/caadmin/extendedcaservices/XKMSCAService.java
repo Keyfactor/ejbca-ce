@@ -163,6 +163,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
 		certProfile.setKeyUsageCritical(true);
     	final Certificate xKMSCertificate = ca.generateCertificate(user, xKMSkeys.getPublic(),
     			-1, // KeyUsage
+                null, // Custom not before date
     			ca.getValidity(), certProfile,
     			null // sequence
     	);
