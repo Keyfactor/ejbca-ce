@@ -97,7 +97,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
 
         GlobalConfigurationSessionRemote gcsession = ejb.getGlobalConfigurationSession();
         if (gcsession == null) {
-            throw new ErrorAdminCommandException("Can not get configuration from server. Is server started and communicationn working?");
+            throw new ErrorAdminCommandException("Can not get configuration from server. Is server started and communication working?");
         }
         GlobalConfiguration configuration = gcsession.getCachedGlobalConfiguration();
 
