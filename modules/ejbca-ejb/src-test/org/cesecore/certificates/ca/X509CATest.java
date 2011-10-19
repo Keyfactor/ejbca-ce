@@ -177,7 +177,7 @@ public class X509CATest {
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
-        Certificate usercert = x509ca.generateCertificate(user, keypair.getPublic(), 0, 10L, cp, "00000");
+        Certificate usercert = x509ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
         assertNotNull(usercert);
         assertEquals("CN=User", CertTools.getSubjectDN(usercert));
         assertEquals(CADN, CertTools.getIssuerDN(usercert));
@@ -365,7 +365,7 @@ public class X509CATest {
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
         cp.setUseCertificatePolicies(true);
-        Certificate usercert = ca.generateCertificate(user, keypair.getPublic(), 0, 10L, cp, "00000");
+        Certificate usercert = ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
         String authKeyId = new String(Hex.encode(CertTools.getAuthorityKeyId(usercert)));
         String keyhash = CertTools.getFingerprintAsString(ca.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN).getEncoded());
 
@@ -375,7 +375,7 @@ public class X509CATest {
 		// Restore CA from data (and other things)
 		X509CA ca1 = new X509CA((HashMap)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date(), new Date());
 
-		Certificate usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, 10L, cp, "00000");
+		Certificate usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
 
         String authKeyId1 = new String(Hex.encode(CertTools.getAuthorityKeyId(usercert1)));
         String keyhash1 = CertTools.getFingerprintAsString(ca1.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN).getEncoded());
@@ -386,7 +386,7 @@ public class X509CATest {
         CAData cadata = new CAData(cainfo.getSubjectDN(), cainfo.getName(), cainfo.getStatus(), ca);
 
         CA ca2 = cadata.getCA();
-		Certificate usercert2 = ca.generateCertificate(user, keypair.getPublic(), 0, 10L, cp, "00000");
+		Certificate usercert2 = ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
         String authKeyId2 = new String(Hex.encode(CertTools.getAuthorityKeyId(usercert2)));
         String keyhash2 = CertTools.getFingerprintAsString(ca2.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN).getEncoded());
         assertEquals(authKeyId, authKeyId2);
