@@ -51,7 +51,6 @@ import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 /**
  * Managed bean for editing administrative privileges.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class AdminGroupsManagedBean extends BaseManagedBean {
@@ -293,8 +292,8 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 
     /** @return the 'match type'-text for the admin in the current row of the datatable */
     public String getAdminsMatchType() {
-        AccessUserAspectData adminEntity = getAdminForEach();
-        return "" + adminEntity.getMatchType();
+        AccessUserAspectData userAspect = getAdminForEach();
+        return "" + getEjbcaWebBean().getText(userAspect.getMatchTypeAsType().toString());
     }
 
     /** @return the AdminEntity object for the current row in the datatable */
