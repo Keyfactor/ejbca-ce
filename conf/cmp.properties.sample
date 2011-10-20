@@ -86,7 +86,7 @@
 
 # When the cmp.authenticationmodule is set to 'EndEntityCertificate', Ejbca can be set to check if the certificate in question 
 # belongs to a registered administrator who has the right authorizations. If this action is set to 'false', no such check will be
-# performed. For RA mode this is highly recomended.
+# performed. For RA mode this is highly recommended. For client mode it should be set to false.
 #
 # Default: true
 #cmp.checkadminauthorization=true
