@@ -230,6 +230,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         try {
             connection = DriverManager.getConnection("jdbc:mysql://" + host + ":3306/" + name, user, pass);
         } catch (SQLException e) {
+            e.printStackTrace();
             final StringWriter sw = new StringWriter();
             final PrintWriter pw = new PrintWriter(sw);
             pw.println();
@@ -294,7 +295,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             final String hash = "foo123";
             final PKIMessage confirm = genCertConfirm(SUBJECT_DN, this.cacert, nonce, transid, hash, reqId);
             assertNotNull(confirm);
-            final PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
+            final PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, CPNAME, 567);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
             final DEROutputStream out = new DEROutputStream(bao);
             out.writeObject(req1);
