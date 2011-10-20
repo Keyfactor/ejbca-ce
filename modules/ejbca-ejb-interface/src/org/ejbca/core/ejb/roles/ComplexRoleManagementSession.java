@@ -38,7 +38,7 @@ public interface ComplexRoleManagementSession {
      * @throws AuthorizationDeniedException if authorization was denied.
      * @throws RoleNotFoundException if the supplied role was not found in persistence. 
      */
-    RoleData replaceAccessRulesInRole(AuthenticationToken authenticationToken, final RoleData role, final Collection<AccessRuleData> accessRules)
+    RoleData replaceAccessRulesInRole(final AuthenticationToken authenticationToken, final RoleData role, final Collection<AccessRuleData> accessRules)
             throws AuthorizationDeniedException, RoleNotFoundException;
     
 }
