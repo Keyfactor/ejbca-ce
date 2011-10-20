@@ -63,7 +63,7 @@ public class ComplexRoleManagementSessionBean implements ComplexRoleManagementSe
     private EntityManager entityManager;
     
     @Override
-    public RoleData replaceAccessRulesInRole(AuthenticationToken authenticationToken, final RoleData role,
+    public RoleData replaceAccessRulesInRole(final AuthenticationToken authenticationToken, final RoleData role,
             final Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
         authorizedToEditRole(authenticationToken, role.getRoleName());
         

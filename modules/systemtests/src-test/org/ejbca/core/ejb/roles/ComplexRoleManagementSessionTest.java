@@ -52,6 +52,17 @@ public class ComplexRoleManagementSessionTest extends RoleUsingTestCase {
         tearDownRemoveRole();
     }
 
+    /**
+     * This test creates a role with two rules, one which will be replaced and the other removed because it isn't included new 
+     * collection of rules to replace the old ones. Additionally, the new collection will contain a rule not existing previously,
+     * which should be added. Lastly, the rule existing both before and after the operation should have its value changed to the 
+     * new value provided. 
+     * 
+     * @throws RoleExistsException
+     * @throws AuthorizationDeniedException
+     * @throws AccessRuleNotFoundException
+     * @throws RoleNotFoundException
+     */
     @Test
     public void testReplaceAccessRulesInRole() throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException,
             RoleNotFoundException {
