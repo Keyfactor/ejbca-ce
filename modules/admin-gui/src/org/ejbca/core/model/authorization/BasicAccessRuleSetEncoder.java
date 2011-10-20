@@ -59,7 +59,6 @@ public class BasicAccessRuleSetEncoder implements Serializable {
         initAvailableRoles(aar);
         initAvailableRules(usehardtokens, usekeyrecovery, aar);
 
-        //initCurrentRole(currentaccessrules);
         initCurrentRules(currentaccessrules);
 
     }
