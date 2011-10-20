@@ -118,15 +118,17 @@
 		<h:outputLabel rendered="false" for="startIndex" value="Results start at index"/>
 		<h:inputText rendered="false" id="startIndex" value="#{auditor.startIndex}" style="border: 0px; width: 6em; text-align:right;"><f:convertNumber type="number"/></h:inputText>
 		 -->
-		<h:outputLabel for="maxResults" value="#{web.text.ENTRIESPERPAGE}"/>
-		<h:inputText id="maxResults" value="#{auditor.maxResults}" style="width: 4em; text-align:right;"><f:convertNumber type="number"/></h:inputText>
 		<!-- 
 		<h:outputText rendered="false" value="Displaying results #{auditor.startIndex} - #{auditor.startIndex + auditor.maxResults - 1}."/>
 		<h:outputText rendered="false" value="Ordered by #{auditor.nameFromColumn[(auditor.sortColumn)]}, asc=#{auditor.sortOrder}."/>
 		 -->
-		<h:outputText value="#{web.text.AUDIT_DISPRESULTS}"/>
+		<h:outputText value="#{web.text.AUDIT_DISPRESULTS} "/>
 		<h:inputText id="startIndex2" value="#{auditor.startIndex}" style="width: 6em; text-align:right;"><f:convertNumber type="number"/></h:inputText>
-		<h:outputText value="#{web.text.AUDIT_DISPRESULTSTO} #{auditor.startIndex + auditor.resultSize - 1}."/>
+		<h:outputText value=" #{web.text.AUDIT_DISPRESULTSTO} #{auditor.startIndex + auditor.resultSize - 1}."/>
+		<h:outputLabel for="maxResults" value="#{web.text.ENTRIESPERPAGE} "/>
+		<h:inputText id="maxResults" value="#{auditor.maxResults}" style="width: 4em; text-align:right;"><f:convertNumber type="number"/></h:inputText>
+
+		<br />
 		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResults}" styleClass="commandLink" value="#{web.text.AUDIT_DOWNLOAD}"/>
 		<h:commandButton disabled="#{empty auditor.results}" action="#{auditor.downloadResultsCms}" styleClass="commandLink" value="#{web.text.AUDIT_DOWNLOADASCMS}"/>
 		<h:outputLabel for="signedByCa" value="#{web.text.AUDIT_DOWNLOADASCMSCA} "/>
@@ -272,7 +274,7 @@
 		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.startIndex == 1}" action="#{auditor.previous}" styleClass="commandLink" value="#{web.text.PREVIOUS}"/>
 		<h:commandButton rendered="#{not empty auditor.results}" action="#{auditor.reload}" styleClass="commandLink" value="#{web.text.RELOAD}"/>
 		<h:commandButton rendered="#{not empty auditor.results}" disabled="#{auditor.renderNext==false}" action="#{auditor.next}" styleClass="commandLink" value="#{web.text.NEXT}"/>
-		<h:outputText rendered="#{not empty auditor.results}" value="Displaying results #{auditor.startIndex} to #{auditor.startIndex + auditor.resultSize - 1}."/>
+		<h:outputText rendered="#{not empty auditor.results}" value="#{web.text.AUDIT_DISPRESULTS} #{auditor.startIndex} #{web.text.AUDIT_DISPRESULTSTO} #{auditor.startIndex + auditor.resultSize - 1}."/>
 	</p>
 	</h:form >
 </div>
