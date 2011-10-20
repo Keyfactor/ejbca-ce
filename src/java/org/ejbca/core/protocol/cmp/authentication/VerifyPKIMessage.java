@@ -107,10 +107,11 @@ public class VerifyPKIMessage {
     /**
      * Verifies the authenticity of msg
      * 
-     * @param msg
+     * @param msg PKIMessage to verify
+     * @param username that the PKIMessage should match or null
      * @return True if verification is successful. False otherwise
      */
-    public boolean verify(final PKIMessage msg) {
+    public boolean verify(final PKIMessage msg, final String username) {
         if (log.isTraceEnabled()) {
             log.trace(">verify");
         }
@@ -128,7 +129,7 @@ public class VerifyPKIMessage {
             }
 
             module = getAuthModule(modules[i].trim(), params[i].trim(), msg);
-            if((module != null) && module.verifyOrExtract(msg)) {
+            if((module != null) && module.verifyOrExtract(msg, username)) {
                 this.authModule = module;
                 ret = true;
                 break;
@@ -160,7 +161,7 @@ public class VerifyPKIMessage {
             return hmacmodule;
         } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
             final EndEntityCertificateAuthenticationModule eemodule = new EndEntityCertificateAuthenticationModule(parameter);
-            eemodule.setSession(this.admin, this.caSession, this.certificateStoreSession, this.authorizationSessoin, this.eeProfileSession, authenticationProviderSession);
+            eemodule.setSession(this.admin, this.caSession, this.certificateStoreSession, this.authorizationSessoin, this.eeProfileSession, this.eeAccessSession, authenticationProviderSession);
             return eemodule;
         }
         if(!CmpConfiguration.getRAOperationMode()) {

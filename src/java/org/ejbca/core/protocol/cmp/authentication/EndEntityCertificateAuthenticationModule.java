@@ -41,6 +41,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -72,18 +73,19 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private CertificateStoreSession certSession;
     private AccessControlSession authSession;
     private EndEntityProfileSession eeProfileSession;
+    private EndEntityAccessSession eeAccessSession;
     private WebAuthenticationProviderSessionLocal authenticationProviderSession;
 
     public EndEntityCertificateAuthenticationModule(final String parameter) {
         this.authenticationParameterCAName = parameter;
         password = null;
-        errorMessage = null;
-        
+        errorMessage = null;        
         admin = null;
         caSession = null;
         certSession = null;
         authSession = null;
         eeProfileSession = null;
+        eeAccessSession = null;
         authenticationProviderSession = null;
     }
     
@@ -97,12 +99,14 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * @param eeprofSession
      */
     public void setSession(final AuthenticationToken adm, final CaSession caSession, final CertificateStoreSession certSession, 
-            final AccessControlSession authSession, final EndEntityProfileSession eeprofSession, final WebAuthenticationProviderSessionLocal authProvSession) {
+            final AccessControlSession authSession, final EndEntityProfileSession eeprofSession, final EndEntityAccessSession eeaccessSession,
+            final WebAuthenticationProviderSessionLocal authProvSession) {
         this.admin = adm;
         this.caSession = caSession;
         this.certSession = certSession;
         this.authSession = authSession;
         this.eeProfileSession = eeprofSession;
+        this.eeAccessSession = eeaccessSession;
         this.authenticationProviderSession = authProvSession;
     }
     
@@ -145,10 +149,10 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * When successful, the password is set to the randomly generated 16-gidits String.
      * When failed, the error message is set.
      * 
-     * @param msg
+     * @param msg PKIMessage
      * @return true if the message signature was verified successfully and false otherwise.
      */
-    public boolean verifyOrExtract(final PKIMessage msg) {
+    public boolean verifyOrExtract(final PKIMessage msg, final String username) {
         
         //Check that there is a certificate in the extraCert field in msg
         final X509CertificateStructure extraCertStruct = msg.getExtraCert(0);
@@ -176,44 +180,77 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             return false;
         }
 
-        if(CmpConfiguration.getCheckAdminAuthorization()) {
-            
-            //Check that the certificate in the extraCert field exists in the DB
-            final Certificate dbcert = certSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(extracert));
-            if(dbcert == null) {
-                errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
-                if(log.isDebugEnabled()) {
-                    log.debug(errorMessage);
-                }
-                return false;
+        //Check that the certificate in the extraCert field exists in the DB
+        final String fp = CertTools.getFingerprintAsString(extracert);
+        final Certificate dbcert = certSession.findCertificateByFingerprint(fp);
+        if(dbcert == null) {
+            errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+            if(log.isDebugEnabled()) {
+                log.debug(errorMessage);
             }
-            
-            //Check that the extraCert is given by the right CA
-            CAInfo cainfo;
-            try {
+            return false;
+        }
+        CAInfo cainfo = null;
+        try {
+            // If client mode we will check if this certificate belongs to the user, and set the password of the request to this user's password
+            // so it can later be used when issuing the certificate
+            if (username != null) {
+                CertificateInfo info = certSession.getCertificateInfo(fp);
+                if (!StringUtils.equals(username, info.getUsername())) {
+                    errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"'.";
+                    if(log.isDebugEnabled()) {
+                        // Use a different debug message, as not to reveal too much information
+                        final String debugMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"', but to user '"+info.getUsername()+"'.";
+                        log.debug(debugMessage);
+                    }
+                    return false;                
+                }
+                if (log.isDebugEnabled()) {
+                    log.debug("Extracting and setting password for user '"+username+"'.");
+                }
+                password = eeAccessSession.findUser(admin, username).getPassword();
+            }
+            //Check that the extraCert is issued by the right CA
+            if (!StringUtils.equals("-", this.authenticationParameterCAName)) {
                 cainfo = caSession.getCAInfo(this.admin, this.authenticationParameterCAName);
-            } catch (CADoesntExistsException e) {
-                errorMessage = e.getLocalizedMessage();
-                if(log.isDebugEnabled()) {
-                    log.debug(errorMessage);
+                //Check that the extraCert is given by the right CA
+                if(!StringUtils.equals(CertTools.getIssuerDN(extracert), cainfo.getSubjectDN())) {
+                    errorMessage = "The End Entity certificate attached to the PKIMessage is not given by the CA \"" + this.authenticationParameterCAName + "\"";
+                    if(log.isDebugEnabled()) {
+                        log.debug(errorMessage);
+                    }
+                    return false;
                 }
-                return false;
-            } catch (AuthorizationDeniedException e) {
-                errorMessage = e.getLocalizedMessage();
-                if(log.isDebugEnabled()) {
-                    log.debug(errorMessage);
-                }
-                return false;
+            } else {
+                cainfo = caSession.getCAInfo(this.admin, CertTools.getIssuerDN(extracert).hashCode());
             }
-            
-            if(!StringUtils.equals(CertTools.getIssuerDN(extracert), cainfo.getSubjectDN())) {
-                errorMessage = "The End Entity certificate attached to the PKIMessage is not given by the CA \"" + this.authenticationParameterCAName + "\"";
-                if(log.isDebugEnabled()) {
-                    log.debug(errorMessage);
-                }
-                return false;
+        } catch (CADoesntExistsException e) {
+            errorMessage = e.getLocalizedMessage();
+            if(log.isDebugEnabled()) {
+                log.debug(errorMessage);
             }
-        
+            return false;
+        } catch (AuthorizationDeniedException e) {
+            errorMessage = e.getLocalizedMessage();
+            if(log.isDebugEnabled()) {
+                log.debug(errorMessage);
+            }
+            return false;
+        }            
+
+        // Verify the signature of the client certificate as well, that it is really issued by this CA
+        Certificate cacert = cainfo.getCertificateChain().iterator().next();
+        try {
+            extracert.verify(cacert.getPublicKey(), "BC");
+        } catch (Exception e) {
+            errorMessage = "The End Entity certificate attached to the PKIMessage is not issued by the CA \"" + this.authenticationParameterCAName + "\"";
+            if(log.isDebugEnabled()) {
+                log.debug(errorMessage+": "+e.getLocalizedMessage());
+            }
+            return false;                
+        }
+
+        if(CmpConfiguration.getCheckAdminAuthorization()) {                    
             //Check that the request sender is an authorized administrator
             try {
                 if(!isAuthorized(extracert, msg, cainfo.getCAId())){
@@ -237,8 +274,11 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
             sig.initVerify(extracert.getPublicKey());
             sig.update(msg.getProtectedBytes());
-            if(sig.verify(msg.getProtection().getBytes())) {
-                password = genRandomPwd();
+            if (sig.verify(msg.getProtection().getBytes())) {
+                if (password == null) {
+                    // If not set earlier
+                    password = genRandomPwd();
+                }
                 return true;
             }
         } catch (InvalidKeyException e) {
@@ -287,11 +327,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private boolean isAuthorized(final Certificate cert, final PKIMessage msg, final int caid) throws NotFoundException {
         final CertificateInfo certInfo = certSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
         final String username = certInfo.getUsername();
-        //final Admin reqAdmin = new Admin(cert, username, CertTools.getEMailAddress(cert));
-        
-        //EjbLocalHelper ejb = new EjbLocalHelper();
-        //authenticationProviderSession = 
-        
         if(authenticationProviderSession == null) {
             errorMessage = "WebAuthenticationProviderSession is null";
             if(log.isDebugEnabled()) {

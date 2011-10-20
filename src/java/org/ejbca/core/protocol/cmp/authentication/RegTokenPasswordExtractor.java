@@ -46,13 +46,11 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
     /**
      * Extracts password from the CMRF request message parameters
      * 
-     * @param req
+     * @param msg
+     * @param username
      * @return the password extracted from the CRMF request. Null if no such password was found.
      */
-    public boolean verifyOrExtract(/*final CertReqMsg req*/ PKIMessage msg) {
-        
-        
-            
+    public boolean verifyOrExtract(final PKIMessage msg, final String username) {
         CertReqMsg req = getReq(msg);
         if(req == null) {
             return false;

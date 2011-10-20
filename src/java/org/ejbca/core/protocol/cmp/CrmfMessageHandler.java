@@ -32,7 +32,6 @@ import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
-import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -220,7 +219,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 						}
 						crmfreq.setUsername(data.getUsername());
                         ICMPAuthenticationModule authenticationModule = null;
-                        Object verified = verifyAndGetAuthModule(msg, crmfreq, 0);
+                        Object verified = verifyAndGetAuthModule(msg, crmfreq, data.getUsername(), 0);
                         if(verified instanceof ResponseMessage) {
                             return (ResponseMessage) verified;
                         } else {
@@ -326,7 +325,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         ResponseMessage resp = null; // The CMP response message to be sent back to the client
         //Check the request's authenticity
         ICMPAuthenticationModule authenticationModule = null;
-        Object verified = verifyAndGetAuthModule(msg, crmfreq, caId);
+        Object verified = verifyAndGetAuthModule(msg, crmfreq, null, caId);
         if(verified instanceof ResponseMessage) {
             return (ResponseMessage) verified;
         } else {
@@ -446,7 +445,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		return resp;
 	}
 	
-	private Object verifyAndGetAuthModule(BaseCmpMessage msg, CrmfRequestMessage crmfreq, final int caId) throws CADoesntExistsException, AuthorizationDeniedException {
+	private Object verifyAndGetAuthModule(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq, final String username, final int caId) throws CADoesntExistsException, AuthorizationDeniedException {
         final CAInfo caInfo;
         if (caId == 0) {
             caInfo = null;
@@ -456,7 +455,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, admin, caSession, endEntityAccessSession, certStoreSession, authorizationSession, 
 		                endEntityProfileSession, authenticationProviderSession);
 		ICMPAuthenticationModule authenticationModule = null;
-		if(messageVerifyer.verify(crmfreq.getPKIMessage())) {
+		if(messageVerifyer.verify(crmfreq.getPKIMessage(), username)) {
 			authenticationModule = messageVerifyer.getUsedAuthenticationModule();
 		}
 		if(authenticationModule == null) {

@@ -52,6 +52,7 @@
 # - HMAC - an RA authentication secret can be set in cmp.authenticationparameters. If nothing was set there, the authentication secret
 #   that will be used is the one specified in cmp.ra.authenticationsecret. For client mode no authentication parameters are needed.
 # - EndEntityCertificate - requires the name of the CA that issued the EndEntity certificate to be specified in cmp.authenticationparameters.
+#                          A - here means that it can be issued by any CA.
 #
 # Default: RegTokenPwd;HMAC
 #cmp.authenticationmodule=RegTokenPwd
@@ -85,7 +86,7 @@
 
 # When the cmp.authenticationmodule is set to 'EndEntityCertificate', Ejbca can be set to check if the certificate in question 
 # belongs to a registered administrator who has the right authorizations. If this action is set to 'false', no such check will be
-# performed.
+# performed. For RA mode this is highly recomended.
 #
 # Default: true
 #cmp.checkadminauthorization=true
