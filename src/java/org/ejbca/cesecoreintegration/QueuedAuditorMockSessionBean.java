@@ -29,7 +29,7 @@ import org.cesecore.audit.impl.queued.QueuedAuditorSessionLocal;
 import org.cesecore.audit.log.AuditLogResetException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.util.QueryCriteria;
+import org.cesecore.util.query.QueryCriteria;
 
 /**
  * Mock implementation of QueuedDevice interface to allow the secure audit code imported from

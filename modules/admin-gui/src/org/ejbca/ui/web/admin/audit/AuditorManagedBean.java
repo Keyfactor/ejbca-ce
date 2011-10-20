@@ -21,8 +21,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -49,8 +49,8 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.util.QueryCriteria;
 import org.cesecore.util.ValidityDate;
+import org.cesecore.util.query.QueryCriteria;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -76,6 +76,9 @@ public class AuditorManagedBean implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(AuditorManagedBean.class);
 
+	private static final boolean ORDER_ASC = true;
+	private static final boolean ORDER_DESC = false;
+	
 	private final SecurityEventsAuditorSessionLocal securityEventsAuditorSession = new EjbLocalHelper().getSecurityEventsAuditorSession();
 	private final CAAdminSessionLocal caAdminSession = new EjbLocalHelper().getCaAdminSession();
 	
@@ -84,7 +87,7 @@ public class AuditorManagedBean implements Serializable {
 	private boolean reloadResultsNextView = true;
 	private String device;
 	private String sortColumn = AuditLogEntry.FIELD_TIMESTAMP;
-	private boolean sortOrder = QueryCriteria.ORDER_DESC;
+	private boolean sortOrder = ORDER_DESC;
 	private int maxResults = 40;
 	private int startIndex = 1;
 	private final List<SelectItem> sortColumns = new ArrayList<SelectItem>();
@@ -126,8 +129,8 @@ public class AuditorManagedBean implements Serializable {
 		columnNameMap.put(AuditLogEntry.FIELD_ADDITIONAL_DETAILS, ejbcaWebBean.getText("ADDITIONAL_DETAILS"));
 		columns.addAll(sortColumns);
 		columns.add(new SelectItem(AuditLogEntry.FIELD_ADDITIONAL_DETAILS, columnNameMap.get(AuditLogEntry.FIELD_ADDITIONAL_DETAILS)));
-		sortOrders.add(new SelectItem(QueryCriteria.ORDER_ASC, "ASC"));
-		sortOrders.add(new SelectItem(QueryCriteria.ORDER_DESC, "DESC"));
+		sortOrders.add(new SelectItem(ORDER_ASC, "ASC"));
+		sortOrders.add(new SelectItem(ORDER_DESC, "DESC"));
 		// If no device is chosen we select the first available as default
 		if (getDevices().size()>0) {
 			device = (String) getDevices().get(0).getValue();
@@ -405,7 +408,7 @@ public class AuditorManagedBean implements Serializable {
 			conditions.clear();
 			conditions.add(new AuditSearchCondition(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, Condition.EQUALS, searchDetail2String));
 			sortColumn = AuditLogEntry.FIELD_TIMESTAMP;
-			sortOrder = QueryCriteria.ORDER_DESC;
+			sortOrder = ORDER_DESC;
 		}
 		return conditions;
 	}
@@ -422,38 +425,32 @@ public class AuditorManagedBean implements Serializable {
 		return FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap().get(key);
 	}
 	
-	public void reorderAscByTime() { reorderBy(AuditLogEntry.FIELD_TIMESTAMP, QueryCriteria.ORDER_ASC); }
-	public void reorderDescByTime() { reorderBy(AuditLogEntry.FIELD_TIMESTAMP, QueryCriteria.ORDER_DESC); }
+	public void reorderAscByTime() { reorderBy(AuditLogEntry.FIELD_TIMESTAMP, ORDER_ASC); }
+	public void reorderDescByTime() { reorderBy(AuditLogEntry.FIELD_TIMESTAMP, ORDER_DESC); }
 
-	public void reorderAscByEvent() { reorderBy(AuditLogEntry.FIELD_EVENTTYPE, QueryCriteria.ORDER_ASC); }
-	public void reorderDescByEvent() { reorderBy(AuditLogEntry.FIELD_EVENTTYPE, QueryCriteria.ORDER_DESC); }
+	public void reorderAscByEvent() { reorderBy(AuditLogEntry.FIELD_EVENTTYPE, ORDER_ASC); }
+	public void reorderDescByEvent() { reorderBy(AuditLogEntry.FIELD_EVENTTYPE, ORDER_DESC); }
 
-	public void reorderAscByStatus() { reorderBy(AuditLogEntry.FIELD_EVENTSTATUS, QueryCriteria.ORDER_ASC); }
-	public void reorderDescByStatus() { reorderBy(AuditLogEntry.FIELD_EVENTSTATUS, QueryCriteria.ORDER_DESC); }
+	public void reorderAscByStatus() { reorderBy(AuditLogEntry.FIELD_EVENTSTATUS, ORDER_ASC); }
+	public void reorderDescByStatus() { reorderBy(AuditLogEntry.FIELD_EVENTSTATUS, ORDER_DESC); }
 
-	public void reorderAscByAuthToken() { reorderBy(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, QueryCriteria.ORDER_ASC); }
-	public void reorderDescByAuthToken() { reorderBy(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, QueryCriteria.ORDER_DESC); }
+	public void reorderAscByAuthToken() { reorderBy(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, ORDER_ASC); }
+	public void reorderDescByAuthToken() { reorderBy(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, ORDER_DESC); }
 
-	//public void reorderAscByService() { reorderBy(AuditLogEntry.FIELD_SERVICE, QueryCriteria.ORDER_ASC); }
-	//public void reorderDescByService() { reorderBy(AuditLogEntry.FIELD_SERVICE, QueryCriteria.ORDER_DESC); }
+	public void reorderAscByModule() { reorderBy(AuditLogEntry.FIELD_MODULE, ORDER_ASC); }
+	public void reorderDescByModule() { reorderBy(AuditLogEntry.FIELD_MODULE, ORDER_DESC); }
 
-	public void reorderAscByModule() { reorderBy(AuditLogEntry.FIELD_MODULE, QueryCriteria.ORDER_ASC); }
-	public void reorderDescByModule() { reorderBy(AuditLogEntry.FIELD_MODULE, QueryCriteria.ORDER_DESC); }
+	public void reorderAscByCustomId() { reorderBy(AuditLogEntry.FIELD_CUSTOM_ID, ORDER_ASC); }
+	public void reorderDescByCustomId() { reorderBy(AuditLogEntry.FIELD_CUSTOM_ID, ORDER_DESC); }
 
-	public void reorderAscByCustomId() { reorderBy(AuditLogEntry.FIELD_CUSTOM_ID, QueryCriteria.ORDER_ASC); }
-	public void reorderDescByCustomId() { reorderBy(AuditLogEntry.FIELD_CUSTOM_ID, QueryCriteria.ORDER_DESC); }
+	public void reorderAscBySearchDetail1() { reorderBy(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, ORDER_ASC); }
+	public void reorderDescBySearchDetail1() { reorderBy(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, ORDER_DESC); }
 
-	public void reorderAscBySearchDetail1() { reorderBy(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, QueryCriteria.ORDER_ASC); }
-	public void reorderDescBySearchDetail1() { reorderBy(AuditLogEntry.FIELD_SEARCHABLE_DETAIL1, QueryCriteria.ORDER_DESC); }
+	public void reorderAscBySearchDetail2() { reorderBy(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, ORDER_ASC); }
+	public void reorderDescBySearchDetail2() { reorderBy(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, ORDER_DESC); }
 
-	public void reorderAscBySearchDetail2() { reorderBy(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, QueryCriteria.ORDER_ASC); }
-	public void reorderDescBySearchDetail2() { reorderBy(AuditLogEntry.FIELD_SEARCHABLE_DETAIL2, QueryCriteria.ORDER_DESC); }
-
-	public void reorderAscByNodeId() { reorderBy(AuditLogEntry.FIELD_NODEID, QueryCriteria.ORDER_ASC); }
-	public void reorderDescByNodeId() { reorderBy(AuditLogEntry.FIELD_NODEID, QueryCriteria.ORDER_DESC); }
-
-	//public void reorderAscBySequenceNumber() { reorderBy(AuditLogEntry.FIELD_SEQENCENUMBER, QueryCriteria.ORDER_ASC); }
-	//public void reorderDescBySequenceNumber() { reorderBy(AuditLogEntry.FIELD_SEQENCENUMBER, QueryCriteria.ORDER_DESC); }
+	public void reorderAscByNodeId() { reorderBy(AuditLogEntry.FIELD_NODEID, ORDER_ASC); }
+	public void reorderDescByNodeId() { reorderBy(AuditLogEntry.FIELD_NODEID, ORDER_DESC); }
 
 	private void reorderBy(String column, boolean orderAsc) {
 		if (!sortColumn.equals(column)) {
@@ -463,7 +460,7 @@ public class AuditorManagedBean implements Serializable {
 		if (sortOrder != orderAsc) {
 			reloadResultsNextView = true;
 		}
-		sortOrder = orderAsc ? QueryCriteria.ORDER_ASC : QueryCriteria.ORDER_DESC;
+		sortOrder = orderAsc ? ORDER_ASC : ORDER_DESC;
 	}
 	
 	/**

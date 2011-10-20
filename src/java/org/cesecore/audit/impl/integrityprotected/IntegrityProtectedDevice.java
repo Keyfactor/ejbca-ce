@@ -33,7 +33,7 @@ import org.cesecore.audit.log.AuditRecordStorageException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.time.TrustedTime;
-import org.cesecore.util.QueryCriteria;
+import org.cesecore.util.query.QueryCriteria;
 
 /**
  * Log device using database configured integrity protection.
