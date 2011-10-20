@@ -18,6 +18,7 @@ import java.io.UnsupportedEncodingException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
@@ -67,7 +68,7 @@ public class BaseCmpMessageHandler {
 	}
 
 	/** @return SenderKeyId of in the header or null none was found. */
-	protected String getSenderKeyId(PKIHeader head) {
+	protected String getSenderKeyId(final PKIHeader head) {
 		String keyId = null;
 		final DEROctetString os = head.getSenderKID();
 		if (os != null) {
@@ -77,6 +78,16 @@ public class BaseCmpMessageHandler {
 				keyId = new String(os.getOctets());
 				LOG.info("UTF-8 not available, using platform default encoding for keyId.");
 			}
+            if (keyId == null) {
+                LOG.error("No KeyId contained in CMP request.");
+            } else {
+                if (!StringUtils.isAsciiPrintable(keyId)) {
+                    keyId = new String(Hex.encode(os.getOctets()));
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("keyId is not asciiPrintable, converting to hex: "+keyId);
+                    }                   
+                }
+            }
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Found a sender keyId: "+keyId);
 			}
