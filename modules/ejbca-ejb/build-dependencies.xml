@@ -77,9 +77,10 @@
 					<include name="org/cesecore/util/Base64.java"/>
 					<include name="org/cesecore/util/GUIDGenerator.java"/>
 					<include name="org/cesecore/util/JBossUnmarshaller.java"/>
+					<include name="org/cesecore/util/Query*.java"/>
 					<include name="org/cesecore/util/query/*.java"/>
 					<include name="org/cesecore/util/query/clauses/*.java"/>
-						<include name="org/cesecore/util/query/elems/*.java"/>
+					<include name="org/cesecore/util/query/elems/*.java"/>
 					<include name="org/cesecore/util/Tuplet.java"/>
 					<include name="org/cesecore/util/ValueExtractor.java"/>
 					<include name="org/cesecore/util/XmlSerializer.java"/>
