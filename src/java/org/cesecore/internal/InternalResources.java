@@ -207,8 +207,8 @@ public class InternalResources implements Serializable {
             replaceAll(sb, i, params[i]);
         }
         removeUnusedPlaceHolders(sb, params.length);
-        if (log.isDebugEnabled()) {
-            log.debug(key + "=" + sb.toString());
+        if (log.isTraceEnabled()) {
+            log.trace(key + "=" + sb.toString());
         }
         return sb;
     }
