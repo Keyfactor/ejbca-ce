@@ -230,7 +230,6 @@ public class CmpRAUnidTest extends CmpTestCase {
         try {
             connection = DriverManager.getConnection("jdbc:mysql://" + host + ":3306/" + name, user, pass);
         } catch (SQLException e) {
-            e.printStackTrace();
             final StringWriter sw = new StringWriter();
             final PrintWriter pw = new PrintWriter(sw);
             pw.println();
