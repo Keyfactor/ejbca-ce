@@ -13,7 +13,6 @@
 package org.cesecore.audit;
 
 import static junit.framework.Assert.assertTrue;
-import static org.cesecore.util.QueryCriteria.where;
 import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
@@ -40,7 +39,8 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.QueryCriteria;
+import org.cesecore.util.query.Criteria;
+import org.cesecore.util.query.QueryCriteria;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -71,7 +71,7 @@ public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
     public void test02SelectLogsWithCriteria() throws AuthorizationDeniedException {
         for (final String logDeviceId : securityEventsAuditor.getQuerySupportingLogDevices()) {
             final List<? extends AuditLogEntry> list = securityEventsAuditor.selectAuditLogs(roleMgmgToken, 1, 10,
-                    where().eq(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, "userid"), logDeviceId);
+                    QueryCriteria.create().add(Criteria.eq(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, "userid")), logDeviceId);
             assertTrue(list.size() >= 0);
         }
     }
@@ -154,7 +154,7 @@ public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
             // SelectLogsWithNoCriteria
             try {
                 securityEventsAuditor.selectAuditLogs(adminTokenNoAuth, 1, 10,
-                        QueryCriteria.where().order(AuditLogEntry.FIELD_TIMESTAMP, QueryCriteria.ORDER_DESC), logDeviceId);
+                        QueryCriteria.create().add(Criteria.orderDesc(AuditLogEntry.FIELD_TIMESTAMP)), logDeviceId);
                 assertTrue("should throw", false);
             } catch (final AuthorizationDeniedException e) {
                 // NOPMD

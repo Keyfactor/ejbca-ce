@@ -52,8 +52,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.dbprotection.DatabaseProtectionError;
 import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.util.QueryCriteria;
 import org.cesecore.util.ValidityDate;
+import org.cesecore.util.query.Criteria;
+import org.cesecore.util.query.QueryCriteria;
+import org.cesecore.util.query.QueryGenerator;
 
 /**
  * This class handles secure logs auditing.
@@ -136,7 +138,7 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
         detailsDelete.put("timestamp", FastDateFormat.getInstance(ValidityDate.ISO8601_DATE_FORMAT, TimeZone.getTimeZone("GMT")).format(timestamp));
         securityEventsLogger.log(EventTypes.LOG_DELETE, EventStatus.VOID, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, token.toString(), null, null, null, detailsDelete);
         // Delete all the exported logs (from all nodes)
-		final QueryCriteria queryCriteria = QueryCriteria.where().leq("timeStamp", timestamp.getTime()).order("sequenceNumber", QueryCriteria.ORDER_ASC);
+		final QueryCriteria queryCriteria = QueryCriteria.create().add(Criteria.leq(AuditLogEntry.FIELD_TIMESTAMP, timestamp.getTime())).add(Criteria.orderAsc(AuditLogEntry.FIELD_SEQENCENUMBER));
 		return buildConditionalQuery(entityManager, "DELETE FROM AuditRecordData a", queryCriteria, 0, 0).executeUpdate();
 	}
 
@@ -174,7 +176,7 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
     			log.debug("exportAuditLogs for nodeId " + nodeId);
     		}
     		// Assuming timeStamp is in UTC
-    		final QueryCriteria queryCriteria = QueryCriteria.where().eq("nodeId", nodeId).and().leq("timeStamp", timestamp.getTime()).order("sequenceNumber", QueryCriteria.ORDER_ASC);
+    		final QueryCriteria queryCriteria = QueryCriteria.create().add((Criteria.and(Criteria.eq(AuditLogEntry.FIELD_NODEID, nodeId), Criteria.leq(AuditLogEntry.FIELD_TIMESTAMP, timestamp.getTime())))).add(Criteria.orderAsc(AuditLogEntry.FIELD_SEQENCENUMBER));
     		int startIndex = 1;
     		final Holder<Long> lastSeqNumber = new Holder<Long>(Long.valueOf(-1L));
     		while (true) {
@@ -308,9 +310,12 @@ public class IntegrityProtectedAuditorSessionBean implements IntegrityProtectedA
         if (criteria == null) {
             query = entityManager.createQuery(queryStr);
         } else {
-            query = entityManager.createQuery(queryStr + criteria.conditions(AuditRecordData.class));
-            for (final String key : criteria.getParameterKeys()) {
-                query.setParameter(key, criteria.getParameterValue(key));
+            QueryGenerator generator = QueryGenerator.generator(AuditRecordData.class, criteria, "a");
+            final String conditions = generator.generate();
+            query = entityManager.createQuery(queryStr + conditions);
+            for (final String key : generator.getParameterKeys()) {
+                final Object param = generator.getParameterValue(key);
+                query.setParameter(key, param);
             }
         }
         if (resultLimit > 0) {

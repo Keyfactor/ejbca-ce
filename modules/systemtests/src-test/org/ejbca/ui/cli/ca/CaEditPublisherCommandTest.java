@@ -18,11 +18,13 @@ import static org.junit.Assert.fail;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
+import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,11 +58,11 @@ public class CaEditPublisherCommandTest {
     }
 
     @Test
-    public void testExecuteHappyPath() throws Exception {
-        try {
-            LdapPublisher publisher = new LdapPublisher();
-            publisher.setHostnames("myhost1");
-            publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
+    public void testExecuteHappyPath() throws PublisherExistsException, AuthorizationDeniedException, ErrorAdminCommandException {
+        LdapPublisher publisher = new LdapPublisher();
+        publisher.setHostnames("myhost1");
+        publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
+        try {           
             LdapPublisher pub1 = (LdapPublisher)publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not added as it should", "myhost1", pub1.getHostnames());
             command.execute(HAPPY_PATH_ARGS);
@@ -73,11 +75,11 @@ public class CaEditPublisherCommandTest {
     }
 
     @Test
-    public void testExecuteWithMissingArgs() throws Exception {
-        try {
-            LdapPublisher publisher = new LdapPublisher();
-            publisher.setHostnames("myhost1");
-            publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
+    public void testExecuteWithMissingArgs() throws PublisherExistsException, AuthorizationDeniedException, ErrorAdminCommandException {
+        LdapPublisher publisher = new LdapPublisher();
+        publisher.setHostnames("myhost1");
+        publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
+        try {          
             LdapPublisher pub1 = (LdapPublisher)publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not added as it should", "myhost1", pub1.getHostnames());
             command.execute(MISSING_ARGS);
@@ -90,11 +92,11 @@ public class CaEditPublisherCommandTest {
     }
 
     @Test
-    public void testExecuteWithInvalidField() throws Exception {
-        try {
-            LdapPublisher publisher = new LdapPublisher();
-            publisher.setHostnames("myhost1");
-            publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
+    public void testExecuteWithInvalidField() throws PublisherExistsException, AuthorizationDeniedException  {
+        LdapPublisher publisher = new LdapPublisher();
+        publisher.setHostnames("myhost1");
+        publisherProxySession.addPublisher(admin, PUBLISHER_NAME, publisher);
+        try {        
             LdapPublisher pub1 = (LdapPublisher)publisherSession.getPublisher(PUBLISHER_NAME);
             assertEquals("Hostnames was not added as it should", "myhost1", pub1.getHostnames());
             command.execute(INVALID_FIELD_ARGS);

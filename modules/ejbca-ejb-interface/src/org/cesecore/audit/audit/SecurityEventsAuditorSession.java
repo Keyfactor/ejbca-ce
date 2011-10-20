@@ -22,7 +22,7 @@ import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.util.QueryCriteria;
+import org.cesecore.util.query.QueryCriteria;
 
 /**
  * Allows auditing of securely logged events.

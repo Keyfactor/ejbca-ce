@@ -16,7 +16,6 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
-import static org.cesecore.util.QueryCriteria.where;
 
 import java.io.File;
 import java.security.KeyPair;
@@ -56,6 +55,8 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.query.Criteria;
+import org.cesecore.util.query.QueryCriteria;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -95,8 +96,9 @@ public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
                     roleMgmgToken,
                     1,
                     10,
-                    where().eq(AuditLogEntry.FIELD_EVENTTYPE, ExampleEnumEventTypes.NEW_EVENT_TYPE.toString()).or()
-                            .eq(AuditLogEntry.FIELD_EVENTTYPE, ExampleClassEventTypes.NEW_EVENT_TYPE_CLASS.toString()), logDeviceId);
+                    QueryCriteria.create().add(Criteria.or(Criteria.eq(AuditLogEntry.FIELD_EVENTTYPE, ExampleEnumEventTypes.NEW_EVENT_TYPE.toString()),
+                                            Criteria.eq(AuditLogEntry.FIELD_EVENTTYPE, ExampleClassEventTypes.NEW_EVENT_TYPE_CLASS.toString()))),
+                            logDeviceId);
             assertEquals(2, lastSignedLogs.size());
             for(AuditLogEntry ae: lastSignedLogs) {
                 assertTrue(ae.getEventTypeValue().equals(ExampleEnumEventTypes.NEW_EVENT_TYPE) || 
@@ -189,7 +191,7 @@ public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
         }
         for (final String logDeviceId : securityEventsAuditor.getQuerySupportingLogDevices()) {
             final List<? extends AuditLogEntry> list = securityEventsAuditor.selectAuditLogs(roleMgmgToken, 1, 10,
-                    where().like(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, "TxFailureUser"), logDeviceId);
+                    QueryCriteria.create().add(Criteria.like(AuditLogEntry.FIELD_AUTHENTICATION_TOKEN, "TxFailureUser")), logDeviceId);
             assertEquals("List size is:" + list.size(), 1, list.size());
         }
         log.trace("<test05TxFailure");
