@@ -54,7 +54,7 @@ public class BasicAccessRuleSet implements Serializable {
 		  "REVOKEENDENTITYRULE", "KEYRECOVERENDENTITYRULE",
 		  "APPROVEENDENTITYRULE"};
     		
-    public static final String[]  OTHERTEXTS = {"","VIEWLOG","ISSUEHARDTOKENS"};
+    public static final String[]  OTHERTEXTS = {"","VIEWAUDITLOG","ISSUEHARDTOKENS"};
         
    /**
      * This class should not be able to be instantiated.
