@@ -23,6 +23,8 @@ import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
+import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
+import org.ejbca.core.model.ca.publisher.GeneralPurposeCustomPublisher;
 import org.ejbca.core.model.ca.publisher.LdapPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -37,7 +39,9 @@ import org.junit.Test;
 public class CaEditPublisherCommandTest {
 
     private static final String PUBLISHER_NAME = "1327publisher2";
+    private static final String GCP_PUBLISHER_NAME = "1327GCPpublisher3";
     private static final String[] HAPPY_PATH_ARGS = { "editpublisher", PUBLISHER_NAME, "hostnames=myhost.com" };
+    private static final String[] HAPPY_PATH_GCP_ARGS = { "editpublisher", GCP_PUBLISHER_NAME, "propertyData=primekey http://www.primekey.se" };
     private static final String[] MISSING_ARGS = { "editpublisher", PUBLISHER_NAME };
     private static final String[] INVALID_FIELD_ARGS = { "editpublisher", PUBLISHER_NAME, "hostname=myhost.com" };
 
@@ -72,6 +76,22 @@ public class CaEditPublisherCommandTest {
         } finally {
             publisherProxySession.removePublisher(admin, PUBLISHER_NAME);
         }
+        // Try a custom publisher as well
+        try {           
+            CustomPublisherContainer gcp = new CustomPublisherContainer();
+            gcp.setClassPath(GeneralPurposeCustomPublisher.class.getName());
+            gcp.setPropertyData("foo=bar");
+            publisherProxySession.addPublisher(admin, GCP_PUBLISHER_NAME, gcp);
+            CustomPublisherContainer pub1 = (CustomPublisherContainer)publisherSession.getPublisher(GCP_PUBLISHER_NAME);
+            assertEquals("Propertydata was not added as it should", "foo=bar", pub1.getPropertyData());
+            command.execute(HAPPY_PATH_GCP_ARGS);
+            // Check that we edited
+            CustomPublisherContainer pub2 = (CustomPublisherContainer)publisherSession.getPublisher(GCP_PUBLISHER_NAME);
+            assertEquals("Propertydata was not changed as it should", "primekey http://www.primekey.se", pub2.getPropertyData());
+        } finally {
+            publisherProxySession.removePublisher(admin, GCP_PUBLISHER_NAME);
+        }
+        
     }
 
     @Test
