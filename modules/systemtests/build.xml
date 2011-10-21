@@ -189,6 +189,7 @@
 		<copy todir="${build.test.dir}/conf" file="${ejbca.home}/conf/extendedkeyusage.properties" />
 		<!-- Workaround for tests TestCertificateProfile -->
 		<property name="runone-internal.classpath" value="systemtests.classpath"/>
+		<echo message="runone-internal.classpath=${runone-internal.classpath}"/>
 		<!-- needed by the cesecore tests -->
 		<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
 		<!-- set a default -->
