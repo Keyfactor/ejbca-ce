@@ -91,12 +91,15 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	@After
 	public void tearDown() throws Exception {
 		super.tearDown();
-		cleanUpAdmins(getRoleName());
 	}
 
+    @Test
+    public void test00SetupAccessRights() throws Exception {
+        super.setupAccessRights(this.wsadminRoleName);
+    }
+
 	@Test
-	public void test0AddProfiles() throws Exception {
-		super.setupAccessRights(this.wsadminRoleName);
+	public void test01AddProfiles() throws Exception {
 		if (this.certificateProfileSession.getCertificateProfileId(CERTIFICATE_PROFILE) != 0) {
 			this.certificateProfileSession.removeCertificateProfile(intAdmin, CERTIFICATE_PROFILE);
 		}
@@ -120,13 +123,37 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	}
 
 	@Test
-	public void test1GetCertSuccess() throws Exception {
+	public void test02GetCertSuccess() throws Exception {
 		getCertificateWithExtension(true);
 	}
 
 	@Test
-	public void test2GetCertFail() throws Exception {
+	public void test03GetCertFail() throws Exception {
 		getCertificateWithExtension(false);
+	}
+
+	@Test
+	public void test99cleanUpAdmins() {
+	    try {
+	        this.certificateProfileSession.removeCertificateProfile(intAdmin, CERTIFICATE_PROFILE);
+	    } catch (Throwable e) {
+	        // do nothing
+	    }
+	    try {
+	        this.endEntityProfileSession.removeEndEntityProfile(intAdmin, END_ENTITY_PROFILE);
+	    } catch (Throwable e) {
+	        // do nothing
+	    }
+	    try {
+	        this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+	    } catch (Throwable e) {
+	        // do nothing
+	    }
+	    try {
+	        super.cleanUpAdmins(this.wsadminRoleName);
+	    } catch (Throwable e) {
+	        // do nothing
+	    }
 	}
 
 	private void getCertificateWithExtension(boolean isExpectedToWork) throws Exception {
@@ -244,28 +271,6 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 		return sw.toString();
 	}
 	
-	public void test99cleanUpAdmins() {
-		try {
-			this.certificateProfileSession.removeCertificateProfile(intAdmin, CERTIFICATE_PROFILE);
-		} catch (Throwable e) {
-			// do nothing
-		}
-		try {
-			this.endEntityProfileSession.removeEndEntityProfile(intAdmin, END_ENTITY_PROFILE);
-		} catch (Throwable e) {
-			// do nothing
-		}
-		try {
-			this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-		} catch (Throwable e) {
-			// do nothing
-		}
-		try {
-			super.cleanUpAdmins(this.wsadminRoleName);
-		} catch (Throwable e) {
-			// do nothing
-		}
-	}
 	@Override
 	public String getRoleName() {
 		return this.wsadminRoleName+"Mgmt";
