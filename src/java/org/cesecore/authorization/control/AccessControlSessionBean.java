@@ -58,8 +58,16 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
     @EJB
     private TrustedTimeWatcherSessionLocal trustedTimeWatcherSession;
 
-    /** Cache for authorization data */
-    private static AccessTreeCache accessTreeCache;
+    /** 
+     * Cache for authorization data 
+     * 
+     * This class member knowingly breaks the EJB standard which forbids static volatile class members. The
+     * spirit of this rule is to prohibit implementations from using mutexes in their SSBs, thus negating the
+     * EJB bean pool. It doesn't take into account the need to cache data in a shared singleton, thus we have 
+     * to knowingly break the standard, but not its spirit. 
+     * 
+     */
+    private static volatile AccessTreeCache accessTreeCache;
 
     private boolean isAuthorized(final AuthenticationToken authenticationToken, final String resource, final boolean doLogging) {
         if (accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource)) {
