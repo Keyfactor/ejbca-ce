@@ -1079,6 +1079,20 @@ hostname. In this case, the iPAddress subjectAltName must be present
 in the certificate and must exactly match the IP in the URI.
 </source>
 </subsection>
+<subsection name="Certificate Renewal">
+<p>Certificate renewal is a often missunderstood term. Certificate renewal simply means issuance of a new certificate containing the same public key as an already issued certificate.
+It does not mean issuing a new certificate with the same certificate serial number, and it does not mean that the CA in some magical way has access to the end entitys private key.</p>
+<p>To renew a certificate using the admin GUI, simply:</p>
+<ol>
+<li>Go to 'Search/Edit End Entities' and find the end entity in question.</li>
+<li>Set status to NEW.</li>
+<li>Have the end entity create a new certificate request (CSR), using the same public key as the first certificate.</li>
+<li>Send the new certificate request to the CA (the same way you did when getting the first certificate).</li>
+<li>Get the certificate back.</li>
+</ol>
+<p>Since the CA has all public keys of end entities, as they are in the certificates that the CA stores, this process can be automated.
+How to automate that is more advanced and can be done in many ways, suitable for different work-flows. How to do that is not described here.</p>
+</subsection>
 <subsection name="Request Browser Certificate Renewal">
 <p>
 	If renewal is enabled there is an extra link under "Enroll" on 
