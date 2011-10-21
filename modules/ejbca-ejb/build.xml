@@ -389,9 +389,6 @@
 	</target>
 
 	<target name="build" description="Build this module" depends="compile-ejbca-ejb">
-		<!-- FIXME Figure out why this has to be here. We should keep all properties files in ejbca-properties - Samuel -->
-		<copy todir="${build.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
-
 		<jar destfile="${mod.ejbca-ejb.lib}">
 			<fileset dir="${build.dir}"/>
 			<!--
@@ -451,6 +448,7 @@
 	<target name="build-util" description="Build the ejbca-util JAR" depends="compile-util">
 		<dirname file="${mod.ejbca-util.lib}" property="mod.ejbca-util.lib.dir"/>
 		<mkdir dir="${mod.ejbca-util.lib.dir}" />
+		<!-- Since the base classes reading properties is in ejbca-util, we also store defaultvalues.properties here so it can be used stand-alone -->
 		<jar destfile="${mod.ejbca-util.lib}">
 			<manifest>
 				<attribute name="Implementation-Version" value="${app.version}"/>
@@ -460,6 +458,7 @@
 				<include name="dncomponents.properties"/>
 				<include name="profilemappings.properties"/>
 				<include name="certextensions.properties"/>
+				<include name="defaultvalues.properties"/>
 			</fileset>
 		</jar>
 	</target>
@@ -480,10 +479,15 @@
         	includes="${source.fileset.signserver-util.files}" classpathref="compile-ejbca-ejb.classpath"/>
 		<dirname file="${mod.ejbca-util-signserver.lib}" property="mod.ejbca-util-signserver.lib.dir"/>
 		<mkdir dir="${mod.ejbca-util-signserver.lib.dir}"/>
-		<jar destfile="${mod.ejbca-util-signserver.lib}" basedir="${build-util-signserver.dir}" includes="**/*.class">
+		<!-- Since the base classes reading properties is in ejbca-util-signserver.jar, we also store defaultvalues.properties here so it can be used stand-alone -->
+		<jar destfile="${mod.ejbca-util-signserver.lib}">
 			<manifest>
 				<attribute name="Implementation-Version" value="${app.version}"/>
 			</manifest>
+			<fileset dir="${build-util-signserver.dir}" includes="**/*.class"/>
+			<fileset dir="${ejbca.home}/src/java">
+				<include name="defaultvalues.properties"/>
+			</fileset>
 		</jar>
 	</target>
 
