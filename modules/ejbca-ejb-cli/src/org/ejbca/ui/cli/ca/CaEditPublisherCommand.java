@@ -38,6 +38,7 @@ public class CaEditPublisherCommand extends BaseCaAdminCommand {
             getLogger().info("Description: " + getDescription());
             getLogger().info("Usage: " + getCommand() + " <publisher name> <field name>=<field value>\n"+
                     "Only String value fields can be modified in this version.\n\n"+
+            "Fields that can be set are derived from setFieldName of the publisher java code. If there is a 'setFieldName(String)' method, the values to use in this command should be 'fieldName=value'\n"+
             "Example: ca editpublisher PublisherName hostnames=myhost.com");
             return;
         }
