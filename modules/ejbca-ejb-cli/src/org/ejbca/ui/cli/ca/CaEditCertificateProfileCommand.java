@@ -38,11 +38,12 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
     public void execute(String[] args) throws ErrorAdminCommandException {       
         if (args.length < 3) {
             getLogger().info("Description: " + getDescription());
-            getLogger().info("Usage: " + getCommand() + " <publisher name> <field name>=<field value>\n\n"+
-                    "Only String value fields can be modified in this version.\n"+
+            getLogger().info("Usage: " + getCommand() + " <publisher name> <field name>=<field value>\n"+
+                    "Only String value fields can be modified in this version.\n\n"+
+            "Fields that can be set are derived from setFieldName of the CertificateProfile java code. If there is a 'setFieldName(String)' method, the values to use in this command should be 'fieldName=value'\n"+
             "To set a parameter of type List<String>, add the -paramType=java.util.List\n"+
-            "Exemple: ca editcertificateprofile CertProfileName CRLDistributionPointURI=http://my-crl-distp.com/my.crl\n"+
-            "Exemple: ca editcertificateprofile CertProfileName -paramType java.util.List CaIssuers=http://my-ca.issuer.com/ca");
+            "Example: ca editcertificateprofile CertProfileName CRLDistributionPointURI=http://my-crl-distp.com/my.crl\n"+
+            "Example: ca editcertificateprofile CertProfileName -paramType java.util.List CaIssuers=http://my-ca.issuer.com/ca");
             return;
         }
         try {
