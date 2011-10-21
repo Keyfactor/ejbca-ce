@@ -60,22 +60,20 @@ public class AccessRuleManagementSessionBean implements AccessRuleManagementSess
         for (AccessRuleData accessRule : accessRules) {
             remove(accessRule);
         }
-
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
-    public AccessRuleData setState(AccessRuleData rule, AccessRuleState state, boolean isRecursive) {
+    public AccessRuleData setState(final AccessRuleData rule, final AccessRuleState state, boolean isRecursive) {
         rule.setState(state.getDatabaseValue());
         rule.setRecursive(isRecursive);
-        rule = entityManager.merge(rule);
-
-        return rule;
+        AccessRuleData result = entityManager.merge(rule);
+        return result;
     }
 
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public AccessRuleData createRule(String accessRuleName, String roleName, AccessRuleState state, boolean isRecursive)
+    public AccessRuleData createRule(final String accessRuleName, final String roleName, final AccessRuleState state, boolean isRecursive)
             throws AccessRuleExistsException {
         AccessRuleData result = null;
         int primaryKey = AccessRuleData.generatePrimaryKey(roleName, accessRuleName);
@@ -94,7 +92,6 @@ public class AccessRuleManagementSessionBean implements AccessRuleManagementSess
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void persistRule(AccessRuleData rule) {
         entityManager.persist(rule);
-
     }
 
 }
