@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Map;
 
 import javax.ejb.Local;
+import javax.ejb.Timer;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.services.IWorker;
@@ -58,4 +59,8 @@ public interface ServiceSessionLocal extends ServiceSession {
 	
     /** Cancels a timer with the given Id. */
 	public void cancelTimer(Integer id);
+	
+	/** The timeout method */
+    public void timeoutHandler(Timer timer);
+
 }

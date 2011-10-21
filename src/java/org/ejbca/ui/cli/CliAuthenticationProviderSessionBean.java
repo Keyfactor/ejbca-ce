@@ -64,8 +64,12 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @PostConstruct
-    public void initialize() throws NoSuchAlgorithmException {
-        randomGenerator = SecureRandom.getInstance("SHA1PRNG");
+    public void initialize() throws RuntimeException {
+        try {
+            randomGenerator = SecureRandom.getInstance("SHA1PRNG");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
