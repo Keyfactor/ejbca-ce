@@ -53,7 +53,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	@Override
 	public String getSubCommand() { return "importcrl"; }
 	@Override
-	public String getDescription() { return "Imports a CRL file (and update certificates) to the database"; }
+	public String getDescription() { return "Imports a CRL file (and updates certificates) to the database"; }
 
 	private static final String STRICT_OP = "STRICT";
 	private static final String LENIENT_OP = "LENIENT";
@@ -181,9 +181,9 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	private void usage(String cliUserName, String cliPassword) {
 		getLogger().info("Description: " + getDescription());
 		getLogger().info("Usage: " + getCommand() + " <username> <password> <caname> <crl file> <" + STRICT_OP + "|" + LENIENT_OP + "|" + ADAPTIVE_OP + ">");
-		getLogger().info(STRICT_OP + " means that all certificates must be in the database and that the CRL must not already be in the database");
-		getLogger().info(LENIENT_OP + " means not strict and not adaptive");
-		getLogger().info(ADAPTIVE_OP + " means that missing certficates will be replaced by dummy certificates to cater for proper CRLs for missing certificates");
+		getLogger().info(STRICT_OP + " means that all certificates must be in the database and that the CRL must not already be in the database.");
+		getLogger().info(LENIENT_OP + " means not strict and not adaptive, i.e. all certificates must not be in the database, but no dummy certificates will be created.");
+		getLogger().info(ADAPTIVE_OP + " means that missing certficates will be replaced by dummy certificates to cater for proper CRLs for missing certificates.");
 		getLogger().info(" Existing CAs: " + getAvailableCasString(cliUserName, cliPassword));
 	}	
 }
