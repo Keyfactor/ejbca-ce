@@ -39,7 +39,9 @@ import com.novell.ldap.LDAPModification;
  */
 public class ActiveDirectoryPublisher extends LdapPublisher{
 	
-	private static final Logger log = Logger.getLogger(ActiveDirectoryPublisher.class);
+	private static final long serialVersionUID = 1081937637762724531L;
+
+    private static final Logger log = Logger.getLogger(ActiveDirectoryPublisher.class);
 	 	
 	public static final float LATEST_VERSION = 1;
 	
@@ -255,9 +257,10 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
 	 */
 	public Object clone() throws CloneNotSupportedException {
 		ActiveDirectoryPublisher clone = new ActiveDirectoryPublisher();
-		HashMap clonedata = (HashMap) clone.saveData();
+		@SuppressWarnings("unchecked")
+        HashMap<Object, Object> clonedata = (HashMap<Object, Object>) clone.saveData();
 
-		Iterator i = (data.keySet()).iterator();;
+		Iterator<Object> i = (data.keySet()).iterator();;
 		while(i.hasNext()){
 			Object key = i.next();
 			clonedata.put(key, data.get(key));
