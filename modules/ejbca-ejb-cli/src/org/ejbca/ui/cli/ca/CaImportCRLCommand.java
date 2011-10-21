@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.cli.ca;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -25,6 +26,11 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.DEREnumerated;
+import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -97,66 +103,71 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	        int revoked = 0;	// Number of certs activly revoked by this algorithm
 	        int already_revoked = 0;	// Number of certs already revoked in database and ignored in non-strict mode
 	        final String missing_user_name = "*** Missing During CRL Import to: " + caname;
-	        for (final X509CRLEntry entry : (Set<X509CRLEntry>) x509crl.getRevokedCertificates()) {
-	        	final BigInteger serialNr = entry.getSerialNumber();
-	        	final String serialHex = serialNr.toString(16).toUpperCase();
-	        	final String username = ejb.getCertStoreSession().findUsernameByCertSerno(serialNr, issuer);
-	        	// If this certificate exists and has an assigned username, we keep using that. Otherwise we create this coupling to a user.
-	        	if (username == null) {
-	        		getLogger().info ("Certificate '"+ serialHex +"' missing in the database");
-	        		if (strict) {
-	        			throw new IOException ("Aborted! Running in strict mode and is missing certificate in database.");
-	        		}
-	        		miss_count++;
-	        		if (!adaptive) {
-	        			continue;
-	        		}
-	        		final Date time = new Date();              // time from which certificate is valid
-	        		final KeyPair key_pair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);		
-	        		final X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
-	        		final X500Principal dnName = new X500Principal("CN=Dummy Missing in Imported CRL, serialNumber=" + serialHex);
-	        		certGen.setSerialNumber(serialNr);
-	        		certGen.setIssuerDN(cacert.getSubjectX500Principal());
-	        		certGen.setNotBefore(time);
-	        		certGen.setNotAfter(new Date (time.getTime() + 1000L * 60 * 60 * 24 * 365 * 10));  // 10 years of life
-	        		certGen.setSubjectDN(dnName);                       // note: same as issuer
-	        		certGen.setPublicKey(key_pair.getPublic());
-	        		certGen.setSignatureAlgorithm("SHA1withRSA");
-	        		final X509Certificate certificate = certGen.generate(key_pair.getPrivate(), "BC");
-	        		final String fingerprint = CertTools.getFingerprintAsString(certificate);
-	        		// We add all certificates that does not have a user already to "missing_user_name"
-	        		final EndEntityInformation missingUserDataVO = ejb.getEndEntityAccessSession().findUser(getAdmin(cliUserName, cliPassword), missing_user_name);
-	        		if (missingUserDataVO == null) {
-	        			// Add the user and change status to REVOKED
-		        		getLogger().debug("Loading/updating user " + missing_user_name);
-		        		final EndEntityInformation userdataNew = new EndEntityInformation(missing_user_name, CertTools.getSubjectDN(certificate), cainfo.getCAId(), null, null,
-		        				UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
-		        				SecConst.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
-		        		userdataNew.setPassword("foo123");
-		        		ejb.getUserAdminSession().addUser(getAdmin(cliUserName, cliPassword), userdataNew, false);
-		        		getLogger().info("User '" + missing_user_name + "' has been added.");
-		        		ejb.getUserAdminSession().setUserStatus(getAdmin(cliUserName, cliPassword), missing_user_name, UserDataConstants.STATUS_REVOKED);
-		        		getLogger().info("User '" + missing_user_name + "' has been updated.");
-	        		}
-	        		ejb.getCertStoreSession().storeCertificate(getAdmin(cliUserName, cliPassword), certificate, missing_user_name, fingerprint,
-	        				SecConst.CERT_ACTIVE, SecConst.USER_ENDUSER, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
-        			getLogger().info("Dummy certificate  '" + serialHex + "' has been stored.");
-	        	}
-	        	// This check will not catch a certificate with status SecConst.CERT_ARCHIVED
-	        	if (!strict && ejb.getCertStoreSession().isRevoked(issuer, serialNr)) {
-		        	getLogger().info("Certificate '" + serialHex +"' is already revoked");
-		        	already_revoked++;
-		        	continue;
-	        	}
-	        	getLogger().info("Revoking '" + serialHex +"' " + "(" + serialNr.toString() + ")");
-	        	try {
-		        	ejb.getUserAdminSession().revokeCert(getAdmin(cliUserName, cliPassword), serialNr, entry.getRevocationDate(), issuer, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-		        	revoked++;
-	        	} catch (AlreadyRevokedException e) {
-		        	already_revoked++;
-		        	getLogger().warn("Failed to revoke '" + serialHex +"'. (Status might be 'Archived'.) Error message was: " + e.getMessage());
-	        	}
-	        }
+	        Set<X509CRLEntry> entries = (Set<X509CRLEntry>) x509crl.getRevokedCertificates();
+	        if (entries != null) {
+	            for (final X509CRLEntry entry : entries) {
+	                final BigInteger serialNr = entry.getSerialNumber();
+	                final String serialHex = serialNr.toString(16).toUpperCase();
+	                final String username = ejb.getCertStoreSession().findUsernameByCertSerno(serialNr, issuer);
+	                // If this certificate exists and has an assigned username, we keep using that. Otherwise we create this coupling to a user.
+	                if (username == null) {
+	                    getLogger().info ("Certificate '"+ serialHex +"' missing in the database");
+	                    if (strict) {
+	                        throw new IOException ("Aborted! Running in strict mode and is missing certificate in database.");
+	                    }
+	                    miss_count++;
+	                    if (!adaptive) {
+	                        continue;
+	                    }
+	                    final Date time = new Date();              // time from which certificate is valid
+	                    final KeyPair key_pair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);     
+	                    final X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
+	                    final X500Principal dnName = new X500Principal("CN=Dummy Missing in Imported CRL, serialNumber=" + serialHex);
+	                    certGen.setSerialNumber(serialNr);
+	                    certGen.setIssuerDN(cacert.getSubjectX500Principal());
+	                    certGen.setNotBefore(time);
+	                    certGen.setNotAfter(new Date (time.getTime() + 1000L * 60 * 60 * 24 * 365 * 10));  // 10 years of life
+	                    certGen.setSubjectDN(dnName);                       // note: same as issuer
+	                    certGen.setPublicKey(key_pair.getPublic());
+	                    certGen.setSignatureAlgorithm("SHA1withRSA");
+	                    final X509Certificate certificate = certGen.generate(key_pair.getPrivate(), "BC");
+	                    final String fingerprint = CertTools.getFingerprintAsString(certificate);
+	                    // We add all certificates that does not have a user already to "missing_user_name"
+	                    final EndEntityInformation missingUserDataVO = ejb.getEndEntityAccessSession().findUser(getAdmin(cliUserName, cliPassword), missing_user_name);
+	                    if (missingUserDataVO == null) {
+	                        // Add the user and change status to REVOKED
+	                        getLogger().debug("Loading/updating user " + missing_user_name);
+	                        final EndEntityInformation userdataNew = new EndEntityInformation(missing_user_name, CertTools.getSubjectDN(certificate), cainfo.getCAId(), null, null,
+	                                UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
+	                                SecConst.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
+	                        userdataNew.setPassword("foo123");
+	                        ejb.getUserAdminSession().addUser(getAdmin(cliUserName, cliPassword), userdataNew, false);
+	                        getLogger().info("User '" + missing_user_name + "' has been added.");
+	                        ejb.getUserAdminSession().setUserStatus(getAdmin(cliUserName, cliPassword), missing_user_name, UserDataConstants.STATUS_REVOKED);
+	                        getLogger().info("User '" + missing_user_name + "' has been updated.");
+	                    }
+	                    ejb.getCertStoreSession().storeCertificate(getAdmin(cliUserName, cliPassword), certificate, missing_user_name, fingerprint,
+	                            SecConst.CERT_ACTIVE, SecConst.USER_ENDUSER, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
+	                    getLogger().info("Dummy certificate  '" + serialHex + "' has been stored.");
+	                }
+	                // This check will not catch a certificate with status SecConst.CERT_ARCHIVED
+	                if (!strict && ejb.getCertStoreSession().isRevoked(issuer, serialNr)) {
+	                    getLogger().info("Certificate '" + serialHex +"' is already revoked");
+	                    already_revoked++;
+	                    continue;
+	                }
+	                getLogger().info("Revoking '" + serialHex +"' " + "(" + serialNr.toString() + ")");
+	                try {
+	                    int reason = getCRLReasonValue(entry);
+	                    getLogger().info("Reason code: "+reason);
+	                    ejb.getUserAdminSession().revokeCert(getAdmin(cliUserName, cliPassword), serialNr, entry.getRevocationDate(), issuer, reason);
+	                    revoked++;
+	                } catch (AlreadyRevokedException e) {
+	                    already_revoked++;
+	                    getLogger().warn("Failed to revoke '" + serialHex +"'. (Status might be 'Archived'.) Error message was: " + e.getMessage());
+	                }
+	            }	            
+	        } // if (entries != null)
 	        if (ejb.getCrlStoreSession().getLastCRLNumber(issuer, false) < crl_no) {
 	        	ejb.getCrlStoreSession().storeCRL(getAdmin(cliUserName, cliPassword), x509crl.getEncoded(), CertTools.getFingerprintAsString(cacert), crl_no, issuer, x509crl.getThisUpdate(), x509crl.getNextUpdate(), -1);
 	        } else {
@@ -180,10 +191,37 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 
 	private void usage(String cliUserName, String cliPassword) {
 		getLogger().info("Description: " + getDescription());
-		getLogger().info("Usage: " + getCommand() + " <username> <password> <caname> <crl file> <" + STRICT_OP + "|" + LENIENT_OP + "|" + ADAPTIVE_OP + ">");
+		getLogger().info("Usage: " + getCommand() + " <caname> <crl file> <" + STRICT_OP + "|" + LENIENT_OP + "|" + ADAPTIVE_OP + ">");
 		getLogger().info(STRICT_OP + " means that all certificates must be in the database and that the CRL must not already be in the database.");
 		getLogger().info(LENIENT_OP + " means not strict and not adaptive, i.e. all certificates must not be in the database, but no dummy certificates will be created.");
 		getLogger().info(ADAPTIVE_OP + " means that missing certficates will be replaced by dummy certificates to cater for proper CRLs for missing certificates.");
 		getLogger().info(" Existing CAs: " + getAvailableCasString(cliUserName, cliPassword));
-	}	
+	}
+	
+    /**
+     * Return a CRL reason code from a CRL entry, or RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED if a reson code extension does not exist
+     */
+    private int getCRLReasonValue(final X509CRLEntry entry) throws IOException {
+        int reason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED; 
+        if ((entry != null) && entry.hasExtensions()) {
+            final byte[] bytes = entry.getExtensionValue(X509Extensions.ReasonCode.getId());
+            if (bytes != null) {
+                ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(bytes));
+                final ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
+                aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
+                final DERObject obj = aIn.readObject();
+                if (obj != null) {
+                    try {
+                    final DEREnumerated ext = (DEREnumerated)obj;
+                    reason = ext.getValue().intValue();
+                    } catch (ClassCastException e) {
+                        // this was not a reason code, very strange
+                        getLogger().info("Reason code extension did not contain DEREnumerated, is this CRL corrupt?. "+obj.getClass().getName());
+                    }
+                }
+            }
+        }
+        return reason;
+    } // getCRLReasonValue
+
 }
