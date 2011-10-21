@@ -186,16 +186,24 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         if(dbcert == null) {
             errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
             if(log.isDebugEnabled()) {
-                log.debug(errorMessage);
+                log.debug(errorMessage+". Fingerprint="+fp);
             }
             return false;
+        }
+        // Check that the certificate is not revoked
+        CertificateInfo info = certSession.getCertificateInfo(fp);
+        if (info.getStatus() != SecConst.CERT_ACTIVE) {
+            errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field is revoked.";
+            if(log.isDebugEnabled()) {
+                log.debug(errorMessage+" Username="+info.getUsername());
+            }
+            return false;            
         }
         CAInfo cainfo = null;
         try {
             // If client mode we will check if this certificate belongs to the user, and set the password of the request to this user's password
             // so it can later be used when issuing the certificate
             if (username != null) {
-                CertificateInfo info = certSession.getCertificateInfo(fp);
                 if (!StringUtils.equals(username, info.getUsername())) {
                     errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"'.";
                     if(log.isDebugEnabled()) {
