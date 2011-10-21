@@ -13,6 +13,7 @@
 package org.cesecore.authorization.rules;
 
 import java.io.Serializable;
+import java.security.InvalidParameterException;
 
 import javax.persistence.Entity;
 import javax.persistence.PostLoad;
@@ -40,7 +41,7 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 @Table(name = "AccessRuleData")
 public class AccessRuleData extends ProtectedData implements Serializable, Comparable<AccessRuleData> {
 
-    private static final long serialVersionUID = -8052112002139185890L;
+    private static final long serialVersionUID = 8314055274021576487L;
 
     private int primaryKey;
     private String accessRuleName;
@@ -60,12 +61,21 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
     /**
      * Creates a new instance of AccessRule
      * 
+     * @param primaryKey
+     *            Primary key for this rule. Can be generated using the static method {@link AccessRuleData#generatePrimaryKey(String, String)}
+     * @param accessruleName
+     *            The rule that this AccessRule should represent.         
      * @param internalState
      *            The rule's state.
      * @param recursive
      *            True if the rule is recursive.
      */
-    public AccessRuleData(int primaryKey, String accessruleName, AccessRuleState internalState, boolean isRecursive) {
+    public AccessRuleData(int primaryKey, final String accessruleName, final AccessRuleState internalState, boolean isRecursive) {
+        if(accessRuleName == null) {
+            throw new InvalidParameterException("Illegal to create an access rule with accessruleName == null");
+        } else if(internalState == null) {
+            throw new InvalidParameterException("Illegal to create an access rule with internalState == null");
+        } 
         this.primaryKey = primaryKey;
         this.accessRuleName = accessruleName.trim();
         this.internalState = internalState;
@@ -75,12 +85,21 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
     /**
      * Creates a new instance of AccessRule
      * 
+     * @param roleName 
+     *            The name of the Role to which this rule belongs. Used to generate primary key.
+     * @param accessruleName
+     *          The rule that this AccessRule should represent.
      * @param internalState
      *            The rule's state.
      * @param recursive
      *            True if the rule is recursive.
      */
-    public AccessRuleData(String roleName, String accessruleName, AccessRuleState internalState, boolean isRecursive) {
+    public AccessRuleData(final String roleName, final String accessruleName, final AccessRuleState internalState, boolean isRecursive) {
+        if(accessRuleName == null) {
+            throw new InvalidParameterException("Illegal to create an access rule with accessruleName == null");
+        } else if(internalState == null) {
+            throw new InvalidParameterException("Illegal to create an access rule with internalState == null");
+        } 
         this.primaryKey = generatePrimaryKey(roleName, accessruleName);
         this.accessRuleName = accessruleName.trim();
         this.internalState = internalState;
@@ -92,7 +111,10 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
         return accessRuleName;
     }
 
-    public void setAccessRuleName(String accessRuleName) {
+    public void setAccessRuleName(final String accessRuleName) {
+        if(accessRuleName == null) {
+            throw new InvalidParameterException("Illegal to create an access rule with accessruleName == null");
+        }
         this.accessRuleName = accessRuleName.trim();
     }
 
@@ -101,9 +123,11 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
         return internalState;
     }
 
-    public void setInternalState(AccessRuleState state) {
+    public void setInternalState(final AccessRuleState state) {
+        if(state == null) {
+            throw new InvalidParameterException("Illegal to create an access rule with state == null");
+        } 
         this.internalState = state;
-
     }
 
     /*
@@ -324,7 +348,7 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
 	//
 
     @Override
-    public int compareTo(AccessRuleData o) {   
+    public int compareTo(final AccessRuleData o) {   
         return accessRuleName.compareTo(o.accessRuleName);
     }
 
