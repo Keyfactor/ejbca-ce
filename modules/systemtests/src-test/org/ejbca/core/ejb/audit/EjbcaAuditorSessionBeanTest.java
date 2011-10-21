@@ -129,8 +129,8 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
             fail("Was able to select using bad order clause!");
         } catch (AuthorizationDeniedException e) {
             fail("Authorization was denied!");
-        } catch (IllegalArgumentException e) {
-            // Expected
+        } catch (Exception e) {
+            // Expected, catch wide since different app servers throw differently, i.e. glassfish wraps in EJBException
             LOG.debug(e.getClass().getSimpleName() + ": " + e.getMessage());
         }
         LOG.trace("<assertBadOrderFailure");
@@ -158,8 +158,8 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
             fail("Was able to select using bad where clause!");
         } catch (AuthorizationDeniedException e) {
             fail("Authorization was denied!");
-        } catch (IllegalArgumentException e) {
-            // Expected
+        } catch (Exception e) {
+            // Expected, catch wide since different app servers throw differently, i.e. glassfish wraps in EJBException
             LOG.debug(e.getClass().getSimpleName() + ": " + e.getMessage());
         }
         LOG.trace("<assertBadWhereFailure");
