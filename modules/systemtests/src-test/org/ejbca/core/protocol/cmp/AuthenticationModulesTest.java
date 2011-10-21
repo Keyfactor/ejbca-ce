@@ -883,19 +883,35 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertEquals(expectedErrMsg, errMsg);
     }
 
+    /** Test CMP initial request against EJBCA CMP in client mode (operationmode=normal) using End Entity certificate signature authentication, 
+     * i.e. the request is signed by a certificate of the same end entity making the request, and this signature is used for authenticating the end entity.
+     * Test:
+     * - Request signed by a fake certificate, i.e. one that is not in the database (FAIL)
+     * - Request signed by a certificate that beloongs to another user (FAIL)
+     * - Request signed by a proper certificate but where user status is not NEW (FAIL)
+     * - Request signed by a proper, but revoked certificate (FAIL)
+     * - A working request signed by a proper, unrevoked certificate and user status is NEW (SUCCESS)
+     * 
+     * @throws Exception on some errors
+     */
     @Test
     public void test16CrmfReqClientModeEESignature() throws Exception {
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
         assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE));
         confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-");
         assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-"));        
+        confSession.updateProperty(CmpConfiguration.CONFIG_CHECKADMINAUTHORIZATION, "false");
+        assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_CHECKADMINAUTHORIZATION, "false"));        
         confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
         assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal"));
         
         final String testUserDN = "CN=cmptestuser16,C=SE";
         final String testUsername = "cmptestuser16";
+        final String otherUserDN = "CN=cmptestotheruser16,C=SE";
+        final String otherUsername = "cmptestotheruser16";
         String fingerprint = null;
         String fingerprint2 = null;
+        String fingerprint3 = null;
         try {
             KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             KeyPair fakeKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -931,9 +947,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 final byte[] ba = bao.toByteArray();
                 // Send request and receive response
                 final byte[] resp = sendCmpHttp(ba, 200);        
-                checkCmpResponseGeneral(resp, issuerDN, testUserDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), false, null);
                 // This should have failed
-                checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), false, null);
+                checkCmpResponseGeneral(resp, issuerDN, testUserDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), false, null);
                 PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
                 assertNotNull(respObject);
                 PKIBody body = respObject.getBody();
@@ -942,7 +957,47 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 String expectedErrMsg = "The End Entity certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
                 assertEquals(expectedErrMsg, errMsg);
             }
-            // Step 2 sign with the real certificate, but user status is not NEW
+            // Step 2, sign the request with a certificate that does not belong to the user
+            {
+                KeyPair otherKeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+                createUser(otherUsername, otherUserDN, "foo123");
+                // A real certificate that can be used to sign the message
+                Certificate othercert = signSession.createCertificate(ADMIN, otherUsername, "foo123", otherKeys.getPublic());
+                fingerprint2 = CertTools.getFingerprintAsString(cert);
+                PKIMessage msg = genCertReq(issuerDN, testUserDN, keys, cacert, nonce, transid, false, null, null, null, null); 
+                assertNotNull("Generating CrmfRequest failed.", msg);            
+                AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+                msg.getHeader().setProtectionAlg(pAlg);      
+                msg.getHeader().setSenderKID(new DEROctetString(nonce));
+                addExtraCert(msg, othercert);
+                signPKIMessage(msg, otherKeys);
+                assertNotNull(msg);
+                //******************************************''''''
+                final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
+                sig.initVerify(othercert.getPublicKey());
+                sig.update(msg.getProtectedBytes());
+                boolean verified = sig.verify(msg.getProtection().getBytes());
+                assertTrue("Signing the message failed.", verified);
+                //***************************************************
+
+                final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+                final DEROutputStream out = new DEROutputStream(bao);
+                out.writeObject(msg);
+                final byte[] ba = bao.toByteArray();
+                // Send request and receive response
+                final byte[] resp = sendCmpHttp(ba, 200);        
+                // This should have failed
+                checkCmpResponseGeneral(resp, issuerDN, testUserDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), false, null);
+                PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+                assertNotNull(respObject);
+                PKIBody body = respObject.getBody();
+                assertEquals(23, body.getTagNo());
+                String errMsg = body.getError().getPKIStatus().getStatusString().getString(0).getString();
+                String expectedErrMsg = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+testUsername+"'.";
+                assertEquals(expectedErrMsg, errMsg);
+            }
+            
+            // Step 3 sign with the real certificate, but user status is not NEW
             PKIMessage msg = genCertReq(issuerDN, testUserDN, keys, cacert, nonce, transid, false, null, null, null, null); 
             assertNotNull("Generating CrmfRequest failed.", msg);            
             AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -967,7 +1022,6 @@ public class AuthenticationModulesTest extends CmpTestCase {
             final byte[] resp = sendCmpHttp(ba, 200);        
             checkCmpResponseGeneral(resp, issuerDN, testUserDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), false, null);
             // This should have failed
-            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), false, null);
             PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
             assertNotNull(respObject);
             PKIBody body = respObject.getBody();
@@ -976,17 +1030,35 @@ public class AuthenticationModulesTest extends CmpTestCase {
             String expectedErrMsg = "Got request with status GENERATED (40), NEW, FAILED or INPROCESS required: cmptestuser16.";
             assertEquals(expectedErrMsg, errMsg);
                 
-            // Step 3 now set status to NEW, and a clear text password, then it should finally work
+            // Step 4 now set status to NEW, and a clear text password, then it should finally work
             createUser(testUsername, testUserDN, "randompasswordhere");
             // Send request and receive response
             final byte[] resp2 = sendCmpHttp(ba, 200);                    
             Certificate cert2 = checkCmpCertRepMessage(testUserDN, cacert, resp2, msg.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue());
             assertNotNull("CrmfRequest did not return a certificate", cert2);
-            fingerprint2 = CertTools.getFingerprintAsString(cert2);
+            fingerprint3 = CertTools.getFingerprintAsString(cert2);
+            
+            // Step 5, revoke the certificate and try again
+            {
+                certStoreSession.setRevokeStatus(ADMIN, cert, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, null);
+                final byte[] resp3 = sendCmpHttp(ba, 200);        
+                // This should have failed
+                checkCmpResponseGeneral(resp, issuerDN, testUserDN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID().getOctets(), false, null);
+                PKIMessage respObject3 = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp3)).readObject());
+                assertNotNull(respObject);
+                PKIBody body3 = respObject3.getBody();
+                assertEquals(23, body3.getTagNo());
+                String errMsg3 = body3.getError().getPKIStatus().getStatusString().getString(0).getString();
+                String expectedErrMsg3 = "The End Entity certificate attached to the PKIMessage in the extraCert field is revoked.";
+                assertEquals(expectedErrMsg3, errMsg3);
+            }
+            
         } finally {
             userAdminSession.revokeAndDeleteUser(ADMIN, testUsername, ReasonFlags.unused);
+            userAdminSession.revokeAndDeleteUser(ADMIN, otherUsername, ReasonFlags.unused);
             internalCertStoreSession.removeCertificate(fingerprint);
             internalCertStoreSession.removeCertificate(fingerprint2);
+            internalCertStoreSession.removeCertificate(fingerprint3);
         }
     }
 
