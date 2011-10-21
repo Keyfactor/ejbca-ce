@@ -172,6 +172,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
             log.error("Failed to find CA. " + e.getLocalizedMessage());
         }
         
+        // Initialize config in here
+        EjbcaConfigurationHolder.instance();
+        
         confSession.backupConfiguration();
         
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
