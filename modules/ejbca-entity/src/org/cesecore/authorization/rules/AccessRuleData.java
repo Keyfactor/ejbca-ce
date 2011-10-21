@@ -70,14 +70,14 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
      * @param recursive
      *            True if the rule is recursive.
      */
-    public AccessRuleData(int primaryKey, final String accessruleName, final AccessRuleState internalState, boolean isRecursive) {
+    public AccessRuleData(int primaryKey, final String accessRuleName, final AccessRuleState internalState, boolean isRecursive) {
         if(accessRuleName == null) {
             throw new InvalidParameterException("Illegal to create an access rule with accessruleName == null");
         } else if(internalState == null) {
             throw new InvalidParameterException("Illegal to create an access rule with internalState == null");
         } 
         this.primaryKey = primaryKey;
-        this.accessRuleName = accessruleName.trim();
+        this.accessRuleName = accessRuleName.trim();
         this.internalState = internalState;
         setRecursive(isRecursive);
     }
@@ -94,14 +94,14 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
      * @param recursive
      *            True if the rule is recursive.
      */
-    public AccessRuleData(final String roleName, final String accessruleName, final AccessRuleState internalState, boolean isRecursive) {
+    public AccessRuleData(final String roleName, final String accessRuleName, final AccessRuleState internalState, boolean isRecursive) {
         if(accessRuleName == null) {
             throw new InvalidParameterException("Illegal to create an access rule with accessruleName == null");
         } else if(internalState == null) {
             throw new InvalidParameterException("Illegal to create an access rule with internalState == null");
         } 
-        this.primaryKey = generatePrimaryKey(roleName, accessruleName);
-        this.accessRuleName = accessruleName.trim();
+        this.primaryKey = generatePrimaryKey(roleName, accessRuleName);
+        this.accessRuleName = accessRuleName.trim();
         this.internalState = internalState;
         setRecursive(isRecursive);
     }
