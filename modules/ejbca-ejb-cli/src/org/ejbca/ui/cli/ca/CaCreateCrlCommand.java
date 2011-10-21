@@ -44,7 +44,7 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
         }
         if (args.length == 1) {
         	try{
-        	  createCRL(getAdmin(cliUserName, cliPassword), (String) null, false);
+        	  createCRL(cliUserName, cliPassword, (String) null, false);
         	  getLogger().info("You can also run this command with \"" + getCommand() + " <caname> <-delta>\" to force CRL creation for a CA.");
         	} catch (Exception e) {
         		throw new ErrorAdminCommandException(e);
@@ -63,7 +63,7 @@ public class CaCreateCrlCommand extends BaseCaAdminCommand {
               // createCRL prints info about crl generation
               String issuerName = getIssuerDN(getAdmin(cliUserName, cliPassword), caname);
               if (issuerName != null) {
-                  createCRL(getAdmin(cliUserName, cliPassword), issuerName, deltaCRL);
+                  createCRL(cliUserName, cliPassword, issuerName, deltaCRL);
               } else {
             	  getLogger().error("No such CA exists.");
               }

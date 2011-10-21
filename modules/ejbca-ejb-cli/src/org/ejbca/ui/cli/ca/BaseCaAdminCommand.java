@@ -113,24 +113,24 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         getLogger().trace("<makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
     }
 
-    protected void createCRL(AuthenticationToken authenticationToken, String issuerdn, boolean deltaCRL) {
+    protected void createCRL(final String cliUsername, final String cliPassword, final String issuerdn, final boolean deltaCRL) {
         getLogger().trace(">createCRL()");
         try {
             if (issuerdn != null) {
-                CAInfo cainfo = ejb.getCaSession().getCAInfo(authenticationToken, issuerdn.hashCode());
+                CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), issuerdn.hashCode());
                 if (!deltaCRL) {
-                    ejb.getCrlCreateSession().forceCRL(authenticationToken, cainfo.getCAId());
+                    ejb.getCrlCreateSession().forceCRL(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
                     int number = ejb.getCrlStoreSession().getLastCRLNumber(issuerdn, false);
                     getLogger().info("CRL with number " + number + " generated.");
                 } else {
-                    ejb.getCrlCreateSession().forceDeltaCRL(authenticationToken, cainfo.getCAId());
+                    ejb.getCrlCreateSession().forceDeltaCRL(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
                     int number = ejb.getCrlStoreSession().getLastCRLNumber(issuerdn, true);
                     getLogger().info("Delta CRL with number " + number + " generated.");
                 }
             } else {
-                int createdcrls = ejb.getCrlCreateSession().createCRLs(authenticationToken);
+                int createdcrls = ejb.getCrlCreateSession().createCRLs(getAdmin(cliUserName, cliPassword));
                 getLogger().info("  " + createdcrls + " CRLs have been created.");
-                int createddeltacrls = ejb.getCrlCreateSession().createDeltaCRLs(authenticationToken);
+                int createddeltacrls = ejb.getCrlCreateSession().createDeltaCRLs(getAdmin(cliUserName, cliPassword));
                 getLogger().info("  " + createddeltacrls + " delta CRLs have been created.");
             }
         } catch (Exception e) {
