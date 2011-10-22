@@ -4661,13 +4661,22 @@ be exported from the Admin GUI.
 </subsection>
 </section>
 
-<section name="Reference manual">
-<p>
-All configuration options, JNDI names etc is configured through the use of properties files in conf/*.properties file.
-You can copy the .sample files to respective .properties files and configures. Most options are documented in the .samples files. 
+<section name="Command Line Interfaces">
+<p>There are two types of command line interfaces (CLI) in EJBCA.
+<ul>
+<li>The Local CLI that can only be run on the CA machine.</li>
+<li>ClientToolBox with commands that can be run remotely, for example the Web Service CLI.</li>
+</ul>
 </p>
-
-<subsection name="Command line interface">
+<subsection name="Client Toolbox">
+<p><a href="userguide.html#EJBCA%20client%20toolbox">ClientToolBox</a> is a set of tools that are built as a stand alone package, which can be put on any machine and run independently of EJBCA.
+If contains among other things a very rich <a href="#Configuring%20Web%20Services%20CLI">Web Service CLI</a>.
+</p>
+</subsection>
+<subsection name="Local Command line interface">
+<p>
+The local CLI can be run directly on the CA machine, and contains many functions that can be used in scripts, or come to rescue when your admin certificate has expired or you have
+accidentally revoked your admin privileges for the admin GUI.</p>
 <p>
 EJBCA have command line interfaces (CLI) to both the CA and RA, and some other operations.
 </p>
@@ -4688,6 +4697,21 @@ This will give documentation about available options.
 To access the usage information for some commands, that does not take parameters, the option '-?' can normally be provided.
 </p>
 
+<subsubsection name="Local CLI authentication">
+<p>By default, the CLI authenticates using a standard user defined in ejbca.properties. Disabling this user will lead 
+to all CLI operations demanding authentication in the form of the following flags appended to the argument list:</p>
+<source>
+-u 	&lt;username&gt; -p; 
+</source>
+<p>which will cause the console to prompt for the password. If instead the password should be included in the command line (such as)
+	from a script, it can be specified using the following flags:</p>
+<source>
+-u  &lt;username&gt; -password=&lt;password&gt;
+</source>
+<p>Command line users are authenticated from the existing list of End Entities, and are granted the same rights.
+You can find the default CLI user in the 'Super Administrator Role' under 'Edit Administrator Privileges' after a default install or upgrade.</p>
+</subsubsection>
+
 <subsubsection name="Disable command line interface">
 <p>
 It is possible to disable the command line interface to prevent someone from running the operations that require authorization.
@@ -4703,27 +4727,20 @@ line interface.
 renewing the Super Administrator certificate! Please, make sure to renew the administrator certificates using the Admin Web 
 before they expire!
 </p>
-<b>Note:</b> After changing this property you need to click the Clear All Caches button or run the CLI command:</p>
+<b>Note:</b> After changing this property you mey need to click the Clear All Caches button or run the CLI command:</p>
 <source>
 bin/ejbca.sh clearcache -all
 </source>
 </subsubsection>
 
-<subsubsection name="Disable default CLI user">
-<p>By default, the CLI authenticates with using a standard user defined in ejbca.properties. Disabling this user will lead 
-to all CLI operations demanding authentication in the form of the following flags appended to the argument list:</p>
-<source>
--u 	&lt;username&gt; -p; 
-</source>
-<p>which will cause the console to prompt for the password. If instead the password should be included in the command line (such as)
-	from a script, it can be specified using the following flags:</p>
-<source>
--u  &lt;username&gt; -password=&lt;password&gt;
-</source>
-<p>Command line users are authenticated from the existing list of End Entities, and are granted the same rights.</p>
-</subsubsection>
-
 </subsection>
+</section>
+
+<section name="Reference manual">
+<p>
+All configuration options, JNDI names etc is configured through the use of properties files in conf/*.properties file.
+You can copy the .sample files to respective .properties files and configures. Most options are documented in the .samples files. 
+</p>
 
 <subsection name="Other Configuration">
 <p>
