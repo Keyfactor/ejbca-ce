@@ -21,8 +21,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import javax.faces.application.FacesMessage;
 import javax.faces.context.FacesContext;
@@ -45,17 +45,14 @@ import org.cesecore.audit.enums.ServiceType;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.impl.AuditExporterXml;
 import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.util.ValidityDate;
-import org.cesecore.util.query.QueryCriteria;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -80,7 +77,7 @@ public class AuditorManagedBean implements Serializable {
 	private static final boolean ORDER_DESC = false;
 	
 	private final SecurityEventsAuditorSessionLocal securityEventsAuditorSession = new EjbLocalHelper().getSecurityEventsAuditorSession();
-	private final CAAdminSessionLocal caAdminSession = new EjbLocalHelper().getCaAdminSession();
+	private final CaSessionLocal caSession = new EjbLocalHelper().getCaSession();
 	
 	private boolean renderNext = false;
 
@@ -368,7 +365,7 @@ public class AuditorManagedBean implements Serializable {
 	}
 
 	private void updateCaIdToNameMap() {
-		final Map<Integer, String> map = caAdminSession.getCAIdToNameMap(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("INTERNAL")));
+		final Map<Integer, String> map = caSession.getCAIdToNameMap();
 		final Map<Object, String> ret = new HashMap<Object, String>();
 		for (final Entry<Integer,String> entry : map.entrySet()) {
 			ret.put(entry.getKey().toString(), entry.getValue());
@@ -492,7 +489,7 @@ public class AuditorManagedBean implements Serializable {
 	}
 
     private void updateCmsSigningCas() {
-        final Map<Integer, String> map = caAdminSession.getCAIdToNameMap(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("INTERNAL")));
+        final Map<Integer, String> map = caSession.getCAIdToNameMap();
         cmsSigningCaOptions.clear();
         for (final Entry<Integer,String> entry : map.entrySet()) {
             // TODO: Would be nice to check if the CMS signer service is activated here before we add it

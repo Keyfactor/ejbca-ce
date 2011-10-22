@@ -23,12 +23,11 @@ import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.SecConst;
 
 /**
@@ -48,17 +47,15 @@ public class CAAuthorization implements Serializable {
     private TreeMap<String, Integer> allcanames = null;
     private TreeMap<String, Integer> allprofilenames = null;
     private AuthenticationToken admin;
-    private CAAdminSession caadminsession;
-    private CaSession caSession;
+    private CaSessionLocal caSession;
     private AccessControlSessionLocal authorizationsession;
     private CertificateProfileSession certificateProfileSession;
     
     /** Creates a new instance of CAAuthorization. */
     public CAAuthorization(AuthenticationToken admin,  
-                           CAAdminSession caadminsession, CaSession caSession,
+                           CaSessionLocal caSession,
                            AccessControlSessionLocal authorizationsession, CertificateProfileSession certificateProfileSession) {
       this.admin=admin;
-      this.caadminsession=caadminsession;      
       this.caSession=caSession;      
       this.authorizationsession=authorizationsession;
         this.certificateProfileSession = certificateProfileSession;
@@ -165,7 +162,7 @@ public class CAAuthorization implements Serializable {
     public TreeMap<String, Integer> getCANames(){        
       if(canames==null){        
         canames = new TreeMap<String, Integer>();        
-        HashMap<Integer, String> idtonamemap = this.caadminsession.getCAIdToNameMap(admin);
+        HashMap<Integer, String> idtonamemap = this.caSession.getCAIdToNameMap();
         Iterator<Integer> iter = getAuthorizedCAIds().iterator();
         while(iter.hasNext()){          
           Integer id = (Integer) iter.next();          
@@ -177,7 +174,7 @@ public class CAAuthorization implements Serializable {
     
 	public TreeMap<String, Integer> getAllCANames(){              
 		allcanames = new TreeMap<String, Integer>();        
-		HashMap<Integer, String> idtonamemap = this.caadminsession.getCAIdToNameMap(admin);
+		HashMap<Integer, String> idtonamemap = this.caSession.getCAIdToNameMap();
 		Iterator<Integer> iter = idtonamemap.keySet().iterator();
 		while(iter.hasNext()){          
 		  Integer id = (Integer) iter.next();          

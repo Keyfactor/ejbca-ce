@@ -95,6 +95,16 @@ public interface CaSession {
     public Collection<Integer> getAvailableCAs(AuthenticationToken admin);
     
     /**
+     * Method returning names of all CA's available to the system that the
+     * administrator is authorized to i.e. not having status "external" or
+     * "waiting for certificate response"
+     * 
+     * @param admin AuthenticationToken of admin
+     * @return a Collection<String> of available CA names
+     */
+    public Collection<String> getAvailableCANames(final AuthenticationToken admin);
+
+    /**
      * Returns a value object containing non-sensitive information about a CA
      * give it's name.
      * 

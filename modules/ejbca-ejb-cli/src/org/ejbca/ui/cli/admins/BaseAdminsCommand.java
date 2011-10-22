@@ -13,8 +13,6 @@
 
 package org.ejbca.ui.cli.admins;
 
-import java.util.Map;
-
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -29,7 +27,7 @@ public abstract class BaseAdminsCommand extends BaseCommand {
 
     protected static final String MAINCOMMAND = "admins";
 
-    protected String getParsedAccessRule(AuthenticationToken authenticationToken, String resource) throws NumberFormatException {
+    protected String getParsedAccessRule(AuthenticationToken authenticationToken, String resource) throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
         // Check if it is a profile rule, then replace profile id with profile
         // name.
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
@@ -46,12 +44,15 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         }
         // Check if it is a CA rule, then replace CA id with CA name.
         if (resource.startsWith(StandardRules.CAACCESS.resource())) {
-            Map<Integer,String> caIdToNameMap = ejb.getCAAdminSession().getCAIdToNameMap(authenticationToken);
             if (resource.lastIndexOf('/') < StandardRules.CAACCESS.resource().length()) {
-                return StandardRules.CAACCESS.resource() + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length())));
+                final int caid = Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length()));
+                final String caname = ejb.getCaSession().getCAInfo(authenticationToken, caid).getName();
+                return StandardRules.CAACCESS.resource() + caname;
             } else {
+                final int caid = Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length(), resource.lastIndexOf('/')));
+                final String caname = ejb.getCaSession().getCAInfo(authenticationToken, caid).getName();
                 return StandardRules.CAACCESS.resource()
-                        + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length(), resource.lastIndexOf('/'))))
+                        + caname
                         + resource.substring(resource.lastIndexOf('/'));
             }
         }

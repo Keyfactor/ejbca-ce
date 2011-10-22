@@ -32,11 +32,9 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
@@ -2069,18 +2067,11 @@ public class CAsTest extends CaTestCase {
      * Preemtively remove CA in case it was created by a previous run:
      * 
      * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException 
      */
-    private void removeOldCa(String caName) throws AuthorizationDeniedException {
-        HashMap<Integer, String> nameMap = caAdminSession.getCAIdToNameMap(admin);
-        if (nameMap.containsValue(caName)) {
-            for (Entry<Integer, String> entry : nameMap.entrySet()) {
-                if (entry.getValue().equals(caName)) {
-                    caSession.removeCA(admin, entry.getKey());
-                    break;
-                }
-            }
-
-        }
+    private void removeOldCa(String caName) throws AuthorizationDeniedException, CADoesntExistsException {
+        CAInfo info = caSession.getCAInfo(admin, caName);
+        caSession.removeCA(admin, info.getCAId());
     }
 
     /** Used for direct manipulation of objects without setters. */

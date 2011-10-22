@@ -17,11 +17,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -65,11 +64,10 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                     availableGroups += (availableGroups.length() == 0 ? "" : ", ") + "\"" + adminGroup.getRoleName() + "\"";
                 }
                 getLogger().info("Available Admin groups: " + availableGroups);
-                Map<Integer, String> caIdToNameMap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin(cliUserName, cliPassword));
-                Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword));
+                Collection<String> canames = ejb.getCaSession().getAvailableCANames(getAdmin(cliUserName, cliPassword));
                 String availableCas = "";
-                for (Integer caid : caids) {
-                    availableCas += (availableCas.length() == 0 ? "" : ", ") + "\"" + caIdToNameMap.get(caid) + "\"";
+                for (String caname : canames) {
+                    availableCas += (availableCas.length() == 0 ? "" : ", ") + "\"" + caname + "\"";
                 }
                 getLogger().info("Available CAs: " + availableCas);
                 String availableMatchers = "";

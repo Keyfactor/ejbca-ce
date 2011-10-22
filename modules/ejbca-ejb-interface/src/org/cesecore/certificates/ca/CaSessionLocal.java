@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.certificates.ca;
 
+import java.util.HashMap;
+
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -117,5 +119,22 @@ public interface CaSessionLocal extends CaSession {
      * @throws IllegalCryptoTokenException if the CA token is not proper
      */
     public void editCA(final AuthenticationToken admin, final CA ca, boolean auditlog) throws CADoesntExistsException, AuthorizationDeniedException, IllegalCryptoTokenException;
+
+    /**
+     * Verify that a CA exists.
+     * 
+     * @param caid is the id of the CA
+     * @throws CADoesntExistsException if the CA is not found
+     */
+    public void verifyExistenceOfCA(int caid) throws CADoesntExistsException;
+
+    /**
+     * Returns a HashMap containing mappings of caid (Integer) to CA name
+     * (String) of all CAs in the system.
+     * 
+     * @return HashMap with Integer->String mappings
+     */
+    public HashMap<Integer,String> getCAIdToNameMap();
+
 
 }

@@ -52,23 +52,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 public interface CAAdminSession {
 
     /**
-     * Verify that a CA exists. (This method does not check admin privileges and
-     * will leak the existence of a CA.)
-     * 
-     * @param caid is the id of the CA
-     * @throws CADoesntExistsException if the CA isn't found
-     */
-    public void verifyExistenceOfCA(int caid) throws CADoesntExistsException;
-
-    /**
-     * Returns a HashMap containing mappings of caid (Integer) to CA name
-     * (String) of all CAs in the system.
-     * 
-     * @return HashMap with Integer->String mappings
-     */
-    public HashMap<Integer,String> getCAIdToNameMap(AuthenticationToken admin);
-
-    /**
      * Creates a certificate request that should be sent to External Root CA for
      * processing. To create a normal request using the CAs currently active
      * signature keys use false for all of regenerateKeys, usenextkey and

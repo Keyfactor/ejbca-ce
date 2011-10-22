@@ -30,8 +30,8 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
@@ -46,7 +46,6 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.AccessRulesView;
 import org.ejbca.ui.web.admin.configuration.AuthorizationDataHandler;
-import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
  * Managed bean for editing administrative privileges.
@@ -278,7 +277,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     /** @return the name of the CA that has issed the certificate for the admin in the current row of the datatable */
     public String getIssuingCA() {
         AccessUserAspectData adminEntity = getAdminForEach();
-        String caName = (String) ejb.getCaAdminSession().getCAIdToNameMap(EjbcaJSFHelper.getBean().getAdmin()).get(adminEntity.getCaId());
+        String caName = (String) ejb.getCaSession().getCAIdToNameMap().get(adminEntity.getCaId());
         if (caName == null) {
             caName = "Unknown CA with hash " + adminEntity.getCaId();
         }
@@ -529,7 +528,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
         }
         // Check if it is a CA rule, then replace CA id with CA name.
         if (resource.startsWith(StandardRules.CAACCESS.resource())) {
-            Map<Integer, String> caIdToNameMap = ejb.getCaAdminSession().getCAIdToNameMap(getAdmin());
+            Map<Integer, String> caIdToNameMap = ejb.getCaSession().getCAIdToNameMap();
             if (resource.lastIndexOf('/') < StandardRules.CAACCESS.resource().length()) {
                 return StandardRules.CAACCESS.resource() + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length())));
             } else {

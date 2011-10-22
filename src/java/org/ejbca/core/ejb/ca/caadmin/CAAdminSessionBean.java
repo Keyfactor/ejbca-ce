@@ -616,25 +616,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public void verifyExistenceOfCA(int caid) throws CADoesntExistsException {
-        // TODO: Test if "SELECT a.caId FROM CAData a WHERE a.caId=:caId" improves performance
-        CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public HashMap<Integer, String> getCAIdToNameMap(AuthenticationToken admin) {
-        HashMap<Integer, String> returnval = new HashMap<Integer, String>();
-        Collection<CAData> result = CAData.findAll(entityManager);
-        Iterator<CAData> iter = result.iterator();
-        while (iter.hasNext()) {
-            CAData cadata = iter.next();
-            returnval.put(cadata.getCaId(), cadata.getName());
-        }
-        return returnval;
-    }
-
-    @Override
     public byte[] makeRequest(AuthenticationToken admin, int caid, Collection<?> cachainin, boolean regenerateKeys, boolean usenextkey,
             boolean activatekey, String keystorepass) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException,
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
