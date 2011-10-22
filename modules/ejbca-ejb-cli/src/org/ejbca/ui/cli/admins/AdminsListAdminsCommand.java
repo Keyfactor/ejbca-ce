@@ -14,8 +14,9 @@
 package org.ejbca.ui.cli.admins;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -58,9 +59,12 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
                 return;
             }
             for (AccessUserAspectData  userAspect : adminGroup.getAccessUsers().values()) {
-                String caName = (String) ejb.getCAAdminSession().getCAIdToNameMap(getAdmin(cliUserName, cliPassword)).get(userAspect.getCaId());
-                if (caName == null) {
+                CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), userAspect.getCaId());
+                String caName;
+                if (info == null) {
                     caName = "Unknown CA with id " + userAspect.getCaId();
+                } else {
+                    caName = info.getName();
                 }
                 X500PrincipalAccessMatchValue matchWith = userAspect.getMatchWithByValue();
                 AccessMatchType matchType = userAspect.getMatchTypeAsType();     

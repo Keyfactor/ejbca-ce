@@ -19,6 +19,7 @@ import java.security.cert.CertificateNotYetValidException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -391,6 +392,39 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return returnval;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Collection<String> getAvailableCANames(final AuthenticationToken admin) {
+        final Collection<CAData> allCAs = CAData.findAll(entityManager);
+        final ArrayList<String> returnval = new ArrayList<String>();
+        for (CAData ca : allCAs) {
+            if (authorizedToCA(admin, ca.getCaId())) {
+                returnval.add(ca.getName());
+            }
+        }
+        return returnval;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public void verifyExistenceOfCA(int caid) throws CADoesntExistsException {
+        getCAInternal(caid, null, true);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public HashMap<Integer, String> getCAIdToNameMap() {
+        HashMap<Integer, String> returnval = new HashMap<Integer, String>();
+        Collection<CAData> result = CAData.findAll(entityManager);
+        Iterator<CAData> iter = result.iterator();
+        while (iter.hasNext()) {
+            CAData cadata = iter.next();
+            returnval.put(cadata.getCaId(), cadata.getName());
+        }
+        return returnval;
+    }
+
+
     /**
 	 * Internal method for getting CA, to avoid code duplication. Tries to find the CA even if the CAId is wrong due to CA certificate DN not being
 	 * the same as CA DN. Uses CACacheManager directly if configured to do so in ejbca.properties.
@@ -400,7 +434,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	 * @param caid
 	 *            numerical id of CA (subjectDN.hashCode()) that we search for, or -1 of a name is to ge used instead
 	 * @param name
-	 *            human readable name of CA, used instead of caid if caid == -1, can be null of caid != -1
+	 *            human readable name of CA, used instead of caid if caid == -1, can be null if caid != -1
+	 * @param fromCache if we should use the CA cache or return a new, decoupled, instance from the database, to be used when you need
+	 *             a completely distinct object, for edit, and not a shared cached instance.
 	 * @return CA value object, never null
 	 * @throws CADoesntExistsException
 	 *             if no CA was found
@@ -413,11 +449,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	    // This should only be done if we have enabled caching, meaning that
 	    // we will not update the CA values until cache time expires
 	    CA ca = null;
-	    if (CACacheHelper.getLastCACacheUpdateTime() + CesecoreConfiguration.getCacheCaTimeInCaSession() > System.currentTimeMillis()) {
-	        if (caid != -1) {
-	            ca = CACacheManager.instance().getCA(caid);
-	        } else {
-	            ca = CACacheManager.instance().getCA(name);
+	    if (fromCache) {
+	        if (CACacheHelper.getLastCACacheUpdateTime() + CesecoreConfiguration.getCacheCaTimeInCaSession() > System.currentTimeMillis()) {
+	            if (caid != -1) {
+	                ca = CACacheManager.instance().getCA(caid);
+	            } else {
+	                ca = CACacheManager.instance().getCA(name);
+	            }
 	        }
 	    }
 	    CAData cadata = null;
@@ -432,6 +470,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	            // also fills the CACacheManager cache if the CA is not in there
 	            if (fromCache) {
 	            	ca = cadata.getCA();
+	                CACacheHelper.setLastCACacheUpdateTime(System.currentTimeMillis());             
 	            } else {
 	            	ca = cadata.getCAFromDatabase();
 	            }
@@ -440,7 +479,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	        } catch (IllegalCryptoTokenException e) {
 	            throw new EJBException(e);
 	        }
-	        CACacheHelper.setLastCACacheUpdateTime(System.currentTimeMillis());
 	    }
 	    // Check if CA has expired, cadata (CA in database) will only be updated
 	    // if aggressive caching is not enabled

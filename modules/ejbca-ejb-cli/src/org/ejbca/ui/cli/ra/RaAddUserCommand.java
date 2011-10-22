@@ -87,8 +87,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             if ((args.length < 9) || (args.length > 12)) {
                 getLogger().info("Description: " + getDescription());
                 Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword));
-                HashMap<Integer, String> caidtonamemap = ejb.getCAAdminSession().getCAIdToNameMap(getAdmin(cliUserName, cliPassword));
-
+                Collection<String> canames = ejb.getCaSession().getAvailableCANames(getAdmin(cliUserName, cliPassword));
                 Collection<Integer> certprofileids = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, caids);
                 Map<Integer, String> certificateprofileidtonamemap = ejb.getCertificateProfileSession().getCertificateProfileIdToNameMap();
 
@@ -125,14 +124,14 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 getLogger().info("Existing tokens      : " + USERGENERATED + ", " + P12 + ", " + JKS + ", " + PEM + hardTokenString);
 
                 String existingCas = "";
-                Iterator<Integer> iter = caids.iterator();
-                while (iter.hasNext()) {
-                    existingCas += (existingCas.length() == 0 ? "" : ", ") + caidtonamemap.get(iter.next());
+                Iterator<String> nameiter = canames.iterator();
+                while (nameiter.hasNext()) {
+                    existingCas += (existingCas.length() == 0 ? "" : ", ") + nameiter.next();
                 }
                 getLogger().info("Existing cas  : " + existingCas);
 
                 String existingCps = "";
-                iter = certprofileids.iterator();
+                Iterator<Integer> iter = certprofileids.iterator();
                 while (iter.hasNext()) {
                     existingCps += (existingCps.length() == 0 ? "" : ", ") + certificateprofileidtonamemap.get(iter.next());
                 }

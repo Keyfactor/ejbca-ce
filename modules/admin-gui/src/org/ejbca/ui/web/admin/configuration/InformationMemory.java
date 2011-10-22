@@ -31,7 +31,7 @@ import java.util.TreeMap;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.roles.RoleData;
@@ -68,6 +68,7 @@ public class InformationMemory implements Serializable {
     private AuthenticationToken administrator;
     // Session Bean interfaces (was *Local originally)
     private CAAdminSession caadminsession;
+    private CaSessionLocal casession;
     private EndEntityProfileSession endEntityProfileSession;
     private PublisherSessionLocal publishersession;
     private UserDataSourceSession userdatasourcesession = null;
@@ -94,12 +95,13 @@ public class InformationMemory implements Serializable {
     CertificateProfileNameProxy certificateprofilenameproxy = null;
 
     /** Creates a new instance of ProfileNameProxy */
-    public InformationMemory(AuthenticationToken administrator, CAAdminSession caadminsession, CaSession caSession, AccessControlSessionLocal authorizationsession,
+    public InformationMemory(AuthenticationToken administrator, CAAdminSession caadminsession, CaSessionLocal caSession, AccessControlSessionLocal authorizationsession,
             ComplexAccessControlSessionLocal complexAccessControlSession, EndEntityProfileSession endEntityProfileSession,
             HardTokenSession hardtokensession, PublisherSessionLocal publishersession, UserDataSourceSession userdatasourcesession,
             CertificateProfileSession certificateProfileSession, GlobalConfigurationSession globalConfigurationSession,
             GlobalConfiguration globalconfiguration) {
         this.caadminsession = caadminsession;
+        this.casession = caSession;
         this.administrator = administrator;
         this.endEntityProfileSession = endEntityProfileSession;
         this.publishersession = publishersession;
@@ -108,7 +110,7 @@ public class InformationMemory implements Serializable {
         this.certificateProfileSession = certificateProfileSession;
         this.raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationsession, complexAccessControlSession,
                 caSession, endEntityProfileSession);
-        this.caauthorization = new CAAuthorization(administrator, caadminsession, caSession, authorizationsession, certificateProfileSession);
+        this.caauthorization = new CAAuthorization(administrator, caSession, authorizationsession, certificateProfileSession);
         this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, complexAccessControlSession);
         this.complexAccessControlSession = complexAccessControlSession;
     }
@@ -122,7 +124,7 @@ public class InformationMemory implements Serializable {
      */
     public Map<Integer, String> getCAIdToNameMap() {
         if (caidtonamemap == null) {
-            caidtonamemap = caadminsession.getCAIdToNameMap(administrator);
+            caidtonamemap = casession.getCAIdToNameMap();
         }
 
         return caidtonamemap;

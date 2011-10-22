@@ -796,7 +796,7 @@ public class EjbcaWS implements IEjbcaWS {
 			// Get the certificate chain
 			if (user != null) {
 				int caid = user.getCAId();
-				caAdminSession.verifyExistenceOfCA(caid);
+				caSession.verifyExistenceOfCA(caid);
 				Collection<java.security.cert.Certificate> certs = signSession.getCertificateChain(admin, caid);
 				Iterator<java.security.cert.Certificate> iter = certs.iterator();
 				while (iter.hasNext()) {
@@ -927,7 +927,7 @@ public class EjbcaWS implements IEjbcaWS {
 				throw new NotFoundException(intres.getLocalizedMessage("ra.errorentitynotexist", username));
 			}
 			final int caid = userdata.getCAId();
-			caAdminSession.verifyExistenceOfCA(caid);
+			caSession.verifyExistenceOfCA(caid);
 			if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() +caid)) {
 	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 		        throw new AuthorizationDeniedException(msg);
@@ -1100,7 +1100,7 @@ public class EjbcaWS implements IEjbcaWS {
 				  throw new NotFoundException(msg);
 			  }
 			  int caid = userdata.getCAId();
-			  caAdminSession.verifyExistenceOfCA(caid);
+			  caSession.verifyExistenceOfCA(caid);
 			  if(!authorizationSession.isAuthorized(admin, StandardRules.CAACCESS.resource() +caid)) {
 				  final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 				  throw new AuthorizationDeniedException(msg);
@@ -1182,7 +1182,7 @@ public class EjbcaWS implements IEjbcaWS {
 			final AuthenticationToken admin = ejbhelper.getAdmin();
             logAdminName(admin,logger);
 			final int caid = CertTools.stringToBCDNString(issuerDN).hashCode();
-			caAdminSession.verifyExistenceOfCA(caid);
+			caSession.verifyExistenceOfCA(caid);
 			final BigInteger serno = new BigInteger(certificateSN, 16);
 			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
 			// that was permanently revoked
@@ -1219,7 +1219,7 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			// Check caid
 			int caid = userdata.getCAId();
-			caAdminSession.verifyExistenceOfCA(caid);
+			caSession.verifyExistenceOfCA(caid);
 			if(!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() +caid)) {
 	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 		        throw new AuthorizationDeniedException(msg);
@@ -1270,7 +1270,7 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			// check CAID
 			int caid = userdata.getCAId();
-			caAdminSession.verifyExistenceOfCA(caid);
+			caSession.verifyExistenceOfCA(caid);
             if (!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid)) {
 	            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 		        throw new AuthorizationDeniedException(msg);
@@ -1328,7 +1328,7 @@ public class EjbcaWS implements IEjbcaWS {
 				X509Certificate next = (X509Certificate) iter.next();
 				// check that admin is authorized to CA
 				int caid = CertTools.getIssuerDN(next).hashCode();
-				caAdminSession.verifyExistenceOfCA(caid);
+				caSession.verifyExistenceOfCA(caid);
 				if(!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() +caid)) {
 		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 			        throw new AuthorizationDeniedException(msg);
@@ -1385,7 +1385,7 @@ public class EjbcaWS implements IEjbcaWS {
 
 		  // check that admin is autorized to CA
 		  int caid = CertTools.stringToBCDNString(issuerDN).hashCode();
-		  caAdminSession.verifyExistenceOfCA(caid);
+		  caSession.verifyExistenceOfCA(caid);
 		  if(!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() +caid)) {
 			  final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() +caid, null);
 			  throw new AuthorizationDeniedException(msg);
@@ -1940,7 +1940,7 @@ public class EjbcaWS implements IEjbcaWS {
                         throw new NotFoundException(msg);
                     }
                     int caid = userData.getCAId();
-                    caAdminSession.verifyExistenceOfCA(caid);
+                    caSession.verifyExistenceOfCA(caid);
                     ar = new GenerateTokenApprovalRequest(userData.getUsername(), userData.getDN(), hardTokenData.getHardToken().getLabel(),admin,null,WebServiceConfiguration.getNumberOfRequiredApprovals(),caid,userData.getEndEntityProfileId());
                     int status = ApprovalDataVO.STATUS_REJECTED;
                     try{
@@ -2076,7 +2076,7 @@ public class EjbcaWS implements IEjbcaWS {
 			while(iter.hasNext()){
 				HardTokenData next = (HardTokenData) iter.next();
 				int caid = next.getSignificantIssuerDN().hashCode();
-				caAdminSession.verifyExistenceOfCA(caid);
+				caSession.verifyExistenceOfCA(caid);
 				if(!authorizationSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid)) {
                 	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() + caid, null);
                 	throw new AuthorizationDeniedException(msg);
@@ -2104,7 +2104,7 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try{
 			String bcIssuerDN = CertTools.stringToBCDNString(issuerDN);
-			caAdminSession.verifyExistenceOfCA(bcIssuerDN.hashCode());
+			caSession.verifyExistenceOfCA(bcIssuerDN.hashCode());
 			CertReqHistory certreqhist = certreqHistorySession.retrieveCertReqHistory(admin,new BigInteger(serialNumberInHex,16), bcIssuerDN);
 			if(certreqhist == null){
 				throw new PublisherException("Error: the  certificate with  serialnumber : " + serialNumberInHex +" and issuerdn " + issuerDN + " couldn't be found in database.");
@@ -2266,7 +2266,7 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try {
-			caAdminSession.verifyExistenceOfCA(caid);
+			caSession.verifyExistenceOfCA(caid);
 			if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_VIEWCERTIFICATE)) {
             	final String authmsg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_VIEWCERTIFICATE, null);
             	throw new AuthorizationDeniedException(authmsg);
@@ -2302,7 +2302,7 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try {
 			Collection<Integer> caids = caSession.getAvailableCAs(admin);
-			HashMap<Integer, String> map = caAdminSession.getCAIdToNameMap(admin);
+			HashMap<Integer, String> map = caSession.getCAIdToNameMap();
 			for (Integer id : caids ) {
 				String name = (String)map.get(id);
 				if (name != null) {
@@ -2387,7 +2387,7 @@ public class EjbcaWS implements IEjbcaWS {
 			EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(admin, entityProfileId);
 			if (profile != null) {
 				Collection<String> cas = profile.getAvailableCAs(); // list of CA ids available in profile
-				HashMap<Integer,String> map = caAdminSession.getCAIdToNameMap(admin);
+				HashMap<Integer,String> map = caSession.getCAIdToNameMap();
 				for (String id : cas ) {
 					Integer i = Integer.valueOf(id);
 					String name = (String)map.get(i);
