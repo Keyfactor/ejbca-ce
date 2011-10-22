@@ -18,30 +18,40 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
@@ -144,8 +154,7 @@ public class UserAdminSessionTest extends CaTestCase {
      * @throws Exception error
      */
     private void addUser() throws Exception {
-        log.trace(">test01AddUser()");
-
+        log.trace(">addUser()");
 
         String email = username + "@anatom.se";
         userAdminSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
@@ -191,7 +200,7 @@ public class UserAdminSessionTest extends CaTestCase {
         }
         assertTrue(thrown);
 
-        log.trace("<test01AddUser()");
+        log.trace("<addUser()");
     }
 
     /**
@@ -430,10 +439,10 @@ public class UserAdminSessionTest extends CaTestCase {
      * @throws Exception error
      */
     @Test
-    public void testDeleteUser() throws Exception {
+    public void test06DeleteUser() throws Exception {
         addUser();
 
-        log.trace(">test05DeleteUser()");
+        log.trace(">test06DeleteUser()");
         userAdminSession.deleteUser(admin, username);
         log.debug("deleted user: " + username);
         // Delete the the same user again
@@ -444,7 +453,7 @@ public class UserAdminSessionTest extends CaTestCase {
             removed = true;
         }
         assertTrue("User does not exist does not throw NotFoundException", removed);
-        log.trace("<test05DeleteUser()");
+        log.trace("<test06DeleteUser()");
     }
 
     /**
@@ -453,7 +462,7 @@ public class UserAdminSessionTest extends CaTestCase {
      * @throws Exception error
      */
     @Test
-    public void test06MergeWithWS() throws Exception {
+    public void test07MergeWithWS() throws Exception {
         EndEntityProfile profile = new EndEntityProfile();
         profile.addField(DnComponents.COMMONNAME);
         profile.addField(DnComponents.DNEMAIL);
@@ -483,5 +492,51 @@ public class UserAdminSessionTest extends CaTestCase {
         // E=foo@bar.com,CN=430208,OU=FooOrgUnit,O=hoho,C=NO
         assertEquals("E=foo@bar.com,CN=" + username + ",OU=hoho,O=AnaTom,C=SE", data.getDN());
     }
+    
+    @Test
+    public void test08Authorization() throws Exception {
+        
+        KeyPair keys = KeyTools.genKeys("512", "RSA");
+        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test UserAdminSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        credentials.add(certificate);
+        Set<X500Principal> principals = new HashSet<X500Principal>();
+        principals.add(certificate.getSubjectX500Principal());
+
+        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
+
+        final String authUsername = genRandomUserName();
+        String email = authUsername + "@anatom.se";
+        EndEntityInformation userdata = new EndEntityInformation(authUsername, "C=SE, O=AnaTom, CN=" + username, caid, null, email, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+        userdata.setPassword("foo123");
+        try {
+            try {
+                userAdminSession.addUser(adminTokenNoAuth, userdata, false);
+                fail("should throw");
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD: this is what we want
+            }
+
+            try {
+                userAdminSession.changeUser(adminTokenNoAuth, userdata, true);
+                fail("should throw");
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD: this is what we want
+            }
+
+            try {
+                userAdminSession.addUser(admin, userdata, false);
+                userAdminSession.deleteUser(adminTokenNoAuth, authUsername);
+                fail("should throw");
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD: this is what we want
+            }
+        } finally {
+            userAdminSession.deleteUser(admin, authUsername);
+        }
+    }
+
 
 }
