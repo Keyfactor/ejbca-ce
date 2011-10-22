@@ -2069,9 +2069,13 @@ public class CAsTest extends CaTestCase {
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException 
      */
-    private void removeOldCa(String caName) throws AuthorizationDeniedException, CADoesntExistsException {
-        CAInfo info = caSession.getCAInfo(admin, caName);
-        caSession.removeCA(admin, info.getCAId());
+    private void removeOldCa(String caName) throws AuthorizationDeniedException {
+        try {
+            CAInfo info = caSession.getCAInfo(admin, caName);
+            caSession.removeCA(admin, info.getCAId());
+        } catch (CADoesntExistsException e) {
+            // NOPMD: we ignore this
+        }
     }
 
     /** Used for direct manipulation of objects without setters. */
