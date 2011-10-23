@@ -138,7 +138,7 @@ public final class UniqueSernoHelper {
 				}
 				if (!isUniqueCertificateSerialNumberIndex.booleanValue()) {
 					// It was possible to store a second certificate with same serial number. Unique number not working.
-					log.info( intres.getLocalizedMessage("signsession.not_unique_certserialnumberindex") );
+					log.info( intres.getLocalizedMessage("createcert.not_unique_certserialnumberindex") );
 				}
 			} finally {
 				// Remove potentially stored certificates so anyone can create the unique index if wanted
