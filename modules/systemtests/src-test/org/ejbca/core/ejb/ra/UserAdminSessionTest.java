@@ -23,12 +23,14 @@ import static org.junit.Assert.fail;
 import java.rmi.RemoteException;
 import java.rmi.ServerException;
 import java.security.KeyPair;
+import java.security.Principal;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -36,32 +38,44 @@ import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
 import javax.security.auth.x500.X500Principal;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.ErrorCode;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionRemote;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
-import org.cesecore.certificates.certificateprofile.CertificateProfile;
-import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -95,11 +109,16 @@ public class UserAdminSessionTest extends CaTestCase {
 
     private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
+    private EndEntityAccessSessionRemote endEntityAccessSession = InterfaceCache.getEndEntityAccessSession();
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private CertificateStoreSessionRemote storeSession = InterfaceCache.getCertificateStoreSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
+    private RoleManagementSessionRemote roleManagementSession = InterfaceCache.getRoleManagementSession();
+    private RoleAccessSessionRemote roleAccessSession = InterfaceCache.getRoleAccessSession();
+    private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
+    private GlobalConfigurationSessionRemote globalConfSession = InterfaceCache.getGlobalConfigurationSession();
 
     @BeforeClass
     public static void beforeClass() {
@@ -496,16 +515,15 @@ public class UserAdminSessionTest extends CaTestCase {
     @Test
     public void test08Authorization() throws Exception {
         
-        KeyPair keys = KeyTools.genKeys("512", "RSA");
-        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test UserAdminSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
-                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new X500Principal("C=SE,O=Test,CN=Test UserAdminSessionNoAuth"));
+        
+        TestX509CertificateAuthenticationToken adminTokenNoAuth  = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+        final X509Certificate adminCert = adminTokenNoAuth.getCertificate();
 
-        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-        credentials.add(certificate);
-        Set<X500Principal> principals = new HashSet<X500Principal>();
-        principals.add(certificate.getSubjectX500Principal());
-
-        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
+        final String testRole = "UserAdminSessionTestAuthRole";
+        GlobalConfiguration gc = globalConfSession.getCachedGlobalConfiguration();
+        boolean eelimitation = gc.getEnableEndEntityProfileLimitations();
 
         final String authUsername = genRandomUserName();
         String email = authUsername + "@anatom.se";
@@ -516,14 +534,14 @@ public class UserAdminSessionTest extends CaTestCase {
                 userAdminSession.addUser(adminTokenNoAuth, userdata, false);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                // NOPMD: this is what we want
+                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
 
             try {
                 userAdminSession.changeUser(adminTokenNoAuth, userdata, true);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                // NOPMD: this is what we want
+                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
 
             try {
@@ -531,10 +549,51 @@ public class UserAdminSessionTest extends CaTestCase {
                 userAdminSession.deleteUser(adminTokenNoAuth, authUsername);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
-                // NOPMD: this is what we want
+                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
+            
+            // Now add the administrator to a role that has access to /ca/* but not ee profiles
+            RoleData role = roleAccessSession.findRole(testRole);
+            if (role == null) {
+                role = roleManagementSession.create(roleMgmgToken, testRole);
+            }
+            final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+            accessRules.add(new AccessRuleData(testRole, StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
+            role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+
+            final List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
+            accessUsers.add(new AccessUserAspectData(testRole, CertTools.getIssuerDN(adminCert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                    AccessMatchType.TYPE_EQUALCASE, CertTools.getPartFromDN(CertTools.getSubjectDN(adminCert), "CN")));
+            roleManagementSession.addSubjectsToRole(roleMgmgToken, role, accessUsers);
+            accessControlSession.forceCacheExpire();
+            // We must enforce end entity profile limitations for this, with false it should be ok now
+            gc.setEnableEndEntityProfileLimitations(false);
+            globalConfSession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
+            // Do the same test, now it should work since we are authorized to CA and we don't enforce EE profile authorization
+            userAdminSession.changeUser(adminTokenNoAuth, userdata, false);
+            // Enforce EE profile limitations
+            gc.setEnableEndEntityProfileLimitations(true);
+            globalConfSession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
+            // Do the same test, now we should get auth denied on EE profiles instead
+            try {
+                userAdminSession.changeUser(adminTokenNoAuth, userdata, false);
+                fail("should throw");
+            } catch (AuthorizationDeniedException e) {
+                assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to end entity profile"));
+            }
+
         } finally {
-            userAdminSession.deleteUser(admin, authUsername);
+            gc.setEnableEndEntityProfileLimitations(eelimitation);
+            globalConfSession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
+            try {
+                userAdminSession.deleteUser(admin, authUsername);
+            } catch (Exception e) { // NOPMD
+                log.info("Error in finally: ", e);
+            }
+            RoleData role = roleAccessSession.findRole(testRole);
+            if (role != null) {
+                roleManagementSession.remove(roleMgmgToken, role);
+            }
         }
     }
 
