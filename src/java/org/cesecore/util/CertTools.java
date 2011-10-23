@@ -1712,8 +1712,8 @@ public class CertTools {
      *         in the resulting string.
      */
     public static String getSubjectAlternativeName(Certificate certificate) {
-    	if (log.isDebugEnabled()) {
-    		log.debug(">getSubjectAlternativeName");
+    	if (log.isTraceEnabled()) {
+    		log.trace(">getSubjectAlternativeName");
     	}
         String result = "";
         if (certificate instanceof X509Certificate) {
@@ -1781,6 +1781,9 @@ public class CertTools {
                 default: // SubjectAltName of unknown type
                     break;
                 }
+            }
+            if (log.isTraceEnabled()) {
+                log.trace("<getSubjectAlternativeName: result");
             }
             if (StringUtils.isEmpty(result)) {
                 return null;
