@@ -181,7 +181,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         
         final String fp = CertTools.getFingerprintAsString(extracert);
-        if(fp == null) {
+        if (fp == null) {
             this.errorMessage = "Could not get the fingerprint of the certificate in the extraCert field in the CMP request";
             if(log.isDebugEnabled()) {
                 log.debug(this.errorMessage);
@@ -190,30 +190,30 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         
         // Get CA info. In case of fail, error message would have already been set and logged.
-        CAInfo cainfo = getCAInfo(extracert);
-        if(cainfo == null) {
+        final CAInfo cainfo = getCAInfo(extracert);
+        if (cainfo == null) {
             return false;
         }
  
-        if(CmpConfiguration.getRAOperationMode() && CmpConfiguration.getCheckAdminAuthorization()) {
+        if (CmpConfiguration.getRAOperationMode() && CmpConfiguration.getCheckAdminAuthorization()) {
             
             //Check that the certificate in the extraCert field exists in the DB. In case of fail, error message would have already been sat and logged.
-            if(getActiveExistingCertInfo(fp) == null) {
+            if (getActiveExistingCertInfo(fp) == null) {
                 return false;
             }
             
             //Check that the extraCert is given by the right CA
-            if(!StringUtils.equals(CertTools.getIssuerDN(extracert), cainfo.getSubjectDN())) {
+            if (!StringUtils.equals(CertTools.getIssuerDN(extracert), cainfo.getSubjectDN())) {
                 errorMessage = "The certificate attached to the PKIMessage is not given by the CA '" + this.authenticationParameterCAName + "'";
                 if(log.isDebugEnabled()) {
                     log.debug(errorMessage);
                 }
-                cainfo = null;
+                return false;           
             }
                 
             //Check that the request sender is an authorized administrator
             try {
-                if(!isAuthorized(extracert, msg, cainfo.getCAId())){
+                if (!isAuthorized(extracert, msg, cainfo.getCAId())){
                     errorMessage = "'" + CertTools.getSubjectDN(extracert) + "' is not an authorized administrator.";
                     if(log.isDebugEnabled()) {
                         log.debug(errorMessage);
@@ -227,11 +227,11 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 }
             }
                 
-        } else if(!CmpConfiguration.getRAOperationMode()) {
+        } else if (!CmpConfiguration.getRAOperationMode()) {
             
             //Check that the certificate in the extraCert field exists in the DB. In case of fail, error message would have already been sat and logged.
             CertificateInfo certInfo = getActiveExistingCertInfo(fp);
-            if(certInfo == null) {
+            if (certInfo == null) {
                 return false;
             }
             
@@ -465,9 +465,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return ret;
     }
 
-    private CertificateInfo getActiveExistingCertInfo(String fp) {
+    private CertificateInfo getActiveExistingCertInfo(final String fp) {
         // Check that the certificate is not revoked
-        CertificateInfo info = certSession.getCertificateInfo(fp);
+        final CertificateInfo info = certSession.getCertificateInfo(fp);
         if(info == null) {
             errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
             if(log.isDebugEnabled()) {
@@ -489,7 +489,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return info;
     }
     
-    private CAInfo getCAInfo(Certificate extracert) {
+    private CAInfo getCAInfo(final Certificate extracert) {
         CAInfo cainfo = null;
         try {
             //Check that the extraCert is issued by the right CA
