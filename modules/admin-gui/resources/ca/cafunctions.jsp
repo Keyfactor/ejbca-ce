@@ -111,9 +111,14 @@ function getPasswordAndSubmit(formname) {
      while(iter.hasNext()){
        String caname = (String) iter.next();  
        int caid = ((Integer) canames.get(caname)).intValue();
-       org.ejbca.ui.web.admin.cainterface.CAInfoView cainfo = cabean.getCAInfo(caid);
+       org.ejbca.ui.web.admin.cainterface.CAInfoView cainfo = null;
+       try {
+           cainfo = cabean.getCAInfo(caid);
+       } catch (AuthorizationDeniedException e) {
+           continue; // We are obviously not authorized to this CA
+       }
        if (cainfo == null) {
-         continue;	// We are obviously not authorized to this CA
+         continue;	// Something wrong happened retrieving this CA?       
        }
        String subjectdn = cainfo.getCAInfo().getSubjectDN();
        Certificate[] certificatechain = (Certificate[]) cainfo.getCertificateChain().toArray(new Certificate[0]);
