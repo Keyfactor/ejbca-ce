@@ -630,7 +630,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         PKIBody body = respObject.getBody();
         assertEquals(23, body.getTagNo());
         String errMsg = body.getError().getPKIStatus().getStatusString().getString(0).getString();
-        assertEquals("\"CN=cmpTestUnauthorizedAdmin,C=SE\" is not an authorized administrator.", errMsg);
+        assertEquals("'CN=cmpTestUnauthorizedAdmin,C=SE' is not an authorized administrator.", errMsg);
         
         confSession.updateProperty(CmpConfiguration.CONFIG_CHECKADMINAUTHORIZATION, "false");
         assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_CHECKADMINAUTHORIZATION, "false"));
@@ -957,7 +957,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 PKIBody body = respObject.getBody();
                 assertEquals(23, body.getTagNo());
                 String errMsg = body.getError().getPKIStatus().getStatusString().getString(0).getString();
-                String expectedErrMsg = "The End Entity certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+                String expectedErrMsg = "CA with id " + CertTools.getIssuerDN(fakeCert).hashCode() + " does not exist.";
                 assertEquals(expectedErrMsg, errMsg);
             }
             // Step 2, sign the request with a certificate that does not belong to the user
@@ -1052,13 +1052,19 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 PKIBody body3 = respObject3.getBody();
                 assertEquals(23, body3.getTagNo());
                 String errMsg3 = body3.getError().getPKIStatus().getStatusString().getString(0).getString();
-                String expectedErrMsg3 = "The End Entity certificate attached to the PKIMessage in the extraCert field is revoked.";
+                String expectedErrMsg3 = "The certificate attached to the PKIMessage in the extraCert field is revoked.";
                 assertEquals(expectedErrMsg3, errMsg3);
             }
             
         } finally {
-            userAdminSession.revokeAndDeleteUser(ADMIN, testUsername, ReasonFlags.unused);
-            userAdminSession.revokeAndDeleteUser(ADMIN, otherUsername, ReasonFlags.unused);
+            try {
+                userAdminSession.revokeAndDeleteUser(ADMIN, testUsername, ReasonFlags.unused);
+            } catch(Exception e) {}
+            
+            try {
+                userAdminSession.revokeAndDeleteUser(ADMIN, otherUsername, ReasonFlags.unused);
+            } catch(Exception e) {}
+            
             internalCertStoreSession.removeCertificate(fingerprint);
             internalCertStoreSession.removeCertificate(fingerprint2);
             internalCertStoreSession.removeCertificate(fingerprint3);

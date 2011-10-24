@@ -179,90 +179,32 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
             return false;
         }
-
-        //Check that the certificate in the extraCert field exists in the DB
+        
         final String fp = CertTools.getFingerprintAsString(extracert);
-        final Certificate dbcert = certSession.findCertificateByFingerprint(fp);
-        if(dbcert == null) {
-            errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+        if(fp == null) {
+            this.errorMessage = "Could not get the fingerprint of the certificate in the extraCert field in the CMP request";
             if(log.isDebugEnabled()) {
-                log.debug(errorMessage+". Fingerprint="+fp);
-            }
-            return false;
-        }
-        // Check that the certificate is not revoked
-        CertificateInfo info = certSession.getCertificateInfo(fp);
-        if (info.getStatus() != SecConst.CERT_ACTIVE) {
-            errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field is revoked.";
-            if(log.isDebugEnabled()) {
-                log.debug(errorMessage+" Username="+info.getUsername());
+                log.debug(this.errorMessage);
             }
             return false;            
         }
-        CAInfo cainfo = null;
-        try {
-            // If client mode we will check if this certificate belongs to the user, and set the password of the request to this user's password
-            // so it can later be used when issuing the certificate
-            if (username != null) {
-                if (!StringUtils.equals(username, info.getUsername())) {
-                    errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"'.";
-                    if(log.isDebugEnabled()) {
-                        // Use a different debug message, as not to reveal too much information
-                        final String debugMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"', but to user '"+info.getUsername()+"'.";
-                        log.debug(debugMessage);
-                    }
-                    return false;                
-                }
-                if (log.isDebugEnabled()) {
-                    log.debug("Extracting and setting password for user '"+username+"'.");
-                }
-                password = eeAccessSession.findUser(admin, username).getPassword();
-            }
-            //Check that the extraCert is issued by the right CA
-            if (!StringUtils.equals("-", this.authenticationParameterCAName)) {
-                cainfo = caSession.getCAInfo(this.admin, this.authenticationParameterCAName);
-                //Check that the extraCert is given by the right CA
-                if(!StringUtils.equals(CertTools.getIssuerDN(extracert), cainfo.getSubjectDN())) {
-                    errorMessage = "The End Entity certificate attached to the PKIMessage is not given by the CA \"" + this.authenticationParameterCAName + "\"";
-                    if(log.isDebugEnabled()) {
-                        log.debug(errorMessage);
-                    }
-                    return false;
-                }
-            } else {
-                cainfo = caSession.getCAInfo(this.admin, CertTools.getIssuerDN(extracert).hashCode());
-            }
-        } catch (CADoesntExistsException e) {
-            errorMessage = e.getLocalizedMessage();
-            if(log.isDebugEnabled()) {
-                log.debug(errorMessage);
-            }
+        
+        // Get CA info. In case of fail, error message would have already been sat and logged.
+        CAInfo cainfo = getAndCheckCAInfo(extracert);
+        if(cainfo == null) {
             return false;
-        } catch (AuthorizationDeniedException e) {
-            errorMessage = e.getLocalizedMessage();
-            if(log.isDebugEnabled()) {
-                log.debug(errorMessage);
-            }
-            return false;
-        }            
-
-        // Verify the signature of the client certificate as well, that it is really issued by this CA
-        Certificate cacert = cainfo.getCertificateChain().iterator().next();
-        try {
-            extracert.verify(cacert.getPublicKey(), "BC");
-        } catch (Exception e) {
-            errorMessage = "The End Entity certificate attached to the PKIMessage is not issued by the CA \"" + this.authenticationParameterCAName + "\"";
-            if(log.isDebugEnabled()) {
-                log.debug(errorMessage+": "+e.getLocalizedMessage());
-            }
-            return false;                
         }
-
-        if(CmpConfiguration.getCheckAdminAuthorization()) {                    
+ 
+        if(CmpConfiguration.getRAOperationMode() && CmpConfiguration.getCheckAdminAuthorization()) {
+            //Check that the certificate in the extraCert field exists in the DB. In case of fail, error message would have already been sat and logged.
+            if(getActiveExistingCertInfo(fp) == null) {
+                return false;
+            }
+                
             //Check that the request sender is an authorized administrator
             try {
                 if(!isAuthorized(extracert, msg, cainfo.getCAId())){
-                    errorMessage = "\"" + CertTools.getSubjectDN(extracert) + "\" is not an authorized administrator.";
+                    errorMessage = "'" + CertTools.getSubjectDN(extracert) + "' is not an authorized administrator.";
                     if(log.isDebugEnabled()) {
                         log.debug(errorMessage);
                     }
@@ -274,7 +216,55 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                     log.debug(errorMessage);
                 }
             }
+                
+        } else if(!CmpConfiguration.getRAOperationMode()) {
+            
+            //Check that the certificate in the extraCert field exists in the DB. In case of fail, error message would have already been sat and logged.
+            CertificateInfo certInfo = getActiveExistingCertInfo(fp);
+            if(certInfo == null) {
+                return false;
+            }
+            
+            // Verify the signature of the client certificate as well, that it is really issued by this CA
+            Certificate cacert = cainfo.getCertificateChain().iterator().next();
+            try {
+                extracert.verify(cacert.getPublicKey(), "BC");
+            } catch (Exception e) {
+                errorMessage = "The End Entity certificate attached to the PKIMessage is not issued by the CA \"" + this.authenticationParameterCAName + "\"";
+                if(log.isDebugEnabled()) {
+                    log.debug(errorMessage+": "+e.getLocalizedMessage());
+                }
+                return false;                
+            }
+         
+            // If client mode we will check if this certificate belongs to the user, and set the password of the request to this user's password
+            // so it can later be used when issuing the certificate
+            if (username != null) {
+                if (!StringUtils.equals(username, certInfo.getUsername())) {
+                    errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"'.";
+                    if(log.isDebugEnabled()) {
+                        // Use a different debug message, as not to reveal too much information
+                        final String debugMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"', but to user '"+certInfo.getUsername()+"'.";
+                        log.debug(debugMessage);
+                    }
+                    return false;                
+                }
+                
+                if (log.isDebugEnabled()) {
+                    log.debug("Extracting and setting password for user '"+username+"'.");
+                }
+                try {
+                    password = eeAccessSession.findUser(admin, username).getPassword();
+                } catch (AuthorizationDeniedException e) {
+                    errorMessage = e.getLocalizedMessage();
+                    if(log.isDebugEnabled()) {
+                        log.debug(errorMessage);
+                    }
+                    return false;
+                }
+            }
         }
+
         
         //Begin the verification process.
         //Verify the signature of msg using the public key of the certificate we found in the database
@@ -463,5 +453,61 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             throw new NotFoundException(errorMessage);
         }
         return ret;
+    }
+
+    private CertificateInfo getActiveExistingCertInfo(String fp) {
+        // Check that the certificate is not revoked
+        CertificateInfo info = certSession.getCertificateInfo(fp);
+        if(info == null) {
+            errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+            if(log.isDebugEnabled()) {
+                log.debug(errorMessage+". Fingerprint="+fp);
+            }
+
+            return null;
+        }
+        
+        if (info.getStatus() != SecConst.CERT_ACTIVE) {
+            errorMessage = "The certificate attached to the PKIMessage in the extraCert field is revoked.";
+            if(log.isDebugEnabled()) {
+                log.debug(errorMessage+" Username="+info.getUsername());
+            }
+
+            return null;            
+        }
+        
+        return info;
+    }
+    
+    private CAInfo getAndCheckCAInfo(Certificate extracert) {
+        CAInfo cainfo = null;
+        try {
+            //Check that the extraCert is issued by the right CA
+            if (!StringUtils.equals("-", this.authenticationParameterCAName)) {
+                cainfo = caSession.getCAInfo(this.admin, this.authenticationParameterCAName);
+                //Check that the extraCert is given by the right CA
+                if(!StringUtils.equals(CertTools.getIssuerDN(extracert), cainfo.getSubjectDN())) {
+                    errorMessage = "The certificate attached to the PKIMessage is not given by the CA '" + this.authenticationParameterCAName + "'";
+                    if(log.isDebugEnabled()) {
+                        log.debug(errorMessage);
+                    }
+                    cainfo = null;
+                }
+            } else {
+                cainfo = caSession.getCAInfo(this.admin, CertTools.getIssuerDN(extracert).hashCode());
+            }
+        } catch (CADoesntExistsException e) {
+            errorMessage = e.getLocalizedMessage();
+            if(log.isDebugEnabled()) {
+                log.debug(errorMessage);
+            }
+        } catch (AuthorizationDeniedException e) {
+            errorMessage = e.getLocalizedMessage();
+            if(log.isDebugEnabled()) {
+                log.debug(errorMessage);
+            }
+        }
+        
+        return cainfo;
     }
 }
