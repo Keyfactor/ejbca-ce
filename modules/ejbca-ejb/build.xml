@@ -304,6 +304,7 @@
 		<include name="org/ejbca/core/model/hardtoken/profiles/TurkishEIDProfile.java"/>
 		<include name="org/ejbca/core/model/services/actions/NoAction.java"/>
 		<include name="org/ejbca/util/CombineTime.java"/>
+		<include name="org/cesecore/certificates/certificate/UniqueSernoHelper.java"/>
 		<!-- This is only used from AdminGUI, but we probably want to use it more generally -->
 		<include name="org/cesecore/audit/AuditDevicesConfig.java"/>
 		<include name="org/ejbca/core/model/log/CsvLogExporter.java"/>
