@@ -192,9 +192,16 @@ JDBC driver: ojdbc14.zip
 
 Use latest driver from at least Oracle 10 that can be downloaded from http://www.oracle.com/.
 We also had reports that some version of the Oracle 10 driver does not work, but that the driver 
-from Oracle 9.2i works. Since oracles JDBC driver seems to be of such bad quality, we have to 
-recommend that you try different versions until you find one that works...or use another database.
-Version 10.1.0.4.0 is confirmed to work.
+from Oracle 9.2i works. Since oracles JDBC driver seems to be of shifting quality, we have to 
+recommend that you try different versions until you find one that works...
+Version 10.1.0.4.0 is confirmed to work, and from this day one we have had no reports of problems.
+
+From EJBCA 4.0 hibernate is used as the JPA (Java Persistence) provider. If startup is slow, when
+hibernate is loading/updating the schema you should add the following to 
+modules/ejbca-entity/resources/persistense-ds-template.xml, and then do a "ant clean bootstrap" 
+-----	
+<property name="hibernate.default_schema">YOUR_SCHEMANAME_IN_UPPERCASE</property> 
+-----
 
 The SQL command to show tables in Oracle is:
 select table_name from user_tables;
