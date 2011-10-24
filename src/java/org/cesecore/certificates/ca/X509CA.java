@@ -797,7 +797,9 @@ public class X509CA extends CA implements Serializable {
         // If we can not verify the issued certificate using the CA certificate we don't want to issue this cert
         // because something is wrong...
         PublicKey verifyKey;
-        if (cacert != null) {
+        // We must use the configured public key if this is a rootCA, because then we can renew our own certificate, after changing
+        // the keys. In this case the _new_ key will not match the current CA certificate.
+        if ((cacert != null) && (!isRootCA)) {
             verifyKey = cacert.getPublicKey();
         } else {
             verifyKey = caPublicKey;

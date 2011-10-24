@@ -37,6 +37,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.CaTestSessionRemote;
 import org.cesecore.certificates.ca.internal.CATokenCacheManager;
+import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
@@ -145,22 +146,13 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
     	// Now new keys
     	CATokenCacheManager.instance().removeAll();
     	ca = caTestSession.getCA(roleMgmgToken, testx509ca.getName());
-    	usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
     	try {
-    		usercert1.verify(cert.getPublicKey());
-    		assertTrue("Should throw", false);
+    	    // Not able to issue a new user certificate that the current CA certificate can not verify
+    	    usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
+    	    fail("Should throw");
     	} catch (InvalidKeyException e) {
-    		// NOPMD
+            // NOPMD    	    
     	}
-    	try {
-    		usercert1.verify(pubK);
-    		assertTrue("Should throw", false);
-    	} catch (InvalidKeyException e) {
-    		// NOPMD
-    	}
-    	usercert1.verify(ca.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
-    	
-    	
     }
 
     @Test
@@ -285,15 +277,12 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
 
     	// Now we should not be able to verify a new certificate with old CA certificate
     	try {
-    		X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
-    		cert = resp.getCertificate();
-    		assertNotNull("Failed to create certificate", cert);
-    		try {
-    			cert.verify(cacert.getPublicKey());
-    			fail("Should throw");
-    		} catch (InvalidKeyException e) {
-    			// NOPMD
-    		}
+            try {
+                X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                fail("should not be able to create certificate");
+            } catch (CertificateCreateException e) {
+                // NOPMD
+            }
     	} finally {
     		internalCertificateStoreSession.removeCertificate(cert);
     	}
