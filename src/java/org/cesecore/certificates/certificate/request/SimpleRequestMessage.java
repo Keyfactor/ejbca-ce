@@ -21,7 +21,6 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Date;
 
-import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
@@ -46,8 +45,6 @@ public class SimpleRequestMessage implements RequestMessage {
      *
      */
     static final long serialVersionUID = 1L;
-
-    private static final Logger log = Logger.getLogger(SimpleRequestMessage.class);
 
     /** The public key */
     protected PublicKey pubkey;
@@ -75,23 +72,25 @@ public class SimpleRequestMessage implements RequestMessage {
     
     /** request X509Name, if set manually */
     private String requestDN = null;
+
+    /** Requested certificate extensions */
+    private X509Extensions x509Extensions = null;
     
     /**
      * Constructs a new Simple message handler object.
      * @param pubkey the public key to be certified
      * @param username username of the EJBCA user
      * @param password password of the EJBCA user
+     * @param extensions requested certificate extensions, or null
      */
-    public SimpleRequestMessage(PublicKey pubkey, String username, String password) {
-        log.trace(">SimpleRequestMessage()");
+    public SimpleRequestMessage(final PublicKey pubkey, final String username, final String password) {
         this.pubkey = pubkey;
         this.username = username;
         this.password = password;
-        log.trace("<SimpleRequestMessage()");
     }
 
     /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
+     * @see org.cesecore.certificates.certificate.request.RequestMessage
      */
     public PublicKey getRequestPublicKey() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
     	return pubkey;
@@ -195,28 +194,33 @@ public class SimpleRequestMessage implements RequestMessage {
     }
 
     /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
+     * @see org.cesecore.certificates.certificate.request.RequestMessage
      */
 	public Date getRequestValidityNotBefore() {
 		return null;
 	}
 	
     /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
+     * @see org.cesecore.certificates.certificate.request.RequestMessage
      */
 	public Date getRequestValidityNotAfter() {
 		return null;
 	}
 	
     /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
+     * @see org.cesecore.certificates.certificate.request.RequestMessage
      */
 	public X509Extensions getRequestExtensions() {
-		return null;
+	    return x509Extensions;
+	}
+	
+	/** Sets request extensions, if any */
+	public void setRequestExtensions(final X509Extensions extensions) {
+	    this.x509Extensions = extensions;
 	}
 	
     /**
-     * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
+     * @see org.cesecore.certificates.certificate.request.RequestMessage
      */
     public boolean verify()
     throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
@@ -291,30 +295,30 @@ public class SimpleRequestMessage implements RequestMessage {
         return null;
     }
     
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
+    /** @see org.cesecore.certificates.certificate.request.RequestMessage
      */
     public String getPreferredDigestAlg() {
     	return preferredDigestAlg;
     }
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
+    /** @see org.cesecore.certificates.certificate.request.RequestMessage
      */
     public boolean includeCACert() {
     	return includeCACert;
     }
 
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
+    /** @see org.cesecore.certificates.certificate.request.RequestMessage
      */
     public int getRequestType() {
     	return 0;
     }
     
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
+    /** @see org.cesecore.certificates.certificate.request.RequestMessage
      */
     public int getRequestId() {
     	return 0;
     }
     
-    /** @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
+    /** @see org.cesecore.certificates.certificate.request.RequestMessage
      */
     public CertificateResponseMessage createResponseMessage(Class responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider) {
     	return RequestMessageUtils.createResponseMessage(responseClass, req, cert, signPriv, provider);

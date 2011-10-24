@@ -19,7 +19,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -36,12 +39,27 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.Vector;
 
 import javax.xml.namespace.QName;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERInteger;
+import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.X509Extension;
+import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
@@ -51,8 +69,8 @@ import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
@@ -66,6 +84,7 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -140,6 +159,11 @@ import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.ejbca.util.InterfaceCache;
 
+import com.novosec.pkix.asn1.crmf.CertReqMessages;
+import com.novosec.pkix.asn1.crmf.CertReqMsg;
+import com.novosec.pkix.asn1.crmf.CertRequest;
+import com.novosec.pkix.asn1.crmf.CertTemplate;
+
 /**
  * 
  * @version $Id$
@@ -194,6 +218,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private static final String CA1 = "CA1";
     private static final String CA2 = "CA2";
     private static final String WS_EEPROF_EI = "WS_EEPROF_EI";
+    private static final String WS_CERTPROF_EI = "WS_CERTPROF_EI";
 
     private static final String WSTESTPROFILE = "WSTESTPROFILE";
 
@@ -342,7 +367,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user.setStatus(UserDataVOWS.STATUS_NEW);
         user.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user.setEndEntityProfileName(WS_EEPROF_EI);
-        user.setCertificateProfileName("ENDUSER");
+        user.setCertificateProfileName(WS_CERTPROF_EI);
 
         List<ExtendedInformationWS> ei = new ArrayList<ExtendedInformationWS>();
         ei.add(new ExtendedInformationWS(ExtendedInformation.CUSTOMDATA + ExtendedInformation.CUSTOM_REVOCATIONREASON, Integer
@@ -369,7 +394,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(userdata.getCaName().equals(caName));
         assertTrue(userdata.getSubjectAltName() == null);
         assertTrue(userdata.getEmail() == null);
-        assertTrue(userdata.getCertificateProfileName().equals("ENDUSER"));
+        assertTrue(userdata.getCertificateProfileName().equals(WS_CERTPROF_EI));
         assertTrue(userdata.getEndEntityProfileName().equals(WS_EEPROF_EI));
         assertTrue(userdata.getTokenType().equals(UserDataVOWS.TOKEN_TYPE_USERGENERATED));
         assertTrue(userdata.getStatus() == UserDataVOWS.STATUS_NEW);
@@ -456,8 +481,17 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             endEntityProfileSession.addEndEntityProfile(intAdmin, WS_EEPROF_EI, profile);
             endEntityProfileSession.getEndEntityProfileId(intAdmin, WS_EEPROF_EI);
         } catch (EndEntityProfileExistsException pee) {
-        	pee.printStackTrace();
+        	log.error("Error creating end entity profile: ", pee);
             assertTrue("Can not create end entity profile", false);
+        }
+        try {
+            CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            certificateProfileSession.removeCertificateProfile(intAdmin, WS_CERTPROF_EI);
+            certificateProfileSession.addCertificateProfile(intAdmin, WS_CERTPROF_EI, profile);
+            certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+        } catch (CertificateProfileExistsException e) {
+            log.error("Error creating certificate profile: ", e);
+            assertTrue("Can not create certificate profile", false);            
         }
         editUser(CA1_WSTESTUSER1, CA1);
         editUser(CA1_WSTESTUSER2, CA1);
@@ -516,7 +550,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         usermatch = new UserMatch();
         usermatch.setMatchwith(UserMatch.MATCH_WITH_CERTIFICATEPROFILE);
         usermatch.setMatchtype(UserMatch.MATCH_TYPE_EQUALS);
-        usermatch.setMatchvalue("ENDUSER");
+        usermatch.setMatchvalue(WS_CERTPROF_EI);
         List<UserDataVOWS> userdatas6 = ejbcaraws.findUser(usermatch);
         assertNotNull(userdatas6);
         assertTrue(userdatas6.size() > 0);
@@ -540,21 +574,54 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void generatePkcs10() throws Exception {
 
-        KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        PKCS10CertificationRequest pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"),
-                keys.getPublic(), new DERSet(), keys.getPrivate());
+        UserDataVOWS user1 = new UserDataVOWS();
+        user1.setUsername(CA1_WSTESTUSER1);
+        user1.setPassword(PASSWORD);
+        user1.setClearPwd(true);
+        user1.setSubjectDN(getDN(CA1_WSTESTUSER1));
+        user1.setCaName(CA1);
+        user1.setStatus(UserDataVOWS.STATUS_NEW);
+        user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+        user1.setEndEntityProfileName(WS_EEPROF_EI);
+        user1.setCertificateProfileName(WS_CERTPROF_EI);
+        ejbcaraws.editUser(user1);
 
+        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+
+        PKCS10CertificationRequest pkcs10 = getP10Request();
+        // Submit the request
         CertificateResponse certenv = ejbcaraws.pkcs10Request(CA1_WSTESTUSER1, PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
                 CertificateHelper.RESPONSETYPE_CERTIFICATE);
-
         assertNotNull(certenv);
-
         X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
-
         assertNotNull(cert);
-
         assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
-
+        byte[] ext = cert.getExtensionValue("1.2.3.4");
+        // Certificate profile did not allow extension override
+        assertNull("no extension should exist", ext);
+        // Allow extension override
+        CertificateProfile profile = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+        profile.setAllowExtensionOverride(true);
+        certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);
+        // Now our extension should be possible to get in there
+        try {
+            ejbcaraws.editUser(user1);
+            pkcs10 = getP10Request();
+            certenv = ejbcaraws.pkcs10Request(CA1_WSTESTUSER1, PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
+                    CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            assertNotNull(certenv);
+            cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
+            assertNotNull(cert);
+            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+            ext = cert.getExtensionValue("1.2.3.4");
+            assertNotNull("there should be an extension", ext);
+            DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(ext)).readObject());
+            assertEquals("Extension did not have the correct value", "foo123", new String(oct.getOctets()));
+        } finally {
+            // restore
+            profile.setAllowExtensionOverride(false);
+            certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);            
+        }
     }
 
     /**
@@ -615,9 +682,26 @@ public abstract class CommonEjbcaWS extends CaTestCase {
      * Generate a new key pair and return a B64 encoded PKCS#10 encoded certificate request for the keypair.
      */
     private String getP10() throws Exception {
-        final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        return new String(Base64.encode(new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(),
-                new DERSet(), keys.getPrivate()).getEncoded()));
+        return new String(Base64.encode(getP10Request().getEncoded()));
+
+    }
+    private PKCS10CertificationRequest getP10Request() throws Exception {
+        final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        // Make a PKCS10 request with extensions
+        ASN1EncodableVector attributes = new ASN1EncodableVector();
+        // Add a custom extension (dummy)
+        ASN1EncodableVector attr = new ASN1EncodableVector();
+        attr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+        Vector<DERObjectIdentifier> oidvec = new Vector<DERObjectIdentifier>();
+        oidvec.add(new DERObjectIdentifier("1.2.3.4"));
+        Vector<X509Extension> valuevec = new Vector<X509Extension>();
+        valuevec.add(new X509Extension(false, new DEROctetString("foo123".getBytes())));
+        X509Extensions exts = new X509Extensions(oidvec, valuevec);
+        attr.add(new DERSet(exts));
+        attributes.add(new DERSequence(attr));
+        PKCS10CertificationRequest pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"),
+                keys.getPublic(), new DERSet(attributes), keys.getPrivate());
+        return pkcs10;
     }
 
     /**
@@ -636,6 +720,41 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertNull("PUBLICKEY request resulted in error code: " + (errorCode == null ? "" : errorCode.getInternalErrorCode()), errorCode);
         errorCode = certreqInternal(userData1, PUBLICKEY_BASE64, CertificateHelper.CERT_REQ_TYPE_PUBLICKEY);
         assertNull("PUBLICKEY request resulted in error code: " + (errorCode == null ? "" : errorCode.getInternalErrorCode()), errorCode);
+
+        // Test with custom extensions
+        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+
+        userData1.setStatus(UserDataVOWS.STATUS_NEW);
+        userData1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
+        userData1.setEndEntityProfileName(WS_EEPROF_EI);
+        userData1.setCertificateProfileName(WS_CERTPROF_EI);
+        ejbcaraws.editUser(userData1);
+        CertificateResponse certificateResponse = ejbcaraws.certificateRequest(userData1, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+        X509Certificate cert = certificateResponse.getCertificate();
+        byte[] ext = cert.getExtensionValue("1.2.3.4");
+        // Certificate profile did not allow extension override
+        assertNull("no extension should exist", ext);
+        // Allow extension override
+        CertificateProfile profile = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+        profile.setAllowExtensionOverride(true);
+        certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);
+        // Now our extension should be possible to get in there
+        try {
+            ejbcaraws.editUser(userData1);
+            certificateResponse = ejbcaraws.certificateRequest(userData1, getP10(), CertificateHelper.CERT_REQ_TYPE_PKCS10, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            cert = certificateResponse.getCertificate();
+            assertNotNull(cert);
+            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+            ext = cert.getExtensionValue("1.2.3.4");
+            assertNotNull("there should be an extension", ext);
+            DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(ext)).readObject());
+            assertEquals("Extension did not have the correct value", "foo123", new String(oct.getOctets()));
+        } finally {
+            // restore
+            profile.setAllowExtensionOverride(false);
+            certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);            
+        }
+
     }
 
     protected void enforcementOfUniquePublicKeys() throws Exception {
@@ -758,21 +877,80 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setCaName(CA1);
         user1.setStatus(UserDataVOWS.STATUS_NEW);
         user1.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
-        user1.setEndEntityProfileName("EMPTY");
-        user1.setCertificateProfileName("ENDUSER");
+        user1.setEndEntityProfileName(WS_EEPROF_EI);
+        user1.setCertificateProfileName(WS_CERTPROF_EI);
         ejbcaraws.editUser(user1);
 
-        CertificateResponse certenv = ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, CRMF, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
-
+        final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
+        KeyPair keys = KeyTools.genKeys("512", "RSA");
+        CAInfo info = caSession.getCAInfo(admin, CA1);
+        CertReqMsg req = createCrmfRequest(info.getSubjectDN(), getDN(CA1_WSTESTUSER1), keys, "1.2.3.4");
+        CertReqMessages msgs = new CertReqMessages(req);
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        DEROutputStream out = new DEROutputStream(bao);
+        out.writeObject(msgs);
+        byte[] ba = bao.toByteArray();
+        String reqstr = new String(Base64.encode(ba));
+        //CertificateResponse certenv = ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, CRMF, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+        CertificateResponse certenv = ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, reqstr, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
         assertNotNull(certenv);
-
         X509Certificate cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
-
         assertNotNull(cert);
         log.info(cert.getSubjectDN().toString());
         assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+        byte[] ext = cert.getExtensionValue("1.2.3.4");
+        // Certificate profile did not allow extension override
+        assertNull("no extension should exist", ext);
+        // Allow extension override
+        CertificateProfile profile = certificateProfileSession.getCertificateProfile(WS_CERTPROF_EI);
+        profile.setAllowExtensionOverride(true);
+        certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);
+        // Now our extension should be possible to get in there
+        try {
+            ejbcaraws.editUser(user1);
+            keys = KeyTools.genKeys("512", "RSA");
+            info = caSession.getCAInfo(admin, CA1);
+            req = createCrmfRequest(info.getSubjectDN(), getDN(CA1_WSTESTUSER1), keys, "1.2.3.4");
+            msgs = new CertReqMessages(req);
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(msgs);
+            ba = bao.toByteArray();
+            reqstr = new String(Base64.encode(ba));
+            certenv = ejbcaraws.crmfRequest(CA1_WSTESTUSER1, PASSWORD, reqstr, null, CertificateHelper.RESPONSETYPE_CERTIFICATE);
+            assertNotNull(certenv);
+            cert = (X509Certificate) CertificateHelper.getCertificate(certenv.getData());
+            assertNotNull(cert);
+            assertEquals(getDN(CA1_WSTESTUSER1), cert.getSubjectDN().toString());
+            ext = cert.getExtensionValue("1.2.3.4");
+            assertNotNull("there should be an extension", ext);
+            DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(ext)).readObject());
+            assertEquals("Extension did not have the correct value", "foo123", new String(oct.getOctets()));
+        } finally {
+            // restore
+            profile.setAllowExtensionOverride(false);
+            certificateProfileSession.changeCertificateProfile(admin, WS_CERTPROF_EI, profile);            
+        }
     }
 
+    private CertReqMsg createCrmfRequest(final String issuerDN, final String userDN, final KeyPair keys, final String extensionOid) throws IOException {
+        CertTemplate myCertTemplate = new CertTemplate();
+        myCertTemplate.setIssuer(new X509Name(issuerDN));
+        myCertTemplate.setSubject(new X509Name(userDN));
+        byte[] bytes = keys.getPublic().getEncoded();
+        ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
+        ASN1InputStream dIn = new ASN1InputStream(bIn);
+        SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
+        myCertTemplate.setPublicKey(keyInfo);
+        // If we did not pass any extensions as parameter, we will create some of our own, standard ones
+        X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
+        extgen.addExtension(new DERObjectIdentifier(extensionOid), false, "foo123".getBytes());
+        myCertTemplate.setExtensions(extgen.generate());
+        CertRequest myCertRequest = new CertRequest(new DERInteger(4), myCertTemplate);
+        CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest);
+        return myCertReqMsg;
+    }
+    
     protected void generateSpkac() throws Exception {
 
         // Edit our favorite test user
