@@ -314,7 +314,10 @@ public class HSMKeyTool extends ClientToolBox {
             pw.println("  "+args[0]+" "+VERIFY_SWITCH);
             pw.println("  "+args[0]+" "+MOVE_SWITCH);
             pw.flush();
-            log.error("Command '"+commandString(args)+"' not found.");
+            if (args.length > 1) {
+                // Don't print this if it is only a general usage message
+                log.error("Command '"+commandString(args)+"' not found.");
+            }
             System.exit(1); // Command not found.  // NOPMD, it's not a JEE app
         } catch (Throwable e) {
             System.err.println("Command could not be executed. See log for stack trace.");
