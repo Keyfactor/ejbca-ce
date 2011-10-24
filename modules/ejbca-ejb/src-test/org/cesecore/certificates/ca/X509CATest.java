@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.cert.CRL;
 import java.security.cert.CertStore;
@@ -467,6 +468,38 @@ public class X509CATest {
 		ca.setCAToken(token);
 	}
 	
+	@Test
+	public void testWrongCAKey() throws Exception {
+	    X509CA x509ca = createTestCA(CADN);
+
+	    // Generate a client certificate and check that it was generated correctly
+	    EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", EndEntityConstants.USER_ENDUSER, 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+	    KeyPair keypair = KeyTools.genKeys("512", "RSA");
+	    CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+	    cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
+	    cp.setUseCertificatePolicies(true);
+	    Certificate usercert = x509ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
+	    assertNotNull(usercert);
+	    
+	    // Change CA keys, but not CA certificate, should not work to issue a certificate with this CA, when the 
+	    // issued cert can not be verified by the CA certificate
+	    x509ca.getCAToken().getCryptoToken().generateKeyPair("512", CAToken.SOFTPRIVATESIGNKEYALIAS);
+	    try {
+	        usercert = x509ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
+	        fail("should not work to issue this certificate");
+	    } catch (InvalidKeyException e) {
+	        // NOPMD: this is what we want
+	    }
+	    // New CA certificate to make it work again
+	    X509Certificate cacert = CertTools.genSelfCert(CADN, 10L, "1.1.1.1", x509ca.getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), x509ca.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), "SHA256WithRSA", true);
+	    assertNotNull(cacert);
+	    Collection<Certificate> cachain = new ArrayList<Certificate>();
+	    cachain.add(cacert);
+	    x509ca.setCertificateChain(cachain);
+        usercert = x509ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
+        assertNotNull(usercert);
+	}
+
 	private static X509CA createTestCA(final String cadn) throws Exception {
 		return createTestCA(cadn, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
 	}

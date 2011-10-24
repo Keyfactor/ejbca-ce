@@ -793,8 +793,10 @@ public class X509CA extends CA implements Serializable {
             log.trace("<certgen.generate");
         }
 
-        // Verify before returning
-        cert.verify(caPublicKey);
+        // Verify using the CA certificate before returning
+        // If we can not verify the issued certificate using the CA certificate we don't want to issue this cert
+        // because something is wrong...
+        cert.verify(cacert.getPublicKey());
 
         // If we have a CA-certificate, verify that we have all path verification stuff correct
         if (cacert != null) {
