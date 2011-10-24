@@ -654,9 +654,11 @@ set in the option "cmp.authenticationparameters".</p>
 this password will be used to authenticate the message</li>
 </ul>
 <li>EndEntityCertificate: When this module is used, the request sender should attach his certificate to the extraCert parameter in the PKIMessage and then 
-sign the message with his private key. EJBCA will then check if the certificate in extraCert does exist in its database and verifies the message signature. 
-If "cmp.checkadminauthorization" in cmp.properties file is set to "true", the certificate in extraCert is checked to determin that it belongs to a registerd 
-administrator in EJBCA with the right authorizations to perform the operations required in the request</li>
+sign the message with his private key. In client mode, a user may only send a CMP request regarding his/her own certificate. Ejbca will then check if the 
+certificate in extraCert does exist in its database and verifies that it belongs to the sender before verifying the signature. 
+In RA mode, if "cmp.checkadminauthorization" in cmp.properties file is set to "true", EJBCA will then check if the certificate in extraCert does exist in its 
+database and make a check to determin that it belongs to a registerd administrator in EJBCA with the right authorizations to perform the operations required 
+in the request</li>
 </ul>
 <p>For details about how to set which modules to use and their parameters, see the documentation in the properties file.</p>
 </subsection>
