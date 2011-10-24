@@ -796,7 +796,13 @@ public class X509CA extends CA implements Serializable {
         // Verify using the CA certificate before returning
         // If we can not verify the issued certificate using the CA certificate we don't want to issue this cert
         // because something is wrong...
-        cert.verify(cacert.getPublicKey());
+        PublicKey verifyKey;
+        if (cacert != null) {
+            verifyKey = cacert.getPublicKey();
+        } else {
+            verifyKey = caPublicKey;
+        }
+        cert.verify(verifyKey);
 
         // If we have a CA-certificate, verify that we have all path verification stuff correct
         if (cacert != null) {
@@ -959,7 +965,13 @@ public class X509CA extends CA implements Serializable {
         // Verify using the CA certificate before returning
         // If we can not verify the issued CRL using the CA certificate we don't want to issue this CRL
         // because something is wrong...
-        crl.verify(cacert.getPublicKey());
+        PublicKey verifyKey;
+        if (cacert != null) {
+            verifyKey = cacert.getPublicKey();
+        } else {
+            verifyKey = getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
+        }
+        crl.verify(verifyKey);
         return crl;
     }
 
