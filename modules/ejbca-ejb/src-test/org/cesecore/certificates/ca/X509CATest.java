@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.SignatureException;
 import java.security.cert.CRL;
 import java.security.cert.CertStore;
 import java.security.cert.Certificate;
@@ -490,6 +491,14 @@ public class X509CATest {
 	    } catch (InvalidKeyException e) {
 	        // NOPMD: this is what we want
 	    }
+        try {
+            Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
+            x509ca.generateCRL(revcerts, 1);
+            fail("should not work to issue this CRL");
+        } catch (SignatureException e) {
+            // NOPMD: this is what we want
+        }
+
 	    // New CA certificate to make it work again
 	    X509Certificate cacert = CertTools.genSelfCert(CADN, 10L, "1.1.1.1", x509ca.getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), x509ca.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), "SHA256WithRSA", true);
 	    assertNotNull(cacert);
@@ -498,6 +507,9 @@ public class X509CATest {
 	    x509ca.setCertificateChain(cachain);
         usercert = x509ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
         assertNotNull(usercert);
+        Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
+        CRL crl = x509ca.generateCRL(revcerts, 1);
+        assertNotNull(crl);
 	}
 
 	private static X509CA createTestCA(final String cadn) throws Exception {
