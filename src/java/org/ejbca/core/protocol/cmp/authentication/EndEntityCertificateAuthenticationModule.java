@@ -189,16 +189,26 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             return false;            
         }
         
-        // Get CA info. In case of fail, error message would have already been sat and logged.
-        CAInfo cainfo = getAndCheckCAInfo(extracert);
+        // Get CA info. In case of fail, error message would have already been set and logged.
+        CAInfo cainfo = getCAInfo(extracert);
         if(cainfo == null) {
             return false;
         }
  
         if(CmpConfiguration.getRAOperationMode() && CmpConfiguration.getCheckAdminAuthorization()) {
+            
             //Check that the certificate in the extraCert field exists in the DB. In case of fail, error message would have already been sat and logged.
             if(getActiveExistingCertInfo(fp) == null) {
                 return false;
+            }
+            
+            //Check that the extraCert is given by the right CA
+            if(!StringUtils.equals(CertTools.getIssuerDN(extracert), cainfo.getSubjectDN())) {
+                errorMessage = "The certificate attached to the PKIMessage is not given by the CA '" + this.authenticationParameterCAName + "'";
+                if(log.isDebugEnabled()) {
+                    log.debug(errorMessage);
+                }
+                cainfo = null;
             }
                 
             //Check that the request sender is an authorized administrator
@@ -237,7 +247,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 return false;                
             }
          
-            // If client mode we will check if this certificate belongs to the user, and set the password of the request to this user's password
+            // Check if this certificate belongs to the user, and set the password of the request to this user's password
             // so it can later be used when issuing the certificate
             if (username != null) {
                 if (!StringUtils.equals(username, certInfo.getUsername())) {
@@ -479,20 +489,12 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return info;
     }
     
-    private CAInfo getAndCheckCAInfo(Certificate extracert) {
+    private CAInfo getCAInfo(Certificate extracert) {
         CAInfo cainfo = null;
         try {
             //Check that the extraCert is issued by the right CA
             if (!StringUtils.equals("-", this.authenticationParameterCAName)) {
                 cainfo = caSession.getCAInfo(this.admin, this.authenticationParameterCAName);
-                //Check that the extraCert is given by the right CA
-                if(!StringUtils.equals(CertTools.getIssuerDN(extracert), cainfo.getSubjectDN())) {
-                    errorMessage = "The certificate attached to the PKIMessage is not given by the CA '" + this.authenticationParameterCAName + "'";
-                    if(log.isDebugEnabled()) {
-                        log.debug(errorMessage);
-                    }
-                    cainfo = null;
-                }
             } else {
                 cainfo = caSession.getCAInfo(this.admin, CertTools.getIssuerDN(extracert).hashCode());
             }
