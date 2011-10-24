@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -32,8 +31,6 @@ import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -64,12 +61,8 @@ import javax.xml.ws.WebServiceContext;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.X509Principal;
-import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
@@ -92,12 +85,10 @@ import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.IllegalKeyException;
-import org.cesecore.certificates.certificate.request.CVCRequestMessage;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -198,13 +189,10 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
 
-import com.novosec.pkix.asn1.crmf.CertRequest;
-
 /**
  * Implementor of the IEjbcaWS interface.
  * Keep this class free of other helper methods, and implement them in the helper classes instead.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 @Stateless
@@ -260,11 +248,6 @@ public class EjbcaWS implements IEjbcaWS {
 
 	/** The maximum number of rows returned in array responses. */
 	private static final int MAXNUMBEROFROWS = 100;
-	
-	private static final int REQTYPE_PKCS10 = 1;
-	private static final int REQTYPE_CRMF = 2;
-	private static final int REQTYPE_SPKAC = 3;
-	private static final int REQTYPE_CVC = 4;
 	
 	private static final Logger log = Logger.getLogger(EjbcaWS.class);	
     /** Internal localization of logs and errors */
@@ -473,7 +456,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
 	        return new CertificateResponse(responseType, processCertReq(username, password,
-	                                                                    crmf, REQTYPE_CRMF, hardTokenSN, responseType, logger));
+	                                                                    crmf, SecConst.CERT_REQ_TYPE_CRMF, hardTokenSN, responseType, logger));
         } catch( AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -498,7 +481,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
 	        return new CertificateResponse(responseType, processCertReq(username, password,
-	                                                                    spkac, REQTYPE_SPKAC, hardTokenSN, responseType, logger));
+	                                                                    spkac, SecConst.CERT_REQ_TYPE_SPKAC, hardTokenSN, responseType, logger));
         } catch( AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -786,7 +769,7 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			
 			// Finally generate the certificate (assuming status is NEW and password is correct
-			byte[] response = processCertReq(username, password, cvcreq, REQTYPE_CVC, null, CertificateHelper.RESPONSETYPE_CERTIFICATE, logger);
+			byte[] response = processCertReq(username, password, cvcreq, SecConst.CERT_REQ_TYPE_CVC, null, CertificateHelper.RESPONSETYPE_CERTIFICATE, logger);
 			CertificateResponse ret = new CertificateResponse(CertificateHelper.RESPONSETYPE_CERTIFICATE, response);
 			byte[] b64cert = ret.getData();
 			CVCertificate certObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
@@ -899,7 +882,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    		log.debug("PKCS10 from user '"+username+"'.");
 	    	}
 	        return new CertificateResponse(responseType, processCertReq(username, password,
-	                                                                    pkcs10, REQTYPE_PKCS10, hardTokenSN, responseType, logger));
+	                                                                    pkcs10, SecConst.CERT_REQ_TYPE_PKCS10, hardTokenSN, responseType, logger));
         } catch( AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -942,82 +925,7 @@ public class EjbcaWS implements IEjbcaWS {
                                         logger, ErrorCode.BAD_USER_TOKEN_TYPE, null);
 			}
 
-			RequestMessage imsg = null;
-			if (reqType == REQTYPE_PKCS10) {
-				final RequestMessage pkcs10req = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());
-				final PublicKey pubKey = pkcs10req.getRequestPublicKey();
-				imsg = new SimpleRequestMessage(pubKey, username, password);
-			} else if (reqType == REQTYPE_SPKAC) {
-				// parts copied from request helper.
-				byte[] reqBytes = req.getBytes();
-				if (reqBytes != null) {
-					if (log.isDebugEnabled()) {
-						log.debug("Received NS request: "+new String(reqBytes));
-					}
-					byte[] buffer = Base64.decode(reqBytes);
-					if (buffer == null) {
-						return null;
-					}
-					ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer));
-					ASN1Sequence spkacSeq = (ASN1Sequence) in.readObject();
-					in.close();
-					NetscapeCertRequest nscr = new NetscapeCertRequest(spkacSeq);
-					// Verify POPO, we don't care about the challenge, it's not important.
-					nscr.setChallenge("challenge");
-					if (nscr.verify("challenge") == false) {
-						if (log.isDebugEnabled()) {
-							log.debug("SPKAC POPO verification Failed");
-						}
-						throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
-					}
-					if (log.isDebugEnabled()) {
-						log.debug("POPO verification successful");
-					}
-					PublicKey pubKey = nscr.getPublicKey();
-					imsg = new SimpleRequestMessage(pubKey, username, password);
-				}		
-			} else if (reqType == REQTYPE_CRMF) {
-				byte[] request = Base64.decode(req.getBytes());
-				ASN1InputStream in = new ASN1InputStream(request);
-				ASN1Sequence    crmfSeq = (ASN1Sequence) in.readObject();
-				ASN1Sequence reqSeq =  (ASN1Sequence) ((ASN1Sequence) crmfSeq.getObjectAt(0)).getObjectAt(0);
-				CertRequest certReq = new CertRequest( reqSeq );
-				SubjectPublicKeyInfo pKeyInfo = certReq.getCertTemplate().getPublicKey();
-				KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
-				KeySpec keySpec = new X509EncodedKeySpec( pKeyInfo.getEncoded() );
-				PublicKey pubKey = keyFact.generatePublic(keySpec); // just check it's ok
-				imsg = new SimpleRequestMessage(pubKey, username, password);
-				// a simple crmf is not a complete PKI message, as desired by the CrmfRequestMessage class
-				//PKIMessage msg = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(request)).readObject());
-				//CrmfRequestMessage reqmsg = new CrmfRequestMessage(msg, null, true, null);
-				//imsg = reqmsg;
-			} else if (reqType == REQTYPE_CVC) {
-				CVCObject parsedObject = CertificateParser.parseCVCObject(Base64.decode(req.getBytes()));
-				// We will handle both the case if the request is an authenticated request, i.e. with an outer signature
-				// and when the request is missing the (optional) outer signature.
-				CVCertificate cvccert = null;
-				if (parsedObject instanceof CVCAuthenticatedRequest) {
-					CVCAuthenticatedRequest cvcreq = (CVCAuthenticatedRequest)parsedObject;
-					cvccert = cvcreq.getRequest();
-				} else {
-					cvccert = (CVCertificate)parsedObject;
-				}
-				CVCRequestMessage reqmsg = new CVCRequestMessage(cvccert.getDEREncoded());
-				reqmsg.setUsername(username);
-				reqmsg.setPassword(password);
-				// Popo is really actually verified by the CA (in RSASignSessionBean) as well
-				if (reqmsg.verify() == false) {
-					if (log.isDebugEnabled()) {
-						log.debug("CVC POPO verification Failed");
-					}
-					throw new SignRequestSignatureException("Invalid inner signature in CVCRequest, popo-verification failed.");
-				} else {
-					if (log.isDebugEnabled()) {
-						log.debug("POPO verification successful");
-					}
-				}
-				imsg = reqmsg;
-			}
+			RequestMessage imsg = RequestMessageUtils.getSimpleRequestMessageFromType(username, password, req, reqType);
 			if (imsg != null) {
 				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType);
 			}

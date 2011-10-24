@@ -13,24 +13,19 @@
 
 package org.ejbca.core.ejb.ra;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
-import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.KeySpec;
-import java.security.spec.X509EncodedKeySpec;
 
 import javax.annotation.Resource;
 import javax.ejb.EJB;
@@ -42,30 +37,21 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.cesecore.CesecoreException;
+import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.FileTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
@@ -84,8 +70,8 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.GenerateToken;
-
-import com.novosec.pkix.asn1.crmf.CertRequest;
+import org.ejbca.cvc.exception.ConstructionException;
+import org.ejbca.cvc.exception.ParseException;
 
 /**
  * Combines EditUser (RA) with CertReq (CA) methods using transactions.
@@ -142,72 +128,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         try {
             String password = userdata.getPassword();
             String username = userdata.getUsername();
-            RequestMessage imsg = null;
-            if (reqType == SecConst.CERT_REQ_TYPE_PKCS10) {
-                RequestMessage pkcs10req = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());
-                PublicKey pubKey = pkcs10req.getRequestPublicKey();
-                imsg = new SimpleRequestMessage(pubKey, username, password);
-            } else if (reqType == SecConst.CERT_REQ_TYPE_SPKAC) {
-                // parts copied from request helper.
-                byte[] reqBytes = req.getBytes();
-                if (reqBytes != null) {
-                    log.debug("Received NS request: " + new String(reqBytes));
-                    byte[] buffer = Base64.decode(reqBytes);
-                    if (buffer == null) {
-                        return null;
-                    }
-                    ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(buffer));
-                    ASN1Sequence spkacSeq = (ASN1Sequence) in.readObject();
-                    in.close();
-                    NetscapeCertRequest nscr = new NetscapeCertRequest(spkacSeq);
-                    // Verify POPO, we don't care about the challenge, it's not important.
-                    nscr.setChallenge("challenge");
-                    if (nscr.verify("challenge") == false) {
-                        log.debug("POPO verification Failed");
-                        throw new SignRequestSignatureException("Invalid signature in NetscapeCertRequest, popo-verification failed.");
-                    }
-                    log.debug("POPO verification successful");
-                    PublicKey pubKey = nscr.getPublicKey();
-                    imsg = new SimpleRequestMessage(pubKey, username, password);
-                }
-            } else if (reqType == SecConst.CERT_REQ_TYPE_CRMF) {
-                byte[] request = Base64.decode(req.getBytes());
-                ASN1InputStream in = new ASN1InputStream(request);
-                ASN1Sequence crmfSeq = (ASN1Sequence) in.readObject();
-                ASN1Sequence reqSeq = (ASN1Sequence) ((ASN1Sequence) crmfSeq.getObjectAt(0)).getObjectAt(0);
-                CertRequest certReq = new CertRequest(reqSeq);
-                SubjectPublicKeyInfo pKeyInfo = certReq.getCertTemplate().getPublicKey();
-                KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
-                KeySpec keySpec = new X509EncodedKeySpec(pKeyInfo.getEncoded());
-                PublicKey pubKey = keyFact.generatePublic(keySpec); // just check it's ok
-                imsg = new SimpleRequestMessage(pubKey, username, password);
-                // a simple crmf is not a complete PKI message, as desired by the CrmfRequestMessage class
-                // PKIMessage msg = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(request)).readObject());
-                // CrmfRequestMessage reqmsg = new CrmfRequestMessage(msg, null, true, null);
-                // imsg = reqmsg;
-            } else if (reqType == SecConst.CERT_REQ_TYPE_PUBLICKEY) {
-                byte[] request;
-                // Request can be Base64 encoded or in PEM format
-                try {
-                    request = FileTools.getBytesFromPEM(req.getBytes(), CertTools.BEGIN_PUBLIC_KEY, CertTools.END_PUBLIC_KEY);
-                } catch (IOException ex) {
-                    try {
-                        request = Base64.decode(req.getBytes());
-                        if (request == null) {
-                            throw new IOException("Base64 decode of buffer returns null");
-                        }
-                    } catch (ArrayIndexOutOfBoundsException ae) {
-                        throw new IOException("Base64 decode fails, message not base64 encoded: " + ae.getMessage());
-                    }
-                }
-                final ASN1InputStream in = new ASN1InputStream(request);
-                final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(in.readObject());
-                final AlgorithmIdentifier keyAlg = keyInfo.getAlgorithmId();
-                final X509EncodedKeySpec xKeySpec = new X509EncodedKeySpec(new DERBitString(keyInfo).getBytes());
-                final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getObjectId().getId(), "BC");
-                final PublicKey pubKey = keyFact.generatePublic(xKeySpec);
-                imsg = new SimpleRequestMessage(pubKey, username, password);
-            }
+            RequestMessage imsg = RequestMessageUtils.getSimpleRequestMessageFromType(username, password, req, reqType);
             if (imsg != null) {
                 retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType, userdata);
             }
@@ -241,6 +162,15 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         } catch (CesecoreException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
+        } catch (ParseException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
+        } catch (ConstructionException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
+        } catch (NoSuchFieldException e) {
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, e);
         }
         return retval;
     }

@@ -153,6 +153,8 @@ public final class SecConst {
     public static final int CERT_REQ_TYPE_CRMF		= 1;
     public static final int CERT_REQ_TYPE_SPKAC     = 2;
 	public static final int CERT_REQ_TYPE_PUBLICKEY = 3;
+	public static final int CERT_REQ_TYPE_CVC       = 4;
+
     
     // Certificate response types
     public static final int CERT_RES_TYPE_CERTIFICATE	 = 0;
