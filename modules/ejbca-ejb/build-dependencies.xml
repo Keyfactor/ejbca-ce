@@ -463,6 +463,7 @@
 					<exclude name="org/ejbca/core/ejb/ca/store/CertReqHistory*.java"/>
 				</fileset>
 				<fileset dir="${src.dir}">
+					<include name="com/novosec/pkix/asn1/crmf/*.java"/>
 					<include name="org/cesecore/certificates/certificate/*.java"/>
 					<include name="org/cesecore/certificates/certificate/request/*.java"/>
 					<include name="org/cesecore/certificates/ca/SignRequestException.java"/>
@@ -529,6 +530,7 @@
 			<mkdir dir="${build-temp.dir}/ca"/>
 			<copy todir="${src-temp.dir}/ca">
 				<fileset dir="${src.dir}">
+					<include name="com/novosec/pkix/asn1/crmf/*.java"/>
 					<include name="org/cesecore/certificates/ca/*CA.java"/>
 					<include name="org/cesecore/certificates/ca/*CAInfo.java"/>
 					<include name="org/cesecore/certificates/ca/CAConstants.java"/>
@@ -549,6 +551,7 @@
 					<include name="org/cesecore/certificates/certificate/CertificateCreateException.java"/>
 					<include name="org/cesecore/certificates/certificate/request/PKCS10RequestMessage.java"/>
 					<include name="org/cesecore/certificates/certificate/request/CVCRequestMessage.java"/>
+					<include name="org/cesecore/certificates/certificate/request/SimpleRequestMessage.java"/>
 					<include name="org/cesecore/certificates/certificate/request/RequestMessage.java"/>
 					<include name="org/cesecore/certificates/certificate/request/ResponseMessage.java"/>
 					<include name="org/cesecore/certificates/certificate/request/CertificateResponseMessage.java"/>
