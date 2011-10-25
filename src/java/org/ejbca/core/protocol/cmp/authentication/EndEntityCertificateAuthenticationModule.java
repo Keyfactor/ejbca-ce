@@ -201,7 +201,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         try {
             extracert.verify(cacert.getPublicKey(), "BC");
         } catch (Exception e) {
-            errorMessage = "The End Entity certificate attached to the PKIMessage is not issued by the CA \"" + this.authenticationParameterCAName + "\"";
+            errorMessage = "The End Entity certificate attached to the PKIMessage is not issued by the CA '" + cainfo.getName() + "'";
             if(log.isDebugEnabled()) {
                 log.debug(errorMessage+": "+e.getLocalizedMessage());
             }
