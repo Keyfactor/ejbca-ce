@@ -89,6 +89,9 @@
 # performed. For RA mode this is highly recommended. For client mode, the value of this setting is not used since the user may only 
 # send CMP requests regarding his own certificate and no one else's.
 #
+# WARNING: It is highly not recommended to set this variable to 'false'. Do NOT set it to 'false' unless you are sure that you know 
+# what you are doing and why.
+#
 # Default: true
 #cmp.checkadminauthorization=true
 #cmp.checkadminauthorization=false
