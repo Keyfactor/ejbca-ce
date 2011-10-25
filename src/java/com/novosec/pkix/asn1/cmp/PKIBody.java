@@ -239,12 +239,12 @@ public class PKIBody implements DEREncodable
       return (DERNull)this.obj;
     }
 
-    public PKIMessage getNested()
+    public DEREncodable getNested()
     {
       if( this.tag != 20 ) {
         return null;
       }
-      return (PKIMessage)this.obj;
+      return (DEREncodable)this.obj;
     }
 
     public GenMsgContent getGenm()
@@ -308,8 +308,8 @@ public class PKIBody implements DEREncodable
           case 16: return new PKIBody(X509CertificateStructure.getInstance(tagObj.getObject()),16);          
           case 17: return new PKIBody(RevAnnContent.getInstance(tagObj.getObject()),           17);
           case 18: return new PKIBody(CRLAnnContent.getInstance(tagObj.getObject()),           18);
-          case 19: return new PKIBody(tagObj.getObject(),                             19);
-          case 20: return new PKIBody(PKIMessage.getInstance(tagObj.getObject()),              20);          
+          case 19: return new PKIBody(tagObj.getObject(),                                      19);
+          case 20: return new PKIBody(tagObj.getObject(),                                      20);          
           case 21: return new PKIBody(GenMsgContent.getInstance(tagObj.getObject()),           21);
           case 22: return new PKIBody(GenRepContent.getInstance(tagObj.getObject()),           22);
           case 23: return new PKIBody(ErrorMsgContent.getInstance(tagObj.getObject()),         23);

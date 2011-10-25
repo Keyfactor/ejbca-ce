@@ -51,6 +51,7 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBitString;
@@ -60,6 +61,7 @@ import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -308,8 +310,8 @@ public class NestedMessageContentTest extends CmpTestCase {
         final byte[] nonce = CmpMessageHelper.createSenderNonce();
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         
-        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(reqSubjectDN)), new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN()
-                   .getName())));
+        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(reqSubjectDN)), 
+                    new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN().getName())));
         myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
         // senderNonce
         myPKIHeader.setSenderNonce(new DEROctetString(nonce));
@@ -317,8 +319,15 @@ public class NestedMessageContentTest extends CmpTestCase {
         myPKIHeader.setTransactionID(new DEROctetString(transid));
         //myPKIHeader.addGeneralInfo(new InfoTypeAndValue(ASN1Sequence.getInstance(crmfMsg)));
 
-        PKIBody myPKIBody = new PKIBody(crmfMsg, 20); // NestedMessageContent
+        
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add( crmfMsg );
+        DERSequence seq = new DERSequence(v);
+        PKIBody myPKIBody = new PKIBody(seq, 20); // NestedMessageContent
+        assertNotNull("Failed to create nested Message PKIBody", myPKIBody);
+        
         PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
+        assertNotNull("Failed to created nested message PKIMessage", myPKIMessage);
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         createRACertificate("raCrmfSigner", "foo123", raKeys, null, null);
         signPKIMessage(myPKIMessage, raKeys);
@@ -440,7 +449,10 @@ public class NestedMessageContentTest extends CmpTestCase {
         myPKIHeader.setTransactionID(new DEROctetString(reqTransid));
         //myPKIHeader.addGeneralInfo(new InfoTypeAndValue(ASN1Sequence.getInstance(crmfMsg)));
 
-        PKIBody myPKIBody = new PKIBody(revMsg, 20); // NestedMessageContent
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add( revMsg );
+        DERSequence seq = new DERSequence(v);
+        PKIBody myPKIBody = new PKIBody(seq, 20); // NestedMessageContent
         PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         createRACertificate("raRevSigner", "foo123", raKeys, null, null);
@@ -498,7 +510,10 @@ public class NestedMessageContentTest extends CmpTestCase {
         myPKIHeader.setTransactionID(new DEROctetString(transid));
         //myPKIHeader.addGeneralInfo(new InfoTypeAndValue(ASN1Sequence.getInstance(crmfMsg)));
 
-        PKIBody myPKIBody = new PKIBody(crmfMsg, 20); // NestedMessageContent
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add( crmfMsg );
+        DERSequence seq = new DERSequence(v);
+        PKIBody myPKIBody = new PKIBody(seq, 20); // NestedMessageContent
         PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
         KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
         createRACertificate("raSignerTest04", "foo123", raKeys, null, null);
@@ -658,6 +673,9 @@ public class NestedMessageContentTest extends CmpTestCase {
         myPKIHeader.setTransactionID(new DEROctetString(transid));
         PKIBody myPKIBody = new PKIBody(myCertReqMessages, 20); // nestedMessageContent
         PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
+        KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
+        createRACertificate("raSignerTest06", "foo123", raKeys, null, null);
+        signPKIMessage(myPKIMessage, raKeys);
         
         assertNotNull("Failed to create PKIHeader", myPKIHeader);
         assertNotNull("Failed to create PKIBody", myPKIBody);
@@ -676,7 +694,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         PKIBody body = respObject.getBody();
         assertEquals(23, body.getTagNo());
         String errMsg = body.getError().getPKIStatus().getStatusString().getString(0).getString();
-        assertEquals("Wrong error message", "Not a valid CMP message.", errMsg);
+        assertEquals("unknown object in getInstance: org.bouncycastle.asn1.DERSequence", errMsg);
     }
     
     @Test
