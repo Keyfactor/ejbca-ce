@@ -23,7 +23,9 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.cmp.PKIMessages;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -172,13 +174,24 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                 if(log.isDebugEnabled()) {
                     log.debug("Received a NestedMessageContent");
                 }
+
                 final NestedMessageContent nestedMessage = new NestedMessageContent(req);
                 if(nestedMessage.verify()) {
                     if(log.isDebugEnabled()) {
                         log.debug("The NestedMessageContent was verifies successfully");
                     }
-                    final PKIMessage nested = nestedMessage.getPKIMessage().getBody().getNested();
-                    return dispatch(admin, nested.getDERObject().getDEREncoded());
+                    try {
+                        final DEREncodable nested = nestedMessage.getPKIMessage().getBody().getNested();
+                        PKIMessages nestedMessages = PKIMessages.getInstance(nested);
+                        org.bouncycastle.asn1.cmp.PKIMessage[] pkiMessages = nestedMessages.toPKIMessageArray();
+                        return dispatch(admin, pkiMessages[0].getDERObject().getDEREncoded());
+                        //return dispatch(admin, nested.getDERObject().getDEREncoded());
+                    } catch (IllegalArgumentException e) {
+                        final String errMsg = e.getLocalizedMessage();
+                        log.error(errMsg);
+                        cmpMessage = new NestedMessageContent(req);
+                        return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg); 
+                    }
                 } else {
                     final String errMsg = "Could not verify the RA";
                     log.error(errMsg);
