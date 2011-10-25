@@ -79,7 +79,7 @@ public class DatabaseSchemaTest {
 	public void setUp() throws Exception {
 		LOG.trace(">setup");
 		if (entityManagerFactory == null) {
-			entityManagerFactory = Persistence.createEntityManagerFactory("ejbca-write");
+			entityManagerFactory = Persistence.createEntityManagerFactory("ejbca-pu");
 		}
 		entityManager = entityManagerFactory.createEntityManager();
 		LOG.trace("<setup");
