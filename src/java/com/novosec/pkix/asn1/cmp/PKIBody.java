@@ -54,7 +54,7 @@ import com.novosec.pkix.asn1.crmf.CertReqMessages;
  *       rann    [17] RevAnnContent,          --Revocation Ann.
  *       crlann  [18] CRLAnnContent,          --CRL Announcement
  *       conf    [19] PKIConfirmContent,      --Confirmation          (NULL)
- *       nested  [20] NestedMessageContent,   --Nested Message        (PKIMessage)
+ *       nested  [20] NestedMessageContent,   --Nested Message        (PKIMessages)
  *       genm    [21] GenMsgContent,          --General Message
  *       genp    [22] GenRepContent,          --General Response
  *       error   [23] ErrorMsgContent         --Error Message
