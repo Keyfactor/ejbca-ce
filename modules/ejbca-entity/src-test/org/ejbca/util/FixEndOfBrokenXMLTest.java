@@ -11,6 +11,9 @@
  *                                                                       *
  *************************************************************************/
 package org.ejbca.util;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+
 import java.beans.XMLDecoder;
 import java.beans.XMLEncoder;
 import java.io.ByteArrayInputStream;
@@ -20,16 +23,15 @@ import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.junit.Test;
 
 /**
  * Test reparation of XML serialized objects.
  * 
  * @version $Id$
  */
-public class FixEndOfBrokenXMLTest extends TestCase {
+public class FixEndOfBrokenXMLTest {
 
 	private static Logger log = Logger.getLogger(FixEndOfBrokenXMLTest.class);
 	private static String CHAR_ENCODING = "UTF-8";
@@ -41,6 +43,7 @@ public class FixEndOfBrokenXMLTest extends TestCase {
 	 * This test does not reproduce the production failure that the fix was written
 	 * for, but instead tests the general ability to repair XML under the current JDK.
 	 */ 
+	@Test
 	public void test01() throws Exception {
 		log.trace(">test01");
 		final int limit = "</string></void></object></java>".length(); // This is what we expect to be able to repair
@@ -116,6 +119,7 @@ public class FixEndOfBrokenXMLTest extends TestCase {
 	 * This might not be a good thing since we loose more data than necessary,
 	 * but at least we want to have this behavior demonstrated and documented.
 	 */
+	@Test
 	public void test02MissingLastStartOfString() throws Exception {
 		log.trace(">test02MissingLastStartOfString");
 		final String BROKEN_XML_2_PART1 =
