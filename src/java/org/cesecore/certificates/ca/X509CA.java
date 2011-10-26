@@ -378,7 +378,14 @@ public class X509CA extends CA implements Serializable {
         // First verify that we signed this certificate
         try {
             if (cert != null) {
-                cert.verify(getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+                PublicKey verifyKey;
+                X509Certificate cacert = (X509Certificate)getCACertificate ();
+                if (cacert != null) {
+                    verifyKey = cacert.getPublicKey();
+                } else {
+                    verifyKey = getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+                }
+               cert.verify(verifyKey);
             }
         } catch (Exception e) {
             throw new SignRequestSignatureException("Cannot verify certificate in createPKCS7(), did I sign this?");
