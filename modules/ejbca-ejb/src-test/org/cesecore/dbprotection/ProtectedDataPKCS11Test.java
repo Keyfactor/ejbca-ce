@@ -96,14 +96,15 @@ public class ProtectedDataPKCS11Test extends ProtectedData {
     //
     // Start Database integrity protection methods
     //
-
+    @Override
     public String getRowProtection() {
         return rowProtection;
     }
+    @Override
     public void setRowProtection(String rowProtection) {
         this.rowProtection = rowProtection;
     }
-
+    @Override
     protected String getProtectString(final int version) {
         StringBuilder build = new StringBuilder(3000);
         // What is important to protect here is the data that we define, id, name and certificate profile data
@@ -116,15 +117,15 @@ public class ProtectedDataPKCS11Test extends ProtectedData {
     protected int getProtectVersion() {
         return 1;
     }
-
+    @Override
     protected void protectData() {
         super.protectData();
     }
-
+    @Override
     protected void verifyData() {
         super.verifyData();
     }
-
+    @Override
     protected String getRowId() {
         return "1";
     }
