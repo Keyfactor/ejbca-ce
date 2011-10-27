@@ -21,6 +21,8 @@ import java.io.Serializable;
  * 
  * @version $Id$
  *
+ *
+ * @deprecated - Use AbstractMap.SimpleEntry instead
  */
 public final class Tuplet<K, V> implements Serializable{
 
