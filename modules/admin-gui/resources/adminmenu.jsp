@@ -334,6 +334,9 @@
 			title="<%= ejbcawebbean.getText("OPENHELPSECTION") %>"><%=ejbcawebbean.getText("DOCUMENTATION") %></a>
 		</li>
 <% } %>
+<% if (org.ejbca.config.WebConfiguration.isProxiedAuthenticationEnabled()) { %>
+		<li id="cat10"><a href="/logout" target="_top"><%=ejbcawebbean.getText("LOGOUT") %></a></li>
+<% } %>
 
 <%
     // If authorized to view help pages then display related links.
