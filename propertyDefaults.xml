@@ -59,6 +59,7 @@
 	    </condition>
 	</fail>
 	<property name="plugin.ejbca.lib.dir" value="${ejbca.home}/doesnotexist"/>
+	<property name="plugin.ejbca.mod.dir" value="${ejbca.home}/doesnotexist"/>
 
 	<!-- Load property files -->	
     <property file="${ejbca.home}/conf/ejbca.properties" />

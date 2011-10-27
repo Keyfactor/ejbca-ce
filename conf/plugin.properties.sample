@@ -3,11 +3,16 @@
 # if defined the EJBCA build will invoke the plugin ANT file with the following
 # properties defined:
 #
-#     ejbca.total.plugin.classpath    Holds a path to all .jar files
+#     ejbca.plugin.classpath     Holds a path to all EJBCA .jar files
+#     ejbca.plugin.app.xml       Holds the path to EJBCA's application.xml
+#     ejbca.plugin.dbtype        Holds the type of the EJBCA database (e.g. "mysql")
 
-# Mandatory: where the ANT file is
+# Mandatory: where the plugin's ANT file resides
 plugin.ejbca.ant.file /home/demo/myplugin/build.xml
 
-# Optional: where plugin's LIB (jar) distribution is
-plugin.ejbca.lib.dir /home/demo/myplugin/dist
+# Optional: where the plugin's LIB (jar) distribution resides
+plugin.ejbca.lib.dir /home/demo/myplugin/dist/lib
+
+# Optional: where the plugin's top-level (ejb,war) distribution resides
+plugin.ejbca.mod.dir /home/demo/myplugin/dist/mod
 
