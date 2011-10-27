@@ -177,7 +177,7 @@
 
 	<target name="plugin-bootstrap-build" if="plugin.ejbca.present">
     	<echo message="Plugin build found"/>
-		<path id="ejbca.total.plugin.classpath">
+		<path id="ejbca.plugin.classpath">
 		   <fileset dir="${lib}">
 			   <include name="*.jar"/>
 		     </fileset>
@@ -187,10 +187,19 @@
 			 <fileset dir="${dist.dir}">
 			   <include name="*.jar"/>
 			 </fileset>
-			 <path refid="lib.jee.classpath"/>
-		  </path>
+			<path refid="lib.ejbca-common-web.classpath"/>
+			<path refid="lib.log4j.classpath"/>
+			<path refid="lib.servlet.classpath"/>
+			<path refid="lib.commons-lang.classpath"/>
+			<path refid="lib.commons-fileupload.classpath"/>
+			<path refid="lib.jee.classpath"/>
+			<path refid="lib.bouncycastle.classpath"/>
+			<path refid="lib.ldap.classpath"/>
+         </path>
 		<ant antfile="${plugin.ejbca.ant.file}" inheritAll="false" inheritrefs="false">
-			<property name="ejbca.total.plugin.classpath" refid="ejbca.total.plugin.classpath"/>
+			<property name="ejbca.plugin.classpath" refid="ejbca.plugin.classpath"/>
+	        <property name="ejbca.plugin.app.xml" value="${eardd.src}/META-INF/application.xml"/>
+	        <property name="ejbca.plugin.dbtype" value="${database.name}"/>
 		</ant>
 	</target>
 
@@ -310,7 +319,11 @@
 		    <zipfileset prefix="lib" dir="${plugin.ejbca.lib.dir}" erroronmissingdir="false">
 	    	    <include name="*.jar" if="plugin.ejbca.present"/>
 		    </zipfileset>
-            <zipfileset prefix="lib" dir="${lib}">
+		    <zipfileset dir="${plugin.ejbca.mod.dir}" erroronmissingdir="false">
+			    <include name="*.jar" if="plugin.ejbca.present"/>
+			    <include name="*.war" if="plugin.ejbca.present"/>
+		    </zipfileset>
+           <zipfileset prefix="lib" dir="${lib}">
             	<!-- Since WepSphere 7's "special" tools can't handle the signature of these objects, we will add them later. -->
                 <include name="bcmail-jdk${java.ver}-145.jar" unless="websphere-specials"/>
                 <include name="bcprov-jdk${java.ver}-145.jar" unless="websphere-specials"/>
