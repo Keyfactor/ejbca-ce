@@ -71,7 +71,9 @@ public final class EjbcaConfigurationHolder {
 				if (url != null) {
 					final PropertiesConfiguration pc = new PropertiesConfiguration(url);
 					allowexternal = "true".equalsIgnoreCase(pc.getString(CONFIGALLOWEXTERNAL, "false"));
-					log.info("Allow external re-configuration: " + allowexternal);
+					if (allowexternal) {
+					    log.info("Allow external re-configuration: " + allowexternal);
+					}
 				}
 			} catch (ConfigurationException e) {
 				log.error("Error intializing configuration: ", e);

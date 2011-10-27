@@ -30,6 +30,7 @@
     	<mkdir dir="${build.dir}/conf"/>
     	<copy todir="${build.dir}/conf">
     		<fileset dir="${ejbca.home}/conf" includes="extendedkeyusage.properties"/>
+    		<fileset dir="${ejbca.home}/conf" includes="ejbca.properties"/>
     	</copy>
     	<copy todir="${build.dir}">
     		<fileset dir="${ejbca.home}/src/java" includes="defaultvalues.properties"/>
