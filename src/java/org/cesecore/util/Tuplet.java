@@ -24,7 +24,7 @@ import java.io.Serializable;
  */
 public final class Tuplet<K, V> implements Serializable{
 
-    final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -3272995902610306280L;
     private final K firstElement;
     private final V secondElement;
     
