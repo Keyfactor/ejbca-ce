@@ -35,4 +35,9 @@ public class ConfigurationHolderDefaultValuesTest {
         Assert.assertEquals("hsqldb", configurationHolderProxySession.getDefaultValue("database.name"));
     }
 
+    @Test
+    public void testNonExistingValue() {
+        Assert.assertNull("A value that does not exist in defaultvalues.properties should be null", configurationHolderProxySession.getDefaultValue("xyz.abc"));
+    }
+
 }
