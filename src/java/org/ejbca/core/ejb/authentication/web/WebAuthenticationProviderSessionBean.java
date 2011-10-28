@@ -57,6 +57,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
         X509Certificate[] certificateArray = subject.getCredentials().toArray(new X509Certificate[0]);
         if (certificateArray.length != 1) {
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("certificateArray contains "+certificateArray.length+" certificates, instead of 1 that is required.");
+            }
             return null;
         } else {
             X509Certificate certificate = certificateArray[0];
