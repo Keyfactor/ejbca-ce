@@ -16,6 +16,7 @@ import javax.ejb.Remote;
 
 /**
  * Remote interface for AuthenticationSession.
+ * @version $Id$
  */
 @Remote
 public interface EndEntityAuthenticationSessionRemote extends EndEntityAuthenticationSession {
