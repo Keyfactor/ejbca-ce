@@ -267,7 +267,11 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     public int compareTo(AccessUserAspectData o) {
-        return matchValue.compareTo(o.matchValue);
+        if (o == null) {
+            return -1;
+        } else {
+            return matchValue.compareTo(o.matchValue);
+        }
     }
 
 
