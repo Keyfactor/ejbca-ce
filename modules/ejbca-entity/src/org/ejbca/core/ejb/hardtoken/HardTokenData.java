@@ -144,7 +144,7 @@ public class HardTokenData extends ProtectedData implements Serializable {
         final String dataStr;
         if (data.get(ENCRYPTEDDATA) != null) {
             byte[] encdata = (byte[]) data.get(org.ejbca.core.ejb.hardtoken.HardTokenData.ENCRYPTEDDATA);
-            dataStr = new String(Base64.encode(encdata));
+            dataStr = new String(Base64.encode(encdata, false));
         } else {
             dataStr = getData().toString(); 
         }
