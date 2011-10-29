@@ -35,9 +35,9 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -166,7 +166,7 @@ public class X509CertificateAuthenticationTokenTest {
         accessUser = EasyMock.createMock(AccessUserAspectData.class);
         
         EasyMock.expect(accessUser.getCaId()).andReturn(caid);
-        EasyMock.expect(accessUser.getMatchWithByValue()).andReturn(X500PrincipalAccessMatchValue.WITH_FULLDN);
+        EasyMock.expect(accessUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue());
         EasyMock.expect(accessUser.getMatchValue()).andReturn(CertTools.getSubjectDN(certificate));
         EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASEINS);
         EasyMock.replay(accessUser);
@@ -191,7 +191,7 @@ public class X509CertificateAuthenticationTokenTest {
             case WITH_SERIALNUMBER:
                 accessUser = EasyMock.createMock(AccessUserAspectData.class);
                 EasyMock.expect(accessUser.getCaId()).andReturn(caid).times(2);
-                EasyMock.expect(accessUser.getMatchWithByValue()).andReturn(X500PrincipalAccessMatchValue.WITH_SERIALNUMBER).times(2);
+                EasyMock.expect(accessUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.getNumericValue()).times(2);
                 EasyMock.expect(accessUser.getMatchValue()).andReturn(certificate.getSerialNumber().toString(16)).times(2);
                 EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASEINS);
                 EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_NOT_EQUALCASEINS);
@@ -214,7 +214,7 @@ public class X509CertificateAuthenticationTokenTest {
                 accessUser = EasyMock.createMock(AccessUserAspectData.class);
                 EasyMock.expect(accessUser.getCaId()).andReturn(caid);
 
-                EasyMock.expect(accessUser.getMatchWithByValue()).andReturn(matchValue);
+                EasyMock.expect(accessUser.getMatchWith()).andReturn(matchValue.getNumericValue());
                 EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(match);
                 EasyMock.expect(accessUser.getMatchValue()).andReturn("Test");
                 EasyMock.replay(accessUser);

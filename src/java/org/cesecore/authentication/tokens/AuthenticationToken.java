@@ -17,6 +17,7 @@ import java.security.Principal;
 import java.util.Set;
 
 import org.cesecore.authorization.user.AccessUserAspect;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
 /**
  * A token returned by the act of authentication. Ownership of such a token denotes that the caller has previously authenticated herself via the
@@ -83,4 +84,25 @@ public abstract class AuthenticationToken implements Serializable {
     	}
     	return sb.toString();
     }
+    
+    /**
+     * 
+     * 
+     * @param tokenType String a String from an AccessMatchValue derivative that matches this token type.
+     * @return true if the given value matches this AuthenticationToken's inherent token type.
+     */
+    public abstract boolean matchTokenType(String tokenType);
+    
+    /**
+     * 
+     * @return the AccessMatchValue inherent to the implementing token type.
+     */
+    public abstract AccessMatchValue getDefaultMatchValue();
+    
+    /**
+     * 
+     * @param databaseValue the numeric value from the database.
+     * @return the enum implementing AccessMatchValue that matches the given numeric value from the database.
+     */
+    public abstract AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue);
 }

@@ -139,7 +139,7 @@
 			<mkdir dir="${src-temp.dir}/admins"/>
 			<mkdir dir="${build-temp.dir}/admins"/>
 			<copy todir="${src-temp.dir}/admins">
-				<fileset dir="${src.dir}">
+				<fileset dir="${src.dir}">			
 					<include name="org/cesecore/authentication/tokens/AuthenticationToken.java"/>
 					<include name="org/cesecore/authentication/tokens/AlwaysAllowLocalAuthenticationToken.java"/>
 					<include name="org/cesecore/authentication/tokens/InvalidAuthenticationTokenException.java"/>
@@ -147,14 +147,28 @@
 					<include name="org/cesecore/authentication/tokens/UsernamePrincipal.java"/>
 					<include name="org/cesecore/authentication/tokens/X509CertificateAuthenticationToken.java"/>
 					<include name="org/cesecore/authorization/user/AccessUserAspect.java"/>
-					<include name="org/cesecore/authorization/user/X500PrincipalAccessMatchValue.java"/>
 					<include name="org/cesecore/authorization/user/AccessMatchType.java"/>
+					<include name="org/cesecore/authorization/user/matchvalues/AccessMatchValue.java"/>
+					<include name="org/cesecore/authorization/user/matchvalues/AccessMatchValueReverseLookupRegistry.java"/>
+					<include name="org/cesecore/authorization/user/matchvalues/InvalidMatchValueException.java"/>
+					<include name="org/cesecore/authorization/user/matchvalues/ReverseMatchValueLookupException.java"/>
+					<include name="org/cesecore/authorization/user/matchvalues/X500PrincipalAccessMatchValue.java"/>
 					<include name="org/ejbca/core/model/log/Admin.java"/>
 					<include name="org/ejbca/core/model/authorization/AdminInformation.java"/>
 					<include name="org/ejbca/util/dn/DNFieldExtractor.java"/>
 					<include name="org/ejbca/util/dn/DnComponents.java"/>
 					<include name="org/ejbca/util/CertTools.java"/>
 					<include name="org/ejbca/core/model/ca/crl/RevokedCertInfo.java"/>
+					<!-- The below dependencies are incorrect (because CESeCore should not depend on EJBCA,
+					     and should be removed once the existing dependency issue is solved. -->
+					<include name="org/ejbca/ui/cli/CliUserAccessMatchValue.java"/>
+					<include name="org/ejbca/ui/cli/CliAuthenticationToken.java"/>
+					<include name="org/ejbca/ui/cli/exception/CliAuthenticationFailedException.java"/>
+					<include name="org/ejbca/ui/cli/exception/UninitializedCliAuthenticationTokenException.java"/>
+					<include name="org/ejbca/util/crypto/BCrypt.java"/>
+					<include name="org/ejbca/util/crypto/CryptoTools.java"/>
+					<include name="org/ejbca/util/crypto/SupportedPasswordHashAlgorithm.java"/>	
+					<include name="org/ejbca/ui/cli/CliAuthenticationTokenReferenceRegistry.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/admins" destdir="${build-temp.dir}/admins" debug="on" includeantruntime="no"

@@ -31,7 +31,9 @@ import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
@@ -150,7 +152,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     /** @return a viewable list of 'match with'-texts */
     public List<SelectItem> getMatchWithTexts() {
         List<SelectItem> list = new ArrayList<SelectItem>();
-        for (X500PrincipalAccessMatchValue current : X500PrincipalAccessMatchValue.values()) {
+        for (AccessMatchValue current : X500PrincipalAccessMatchValue.values()) {
             if (!"".equals(current)) {
                 list.add(new SelectItem(current, getEjbcaWebBean().getText(current.toString())));
             }
@@ -286,7 +288,8 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 
     /** @return the 'match with'-text for the admin in the current row of the datatable */
     public String getAdminsMatchWith() {
-        return getEjbcaWebBean().getText(getAdminForEach().getMatchWithByValue().toString());
+        AccessUserAspectData userAspect = getAdminForEach();
+        return getEjbcaWebBean().getText(getMatchValueFromTokenType(userAspect.getTokenType(), userAspect.getMatchWith()).name());
     }
 
     /** @return the 'match type'-text for the admin in the current row of the datatable */
@@ -300,11 +303,13 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
         return (AccessUserAspectData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("admin");
     }
 
+    private AccessMatchValue getMatchValueFromTokenType(String tokenType, int databaseValue) {
+        return AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, databaseValue);
+    }
+    
     //
     // Edit basic access rules (mostly used by editbasicaccessrules.jsp)
     //
-
-
 
     // Stores the value from request, but always reads the value directly from the saved data
     public String getCurrentRoleTemplate() {      

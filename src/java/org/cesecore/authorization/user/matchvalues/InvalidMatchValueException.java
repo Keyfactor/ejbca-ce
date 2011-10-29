@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,24 +10,33 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.authentication.cli;
-
-import javax.ejb.Remote;
+package org.cesecore.authorization.user.matchvalues;
 
 /**
- * Assists with some actions in CliAuthenticationTest
+ * This runtime exception is thrown to signify that an attempt of an enum to extend the AccessMatchValue
+ * interface failed and could not be recovered.
  * 
  * @version $Id$
  *
  */
-@Remote
-public interface CliAuthenticationTestHelperSessionRemote {
-  
-    public static final String USERNAME = "clitest";
-    public static final String PASSWORD = "clitest";
-    
-    void createUser(String username, String password);
-    
-    
-    
+public class InvalidMatchValueException extends RuntimeException {
+
+    private static final long serialVersionUID = -7145630440532075247L;
+
+    public InvalidMatchValueException() {
+        super();
+    }
+
+    public InvalidMatchValueException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public InvalidMatchValueException(String message) {
+        super(message);
+    }
+
+    public InvalidMatchValueException(Throwable cause) {
+        super(cause);
+    }
+
 }

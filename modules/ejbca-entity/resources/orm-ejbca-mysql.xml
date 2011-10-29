@@ -70,6 +70,7 @@
             <basic fetch="EAGER" name="matchValue"><column name="matchValue" column-definition="VARCHAR(250) BINARY"/></basic>
             <basic fetch="EAGER" name="caId"><column name="cAId" column-definition="INT(11)" nullable="false"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="LONGTEXT"/><lob/></basic>
+            <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="VARCHAR(250) BINARY"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INT(11)" nullable="false"/></version>
         </attributes>
     </entity>

@@ -20,8 +20,8 @@ import java.util.List;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.roles.RoleData;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.DefaultRoles;

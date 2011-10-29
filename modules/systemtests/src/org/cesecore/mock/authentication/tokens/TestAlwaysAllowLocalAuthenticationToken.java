@@ -17,6 +17,7 @@ import java.util.HashSet;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.user.AccessUserAspect;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
 /**
  * This token is God-token that can be sent via remote (and should never be deployed). It's purpose is to simplify boilerplate work in system tests, and
@@ -66,5 +67,36 @@ public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken
     @Override
     public int hashCode() {
         return "AlwaysAllowLocalAuthenticationToken".hashCode();
+    }
+
+    @Override
+    public boolean matchTokenType(String tokenType) {
+        return true;
+    }
+
+    @Override
+    public AccessMatchValue getDefaultMatchValue() { 
+        return InternalMatchValue.INSTANCE;
+    }
+
+    @Override
+    public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
+        return InternalMatchValue.INSTANCE;
+    }
+    
+    private static enum InternalMatchValue implements AccessMatchValue {
+        INSTANCE;
+
+        private static final String TOKEN_TYPE = "TestAlwaysAllowAuthenticationToken";
+        
+        @Override
+        public int getNumericValue() {         
+            return 0;
+        }
+
+        @Override
+        public String getTokenType() {           
+            return TOKEN_TYPE;
+        }      
     }
 }

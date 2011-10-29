@@ -35,7 +35,7 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.AccessUserAspectExistsException;
 import org.cesecore.authorization.user.AccessUserAspectManagerTestSessionRemote;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;

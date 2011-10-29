@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -18,6 +18,7 @@ import java.util.HashSet;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.ejbca.ui.cli.exception.UninitializedCliAuthenticationTokenException;
 import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.CryptoTools;
@@ -31,6 +32,8 @@ import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
  */
 public class CliAuthenticationToken extends AuthenticationToken {
 
+    public static final String TOKEN_TYPE = "CliUsernamePrincipal";
+    
     private static final long serialVersionUID = -3942437717641924829L;
 
     private final long referenceNumber;
@@ -66,10 +69,10 @@ public class CliAuthenticationToken extends AuthenticationToken {
         this.sha1Salt = sha1Salt;
         if (passwordHash != null) {
             this.sha1Hash = generateSha1Hash(passwordHash, referenceId);
-            
+
             // The modern BCrypt hash uses a salt, which we have to pass with.
             switch (hashAlgorithm) {
-            case SHA1_BCRYPT:   
+            case SHA1_BCRYPT:
                 passwordSalt = CryptoTools.extractSaltFromPasswordHash(passwordHash);
                 break;
             case SHA1_OLD:
@@ -113,26 +116,16 @@ public class CliAuthenticationToken extends AuthenticationToken {
         if (isVerified) {
             return true;
         } else {
-            /*
-             * Match user name against UID or perhaps common name.  
-             */
-            switch (accessUser.getMatchWithByValue()) {
-            case WITH_UID:
-            case WITH_COMMONNAME:
-                if (userName.equals(accessUser.getMatchValue())
-                        && CliAuthenticationTokenReferenceRegistry.INSTANCE.verifySha1Hash(referenceNumber, sha1Hash)) {
-                    if (CliAuthenticationTokenReferenceRegistry.INSTANCE.unregisterToken(referenceNumber)) {
-                        // The reference to this token hasn't been used.
-                        isVerified = true;
-                        return true;
-                    }
+            if (userName.equals(accessUser.getMatchValue())
+                    && CliAuthenticationTokenReferenceRegistry.INSTANCE.verifySha1Hash(referenceNumber, sha1Hash)) {
+                if (CliAuthenticationTokenReferenceRegistry.INSTANCE.unregisterToken(referenceNumber)) {
+                    // The reference to this token hasn't been used.
+                    isVerified = true;
+                    return true;
                 }
-                break;
-            default:
-                break;
             }
-            return false;
         }
+        return false;
     }
 
     /**
@@ -259,6 +252,25 @@ public class CliAuthenticationToken extends AuthenticationToken {
      */
     public void setPasswordSalt(String passwordSalt) {
         this.passwordSalt = passwordSalt;
+    }
+
+    @Override
+    public boolean matchTokenType(String tokenType) {
+        return tokenType.equals(TOKEN_TYPE);
+    }
+
+    @Override
+    public AccessMatchValue getDefaultMatchValue() {   
+        return CliUserAccessMatchValue.USERNAME;
+    }
+
+    @Override
+    public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {     
+        if (databaseValue != CliUserAccessMatchValue.USERNAME.getNumericValue()) {
+            return null;
+        } else {
+            return CliUserAccessMatchValue.USERNAME;
+        }
     }
 
 }

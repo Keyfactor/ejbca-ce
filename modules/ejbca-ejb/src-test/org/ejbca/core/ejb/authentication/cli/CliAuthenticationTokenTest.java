@@ -22,8 +22,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspect;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.easymock.EasyMock;
 import org.ejbca.ui.cli.CliAuthenticationToken;
 import org.ejbca.ui.cli.CliAuthenticationTokenReferenceRegistry;
@@ -52,7 +52,7 @@ public class CliAuthenticationTokenTest {
                 SupportedPasswordHashAlgorithm.SHA1_OLD);
         CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
-        EasyMock.expect(accessUser.getMatchWithByValue()).andReturn(X500PrincipalAccessMatchValue.WITH_UID);
+        EasyMock.expect(accessUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_UID.getNumericValue());
         EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST");
         EasyMock.replay(accessUser);
         assertTrue(authenticationToken.matches(accessUser));
@@ -70,7 +70,7 @@ public class CliAuthenticationTokenTest {
                 SupportedPasswordHashAlgorithm.SHA1_OLD);
         CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
-        EasyMock.expect(accessUser.getMatchWithByValue()).andReturn(X500PrincipalAccessMatchValue.WITH_UID).times(2);
+        EasyMock.expect(accessUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_UID.getNumericValue()).times(2);
         EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST").times(2);
         EasyMock.replay(accessUser);
         assertTrue(authenticationToken.matches(accessUser));

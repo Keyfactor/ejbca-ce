@@ -236,6 +236,7 @@
 		<include name="org/ejbca/core/model/hardtoken/types/EnhancedEIDHardToken.java"/>
 		<include name="org/ejbca/core/model/hardtoken/types/SwedishEIDHardToken.java"/>
 		<include name="org/ejbca/ui/cli/CliAuthenticationToken.java"/>
+		<include name="org/ejbca/ui/cli/CliUserAccessMatchValue.java"/>
 		<include name="org/ejbca/util/crypto/BCrypt.java"/>
 		<include name="org/ejbca/util/crypto/CryptoTools.java"/>
 		<include name="org/ejbca/util/crypto/SupportedPasswordHashAlgorithm.java"/>	

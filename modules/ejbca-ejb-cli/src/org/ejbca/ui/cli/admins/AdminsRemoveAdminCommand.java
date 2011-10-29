@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.CliUsernameException;

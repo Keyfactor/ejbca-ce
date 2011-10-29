@@ -17,21 +17,26 @@ import static org.junit.Assert.assertTrue;
 
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import org.cesecore.RoleUsingTestCase;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
+import org.ejbca.ui.cli.CliUserAccessMatchValue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -65,20 +70,15 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
     public void testIsAuthorized() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
         // Let's set up a role and a nice resource tree to play with.
         RoleData nerfHerder = roleManagementSession.create(roleMgmgToken, "NerfHerder");
-
         X509Certificate[] certificateArray = new X509Certificate[1]; 
-        certificateArray = roleMgmgToken.getCredentials().toArray(certificateArray);
-        
-        int caId = CertTools.getIssuerDN(certificateArray[0]).hashCode();
-        
+        certificateArray = roleMgmgToken.getCredentials().toArray(certificateArray);       
+        int caId = CertTools.getIssuerDN(certificateArray[0]).hashCode();       
         try {
-
             List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-            accessUsers.add(new AccessUserAspectData(nerfHerder.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COUNTRY, AccessMatchType.TYPE_EQUALCASE, "SE"));
-            roleManagementSession.addSubjectsToRole(roleMgmgToken, nerfHerder, accessUsers);
-            
-            List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-            
+            accessUsers.add(new AccessUserAspectData(nerfHerder.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COUNTRY,
+                    AccessMatchType.TYPE_EQUALCASE, "SE"));
+            roleManagementSession.addSubjectsToRole(roleMgmgToken, nerfHerder, accessUsers);          
+            List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();       
             accessRules.add(new AccessRuleData(nerfHerder.getRoleName(), "/", AccessRuleState.RULE_NOTUSED, false));            
             accessRules.add(new AccessRuleData(nerfHerder.getRoleName(), "/acceptRecursive", AccessRuleState.RULE_ACCEPT, true));
             accessRules.add(new AccessRuleData(nerfHerder.getRoleName(), "/accept", AccessRuleState.RULE_ACCEPT, false));
@@ -124,12 +124,63 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
             assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/decline/decline"));
             assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/decline/notused"));
             assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/decline/unexistent"));
-            
-            
+      
         } finally {
             roleManagementSession.remove(roleMgmgToken, nerfHerder);
         }
-
     }
-
+    
+    /**
+     * This test tests that authentication tokens only match the types aspects they were created from.
+     * @throws AuthorizationDeniedException 
+     * @throws RoleExistsException 
+     * @throws RoleNotFoundException 
+     */
+    @Test
+    public void testDifferentationBetweenDifferentAuthenticationTokens() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
+        //Create a role    
+        final String roleName = "MasterController";
+        final String resourceName = "/Encom"; 
+        final String tronDn = "CN=Tron";
+        final String flynnDn = "CN=Flynn";
+        RoleData role = roleManagementSession.create(roleMgmgToken, roleName);        
+        try {
+            //Give the role a ClI-based aspect and an X509-based aspect
+            Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
+            AccessUserAspectData tron = new AccessUserAspectData(roleName, tronDn.hashCode(), CliUserAccessMatchValue.USERNAME, AccessMatchType.TYPE_EQUALCASE, "Tron");
+            AccessUserAspectData flynn = new AccessUserAspectData(roleName, flynnDn.hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, "Flynn");
+            subjects.add(tron);
+            subjects.add(flynn);
+            role = roleManagementSession.addSubjectsToRole(roleMgmgToken, role, subjects);
+            Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+            accessRules.add(new AccessRuleData(roleName, resourceName, AccessRuleState.RULE_ACCEPT, false));
+            role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+            
+            //Let's produce two valid tokens.          
+            AuthenticationToken validUsernameToken = new UsernameBasedAuthenticationToken(new UsernamePrincipal("Tron"));
+            //Make sure that the two valid usernames work.
+            if(!accessControlSession.isAuthorizedNoLogging(validUsernameToken, resourceName)) {
+                throw new RuntimeException("Test can't continue, valid token was not authorized.");
+            }
+            AuthenticationToken validX509Token = createAuthenticationToken(flynnDn);
+            if(!accessControlSession.isAuthorizedNoLogging(validX509Token, resourceName)) {
+                throw new RuntimeException("Test can't continue, valid token was not authorized.");
+            }
+            // Now, create a X509 token pretending to be a UsernameBasedAuthenticationToken using the same DN.             
+            AuthenticationToken invalidX509Token = createAuthenticationToken(tronDn); 
+            // Make sure that this token would have matched if not for the token type check
+        /*    if(!invalidX509Token.matches(tron)) {
+                throw new RuntimeCryptoException("Invalid token did not match the sought aspect, test cannot continue.");
+            }*/
+            assertFalse("Invalid X509 token should not have been able to authorize", accessControlSession.isAuthorizedNoLogging(invalidX509Token, resourceName));
+        } finally {
+            try {
+                roleManagementSession.remove(roleMgmgToken, role);
+            } catch (RoleNotFoundException e) {
+                //ignore
+            }
+        }
+        
+    }
+    
 }

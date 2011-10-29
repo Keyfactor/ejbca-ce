@@ -40,8 +40,8 @@ import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
@@ -55,6 +55,7 @@ import org.cesecore.util.ValueExtractor;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.ui.cli.CliUserAccessMatchValue;
 
 /**
  * This session bean handles complex authorization queries.
@@ -110,7 +111,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
 
         log.debug("Adding new AccessUserAspect 'NONE' to " + SUPERADMIN_ROLE + ".");
         Map<Integer, AccessUserAspectData> newUsers = new HashMap<Integer, AccessUserAspectData>();      
-        AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, 0, X500PrincipalAccessMatchValue.WITH_UID,
+        AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, 0, CliUserAccessMatchValue.USERNAME,
                 AccessMatchType.TYPE_EQUALCASE, EjbcaConfiguration.getCliDefaultUser());
         newUsers.put(defaultCliUserAspect.getPrimaryKey(), defaultCliUserAspect);
         role.setAccessUsers(newUsers);

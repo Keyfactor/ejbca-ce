@@ -20,6 +20,7 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 
@@ -38,24 +39,24 @@ import org.cesecore.dbprotection.ProtectionStringBuilder;
 @Table(name = "AccessUserAspectData")
 public class AccessUserAspectData extends ProtectedData implements AccessUserAspect, Comparable<AccessUserAspectData> {
 
-    private static final long serialVersionUID = 5560742096462018744L;
+    private static final long serialVersionUID = 2504191317243484124L;
     private int primaryKey;
-    private X500PrincipalAccessMatchValue matchWith;
-    private AccessMatchType matchType;
-    private String matchValue;
+    private String tokenType;
     private Integer caId;
     private int rowVersion = 0;
     private String rowProtection;
-
-    public AccessUserAspectData(final String roleName, final int caId, final X500PrincipalAccessMatchValue matchWith, final AccessMatchType matchType,
+    private Integer matchWith;
+    private AccessMatchType matchType;
+    private String matchValue;
+    
+    public AccessUserAspectData(final String roleName, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
             final String matchValue) {
-
         this.primaryKey = generatePrimaryKey(roleName, caId, matchWith, matchType, matchValue);
-        this.matchWith = matchWith;
+        this.matchWith = matchWith.getNumericValue();
         this.matchType = matchType;
         this.matchValue = matchValue;
         this.caId = caId;
-
+        this.tokenType = matchWith.getTokenType();
     }
 
     /**
@@ -77,25 +78,14 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     public int getMatchWith() {
-        return matchWith.getNumericValue();
-    }
-
-    @Override
-    @Transient
-    public X500PrincipalAccessMatchValue getMatchWithByValue() {
         return matchWith;
     }
 
     @Override
     public void setMatchWith(Integer matchWith) {
-        this.matchWith = X500PrincipalAccessMatchValue.matchFromDatabase(matchWith);
-    }
-    
-    @Override
-    public void setMatchWithAsValue(X500PrincipalAccessMatchValue matchWith) {
         this.matchWith = matchWith;
     }
-
+   
     @Override
     public int getMatchType() {
     	if (matchType == null) {
@@ -157,8 +147,18 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     public void setRowProtection(final String rowProtection) {
         this.rowProtection = rowProtection;
     }
+    
+    @Override
+    public String getTokenType() {
+        return tokenType;
+    }
 
-    public static int generatePrimaryKey(final String roleName, final int caId, final X500PrincipalAccessMatchValue matchWith,
+    @Override
+    public void setTokenType(String tokenType) {
+        this.tokenType = tokenType;
+    }
+
+    public static int generatePrimaryKey(final String roleName, final int caId, final AccessMatchValue matchWith,
             final AccessMatchType matchType, final String matchValue) {
         final int roleNameHash = roleName == null ? 0 : roleName.hashCode();
         final int matchValueHash = matchValue == null ? 0 : matchValue.hashCode();
@@ -167,7 +167,7 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     @Transient
-    public X500PrincipalAccessMatchValue getPriority() {
+    public Integer getPriority() {
         return matchWith;
     }
 
@@ -212,7 +212,7 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
         } else if (!matchValue.equals(other.matchValue)) {
             return false;
         }
-        if (matchWith != other.matchWith) {
+        if (matchWith.intValue() != other.matchWith.intValue()) {
             return false;
         }
         if (primaryKey != other.primaryKey) {

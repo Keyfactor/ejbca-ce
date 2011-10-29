@@ -18,9 +18,9 @@ import java.util.HashMap;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.roles.RoleData;
 import org.cesecore.util.Tuplet;
 
@@ -156,7 +156,8 @@ public class AccessTreeNode {
                     returnval = true;
                 } else {
                 	if (log.isTraceEnabled()) {
-                		log.trace("Not accepting because state is not STATE_ACCEPT_RECURSIVE. Internalstate="+internalstate+", legacyState="+legacyState);
+                        log.trace("Not accepting because state is not STATE_ACCEPT_RECURSIVE. Internalstate=" + internalstate + ", legacyState="
+                                + legacyState);
                 	}                	
                 }
             } else { // resource path exists.
@@ -218,7 +219,7 @@ public class AccessTreeNode {
      */
     private AccessTreeState findPreferredRule(AuthenticationToken authenticationToken) {
         AccessTreeState state = AccessTreeState.STATE_UNKNOWN;
-        X500PrincipalAccessMatchValue statePriority = X500PrincipalAccessMatchValue.NONE;
+        AccessMatchValue statePriority = authenticationToken.getDefaultMatchValue();
         Collection<AccessUserAspectData> accessUsers;
         if (log.isTraceEnabled()) {
         	log.trace("AccessTreeNode " + resource + " has " + roleRulePairs.size() + " roleRulePairs");
@@ -226,40 +227,47 @@ public class AccessTreeNode {
         for (Tuplet<RoleData, AccessRuleData> roleRulePair : roleRulePairs) {
             accessUsers = roleRulePair.getFirstElement().getAccessUsers().values();
             if (log.isTraceEnabled()) {
-            	log.trace("roleRulePair for accessRuleName " + roleRulePair.getSecondElement().getAccessRuleName() + " has " + accessUsers.size() + " accessUsers");
+                log.trace("roleRulePair for accessRuleName " + roleRulePair.getSecondElement().getAccessRuleName() + " has " + accessUsers.size()
+                        + " accessUsers");
             }
             for (AccessUserAspect accessUser : accessUsers) {
-                // If two principals match.
-                if (authenticationToken.matches(accessUser)) {
-                    AccessTreeState thisUserState = roleRulePair.getSecondElement().getTreeState();
-                    X500PrincipalAccessMatchValue thisUserStatePriority = accessUser.getPriority();
-                    if (log.isTraceEnabled()) {
-                        AccessTreeState logState = thisUserState;
-                        if (logState == null) {
-                            log.trace("logState is null");
-                            logState = AccessTreeState.STATE_UNKNOWN;
+                //If aspect is of the correct token type
+                if (authenticationToken.matchTokenType(accessUser.getTokenType())) {
+                    // And the two principals match (done inside to save on cycles)
+                    if (authenticationToken.matches(accessUser)) {
+                        AccessTreeState thisUserState = roleRulePair.getSecondElement().getTreeState();
+                        AccessMatchValue thisUserStatePriority = authenticationToken.getMatchValueFromDatabaseValue(accessUser.getPriority());
+                        if (log.isTraceEnabled()) {
+                            AccessTreeState logState = thisUserState;
+                            if (logState == null) {
+                                log.trace("logState is null");
+                                logState = AccessTreeState.STATE_UNKNOWN;
+                            }
+                            AccessMatchValue logMatchValue = thisUserStatePriority;
+                            if (logMatchValue == null) {
+                                log.trace("logMatchValue is null");
+                                logMatchValue = authenticationToken.getDefaultMatchValue();
+                            }
+                            log.trace("accessUser " + authenticationToken.getMatchValueFromDatabaseValue(accessUser.getMatchWith()).name() + " " + accessUser.getMatchTypeAsType().name() + " "
+                                    + accessUser.getMatchValue() + " matched authenticationToken. thisUserState=" + logState.name()
+                                    + " thisUserStatePriority=" + logMatchValue.name());
                         }
-                        X500PrincipalAccessMatchValue logMatchValue = thisUserStatePriority;
-                        if (logMatchValue == null) {
-                            log.trace("logMatchValue is null");
-                            logMatchValue = X500PrincipalAccessMatchValue.NONE;                            
-                        }
-                    	log.trace("accessUser "+accessUser.getMatchWithByValue().name()+" "+accessUser.getMatchTypeAsType().name()+" "+accessUser.getMatchValue()+" matched authenticationToken. thisUserState=" + logState.name() + " thisUserStatePriority=" + logMatchValue.name());
-                    }
-                    // If rule has higher priority, its state is to be used.
-                    if (statePriority.getNumericValue() < thisUserStatePriority.getNumericValue()) {
-                        state = thisUserState;
-                        statePriority = thisUserStatePriority;
-                    } else {
-                        if (statePriority == thisUserStatePriority) {
-                            // If the priority is the same then decline has priority over accept.
-                            if (state.getLegacyNumber() < thisUserState.getLegacyNumber()) {
-                                state = thisUserState;
+                        // If rule has higher priority, its state is to be used.
+                        if (statePriority.getNumericValue() < thisUserStatePriority.getNumericValue()) {
+                            state = thisUserState;
+                            statePriority = thisUserStatePriority;
+                        } else {
+                            if (statePriority == thisUserStatePriority) {
+                                // If the priority is the same then decline has priority over accept.
+                                if (state.getLegacyNumber() < thisUserState.getLegacyNumber()) {
+                                    state = thisUserState;
+                                }
                             }
                         }
+                    } else if (log.isTraceEnabled()) {
+                        log.trace("accessUser " + authenticationToken.getMatchValueFromDatabaseValue(accessUser.getMatchWith()).name() + " " + accessUser.getMatchTypeAsType().name() + " "
+                                + accessUser.getMatchValue() + " did not match authenticationToken.");
                     }
-                } else if (log.isTraceEnabled()) {
-                	log.trace("accessUser "+accessUser.getMatchWithByValue().name()+" "+accessUser.getMatchTypeAsType().name()+" "+accessUser.getMatchValue()+" did not match authenticationToken.");
                 }
             }
         }
