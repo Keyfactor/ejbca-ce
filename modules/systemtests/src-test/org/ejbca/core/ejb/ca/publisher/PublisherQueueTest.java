@@ -54,8 +54,7 @@ import org.junit.Test;
 /**
  * Tests Publisher Queue Data.
  * 
- * @version $Id: PublisherQueueTest.java 12742 2011-09-28 08:20:40Z mikekushner
- *          $
+ * @version $Id$
  */
 public class PublisherQueueTest {
 
