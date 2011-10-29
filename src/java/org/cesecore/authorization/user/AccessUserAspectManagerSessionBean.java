@@ -21,6 +21,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.RoleData;
@@ -51,7 +52,7 @@ public class AccessUserAspectManagerSessionBean implements AccessUserAspectManag
     @Override
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public AccessUserAspectData create(final RoleData role, final int caId,
-            final X500PrincipalAccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException {
+            final AccessMatchValue matchWith, final AccessMatchType matchType, final String matchValue) throws AccessUserAspectExistsException {
         AccessUserAspectData result = null;
 
         if (find(AccessUserAspectData.generatePrimaryKey(role.getRoleName(), caId, matchWith, matchType, matchValue)) == null) {

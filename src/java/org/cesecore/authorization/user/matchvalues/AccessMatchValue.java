@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,24 +10,35 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.authentication.cli;
 
-import javax.ejb.Remote;
+package org.cesecore.authorization.user.matchvalues;
 
 /**
- * Assists with some actions in CliAuthenticationTest
+ * Interface for all AccessMatchValue implementations.
  * 
  * @version $Id$
  *
  */
-@Remote
-public interface CliAuthenticationTestHelperSessionRemote {
-  
-    public static final String USERNAME = "clitest";
-    public static final String PASSWORD = "clitest";
+
+public interface AccessMatchValue {
+
+    /**
+     * 
+     * @return the numeric value of this AccessMatchValue, i.e. its database value. 
+     */
+    int getNumericValue();
     
-    void createUser(String username, String password);
+    /**
+     * A string value inherent to the implementing AccessMatchValue. This value should be unique, but independent of code 
+     * (i.e do not use Class.getSimpleName()) to avoid upgrade issues in case of future refactorization.
+     * 
+     * @return a name for the implementation of this match value. 
+     */
+    String getTokenType();
     
-    
-    
+    /**
+     * 
+     * @return the name of the implementing enumeration.
+     */
+    String name();
 }

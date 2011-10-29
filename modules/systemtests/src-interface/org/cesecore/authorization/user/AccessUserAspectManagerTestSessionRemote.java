@@ -16,6 +16,7 @@ import java.util.Collection;
 
 import javax.ejb.Remote;
 
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.roles.RoleData;
 
 /**

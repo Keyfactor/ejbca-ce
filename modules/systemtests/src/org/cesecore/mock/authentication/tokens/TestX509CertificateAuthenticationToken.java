@@ -20,19 +20,23 @@ import java.util.regex.Pattern;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.user.AccessUserAspect;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.CertTools;
 
 /**
- * Acts liks X509CertificateAuthenticationToken, but without the JVM-only check. B
+ * Acts like X509CertificateAuthenticationToken, but without the JVM-only check. B
  * 
  * @version $Id$
  */
 
 public class TestX509CertificateAuthenticationToken extends AuthenticationToken {
 
+    public static final String TOKEN_TYPE = X509CertificateAuthenticationToken.TOKEN_TYPE;
+    
     private static final long serialVersionUID = 4343703249070152822L;
 
     private static final Pattern serialPattern = Pattern.compile("\\bSERIALNUMBER=", Pattern.CASE_INSENSITIVE);
@@ -79,7 +83,7 @@ public class TestX509CertificateAuthenticationToken extends AuthenticationToken 
             DNFieldExtractor dn = new DNFieldExtractor(certstring, DNFieldExtractor.TYPE_SUBJECTDN);
             DNFieldExtractor an = new DNFieldExtractor(anString, DNFieldExtractor.TYPE_SUBJECTALTNAME);
             DNFieldExtractor usedExtractor = dn;
-            X500PrincipalAccessMatchValue matchValue = accessUser.getMatchWithByValue();
+            X500PrincipalAccessMatchValue matchValue = (X500PrincipalAccessMatchValue) getMatchValueFromDatabaseValue(accessUser.getMatchWith());
             if (matchValue == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER) {
                 BigInteger matchValueAsBigInteger = new BigInteger(accessUser.getMatchValue(), 16);
                 switch (accessUser.getMatchTypeAsType()) {
@@ -227,5 +231,20 @@ public class TestX509CertificateAuthenticationToken extends AuthenticationToken 
     
     public X509Certificate getCertificate() {
         return this.certificate;
+    }
+
+    @Override
+    public boolean matchTokenType(String tokenType) {
+        return tokenType.equals(X509CertificateAuthenticationToken.TOKEN_TYPE);
+    }
+
+    @Override
+    public AccessMatchValue getDefaultMatchValue() {        
+        return X500PrincipalAccessMatchValue.NONE;
+    }
+    
+    @Override
+    public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
+        return X500PrincipalAccessMatchValue.matchFromDatabase(databaseValue);
     }
 }

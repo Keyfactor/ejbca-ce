@@ -32,7 +32,6 @@ import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.jndi.JndiHelper;
@@ -45,6 +44,7 @@ import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.CliAuthenticationToken;
+import org.ejbca.ui.cli.CliUserAccessMatchValue;
 import org.ejbca.util.crypto.CryptoTools;
 import org.junit.After;
 import org.junit.Before;
@@ -77,7 +77,7 @@ public class CliAuthenticationTest {
     public void setUp() throws Exception {
         RoleData role = roleManagementSession.create(internalToken, CLI_TEST_ROLENAME);
         List<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-        AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(CLI_TEST_ROLENAME, 0, X500PrincipalAccessMatchValue.WITH_UID,
+        AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(CLI_TEST_ROLENAME, 0, CliUserAccessMatchValue.USERNAME,
                 AccessMatchType.TYPE_EQUALCASE, CliAuthenticationTestHelperSessionRemote.USERNAME);
         subjects.add(defaultCliUserAspect);
         roleManagementSession.addSubjectsToRole(internalToken, role, subjects);
@@ -98,7 +98,7 @@ public class CliAuthenticationTest {
     @Test
     public void testInstallCliAuthenticationWithBCrypt() throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException, RemoveException {
-        cliAuthenticationTestHelperSession.createUser();
+        cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME, CliAuthenticationTestHelperSessionRemote.PASSWORD);
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new UsernamePrincipal(CliAuthenticationTestHelperSessionRemote.USERNAME));
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
@@ -111,7 +111,7 @@ public class CliAuthenticationTest {
     @Test
     public void testInstallCliAuthenticationWithOldHash() {
         configurationSession.updateProperty("ejbca.passwordlogrounds", "0");
-        cliAuthenticationTestHelperSession.createUser();
+        cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME, CliAuthenticationTestHelperSessionRemote.PASSWORD);
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new UsernamePrincipal(CliAuthenticationTestHelperSessionRemote.USERNAME));
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);

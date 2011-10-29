@@ -20,7 +20,8 @@ import java.util.List;
 
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -71,7 +72,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 }
                 getLogger().info("Available CAs: " + availableCas);
                 String availableMatchers = "";
-                for (X500PrincipalAccessMatchValue currentMatchWith : X500PrincipalAccessMatchValue.values()) {
+                for (AccessMatchValue currentMatchWith : X500PrincipalAccessMatchValue.values()) {
                     availableMatchers += (availableMatchers.length() == 0 ? "" : ", ") + currentMatchWith;
                 }
                 getLogger().info("Match with is one of: " + availableMatchers);

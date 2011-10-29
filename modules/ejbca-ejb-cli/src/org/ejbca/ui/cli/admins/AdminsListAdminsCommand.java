@@ -14,9 +14,11 @@
 package org.ejbca.ui.cli.admins;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.authorization.user.AccessUserAspectData;
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -59,14 +61,14 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
                 return;
             }
             for (AccessUserAspectData  userAspect : adminGroup.getAccessUsers().values()) {
-                CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), userAspect.getCaId());
                 String caName;
-                if (info == null) {
-                    caName = "Unknown CA with id " + userAspect.getCaId();
-                } else {
+                try {  
+                    CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), userAspect.getCaId());
                     caName = info.getName();
-                }
-                X500PrincipalAccessMatchValue matchWith = userAspect.getMatchWithByValue();
+                } catch(CADoesntExistsException e) {
+                    caName = "Unknown CA with id " + userAspect.getCaId();
+                }       
+                AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(userAspect.getTokenType(), userAspect.getMatchWith());
                 AccessMatchType matchType = userAspect.getMatchTypeAsType();     
                 String matchValue = userAspect.getMatchValue();
                 getLogger().info("\"" + caName + "\" " + matchWith + " " + matchType + " \"" + matchValue + "\"");

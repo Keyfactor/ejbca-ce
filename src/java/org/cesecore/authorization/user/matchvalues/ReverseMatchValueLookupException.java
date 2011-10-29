@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  EJBCA: The OpenSource Certificate Authority                          *
+ *  CESeCore: CE Security Core                                           *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,24 +10,32 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.core.ejb.authentication.cli;
-
-import javax.ejb.Remote;
+package org.cesecore.authorization.user.matchvalues;
 
 /**
- * Assists with some actions in CliAuthenticationTest
+ * Thrown if an error occurs during reverse lookup
  * 
  * @version $Id$
  *
  */
-@Remote
-public interface CliAuthenticationTestHelperSessionRemote {
-  
-    public static final String USERNAME = "clitest";
-    public static final String PASSWORD = "clitest";
-    
-    void createUser(String username, String password);
-    
-    
-    
+public class ReverseMatchValueLookupException extends RuntimeException{
+
+    private static final long serialVersionUID = -7869788516422286307L;
+
+    public ReverseMatchValueLookupException() {
+        super();
+    }
+
+    public ReverseMatchValueLookupException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public ReverseMatchValueLookupException(String message) {
+        super(message);
+    }
+
+    public ReverseMatchValueLookupException(Throwable cause) {
+        super(cause);
+    }
+
 }

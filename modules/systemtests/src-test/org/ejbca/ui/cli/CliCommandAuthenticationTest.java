@@ -94,7 +94,7 @@ public class CliCommandAuthenticationTest {
 
     @Test
     public void testWithKnownUser() throws Exception {
-        cliAuthenticationTestHelperSession.createUser();
+        cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME, CliAuthenticationTestHelperSessionRemote.PASSWORD);
         try {
             mockCliCommand.execute(new String[] { "foo", "-u", CliAuthenticationTestHelperSessionRemote.USERNAME,
                     "-password=" + CliAuthenticationTestHelperSessionRemote.PASSWORD });

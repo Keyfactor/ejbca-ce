@@ -50,15 +50,10 @@ public abstract class RoleUsingTestCase {
     protected AuthenticationToken roleMgmgToken;
 
     public void setUpAuthTokenAndRole(String roleName) throws RoleExistsException, RoleNotFoundException {
-        this.roleName = roleName;
-        Set<Principal> principals = new HashSet<Principal>();
+        this.roleName = roleName;       
         String commonname = this.getClass().getCanonicalName();
-        X500Principal p = new X500Principal("C=SE,O=Test,CN=" + commonname);
-        principals.add(p);
-        AuthenticationSubject subject = new AuthenticationSubject(principals, null);
-        roleMgmgToken = authenticationProvider.authenticate(subject);
+        roleMgmgToken = createAuthenticationToken("C=SE,O=Test,CN=" + commonname);
         X509Certificate cert = (X509Certificate) roleMgmgToken.getCredentials().iterator().next();
-
         // Initialize the role mgmt system with this role that is allowed to edit roles
         if (roleAccessSessionRemote.findRole(roleName) == null) {
             roleInitSession.initializeAccessWithCert(roleMgmgToken, roleName, cert);
@@ -69,5 +64,13 @@ public abstract class RoleUsingTestCase {
         if (roleAccessSessionRemote.findRole(roleName) != null) {
             roleManagementSession.remove(roleMgmgToken, roleName);
         }
+    }
+    
+    protected AuthenticationToken createAuthenticationToken(String issuerDn) {
+        Set<Principal> principals = new HashSet<Principal>();
+        X500Principal p = new X500Principal(issuerDn);
+        AuthenticationSubject subject = new AuthenticationSubject(principals, null);
+        principals.add(p);
+        return authenticationProvider.authenticate(subject);
     }
 }

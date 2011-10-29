@@ -19,8 +19,9 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
-import org.cesecore.authorization.user.X500PrincipalAccessMatchValue;
 import org.cesecore.authorization.user.AccessUserAspect;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.CertTools;
 
@@ -31,14 +32,14 @@ import org.cesecore.util.CertTools;
  * 
  * The implementation of the <code>matches(...)</code> method is based on <code>AdminEntity.java 10832 2010-12-13 13:54:25Z anatom</code> from EJBCA.
  * 
- * Based on cesecore version:
- *      X509CertificateAuthenticationToken.java 937 2011-07-14 15:57:25Z mikek
  * 
  * @version $Id$
  * 
  */
 public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticationToken {
 
+    public static final String TOKEN_TYPE = "X500Principal";
+    
     private static final long serialVersionUID = 1097165653913865515L;
 
     private static final Pattern serialPattern = Pattern.compile("\\bSERIALNUMBER=", Pattern.CASE_INSENSITIVE);
@@ -108,7 +109,7 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
         if (accessUser.getCaId() == adminCaId) {
             // Determine part of certificate to match with.
             DNFieldExtractor usedExtractor = dnExtractor;
-            X500PrincipalAccessMatchValue matchValue = accessUser.getMatchWithByValue();
+            X500PrincipalAccessMatchValue matchValue = X500PrincipalAccessMatchValue.matchFromDatabase(accessUser.getMatchWith());
             if (matchValue == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER) {
                 BigInteger matchValueAsBigInteger = new BigInteger(accessUser.getMatchValue(), 16);
                 switch (accessUser.getMatchTypeAsType()) {
@@ -281,6 +282,20 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
     public X509Certificate getCertificate() {
         return certificate;
     }
-
-
+    
+    @Override
+    public boolean matchTokenType(String tokenType) {
+        return tokenType.equals(TOKEN_TYPE);
+    }
+    
+    @Override
+    public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
+        return X500PrincipalAccessMatchValue.matchFromDatabase(databaseValue);
+    }
+    
+    @Override
+    public AccessMatchValue getDefaultMatchValue() {        
+        return X500PrincipalAccessMatchValue.NONE;
+    }
 }
+

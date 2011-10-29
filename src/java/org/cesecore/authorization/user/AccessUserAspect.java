@@ -29,11 +29,7 @@ public interface AccessUserAspect extends Serializable {
 
     int getMatchWith();
 
-    X500PrincipalAccessMatchValue getMatchWithByValue();
-
     void setMatchWith(Integer matchWith);
-
-    void setMatchWithAsValue(X500PrincipalAccessMatchValue matchWith);
 
     int getMatchType();
 
@@ -51,11 +47,15 @@ public interface AccessUserAspect extends Serializable {
 
     void setCaId(Integer caId);
 
+    String getTokenType();
+
+    void setTokenType(String tokenType);
+    
     /**
      * Method used by the access tree to determine the priority. The priority is the same as match with value.
      * 
      * @return the matchWith value for the AccessUserData instance.
      */
-    X500PrincipalAccessMatchValue getPriority();
+    Integer getPriority();
 
 }

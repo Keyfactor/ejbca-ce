@@ -16,6 +16,7 @@ import java.security.Principal;
 import java.util.HashSet;
 
 import org.cesecore.authorization.user.AccessUserAspect;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
 /**
  * An authentication token that always matches the provided AccessUserAspectData if the AuthenticationToken was created in the same JVM as it is
@@ -65,5 +66,37 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
     @Override
     public int hashCode() {
         return "AlwaysAllowLocalAuthenticationToken".hashCode();
+    }
+
+    @Override
+    public boolean matchTokenType(String tokenType) {  
+        return true;
+    }
+
+    @Override
+    public AccessMatchValue getDefaultMatchValue() {
+        return InternalMatchValue.INSTANCE;
+    }
+
+    @Override
+    public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {
+        return InternalMatchValue.INSTANCE;
+    }
+    
+    private static enum InternalMatchValue implements AccessMatchValue {
+        INSTANCE;
+
+        private static final String TOKEN_TYPE = "AlwaysAllowAuthenticationToken";
+        
+        @Override
+        public int getNumericValue() {         
+            return 0;
+        }
+
+        @Override
+        public String getTokenType() {           
+            return TOKEN_TYPE;
+        }
+        
     }
 }

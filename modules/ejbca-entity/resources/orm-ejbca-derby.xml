@@ -68,6 +68,7 @@
             <basic fetch="EAGER" name="matchValue"><column name="matchValue" column-definition="VARCHAR(256)"/></basic>
             <basic fetch="EAGER" name="caId"><column name="cAId" column-definition="INTEGER" nullable="false"/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB(10 K)"/><lob/></basic>
+            <basic fetch="EAGER" name="tokenType"><column name="tokenType" column-definition="VARCHAR(256)"/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
     </entity>
