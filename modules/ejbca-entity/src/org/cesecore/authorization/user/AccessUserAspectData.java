@@ -273,6 +273,4 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
             return matchValue.compareTo(o.matchValue);
         }
     }
-
-
 }
