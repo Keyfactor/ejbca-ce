@@ -117,7 +117,6 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
 
-    private static final String ENCRYPTEDDATA = "ENCRYPTEDDATA";
     public static final int NO_ISSUER = 0;
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
@@ -1090,9 +1089,9 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     private HardToken getHardToken(AuthenticationToken admin, int encryptcaid, boolean includePUK, LinkedHashMap data) {
         HardToken returnval = null;
 
-        if (data.get(ENCRYPTEDDATA) != null) {
+        if (data.get(org.ejbca.core.ejb.hardtoken.HardTokenData.ENCRYPTEDDATA) != null) {
             // Data in encrypted, decrypt
-            byte[] encdata = (byte[]) data.get(ENCRYPTEDDATA);
+            byte[] encdata = (byte[]) data.get(org.ejbca.core.ejb.hardtoken.HardTokenData.ENCRYPTEDDATA);
 
             HardTokenEncryptCAServiceRequest request = new HardTokenEncryptCAServiceRequest(HardTokenEncryptCAServiceRequest.COMMAND_DECRYPTDATA, encdata);
             try {
@@ -1143,7 +1142,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                         .toByteArray());
                 HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) caAdminSession.extendedService(admin, encryptcaid, request);
                 LinkedHashMap<String,byte[]> data = new LinkedHashMap<String,byte[]>();
-                data.put(ENCRYPTEDDATA, response.getData());
+                data.put(org.ejbca.core.ejb.hardtoken.HardTokenData.ENCRYPTEDDATA, response.getData());
                 retval = data;
             } catch (Exception e) {
                 throw new EJBException(e);

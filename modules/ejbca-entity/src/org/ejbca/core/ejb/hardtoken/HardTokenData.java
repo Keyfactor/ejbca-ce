@@ -28,6 +28,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
+import org.apache.xml.security.utils.Base64;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 import org.cesecore.util.JBossUnmarshaller;
@@ -44,6 +45,8 @@ public class HardTokenData extends ProtectedData implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(HardTokenData.class);
+
+    public static final String ENCRYPTEDDATA = "ENCRYPTEDDATA";
 
 	private String tokenSN;
 	private String username;
@@ -133,8 +136,19 @@ public class HardTokenData extends ProtectedData implements Serializable {
     protected String getProtectString(final int version) {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getTokenSN()).append(getUsername()).append(getCtime()).append(getMtime()).append(getTokenType());
-        build.append(getSignificantIssuerDN()).append(getData());
+        build.append(getTokenSN()).append(getUsername()).append(getCtime()).append(getMtime()).append(getTokenType()).append(getSignificantIssuerDN());
+        LinkedHashMap data = getData();
+        // We must have special handling here if the data is encrypted because the byte[] is a binary byte array 
+        // in this case, when doing getData().toString in this case a reference to the byte array is printed, and 
+        // this is different for every invocation so signature verification fail.
+        final String dataStr;
+        if (data.get(ENCRYPTEDDATA) != null) {
+            byte[] encdata = (byte[]) data.get(org.ejbca.core.ejb.hardtoken.HardTokenData.ENCRYPTEDDATA);
+            dataStr = Base64.encode(encdata);
+        } else {
+            dataStr = getData().toString(); 
+        }
+        build.append(dataStr);
         return build.toString();
     }
 

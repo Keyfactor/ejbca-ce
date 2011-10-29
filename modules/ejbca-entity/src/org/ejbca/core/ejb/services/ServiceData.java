@@ -182,7 +182,12 @@ public class ServiceData extends ProtectedData implements Serializable {
     protected String getProtectString(final int version) {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-        build.append(getId()).append(getName()).append(getRunTimeStamp()).append(getNextRunTimeStamp()).append(getData());
+        build.append(getId()).append(getName()).append(getData());
+        // runTimeStamp and nextRunTimeStamp are deliberately excluded from this so that they can be updated
+        // efficiently in method updateTimestamps below. 
+        // This causes a slight security risk of denial of service, since the runtimestamp can be modified to manipulate
+        // how services run. The EJB timer itself is not stored here though, and with other monitoring that the system/CRLs etc
+        // are working it should not be seen as a great security risk. No security vital parts can be modified by altering these values.
         return build.toString();
     }
 
