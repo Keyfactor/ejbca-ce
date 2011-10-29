@@ -167,7 +167,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         }
         // Upgrade between EJBCA 3.11.x and EJBCA 4.0.x to 5.0.x
         if (oldVersion <= 500) {
-        	if (!migrateDatabase500()) {
+        	if (!migrateDatabase500(dbtype)) {
         		return false;
         	}
         }
@@ -179,7 +179,6 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * Called from other migrate methods, don't call this directly, call from an
      * interface-method
      * 
-     * Not used in EJBCA 4.0.x, but might be later
      */
     private boolean migrateDatabase(String resource) {
         // Fetch the resource file with SQL to modify the database tables
@@ -320,17 +319,25 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * In EJBCA 5.0 we have introduced a new authorization rule system.
      * The old "/super_administrator" rule is replaced by a rule to access "/" with recursive=true.
      * therefore we must insert a new acess rule in the database in all roles that have super_administrator access.
+     * 
+     * We have also added a column to the table AdminEntityData: tokenType
+     * 
+     * @param dbtype A string representation of the actual database.
+     * 
      * @throws AuthorizationDeniedException 
      * @throws RoleNotFoundException 
      * @throws AccessRuleNotFoundException 
      * 
      */
-    private boolean migrateDatabase500() {
+    private boolean migrateDatabase500(String dbtype) {
     	log.error("(this is not an error) Starting upgrade from ejbca 4.0.x to ejbca 5.0.x");
     	boolean ret = true;
     	
     	AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.migrateDatabase500"));
 
+    	//Upgrade database
+    	migrateDatabase("/400_500/400_500-upgrade-"+dbtype+".sql");
+    	
     	// fix CAs that don't have classpath for extended CA services
     	Collection<Integer> caids = caSession.getAvailableCAs();
     	for (Integer caid : caids) {
@@ -482,8 +489,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return ret;
     }
 
-    /** Checks if the column rowVersion exists in table PublisherQueueData
-     * @ejb.interface-method
+    /** 
+     * Checks if the column cAId column exists in AdminGroupData
      * 
      * @return true or false if the column exists or not
      */
