@@ -23,6 +23,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.cesecore.authorization.access.AccessTreeState;
+import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 
@@ -349,7 +350,11 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
 
     @Override
     public int compareTo(final AccessRuleData o) {   
-        return accessRuleName.compareTo(o.accessRuleName);
+        if (o == null) {
+            return -1;
+        } else {
+            return accessRuleName.compareTo(o.accessRuleName);
+        }
     }
 
 }
