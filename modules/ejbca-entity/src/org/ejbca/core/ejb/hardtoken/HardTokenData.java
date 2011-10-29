@@ -28,9 +28,9 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
-import org.apache.xml.security.utils.Base64;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
+import org.cesecore.util.Base64;
 import org.cesecore.util.JBossUnmarshaller;
 import org.cesecore.util.StringTools;
 
@@ -144,7 +144,7 @@ public class HardTokenData extends ProtectedData implements Serializable {
         final String dataStr;
         if (data.get(ENCRYPTEDDATA) != null) {
             byte[] encdata = (byte[]) data.get(org.ejbca.core.ejb.hardtoken.HardTokenData.ENCRYPTEDDATA);
-            dataStr = Base64.encode(encdata);
+            dataStr = new String(Base64.encode(encdata));
         } else {
             dataStr = getData().toString(); 
         }
