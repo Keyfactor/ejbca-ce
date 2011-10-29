@@ -81,7 +81,6 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
         if (!globalConfigurationSession.getCachedGlobalConfiguration().getEnableCommandLineInterface()) {
             throw new CliAuthenticationFailedException("Could not authenticate from CLI, CLI is disabled.");
         } else {
-
             Set<Principal> subjectPrincipals = subject.getPrincipals();
             if (subjectPrincipals.size() == 0) {
                 log.error("ClI Authentication was attempted without principals");
@@ -94,6 +93,11 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
             final long referenceId = randomGenerator.nextLong();
 
             UsernamePrincipal usernamePrincipal = subjectPrincipals.toArray((new UsernamePrincipal[subjectPrincipals.size()]))[0];
+            
+            if(!globalConfigurationSession.getCachedGlobalConfiguration().getEnableCommandLineInterfaceDefaultUser() 
+                && usernamePrincipal.getName().equals(EjbcaConfiguration.getCliDefaultUser())) {
+                throw new CliAuthenticationFailedException("Could not authenticate from CLI, use of default user is prohibited.");
+            }
 
             try {
                 Tuplet<String, SupportedPasswordHashAlgorithm> passwordAndAlgorithm = endEntityAccessSession

@@ -13,17 +13,25 @@
 package org.ejbca.ui.cli;
 
 import static org.junit.Assert.*;
+
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
+
 import junit.framework.Assert;
 
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTestHelperSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -42,6 +50,7 @@ public class CliCommandAuthenticationTest {
     private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = JndiHelper
             .getRemoteSession(CliAuthenticationTestHelperSessionRemote.class);
     private UserAdminSessionRemote userAdminSession = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);
+    private CliAuthenticationProviderRemote cliAuthenticationProvider = JndiHelper.getRemoteSession(CliAuthenticationProviderRemote.class);
 
     private final TestAlwaysAllowLocalAuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "CliAuthenticationTest"));
@@ -141,6 +150,40 @@ public class CliCommandAuthenticationTest {
             // Ignore
         } finally {
             setCliEnabled(oldValue);
+        }
+    }
+    
+    /**
+     * Test that this works server side as well. 
+     */
+    @Test
+    public void testCliDisabledServerSide() {
+        boolean oldValue = setCliEnabled(false);
+        try {
+            cliAuthenticationProvider.authenticate(null);
+            fail("Cli should not have been able to authenticate.");
+        } catch (CliAuthenticationFailedException e) {
+            //Awsum
+        } finally {
+            setCliEnabled(oldValue);
+        }
+    }
+    
+    /**
+     * Test that this works server side as well. 
+     */
+    @Test
+    public void testDefaultCliUserDisabled() {
+        boolean oldValue = setCliUserEnabled(false);
+        try {
+            Set<Principal> principals = new HashSet<Principal>();
+            principals.add(new UsernamePrincipal(EjbcaConfiguration.getCliDefaultUser()));
+            cliAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
+            fail("Cli should not have been able to authenticate using default cli user.");
+        } catch (CliAuthenticationFailedException e) {
+            //Awsum
+        } finally {
+            setCliUserEnabled(oldValue);
         }
     }
 
