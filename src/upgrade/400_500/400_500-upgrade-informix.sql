@@ -1,0 +1,1 @@
+ALTER TABLE AdminEntityData ADD tokenType VARCHAR(255,0);
