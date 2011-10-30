@@ -23,10 +23,10 @@ import java.io.ObjectOutputStream;
 
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.easymock.EasyMock;
 import org.ejbca.ui.cli.CliAuthenticationToken;
 import org.ejbca.ui.cli.CliAuthenticationTokenReferenceRegistry;
+import org.ejbca.ui.cli.CliUserAccessMatchValue;
 import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 import org.junit.Test;
@@ -52,8 +52,8 @@ public class CliAuthenticationTokenTest {
                 SupportedPasswordHashAlgorithm.SHA1_OLD);
         CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
-        EasyMock.expect(accessUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_UID.getNumericValue());
         EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST");
+        EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationToken.TOKEN_TYPE);
         EasyMock.replay(accessUser);
         assertTrue(authenticationToken.matches(accessUser));
         // The token should still work
@@ -70,7 +70,7 @@ public class CliAuthenticationTokenTest {
                 SupportedPasswordHashAlgorithm.SHA1_OLD);
         CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
-        EasyMock.expect(accessUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_UID.getNumericValue()).times(2);
+        EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationToken.TOKEN_TYPE).times(2);
         EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST").times(2);
         EasyMock.replay(accessUser);
         assertTrue(authenticationToken.matches(accessUser));
