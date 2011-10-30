@@ -42,12 +42,15 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -318,7 +321,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     /**
      * In EJBCA 5.0 we have introduced a new authorization rule system.
      * The old "/super_administrator" rule is replaced by a rule to access "/" with recursive=true.
-     * therefore we must insert a new acess rule in the database in all roles that have super_administrator access.
+     * therefore we must insert a new access rule in the database in all roles that have super_administrator access.
      * 
      * We have also added a column to the table AdminEntityData: tokenType
      * 
@@ -425,9 +428,30 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 				log.error("Illegal Crypto Token editing CA during upgrade: "+caid, e);
 			}
     	}
-    	// Upgrade super_administrator access rules to be a /* rule, so super_administrators can still do everything.
+    	/*
+    	 *  Upgrade super_administrator access rules to be a /* rule, so super_administrators can still do everything.
+    	 *  
+    	 * Also, set token types to the standard X500 principal if otherwise null. Since token types is a new concept, 
+         * all existing aspects/admin entities must be of this type
+    	 */
     	Collection<RoleData> roles = roleAccessSession.getAllRoles();
     	for (RoleData role : roles) {
+    	    Collection<AccessUserAspectData> updatedUsers = new ArrayList<AccessUserAspectData>();
+    	    for(AccessUserAspectData userAspect : role.getAccessUsers().values()) {
+    	        if(userAspect.getTokenType() == null) {
+    	            userAspect.setTokenType(X509CertificateAuthenticationToken.TOKEN_TYPE);
+    	            updatedUsers.add(userAspect);
+    	        }
+    	    }
+    	    try {
+                role = roleMgmtSession.addSubjectsToRole(admin, role, updatedUsers);
+            } catch (RoleNotFoundException e) {
+                log.error("Not possible to edit subjects for role: "+role.getRoleName(), e);
+            } catch (AuthorizationDeniedException e) {
+                log.error("Not possible to edit subjects for role: "+role.getRoleName(), e);
+            }
+    
+    	    
     		Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
     		Collection<AccessRuleData> rules = rulemap.values();
     		for (AccessRuleData rule : rules) {
