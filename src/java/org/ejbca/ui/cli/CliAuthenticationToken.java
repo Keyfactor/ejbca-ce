@@ -116,12 +116,14 @@ public class CliAuthenticationToken extends AuthenticationToken {
         if (isVerified) {
             return true;
         } else {
-            if (userName.equals(accessUser.getMatchValue())
-                    && CliAuthenticationTokenReferenceRegistry.INSTANCE.verifySha1Hash(referenceNumber, sha1Hash)) {
-                if (CliAuthenticationTokenReferenceRegistry.INSTANCE.unregisterToken(referenceNumber)) {
-                    // The reference to this token hasn't been used.
-                    isVerified = true;
-                    return true;
+            if (accessUser.getTokenType().equals(TOKEN_TYPE)) {
+                if (userName.equals(accessUser.getMatchValue())
+                        && CliAuthenticationTokenReferenceRegistry.INSTANCE.verifySha1Hash(referenceNumber, sha1Hash)) {
+                    if (CliAuthenticationTokenReferenceRegistry.INSTANCE.unregisterToken(referenceNumber)) {
+                        // The reference to this token hasn't been used.
+                        isVerified = true;
+                        return true;
+                    }
                 }
             }
         }
