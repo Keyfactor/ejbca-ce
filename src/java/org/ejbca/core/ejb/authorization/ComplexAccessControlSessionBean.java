@@ -117,7 +117,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         role.setAccessUsers(newUsers);
 
         UserData defaultCliUserData = new UserData(EjbcaConfiguration.getCliDefaultUser(), EjbcaConfiguration.getCliDefaultPassword(), false, "UID="
-                + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, 0, 0, 0, 0, null);
+                + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, 1, 0, 0, 0, null);
         entityManager.persist(defaultCliUserData);
     }
 
