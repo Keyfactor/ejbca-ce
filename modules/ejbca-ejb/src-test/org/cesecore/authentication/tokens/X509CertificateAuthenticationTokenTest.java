@@ -152,6 +152,7 @@ public class X509CertificateAuthenticationTokenTest {
         X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspectData.class);
         EasyMock.expect(accessUser.getCaId()).andReturn(-1);
+        EasyMock.expect(accessUser.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE);
         EasyMock.replay(accessUser);
         assertFalse("AccessUser matched in spit of incorrect CaIDs", authenticationToken.matches(accessUser));
         EasyMock.verify(accessUser);
@@ -169,6 +170,7 @@ public class X509CertificateAuthenticationTokenTest {
         EasyMock.expect(accessUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_FULLDN.getNumericValue());
         EasyMock.expect(accessUser.getMatchValue()).andReturn(CertTools.getSubjectDN(certificate));
         EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASEINS);
+        EasyMock.expect(accessUser.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE);
         EasyMock.replay(accessUser);
         
         assertTrue(authenticationToken.matches(accessUser));
@@ -195,6 +197,7 @@ public class X509CertificateAuthenticationTokenTest {
                 EasyMock.expect(accessUser.getMatchValue()).andReturn(certificate.getSerialNumber().toString(16)).times(2);
                 EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASEINS);
                 EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_NOT_EQUALCASEINS);
+                EasyMock.expect(accessUser.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE).times(2);
                 EasyMock.replay(accessUser);
                 // Try once for AccessMatchType.TYPE_EQUALCASE/TYPE_EQUALCASEINS
                 assertTrue(authenticationToken.matches(accessUser));
@@ -217,6 +220,7 @@ public class X509CertificateAuthenticationTokenTest {
                 EasyMock.expect(accessUser.getMatchWith()).andReturn(matchValue.getNumericValue());
                 EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(match);
                 EasyMock.expect(accessUser.getMatchValue()).andReturn("Test");
+                EasyMock.expect(accessUser.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE);
                 EasyMock.replay(accessUser);
                 if (match == AccessMatchType.TYPE_EQUALCASE || match == AccessMatchType.TYPE_EQUALCASEINS) {
                     assertTrue("Could not match for value " + matchValue, authenticationToken.matches(accessUser));
