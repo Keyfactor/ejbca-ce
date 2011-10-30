@@ -74,10 +74,12 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
     @Override
     public void removeCertificate(Certificate certificate) {
         if (certificate != null) {
-            CertificateData certificateData = CertificateData.findByFingerprint(entityManager, CertTools.getFingerprintAsString(certificate));
-            if (certificateData != null) {
-                entityManager.remove(certificateData);
-            }
+            // Do this as a native query because we do not want to be depending on rowProtection validating
+            // correctly, since some systemtests may insert directly in the database with null rowProtection (publisher tests)
+            String fingerprint = CertTools.getFingerprintAsString(certificate);
+            final Query query = entityManager.createNativeQuery("DELETE from CertificateData where fingerprint=:fingerprint");
+            query.setParameter("fingerprint", fingerprint);
+            query.executeUpdate();
         }
     }
 

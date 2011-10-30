@@ -38,6 +38,7 @@ import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
@@ -123,10 +124,9 @@ public class PublisherTest {
     private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
     private PublisherSessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherSessionRemote.class);
     private PublisherProxySessionRemote publisherProxySession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
-    
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
-    
     private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertStoreSession = JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
     private AuthenticationToken admin;
     
@@ -331,86 +331,90 @@ public class PublisherTest {
     public void test14ExternalOCSPPublisherCustom() throws Exception {
 	    log.trace(">test14ExternalOCSPPublisher()");
         boolean ret = false;
-
-        ret = false;
-		try {
-            CustomPublisherContainer publisher = new CustomPublisherContainer();
-            publisher.setClassPath(ValidationAuthorityPublisher.class.getName());
-		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-			final String jndiPrefix = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
-			final String jndiName = jndiPrefix + configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
-            log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
-            publisher.setPropertyData("dataSource " + jndiName);
-            publisher.setDescription("Used in Junit Test, Remove this one");
-            publisherProxySession.addPublisher(internalAdmin, "TESTEXTOCSP", publisher);
-            ret = true;
-        } catch (PublisherExistsException pee) {
-        	log.error(pee);
-        }        
-        assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = publisherProxySession.getPublisherId("TESTEXTOCSP");
-        publisherProxySession.testConnection(id);
-        
         Certificate cert = CertTools.getCertfromByteArray(testcert);
-        ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId("TESTEXTOCSP")));
+        try {
+            try {
+                CustomPublisherContainer publisher = new CustomPublisherContainer();
+                publisher.setClassPath(ValidationAuthorityPublisher.class.getName());
+                // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
+                final String jndiPrefix = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
+                final String jndiName = jndiPrefix + configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
+                log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
+                publisher.setPropertyData("dataSource " + jndiName);
+                publisher.setDescription("Used in Junit Test, Remove this one");
+                publisherProxySession.addPublisher(internalAdmin, "TESTEXTOCSP", publisher);
+                ret = true;
+            } catch (PublisherExistsException pee) {
+                log.error(pee);
+            }        
+            assertTrue("Creating External OCSP Publisher failed", ret);
+            int id = publisherProxySession.getPublisherId("TESTEXTOCSP");
+            publisherProxySession.testConnection(id);
 
-        ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
-        assertTrue("Error storing certificate to external ocsp publisher", ret);
+            ArrayList<Integer> publishers = new ArrayList<Integer>();
+            publishers.add(Integer.valueOf(publisherProxySession.getPublisherId("TESTEXTOCSP")));
 
-        publisherProxySession.revokeCertificate(internalAdmin, publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime());
-	    log.trace("<test14ExternalOCSPPublisherCustom()");
+            ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
+            assertTrue("Error storing certificate to external ocsp publisher", ret);
+
+            publisherProxySession.revokeCertificate(internalAdmin, publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime());
+        } finally {
+            internalCertStoreSession.removeCertificate(cert);
+        }
+        log.trace("<test14ExternalOCSPPublisherCustom()");
     }
     
     @Test
     public void test15ExternalOCSPPublisher() throws Exception {
 	    log.trace(">test15ExternalOCSPPublisher()");
         boolean ret = false;
-
-        ret = false;
-		try {
-			ValidationAuthorityPublisher publisher = new ValidationAuthorityPublisher();
-		    // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
-			final String jndiPrefix = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
-			final String jndiName = jndiPrefix + configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
-            log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
-            publisher.setDataSource(jndiName);
-            publisher.setDescription("Used in Junit Test, Remove this one");
-            publisherProxySession.addPublisher(internalAdmin, "TESTEXTOCSP2", publisher);
-            ret = true;
-        } catch (PublisherExistsException pee) {
-        	log.error(pee);
-        }        
-        assertTrue("Creating External OCSP Publisher failed", ret);
-        int id = publisherProxySession.getPublisherId("TESTEXTOCSP2");
-        publisherProxySession.testConnection(id);
-        
         Certificate cert = CertTools.getCertfromByteArray(testcert);
-        ArrayList<Integer> publishers = new ArrayList<Integer>();
-        publishers.add(Integer.valueOf(publisherProxySession.getPublisherId("TESTEXTOCSP2")));
-        
-        long date = new Date().getTime();
-        ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, date, null);
-        assertTrue("Error storing certificate to external ocsp publisher", ret);
+        try {
+            try {
+                ValidationAuthorityPublisher publisher = new ValidationAuthorityPublisher();
+                // We use the default EjbcaDS datasource here, because it probably exists during our junit test run
+                final String jndiPrefix = configurationSession.getProperty(InternalConfiguration.CONFIG_DATASOURCENAMEPREFIX);
+                final String jndiName = jndiPrefix + configurationSession.getProperty(DatabaseConfiguration.CONFIG_DATASOURCENAME);
+                log.debug("jndiPrefix=" + jndiPrefix + " jndiName=" + jndiName);
+                publisher.setDataSource(jndiName);
+                publisher.setDescription("Used in Junit Test, Remove this one");
+                publisherProxySession.addPublisher(internalAdmin, "TESTEXTOCSP2", publisher);
+                ret = true;
+            } catch (PublisherExistsException pee) {
+                log.error(pee);
+            }        
+            assertTrue("Creating External OCSP Publisher failed", ret);
+            int id = publisherProxySession.getPublisherId("TESTEXTOCSP2");
+            publisherProxySession.testConnection(id);
 
-        CertificateInfo info = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
-        assertEquals(SecConst.CERTPROFILE_FIXED_ENDUSER, info.getCertificateProfileId());
-        assertEquals("foo", info.getTag());
-        assertEquals(date, info.getUpdateTime().getTime());
+            ArrayList<Integer> publishers = new ArrayList<Integer>();
+            publishers.add(Integer.valueOf(publisherProxySession.getPublisherId("TESTEXTOCSP2")));
 
-        date = date + 12345;
-        publisherProxySession.revokeCertificate(internalAdmin, publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foobar", 12345, date);
+            long date = new Date().getTime();
+            ret = publisherSession.storeCertificate(admin, publishers, cert, "test05", "foo123", null, null, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY, -1, RevokedCertInfo.NOT_REVOKED, "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, date, null);
+            assertTrue("Error storing certificate to external ocsp publisher", ret);
 
-        info = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
-        assertEquals(12345, info.getCertificateProfileId());
-        assertEquals("foobar", info.getTag());
-        assertEquals(date, info.getUpdateTime().getTime());
+            CertificateInfo info = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
+            assertEquals(SecConst.CERTPROFILE_FIXED_ENDUSER, info.getCertificateProfileId());
+            assertEquals("foo", info.getTag());
+            assertEquals(date, info.getUpdateTime().getTime());
 
-        String issuerDn = CertTools.getIssuerDN(CertTools.getCRLfromByteArray(testcrl));
-        // Test storing and updating CRLs as well
-        publisherSession.storeCRL(admin, publishers, testcrl, "test05", 1, issuerDn);
-        publisherSession.storeCRL(admin, publishers, testcrl, "test05", 1, issuerDn);
-        
+            date = date + 12345;
+            publisherProxySession.revokeCertificate(internalAdmin, publishers, cert, "test05", null, null, SecConst.CERTTYPE_ENDENTITY, RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, new Date().getTime(), "foobar", 12345, date);
+
+            info = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
+            assertEquals(12345, info.getCertificateProfileId());
+            assertEquals("foobar", info.getTag());
+            assertEquals(date, info.getUpdateTime().getTime());
+
+            String issuerDn = CertTools.getIssuerDN(CertTools.getCRLfromByteArray(testcrl));
+            // Test storing and updating CRLs as well
+            publisherSession.storeCRL(admin, publishers, testcrl, "test05", 1, issuerDn);
+            publisherSession.storeCRL(admin, publishers, testcrl, "test05", 1, issuerDn);
+
+        } finally {
+            internalCertStoreSession.removeCertificate(cert);
+        }
         log.trace("<test15ExternalOCSPPublisher()");
     }
 
