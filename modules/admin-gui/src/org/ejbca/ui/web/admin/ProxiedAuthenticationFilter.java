@@ -68,7 +68,7 @@ public class ProxiedAuthenticationFilter implements Filter {
 				if (username != null) {
 				    final EjbLocalHelper ejb = new EjbLocalHelper();
 				    if (log.isDebugEnabled()) {
-	                    log.info("No client certificate supplied through SSL/TLS. Trying alternative certificate emulation lookup for subject '" + username + "'.");
+	                    log.debug("No client certificate supplied through SSL/TLS. Trying alternative certificate emulation lookup for subject '" + username + "'.");
 				    }
 					final Collection<Certificate> userCerts = ejb.getCertificateStoreSession().findCertificatesByUsernameAndStatus(username, CertificateConstants.CERT_ACTIVE);
 					Date latestestIssuance = null;
