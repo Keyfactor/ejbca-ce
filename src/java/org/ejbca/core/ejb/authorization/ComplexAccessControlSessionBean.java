@@ -54,6 +54,7 @@ import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ra.UserData;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.cli.CliUserAccessMatchValue;
 
@@ -117,7 +118,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         role.setAccessUsers(newUsers);
 
         UserData defaultCliUserData = new UserData(EjbcaConfiguration.getCliDefaultUser(), EjbcaConfiguration.getCliDefaultPassword(), false, "UID="
-                + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, 1, 0, 0, 0, null);
+                + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, SecConst.EMPTY_ENDENTITYPROFILE, 0, 0, 0, null);
         entityManager.persist(defaultCliUserData);
     }
 

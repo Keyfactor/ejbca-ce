@@ -47,7 +47,6 @@ import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
  * @version $Id$
  * 
  */
-
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CliAuthenticationProviderRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CliAuthenticationProviderSessionBean implements CliAuthenticationProviderLocal, CliAuthenticationProviderRemote {
@@ -79,6 +78,7 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
          * server and not the client to avoid spoofing.
          */
         if (!globalConfigurationSession.getCachedGlobalConfiguration().getEnableCommandLineInterface()) {
+            log.info("CLI authentication attempted, but CLI is disabled.");
             throw new CliAuthenticationFailedException("Could not authenticate from CLI, CLI is disabled.");
         } else {
             Set<Principal> subjectPrincipals = subject.getPrincipals();
@@ -96,6 +96,7 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
             
             if(!globalConfigurationSession.getCachedGlobalConfiguration().getEnableCommandLineInterfaceDefaultUser() 
                 && usernamePrincipal.getName().equals(EjbcaConfiguration.getCliDefaultUser())) {
+                log.info("CLI authentication attempted, but the default user ("+EjbcaConfiguration.getCliDefaultUser()+") is disabled.");
                 throw new CliAuthenticationFailedException("Could not authenticate from CLI, use of default user is prohibited.");
             }
 
