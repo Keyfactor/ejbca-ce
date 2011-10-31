@@ -273,10 +273,10 @@ public class ServiceConfigurationView implements Serializable{
 		this.selectedWorker = selectedWorker;
 	}	
 	
-	public List getAvailableWorkers(){
-		ArrayList retval = new ArrayList();
-		Collection available = typeManager.getAvailableWorkerTypes();
-		Iterator iter = available.iterator();
+	public List<SelectItem> getAvailableWorkers(){
+		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
+		Collection<ServiceType> available = typeManager.getAvailableWorkerTypes();
+		Iterator<ServiceType> iter = available.iterator();
 		while(iter.hasNext()){
 			ServiceType next = (ServiceType) iter.next();
 			String label = next.getName();
@@ -289,12 +289,12 @@ public class ServiceConfigurationView implements Serializable{
 		return retval;
 	}
 	
-	public List getAvailableIntervals(){
-		ArrayList retval = new ArrayList();
+	public List<SelectItem> getAvailableIntervals(){
+		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
 		WorkerType currentWorkerType = (WorkerType) typeManager.getServiceTypeByName(selectedWorker);
-		Iterator iter = currentWorkerType.getCompatibleIntervalTypeNames().iterator();
+		Iterator<String> iter = currentWorkerType.getCompatibleIntervalTypeNames().iterator();
 		while(iter.hasNext()){
-			String name = (String) iter.next();
+			String name = iter.next();
 			ServiceType next = typeManager.getServiceTypeByName(name);
 			String label = name;
 			if(next.isTranslatable()){
@@ -308,12 +308,12 @@ public class ServiceConfigurationView implements Serializable{
 		return retval;
 	}
 	
-	public List getAvailableActions(){
-		ArrayList retval = new ArrayList();
+	public List<SelectItem> getAvailableActions(){
+		ArrayList<SelectItem> retval = new ArrayList<SelectItem>();
 		WorkerType currentWorkerType = (WorkerType) typeManager.getServiceTypeByName(selectedWorker);
-		Iterator iter = currentWorkerType.getCompatibleActionTypeNames().iterator();
+		Iterator<String> iter = currentWorkerType.getCompatibleActionTypeNames().iterator();
 		while(iter.hasNext()){
-			String name = (String) iter.next();
+			String name = iter.next();
 			ServiceType next = typeManager.getServiceTypeByName(name);
 			String label = name;
 			if(next.isTranslatable()){

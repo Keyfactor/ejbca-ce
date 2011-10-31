@@ -69,7 +69,7 @@ public class ServiceTypeManager implements java.io.Serializable {
 
 	private HashMap localAvailableTypesByName;
 	private HashMap localAvailableTypesByClassPath;
-	private ArrayList localWorkerTypes;
+	private ArrayList<ServiceType> localWorkerTypes;
 	
 	static{
 		ServiceTypeManager.registerServiceType(new CustomIntervalType());
@@ -84,8 +84,6 @@ public class ServiceTypeManager implements java.io.Serializable {
 		ServiceTypeManager.registerServiceType(new RenewCAWorkerType());
 		ServiceTypeManager.registerServiceType(new PublishQueueWorkerType());
 	}
-	
-
 
 	public  ServiceTypeManager(){
 		// Create a deep clone of the static global data.
@@ -125,7 +123,6 @@ public class ServiceTypeManager implements java.io.Serializable {
 		
 	}
 	
-	
 	/**
 	 * Returns the service type with the given name.
 	 */
@@ -144,12 +141,8 @@ public class ServiceTypeManager implements java.io.Serializable {
 	/**
 	 * @return returns all available workers in the GUI
 	 */
-	public Collection getAvailableWorkerTypes(){
+	public Collection<ServiceType> getAvailableWorkerTypes(){
 		return localWorkerTypes;
 	}
-	
-	
-	
-	
 }
 

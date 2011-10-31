@@ -27,20 +27,20 @@ import java.util.Collection;
  */
 public abstract class WorkerType extends ServiceType {
 
+	private static final long serialVersionUID = -7391225892972793605L;
 
-	
-	public WorkerType(String subViewPage, String name, boolean translatable) {
+    public WorkerType(String subViewPage, String name, boolean translatable) {
 		super(subViewPage, name, translatable);
 	}
 
 	/**
 	 * @return the names of the Compatible Action Types
 	 */
-	public abstract Collection getCompatibleActionTypeNames();
+	public abstract Collection<String> getCompatibleActionTypeNames();
 
 	/**
 	 * @return the names of the Compatible Interval Types
 	 */
-	public abstract Collection getCompatibleIntervalTypeNames();
+	public abstract Collection<String> getCompatibleIntervalTypeNames();
 
 }
