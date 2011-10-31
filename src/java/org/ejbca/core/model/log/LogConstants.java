@@ -18,13 +18,6 @@ package org.ejbca.core.model.log;
  */
 public interface LogConstants {
 
-    /**
-     * Constant containing caid that couldn't be determined in any other way. Log events can only be viewed.
-     * by superadministrator.
-     */
-	@Deprecated	// Use null instead
-    public static final int INTERNALCAID = 0;
-
     // Public constants
 
     /*Possible log events, all information events should have an id below 1000 and all error events should have a id above 1000 */
