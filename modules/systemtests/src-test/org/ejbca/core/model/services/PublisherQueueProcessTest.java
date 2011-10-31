@@ -24,6 +24,7 @@ import java.util.Properties;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -65,15 +66,8 @@ public class PublisherQueueProcessTest {
     private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
     private PublisherProxySessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
     private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
+    private InternalCertificateStoreSessionRemote internalCertStoreSession = JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
-
-    @Before
-    public void setUp() throws Exception {
-    }
-
-    @After
-    public void tearDown() throws Exception {
-    }
 
     /**
      * Add a new entry to the publisher queue and let the process service run,
@@ -130,7 +124,7 @@ public class PublisherQueueProcessTest {
      * 
      */
     @Test
-    public void test01PublishQueueProcessSuccess() throws Exception {
+    public void test02PublishQueueProcessSuccess() throws Exception {
         // Add a Dummy publisher with Id 12345
         try {
             CustomPublisherContainer publisher = new CustomPublisherContainer();
@@ -216,6 +210,10 @@ public class PublisherQueueProcessTest {
             publisherQueueSession.removeQueueData(d.getPk());
 
         }
+
+        // If the dummy cert was put in the database, remove it
+        Certificate cert = CertTools.getCertfromByteArray(testcert);
+        internalCertStoreSession.removeCertificate(cert);
 
         serviceSession.removeService(admin, "TestPublishQueueProcessService12345");
         serviceSession.removeService(admin, "TestPublishQueueProcessService");
