@@ -349,7 +349,7 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
 
     @Override
     public int compareTo(final AccessRuleData o) {   
-        if (o == null) {
+        if (o == null || o.accessRuleName == null || accessRuleName == null) {
             return -1;
         } else {
             return accessRuleName.compareTo(o.accessRuleName);
