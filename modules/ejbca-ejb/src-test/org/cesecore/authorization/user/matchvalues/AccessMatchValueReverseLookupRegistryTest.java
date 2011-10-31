@@ -13,6 +13,7 @@
 package org.cesecore.authorization.user.matchvalues;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.security.InvalidParameterException;
@@ -113,7 +114,19 @@ public class AccessMatchValueReverseLookupRegistryTest {
         } catch (InvalidParameterException e) {
             //Ignore
         }
-
+    }
+    
+    /**
+     * Tests that the lookup registry gives a nice reply to an unregistered token type
+     */
+    @Test
+    public void testLookupUnregisteredTokenType() {
+        try {
+            AccessMatchValue result = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup("MickeyMouse", 0);
+            assertNull("Reverse lookup of an unregistered token type shouldn't have returned null", result);
+        } catch(NullPointerException e) {
+            fail("Lookup for an unregistered token threw an NPE.");
+        }
     }
 
     private enum VanillaAccessMatchValueMock implements AccessMatchValue {

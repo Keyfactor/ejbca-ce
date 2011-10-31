@@ -159,16 +159,6 @@
 					<include name="org/ejbca/util/dn/DnComponents.java"/>
 					<include name="org/ejbca/util/CertTools.java"/>
 					<include name="org/ejbca/core/model/ca/crl/RevokedCertInfo.java"/>
-					<!-- The below dependencies are incorrect (because CESeCore should not depend on EJBCA,
-					     and should be removed once the existing dependency issue is solved. -->
-					<include name="org/ejbca/ui/cli/CliUserAccessMatchValue.java"/>
-					<include name="org/ejbca/ui/cli/CliAuthenticationToken.java"/>
-					<include name="org/ejbca/ui/cli/exception/CliAuthenticationFailedException.java"/>
-					<include name="org/ejbca/ui/cli/exception/UninitializedCliAuthenticationTokenException.java"/>
-					<include name="org/ejbca/util/crypto/BCrypt.java"/>
-					<include name="org/ejbca/util/crypto/CryptoTools.java"/>
-					<include name="org/ejbca/util/crypto/SupportedPasswordHashAlgorithm.java"/>	
-					<include name="org/ejbca/ui/cli/CliAuthenticationTokenReferenceRegistry.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/admins" destdir="${build-temp.dir}/admins" debug="on" includeantruntime="no"

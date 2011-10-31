@@ -19,9 +19,6 @@ import java.security.InvalidParameterException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.apache.log4j.Logger;
-import org.ejbca.ui.cli.CliUserAccessMatchValue;
-
 /**
  * This enum-pattern singleton acts as a lookup registry for AccessMatchValue implementations. 
  * Any AccessMatchValue willing to be used has to register itself and its token type here.
@@ -32,39 +29,17 @@ import org.ejbca.ui.cli.CliUserAccessMatchValue;
 public enum AccessMatchValueReverseLookupRegistry {
     INSTANCE;
     
-    private static final Logger log = Logger.getLogger(AccessMatchValueReverseLookupRegistry.class);
-    
     private Map<String, Method> registry;
-
-    static {
-        /*
-         * FIXME: This is a hack, because we need some sort of annotation or service loader to make sure 
-         * that the AccessMatchValue-implementing enums get initialized at runtime. Sadly, enums aren't 
-         * initialized until they're called, which causes trouble with this registry. 
-         * 
-         * The mostly likely solution is to (from here) walk through the entire source tree and initialize 
-         * any class implementing the AccessMatchValue interface.
-         * 
-         * Suggestions on where to move these lines would be appreciated.
-         * 
-         * -mikek
-         */      
-        try {
-            Class.forName(X500PrincipalAccessMatchValue.class.getName());
-            Class.forName(CliUserAccessMatchValue.class.getName());
-        } catch (ClassNotFoundException e) {
-            // TODO Auto-generated catch block
-            log.error("Failure during match value initialization", e);
-        }
-    }
     
     private AccessMatchValueReverseLookupRegistry() {
         registry = new ConcurrentHashMap<String, Method>();      
     }
 
     /**
-     * This method registers a static reverse lookup method for enums extending the AccessMatchValue
+     * This method registers a static reverse lookup method for enums implementing the AccessMatchValue
      * interface.  
+     * 
+     * A method registered to this registry MUST be public, static and have a return type implementing AccessMatchvalue.
      * 
      * @param tokenType A string identifier 
      * @param lookupMethod a method that must return an enum extending AccessMatchValue that must be public and static.
@@ -89,24 +64,31 @@ public enum AccessMatchValueReverseLookupRegistry {
     }
 
     /**
+     * This method performs a reverse lookup given a token type and an integer, by using already registered callback method
+     * to translate those values into an AccessMatchValue. If no corresponding callback method has been registered, this method
+     * will return null.
      * 
      * @param tokenType A string identifier 
-     * @param databaseValue
-     * @return The AccessMatchValue-extending enum returned by the corresponding lookup method. 
-     * @throws InvocationTargetException to wrap any exceptions thrown during the method invocation. 
+     * @param databaseValue the numeric value from the database.
+     * @return The AccessMatchValue-extending enum returned by the corresponding lookup method, null if token type isn't registered. 
      */
     public AccessMatchValue performReverseLookup(String tokenType, int databaseValue) {
         if (tokenType == null) {
             return null;
         } else {
-            try {
-                return (AccessMatchValue) registry.get(tokenType).invoke(null, databaseValue);
-            } catch (IllegalArgumentException e) {
-                throw new InvalidMatchValueException("IllegalArgumentException thrown", e);
-            } catch (IllegalAccessException e) {
-                throw new InvalidMatchValueException("Lookup method was not public", e);
-            } catch (InvocationTargetException e) {
-                throw new ReverseMatchValueLookupException(e);
+            Method callback = registry.get(tokenType);
+            if (callback == null) {
+                return null;
+            } else {
+                try {
+                    return (AccessMatchValue) callback.invoke(null, databaseValue);
+                } catch (IllegalArgumentException e) {
+                    throw new InvalidMatchValueException("IllegalArgumentException thrown", e);
+                } catch (IllegalAccessException e) {
+                    throw new InvalidMatchValueException("Lookup method was not public", e);
+                } catch (InvocationTargetException e) {
+                    throw new ReverseMatchValueLookupException(e);
+                }
             }
         }
     }

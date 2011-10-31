@@ -36,6 +36,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.keys.token.CryptoTokenFactory;
@@ -50,6 +51,7 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.ui.cli.CliUserAccessMatchValue;
 
 /**
  * Servlet used to start services by calling the ServiceSession.load() at startup<br>
@@ -128,7 +130,7 @@ public class StartServicesServlet extends HttpServlet {
         //
         // Run all "safe" initializations first, 
         // i.e. those that does not depend on other running beans, components etc
-    
+
         
         // Log a startup message
 		String iMsg = intres.getLocalizedMessage("startservice.startup", GlobalConfiguration.EJBCA_VERSION);
@@ -224,7 +226,22 @@ public class StartServicesServlet extends HttpServlet {
         log.trace(">init SignSession to check for unique issuerDN,serialNumber index");
         // Call the check for unique index, since first invocation will perform the database
         // operation and avoid a performance hit for the first request where this is checked.
-        certCreateSession.isUniqueCertificateSerialNumberIndex();        
+        certCreateSession.isUniqueCertificateSerialNumberIndex();       
+        
+        /*
+         * FIXME: This is a hack, because we need some sort of annotation or service loader to make sure 
+         * that the AccessMatchValue-implementing enums get initialized at runtime. Sadly, enums aren't 
+         * initialized until they're called, which causes trouble with this registry. 
+         * 
+         * These lines are to be removed once a dynamic initialization heuristic has been developed.
+         * 
+         */      
+        try {
+            Class.forName(X500PrincipalAccessMatchValue.class.getName());
+            Class.forName(CliUserAccessMatchValue.class.getName());
+        } catch (ClassNotFoundException e) {
+            log.error("Failure during match value initialization", e);
+        }
     }
     
     /**

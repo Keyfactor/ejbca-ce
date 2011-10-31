@@ -32,7 +32,10 @@ public enum CliUserAccessMatchValue implements AccessMatchValue {
     private static Map<Integer, CliUserAccessMatchValue> databaseLookup;
 
     static {
-        //Register this enum    
+        /*
+         * This match value is registered with the token reverse lookup registry, which will allow it to be looked up from the string
+         * return by the getTokenType method implemented from AccessMatchValue.  
+         */  
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(CliAuthenticationToken.TOKEN_TYPE,
                     CliUserAccessMatchValue.class.getMethod("matchFromDatabase", Integer.class));
@@ -42,6 +45,10 @@ public enum CliUserAccessMatchValue implements AccessMatchValue {
             log.error("Failure when registering method", e);
         }
 
+        /**
+         * Create an internal mapping to translate from the database representation of this match value (an int)
+         * to an actual match value.
+         */
         databaseLookup = new HashMap<Integer, CliUserAccessMatchValue>();
         for (CliUserAccessMatchValue value : CliUserAccessMatchValue.values()) {
             databaseLookup.put(value.numericValue, value);
