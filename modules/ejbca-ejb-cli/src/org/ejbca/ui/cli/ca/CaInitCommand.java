@@ -214,7 +214,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
             	}
             }
                             
-            initAuthorizationModule(getAdmin(cliUserName, cliPassword), dn.hashCode(), superAdminCN);
+            if (superAdminCN  != null) {
+                initAuthorizationModule(getAdmin(cliUserName, cliPassword), dn.hashCode(), superAdminCN);
+            }
             // Define CAToken type (soft token or hsm).
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setSignatureAlgorithm(signAlg);
