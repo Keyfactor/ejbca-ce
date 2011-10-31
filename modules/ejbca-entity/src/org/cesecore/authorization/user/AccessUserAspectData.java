@@ -13,6 +13,8 @@
 
 package org.cesecore.authorization.user;
 
+import java.security.InvalidParameterException;
+
 import javax.persistence.Entity;
 import javax.persistence.PostLoad;
 import javax.persistence.PrePersist;
@@ -20,6 +22,7 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
@@ -51,12 +54,28 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     
     public AccessUserAspectData(final String roleName, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
             final String matchValue) {
-        this.primaryKey = generatePrimaryKey(roleName, caId, matchWith, matchType, matchValue);
-        this.matchWith = matchWith.getNumericValue();
-        this.matchType = matchType;
-        this.matchValue = matchValue;
+        if(roleName == null) {
+            throw new InvalidParameterException("Attempted to create an AccessUserAspectData with roleName == null");
+        } else { 
+            this.primaryKey = generatePrimaryKey(roleName, caId, matchWith, matchType, matchValue);
+        }
+        if(matchWith == null) {
+            throw new InvalidParameterException("Attempted to create an AccessUserAspectData with roleName == null");
+        } else {
+            this.matchWith = matchWith.getNumericValue();
+        }
+        if(matchType == null) {
+            throw new InvalidParameterException("Attempted to create an AccessUserAspectData with matchType == null");
+        } else {
+            this.matchType = matchType;
+        }
+        if(matchValue == null) {
+            throw new InvalidParameterException("Attempted to create an AccessUserAspectData with matchValue == null");
+        } else {
+            this.matchValue = matchValue;
+        }
         this.caId = caId;
-        this.tokenType = matchWith.getTokenType();
+        this.tokenType = matchWith.getTokenType();      
     }
 
     /**
@@ -83,6 +102,9 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     public void setMatchWith(Integer matchWith) {
+        if(matchWith == null) {
+            throw new InvalidParameterException("Invalid to set matchWith == null");
+        }
         this.matchWith = matchWith;
     }
    
@@ -96,11 +118,17 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     public void setMatchType(Integer matchType) {
+        if(matchType == null) {
+            throw new InvalidParameterException("Invalid to set matchType == null");
+        }
         this.matchType = AccessMatchType.matchFromDatabase(matchType);
     }
     
     @Override
     public void setMatchTypeAsValue(AccessMatchType matchType) {
+        if(matchType == null) {
+            throw new InvalidParameterException("Invalid to set matchType == null");
+        }
         this.matchType = matchType;
     }
     
@@ -118,6 +146,9 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     public void setMatchValue(String matchValue) {
+        if(matchValue == null) {
+            throw new InvalidParameterException("Invalid to set matchValue == null");
+        }
         this.matchValue = matchValue;
     }
 
@@ -129,6 +160,9 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     public void setCaId(Integer caId) {
+        if(caId == null) {
+            throw new InvalidParameterException("Invalid to set caId == null");
+        }
         this.caId = caId;
     }
 
@@ -267,10 +301,6 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     public int compareTo(AccessUserAspectData o) {
-        if (o == null || matchValue == null || o.matchValue == null) {
-            return -1;
-        } else {
-            return matchValue.compareTo(o.matchValue);
-        }
+        return new CompareToBuilder().append(this.matchValue, o.matchValue).toComparison();
     }
 }

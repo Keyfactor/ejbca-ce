@@ -22,6 +22,7 @@ import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.apache.commons.lang.builder.CompareToBuilder;
 import org.cesecore.authorization.access.AccessTreeState;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
@@ -52,9 +53,11 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
     private String rowProtection;
 
     /**
-     * Default constructor.
+     * Default constructor private to prohibit default
+     * instantiation. 
      */
-    public AccessRuleData() {
+    @SuppressWarnings("unused")
+    private AccessRuleData() {
         
     }
     
@@ -95,14 +98,21 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
      *            True if the rule is recursive.
      */
     public AccessRuleData(final String roleName, final String accessRuleName, final AccessRuleState internalState, boolean isRecursive) {
+        if(roleName == null) {
+            throw new InvalidParameterException("Illegal to create an access rule with roleName == null");
+        } else {
+            this.primaryKey = generatePrimaryKey(roleName, accessRuleName);
+        } 
         if(accessRuleName == null) {
             throw new InvalidParameterException("Illegal to create an access rule with accessruleName == null");
-        } else if(internalState == null) {
+        } else { 
+            this.accessRuleName = accessRuleName.trim();
+        }
+        if(internalState == null) {
             throw new InvalidParameterException("Illegal to create an access rule with internalState == null");
-        } 
-        this.primaryKey = generatePrimaryKey(roleName, accessRuleName);
-        this.accessRuleName = accessRuleName.trim();
-        this.internalState = internalState;
+        } else {
+            this.internalState = internalState;
+        }
         setRecursive(isRecursive);
     }
 
@@ -172,6 +182,9 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
 
     /** Use setIsRecursive(boolean) instead of this method! */
     public void setRecursiveBool(final Boolean recursiveBool) {
+        if(recursiveBool == null) {
+            throw new InvalidParameterException("Illegal to create an access rule with recursiveBool == null");
+        } 
         this.recursiveBool = recursiveBool;
     }
 
@@ -184,6 +197,9 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
 
     /** Use setIsRecursive(boolean) instead of this method! */
     public void setRecursiveInt(final Integer isRecursiveInt) {
+        if(isRecursiveInt == null) {
+            throw new InvalidParameterException("Illegal to create an access rule with isRecursiveInt == null");
+        } 
         this.recursiveInt = isRecursiveInt;
     }
 
@@ -349,10 +365,6 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
 
     @Override
     public int compareTo(final AccessRuleData o) {   
-        if (o == null || o.accessRuleName == null || accessRuleName == null) {
-            return -1;
-        } else {
-            return accessRuleName.compareTo(o.accessRuleName);
-        }
+        return new CompareToBuilder().append(this.accessRuleName, o.accessRuleName).toComparison();
     }
 }
