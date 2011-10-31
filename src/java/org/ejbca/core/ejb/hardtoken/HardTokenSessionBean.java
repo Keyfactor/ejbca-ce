@@ -82,7 +82,6 @@ import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
-import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.UserAdminConstants;
 
 /**
@@ -730,7 +729,6 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (log.isTraceEnabled()) {
             log.trace(">removeHardToken(tokensn : " + tokensn + ")");
         }
-        int caid = LogConstants.INTERNALCAID;
 
         org.ejbca.core.ejb.hardtoken.HardTokenData htd = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
         if (htd == null) {
@@ -738,7 +736,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             log.info(msg);
             throw new HardTokenDoesntExistsException("Tokensn : " + tokensn);
         }
-        caid = htd.getSignificantIssuerDN().hashCode();
+        int caid = htd.getSignificantIssuerDN().hashCode();
         entityManager.remove(htd);
         // Remove all certificate mappings.
         removeHardTokenCertificateMappings(admin, tokensn);
