@@ -151,7 +151,7 @@ public class X509CertificateAuthenticationTokenTest {
     public void testMatchCaIdFail() {
         X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
         AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspectData.class);
-        EasyMock.expect(accessUser.getCaId()).andReturn(-1);
+        EasyMock.expect(accessUser.getCaId()).andReturn(-1).anyTimes();
         EasyMock.expect(accessUser.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE);
         EasyMock.replay(accessUser);
         assertFalse("AccessUser matched in spit of incorrect CaIDs", authenticationToken.matches(accessUser));
