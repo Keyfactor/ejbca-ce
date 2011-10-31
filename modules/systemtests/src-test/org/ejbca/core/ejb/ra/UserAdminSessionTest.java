@@ -512,6 +512,11 @@ public class UserAdminSessionTest extends CaTestCase {
         assertEquals("E=foo@bar.com,CN=" + username + ",OU=hoho,O=AnaTom,C=SE", data.getDN());
     }
     
+    /** Tests that CA and End Entity profile authorization methods in UserAdminSessionBean works.
+     * When called with a user that does not have access to the CA (that you try to add a user for), or the
+     * end entity profile specified for the user, an AuthorizationDeniedException should be thrown.
+     * For end entity profile authorization to be effective, this must be configured in global configuration.
+     */
     @Test
     public void test08Authorization() throws Exception {
         
@@ -529,6 +534,7 @@ public class UserAdminSessionTest extends CaTestCase {
         String email = authUsername + "@anatom.se";
         EndEntityInformation userdata = new EndEntityInformation(authUsername, "C=SE, O=AnaTom, CN=" + username, caid, null, email, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
+        // Test CA authorization
         try {
             try {
                 userAdminSession.addUser(adminTokenNoAuth, userdata, false);
