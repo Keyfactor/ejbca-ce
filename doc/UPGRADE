@@ -76,6 +76,10 @@ The database schema upgrade is normally done automatically for you when you run 
 Some application servers will not let you deploy unless the database is in sync though, so you may have
 to run the SQL commands manually. Check src/upgrade/400_500 to find the correct sql files for your database.
 
+A practical note is that when upgrading from EJBCA 4.0 you can not use the CLI in 5.0 before you
+have finished migrating all your 4.0 nodes and run post-upgrade.
+
+
 From EJBCA 4.0.x to EJBCA 4.0.x
 -------------------------------
 See release notes for details between certain versions. 
