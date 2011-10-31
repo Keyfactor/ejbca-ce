@@ -200,12 +200,6 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     }
 
     @Override
-    @Transient
-    public Integer getPriority() {
-        return matchWith;
-    }
-
-    @Override
     public int hashCode() {
         final int prime = 31;
         int result = 1;

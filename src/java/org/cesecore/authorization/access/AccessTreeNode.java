@@ -236,7 +236,7 @@ public class AccessTreeNode {
                     // And the two principals match (done inside to save on cycles)
                     if (authenticationToken.matches(accessUser)) {
                         AccessTreeState thisUserState = roleRulePair.getSecondElement().getTreeState();
-                        AccessMatchValue thisUserStatePriority = authenticationToken.getMatchValueFromDatabaseValue(accessUser.getPriority());
+                        AccessMatchValue thisUserStatePriority = authenticationToken.getMatchValueFromDatabaseValue(accessUser.getMatchWith());
                         if (log.isTraceEnabled()) {
                             AccessTreeState logState = thisUserState;
                             if (logState == null) {
