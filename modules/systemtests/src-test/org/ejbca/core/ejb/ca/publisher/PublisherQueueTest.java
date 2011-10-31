@@ -30,6 +30,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiHelper;
@@ -73,6 +74,7 @@ public class PublisherQueueTest {
     private PublisherSessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherSessionRemote.class);
     private PublisherProxySessionRemote publisherProxySession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
     private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
+    private InternalCertificateStoreSessionRemote internalCertStoreSession = JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
@@ -376,5 +378,10 @@ public class PublisherQueueTest {
             publisherProxySession.removePublisher(internalAdmin, "TESTEXTOCSPQUEUE");
         } catch (Exception pee) {
         }
+        
+        // If the dummy cert was put in the database, remove it
+        Certificate cert = CertTools.getCertfromByteArray(testcert);
+        internalCertStoreSession.removeCertificate(cert);
+
     }
 }
