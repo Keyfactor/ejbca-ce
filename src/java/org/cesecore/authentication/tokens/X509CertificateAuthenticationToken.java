@@ -19,6 +19,8 @@ import java.util.regex.Pattern;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.Logger;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
@@ -37,6 +39,8 @@ import org.cesecore.util.CertTools;
  * 
  */
 public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticationToken {
+
+    private static final Logger log = Logger.getLogger(X509CertificateAuthenticationToken.class);
 
     public static final String TOKEN_TYPE = "X500Principal";
     
@@ -104,8 +108,7 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
         int parameter;
         int size = 0;
         String[] clientstrings = null;
-
-        if (accessUser.getTokenType() == TOKEN_TYPE) {
+        if (StringUtils.equals(TOKEN_TYPE,accessUser.getTokenType())) {
             // First check that issuers match.
             if (accessUser.getCaId() == adminCaId) {
                 // Determine part of certificate to match with.
@@ -236,7 +239,15 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
                         }
                     }
                 }
+            } else {
+                if (log.isTraceEnabled()) {
+                    log.trace("Caid does not match. Required="+adminCaId+", actual was "+accessUser.getCaId());
+                }
             }
+        } else {
+            if (log.isTraceEnabled()) {
+                log.trace("Token type does not match. Required="+TOKEN_TYPE+", actual was "+accessUser.getTokenType());
+            }            
         }
 
         return returnvalue;
