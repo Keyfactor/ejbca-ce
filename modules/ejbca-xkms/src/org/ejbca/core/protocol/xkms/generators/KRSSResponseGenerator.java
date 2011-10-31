@@ -26,6 +26,7 @@ import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertStore;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CollectionCertStoreParameters;
@@ -137,8 +138,7 @@ public class KRSSResponseGenerator extends
 	 */
 	protected Object getPublicKeyInfo(RequestAbstractType req, boolean registerRequest){
 		Object retval = null;
-				
-		
+	
 		if(GeneralizedKRSSMessageHelper.getKeyBindingAbstractType(req).getKeyInfo() != null && GeneralizedKRSSMessageHelper.getKeyBindingAbstractType(req).getKeyInfo().getContent().get(0) != null){
 			try{
 				JAXBElement element = (JAXBElement) GeneralizedKRSSMessageHelper.getKeyBindingAbstractType(req).getKeyInfo().getContent().get(0);
@@ -486,8 +486,8 @@ public class KRSSResponseGenerator extends
 		try {
 			CAInfo cAInfo = casession.getCAInfo(pubAdmin, CertTools.getIssuerDN(cert).hashCode());
 			if(cAInfo != null){		
-				Collection caCertChain = cAInfo.getCertificateChain();
-				Iterator iter = caCertChain.iterator();
+				Collection<Certificate> caCertChain = cAInfo.getCertificateChain();
+				Iterator<Certificate> iter = caCertChain.iterator();
 				
 				boolean revoked = false;				
 				if (certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), cert.getSerialNumber())) {
@@ -516,23 +516,22 @@ public class KRSSResponseGenerator extends
 
 		return retval;
 	}
-	
 
 
-	   /**
+ /**
   * method that verifies the certificate and returns an error message
   * @param cACertChain
   * @param trustedCRLs
   * @param cert
   * @return  true if everything is OK
   */
-	private boolean verifyCert(Collection cACertChain, Collection trustedCRLs, X509Certificate usercert){
+	private boolean verifyCert(Collection<Certificate> cACertChain, Collection trustedCRLs, X509Certificate usercert){
     
      boolean retval = false;
              
      try{                	        	                   	
      	X509Certificate rootCert = null;
-     	Iterator iter = cACertChain.iterator();
+     	Iterator<Certificate> iter = cACertChain.iterator();
      	while(iter.hasNext()){
      		X509Certificate cert = (X509Certificate) iter.next();
      		if(cert.getIssuerDN().equals(cert.getSubjectDN())){
@@ -545,7 +544,7 @@ public class KRSSResponseGenerator extends
      		throw new CertPathValidatorException("Error Root CA cert not found in cACertChain"); 
      	}
      	
-     	List list = new ArrayList();
+     	List<Certificate> list = new ArrayList<Certificate>();
      	list.add(usercert);
      	list.addAll(cACertChain);
      	if(trustedCRLs != null){
@@ -556,12 +555,12 @@ public class KRSSResponseGenerator extends
      	CertStore store = CertStore.getInstance("Collection", ccsp);
      	
      	//validating path
-     	List certchain = new ArrayList();
+     	List<Certificate> certchain = new ArrayList<Certificate>();
      	certchain.addAll(cACertChain);
      	certchain.add(usercert);
      	CertPath cp = CertificateFactory.getInstance("X.509","BC").generateCertPath(certchain);
      	
-     	Set trust = new HashSet();
+     	Set<TrustAnchor> trust = new HashSet<TrustAnchor>();
      	trust.add(new TrustAnchor(rootCert, null));
      	
      	CertPathValidator cpv = CertPathValidator.getInstance("PKIX","BC");
@@ -575,12 +574,9 @@ public class KRSSResponseGenerator extends
      	}
      	cpv.validate(cp, param);
      	retval = true;
-     }catch(Exception e){
+     } catch(Exception e){
     	 log.error(intres.getLocalizedMessage("xkms.errorverifyingcert"),e);			
-
      } 
-
-		
 		return retval;
 	}
     

@@ -27,7 +27,9 @@ import java.util.Properties;
  */
 public class CustomActionType extends ActionType {
 	
-	public static final String NAME = "CUSTOMACTION";
+	private static final long serialVersionUID = -1897582972418437359L;
+
+    public static final String NAME = "CUSTOMACTION";
 	
 	public CustomActionType() {
 		super("customaction.jsp", NAME, true);
@@ -62,7 +64,7 @@ public class CustomActionType extends ActionType {
 		return classPath;
 	}
 
-	public Properties getProperties(ArrayList errorMessages) throws IOException{
+	public Properties getProperties(ArrayList<String> errorMessages) throws IOException{
 		Properties retval = new Properties();
 	    retval.load(new ByteArrayInputStream(getPropertyText().getBytes()));		
 		return retval;
@@ -73,11 +75,9 @@ public class CustomActionType extends ActionType {
 		properties.store(baos, null);		
 		setPropertyText(new String(baos.toByteArray()));
 	}
-
 	
 	public boolean isCustom() {
 		return true;
 	}
-
 
 }
