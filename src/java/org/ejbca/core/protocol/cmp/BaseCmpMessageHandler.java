@@ -136,7 +136,7 @@ public class BaseCmpMessageHandler {
 			}
 		} else if (StringUtils.equals(caName, "KeyId")) {
 			if (LOG.isDebugEnabled()) {
-				LOG.debug("Using keyId as CA name when adding users in RA mode.");
+				LOG.debug("Using keyId as CA name when adding users in RA mode: "+keyId);
 			}
 			// Use keyId as CA name
 			final CAInfo info = caSession.getCAInfo(admin, keyId);
