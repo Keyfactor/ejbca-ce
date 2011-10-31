@@ -35,6 +35,10 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     private int numericValue;
     
     static {
+        /*
+         * This match value is registered with the token reverse lookup registry, which will allow it to be looked up from the string
+         * return by the getTokenType method implemented from AccessMatchValue.  
+         */
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(X509CertificateAuthenticationToken.TOKEN_TYPE,
                     X500PrincipalAccessMatchValue.class.getMethod("matchFromDatabase", Integer.class));
@@ -44,6 +48,10 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
             log.error("Failure when registering method", e);
         }
         
+        /**
+         * Create internal mappings to translate from the database representation of this match value (an int) or
+         * to GUI representation (a String) to an actual match value.
+         */
         databaseLookup = new HashMap<Integer, X500PrincipalAccessMatchValue>();
         nameLookup = new HashMap<String, X500PrincipalAccessMatchValue>();
         for(X500PrincipalAccessMatchValue value : X500PrincipalAccessMatchValue.values()) {
