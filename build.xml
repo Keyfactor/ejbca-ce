@@ -413,7 +413,7 @@
     <!-- =================================================================== -->
     <!-- Build VA-ear                                                        -->
     <!-- =================================================================== -->
-    <target name="va-ear" depends="fail-unless-appserver-detected, display-properties, vahealthcheck.war, create-log4config-bundle">
+    <target name="va-ear" depends="fail-unless-appserver-detected, display-properties, ejbca-util.jar, vahealthcheck.war, create-log4config-bundle">
 		<property name="eardd.src" value="${tmp}/va-ear" />
 		<mkdir dir="${eardd.src}/META-INF"/>
 		<copy todir="${eardd.src}/META-INF" file="src/deploy/va-ear/META-INF/application.xml" flatten="true" failonerror="true"/>
@@ -454,6 +454,9 @@
                 <include name="va-common.jar" />
                 <include name="log4jconfig.jar" />
         	</zipfileset>
+            <zipfileset prefix="lib" dir="${ejbca.home}/dist">
+                <include name="ejbca-util.jar" />
+            </zipfileset>
 	</ear>
     </target>
 	
