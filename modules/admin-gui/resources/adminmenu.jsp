@@ -55,6 +55,8 @@
   final String HELP_LINK                =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getHelpPath() 
                                                   + "/index_help.html";
 
+  final String LOGOUT_LINK                =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "logout";
+
 
   final String MAIN_RESOURCE                          = "/administrator";
   final String CABASICFUNCTIONS_RESOURCE              = "/ca_functionality/basic_functions";
@@ -334,9 +336,7 @@
 			title="<%= ejbcawebbean.getText("OPENHELPSECTION") %>"><%=ejbcawebbean.getText("DOCUMENTATION") %></a>
 		</li>
 <% } %>
-<% if (org.ejbca.config.WebConfiguration.isProxiedAuthenticationEnabled()) { %>
-		<li id="cat10"><a href="/logout" target="_top"><%=ejbcawebbean.getText("LOGOUT") %></a></li>
-<% } %>
+		<li id="cat10"><a href="<%= LOGOUT_LINK %>" target="_top"><%=ejbcawebbean.getText("LOGOUT") %></a></li>
 
 <%
     // If authorized to view help pages then display related links.
