@@ -50,12 +50,5 @@ public interface AccessUserAspect extends Serializable {
     String getTokenType();
 
     void setTokenType(String tokenType);
-    
-    /**
-     * Method used by the access tree to determine the priority. The priority is the same as match with value.
-     * 
-     * @return the matchWith value for the AccessUserData instance.
-     */
-    Integer getPriority();
-
+   
 }
