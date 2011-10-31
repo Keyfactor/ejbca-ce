@@ -124,4 +124,5 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 
 # Custom Servlet filter for emulation of client certificate authentication to the Admin GUI
 # using a Tomcat Valve or similar proxy.
+# Default is false.
 #web.enableproxiedauth=true
