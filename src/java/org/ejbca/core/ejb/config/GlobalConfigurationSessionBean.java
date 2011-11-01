@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.config;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
@@ -33,6 +34,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -78,6 +80,12 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             globalconfigurationCache.setGlobalconfiguration(result);
         }
         return result;
+    }
+    
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public Properties getAllProperties() {
+        return EjbcaConfigurationHolder.getAsProperties();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
