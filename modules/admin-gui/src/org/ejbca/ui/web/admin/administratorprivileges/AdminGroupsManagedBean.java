@@ -152,10 +152,8 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     /** @return a viewable list of 'match with'-texts */
     public List<SelectItem> getMatchWithTexts() {
         List<SelectItem> list = new ArrayList<SelectItem>();
-        for (AccessMatchValue current : X500PrincipalAccessMatchValue.values()) {
-            if (!"".equals(current)) {
-                list.add(new SelectItem(current, getEjbcaWebBean().getText(current.toString())));
-            }
+        for (AccessMatchValue current : X500PrincipalAccessMatchValue.values()) {       
+            list.add(new SelectItem(current, getEjbcaWebBean().getText(current.toString())));
         }
         return list;
     }
