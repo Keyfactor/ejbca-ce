@@ -121,10 +121,6 @@
       <url-pattern>/ca/getcrl/getcrl</url-pattern>
    </servlet-mapping>
    <servlet-mapping>
-      <servlet-name>StartServices</servlet-name>
-      <url-pattern>/configuration/startservices</url-pattern>
-   </servlet-mapping>
-   <servlet-mapping>
       <servlet-name>LogOutServlet</servlet-name>
       <url-pattern>/logout</url-pattern>
    </servlet-mapping>
