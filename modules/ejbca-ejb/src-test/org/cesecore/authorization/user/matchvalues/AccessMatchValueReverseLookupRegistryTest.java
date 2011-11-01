@@ -123,7 +123,7 @@ public class AccessMatchValueReverseLookupRegistryTest {
     public void testLookupUnregisteredTokenType() {
         try {
             AccessMatchValue result = AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup("MickeyMouse", 0);
-            assertNull("Reverse lookup of an unregistered token type shouldn't have returned null", result);
+            assertNull("Reverse lookup of an unregistered token type should have returned null", result);
         } catch(NullPointerException e) {
             fail("Lookup for an unregistered token threw an NPE.");
         }
