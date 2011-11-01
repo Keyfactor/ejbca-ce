@@ -442,6 +442,9 @@
 				<include name="dncomponents.properties"/>
 				<include name="profilemappings.properties"/>
 				<include name="certextensions.properties"/>
+			    <!-- defaultvalues.properties is normally included in ejbca-util.jar, but since that jar
+			         is not included in the va ear build, we include it in this lib instead -->
+                <include name="defaultvalues.properties"/>
 			</fileset>
 		</jar>
 	</target>
