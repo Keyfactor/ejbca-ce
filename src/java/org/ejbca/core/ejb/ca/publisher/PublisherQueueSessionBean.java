@@ -19,14 +19,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.ejb.CreateException;
-import javax.ejb.EJB;
 import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 import javax.ejb.SessionContext;
@@ -37,9 +34,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
-import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.crl.CRLData;
@@ -47,8 +42,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
-import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
-import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -75,9 +68,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
     @Resource
     private SessionContext sessionContext;
 
-    @EJB
-    private SecurityEventsLoggerSessionLocal auditSession;
-    
+    /** not injected but created in ejbCreate, since it is ourself */
     private PublisherQueueSessionLocal publisherQueueSession;
 
     @PostConstruct
@@ -325,11 +316,8 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                     log.error(msg);
                 }
             } catch (FinderException e) {
-                String msg = intres.getLocalizedMessage("publisher.errornocert", fingerprint);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                details.put("error", e.getMessage());
-                auditSession.log(auditEventType, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, certSerialNumber, username, details);
+                final String msg = intres.getLocalizedMessage("publisher.errornocert", fingerprint) + e.getMessage();
+                log.info(msg);
             } catch (PublisherException e) {
                 // Publisher session have already logged this error nicely to
                 // getLogSession().log
