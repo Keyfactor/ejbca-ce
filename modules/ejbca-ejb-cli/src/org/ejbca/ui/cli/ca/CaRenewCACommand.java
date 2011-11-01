@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -28,6 +29,7 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.crypto.Digest;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -66,12 +68,8 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
         	CryptoProviderTools.installBCProvider();
             
         	// Get the CAs info and id
-        	String caname = args[1];
-            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname);
-            if (cainfo == null) {
-            	getLogger().error("Error: CA " + caname + " cannot be found");	
-            	return;            	
-            }
+        	final String caname = args[1];
+        	CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname);
         	
         	boolean regenerateKeys = false;
         	String authCode = null;
@@ -95,11 +93,16 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
         		}
         	}
         	if (args.length > 4) {
-        		customNotBefore = ValidityDate.parseAsIso8601(args[4]);
-        		if (customNotBefore == null) {
-        			getLogger().error("Error: Could not parse date. Use ISO 8601 format. ");
-        			return;
-        		}
+        	    try {
+        	        customNotBefore = ValidityDate.parseAsIso8601(args[4]);
+        	        if (customNotBefore == null) {
+        	            getLogger().error("Error: Could not parse date. Use ISO 8601 format, for example '2010-09-08 07:06:05+02:00' ");
+        	            return;
+        	        }
+        	    } catch (ParseException e) {
+        	        getLogger().error("Error: "+e.getMessage()+". Use ISO 8601 format, for example '2010-09-08 07:06:05+02:00' ");
+                    return;        	        
+        	    }
         	}
             
     		final StringBuilder buff = new StringBuilder();
@@ -136,16 +139,15 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
             ejb.getCAAdminSession().renewCA(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), authCode, regenerateKeys, customNotBefore);
             getLogger().info("New certificate created:");
             cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname);
-            if (cainfo == null) {
-            	getLogger().error("Error: CA " + caname + " cannot be found");	
-            	return;            	
-            }
             final Object newCertificate = cainfo.getCertificateChain().iterator().next();
             if (newCertificate instanceof Certificate) {
             	printCertificate((Certificate) newCertificate);
             } else {
             	getLogger().error("Error: Certificate not found");
             }
+        } catch (CADoesntExistsException e) {
+            getLogger().error(e.getMessage());  
+            return;                             
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
@@ -155,7 +157,8 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
     	getLogger().info(new StringBuilder()
     		.append("Description: ").append(getDescription()).append(NEWLINE)
     		.append("Usage: ").append(getCommand()).append(" <CA name> [<regenerate keys>] [<authorization code> | -prompt] [<custom notBefore>]").append(NEWLINE)
-    		.append("Example: ").append(getCommand()).append(" ExampleCA1 false -prompt \"2010-09:08 07:06:05+02:00\"").append(NEWLINE)
+    		.append("Authorization code is only used when generating new keys.").append(NEWLINE)
+    		.append("Example: ").append(getCommand()).append(" ExampleCA1 false -prompt \"2010-09-08 07:06:05+02:00\"").append(NEWLINE)
     		.toString());
     }
 
