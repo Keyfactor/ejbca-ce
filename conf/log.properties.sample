@@ -6,5 +6,8 @@
 
 # Example configuration of Log4jDevice
 securityeventsaudit.implementation.0=org.cesecore.audit.impl.log4j.Log4jDevice
+
 # Example configuration of IntegrityProtectedDevice
+# Note that this device relies on the database protection configured in databaseprotection.properties.
+# The device can be used without integrity protection if you only want searchable logs in the Admin GUI.
 securityeventsaudit.implementation.1=org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice
