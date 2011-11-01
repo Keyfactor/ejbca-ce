@@ -121,7 +121,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                         hardTokenString += (hardTokenString.length() == 0 ? "" : ", ") + hardtokenprofileidtonamemap.get(iter.next());
                     }
                 }
-                getLogger().info("Existing tokens      : " + USERGENERATED + ", " + P12 + ", " + JKS + ", " + PEM + hardTokenString);
+                getLogger().info("Existing tokens      : " + USERGENERATED + ", " + P12 + ", " + JKS + ", " + PEM + ", " + hardTokenString);
 
                 String existingCas = "";
                 Iterator<String> nameiter = canames.iterator();
