@@ -14,6 +14,8 @@ package org.ejbca.core.ejb.config;
 
 import java.util.Properties;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.GlobalConfiguration;
 
 /** 
@@ -46,7 +48,9 @@ public interface GlobalConfigurationSession {
     /** Clear and load global configuration cache. */
     void flushGlobalConfigurationCache();
     
-    /** @return all currently used properties */
-    Properties getAllProperties();
+    /** @return all currently used properties (configured in conf/*.properties.
+     * Required admin access to '/' to dump these properties. 
+     */
+    Properties getAllProperties(AuthenticationToken admin) throws AuthorizationDeniedException;
 
 }

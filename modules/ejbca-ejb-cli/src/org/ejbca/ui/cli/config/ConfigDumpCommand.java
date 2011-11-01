@@ -17,6 +17,7 @@ import java.util.Enumeration;
 import java.util.Properties;
 
 import org.ejbca.ui.cli.BaseCommand;
+import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
@@ -42,13 +43,21 @@ public class ConfigDumpCommand extends BaseCommand {
      * Tries to fetch the server properties and dumps them to standard out
      */
     public void execute(String[] args) throws ErrorAdminCommandException {
-        getLogger().info("Trying to fetch currently used server properties..");
-        Properties properties = ejb.getGlobalConfigurationSession().getAllProperties();
-        Enumeration<Object> enumeration = properties.keys();
-        while (enumeration.hasMoreElements()) {
-            String key = (String) enumeration.nextElement();
-            getLogger().info(" " + key + " = " + properties.getProperty(key));
+        try {
+            args = parseUsernameAndPasswordFromArgs(args);
+        } catch (CliUsernameException e) {
+            return;
         }
-
+        getLogger().info("Trying to fetch currently used server properties...");
+        try {
+            Properties properties = ejb.getGlobalConfigurationSession().getAllProperties(getAdmin(cliUserName, cliPassword));
+            Enumeration<Object> enumeration = properties.keys();
+            while (enumeration.hasMoreElements()) {
+                String key = (String) enumeration.nextElement();
+                getLogger().info(" " + key + " = " + properties.getProperty(key));
+            }
+        } catch (Exception e) {
+            throw new ErrorAdminCommandException(e);
+        }        
     }
 }
