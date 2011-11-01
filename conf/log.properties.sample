@@ -2,19 +2,9 @@
 # 
 # You should copy and rename this file to log.properties and customize at will.
 #
+# Version: $Id$
 
-# Used log devices.
-#  The devices will be displayed in reversed order in the Admin GUI.
-#  Default is "Log4jLogDevice;OldLogDevice" for now.
-#usedLogDevices=Log4jLogDevice;OldLogDevice
-
-#
-# List of available loggers, name=Factory Class;propertyfile
-#
-
-# Dummy log device that does nothing
-DummyLogDevice=org.ejbca.core.model.log.DummyLogDeviceFactory;
-# Log4J is the standard logger for logging to console or file
-Log4jLogDevice=org.ejbca.core.model.log.Log4jLogDeviceFactory;logdevices/log4j.properties
-# Internal EJBCA logging device that writes to the database. See logdevices/oldlog.properties.sample for more information.
-OldLogDevice=org.ejbca.core.model.log.OldLogDeviceFactory;logdevices/oldlog.properties
+# Example configuration of Log4jDevice
+securityeventsaudit.implementation.0=org.cesecore.audit.impl.log4j.Log4jDevice
+# Example configuration of IntegrityProtectedDevice
+securityeventsaudit.implementation.1=org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice
