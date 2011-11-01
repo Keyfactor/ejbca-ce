@@ -116,12 +116,7 @@ public class StartServicesServlet extends HttpServlet {
 
     public void doGet(HttpServletRequest req,  HttpServletResponse res) throws java.io.IOException, ServletException {
         log.trace(">doGet()");
-        String param = req.getParameter("ejbcaInit");
-        if (StringUtils.equals(param, "true")) {
-        	ejbcaInit();
-        } else {        
-        	res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Servlet doesn't support requests is only loaded on startup.");
-        }
+    	res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Servlet doesn't support requests is only loaded on startup.");
         log.trace("<doGet()");
     } // doGet
 
