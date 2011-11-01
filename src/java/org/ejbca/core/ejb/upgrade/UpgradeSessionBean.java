@@ -457,7 +457,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     			if (StringUtils.equals(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, rule.getAccessRuleName()) && 
     					rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
     				// Now we add a new rule
-    		    	AccessRuleData slashrule = new AccessRuleData(role.getRoleName(), "/", AccessRuleState.RULE_ACCEPT, true);
+    		    	AccessRuleData slashrule = new AccessRuleData(role.getRoleName(), AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true);
     		    	// Only add the rule if it does not already exist
     		    	if (!rulemap.containsKey(slashrule.getPrimaryKey())) {
         				log.info("Adding new access rule of '/' on role: "+role.getRoleName());
