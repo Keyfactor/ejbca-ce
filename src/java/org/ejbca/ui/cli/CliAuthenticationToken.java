@@ -116,7 +116,7 @@ public class CliAuthenticationToken extends AuthenticationToken {
         if (isVerified) {
             return true;
         } else {
-            if (accessUser.getTokenType().equals(TOKEN_TYPE)) {
+            if (matchTokenType(accessUser.getTokenType())) {
                 if (userName.equals(accessUser.getMatchValue())
                         && CliAuthenticationTokenReferenceRegistry.INSTANCE.verifySha1Hash(referenceNumber, sha1Hash)) {
                     if (CliAuthenticationTokenReferenceRegistry.INSTANCE.unregisterToken(referenceNumber)) {
@@ -268,7 +268,7 @@ public class CliAuthenticationToken extends AuthenticationToken {
 
     @Override
     public AccessMatchValue getMatchValueFromDatabaseValue(Integer databaseValue) {     
-        if (databaseValue != CliUserAccessMatchValue.USERNAME.getNumericValue()) {
+        if (databaseValue.intValue() != CliUserAccessMatchValue.USERNAME.getNumericValue()) {
             return null;
         } else {
             return CliUserAccessMatchValue.USERNAME;
