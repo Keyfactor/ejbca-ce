@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.ejbca.core.ejb.config;
 
+import java.util.Properties;
+
 import org.ejbca.config.GlobalConfiguration;
 
 /** 
@@ -43,6 +45,8 @@ public interface GlobalConfigurationSession {
 
     /** Clear and load global configuration cache. */
     void flushGlobalConfigurationCache();
-
+    
+    /** @return all currently used properties */
+    Properties getAllProperties();
 
 }
