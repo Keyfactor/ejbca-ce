@@ -13,6 +13,7 @@
 
 package org.ejbca.core.ejb.config;
 
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -27,10 +28,16 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.config.EjbcaConfiguration;
@@ -41,6 +48,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ra.raadmin.GlobalConfigurationData;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
  * This bean handled global configurations.
@@ -70,7 +78,9 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
 
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
-   
+    @EJB
+    private AccessControlSessionLocal accessSession;
+
     @Override
     public GlobalConfiguration flushCache() {
         GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, "0");
@@ -84,8 +94,22 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Properties getAllProperties() {
-        return EjbcaConfigurationHolder.getAsProperties();
+    public Properties getAllProperties(AuthenticationToken admin) throws AuthorizationDeniedException {
+        if (!accessSession.isAuthorized(admin, AccessRulesConstants.ROLE_ROOT)) {
+            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ROOT, null);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), null, null, null, details);
+            throw new AuthorizationDeniedException(msg);
+        } 
+
+        Properties ejbca = EjbcaConfigurationHolder.getAsProperties();
+        Properties cesecore = ConfigurationHolder.getAsProperties();
+        for (Iterator<Object> iterator = ejbca.keySet().iterator(); iterator.hasNext();) {
+            String key = (String)iterator.next();
+            cesecore.setProperty(key, ejbca.getProperty(key));            
+        }
+        return cesecore;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
