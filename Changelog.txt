@@ -1,3 +1,19 @@
+EJBCA 4.0.5, 2011-11-02
+---
+
+New Feature
+    [ECA-2332] - Admin GUI ServletFilter for client certificate emulation
+
+Improvement
+    [ECA-2325] - Add custom cert serno and extension parsing the generatenewuser WS command
+
+Bug
+    [ECA-2297] - NestedMessageContent implements version RFC2510 instead of RFC4210
+    [ECA-2302] - Publishing Queue Fails on slow publishers
+    [ECA-2338] - CMP End entity certificate authentication module does not work in client mode
+    [ECA-2346] - Certificate issuance verification does not detect when CAs public key (in HSM) does not match CA certificate
+    [ECA-2354] - Should not be possible to run service initialization after start
+
 EJBCA 4.0.4, 2011-10-05
 ---
 New Feature
