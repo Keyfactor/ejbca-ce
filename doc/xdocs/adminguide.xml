@@ -4736,6 +4736,18 @@ bin/ejbca.sh clearcache -all
 </subsubsection>
 
 </subsection>
+
+<subsection name="Local Database CLI">
+<p>You can build and run the local database CLI with the commands:
+</p>
+<source>
+ant ejbca-db-cli
+cd dist/ejbca-db-cli
+./run.sh</source>
+ <p>The cli contains command that directly accesses a database, export, import, copy, verify audit log and OCSP monitoring. 
+ Run the command to get a description about all available commands.</p>
+</subsection>
+
 </section>
 
 <section name="Reference manual">
