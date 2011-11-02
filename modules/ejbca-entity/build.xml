@@ -216,7 +216,7 @@
 		</junit>
 		<antcall target="createreport"/>
     	<condition property="databaseschemarest.ok" value="true"><not><isset property="databaseschemarest.failed"/></not></condition>
-    	<echounlesstrue unless-true="databaseschemarest.ok" message="If your test runs our of memory (for example during the CRL write), you might want to consider using ANT_OPTS like '-Xms1024m -Xmx2048m'." />
+    	<echo message="If your test runs our of memory (for example during the CRL write), you might want to consider using ANT_OPTS like '-Xms1024m -Xmx2048m'." />
     </target>
 
     <target name="test-ocspmon" description="Test ocsp monitoring." depends="compile-test, handlepersistence, handleorm">
