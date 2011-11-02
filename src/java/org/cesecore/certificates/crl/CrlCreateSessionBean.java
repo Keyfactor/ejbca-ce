@@ -443,9 +443,6 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			if (crlBytes != null) {
     				ret = CertTools.getFingerprintAsString(crlBytes);                       
     			}
-    			// This is logged in the database by SignSession 
-    			String msg = intres.getLocalizedMessage("createcrl.createdcrl", cainfo.getName(), cainfo.getSubjectDN(), ret);               
-    			log.info(msg);
     			// This debug logging is very very heavy if you have large CRLs. Please don't use it :-)
     			//              if (log.isDebugEnabled()) {
     			//              X509CRL crl = CertTools.getCRLfromByteArray(crlBytes);

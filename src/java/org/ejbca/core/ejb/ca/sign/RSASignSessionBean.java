@@ -210,7 +210,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
             bccert.verify(cert.getPublicKey());
         } catch (Exception e) {
             log.debug("Exception verify POPO: ", e);
-            String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
+            String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
             throw new SignRequestSignatureException(msg);
         }
         Certificate ret = createCertificate(admin, username, password, cert.getPublicKey(), CertTools.sunKeyUsageToBC(cert.getKeyUsage()), null, null);
@@ -446,7 +446,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         // Verify the request
         if (req.verify() == false) {
-            String msg = intres.getLocalizedMessage("signsession.popverificationfailed");
+            String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
             throw new SignRequestSignatureException(msg);
         }
     }
