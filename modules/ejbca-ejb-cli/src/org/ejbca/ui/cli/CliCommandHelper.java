@@ -125,7 +125,7 @@ public class CliCommandHelper {
             instance.execute(shiftArgs ? shiftStringArray(args) : args);
             return;
         } catch (Exception e) {
-            log.error("Could not run execute method for class " + commandClass, e);
+            log.error("Could not run execute method for class " + commandClass.getName(), e);
             System.exit(1);
         }
     }
