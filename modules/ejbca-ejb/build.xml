@@ -517,6 +517,8 @@
 	<target name="compile-va-common" depends="with.clover, va-ejb-interface">
 		<mkdir dir="${build-va-common.dir}"/>
 		<javac destdir="${build-va-common.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" classpathref="compile-va-ejb.classpath">
+            <include name="org/cesecore/authentication/tokens/*.java"/>
+		    <include name="org/cesecore/audit/enums/*.java"/>
 			<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java"/>
 			<include name="org/ejbca/ui/web/protocol/RFC4387URL.java"/>
 			<include name="org/ejbca/ui/web/protocol/IHealtChecker.java"/>
