@@ -17,6 +17,18 @@ Additionally, a "Super Administrator Role" is created during either bootstrap or
 Usage of access rules have in some cases changed, and some new access rules have been added (edit publishers). 
 After an upgrade to 5.0, verify your access roles (old admin groups) and privileges.
 
+EJBCA 4.0.5
+-----------
+This is a maintenance release with a few improvements and bug fixes. In all 7 issues have been resolved.
+
+* Noteworthy changes:
+- Correct comparison of public key in HSM and CA certificate
+- Fixed regression during republish
+- Many small bug fixes.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 EJBCA 4.0.4
 -----------
 This is a maintenance release with a few new features and bug fixes. In all 33 issues have been resolved.
