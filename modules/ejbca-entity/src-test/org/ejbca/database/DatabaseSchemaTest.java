@@ -26,10 +26,16 @@ import javax.persistence.Persistence;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.util.Arrays;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.certificates.crl.CRLData;
+import org.cesecore.roles.RoleData;
 import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.ca.publisher.PublisherData;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueData;
@@ -142,54 +148,40 @@ public class DatabaseSchemaTest {
 		storeAndRemoveEntity(entity);
 		LOG.trace("<testApprovalData");
 	}
-/*
+
     @Test
 	public void testAccessRulesData() {
 		LOG.trace(">testAccessRulesData");
 		logMemStats();
-		AccessRulesData entity = new AccessRulesData();
-		entity.setAccessRule(VARCHAR_250B);
-		entity.setIsRecursive(false);
-		entity.setPrimKey(BOGUS_INTEGER.intValue());
-		entity.setRowProtection(CLOB_10KiB);
-		entity.setRowVersion(0);
-		entity.setRule(0);
+		AccessRuleData entity = new AccessRuleData(BOGUS_INTEGER.intValue(), VARCHAR_250B, AccessRuleState.RULE_ACCEPT, false);
+        entity.setRowProtection(CLOB_10KiB);
+        entity.setRowVersion(0);
 		storeAndRemoveEntity(entity);
 		LOG.trace("<testAccessRulesData");
 	}
-*/
-	/*
+    
     @Test
 	public void testAdminEntityData() {
 		LOG.trace(">testAdminEntityData");
 		logMemStats();
-		AdminEntityData entity = new AdminEntityData();
-		entity.setCaId(BOGUS_INTEGER);
-		entity.setMatchType(0);
-		entity.setMatchValue(VARCHAR_250B);
-		entity.setMatchWith(0);
-		entity.setPrimeKey(BOGUS_INT);
+		AccessUserAspectData entity = new AccessUserAspectData(VARCHAR_250B, BOGUS_INTEGER, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, VARCHAR_250B);
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		storeAndRemoveEntity(entity);
 		LOG.trace("<testAdminEntityData");
 	}
-*/
-	/*
+
     @Test
 	public void testAdminGroupData() {
 		LOG.trace(">testAdminGroupData");
 		logMemStats();
-		AdminGroupData entity = new AdminGroupData();
-		entity.setAdminGroupName(VARCHAR_250B);
-		entity.setCaId(BOGUS_INT);
-		entity.setPrimeKey(BOGUS_INTEGER);
+		RoleData entity = new RoleData(BOGUS_INTEGER, VARCHAR_250B);
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		storeAndRemoveEntity(entity);
 		LOG.trace("<testAdminGroupData");
 	}
-*/
+
     @Test
 	public void testCAData() {
 		LOG.trace(">testCAData");
