@@ -536,7 +536,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
                             log.debug("Using CA from username: " + req.getUsername());
                         }
                     } else {
-                        String msg = intres.getLocalizedMessage("signsession.canotfoundissuerusername", dn, "null");
+                        String msg = intres.getLocalizedMessage("createcert.canotfoundissuerusername", dn, "null");
                         throw new CADoesntExistsException(msg);
                     }
                 }
@@ -546,12 +546,12 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
                     log.debug("Using CA from username: " + req.getUsername());
                 }
             } else {
-                throw new CADoesntExistsException(intres.getLocalizedMessage("signsession.canotfoundissuerusername", req.getIssuerDN(),
+                throw new CADoesntExistsException(intres.getLocalizedMessage("createcert.canotfoundissuerusername", req.getIssuerDN(),
                         req.getUsername()));
             }
         } catch (ObjectNotFoundException e) {
             throw new CADoesntExistsException(
-                    intres.getLocalizedMessage("signsession.canotfoundissuerusername", req.getIssuerDN(), req.getUsername()));
+                    intres.getLocalizedMessage("createcert.canotfoundissuerusername", req.getIssuerDN(), req.getUsername()));
         }
 
         if (ca.getStatus() != SecConst.CA_ACTIVE) {
