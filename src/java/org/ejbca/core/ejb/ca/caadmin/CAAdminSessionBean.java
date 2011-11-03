@@ -39,7 +39,6 @@ import java.security.spec.InvalidKeySpecException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -47,8 +46,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -191,6 +192,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     private PublisherSessionLocal publisherSession;
     @EJB
     private ApprovalSessionLocal approvalSession;
+    @Resource
+    private SessionContext sessionContext;
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -291,8 +294,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
         // Create CAToken
         CATokenInfo catokeninfo = cainfo.getCATokenInfo();
-        CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(catokeninfo.getClassPath(), catokeninfo.getProperties(), null,
-                cainfo.getCAId());
+        CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(catokeninfo.getClassPath(), catokeninfo.getProperties(), null, cainfo.getCAId());
         CAToken catoken = new CAToken(cryptoToken);
         catoken.setSignatureAlgorithm(catokeninfo.getSignatureAlgorithm());
         catoken.setEncryptionAlgorithm(catokeninfo.getEncryptionAlgorithm());
@@ -309,6 +311,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (cainfo instanceof X509CAInfo) {
             caAltName = ((X509CAInfo)cainfo).getSubjectAltName();
         }
+        
+        // See if CA token is OK before storing CA
+        String authCode = catokeninfo.getAuthenticationCode();
+        authCode = getDefaultKeyStorePassIfSWAndEmpty(authCode, cryptoToken);
+        activateCAToken(admin, cainfo, caid, catoken, authCode);
+
         // Store CA in database, so we can generate keys using the ca token session.
         try {
             caSession.addCA(admin, ca);
@@ -318,6 +326,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             details.put("msg", msg);
             auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
             		String.valueOf(caid), null, null, details);
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (IllegalCryptoTokenException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcreatetoken");
@@ -330,8 +339,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Generate keys, for soft CAs, and activate CA token
-        String authCode = catokeninfo.getAuthenticationCode();
-        authCode = getDefaultKeyStorePassIfSWAndEmpty(authCode, cryptoToken);
         if (cryptoToken instanceof SoftCryptoToken) {
             try {
                 // There are two ways to get the authentication code:
@@ -353,25 +360,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 throw new EJBException(e);
             }
         }
-        try {
-        	// We don't have to do this if we generated keys, since caTokenSession.generateKeys should do it for us...
-        	// It is not certain that caTokenSession.generateKeys was called though, probably not for HSM CA tokens
-            catoken.getCryptoToken().activate(authCode.toCharArray());
-        } catch (CryptoTokenAuthenticationFailedException ctaf) {
-            String msg = intres.getLocalizedMessage("caadmin.errorcreatetokenpin");
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-            		String.valueOf(caid), null, null, details);
-            throw ctaf;
-        } catch (CryptoTokenOfflineException ctoe) {
-            String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-            		String.valueOf(caid), null, null, details);
-            throw ctoe;
-        }
+        activateCAToken(admin, cainfo, caid, catoken, authCode);
 
         // Create certificate chain
         Collection<Certificate> certificatechain = null;
@@ -397,6 +386,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 details.put("msg", msg);
                 auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
                 		String.valueOf(caid), null, null, details);
+                sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
                 throw e;
             } catch (Exception fe) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
@@ -443,6 +433,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 details.put("msg", msg);
                 auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
                 		String.valueOf(caid), null, null, details);
+                sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
                 throw e;
             } catch (Exception fe) {
                 String msg = intres.getLocalizedMessage("caadmin.errorcreateca", cainfo.getName());
@@ -525,6 +516,31 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         if (log.isTraceEnabled()) {
             log.trace("<createCA: " + cainfo.getName());
+        }
+    }
+
+    private void activateCAToken(AuthenticationToken admin, CAInfo cainfo, final int caid, CAToken catoken, String authCode)
+            throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
+        try {
+        	// We don't have to do this if we generated keys, since caTokenSession.generateKeys should do it for us...
+        	// It is not certain that caTokenSession.generateKeys was called though, probably not for HSM CA tokens
+            catoken.getCryptoToken().activate(authCode.toCharArray());
+        } catch (CryptoTokenAuthenticationFailedException ctaf) {
+            String msg = intres.getLocalizedMessage("caadmin.errorcreatetokenpin");
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
+            		String.valueOf(caid), null, null, details);
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw ctaf;
+        } catch (CryptoTokenOfflineException ctoe) {
+            String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EventTypes.CA_CREATION, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
+            		String.valueOf(caid), null, null, details);
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
+            throw ctoe;
         }
     }
 
@@ -995,14 +1011,17 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         } catch (CryptoTokenOfflineException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertresp", Integer.valueOf(caid));
             log.info(msg);
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (CADoesntExistsException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertresp", Integer.valueOf(caid));
             log.info(msg);
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (IllegalCryptoTokenException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertresp", Integer.valueOf(caid));
             log.info(msg);
+            sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically
             throw e;
         } catch (CertificateEncodingException e) {
             String msg = intres.getLocalizedMessage("caadmin.errorcertresp", Integer.valueOf(caid));
