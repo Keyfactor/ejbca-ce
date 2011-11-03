@@ -1,1 +1,2 @@
-ALTER TABLE AdminEntityData ADD tokenType VARCHAR2(255 byte);
+-- This column is added by the JPA provider if there are sufficient privileges
+-- ALTER TABLE AdminEntityData ADD tokenType VARCHAR2(255 byte) DEFAULT NULL;
