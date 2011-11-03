@@ -24,12 +24,11 @@ ca.dn=CN=AdminCA1,O=EJBCA Sample,C=SE
 
 # The token type the administrative CA will use.
 # Use soft for software generated keys (default) or enter a class path for the HSM class.
-# Normally the HSM class should be the PKCS11CAToken. 
-# Other specific classes like NFastCAToken of SafeNetLunaCAToken are for JCE providers, which was used before PKCS#11 and is not recommended now.
+# Normally the HSM class should be the PKCS11CryptoToken. 
 #
 # Possible values are:
 # soft
-# org.ejbca.core.model.ca.catoken.PKCS11CAToken
+# org.cesecore.keys.token.PKCS11CryptoToken
 # se.primeKey.caToken.card.PrimeCAToken
 #
 # Default: soft
@@ -37,7 +36,7 @@ ca.tokentype=soft
 
 # Password for the administrative CA token.
 # With soft token, use password null.
-# To prompt for the password on the terminal, don't set.
+# To prompt for the password on the terminal, don't set, i.e. comment out the line below.
 # If no password should be used (for example nCipher module protected), use password '' (nothing).
 ca.tokenpassword=null
 
@@ -48,12 +47,13 @@ ca.tokenpassword=null
 # On windows use / instead of \
 #ca.tokenproperties=/home/ejbca/ejbca/conf/catoken.properties
 
-# The keyspec for the administrative CAs key. 
+# The keyspec for the administrative CAs key, to be generated in soft keystore.
 # Keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192).
 # Keyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.
 ca.keyspec=2048
 
 # The keytype for the administrative CA, can be RSA, ECDSA or DSA
+# For the key to be generated in soft keystore.
 ca.keytype=RSA
 
 # Default signing algorithm for the administrative CA.
