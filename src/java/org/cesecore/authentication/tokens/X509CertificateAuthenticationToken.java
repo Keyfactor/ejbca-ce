@@ -42,7 +42,7 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
 
     private static final Logger log = Logger.getLogger(X509CertificateAuthenticationToken.class);
 
-    public static final String TOKEN_TYPE = "X500Principal";
+    public static final String TOKEN_TYPE = "CertificateAuthenticationToken";
     
     private static final long serialVersionUID = 1097165653913865515L;
 
