@@ -20,7 +20,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration,
-	org.ejbca.core.model.authorization.BasicAccessRuleSet"%>
+	org.ejbca.core.model.authorization.BasicAccessRuleSet,org.ejbca.core.model.authorization.DefaultRoles"%>
  
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
  
@@ -47,7 +47,7 @@ function roleupdated(){
 	
   var currentrole = selectrole.options[selectrole.options.selectedIndex].value;  
  
-  if(currentrole == <%=BasicAccessRuleSet.ROLE_NONE %>){
+  if(currentrole == '<%=DefaultRoles.CUSTOM.getName() %>'){
     selectcas.disabled = true;
     selectendentityrules.disabled = true;
     selectendentityprofiles.disabled = true;
@@ -74,7 +74,7 @@ function roleupdated(){
     }
   }
   
-  if(currentrole == <%=BasicAccessRuleSet.ROLE_SUPERADMINISTRATOR %>){
+  if(currentrole == '<%=DefaultRoles.SUPERADMINISTRATOR.getName() %>'){
     selectcas.disabled = true;
     selectendentityrules.disabled = true;
     selectendentityprofiles.disabled = true;
@@ -101,7 +101,7 @@ function roleupdated(){
     }
  
   }
-  if(currentrole == <%= BasicAccessRuleSet.ROLE_CAADMINISTRATOR%>){
+  if(currentrole == '<%= DefaultRoles.CAADMINISTRATOR.getName()%>'){
     selectcas.disabled = false;
     selectendentityrules.disabled = true;
     selectendentityprofiles.disabled = true;
@@ -124,7 +124,7 @@ function roleupdated(){
 	    <% } %>
     }
   }
-  if(currentrole == <%= BasicAccessRuleSet.ROLE_RAADMINISTRATOR%>){
+  if(currentrole == '<%= DefaultRoles.RAADMINISTRATOR.getName()%>'){
     selectcas.disabled = false;
     selectendentityrules.disabled = false;
     selectendentityprofiles.disabled = false;
@@ -139,7 +139,7 @@ function roleupdated(){
 	    <% } %>
     }
   }  
-  if(currentrole == <%= BasicAccessRuleSet.ROLE_SUPERVISOR%>){
+  if(currentrole == '<%= DefaultRoles.SUPERVISOR.getName()%>'){
     selectcas.disabled = false;
     selectendentityrules.disabled = false;
     selectendentityprofiles.disabled = false;
@@ -173,11 +173,11 @@ function checkallfields(){
  
     var currentrole = selectrole.options[selectrole.options.selectedIndex].value;        
  
-    if(currentrole == <%= BasicAccessRuleSet.ROLE_NONE%>){
+    if(currentrole == '<%= DefaultRoles.CUSTOM.getName()%>'){
       alert("<%= ejbcawebbean.getText("SELECTAROLE", true) %>");
     }
  
-    if(currentrole == <%= BasicAccessRuleSet.ROLE_SUPERVISOR%>){
+    if(currentrole == '<%= DefaultRoles.SUPERVISOR.getName()%>'){
       var numofendentity = selectendentityrules.length;
       for( i=numofendentity-1; i >= 0; i-- ){
        if(selectendentityrules.options[i].selected){
