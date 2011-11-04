@@ -100,26 +100,39 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
     public void createSuperAdministrator() {
-        log.debug("Creating new role '" + SUPERADMIN_ROLE + "'.");
-        RoleData role = new RoleData(1, SUPERADMIN_ROLE);
-        entityManager.persist(role);
-        log.debug("Adding new rule '/' to " + SUPERADMIN_ROLE + ".");
+        RoleData role = roleAccessSession.findRole(SUPERADMIN_ROLE);
+        if (role == null) {
+            log.debug("Creating new role '" + SUPERADMIN_ROLE + "'.");
+            role = new RoleData(1, SUPERADMIN_ROLE);
+            entityManager.persist(role);
+        } else {
+            log.debug("'" + SUPERADMIN_ROLE + "' already exists, not creating new.");            
+        }
 
+        Map<Integer, AccessRuleData> rules = role.getAccessRules();
         AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, "/", AccessRuleState.RULE_ACCEPT, true);
-        Map<Integer, AccessRuleData> newrules = new HashMap<Integer, AccessRuleData>();
-        newrules.put(rule.getPrimaryKey(), rule);
-        role.setAccessRules(newrules);
-
-        log.debug("Adding new AccessUserAspect 'NONE' to " + SUPERADMIN_ROLE + ".");
-        Map<Integer, AccessUserAspectData> newUsers = new HashMap<Integer, AccessUserAspectData>();      
+        if (!rules.containsKey(rule.getPrimaryKey())) {
+            log.debug("Adding new rule '/' to " + SUPERADMIN_ROLE + ".");
+            Map<Integer, AccessRuleData> newrules = new HashMap<Integer, AccessRuleData>();
+            newrules.put(rule.getPrimaryKey(), rule);
+            role.setAccessRules(newrules);
+        } else {
+            log.debug("rule '/' already exists in " + SUPERADMIN_ROLE + ".");
+        }
+        Map<Integer, AccessUserAspectData> users = role.getAccessUsers();
         AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(SUPERADMIN_ROLE, 0, CliUserAccessMatchValue.USERNAME,
                 AccessMatchType.TYPE_EQUALCASE, EjbcaConfiguration.getCliDefaultUser());
-        newUsers.put(defaultCliUserAspect.getPrimaryKey(), defaultCliUserAspect);
-        role.setAccessUsers(newUsers);
-
-        UserData defaultCliUserData = new UserData(EjbcaConfiguration.getCliDefaultUser(), EjbcaConfiguration.getCliDefaultPassword(), false, "UID="
-                + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, SecConst.EMPTY_ENDENTITYPROFILE, 0, 0, 0, null);
-        entityManager.persist(defaultCliUserData);
+        if (!users.containsKey(defaultCliUserAspect.getPrimaryKey())) {
+            log.debug("Adding new AccessUserAspect '"+EjbcaConfiguration.getCliDefaultUser()+"' to " + SUPERADMIN_ROLE + ".");
+            Map<Integer, AccessUserAspectData> newUsers = new HashMap<Integer, AccessUserAspectData>();      
+            newUsers.put(defaultCliUserAspect.getPrimaryKey(), defaultCliUserAspect);
+            role.setAccessUsers(newUsers);
+            UserData defaultCliUserData = new UserData(EjbcaConfiguration.getCliDefaultUser(), EjbcaConfiguration.getCliDefaultPassword(), false, "UID="
+                    + EjbcaConfiguration.getCliDefaultUser(), 0, null, null, null, 0, SecConst.EMPTY_ENDENTITYPROFILE, 0, 0, 0, null);
+            entityManager.persist(defaultCliUserData);
+        } else {
+            log.debug("AccessUserAspect '"+EjbcaConfiguration.getCliDefaultUser()+"' already exists in " + SUPERADMIN_ROLE + ".");            
+        }
     }
 
 

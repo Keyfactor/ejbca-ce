@@ -505,7 +505,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     		ret = migrateDatabase("/400_500/400_500-post-upgrade-"+dbtype+".sql");			
     	}
 
-        // Creates a super admin role for ClI usage. post-upgrade to remove caId column must have been run in order
+        // Creates a super admin role for Cli usage. post-upgrade to remove caId column must have been run in order
     	// for this command to succeed. 
     	// In practice this means that when upgrading from EJBCA 4.0 you can not use the CLI in 5.0 before you
     	// have finished migrating all your 4.0 nodes and run post-upgrade.
