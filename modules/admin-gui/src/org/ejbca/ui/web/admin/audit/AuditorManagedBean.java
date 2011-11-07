@@ -545,12 +545,17 @@ public class AuditorManagedBean implements Serializable {
         final Class<? extends AuditExporter> exporterClass = AuditDevicesConfig.getExporter(getDevice());
         AuditExporter auditExporter = null;
         if (exporterClass != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Using AuditExporter class: " + exporterClass.getName());
+            }
+            
             try {
                 auditExporter = exporterClass.newInstance();
             } catch (Exception e) {
                 log.warn("AuditExporter for " + getDevice() + " is not configured correctly.", e);
             }
         }
+        
         if (auditExporter==null) {
             if (log.isDebugEnabled()) {
                 log.debug("AuditExporter not configured. Using default: " + AuditExporterXml.class.getSimpleName());
