@@ -12,12 +12,15 @@
  *************************************************************************/
 package org.ejbca.ui.cli.exception;
 
+import javax.ejb.ApplicationException;
+
 /**
  * This exception is thrown if authentication fails during the authorization phase of a CliAuthenticationToken
  * 
  * @version $Id$
  *
  */
+@ApplicationException(rollback=true)  
 public class CliAuthenticationFailedException extends RuntimeException {
 
     private static final long serialVersionUID = 1092700837332116526L;
