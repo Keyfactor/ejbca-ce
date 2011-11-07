@@ -4617,13 +4617,13 @@ public class SomeAdvancedCertificateExtension extends CertificateExtension {
 
 <section name="Logging">
 <p>
-The are three different logging devices available for official events
-(creation of certificate etc) from EJBCA 3.6. These devices should not be
+The are two different logging devices available for official security audit events
+(creation of certificate etc). These devices should not be
 confused with the info/debug output that is sent to Log4J directly. You can
 find more information on how to configure Log4J in doc/howto/log4j.txt.
 </p>
 <p>
-What log devices to use, can be configured in conf/log.properties.
+What log devices to use, can be configured in conf/cesecore.properties.
 </p>
 <p>
 It is recommended to only allow new log-posts to the database-tables. More
@@ -4640,9 +4640,17 @@ back to EJBCA for display in the Admin GUI.
 You can find information about configuring log4j on JBoss in the EJBCA <a href="http://wiki.ejbca.org/ejbca-install#toc5">wiki</a>.
 </p>
 </subsection>
+<subsection name="IntegrityProtectedDevice">
+<p>
+The integrity protected log device stores audit record in the AuditRecordData table in the database. 
+The record can be protected using either HMAC or digital signatures. See conf/cesecore.properties for configuration options.
+</p>
+</subsection>
 <subsection name="OldLogDevice">
 <p>
-From EJBCA 4.1 the LogEntryData table is no longer used for audit log. The existing log entries can be exported
+The old log device, as it was called in EJBCA 4.0 is no longer available.</p>
+<p>
+From EJBCA 5.0 the LogEntryData table is no longer used for audit log. The existing log entries can be exported
 using by using a small export CLI. Configure conf/database.properties with (if not done already)
 <code>
 database.url=...
@@ -5036,7 +5044,7 @@ For OCSP it is more important, but OCSP is also more light weight so the default
 <p>In more specialized PKI installations there can however be the need to issue hundreds of certificates per second. Therefore we provide a small list of
 configuration items that can maximize performance of EJBCA to issue more than 100 certificates per second (depending on hardware etc).</p>
 <ul>
-<li>Disable logging to database in log.properties, only use Log4jLogDevice. This removes a database insert and gives a big boost.</li>
+<li>Disable logging to database in cesecore.properties, only use Log4jLogDevice. This removes a database insert and gives a big boost.</li>
 <li>Configure Log4j to log only to file, not console, and use only INFO or ERROR logging, not DEBUG. This can give a small improvement.</li>
 <li>Disable use of CertReqHistory in CA configuration. This removes a database insert and gives a big boost.</li>
 <li>Disable finishUser in CA configuration. Verify that this is ok first by reading the documentation for this feature. This can save a database read and update.</li>
