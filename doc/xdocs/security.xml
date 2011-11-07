@@ -144,8 +144,8 @@ List of these passwords in ejbca.properites :
 <br/>ca.xkmskeystorepass
 <br/>ca.cmskeystorepass
 </p><p>
-List of these passwords in protectedlog.properties :
-<br/>protectionTokenKeyStorePassword
+List of these passwords in databaseprotection.properties :
+<br/>databaseprotection.tokenpin
 </p>
 </subsection>
 <subsection name="Passwords used by the application server">

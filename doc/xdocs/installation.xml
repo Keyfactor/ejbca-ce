@@ -736,7 +736,6 @@ Configure the following for a test setup:
 <li>conf/ejbca.properties#appserver.home=/opt/IBM/WebSphere/AppServer</li>
 <li>conf/database.properties#database.name=db2</li>
 <li>conf/log4j-websphere.xml (use conf/log4j-websphere.xml.sample)</li>
-<li>conf/log.properties#usedLogDevices=Log4jLogDevice</li>
 <li>conf/web.properties#java.trustpassword=changeit</li>
 <li>conf/web.properties#superadmin.cn=SuperAdmin</li>
 <li>conf/web.properties#superadmin.dn=CN=${superadmin.cn}</li>
