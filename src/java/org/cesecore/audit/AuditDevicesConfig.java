@@ -66,6 +66,8 @@ public class AuditDevicesConfig {
                 final String DEVICE_CLASS = "securityeventsaudit.implementation.";
                 final String EXPORTER_CLASS = "securityeventsaudit.exporter.";
                 // Extract custom properties configured for any device, to avoid lookup for each device later on..
+                // Default devices should not require configuring of 'deviceproperty' in defaultvalues.properties, 
+                // since the below Iterator does not read from default values. 
                 final String DEVICE_PROPERTY = "securityeventsaudit\\.deviceproperty\\.(\\d+)\\.(.+)";
                 final Map<Integer, Properties> allDeviceProperties = new HashMap<Integer, Properties>();
                 final Iterator<String> iterator = conf.getKeys();
@@ -89,8 +91,8 @@ public class AuditDevicesConfig {
                     }
                 }
                 for (int i = 0; i < 255; i++) {
-                    final String deviceClass = conf.getString(DEVICE_CLASS + i);
-                    if (deviceClass != null) {
+                    final String deviceClass = ConfigurationHolder.getString(DEVICE_CLASS + i);
+                    if ((deviceClass != null) && (!"null".equalsIgnoreCase(deviceClass))) {
                         if (log.isDebugEnabled()) {
                             log.debug("Trying to register audit device using implementation: " + deviceClass);
                         }
@@ -107,7 +109,7 @@ public class AuditDevicesConfig {
                             }
                             deviceProperties.put(name, allDeviceProperties.get(Integer.valueOf(i)));
                             // Setup an exporter for this device
-                            final String exporterClassName = conf.getString(EXPORTER_CLASS + i);
+                            final String exporterClassName = ConfigurationHolder.getString(EXPORTER_CLASS + i);
                             Class<? extends AuditExporter> exporterClass = AuditExporterDummy.class;
                             if (exporterClassName != null) {
                                 try {
