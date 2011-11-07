@@ -977,6 +977,7 @@
 			<copy todir="${src-temp.dir}/services">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/ejbca/core/ejb/services/*.java"/>
+					<include name="org/ejbca/core/ejb/authentication/web/WebAuthenticationProviderSessionLocal.java"/>
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/services/*.java"/>
@@ -993,6 +994,7 @@
     			<include name="org/ejbca/core/model/services/intervals/*.java"/>
     			-->
 					<include name="org/ejbca/core/model/services/workers/EmailSendingWorkerConstants.java"/>
+					<include name="org/cesecore/authentication/tokens/*.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/services" destdir="${build-temp.dir}/services" debug="on" includeantruntime="no"
