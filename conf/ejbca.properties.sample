@@ -36,7 +36,7 @@
 # Set to true to allow dynamic re-configuration using properties files in the file 
 # system. Using this you can place a file /etc/ejbca/conf/ocsp.properties in the file system and
 # override default values compiled into ejbca.ear.
-# Currently this works for most values in ejbca.properties, web.properties, cmp.properties, externalra-caservice.properties, ocsp.properties, extendedkeyusage.properties, jaxws.properties, xkms.properties, log.properties
+# Currently this works for most values in ejbca.properties, web.properties, cmp.properties, externalra-caservice.properties, ocsp.properties, extendedkeyusage.properties, jaxws.properties, xkms.properties
 #
 # Default: false
 #allow.external-dynamic.configuration=false
@@ -217,7 +217,7 @@ ejbca.cli.defaultpassword=ejbca
 # Default: ""
 #ejbca.customavailableaccessrules=
 
-# When upgrading a 100% up-time cluster, all nodes should be deployed with the affective version
+# When upgrading a 100% up-time cluster, all nodes should be deployed with the effective version
 # of the oldest still running EJBCA version.
 # Default: ${app.version.number}
 #app.version.effective=3.11.x

@@ -12,31 +12,35 @@
 # The following AuditLogDevice implementations are available:
 #securityeventsaudit.implementation.X=org.cesecore.audit.impl.log4j.Log4jDevice
 #securityeventsaudit.implementation.X=org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice
-#securityeventsaudit.implementation.X=org.cesecore.audit.impl.queued.QueuedDevice
+
+# Default is to use the Log4jDevice and the IntegrityProtectedDevice (without integrity protection enabled),
+# To de-configure these devices, set their implementation to "null" value (don't forget to comment out default section below).
+# i.e.
+#securityeventsaudit.implementation.0=null
+#securityeventsaudit.implementation.1=null
 
 # Each device can have a different exporter.
 # The following AuditExporter implementations are available:
 #securityeventsaudit.exporter.X=org.cesecore.audit.impl.AuditExporterDummy (default)
 #securityeventsaudit.exporter.X=org.cesecore.audit.impl.AuditExportCsv
 #securityeventsaudit.exporter.X=org.cesecore.audit.impl.AuditExporterXml
-#securityeventsaudit.exporter.X=org.cesecore.audit.impl.AuditExporterJson
 
 # Device implementation specific parameters (e.g. "key.subkey=value") can be passed by using 
 #securityeventsaudit.deviceproperty.X.key.subkey=value
 
-# Example configuration of Log4jDevice
+# Example configuration of Log4jDevice that logs to log4j server log file.
+# The Log4jDevice does not support query, validation or export operations
 securityeventsaudit.implementation.0=org.cesecore.audit.impl.log4j.Log4jDevice
 
-# Example configuration of IntegrityProtectedDevice with XML export to /tmp/ (default export dir)
+# Example configuration of IntegrityProtectedDevice that logs to the database
+# With XML export to /tmp/ (default export dir)
 securityeventsaudit.implementation.1=org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice
 securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 #securityeventsaudit.deviceproperty.1.export.dir=/tmp/
 #securityeventsaudit.deviceproperty.1.export.fetchsize=1000
 #securityeventsaudit.deviceproperty.1.validate.fetchsize=1000
 
-# Example configuration of IntegrityProtectedDevice with XML export to /tmp/ (default export dir)
-#securityeventsaudit.implementation.2=org.cesecore.audit.impl.queued.QueuedDevice
-#securityeventsaudit.exporter.2=org.cesecore.audit.impl.AuditExporterJson
-#securityeventsaudit.deviceproperty.2.export.dir=/tmp/
-#securityeventsaudit.deviceproperty.2.export.fetchsize=1000
-#securityeventsaudit.deviceproperty.2.validate.fetchsize=1000
+# When upgrading a 100% up-time cluster, all nodes should be deployed with db.keepjbossserialization=true.
+# Once all nodes are running > 4.0, set to true to increase efficiency and portability.
+# Default: false
+#db.keepjbossserialization=true
