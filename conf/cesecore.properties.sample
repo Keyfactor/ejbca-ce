@@ -34,6 +34,7 @@ securityeventsaudit.implementation.0=org.cesecore.audit.impl.log4j.Log4jDevice
 
 # Example configuration of IntegrityProtectedDevice that logs to the database
 # With XML export to /tmp/ (default export dir)
+# On windows a path would be for example 'C:/Temp/'
 securityeventsaudit.implementation.1=org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice
 securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 #securityeventsaudit.deviceproperty.1.export.dir=/tmp/
