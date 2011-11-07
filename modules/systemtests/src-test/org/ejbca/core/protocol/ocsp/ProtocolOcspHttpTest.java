@@ -711,7 +711,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
             // Windows throws an IOException when trying to write more bytes to
             // the server than it should. Linux does not.
-            assertTrue("Tried to write more than it should to the server.", i > 1000);
+            assertTrue("Tried to write more than it should to the server (>1000), "+i, i > 1000);
             return;
         }
         // Reading the response.
