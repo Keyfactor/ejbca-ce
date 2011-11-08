@@ -63,7 +63,7 @@
                 <item name="Contribute to EJBCA"     href="/contributions.html"/>
                 <item name="Contributors"          href="/contributors.html"/>
                 <item name="Bug Database"          href="http://jira.primekey.se/"/>
-                <item name="SVN Repository"      href="http://ejbca.svn.sourceforge.net/viewvc/ejbca/"/>
+                <item name="SVN Repository"      href="https://svn.cesecore.eu/svn/ejbca/"/>
                 <item name="FishEye SVN" href="http://fisheye.primekey.se/changelog/EJBCA/"/>
             </menu>
 
