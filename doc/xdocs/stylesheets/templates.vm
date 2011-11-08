@@ -86,7 +86,9 @@
 #macro ( projectanchor $name $value )
   #if ($value.startsWith("http://"))
     <a href="$value" class="externalLink">$name</a>
-  #else
+  #elseif ($value.startsWith("https://"))
+    <a href="$value" class="externalLink">$name</a>
+  #else  
     <a href="$relativePath$value">$name</a>
   #end
 #end
