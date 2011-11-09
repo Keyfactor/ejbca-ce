@@ -1,7 +1,8 @@
 EJBCA 5.0.0
 -----------
 
-Old log and log configuration is gone.
+The old database audit log log system has been removed and replaced by a new security audit function that is capable
+of storing integrity protected audit records in the database. 
 
 Approvals. When upgrading from 4.x to 5.x new approval requests created in a 5.x instance can not be read in a 4.x instance. 
 So if you require uptime and roll-back capabilities, only allow to create new approval requests from an 4.x host.
