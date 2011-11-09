@@ -96,6 +96,20 @@
 #cmp.checkadminauthorization=true
 #cmp.checkadminauthorization=false
 
+# Allow automatic key update (certificate renewal). Setting this option to 'true' will change the end entity status to 'NEW' to allow the 
+# issuance of a new certificate. Setting it to 'false' will not go through this step, so the KeyUpdate request will fail if the status 
+# of the end entity does not allow the issuance of a new certificate. For higher security, it is recommended to set this value to 'false'.
+#
+# Default: false
+#cmp.allowautomatickeyupdate=true
+#cmp.allowautomatickeyupdate=false
+
+# Allow the use of the old keys when renewing a certificate/updating keys
+#
+# Default: true
+#cmp.allowupdatewithsamekey=false
+#cmp.allowupdatewithsamekey=true
+
 # Allow the client/RA to specify that the CA should not verify POP, 
 # set to true to allow no POP (raVerify in the rfc). 
 # Note: only set to true if cmp.operationmode=ra.
