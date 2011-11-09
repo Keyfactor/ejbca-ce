@@ -599,6 +599,7 @@ The following CMP messages are supported:
 <li>Certification confirm (certConf)</li>
 <li>Revocation request (rr)</li>
 <li>NestedMessageContent (nested)</li>
+<li>Key Update Request (kur)</li>
 </ul>
 Certificate requests use the CRMF (RFC4211).
 </p>

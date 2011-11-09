@@ -67,6 +67,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     private String authenticationParameterCAName;
     private String password;
     private String errorMessage;
+    private Certificate extraCert;
     
     private AuthenticationToken admin;
     private CaSession caSession;
@@ -79,7 +80,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     public EndEntityCertificateAuthenticationModule(final String parameter) {
         this.authenticationParameterCAName = parameter;
         password = null;
-        errorMessage = null;        
+        errorMessage = null;      
+        extraCert = null;
+        
         admin = null;
         caSession = null;
         certSession = null;
@@ -141,6 +144,15 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     public String getErrorMessage() {
         return this.errorMessage;
     }
+    
+    /**
+     * Get the certificate that was attached to the CMP request in it's extreCert filed.
+     * 
+     * @return The certificate that was attached to the CMP request in it's extreCert filed 
+     */
+    public Certificate getExtraCert() {
+        return extraCert;
+    }
 
     /**
      * Verifies the signature of 'msg'. msg should be signed by an authorized administrator in EJBCA and 
@@ -163,9 +175,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         
         //Read the extraCert and store it in a local variable
-        Certificate extracert = null;
         try {
-            extracert = CertTools.getCertfromByteArray(extraCertStruct.getEncoded());
+            extraCert = CertTools.getCertfromByteArray(extraCertStruct.getEncoded());
         } catch (CertificateException e) {
             this.errorMessage = e.getLocalizedMessage();
             if(log.isDebugEnabled()) {
@@ -180,7 +191,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             return false;
         }
         
-        final String fp = CertTools.getFingerprintAsString(extracert);
+        final String fp = CertTools.getFingerprintAsString(extraCert);
         if (fp == null) {
             this.errorMessage = "Could not get the fingerprint of the certificate in the extraCert field in the CMP request";
             if(log.isDebugEnabled()) {
@@ -190,7 +201,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         
         // Get CA info. In case of fail, error message would have already been set and logged.
-        final CAInfo cainfo = getCAInfo(extracert);
+        final CAInfo cainfo = getCAInfo(extraCert);
         if (cainfo == null) {
             return false;
         }
@@ -199,7 +210,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         // Verify the signature of the client certificate as well, that it is really issued by this CA
         Certificate cacert = cainfo.getCertificateChain().iterator().next();
         try {
-            extracert.verify(cacert.getPublicKey(), "BC");
+            extraCert.verify(cacert.getPublicKey(), "BC");
         } catch (Exception e) {
             errorMessage = "The End Entity certificate attached to the PKIMessage is not issued by the CA '" + cainfo.getName() + "'";
             if(log.isDebugEnabled()) {
@@ -217,8 +228,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 
             //Check that the request sender is an authorized administrator
             try {
-                if (!isAuthorized(extracert, msg, cainfo.getCAId())){
-                    errorMessage = "'" + CertTools.getSubjectDN(extracert) + "' is not an authorized administrator.";
+                if (!isAuthorized(extraCert, msg, cainfo.getCAId())){
+                    errorMessage = "'" + CertTools.getSubjectDN(extraCert) + "' is not an authorized administrator.";
                     if(log.isDebugEnabled()) {
                         log.debug(errorMessage);
                     }
@@ -272,7 +283,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         //Verify the signature of msg using the public key of the certificate we found in the database
         try {
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
-            sig.initVerify(extracert.getPublicKey());
+            sig.initVerify(extraCert.getPublicKey());
             sig.update(msg.getProtectedBytes());
             if (sig.verify(msg.getProtection().getBytes())) {
                 if (password == null) {
@@ -458,7 +469,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     }
 
     private CertificateInfo getActiveExistingCertInfo(final String fp) {
-        // Check that the certificate is not revoked
+        
+        // Check that the certificate is in the database
         final CertificateInfo info = certSession.getCertificateInfo(fp);
         if(info == null) {
             errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
@@ -469,6 +481,20 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             return null;
         }
         
+        // Check that the certificate is valid
+        X509Certificate cert = (X509Certificate) certSession.findCertificateByFingerprint(fp);
+        try {
+            cert.checkValidity();
+        } catch(Exception e) {
+            errorMessage = "The certificate attached to the PKIMessage in the extraCert field in not valid";
+            if(log.isDebugEnabled()) {
+                log.debug(errorMessage+". Fingerprint="+fp);
+                log.debug(e.getLocalizedMessage());
+            }
+        }
+        
+
+        // Check that the certificate is not revoked
         if (info.getStatus() != SecConst.CERT_ACTIVE) {
             errorMessage = "The certificate attached to the PKIMessage in the extraCert field is revoked.";
             if(log.isDebugEnabled()) {
