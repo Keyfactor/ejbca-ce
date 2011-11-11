@@ -76,7 +76,7 @@ public class CAData extends ProtectedData implements Serializable {
     		setCaId(Integer.valueOf(subjectdn.hashCode()));
     		setName(name);
     		setSubjectDN(subjectdn);
-    		if ((ca.getCertificateChain() != null) && (ca.getCertificateChain().size() > 0)) {
+    		if (ca.getCACertificate() != null) {
     			final Certificate cacert = ca.getCACertificate();
     			setExpireTime(CertTools.getNotAfter(cacert).getTime());  
     			ca.setExpireTime(CertTools.getNotAfter(cacert)); 
@@ -268,6 +268,11 @@ public class CAData extends ProtectedData implements Serializable {
         // We have to update status as well, because it is kept in it's own database column, but only do that if it was actually provided in the request
         if (ca.getStatus() > 0) {
             setStatus(ca.getStatus());        	
+        }
+        // set expire time, perhaps we have updated the CA certificate
+        Certificate cacert = ca.getCACertificate();
+        if (cacert != null) {
+            setExpireTime(CertTools.getNotAfter(cacert).getTime());
         }
         // remove the CA from the cache to force an update the next time we load it
         CACacheManager.instance().removeCA(getCaId().intValue());

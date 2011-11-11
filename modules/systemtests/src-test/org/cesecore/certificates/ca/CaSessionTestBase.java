@@ -25,6 +25,7 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -153,6 +154,11 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertEquals(CryptoToken.STATUS_ACTIVE, ca1.getCAToken().getCryptoToken().getTokenStatus());
         assertEquals(CryptoToken.STATUS_ACTIVE, ca1.getCAInfo().getCATokenInfo().getTokenStatus());
         assertEquals(CryptoToken.STATUS_ACTIVE, ca2.getCAInfo().getCATokenInfo().getTokenStatus());
+        Date now = new Date();
+        assertTrue("CA expire time should be after now: "+ca1.getExpireTime(), now.before(ca1.getExpireTime()));
+        assertTrue("CA expire time should be after now: "+ca2.getExpireTime(), now.before(ca2.getExpireTime()));
+        assertTrue("CAInfo expire time should be after now: "+ca1.getCAInfo().getExpireTime(), now.before(ca1.getCAInfo().getExpireTime()));
+        assertTrue("CAInfo expire time should be after now: "+ca2.getCAInfo().getExpireTime(), now.before(ca2.getCAInfo().getExpireTime()));
 
         // See that we can do something with the CAs to verify that everything was stored as we think
         EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", EndEntityConstants.USER_ENDUSER, 0,

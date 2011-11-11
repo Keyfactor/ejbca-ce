@@ -659,10 +659,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         setUseCertReqHistory(cainfo.isUseCertReqHistory());
         setUseUserStorage(cainfo.isUseUserStorage());
         setUseCertificateStorage(cainfo.isUseCertificateStorage());
-
         Collection<Certificate> newcerts = cainfo.getCertificateChain();
         if ((newcerts != null) && (newcerts.size() > 0)) {
             setCertificateChain(newcerts);
+            Certificate cacert = newcerts.iterator().next();
+            setExpireTime(CertTools.getNotAfter(cacert));  
         }
 
         // Update or create extended CA services
