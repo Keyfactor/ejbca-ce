@@ -1044,6 +1044,8 @@
 					<include name="org/ejbca/config/*Configuration.java"/>
 					<include name="org/cesecore/config/*Configuration.java"/>
 					<include name="org/cesecore/certificates/ocsp/exception/*Exception.java"/>
+					<!-- upgrade of CertificatePolicy, change from ejbca to cesecore class -->
+					<include name="org/ejbca/core/model/ca/certificateprofiles/CertificatePolicy.java"/>					
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/upgrade" destdir="${build-temp.dir}/upgrade" debug="on" includeantruntime="no"
