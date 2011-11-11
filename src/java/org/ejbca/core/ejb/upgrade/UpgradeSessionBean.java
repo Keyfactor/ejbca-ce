@@ -23,9 +23,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
@@ -55,7 +57,10 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.roles.RoleData;
@@ -111,6 +116,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private RoleAccessSessionLocal roleAccessSession;
     @EJB
     private RoleManagementSessionLocal roleMgmtSession;
+    @EJB
+    private CertificateProfileSessionLocal certProfileSession;
    
 
     private UpgradeSessionLocal upgradeSession;
@@ -495,7 +502,39 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      */
     private boolean postMigrateDatabase500(String dbtype) {
     	
-    	// TODO: post-upgrade "change CertificatePolicy from ejbca class to cesecore class in certificate profiles that have that defined.
+        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.migrateDatabase500"));
+
+    	// post-upgrade "change CertificatePolicy from ejbca class to cesecore class in certificate profiles that have that defined.
+        Map<Integer, String> map = certProfileSession.getCertificateProfileIdToNameMap();
+        Set<Integer> ids = map.keySet();
+        for (Integer id : ids) {
+            CertificateProfile profile = certProfileSession.getCertificateProfile(id);
+            final List<CertificatePolicy> policies = profile.getCertificatePolicies();
+            if (!policies.isEmpty()) {
+                final List<CertificatePolicy> newpolicies = new ArrayList<CertificatePolicy>();
+                for(final Iterator<?> it = policies.iterator(); it.hasNext(); ) {
+                    Object o = it.next();
+                    try {
+                        final CertificatePolicy policy = (CertificatePolicy)o;
+                        // This was a new policy (org.cesecore), just add it
+                        newpolicies.add(policy);
+                    } catch (ClassCastException e) {
+                        // Here we stumbled upon an old certificate policy
+                        final org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy policy = (org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy)o;
+                        CertificatePolicy newpolicy = new CertificatePolicy(policy.getPolicyID(), policy.getQualifierId(), policy.getQualifier());
+                        newpolicies.add(newpolicy);                    
+                    }
+                }
+                // Set the updated policies, replacing the old
+                profile.setCertificatePolicies(newpolicies);
+                try {
+                    certProfileSession.changeCertificateProfile(admin, map.get(id), profile);
+                } catch (AuthorizationDeniedException e) {
+                    log.error("Error upgrading certificate policy: ", e);
+                }
+            }
+            
+        }
         // TODO: post-upgrade "change CertificatePolicy from ejbca class to cesecore class in CAs profiles that have that defined?
 
     	log.error("(this is not an error) Starting post upgrade from ejbca 4.0.x to ejbca 5.0.x");
