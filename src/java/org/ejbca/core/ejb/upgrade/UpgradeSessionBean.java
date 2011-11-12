@@ -528,7 +528,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                 // Set the updated policies, replacing the old
                 profile.setCertificatePolicies(newpolicies);
                 try {
-                    certProfileSession.changeCertificateProfile(admin, map.get(id), profile);
+                    final String profName = map.get(id);
+                    log.info("Upgrading CertificatePolicy of certificate profile '"+profName+"'. This profile can no longer be used with EJBCA 4.x.");
+                    certProfileSession.changeCertificateProfile(admin, profName, profile);
                 } catch (AuthorizationDeniedException e) {
                     log.error("Error upgrading certificate policy: ", e);
                 }
