@@ -108,7 +108,7 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 /**
  * This will test the different cmp authentication modules.
  * 
- * @version $Id: AuthenticationModulesTest.java 13034 2011-10-29 15:15:40Z mikekushner $
+ * @version $Id$
  *
  */
 public class CrmfKeyUpdateTest extends CmpTestCase {
