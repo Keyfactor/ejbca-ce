@@ -49,9 +49,9 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.cmp.authentication.EndEntityCertificateAuthenticationModule;
 
 /**
- * Message handler for certificate request messages in the CRMF format
- * @author tomas
- * @version $Id: CrmfMessageHandler.java 12950 2011-10-20 16:56:05Z anatom $
+ * Message handler for update messages using the CRMF format for the request itself.
+ * 
+ * @version $Id$
  */
 public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
     
