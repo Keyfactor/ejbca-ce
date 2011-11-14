@@ -105,9 +105,7 @@
 
 	<root> 
 		<priority value="DEBUG" />
-		<!--
 		<appender-ref ref="CONSOLE"/>
-		-->
 		<appender-ref ref="FILE"/>
 	</root> 
 
