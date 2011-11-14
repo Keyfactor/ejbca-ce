@@ -56,6 +56,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -501,7 +502,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * to allow for 100% uptime upgrades.
      */
     private boolean postMigrateDatabase500(String dbtype) {
-    	
+
+        log.error("(this is not an error) Starting post upgrade from ejbca 4.0.x to ejbca 5.0.x");
+        boolean ret = true;
+
         AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UpgradeSessionBean.migrateDatabase500"));
 
     	// post-upgrade "change CertificatePolicy from ejbca class to cesecore class in certificate profiles that have that defined.
@@ -510,7 +514,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         for (Integer id : ids) {
             CertificateProfile profile = certProfileSession.getCertificateProfile(id);
             final List<CertificatePolicy> policies = profile.getCertificatePolicies();
-            if (!policies.isEmpty()) {
+            if ((policies != null) && (!policies.isEmpty())) {
                 final List<CertificatePolicy> newpolicies = new ArrayList<CertificatePolicy>();
                 for(final Iterator<?> it = policies.iterator(); it.hasNext(); ) {
                     Object o = it.next();
@@ -537,10 +541,50 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
             
         }
-        // TODO: post-upgrade "change CertificatePolicy from ejbca class to cesecore class in CAs profiles that have that defined?
-
-    	log.error("(this is not an error) Starting post upgrade from ejbca 4.0.x to ejbca 5.0.x");
-    	boolean ret = true;
+        // post-upgrade "change CertificatePolicy from ejbca class to cesecore class in CAs profiles that have that defined?
+        // fix CAs that don't have classpath for extended CA services
+        Collection<Integer> caids = caSession.getAvailableCAs();
+        for (Integer caid : caids) {
+            try {
+                CA ca = caSession.getCAForEdit(admin, caid);
+                if (ca.getCAType() == CAInfo.CATYPE_X509) {
+                    try {
+                        X509CA x509ca = (X509CA)ca;
+                        final List<CertificatePolicy> policies = x509ca.getPolicies();
+                        if ((policies != null) && (!policies.isEmpty())) {
+                            final List<CertificatePolicy> newpolicies = new ArrayList<CertificatePolicy>();
+                            for(final Iterator<?> it = policies.iterator(); it.hasNext(); ) {
+                                Object o = it.next();
+                                try {
+                                    final CertificatePolicy policy = (CertificatePolicy)o;
+                                    // This was a new policy (org.cesecore), just add it
+                                    newpolicies.add(policy);
+                                } catch (ClassCastException e) {
+                                    // Here we stumbled upon an old certificate policy
+                                    final org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy policy = (org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy)o;
+                                    CertificatePolicy newpolicy = new CertificatePolicy(policy.getPolicyID(), policy.getQualifierId(), policy.getQualifier());
+                                    newpolicies.add(newpolicy);                    
+                                }
+                            }
+                            // Set the updated policies, replacing the old
+                            x509ca.setPolicies(newpolicies);
+                            // Finally store the upgraded CA
+                            log.info("Upgrading CertificatePolicy of CA '"+ca.getName()+"'. This CA can no longer be used with EJBCA 4.x.");
+                            caSession.editCA(admin, ca, true);
+                        }
+                    } catch (ClassCastException e) {
+                        log.error("CA is not of type X509CA: "+caid+", "+ca.getClass().getName());
+                    }
+                }
+            } catch (CADoesntExistsException e) {
+                log.error("CA does not exist during upgrade: "+caid, e);
+            } catch (AuthorizationDeniedException e) {
+                log.error("Authorization denied to CA during upgrade: "+caid, e);
+            } catch (IllegalCryptoTokenException e) {
+                log.error("Illegal Crypto Token editing CA during upgrade: "+caid, e);
+            }
+        } // for (Integer caid : caids
+        
     	boolean exists = upgradeSession.checkColumnExists500();
     	if (exists) {
     		ret = migrateDatabase("/400_500/400_500-post-upgrade-"+dbtype+".sql");			
