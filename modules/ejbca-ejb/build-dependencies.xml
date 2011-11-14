@@ -1031,6 +1031,7 @@
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/upgrade/*.java"/>
+				    <include name="org/cesecore/certificates/ca/*.java"/>                    
 				</fileset>
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/core/ejb/upgrade/*SessionBean.java"/>
@@ -1046,6 +1047,11 @@
 					<include name="org/cesecore/certificates/ocsp/exception/*Exception.java"/>
 					<!-- upgrade of CertificatePolicy, change from ejbca to cesecore class -->
 					<include name="org/ejbca/core/model/ca/certificateprofiles/CertificatePolicy.java"/>					
+				    <include name="org/cesecore/certificates/ca/internal/*.java"/>                    
+				    <include name="org/cesecore/certificates/certificate/certextensions/**/*.java"/>                    
+                    <include name="org/cesecore/certificates/ca/*.java"/>                    
+				    <include name="org/cesecore/certificates/util/cert/*.java"/>                    
+                    <include name="org/cesecore/certificates/util/dn/*.java"/>                    
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/upgrade" destdir="${build-temp.dir}/upgrade" debug="on" includeantruntime="no"
