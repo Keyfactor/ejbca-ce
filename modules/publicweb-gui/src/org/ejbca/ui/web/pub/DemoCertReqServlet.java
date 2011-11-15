@@ -45,6 +45,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.util.HTMLTools;
 
 /**
  * This is a servlet that is used for creating a user into EJBCA and retrieving her certificate. Supports only POST.
@@ -167,7 +168,7 @@ public class DemoCertReqServlet extends HttpServlet {
         // Before doing anything else, check if the user name is unique and ok.
         boolean check = checkUsername(admin, username, endEntityAccessSession);
         if (check == false) {
-            String msg = "User '" + username + "' already exist.";
+            String msg = "User '" + HTMLTools.htmlescape(username) + "' already exist.";
             log.error(msg);
             debug.printMessage(msg);
             debug.printDebugInfo();
@@ -298,7 +299,7 @@ public class DemoCertReqServlet extends HttpServlet {
             while (paramNames.hasMoreElements()) {
                 String name = paramNames.nextElement().toString();
                 String parameter = request.getParameter(name);
-                debug.print("<h4>" + name + ":</h4>" + parameter + "<br>");
+                debug.print("<h4>" + HTMLTools.htmlescape(name) + ":</h4>" + HTMLTools.htmlescape(parameter) + "<br>");
             }
             debug.takeCareOfException(e);
             debug.printDebugInfo();

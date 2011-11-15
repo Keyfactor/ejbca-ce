@@ -72,6 +72,7 @@ import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.util.HTMLTools;
 
 /**
  * Servlet used to install a private key with a corresponding certificate in a browser. A new
@@ -169,7 +170,7 @@ public class CardCertReqServlet extends HttpServlet {
                 }
             }
             log.debug("Got request for " + username + ".");
-            debug.print("<h3>username: " + username + "</h3>");
+            debug.print("<h3>username: " + HTMLTools.htmlescape(username) + "</h3>");
             
             final EndEntityInformation data = endEntityAccessSession.findUser(administrator, username);
             final X509Certificate notRevokedCerts[]; {
@@ -310,7 +311,7 @@ public class CardCertReqServlet extends HttpServlet {
             while (paramNames.hasMoreElements()) {
                 String name = paramNames.nextElement().toString();
                 String parameter = request.getParameter(name);
-                debug.print("<h4>" + name + ":</h4>" + parameter + "<br>");
+                debug.print("<h4>" + HTMLTools.htmlescape(name) + ":</h4>" + HTMLTools.htmlescape(parameter) + "<br>");
             }
             debug.takeCareOfException(e);
             debug.printDebugInfo();

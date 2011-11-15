@@ -65,6 +65,7 @@ import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.util.HTMLTools;
 
 public class RequestInstance {
 
@@ -143,7 +144,7 @@ public class RequestInstance {
 			RequestHelper helper = new RequestHelper(administrator, debug);
 
 			log.info(intres.getLocalizedMessage("certreq.receivedcertreq", username, request.getRemoteAddr()));
-			debug.print("Username: " + username);
+			debug.print("Username: " + HTMLTools.htmlescape(username));
 
 			// Check user
 			int tokentype = SecConst.TOKEN_SOFT_BROWSERGEN;
@@ -215,7 +216,9 @@ public class RequestInstance {
 				if (getParameter("keygen") != null) {
 					byte[] reqBytes=getParameter("keygen").getBytes();
 					if ((reqBytes != null) && (reqBytes.length>0)) {
-						log.debug("Received NS request: "+new String(reqBytes));
+					    if (log.isDebugEnabled()) {
+					        log.debug("Received NS request: "+new String(reqBytes));
+					    }
 						byte[] certs = helper.nsCertRequest(signSession, reqBytes, username, password);
 						RequestHelper.sendNewCertToNSClient(certs, response);
 					} else {
@@ -225,7 +228,9 @@ public class RequestInstance {
 					// NetID iid?
 					byte[] reqBytes = getParameter("iidPkcs10").getBytes();
 					if ((reqBytes != null) && (reqBytes.length>0)) {
-						log.debug("Received iidPkcs10 request: "+new String(reqBytes));
+                        if (log.isDebugEnabled()) {
+                            log.debug("Received iidPkcs10 request: "+new String(reqBytes));
+                        }
 						byte[] b64cert=helper.pkcs10CertRequest(signSession, reqBytes, username, password, RequestHelper.ENCODED_CERTIFICATE, false);
 						response.setContentType("text/html");
 						RequestHelper.sendNewCertToIidClient(b64cert, request, response.getOutputStream(), servletContext, servletConfig.getInitParameter("responseIidTemplate"),classid);
@@ -239,7 +244,9 @@ public class RequestInstance {
 						reqBytes=getParameter("PKCS10").getBytes();
 					}
 					if ((reqBytes != null) && (reqBytes.length>0)) {
-						log.debug("Received IE request: "+new String(reqBytes));
+                        if (log.isDebugEnabled()) {
+                            log.debug("Received IE request: "+new String(reqBytes));
+                        }
 						byte[] b64cert=helper.pkcs10CertRequest(signSession, reqBytes, username, password, RequestHelper.ENCODED_PKCS7);
 						debug.ieCertFix(b64cert);
 						response.setContentType("text/html");
@@ -252,7 +259,9 @@ public class RequestInstance {
 					String pkcs10req = getParameter("pkcs10req");
 					if (StringUtils.isEmpty(pkcs10req)) {
 						// did we upload a file instead?
-						log.debug("No pasted request received, checking for uploaded file.");
+                        if (log.isDebugEnabled()) {
+                            log.debug("No pasted request received, checking for uploaded file.");
+                        }
 						pkcs10req = getParameter("pkcs10file");
 						if (StringUtils.isNotEmpty(pkcs10req)) {
 							// The uploaded file has been converted to a base64 encoded string
@@ -274,7 +283,9 @@ public class RequestInstance {
 					String req = getParameter("cvcreq");
 					if (StringUtils.isEmpty(req)) {
 						// did we upload a file instead?
-						log.debug("No pasted request received, checking for uploaded file.");
+                        if (log.isDebugEnabled()) {
+                            log.debug("No pasted request received, checking for uploaded file.");
+                        }
 						req = getParameter("cvcreqfile");
 						if (StringUtils.isNotEmpty(req)) {
 							// The uploaded file has been converted to a base64 encoded string
@@ -286,7 +297,9 @@ public class RequestInstance {
 					}
 
 					if ((reqBytes != null) && (reqBytes.length>0)) {
-						log.debug("Received CVC request: "+new String(reqBytes));
+                        if (log.isDebugEnabled()) {
+                            log.debug("Received CVC request: "+new String(reqBytes));
+                        }
 						byte[] b64cert=helper.cvcCertRequest(signSession, reqBytes, username, password);
 						CVCertificate cvccert = (CVCertificate) CertificateParser.parseCVCObject(Base64.decode(b64cert));
 						String filename = "";
@@ -306,7 +319,9 @@ public class RequestInstance {
 						if (filename.length() == 0) {
 							filename = username;
 						}
-						log.debug("Filename: "+filename);
+                        if (log.isDebugEnabled()) {
+                            log.debug("Filename: "+filename);
+                        }
 						if(resulttype == RequestHelper.BINARY_CERTIFICATE) {  
 							RequestHelper.sendBinaryBytes(Base64.decode(b64cert), response, "application/octet-stream", filename+".cvcert");
 						}
@@ -356,9 +371,9 @@ public class RequestInstance {
 					String name = (String)iter.next();
 					String parameter = getParameter(name);
 					if (!StringUtils.equals(name, "password")) {
-						debug.print(name + ": '" + parameter + "'\n");                	
+						debug.print(HTMLTools.htmlescape(name) + ": '" + HTMLTools.htmlescape(parameter) + "'\n");                	
 					} else {
-						debug.print(name + ": <hidden>\n");
+						debug.print(HTMLTools.htmlescape(name) + ": <hidden>\n");
 					}
 				}
 				debug.takeCareOfException(e);
@@ -431,7 +446,9 @@ public class RequestInstance {
 
 	private void pkcs10Req(HttpServletResponse response, String username, String password, int resulttype, SignSessionLocal signsession,
 			RequestHelper helper, byte[] reqBytes) throws Exception, IOException {
-		log.debug("Received PKCS10 request: " + new String(reqBytes));
+        if (log.isDebugEnabled()) {
+            log.debug("Received PKCS10 request: " + new String(reqBytes));
+        }
 		byte[] b64cert = helper.pkcs10CertRequest(signsession, reqBytes, username, password, resulttype);
 		if (resulttype == RequestHelper.ENCODED_PKCS7) {
 			RequestHelper.sendNewB64File(b64cert, response, username + ".pem", RequestHelper.BEGIN_PKCS7_WITH_NL, RequestHelper.END_PKCS7_WITH_NL);
@@ -499,7 +516,9 @@ public class RequestInstance {
 				if (exitVal != 0) {
 					log.error(intres.getLocalizedMessage("certreq.ovpntexiterror", exitVal));
 				} else {
-					log.debug(intres.getLocalizedMessage("certreq.ovpntexiterror", exitVal));
+                    if (log.isDebugEnabled()) {
+                        log.debug(intres.getLocalizedMessage("certreq.ovpntexiterror", exitVal));
+                    }
 				}
 			}
 		}

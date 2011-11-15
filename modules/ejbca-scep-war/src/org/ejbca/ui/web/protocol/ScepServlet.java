@@ -44,6 +44,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.ui.web.RequestHelper;
+import org.ejbca.util.HTMLTools;
 
 
 /**
@@ -259,8 +260,8 @@ public class ScepServlet extends HttpServlet {
                 response.getOutputStream().print("POSTPKIOperation\nSHA-1");
             } else {
                 log.error("Invalid parameter '" + operation);
-                // TODO: Send back proper Failure Response
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameter: " + operation);
+                // Send back proper Failure Response
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "Invalid parameter: " + HTMLTools.htmlescape(operation));
             }
         } catch (CADoesntExistsException cae) {
     		String errMsg = intres.getLocalizedMessage("scep.errorunknownca", "cert");
