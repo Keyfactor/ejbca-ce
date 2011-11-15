@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.certificatestore.HashID;
+import org.ejbca.util.HTMLTools;
 
 /** 
  * Servlet implementing server side of the Certificate Store.
@@ -82,7 +83,7 @@ public class CertStoreServlet extends StoreServletBase {
 
 	private void returnCert(X509Certificate cert, HttpServletResponse resp, String name) throws IOException, ServletException {
 		if (cert==null) {
-			resp.sendError(HttpServletResponse.SC_NO_CONTENT, "No certificate with hash: "+name);
+			resp.sendError(HttpServletResponse.SC_NO_CONTENT, "No certificate with hash: "+HTMLTools.htmlescape(name));
 			return;
 		}
 		final byte encoded[];
@@ -98,7 +99,7 @@ public class CertStoreServlet extends StoreServletBase {
 	}
 	private void returnCerts(X509Certificate certs[], HttpServletResponse resp, String name) throws IOException, ServletException {
 		if (certs==null) {
-			resp.sendError(HttpServletResponse.SC_NO_CONTENT, "No certificates with issuer hash DN: "+name);
+			resp.sendError(HttpServletResponse.SC_NO_CONTENT, "No certificates with issuer hash DN: "+HTMLTools.htmlescape(name));
 			return;
 		}
 		final Multipart mp = new MimeMultipart();// mixed is default

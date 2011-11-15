@@ -295,7 +295,9 @@ public class RequestHelper {
             InputStream is = sc.getResourceAsStream(responseTemplate);
             if (is == null) {
             	// Some app servers (oracle) require a / first...
-            	log.debug("Trying to read responseTemplate with / first");
+                if (log.isDebugEnabled()) {
+                    log.debug("Trying to read responseTemplate with / first");
+                }
                 is = sc.getResourceAsStream("/"+responseTemplate);
             }
             if (is == null) {
@@ -353,11 +355,15 @@ public class RequestHelper {
         }
 
         PrintStream ps = new PrintStream(out);
-        log.debug("Response template is: "+responseTemplate);
+        if (log.isDebugEnabled()) {
+            log.debug("Response template is: "+responseTemplate);
+        }
         InputStream is = sc.getResourceAsStream(responseTemplate);
         if (is == null) {
         	// Some app servers (oracle) require a / first...
-        	log.debug("Trying to read responseTemplate with / first");
+            if (log.isDebugEnabled()) {
+                log.debug("Trying to read responseTemplate with / first");
+            }
             is = sc.getResourceAsStream("/"+responseTemplate);
         }
         if (is == null) {
@@ -380,8 +386,10 @@ public class RequestHelper {
         }
 
         ps.close();
-        log.debug("Sent reply to IE client");
-        log.debug(new String(b64cert));
+        if (log.isDebugEnabled()) {
+            log.debug("Sent reply to IE client");
+            log.debug(new String(b64cert));
+        }
     } // sendNewCertToIEClient
 
     /**
@@ -406,8 +414,10 @@ public class RequestHelper {
 
         // Print the certificate
         out.getOutputStream().write(certs);
-        log.debug("Sent reply to NS client");
-        log.debug(new String(Base64.encode(certs)));
+        if (log.isDebugEnabled()) {
+            log.debug("Sent reply to NS client");
+            log.debug(new String(Base64.encode(certs)));
+        }
     	log.trace("<nsCertRequest");
     } // sendNewCertToNSClient
 
@@ -444,8 +454,10 @@ public class RequestHelper {
         os.write(b64cert);
         os.write(endKey.getBytes());
         out.flushBuffer();
-        log.debug("Sent reply to client");
-        log.debug(new String(b64cert));        
+        if (log.isDebugEnabled()) {
+            log.debug("Sent reply to client");
+            log.debug(new String(b64cert));   
+        }
     }
     /**
      * Sends back certificate as binary file (application/octet-stream)
@@ -506,7 +518,9 @@ public class RequestHelper {
         ServletOutputStream os = out.getOutputStream();
         os.write(bytes);
         out.flushBuffer();
-        log.debug("Sent " + bytes.length + " bytes to client");
+        if (log.isDebugEnabled()) {
+            log.debug("Sent " + bytes.length + " bytes to client");
+        }
     } // sendBinaryBytes
     
     /** Sets the default character encoding for decoding post and get parameters. 
@@ -521,10 +535,14 @@ public class RequestHelper {
         String encoding = request.getCharacterEncoding();
         if(StringUtils.isEmpty(encoding)) {
             encoding = org.ejbca.config.WebConfiguration.getWebContentEncoding();
-            log.debug("Setting encoding to default value: "+encoding);
+            if (log.isDebugEnabled()) {
+                log.debug("Setting encoding to default value: "+encoding);
+            }
             request.setCharacterEncoding(encoding);
         } else {
-            log.debug("Setting encoding to value from request: "+encoding);
+            if (log.isDebugEnabled()) {
+                log.debug("Setting encoding to value from request: "+encoding);
+            }
             request.setCharacterEncoding(encoding);         
         }        
     }
@@ -557,7 +575,9 @@ public class RequestHelper {
     	if (dnpart == null) {
     		dnpart = defaultname;
     	}
-    	log.debug("dnpart: "+dnpart);
+        if (log.isDebugEnabled()) {
+            log.debug("dnpart: "+dnpart);
+        }
     	// Strip whitespace though
     	String filename = dnpart.replaceAll("\\W", "");
     	return filename;
