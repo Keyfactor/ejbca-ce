@@ -93,7 +93,7 @@ public class CRLStoreServlet extends StoreServletBase {
 			return;
 		}
 		resp.setContentType("application/pkix-crl");
-		resp.setHeader("Content-disposition", "attachment; filename="+(isDelta?"delta":"")+"crl" + HTMLTools.htmlescape(name) + ".crl");
+		resp.setHeader("Content-disposition", "attachment; filename="+(isDelta?"delta":"")+"crl" + name + ".crl");
 		resp.setContentLength(crl.length);
 		resp.getOutputStream().write(crl);
 	}
