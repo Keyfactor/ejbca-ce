@@ -69,8 +69,9 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 
 # Specifies a directory with CA's which are allowed
 # If signatures are restricted and required only requests signed by a certificate issued by a CA in this directory is accepted.
+# The easiest here is to configure the full path of the directory, otherwise it will be relative to some directory where you start you app server. 
 #
-#ocsp.signtrustdir=~/signtrustdir
+#ocsp.signtrustdir=signtrustdir
 
 # Specifies an interval in seconds in which the server reloads certificates from the 'ocsp.signtrustdir'
 # if this variable is set to 0 certificates will not be reloaded after startup.
