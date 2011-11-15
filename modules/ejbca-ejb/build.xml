@@ -524,6 +524,7 @@
 			<include name="org/ejbca/ui/web/protocol/IHealtChecker.java"/>
 			<include name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java"/>
 			<include name="org/ejbca/util/DummyPatternLogger.java"/>
+		    <include name="org/ejbca/util/HTMLTools.java"/>
 			<include name="org/ejbca/config/EjbcaConfiguration.java"/>
 			<include name="org/ejbca/core/model/InternalEjbcaResources.java"/>
 			<include name="org/cesecore/config/OcspConfiguration.java"/>
