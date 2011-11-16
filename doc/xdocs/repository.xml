@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<document>
+  <properties>
+    <title>Source Repository</title>
+  </properties>
+
+  <body>
+<section name="SVN repository">
+<p>
+You can find all the sources of EJBCA releases in our Subversion source code <a href="https://svn.cesecore.eu/svn/ejbca/">repository</a>.
+</p>
+</section>
+
+<section name="Checking out code">
+<p>
+You can check out the code using a simple svn command. For example, to check out the current code for the EJBCA 4.0.x development tree.
+</p>
+<source>
+svn co https://svn.cesecore.eu/svn/ejbca/branches/Branch_4_0/ejbca ejbca
+</source>
+</section>
+
+  </body>
+</document>
