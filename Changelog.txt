@@ -1,16 +1,15 @@
-Ejbca 4.0.6, 2011-11-17
+EJBCA 4.0.6, 2011-11-17
 ---
 
 New Feature
     [ECA-2368] - CMP, Implement message type KeyUpdateRequest
-
 
 Bug
     [ECA-2369] - NestedMessageContentTest does not clean up the test certificates it creates
     [ECA-2380] - Minor XSS issue
     [ECA-2383] - Cannot import empty CRL via CLI
 
-Ejbca 4.0.6, 2011-11-17
+EJBCA 4.0.5, 2011-11-02
 ---
 
 New Feature
