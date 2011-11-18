@@ -176,18 +176,16 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * A "Happy Path" test. Sends a KeyUpdateRequest and receives a new certificate.
      * 
      * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
-     * - Pre-configuration: Set cmp.checkadminauthorization to 'false'
      * - Pre-configuration: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
      * - Pre-configuration: Sets cmp.allowupdatewithsamekey to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
-     * - Signs the CMP request using cert and attached cert to the CMP request. Tests that the CMP request is still not null
-     * - Verifies the signature of the CMP request
+     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
      * - Sends the request using HTTP and receives a response.
      * - Examines the response:
      *      - Checks that the response is not empty or null
      *      - Checks that the protection algorithm is sha1WithRSAEncryption
-     *      - Check that the signer is the expected CA
+     *      - Checks that the signer is the expected CA
      *      - Verifies the response signature
      *      - Checks that the response's senderNonce is 16 bytes long
      *      - Checks that the request's senderNonce is the same as the response's recipientNonce
@@ -238,13 +236,13 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         addExtraCert(req, certificate);
         signPKIMessage(req, keys);
         assertNotNull(req);
-        //******************************************''''''
+        /*
         final Signature sig = Signature.getInstance(req.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
         sig.initVerify(certificate.getPublicKey());
         sig.update(req.getProtectedBytes());
         boolean verified = sig.verify(req.getProtection().getBytes());
         assertTrue("Signing the message failed.", verified);
-        //***************************************************
+        */
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -268,25 +266,23 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * NOT to allow changing the end entity status automatically. A CMP error message is expected and no certificate renewal.
      * 
      * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
-     * - Pre-configuration: Set cmp.checkadminauthorization to 'false'
-     * - Pre-configurations: Sets cmp.allowautomaticrenewal to 'false' and tests that the resetting of configuration has worked.
-     * - Pre-configurations: Sets cmp.allowupdatewithsamekey to 'true'
+     * - Pre-configuration: Sets cmp.allowautomaticrenewal to 'false' and tests that the resetting of configuration has worked.
+     * - Pre-configuration: Sets cmp.allowupdatewithsamekey to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
-     * - Signs the CMP request using cert and attached cert to the CMP request. Tests that the CMP request is still not null
-     * - Verifies the signature of the CMP request
+     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
      * - Sends the request using HTTP and receives a response.
      * - Examines the response:
      *      - Checks that the response is not empty or null
      *      - Checks that the protection algorithm is sha1WithRSAEncryption
-     *      - Check that the signer is the expected CA
+     *      - Checks that the signer is the expected CA
      *      - Verifies the response signature
      *      - Checks that the response's senderNonce is 16 bytes long
      *      - Checks that the request's senderNonce is the same as the response's recipientNonce
      *      - Checks that the request and the response has the same transactionID
-     *      - Parse the response and make sure that the parsing did not result in a 'null'
-     *      - Check that the CMP response message tag number is '23', indicating a CMP error message
-     *      - Check that the CMP response message contain the expected error details text
+     *      - Parses the response and checks that the parsing did not result in a 'null'
+     *      - Checks that the CMP response message tag number is '23', indicating a CMP error message
+     *      - Checks that the CMP response message contains the expected error details text
      * 
      * @throws Exception
      */
@@ -329,13 +325,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         addExtraCert(req, certificate);
         signPKIMessage(req, keys);
         assertNotNull(req);
-        //******************************************''''''
-        final Signature sig = Signature.getInstance(req.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
-        sig.initVerify(certificate.getPublicKey());
-        sig.update(req.getProtectedBytes());
-        boolean verified = sig.verify(req.getProtection().getBytes());
-        assertTrue("Signing the message failed.", verified);
-        //***************************************************
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -364,26 +353,24 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * Sends a KeyUpdateRequest concerning a revoked certificate. A CMP error message is expected and no certificate renewal.
      * 
      * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
-     * - Pre-configuration: Set cmp.checkadminauthorization to 'false'
-     * - Pre-configurations: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
-     * - Pre-configurations: Sets cmp.allowupdatewithsamekey to 'true'
+     * - Pre-configuration: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
+     * - Pre-configuration: Sets cmp.allowupdatewithsamekey to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
-     * - Revokes cert and tests that the revocation was performed successfully
+     * - Revokes cert and tests that the revocation was successful
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
-     * - Signs the CMP request using cert and attached cert to the CMP request. Tests that the CMP request is still not null
-     * - Verifies the signature of the CMP request
+     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
      * - Sends the request using HTTP and receives a response.
      * - Examines the response:
      *      - Checks that the response is not empty or null
      *      - Checks that the protection algorithm is sha1WithRSAEncryption
-     *      - Check that the signer is the expected CA
-     *      - Verifies the response signature
+     *      - Checks that the signer is the expected CA
+     *      - Verifies the response's signature
      *      - Checks that the response's senderNonce is 16 bytes long
      *      - Checks that the request's senderNonce is the same as the response's recipientNonce
      *      - Checks that the request and the response has the same transactionID
-     *      - Parse the response and make sure that the parsing did not result in a 'null'
-     *      - Check that the CMP response message tag number is '23', indicating a CMP error message
-     *      - Check that the CMP response message contain the expected error details text
+     *      - Parses the response and checks that the parsing did not result in a 'null'
+     *      - Checks that the CMP response message tag number is '23', indicating a CMP error message
+     *      - Checks that the CMP response message contain the expected error details text
      * 
      * @throws Exception
      */
@@ -428,13 +415,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         addExtraCert(req, certificate);
         signPKIMessage(req, keys);
         assertNotNull(req);
-        //******************************************''''''
-        final Signature sig = Signature.getInstance(req.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
-        sig.initVerify(certificate.getPublicKey());
-        sig.update(req.getProtectedBytes());
-        boolean verified = sig.verify(req.getProtection().getBytes());
-        assertTrue("Signing the message failed.", verified);
-        //***************************************************
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -463,25 +443,23 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * Sends a KeyUpdateRequest concerning a certificate that does not exist in the database. A CMP error message is expected and no certificate renewal.
      * 
      * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
-     * - Pre-configuration: Set cmp.checkadminauthorization to 'false'
-     * - Pre-configurations: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
-     * - Pre-configurations: Sets cmp.allowupdatewithsamekey to 'true'
+     * - Pre-configuration: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
+     * - Pre-configuration: Sets cmp.allowupdatewithsamekey to 'true'
      * - Generates a self-signed certificate, fakecert
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
      * - Signs the CMP request using fakecert and attaches fakecert to the CMP request. Tests that the CMP request is still not null
-     * - Verifies the signature of the CMP request
      * - Sends the request using HTTP and receives an response.
      * - Examines the response:
      * 		- Checks that the response is not empty or null
      * 		- Checks that the protection algorithm is sha1WithRSAEncryption
-     * 		- Check that the signer is the expected CA
+     * 		- Checks that the signer is the expected CA
      * 		- Verifies the response signature
      * 		- Checks that the response's senderNonce is 16 bytes long
      * 		- Checks that the request's senderNonce is the same as the response's recipientNonce
      * 		- Checks that the request and the response has the same transactionID
-     * 		- Parse the response and make sure that the parsing did not result in a 'null'
-     * 		- Check that the CMP response message tag number is '23', indicating a CMP error message
-     * 		- Check that the CMP response message contain the expected error details text
+     * 		- Parses the response and checks that the parsing did not result in a 'null'
+     * 		- Checks that the CMP response message tag number is '23', indicating a CMP error message
+     * 		- Checks that the CMP response message contain the expected error details text
      * 
      * @throws Exception
      */
@@ -512,13 +490,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         addExtraCert(req, fakeCert);
         signPKIMessage(req, keys);
         assertNotNull(req);
-        //***************************************************
-        final Signature sig = Signature.getInstance(req.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
-        sig.initVerify(fakeCert.getPublicKey());
-        sig.update(req.getProtectedBytes());
-        boolean verified = sig.verify(req.getProtection().getBytes());
-        assertTrue("Signing the message failed.", verified);
-        //***************************************************
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -548,25 +519,23 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * Sends a KeyUpdateRequest in RA mode. A CMP error message is expected and no certificate renewal.
      * 
      * - Pre-configuration: Sets the operational mode to RA mode (cmp.raoperationalmode=ra)
-     * - Pre-configuration: Set cmp.checkadminauthorization to 'false'
-     * - Pre-configurations: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
-     * - Pre-configurations: Sets cmp.allowupdatewithsamekey to 'true'
+     * - Pre-configuration: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
+     * - Pre-configuration: Sets cmp.allowupdatewithsamekey to 'true'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
      * - Signs the CMP request using fakecert and attaches fakecert to the CMP request. Tests that the CMP request is still not null
-     * - Verifies the signature of the CMP request
-     * - Sends the request using HTTP and receives an response.
+     * - Sends the request using HTTP and receives a response.
      * - Examines the response:
      * 		- Checks that the response is not empty or null
      * 		- Checks that the protection algorithm is sha1WithRSAEncryption
-     * 		- Check that the signer is the expected CA
+     * 		- Checks that the signer is the expected CA
      * 		- Verifies the response signature
      * 		- Checks that the response's senderNonce is 16 bytes long
      * 		- Checks that the request's senderNonce is the same as the response's recipientNonce
      * 		- Checks that the request and the response has the same transactionID
-     * 		- Parse the response and make sure that the parsing did not result in a 'null'
-     * 		- Check that the CMP response message tag number is '23', indicating a CMP error message
-     * 		- Check that the CMP response message contain the expected error details text
+     * 		- Parses the response and checks that the parsing did not result in a 'null'
+     * 		- Checks that the CMP response message tag number is '23', indicating a CMP error message
+     * 		- Checks that the CMP response message contain the expected error details text
      * 
      * @throws Exception
      */
@@ -592,20 +561,12 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         PKIMessage req = genRenewalReq(keys, false);
         assertNotNull("Failed to generate a CMP renewal request", req);
-        int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
         req.getHeader().setProtectionAlg(pAlg);      
         req.getHeader().setSenderKID(new DEROctetString(nonce));
         addExtraCert(req, certificate);
         signPKIMessage(req, keys);
         assertNotNull(req);
-        //******************************************''''''
-        final Signature sig = Signature.getInstance(req.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
-        sig.initVerify(certificate.getPublicKey());
-        sig.update(req.getProtectedBytes());
-        boolean verified = sig.verify(req.getProtection().getBytes());
-        assertTrue("Signing the message failed.", verified);
-        //***************************************************
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -635,25 +596,23 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * A CMP error message is expected and no certificate renewal.
      * 
      * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
-     * - Pre-configuration: Set cmp.checkadminauthorization to 'false'
-     * - Pre-configurations: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
-     * - Pre-configurations: Sets cmp.allowupdatewithsamekey to 'false'
+     * - Pre-configuration: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
+     * - Pre-configuration: Sets cmp.allowupdatewithsamekey to 'false'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
-     * - Signs the CMP request using cert and attached cert to the CMP request. Tests that the CMP request is still not null
-     * - Verifies the signature of the CMP request
-     * - Sends the request using HTTP and receives an response.
+     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
+     * - Sends the request using HTTP and receives a response.
      * - Examines the response:
      * 		- Checks that the response is not empty or null
      * 		- Checks that the protection algorithm is sha1WithRSAEncryption
-     * 		- Check that the signer is the expected CA
+     * 		- Checks that the signer is the expected CA
      * 		- Verifies the response signature
      * 		- Checks that the response's senderNonce is 16 bytes long
      * 		- Checks that the request's senderNonce is the same as the response's recipientNonce
      * 		- Checks that the request and the response has the same transactionID
-     * 		- Parse the response and make sure that the parsing did not result in a 'null'
-     * 		- Check that the CMP response message tag number is '23', indicating a CMP error message
-     * 		- Check that the CMP response message contain the expected error details text
+     * 		- Parses the response and checks that the parsing did not result in a 'null'
+     * 		- Checks that the CMP response message tag number is '23', indicating a CMP error message
+     * 		- Checks that the CMP response message contain the expected error details text
      * 
      * @throws Exception
      */
@@ -686,13 +645,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         addExtraCert(req, certificate);
         signPKIMessage(req, keys);
         assertNotNull(req);
-        //******************************************''''''
-        final Signature sig = Signature.getInstance(req.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
-        sig.initVerify(certificate.getPublicKey());
-        sig.update(req.getProtectedBytes());
-        boolean verified = sig.verify(req.getProtection().getBytes());
-        assertTrue("Signing the message failed.", verified);
-        //***************************************************
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -722,14 +674,12 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * Successful operation is expected and a new certificate is received.
      * 
      * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
-     * - Pre-configuration: Set cmp.checkadminauthorization to 'false'
-     * - Pre-configurations: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
-     * - Pre-configurations: Sets cmp.allowupdatewithsamekey to 'false'
+     * - Pre-configuration: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
+     * - Pre-configuration: Sets cmp.allowupdatewithsamekey to 'false'
      * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
      * - Generates a CMP KeyUpdate Request and tests that such request has been created.
-     * - Signs the CMP request using cert and attached cert to the CMP request. Tests that the CMP request is still not null
-     * - Verifies the signature of the CMP request
-     * - Sends the request using HTTP and receives an response.
+     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
+     * - Sends the request using HTTP and receives a response.
      * - Examines the response:
      * 		- Checks that the response is not empty or null
      * 		- Checks that the protection algorithm is sha1WithRSAEncryption
