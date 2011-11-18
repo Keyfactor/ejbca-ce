@@ -18,6 +18,18 @@ Additionally, a "Super Administrator Role" is created during either bootstrap or
 Usage of access rules have in some cases changed, and some new access rules have been added (edit publishers). 
 After an upgrade to 5.0, verify your access roles (old admin groups) and privileges.
 
+Ejbca 4.0.6
+-----------
+This is a maintenance release with a few bug fixes and a new feature. In all 4 issues have been resolved.
+
+* Noteworthy changes:
+- Improved CMP by supporting KeyUpdate requests is client mode.
+- Fixed importing empty CRL via CLI
+- Fixed two minor bugs
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE
+
 EJBCA 4.0.5
 -----------
 This is a maintenance release with a few improvements and bug fixes. In all 7 issues have been resolved.
