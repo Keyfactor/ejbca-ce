@@ -71,12 +71,11 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
 
     private boolean isAuthorized(final AuthenticationToken authenticationToken, final String resource, final boolean doLogging) {
         if (accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource)) {
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("resource", resource);
             if(doLogging) {
-            	TrustedTime tt;
 				try {
-					tt = trustedTimeWatcherSession.getTrustedTime(false);
+				    final TrustedTime tt = trustedTimeWatcherSession.getTrustedTime(false);
+		            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+		            details.put("resource", resource);
 	                securityEventsLoggerSession.log(tt, EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL, ServiceTypes.CORE,
 	                        authenticationToken.toString(), null, null, null, details);
 				} catch (TrustedTimeProviderException e) {

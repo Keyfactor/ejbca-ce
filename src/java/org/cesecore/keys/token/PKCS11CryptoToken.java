@@ -120,7 +120,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
             throw new CryptoTokenOfflineException("Slot not initialized.");
         }
         try {
-            KeyStore keyStore = createKeyStore(authCode);
+            final KeyStore keyStore = createKeyStore(authCode);
             setKeyStore(keyStore);
         } catch (Throwable t) {
             log.warn("Failed to initialize PKCS11 provider slot '" + this.sSlotLabel + "'.", t);

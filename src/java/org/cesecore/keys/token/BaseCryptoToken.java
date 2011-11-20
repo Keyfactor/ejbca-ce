@@ -112,7 +112,9 @@ public abstract class BaseCryptoToken implements CryptoToken {
     protected void autoActivate() {
         if ((this.mAuthCode != null) && (this.keyStore == null)) {
             try {
-                log.debug("Trying to autoactivate CryptoToken");
+                if (log.isDebugEnabled()) {
+                    log.debug("Trying to autoactivate CryptoToken");
+                }
                 activate(this.mAuthCode);
             } catch (Exception e) {
                 log.debug(e);
@@ -404,11 +406,11 @@ public abstract class BaseCryptoToken implements CryptoToken {
     public PrivateKey getPrivateKey(final String alias) throws CryptoTokenOfflineException {
         autoActivate();
         try {
-            PrivateKey privateK = (PrivateKey) getKeyStore().getKey(alias, (mAuthCode != null && mAuthCode.length > 0) ? mAuthCode : null);
+            final PrivateKey privateK = (PrivateKey) getKeyStore().getKey(alias, (mAuthCode != null && mAuthCode.length > 0) ? mAuthCode : null);
             if (privateK == null) {
                 log.warn(intres.getLocalizedMessage("token.noprivate", alias));
                 if (log.isDebugEnabled()) {
-                    Enumeration<String> aliases;
+                    final Enumeration<String> aliases;
                     aliases = getKeyStore().aliases();
                     while (aliases.hasMoreElements()) {
                         log.debug("Existing alias: " + aliases.nextElement());
