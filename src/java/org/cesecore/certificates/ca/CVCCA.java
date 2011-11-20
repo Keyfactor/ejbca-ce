@@ -474,13 +474,13 @@ public class CVCCA extends CA implements Serializable {
 
 
     public CRL generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) {
-        String msg = intres.getLocalizedMessage("signsession.nocrlcreate", "CVC");
+        String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;
     }
 
     public CRL generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) {
-        String msg = intres.getLocalizedMessage("signsession.nocrlcreate", "CVC");
+        String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;
     }
