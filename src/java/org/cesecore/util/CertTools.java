@@ -903,15 +903,17 @@ public class CertTools {
             throw new IllegalArgumentException("getNotAfter: cert is null");
         }
         if (cert instanceof X509Certificate) {
-            X509Certificate xcert = (X509Certificate) cert;
+            final X509Certificate xcert = (X509Certificate) cert;
             ret = xcert.getNotAfter();
         } else if (StringUtils.equals(cert.getType(), "CVC")) {
-            CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cert;
+            final CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cert;
             try {
                 ret = cvccert.getCVCertificate().getCertificateBody().getValidTo();
             } catch (NoSuchFieldException e) {
                 // it is not uncommon that this field is missing in CVC certificate requests (it's not in the EAC standard so)
-                log.debug("NoSuchFieldException: " + e.getMessage());
+                if (log.isDebugEnabled()) {
+                    log.debug("NoSuchFieldException: " + e.getMessage());
+                }
                 return null;
             }
         }

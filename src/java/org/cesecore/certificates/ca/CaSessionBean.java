@@ -660,7 +660,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
     private boolean authorizedToCA(final AuthenticationToken admin, final int caid) {
-    	boolean ret = accessSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid);
+    	final boolean ret = accessSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid);
         if (log.isDebugEnabled() && !ret) {
         	final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
         	log.debug(msg);

@@ -69,11 +69,11 @@ public class CertificateValidity {
 		    throw new IllegalValidityException("ca.toolateexpiredate in ejbca.properties is not a valid date.");
 		}
         // Set back start date ten minutes to avoid some problems with unsynchronized clocks.
-        Date now = new Date((new Date()).getTime() - SETBACKTIME);
+        final Date now = new Date((new Date()).getTime() - SETBACKTIME);
         Date startTimeDate = null;
         Date endTimeDate = null;
         // Extract requested start and endtime from end endtity profile / user data
-        ExtendedInformation ei = subject.getExtendedinformation();
+        final ExtendedInformation ei = subject.getExtendedinformation();
         if ( ei != null ) {
             final String eiStartTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
             final String eiEndTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
