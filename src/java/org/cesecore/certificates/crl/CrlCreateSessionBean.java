@@ -581,7 +581,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     	
     	try {
     		if ( (ca.getStatus() != CAConstants.CA_ACTIVE) && (ca.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) ) {
-    			String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+    			String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
     			throw new CryptoTokenOfflineException(msg);
     		}
     		final X509CRL crl;
@@ -640,7 +640,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     		if (e instanceof EJBException) {
     			throw (EJBException)e;
     		}
-    		throw new EJBException(intres.getLocalizedMessage("signsession.errorcreatecrl"), e);
+    		throw new EJBException(msg, e);
     	}
     	if (log.isTraceEnabled()) {
     		log.trace("<createCRL(Collection)");
