@@ -69,7 +69,7 @@ If you are upgrading a cluster, update the software on all the nodes.
    This will also upgrade CertificateProfile objects and possible CA objects in the database.
    After this upgrade, it may not be possible to downgrade to EJBCA 4.0.x again. 
 
-8. Restart JBoss again to flush all caches.
+8. Stop JBoss, clear the tmp and work directories in the servers, then start JBoss again to flush all caches.
 
 9. Go into the Admin GUI and verify you settings.
 
