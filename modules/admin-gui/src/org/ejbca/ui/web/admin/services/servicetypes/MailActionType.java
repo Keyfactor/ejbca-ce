@@ -23,7 +23,7 @@ import org.ejbca.core.model.services.actions.MailAction;
  * 
  * @author Philip Vendil
  *
- * $id$
+ * $Id$
  */
 public class MailActionType extends ActionType {
 	

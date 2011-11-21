@@ -60,7 +60,7 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
                 getLogger().error("No such role \"" + roleName + "\" .");
                 return;
             }
-            for (AccessUserAspectData  userAspect : adminGroup.getAccessUsers().values()) {
+            for (AccessUserAspectData userAspect : adminGroup.getAccessUsers().values()) {
                 String caName;
                 try {  
                     CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), userAspect.getCaId());
