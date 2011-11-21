@@ -32,7 +32,7 @@ import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
  */
 public class CliAuthenticationToken extends AuthenticationToken {
 
-    public static final String TOKEN_TYPE = "CliUsernamePrincipal";
+    public static final String TOKEN_TYPE = "CliAuthenticationToken";
     
     private static final long serialVersionUID = -3942437717641924829L;
 
