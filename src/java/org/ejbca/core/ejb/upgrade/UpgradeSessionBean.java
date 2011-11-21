@@ -583,7 +583,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             } catch (IllegalCryptoTokenException e) {
                 log.error("Illegal Crypto Token editing CA during upgrade: "+caid, e);
             }
-        } // for (Integer caid : caids
+        }
         
     	boolean exists = upgradeSession.checkColumnExists500();
     	if (exists) {

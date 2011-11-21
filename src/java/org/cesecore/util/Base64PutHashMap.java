@@ -25,7 +25,7 @@ import java.util.Map;
  * 
  * TODO: Look over this object, see if it can be implemented with generics.
  * 
- * @version $ID$
+ * @version $Id$
  */
 public class Base64PutHashMap extends LinkedHashMap {
 

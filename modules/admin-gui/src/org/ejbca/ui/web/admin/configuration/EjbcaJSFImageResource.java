@@ -11,7 +11,7 @@ import javax.ejb.EJBException;
  * 
  * Implements a Map used for retrieving resources.
  * @author Philip Vendil
- * $id$
+ * @version $Id$
  * @see org.ejbca.ui.web.admin.configuration.EjbcaWebBean#getImagefileInfix(String)
  */
 public class EjbcaJSFImageResource implements Map {
