@@ -30,13 +30,13 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.jndi.JndiHelper;
+import org.cesecore.mock.authentication.tokens.UsernameAccessMatchValue;
 import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
-import org.ejbca.ui.cli.CliUserAccessMatchValue;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -147,7 +147,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
         try {
             //Give the role a ClI-based aspect and an X509-based aspect
             Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
-            AccessUserAspectData tron = new AccessUserAspectData(roleName, tronDn.hashCode(), CliUserAccessMatchValue.USERNAME, AccessMatchType.TYPE_EQUALCASE, "Tron");
+            AccessUserAspectData tron = new AccessUserAspectData(roleName, tronDn.hashCode(), UsernameAccessMatchValue.USERNAME, AccessMatchType.TYPE_EQUALCASE, "Tron");
             AccessUserAspectData flynn = new AccessUserAspectData(roleName, flynnDn.hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, "Flynn");
             subjects.add(tron);
             subjects.add(flynn);
@@ -169,9 +169,6 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
             // Now, create a X509 token pretending to be a UsernameBasedAuthenticationToken using the same DN.             
             AuthenticationToken invalidX509Token = createAuthenticationToken(tronDn); 
             // Make sure that this token would have matched if not for the token type check
-        /*    if(!invalidX509Token.matches(tron)) {
-                throw new RuntimeCryptoException("Invalid token did not match the sought aspect, test cannot continue.");
-            }*/
             assertFalse("Invalid X509 token should not have been able to authorize", accessControlSession.isAuthorizedNoLogging(invalidX509Token, resourceName));
         } finally {
             try {
