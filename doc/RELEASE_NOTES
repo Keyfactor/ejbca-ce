@@ -3,25 +3,35 @@ EJBCA 5.0.1
 
 EJBCA 5.0.0
 -----------
+This major release marks a new step as EJBCA is now built on the Common Criteria certified secure core: CESeCore. The 
+negative implications of this for the end customer should be minimal, as database changes are few and far between, and 
+there is a clear upgrade path from EJBCA 4.0.x
 
-The old database audit log log system has been removed and replaced by a new security audit function that is capable
+CESeCore primarily provides two new features that will be of interest to the end user:
+- The old database audit log system has been removed and replaced by a new security audit function that is capable
 of storing integrity protected audit records in the database. 
+- Integrity protection has been introduced to essential tables. This means that rows in these tables can't be modified
+through direct database interaction without invalidating the row.
 
-Approvals. When upgrading from 4.x to 5.x new approval requests created in a 5.x instance can not be read in a 4.x instance. 
-So if you require uptime and roll-back capabilities, only allow to create new approval requests from an 4.x host.
-
-The Command Line Interface now uses authentication. Users are drawn from the standard End Entities list, and have the same respective
+Additionally, the following feature has been introduced.
+- The Command Line Interface now uses authentication. Users are drawn from the standard End Entities list, and have the same respective
 roles. A default CLI user is created as a part of startup/upgrade in order to allow allow the CLI to be used without authentication, 
 and can be turned off from the Administration Interface. This user is defined in ejbca.properties
 
-Additionally, a "Super Administrator Role" is created during either bootstrap or upgrade to create a role for the default CLI user.
+For administrators, the following changes are worth noting:
+- When upgrading from 4.x to 5.x new approval requests created in a 5.x instance can not be read in a 4.x instance. 
+So if you require uptime and roll-back capabilities, only allow to create new approval requests from an 4.x host.
+- A "Super Administrator Role" is created during either bootstrap or upgrade to create a role for the default CLI user.
+- 'Admin Groups' have been renamed 'Roles'. Relevant database tables remain unchanged.
+- 'Admin Entities' are now referred to as 'Access User Aspects'.
+- 'Users' are now ubiquitously referred to as 'End Entities'.
+- Usage of access rules have in some cases changed, and some new access rules have been added (edit publishers). After an 
+upgrade to 5.0, verify your roles and privileges.
 
-'Admin Groups' have been renamed 'Roles'. Relevant database tables remain unchanged.
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE
 
-Usage of access rules have in some cases changed, and some new access rules have been added (edit publishers). 
-After an upgrade to 5.0, verify your access roles (old admin groups) and privileges.
-
-Ejbca 4.0.6
+EJBCA 4.0.6
 -----------
 This is a maintenance release with a few bug fixes and a new feature. In all 4 issues have been resolved.
 
