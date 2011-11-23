@@ -1710,7 +1710,7 @@ public class CAsTest extends CaTestCase {
         assertFalse(cacert1.getSerialNumber().equals(cacert2.getSerialNumber()));
         assertEquals(new String(CertTools.getSubjectKeyId(cacert1)), new String(CertTools.getSubjectKeyId(cacert2)));
         cacert2.verify(cacert1.getPublicKey()); // throws if it fails
-        assertTrue("Renewed CA expire time should be after old one: "+info.getExpireTime(), oldExpire.before(info.getExpireTime()));
+        assertTrue("Renewed CA expire time should be after old one: "+info.getExpireTime()+", old: "+oldExpire, oldExpire.before(info.getExpireTime()));
 
         // Test renew CA keys
         caAdminSession.renewCA(admin, getTestCAId(), "foo123", true, null);
