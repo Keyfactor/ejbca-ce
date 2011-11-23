@@ -1703,6 +1703,7 @@ public class CAsTest extends CaTestCase {
         Date oldExpire = info.getExpireTime();
         Collection<Certificate> certs = info.getCertificateChain();
         X509Certificate cacert1 = (X509Certificate) certs.iterator().next();
+        Thread.sleep(1000); // Sleep 1 second so new validity does not have a chance to be the same as old
         caAdminSession.renewCA(admin, getTestCAId(), "foo123", false, null);
         info = caSession.getCAInfo(admin, getTestCAId());
         certs = info.getCertificateChain();
