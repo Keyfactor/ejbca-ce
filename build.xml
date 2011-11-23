@@ -17,8 +17,6 @@
     <property name="hwtoken.class.dir" location="${hwtoken_classes}" />
     <property name="apidoc" value="${ejbca.home}/doc/api" />
 
-    <property name="doc.src" value="${tmp}/htdocs" />
-	
 	<!-- include the standard properties and paths -->
     <import file="propertyDefaults.xml"/>
 
@@ -596,8 +594,7 @@
 		    	<exclude name="**/*.sh" />
 		    	<exclude name="**/jndi.properties" />
 		    	<exclude name="**/hs_err*" />
-		    	<exclude name="doc/xdocs/gemsafe/**" />
-		    	<exclude name="doc/xdocs/sensornet/**" />		    	
+		    	<exclude name="doc/xdocs/site/**" />
 		    </zipfileset>
 		    <zipfileset dir="." prefix="ejbca_${ejbca.zipversion}" filemode="700" dirmode="700"> 
 		    	<include name="**/*.sh" />

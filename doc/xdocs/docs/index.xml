@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<document>
+
+  <properties>
+    <title>EJBCA Documentation</title>
+  </properties>
+
+<body>
+  <section name="EJBCA Documentation">
+  <p>
+  Welcome to EJBCA documentation, this site contains documentation for EJBCA.
+  </p>
+  <ul>
+<li><a href="installation.html">Certificate Authority</a>.</li>
+<li><a href="services-va.html">Validation Authority</a>.</li>
+<li><a href="architecture-ocsp.html">OCSP Responder</a>.</li>
+</ul>
+  <p>
+  For more information visit the <a href="//ejbca.org/">ejbca.org</a> home page.
+  </p>
+  </section>
+
+</body>
+</document>
+
