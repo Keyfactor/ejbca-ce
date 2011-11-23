@@ -24,30 +24,12 @@
                 <item name="Latest releases" href="/download.html"/>
             </menu>
 
-            <menu name="EJBCA PKI Docs">
-                <item name="Architecture"	  href="/architecture.html"/>
-                <item name="Installation"	  href="/installation.html"/>
-                <item name="Concepts"	  	  href="/concepts.html"/>
-                <item name="Admin Guide"	  href="/adminguide.html"/>
-                <item name="User Guide"		  href="/userguide.html"/>
+            <menu name="Documentation">
+                <item name="Documentation" href="/docs/index.html"/>
             </menu>
 
-            <menu name="Validation Authority (VA)">
-                <item name="VA Services"		  href="/services-va.html"/>
-                <item name="Standalone VA Installation"	  href="/installation-va.html"/>
-            </menu>
-
-            <menu name="EJBCA OCSP Docs">
-                <item name="OCSP Architecture"	  href="/architecture-ocsp.html"/>
-                <item name="OCSP Installation"	  href="/installation-ocsp.html"/>
-                <item name="OCSP User Guide"	  href="/userguide-ocsp.html"/>
-            </menu>
-
-            <menu name="Other documentation">
-                <item name="FAQ"		  href="/faq.html"/>
-                <item name="Wiki"   href="http://wiki.ejbca.org/"/>
+            <menu name="Other resources">
                 <item name="Howto"                href="/howto.html"/>
-                <item name="Security"		  href="/security.html"/>
                 <item name="Changelog"            href="http://jira.primekey.se/browse/ECA?report=com.atlassian.jira.plugin.system.project:changelog-panel"/>
                 <item name="References"           href="/references.html"/>
                 <item name="Release cycle"        href="/releasecycle.html"/>

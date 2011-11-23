@@ -13,16 +13,8 @@
   </p>
   </note>
   <note>
-  The cert-cvc library handles CVC certificates for EU EAC ePassport PKIs and the current release is 
-  feature complete for EU EAC ePassports using all algorithms.
-  <br/>
-  The library is freely usable under the LGPL 2.1 (or later) license for all parties interesting 
-  in handling CVC certificates, in particular for EU EAC ePassports. 
-  The cert-cvc library was donated to the open source by the Swedish National Police Board. 
-  </note>
-  <note>
-  Did you know that EJBCA includes a stand-alone OCSP responder? The responder is scalable with high-performance and can be used
-  also with any other CA than EJBCA. 
+  Did you know that EJBCA includes a stand-alone <a href="docs/services-va.html">Validation Authority</a>? The Validation Authority contains both OCSP responder and CA certificate and CRL distribution. 
+  It is scalable with high-performance and can be used also with any other CA than EJBCA. 
   </note>
   <note>
   Find latest news about ejbca at the <a href="http://blog.ejbca.org/">EJBCA blog</a>.
@@ -38,8 +30,13 @@ stand-alone or integrated in other JEE applications.
 <p>
 EJBCA is an enterprise class PKI, meaning that you can use EJBCA to build a complete PKI infrastructure for your organization.
 If you only want to issue a few single certificates for testing, there are probably options that will get you started quicker, 
-but if you want a serious PKI we recommend EJBCA.
+but if you want a serious PKI we recommend EJBCA. EJBCA is:
 </p>
+<ul>
+<li>A <a href="docs/installation.html">Certificate Authority</a> (link to documentation site).</li>
+<li>A <a href="docs/services-va.html">Validation Authority</a> (link to documentation site).</li>
+<li>An <a href="docs/architecture-ocsp.html">OCSP Responder</a> (link to documentation site).</li>
+</ul>
 <p><strong>EJBCA has everything for your trust center. Contact us for more info.</strong>
 </p>
 <p>
@@ -59,9 +56,9 @@ You can use EJBCA to issue certificates for different purposes such as:
 <li>... and many many more ...</li>
 </ul>
 </p>
-<p>
+<note>
 You can also use EJBCA to set up a CA independent, high performance, highly available OCSP responder service.
-</p>
+</note>
 <p>Together with sister projects (see <i><a href="complementary.html">Complementary software</a></i>) of EJBCA you can also:
 <ul>
 <li>Get central trusted <a href="http://signserver.org">Time Stamps</a> for you electronically signed documents.</li>
@@ -71,6 +68,14 @@ You can also use EJBCA to set up a CA independent, high performance, highly avai
 <li>... and many many more ...</li>
 </ul>
 </p>
+  <note>
+  The cert-cvc library handles CVC certificates for EU EAC ePassport PKIs and the current release is 
+  feature complete for EU EAC ePassports using all algorithms.
+  <br/>
+  The library is freely usable under the LGPL 2.1 (or later) license for all parties interesting 
+  in handling CVC certificates, in particular for EU EAC ePassports. 
+  The cert-cvc library was donated to the open source by the Swedish National Police Board. 
+  </note>
 </section>
 <section name="Open Source PKI">
 <p>
