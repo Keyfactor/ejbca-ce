@@ -158,7 +158,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * Verifies the signature of 'msg'. msg should be signed by an authorized administrator in EJBCA and 
      * the administrator's cerfificate should be attached in msg in the extraCert field.  
      * 
-     * When successful, the password is set to the randomly generated 16-gidits String.
+     * When successful, the password is set to the randomly generated 16-digit String.
      * When failed, the error message is set.
      * 
      * @param msg PKIMessage
