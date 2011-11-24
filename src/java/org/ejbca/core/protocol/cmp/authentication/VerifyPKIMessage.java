@@ -125,7 +125,7 @@ public class VerifyPKIMessage {
         int i=0;
         while(i<modules.length) {
             if(log.isDebugEnabled()) {
-                log.debug("Trying to verify the message authentication by using '" + modules[i] + "' authentication module and authentication parameter '" + ((params[i]==null)?"null":"not null")+"'."); 
+                log.debug("Trying to verify the message authentication by using '" + modules[i] + "' authentication module and authentication parameter '" + (((params[i]!=null) && (!params[i].equals("-")))?"not null":"null")+"'."); 
             }
 
             module = getAuthModule(modules[i].trim(), params[i].trim(), msg);

@@ -950,7 +950,7 @@ cmp.ra.authenticationsecret=password
 <p>
 You can then use cmpclient (as an RA):</p>
 <source>
-./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.der --ir --user mykeyid --password password --clcert clcert.der --key key.pem --subject "CN=User Name;O=My Organization;C=SE"
+./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.der --ir --user mykeyid --password password --newclcert clcert.der --newkey key.pem --subject "CN=User Name;O=My Organization;C=SE"
 </source>
 <p>This requests a certificate, defining the subject DN that will be used. The CA used to sign the certificate is specified in the EJBCA cmp configuration, and can be taken from the keyid.
 EJBCA authenticated the request using the HMAC protection with the password, and accepts any request upon correct authentication. See the CMP documentation above for more advanced configuration.
@@ -970,7 +970,7 @@ bin/ejbca.sh ra setclearpwd user1 password
 <p>
 You can then use cmpclient (as a client):</p>
 <source>
-./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.der --ir --user mykeyid --password password --clcert clcert.der --key key.pem --subject "CN=user1;O=My Organization;C=SE"
+./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.der --ir --user mykeyid --password password --newclcert clcert.der --newkey key.pem --subject "CN=user1;O=My Organization;C=SE"
 </source>
 <p>This requests a certificate, and the requested subject DN must match the registered subject DN.
 EJBCA authenticates the request using the HMAC protection with the password of the registered user. See the CMP documentation above for more advanced configuration.</p>
