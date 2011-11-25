@@ -93,6 +93,7 @@ public class BasicAccessRuleSetDecoder implements Serializable {
         for(Integer next : currentOtherRules) {
             if (next.equals(Integer.valueOf(BasicAccessRuleSet.OTHER_VIEWLOG))) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWLOG, AccessRuleState.RULE_ACCEPT, true));
+                result.add(new AccessRuleTemplate(StandardRules.AUDITLOGSELECT.resource(), AccessRuleState.RULE_ACCEPT, false));
             } else if (next.equals(Integer.valueOf(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS))) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, AccessRuleState.RULE_ACCEPT, false));
             }
