@@ -161,7 +161,7 @@ function checkallfields(){
 	var selectrole = document.getElementById('basicRules:selectrole');
 	var selectendentityrules = document.getElementById('basicRules:selectendentityrules');
 	var selectendentityprofiles = document.getElementById('basicRules:selectendentityprofiles');
-	var selectother = document.getElementById('selectother');
+	var selectother = document.getElementById('basicRules:selectother');
 
     var illegalfields = 0;
     var illegalselection = false;
