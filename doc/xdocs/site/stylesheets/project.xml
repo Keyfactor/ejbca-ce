@@ -29,7 +29,7 @@
             </menu>
 
             <menu name="Other resources">
-                <item name="Howto"                href="/howto.html"/>
+                <item name="Guides"                href="/guides.html"/>
                 <item name="Changelog"            href="http://jira.primekey.se/browse/ECA?report=com.atlassian.jira.plugin.system.project:changelog-panel"/>
                 <item name="References"           href="/references.html"/>
                 <item name="Release cycle"        href="/releasecycle.html"/>

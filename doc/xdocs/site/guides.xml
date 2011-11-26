@@ -2,75 +2,67 @@
 <document>
 
   <properties>
-    <title>Howto</title>
+    <title>Guides</title>
   </properties>
 
 <body>
-  <section name="Howto documents">
-    <p>
-    A number of other, mostly outdated, HOWTO documents are available in the <strong>doc/howto</strong> directory in the source distribution.
-    </p>
-    </section>
   
   <section name="Using CVC CAs for EU EAC ePassports">
   <p>
   Usage of EJBCA for a complete PKI for CVC CAs are explained in this <a href="cvccas.html">document</a>.
   </p>
   </section>
-   
-  <section name="SensorNet PKI">
-    <p>
-    This excellent HOWTO on PKI in general, LDAP, email and server setup has been kindly contributed by SensorNet. Please read this notice!
-    </p>
-    <note>
-These pages were created by the SensorNet Project at Oak Ridge National
-Laboratory (ORNL), Oak Ridge, Tennessee, USA to provide help for their
-instance of EJBCA. You are welcome to modify these pages for your own
-use, but please remove any links to the SensorNetCA web pages so that we
-do not get excess traffic. Please tell your users not to use the URLs in
-the screen shots, and please credit Oak Ridge National Laboratory. ORNL
-is operated by UT-Battelle for the U.S. Department Of Energy.
-    </note>
-    <p>
-    <ul>
-    <li><a href="sensornet/infrastructure.html">SensorNet certificate infrastructure </a></li>
-    <li><a href="sensornet/short-course.html">A short course on certificates</a></li>
-    <li><a href="sensornet/ca-enrollment.html">Certificate Authority Enrollment</a></li>
-    <li><a href="sensornet/CertificateInfrastructure.html">SensorNet certificate infrastructure basics and enrollment</a></li>
-	</ul>
-	</p>
-	
-	<subsection name="Managing certificates">
-	<p>
-	<ul>
-    <li><a href="sensornet/MozillaHowTo/MozillaCertificateManagement.html">Using Firefox</a></li>
-    <li><a href="sensornet/IEHowTo/ManagingCertificateIE.html">Using Microsoft Internet Explorer</a></li>
-    </ul>
-    </p>
-	</subsection>
 
-	<subsection name="Configuring email client and LDAP">
-	<p>
-	<ul>
-    <li><a href="sensornet/LDAPHowTo/SecureEmailNS-Moz/LDAPandMail.html">Using Firefox</a></li>
-    <li><a href="sensornet/LDAPHowTo/SecureEmailO/SecureEmailUsingOutlook.html">Using Microsoft Outlook</a></li>
-    <li><a href="sensornet/LDAPHowTo/SecureEmailOE/Securee-mail%20OutlookExpress.html">Using Microsoft Outlook Express</a></li>
-    </ul>
-    </p>
-	</subsection>
-
-	<subsection name="Server certificates">
-	<p>
-	<ul>
-    <li><a href="sensornet/IISHowTo/ServerCert.html">Microsoft IIS</a></li>
-    <li><a href="sensornet/howto-server.html">Apache HTTPd and Unix servers</a></li>
-    <li><a href="sensornet/howto-tomcat.html">Apache Tomcat</a></li>
-    </ul>
-    </p>
-    </subsection>
-    
+  <section name="Djigzo email gateway and EJBCA integration">
+  <p>
+  This guide explains how to configure a <a href="http://www.djigzo.com">Djigzo</a> gateway to make the gateway request certificates from an external EJBCA server.
+   <a href="http://www.djigzo.com">Djigzo</a> Email Encryption Gateway is a standards based centrally managed email server (MTA) that encrypts and decrypts your incoming and outgoing email at the gateway level.
+  </p>
+  <p>
+  This is an extract from the complete guide, Djigzo <a href="http://www.djigzo.com/downloads.html">EJBCA Setup Guide</a>. 
+  </p>
+  <p>
+  By using the Djigzo-EJBCA integration Djigzo can automatically request certificates from EJBCA for a transparent email encryption experience.
+  </p><p>
+  Setting up Djigzo to work with EJBCA contains of a few simple steps:
+  </p>
+  <subsection name="Create certificate for Djigzo">
+  <p>Djigzo communicates with EJBCA using the WebService interface. This means that Djigzo needs an administrator
+  certificate from EJBCA before is can connect to EJBCA.
+  </p>
+  <p>
+  Create a new administrator keystore for Djigzo in EJBCA.
+  </p>
+  <ul>
+  <li>Create a P12 keystore for administrator.</li>
+  <li>Add the administrator certificate to an administrator group in EJBCA with RA provileges, i.e. privileges to add/edit end entities.</li>
+  </ul>
+  </subsection>
+  <subsection name="Configure Djigzo">
+  <ul>
+  <li>Configure the <i>EJBCA certificate request handler</i> in conf/spring/certificate-request-handlers.xml.</li>
+  <li>Configure properties as described in the Djigzo <a href="http://www.djigzo.com/downloads.html">EJBCA Setup Guide</a>.</li>
+  </ul>
+  </subsection>
+  <subsection name="Configure EJBCA">
+  <ul>
+  <li>Create a Certificate Profile with.</li>
+  <ul>
+  <li>Key Usage: Digital Signature and Key encipherment.</li>
+  <li>Extended Key Usage: Any Extended Key Usage or Email Protection (but not both).</li>
+  </ul> 
+  <li>Create an End Entity Profile with.</li>
+  <ul>
+  <li>RFC 822 Name as Subject Alternative Name.</li>
+  </ul>
+  </ul>
+  </subsection>
+  
+  <p>
+  When the setup is done you can select the <i>EJBCA Certificate Request Handler</i> in the CA configuration of Djigzo.
+  </p>
   </section>
-
+     
   <section name="Microsoft smart card logon">
   <p>
   PrimeKey has made a detailed guide how you set up and configure Windows and EJBCA for Windows SmartCard Logon.
@@ -1476,6 +1468,59 @@ Windows Registry Editor Version 5.00
     or
     <a href="http://www.youtube.com/watch?v=QRpPMze7BBE">YouTube</a>.
     </p>
+  </section>
+
+  <section name="SensorNet PKI">
+    <p>
+    This excellent HOWTO on PKI in general, LDAP, email and server setup has been kindly contributed by SensorNet. Please read this notice!
+    </p>
+    <note>
+These pages were created by the SensorNet Project at Oak Ridge National
+Laboratory (ORNL), Oak Ridge, Tennessee, USA to provide help for their
+instance of EJBCA. You are welcome to modify these pages for your own
+use, but please remove any links to the SensorNetCA web pages so that we
+do not get excess traffic. Please tell your users not to use the URLs in
+the screen shots, and please credit Oak Ridge National Laboratory. ORNL
+is operated by UT-Battelle for the U.S. Department Of Energy.
+    </note>
+    <p>
+    <ul>
+    <li><a href="sensornet/infrastructure.html">SensorNet certificate infrastructure </a></li>
+    <li><a href="sensornet/short-course.html">A short course on certificates</a></li>
+    <li><a href="sensornet/ca-enrollment.html">Certificate Authority Enrollment</a></li>
+    <li><a href="sensornet/CertificateInfrastructure.html">SensorNet certificate infrastructure basics and enrollment</a></li>
+	</ul>
+	</p>
+	
+	<subsection name="Managing certificates">
+	<p>
+	<ul>
+    <li><a href="sensornet/MozillaHowTo/MozillaCertificateManagement.html">Using Firefox</a></li>
+    <li><a href="sensornet/IEHowTo/ManagingCertificateIE.html">Using Microsoft Internet Explorer</a></li>
+    </ul>
+    </p>
+	</subsection>
+
+	<subsection name="Configuring email client and LDAP">
+	<p>
+	<ul>
+    <li><a href="sensornet/LDAPHowTo/SecureEmailNS-Moz/LDAPandMail.html">Using Firefox</a></li>
+    <li><a href="sensornet/LDAPHowTo/SecureEmailO/SecureEmailUsingOutlook.html">Using Microsoft Outlook</a></li>
+    <li><a href="sensornet/LDAPHowTo/SecureEmailOE/Securee-mail%20OutlookExpress.html">Using Microsoft Outlook Express</a></li>
+    </ul>
+    </p>
+	</subsection>
+
+	<subsection name="Server certificates">
+	<p>
+	<ul>
+    <li><a href="sensornet/IISHowTo/ServerCert.html">Microsoft IIS</a></li>
+    <li><a href="sensornet/howto-server.html">Apache HTTPd and Unix servers</a></li>
+    <li><a href="sensornet/howto-tomcat.html">Apache Tomcat</a></li>
+    </ul>
+    </p>
+    </subsection>
+    
   </section>
 
   <section name="Documentation in French/en francais">
