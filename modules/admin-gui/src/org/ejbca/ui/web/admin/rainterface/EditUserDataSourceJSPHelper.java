@@ -383,6 +383,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_MS_UPN"), Integer.valueOf(DNFieldExtractor.UPN));
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_MS_GUID"), Integer.valueOf(DNFieldExtractor.GUID));
     		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_KERBEROS_KPN"), Integer.valueOf(DNFieldExtractor.KRB5PRINCIPAL));
+    		modifyableFieldTexts.put(subjectaltnametext + " : " +  ejbcawebbean.getText("ALT_PKIX_PERMANENTIDENTIFIER"), Integer.valueOf(DNFieldExtractor.PERMANTIDENTIFIER));
     	    
     		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("SDA_DATEOFBIRTH"), Integer.valueOf(DNFieldExtractor.DATEOFBIRTH));
     		modifyableFieldTexts.put(subjectdirattrtext + " : " +  ejbcawebbean.getText("SDA_PLACEOFBIRTH"),Integer.valueOf( DNFieldExtractor.PLACEOFBIRTH));

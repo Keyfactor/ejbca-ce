@@ -37,6 +37,7 @@ import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Enumeration;
@@ -44,14 +45,22 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
+import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.DERTaggedObject;
+import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
@@ -211,6 +220,58 @@ public class CertToolsTest {
                     + "KSxEzOf3+npWo/G7ooDvKpN+w3J//kF4vdM3SQtHQaBkIuCU05Jy16AhvIkLQzq5"
                     + "+a1UI5lIKun3C6NWCSZrE5fFuoax7D+Ofw1Bdxkhvk7DUlHVPdmxb/0hpx8aO64D" + "J626d8c1b25g9hSYslbo2geP2ohV40WW/R1ZjwX6Pd/ip5KuSSzv")
                     .getBytes());
+    
+    /**
+     * Certificate with two subject alternative names:
+     * <pre>
+     *            SEQUENCE {
+     *              OBJECT IDENTIFIER subjectAltName (2 5 29 17)
+     *              OCTET STRING, encapsulates {
+     *                SEQUENCE {
+     *                  [0] {
+     *                    OBJECT IDENTIFIER
+     *                      universalPrincipalName (1 3 6 1 4 1 311 20 2 3)
+     *                    [0] {
+     *                      UTF8String 'upn1@example.com'
+     *                      }
+     *                    }
+     *                  [0] {
+     *                    OBJECT IDENTIFIER
+     *                      permanentIdentifier (1 3 6 1 5 5 7 8 3)
+     *                    [0] {
+     *                      SEQUENCE {
+     *                        UTF8String 'identifier 10003'
+     *                        OBJECT IDENTIFIER '1 2 3 4 5 6'
+     *                        }
+     *                      }
+     *                    }
+     *                  }
+     *                }
+     *              }
+     *            }
+     * </pre>
+     */
+    private static byte[] permanentIdentifierCert = Base64
+        .decode(("MIIDpjCCAo6gAwIBAgIIR+ghrp5GOgEwDQYJKoZIhvcNAQEFBQAwNzERMA8GA1UE"
+                + "AwwIQWRtaW5DQTExFTATBgNVBAoMDEVKQkNBIFNhbXBsZTELMAkGA1UEBhMCU0Uw"
+                + "HhcNMTExMTI2MTkyMzU5WhcNMTMxMTI1MTkyMzU5WjAWMRQwEgYDVQQDDAtQZXJt"
+                + "IHRlc3QgMTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMZsjgEEXS09"
+                + "98tJAiEJVj/Jjw0TUoyrzkvwwHF6Zny41aMLKSVYqynNOJurEapp+EdSGqu2ajYj"
+                + "BQG0+RWjyhhBQuGQa1sv99y2sYHu5BL6Wep+eQJGuWR9rCMGaVrXkNgkCrghxj/A"
+                + "U8ag5aDn6H5xgqK9OFQ6q5SFp6PJKFUZHppEdU+YSJGLrNMYRc4hegrH+tqnXLIY"
+                + "BW4vrME0eaRlWNVlSVb3E6EwAwgYMads5EQrKuZosnIPqhGHWUoelK7LSg4PG6AY"
+                + "JRSHI8EpM7a08Q4haxPbmX5FgTYhCnwsz3ZswB0pflMbNGso7hmqlpelzr2CKZla"
+                + "DOFgKFrEiYcCAwEAAaOB1jCB0zAdBgNVHQ4EFgQU8oFZJcr7pYNHOvpTPNyZmDb/"
+                + "ZOowDAYDVR0TAQH/BAIwADAfBgNVHSMEGDAWgBRpi5L9rci0UKa3/vvJGyr2nhdS"
+                + "qDAOBgNVHQ8BAf8EBAMCBeAwHQYDVR0lBBYwFAYIKwYBBQUHAwIGCCsGAQUFBwME"
+                + "MFQGA1UdEQRNMEugIAYKKwYBBAGCNxQCA6ASDBB1cG4xQGV4YW1wbGUuY29toCcG"
+                + "CCsGAQUFBwgDoBswGQwQaWRlbnRpZmllciAxMDAwMwYFKgMEBQYwDQYJKoZIhvcN"
+                + "AQEFBQADggEBAD6uWly6kndApp4L7cuDeRy3w2dLn0JhwETXPWX1yAOtzClPWZeb"
+                + "SbZdDW5zChSd3DgoL5lUiDA+bBDUBIgstkg/4CnlaTeZbIXsxxHvLA0489PiDuEE"
+                + "qpX4zJcJUDCMW5OSwUynm6kgkV6IZWn33gwxqBnHKHi2PuqpCSB4iC/XhGYTfC7H"
+                + "Jcj5w+sqMgKWR2+Kem2BCufBEy6tlq75Unjm2IE0tvYv6myM5yYW9qxPyjXtrtLi"
+                + "fOX1lzhtH1LUCzXPLPYTk6aJ08zsMZxbBe2cHXQibpcwvo3NyaTPlhsZL63e22Ru"
+                + "KoAwF60lmxnqTzGP8w0HNHvm+Ybj1Qor3lQ=").getBytes());
 
     private static byte[] p10ReqWithAltNames = Base64.decode(("MIICtDCCAZwCAQAwNDELMAkGA1UEBhMCU0UxDDAKBgNVBAoTA1JQUzEXMBUGA1UE"
             + "AxMOMTAuMjUyLjI1NS4yMzcwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIB" + "AQC45+Dh1dO/qaZR2TLnWB44wmYXvBuZ5sGXotlLvuRR09DGlSyPrTG/OVg4xVZa"
@@ -640,6 +701,13 @@ public class CertToolsTest {
         assertFalse(altName.contains("foobar"));
         GeneralNames gns = CertTools.getGeneralNamesFromAltName(altName);
         assertNotNull(gns);
+        
+        // Test cert containing permanentIdentifier
+        cert = CertTools.getCertfromByteArray(permanentIdentifierCert);
+        upn = CertTools.getUPNAltName(cert);
+        assertEquals("upn1@example.com", upn);
+        String permanentIdentifier = CertTools.getPermanentIdentifierAltName(cert);
+        assertEquals("identifier 10003/1.2.3.4.5.6", permanentIdentifier);
 
         String customAlt = "rfc822Name=foo@bar.com";
         ArrayList<String> oids = CertTools.getCustomOids(customAlt);
@@ -1587,4 +1655,71 @@ public class CertToolsTest {
     	assertEquals(2, CrlExtensions.getDeltaCRLIndicator(deltacrl).intValue());
 
     }
+    
+    private DERSequence permanentIdentifier(String identifierValue, String assigner) {
+        DERSequence result;
+        ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
+        v.add(new DERObjectIdentifier(CertTools.PERMANENTIDENTIFIER_OBJECTID));
+
+        // First the PermanentIdentifier sequence
+        ASN1EncodableVector piSeq = new ASN1EncodableVector();
+        if (identifierValue != null) {
+            piSeq.add(new DERUTF8String(identifierValue));
+        }
+        if (assigner != null) {
+            piSeq.add(new DERObjectIdentifier(assigner));
+        }
+        v.add(new DERTaggedObject(true, 0, new DERSequence(piSeq)));
+        result = new DERSequence(v);
+        
+        log.info(ASN1Dump.dumpAsString(result));
+        return result;
+    }
+    
+    @Test
+    public void testGetPermanentIdentifierStringFromSequence() throws Exception {
+        assertEquals("abc123/1.2.3.4", CertTools.getPermanentIdentifierStringFromSequence(permanentIdentifier("abc123", "1.2.3.4")));
+        assertEquals("defg456/", CertTools.getPermanentIdentifierStringFromSequence(permanentIdentifier("defg456", null)));
+        assertEquals("/1.2.3.5", CertTools.getPermanentIdentifierStringFromSequence(permanentIdentifier(null, "1.2.3.5")));
+        assertEquals("/", CertTools.getPermanentIdentifierStringFromSequence(permanentIdentifier(null, null)));
+        
+        assertEquals("ident with \\/ slash/1.2.3.4", CertTools.getPermanentIdentifierStringFromSequence(permanentIdentifier("ident with / slash", "1.2.3.4")));
+        assertEquals("ident with \\/ slash/", CertTools.getPermanentIdentifierStringFromSequence(permanentIdentifier("ident with / slash", null)));
+        assertEquals("ident with \\\\/ slash/1.2.3.6", CertTools.getPermanentIdentifierStringFromSequence(permanentIdentifier("ident with \\/ slash", "1.2.3.6")));
+        assertEquals("ident with \\\\/ slash/", CertTools.getPermanentIdentifierStringFromSequence(permanentIdentifier("ident with \\/ slash", null)));
+    }
+    
+    @Test
+    public void testGetPermanentIdentifierValues() throws Exception {
+        assertEquals("[abc123, 1.2.3.7]", Arrays.toString(CertTools.getPermanentIdentifierValues("abc123/1.2.3.7")));
+        assertEquals("[abc123, null]", Arrays.toString(CertTools.getPermanentIdentifierValues("abc123/")));
+        assertEquals("[abc123, null]", Arrays.toString(CertTools.getPermanentIdentifierValues("abc123")));
+        assertEquals("[null, 1.2.3.8]", Arrays.toString(CertTools.getPermanentIdentifierValues("/1.2.3.8")));
+        assertEquals("[null, null]", Arrays.toString(CertTools.getPermanentIdentifierValues("/")));
+        assertEquals("[null, null]", Arrays.toString(CertTools.getPermanentIdentifierValues("")));
+    }
+    
+    @Test
+    public void testGetGeneralNamesFromAltName4permanentIdentifier() throws Exception {
+        // One permanentIdentifier
+        GeneralNames gn = CertTools.getGeneralNamesFromAltName("permanentIdentifier=def321/1.2.5, upn=upn@u.com");    
+        String[] result = new String[] { 
+            CertTools.getGeneralNameString(0, gn.getNames()[0].getName()), 
+            CertTools.getGeneralNameString(0, gn.getNames()[1].getName())
+        };
+        Arrays.sort(result);
+        assertEquals("[permanentIdentifier=def321/1.2.5, upn=upn@u.com]", Arrays.toString(result));
+        
+        // Two permanentIdentifiers
+        gn = CertTools.getGeneralNamesFromAltName("permanentIdentifier=def321/1.2.5, upn=upn@example.com, permanentIdentifier=abcd 456/1.2.7");    
+        result = new String[] { 
+            CertTools.getGeneralNameString(0, gn.getNames()[0].getName()),
+            CertTools.getGeneralNameString(0, gn.getNames()[1].getName()),
+            CertTools.getGeneralNameString(0, gn.getNames()[2].getName())
+        };
+        Arrays.sort(result);
+        assertEquals("[permanentIdentifier=abcd 456/1.2.7, permanentIdentifier=def321/1.2.5, upn=upn@example.com]", Arrays.toString(result));
+    }
+    
+  
 }
