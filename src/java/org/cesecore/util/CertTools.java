@@ -56,6 +56,7 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -155,6 +156,10 @@ public class CertTools {
     public static final String UPN = "upn";
     /** ObjectID for upn altName for windows smart card logon */
     public static final String UPN_OBJECTID = "1.3.6.1.4.1.311.20.2.3";
+    public static final String PERMANENTIDENTIFIER = "permanentIdentifier";
+    public static final String PERMANENTIDENTIFIER_OBJECTID = "1.3.6.1.5.5.7.8.3";
+    public static final String PERMANENTIDENTIFIER_SEP = "/";
+    
     /** Microsoft altName for windows domain controller guid */
     public static final String GUID = "guid";
     /** ObjectID for upn altName for windows domain controller guid */
@@ -1521,6 +1526,124 @@ public class CertTools {
         }
         return null;
     }
+    
+    /**
+     * Gets the Permanent Identifier (altName, OtherName).
+     * 
+     * permanentIdentifier is an OtherName Subject Alternative Name:
+     * 
+     * OtherName ::= SEQUENCE { type-id OBJECT IDENTIFIER, value [0] EXPLICIT ANY DEFINED BY type-id }
+     * 
+     * -- Permanent Identifier
+     *
+     *   permanentIdentifier OTHER-NAME ::=
+     * { PermanentIdentifier IDENTIFIED BY id-on-permanentIdentifier }
+     *
+     * PermanentIdentifier ::= SEQUENCE {
+     *  identifierValue    UTF8String             OPTIONAL,
+     *                  -- if absent, use the serialNumber attribute
+     *                  -- if there is a single such attribute present
+     *                  -- in the subject DN
+     *  assigner           OBJECT IDENTIFIER      OPTIONAL
+     *                  -- if absent, the assigner is
+     *                  -- the certificate issuer
+     * }
+     * 
+     * @param cert certificate containing the extension
+     * @return String with the permanentIdentifier name or null if the altName does not exist
+     */
+    public static String getPermanentIdentifierAltName(Certificate cert) throws IOException, CertificateParsingException {
+        String ret = null;
+        if (cert instanceof X509Certificate) {
+            X509Certificate x509cert = (X509Certificate) cert;
+            Collection<List<?>> altNames = x509cert.getSubjectAlternativeNames();
+            if (altNames != null) {
+                Iterator<List<?>> i = altNames.iterator();
+                while (i.hasNext()) {
+                    ASN1Sequence seq = getAltnameSequence((List<?>) i.next());
+                    ret = getPermanentIdentifierStringFromSequence(seq);
+                    if (ret != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return ret;
+    } // getPermanentIdentifierAltName
+    
+    static String getPermanentIdentifierStringFromSequence(ASN1Sequence seq) {
+        if (seq != null) {
+            // First in sequence is the object identifier, that we must check
+            DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+            if (id.getId().equals(CertTools.PERMANENTIDENTIFIER_OBJECTID)) {
+                String identifierValue = null;
+                String assigner = null;
+                
+                
+                // Get the PermanentIdentifier sequence
+                ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
+                // After encoding in a cert, it is tagged an extra time...
+                DERObject obj = oobj.getObject();
+                if (obj instanceof ASN1TaggedObject) {
+                    obj = ASN1TaggedObject.getInstance(obj).getObject();
+                }
+                ASN1Sequence piSeq = ASN1Sequence.getInstance(obj);
+                
+                Enumeration<?> e = piSeq.getObjects();
+                if (e.hasMoreElements()) {
+                    Object element = e.nextElement();
+                    if (element instanceof DERUTF8String) {
+                        identifierValue = ((DERUTF8String) element).getString();
+                        if (e.hasMoreElements()) {
+                            element = e.nextElement();
+                        }
+                    }
+                    if (element instanceof DERObjectIdentifier) {
+                        assigner = ((DERObjectIdentifier) element).getId();
+                    }
+                }
+                
+                StringBuilder buff = new StringBuilder();
+                if (identifierValue != null) {
+                    buff.append(escapePermanentIdentifierValue(identifierValue));
+                }
+                buff.append(PERMANENTIDENTIFIER_SEP);
+                if (assigner != null) {
+                    buff.append(assigner);
+                }
+                return buff.toString();
+            }
+        }
+        return null;
+    }
+    
+    static String escapePermanentIdentifierValue(String realValue) {
+        return realValue.replace(PERMANENTIDENTIFIER_SEP, "\\" + PERMANENTIDENTIFIER_SEP);
+    }
+
+    static String unescapePermanentIdentifierValue(String escapedValue) {
+        return escapedValue.replace("\\" + PERMANENTIDENTIFIER, PERMANENTIDENTIFIER);
+    }
+    
+    static String[] getPermanentIdentifierValues(String permanentIdentifierString) {
+        String[] result = new String[2];
+        int sepPos = permanentIdentifierString.lastIndexOf(PERMANENTIDENTIFIER_SEP);
+        if (sepPos == -1) {
+            if (!permanentIdentifierString.isEmpty()) {
+                result[0] = unescapePermanentIdentifierValue(permanentIdentifierString);
+            }
+        } else if (sepPos == 0) {
+            if (permanentIdentifierString.length() > 1) {
+                result[1] = permanentIdentifierString.substring(1);
+            }
+        } else if (permanentIdentifierString.charAt(sepPos - PERMANENTIDENTIFIER_SEP.length()) != '\\') {
+            result[0] = unescapePermanentIdentifierValue(permanentIdentifierString.substring(0, sepPos));
+            if (permanentIdentifierString.length() > sepPos + PERMANENTIDENTIFIER_SEP.length()) {
+                result[1] = permanentIdentifierString.substring(sepPos + 1);
+            }
+        }
+        return result;
+    }
 
     /**
      * Helper method to get MS GUID from GeneralName otherName sequence
@@ -1701,15 +1824,15 @@ public class CertTools {
      * Name, ediPartyName [5] EDIPartyName, uniformResourceIdentifier [6] IA5String, iPAddress [7] OCTET STRING, registeredID [8] OBJECT IDENTIFIER}
      * 
      * SubjectAltName is of form \"rfc822Name=<email>, dNSName=<host name>, uniformResourceIdentifier=<http://host.com/>, iPAddress=<address>,
-     * guid=<globally unique id>, directoryName=<CN=testDirName|dir|name>
+     * guid=<globally unique id>, directoryName=<CN=testDirName|dir|name>, permanentIdentifier=<identifierValue/assigner|identifierValue|/assigner|/>
      * 
-     * Supported altNames are upn, krb5principal, rfc822Name, uniformResourceIdentifier, dNSName, iPAddress, directoryName
+     * Supported altNames are upn, krb5principal, rfc822Name, uniformResourceIdentifier, dNSName, iPAddress, directoryName, permanentIdentifier
      * 
      * @author Marco Ferrante, (c) 2005 CSITA - University of Genoa (Italy)
      * @author Tomas Gustavsson
      * @param certificate containing alt names
      * @return String containing altNames of form
-     *         "rfc822Name=email, dNSName=hostname, uniformResourceIdentifier=uri, iPAddress=ip, upn=upn, directoryName=CN=testDirName|dir|name" or
+     *         "rfc822Name=email, dNSName=hostname, uniformResourceIdentifier=uri, iPAddress=ip, upn=upn, directoryName=CN=testDirName|dir|name", permanentIdentifier=identifierValue/assigner or
      *         empty string if no altNames exist. Values in returned String is from CertTools constants. AltNames not supported are simply not shown
      *         in the resulting string.
      */
@@ -1750,13 +1873,18 @@ public class CertTools {
                     if (upn != null) {
                         result += append + CertTools.UPN + "=" + upn;
                     } else {
-                        String krb5Principal = getKrb5PrincipalNameFromSequence(seq);
-                        if (krb5Principal != null) {
-                            result += append + CertTools.KRB5PRINCIPAL + "=" + krb5Principal;
+                        String permanentIdentifier = getPermanentIdentifierStringFromSequence(seq);
+                        if (permanentIdentifier != null) {
+                            result += append + CertTools.PERMANENTIDENTIFIER + "=" + permanentIdentifier;
                         } else {
-                            String guid = getGUIDStringFromSequence(seq);
-                            if (guid != null) {
-                                result += append + CertTools.GUID + "=" + guid;
+                            String krb5Principal = getKrb5PrincipalNameFromSequence(seq);
+                            if (krb5Principal != null) {
+                                result += append + CertTools.KRB5PRINCIPAL + "=" + krb5Principal;
+                            } else {
+                                String guid = getGUIDStringFromSequence(seq);
+                                if (guid != null) {
+                                    result += append + CertTools.GUID + "=" + guid;
+                                }
                             }
                         }
                     }
@@ -1875,6 +2003,32 @@ public class CertTools {
                 ASN1EncodableVector v = new ASN1EncodableVector();
                 v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
                 v.add(new DERTaggedObject(true, 0, new DERUTF8String((String) iter.next())));
+                // GeneralName gn = new GeneralName(new DERSequence(v), 0);
+                DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                vec.add(gn);
+            }
+        }
+        
+        // PermanentIdentifier is an OtherName see method getPermananentIdentifier... for asn.1 definition
+        ArrayList<String> permanentIdentifier = CertTools.getPartsFromDN(altName, CertTools.PERMANENTIDENTIFIER);
+        if (!permanentIdentifier.isEmpty()) {
+            Iterator<String> iter = permanentIdentifier.iterator();
+            while (iter.hasNext()) {
+                String[] values = getPermanentIdentifierValues(iter.next());
+                
+                ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
+                v.add(new DERObjectIdentifier(CertTools.PERMANENTIDENTIFIER_OBJECTID));
+
+                // First the PermanentIdentifier sequence
+                ASN1EncodableVector piSeq = new ASN1EncodableVector();
+                if (values[0] != null) {
+                    piSeq.add(new DERUTF8String(values[0]));
+                }
+                if (values[1] != null) {
+                    piSeq.add(new DERObjectIdentifier(values[1]));
+                }
+                v.add(new DERTaggedObject(true, 0, new DERSequence(piSeq)));
+                
                 // GeneralName gn = new GeneralName(new DERSequence(v), 0);
                 DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
                 vec.add(gn);
@@ -2010,9 +2164,14 @@ public class CertTools {
             if (upn != null) {
                 ret = CertTools.UPN + "=" + upn;
             } else {
-                String krb5Principal = getKrb5PrincipalNameFromSequence(seq);
-                if (krb5Principal != null) {
-                    ret = CertTools.KRB5PRINCIPAL + "=" + krb5Principal;
+                String permanentIdentifier = getPermanentIdentifierStringFromSequence(seq);
+                if (permanentIdentifier != null) {
+                    ret = CertTools.PERMANENTIDENTIFIER + "=" + permanentIdentifier;
+                } else {
+                    String krb5Principal = getKrb5PrincipalNameFromSequence(seq);
+                    if (krb5Principal != null) {
+                        ret = CertTools.KRB5PRINCIPAL + "=" + krb5Principal;
+                    }
                 }
             }
             break;
