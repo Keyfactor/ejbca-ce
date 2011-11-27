@@ -142,7 +142,8 @@ public class CmpServlet extends HttpServlet {
                 response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, intres.getLocalizedMessage("cmp.errornullresp"));
                 return;
             }
-            // Add no-cache headers as defined in draft-ietf-pkix-cmp-transport-protocols-05.txt
+            // Add no-cache headers as defined in 
+            // http://tools.ietf.org/html/draft-ietf-pkix-cmp-transport-protocols-14
             ServletUtils.addCacheHeaders(response);
             // Send back CMP response
             RequestHelper.sendBinaryBytes(resp.getResponseMessage(), response, "application/pkixcmp", null);
