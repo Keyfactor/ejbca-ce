@@ -25,6 +25,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.internal.InternalResources;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -42,6 +43,8 @@ import com.novosec.pkix.asn1.cmp.PKIHeader;
 public class BaseCmpMessageHandler {
 
 	private static Logger LOG = Logger.getLogger(BaseCmpMessageHandler.class);
+    /** Internal localization of logs and errors */
+    private static final InternalResources INTRES = InternalResources.getInstance();
 
     /** strings for error messages defined in internal resources */
 	protected static final String CMP_ERRORADDUSER = "cmp.erroradduser";
@@ -154,14 +157,29 @@ public class BaseCmpMessageHandler {
 		return ret;
 	}
 
-	/** @return the certificate profile to use for a request based on the current configuration and keyId. */
-	protected String getUsedCertProfileName(final String keyId) throws NotFoundException {
-		final String certificateProfile = CmpConfiguration.getRACertificateProfile();
-		if (StringUtils.equals(certificateProfile, "KeyId")) {
+	/** 
+	 * @return the certificate profile name to use for a request based on the current configuration and keyId. 
+	 */
+	protected String getUsedCertProfileName(final String keyId, final int eeProfileId) throws NotFoundException {
+	    // Get the configured string, may be a profile name or 'KeyId' or 'ProfileDefault'
+		String certificateProfile = CmpConfiguration.getRACertificateProfile();
+		if (StringUtils.equals(certificateProfile, "ProfileDefault")) {
+            // get default certificate profile id from end entity profile
+            final EndEntityProfile eeProfile = endEntityProfileSession.getEndEntityProfile(admin, eeProfileId);
+            if (eeProfile == null) {
+                final String msg = INTRES.getLocalizedMessage("store.errorcertprofilenotexist", eeProfileId);
+                LOG.info(msg);
+                throw new NotFoundException(msg);
+            }
+            certificateProfile = certificateProfileSession.getCertificateProfileName(eeProfile.getDefaultCertificateProfile());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Using default certificate profile from End Entity Profile: " + certificateProfile);
+            }
+		} else if (StringUtils.equals(certificateProfile, "KeyId")) {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using Certificate Profile with same name as KeyId in request: " + keyId);
 			}
-			return keyId;
+			certificateProfile = keyId;
 		}
 		return certificateProfile;
 	}

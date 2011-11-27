@@ -312,7 +312,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         try {
             eeProfileId = getUsedEndEntityProfileId(keyId);
             caId = getUsedCaId(keyId, eeProfileId);
-            certProfileName = getUsedCertProfileName(keyId);
+            certProfileName = getUsedCertProfileName(keyId, eeProfileId);
             certProfileId = getUsedCertProfileId(certProfileName);
         } catch (CADoesntExistsException e) {
             LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
