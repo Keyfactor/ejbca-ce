@@ -416,6 +416,14 @@ public abstract class CmpTestCase extends CaTestCase {
         os.close();
 
         assertEquals("Unexpected HTTP response code.", httpRespCode, con.getResponseCode());
+        // Check that the CMP respone has the cache-control headers as specified in 
+        // http://tools.ietf.org/html/draft-ietf-pkix-cmp-transport-protocols-14
+        final String cacheControl = con.getHeaderField("Cache-Control");
+        assertNotNull(cacheControl);
+        assertEquals("no-cache", cacheControl);
+        final String pragma = con.getHeaderField("Pragma");
+        assertNotNull(pragma);
+        assertEquals("no-cache", pragma);
         // Only try to read the response if we expected a 200 (ok) response
         if (httpRespCode == 200) {
             // Some appserver (Weblogic) responds with
