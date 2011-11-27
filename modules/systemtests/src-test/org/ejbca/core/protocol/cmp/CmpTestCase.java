@@ -416,20 +416,21 @@ public abstract class CmpTestCase extends CaTestCase {
         os.close();
 
         assertEquals("Unexpected HTTP response code.", httpRespCode, con.getResponseCode());
-        // Check that the CMP respone has the cache-control headers as specified in 
-        // http://tools.ietf.org/html/draft-ietf-pkix-cmp-transport-protocols-14
-        final String cacheControl = con.getHeaderField("Cache-Control");
-        assertNotNull(cacheControl);
-        assertEquals("no-cache", cacheControl);
-        final String pragma = con.getHeaderField("Pragma");
-        assertNotNull(pragma);
-        assertEquals("no-cache", pragma);
         // Only try to read the response if we expected a 200 (ok) response
         if (httpRespCode == 200) {
             // Some appserver (Weblogic) responds with
             // "application/pkixcmp; charset=UTF-8"
             assertNotNull("No content type in response.", con.getContentType());
             assertTrue(con.getContentType().startsWith("application/pkixcmp"));
+            // Check that the CMP respone has the cache-control headers as specified in 
+            // http://tools.ietf.org/html/draft-ietf-pkix-cmp-transport-protocols-14
+            final String cacheControl = con.getHeaderField("Cache-Control");
+            assertNotNull(cacheControl);
+            assertEquals("no-cache", cacheControl);
+            final String pragma = con.getHeaderField("Pragma");
+            assertNotNull(pragma);
+            assertEquals("no-cache", pragma);
+            // Now read in the bytes
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             // This works for small requests, and CMP requests are small enough
             InputStream in = con.getInputStream();
