@@ -15,11 +15,13 @@ package org.ejbca.core.protocol.cmp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.math.BigInteger;
+import java.net.URL;
 import java.security.KeyPair;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -67,6 +69,7 @@ import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
@@ -224,89 +227,207 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
 
     @Test
     public void test01CrmfHttpOkUser() throws Exception {
+        try {
+            byte[] nonce = CmpMessageHelper.createSenderNonce();
+            byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        byte[] nonce = CmpMessageHelper.createSenderNonce();
-        byte[] transid = CmpMessageHelper.createSenderNonce();
+            // We should be able to back date the start time when allow validity
+            // override is enabled in the certificate profile
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DAY_OF_WEEK, -1);
+            cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
+            // in validity
+            Date notBefore = cal.getTime();
+            cal.add(Calendar.DAY_OF_WEEK, 3);
+            cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
+            // in validity
+            Date notAfter = cal.getTime();
 
-        // We should be able to back date the start time when allow validity
-        // override is enabled in the certificate profile
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_WEEK, -1);
-        cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
-        // in validity
-        Date notBefore = cal.getTime();
-        cal.add(Calendar.DAY_OF_WEEK, 3);
-        cal.set(Calendar.MILLISECOND, 0); // Certificates don't use milliseconds
-        // in validity
-        Date notAfter = cal.getTime();
+            // In this we also test validity override using notBefore and notAfter
+            // from above
+            // In this test userDN contains special, escaped characters to verify
+            // that that works with CMP RA as well
+            PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, notBefore, notAfter, null);
+            PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
+            assertNotNull(req);
 
-        // In this we also test validity override using notBefore and notAfter
-        // from above
-        // In this test userDN contains special, escaped characters to verify
-        // that that works with CMP RA as well
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, notBefore, notAfter, null);
-        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
-        assertNotNull(req);
+            int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            byte[] resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+            X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+            // Check that validity override works
+            assertTrue(cert.getNotBefore().equals(notBefore));
+            assertTrue(cert.getNotAfter().equals(notAfter));
+            String altNames = CertTools.getSubjectAlternativeName(cert);
+            assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
+            assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
 
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(req);
-        byte[] ba = bao.toByteArray();
-        // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
-        X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
-        // Check that validity override works
-        assertTrue(cert.getNotBefore().equals(notBefore));
-        assertTrue(cert.getNotAfter().equals(notAfter));
-        String altNames = CertTools.getSubjectAlternativeName(cert);
-        assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
-        assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
+            // Send a confirm message to the CA
+            String hash = "foo123";
+            PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, reqId);
+            assertNotNull(confirm);
+            PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(req1);
+            ba = bao.toByteArray();
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+            checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
-        // Send a confirm message to the CA
-        String hash = "foo123";
-        PKIMessage confirm = genCertConfirm(userDN, cacert, nonce, transid, hash, reqId);
-        assertNotNull(confirm);
-        PKIMessage req1 = protectPKIMessage(confirm, false, PBEPASSWORD, 567);
-        bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
-        out.writeObject(req1);
-        ba = bao.toByteArray();
-        // Send request and receive response
-        resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
-        checkCmpPKIConfirmMessage(userDN, cacert, resp);
+            // Now revoke the bastard using the CMPv1 reason code!
+            PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, false);
+            PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
+            assertNotNull(revReq);
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(revReq);
+            ba = bao.toByteArray();
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+            checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
+            int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
+            assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
-        // Now revoke the bastard using the CMPv1 reason code!
-        PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, false);
-        PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
-        assertNotNull(revReq);
-        bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
-        out.writeObject(revReq);
-        ba = bao.toByteArray();
-        // Send request and receive response
-        resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
-        checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, true);
-        int reason = checkRevokeStatus(issuerDN, cert.getSerialNumber());
-        assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+            // Create a revocation request for a non existing cert, should fail!
+            rev = genRevReq(issuerDN, userDN, new BigInteger("1"), cacert, nonce, transid, true);
+            revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
+            assertNotNull(revReq);
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(revReq);
+            ba = bao.toByteArray();
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+            checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, false);
+        } finally {
+            try {
+                userAdminSession.deleteUser(admin, "cmptest");
+            } catch (NotFoundException e) {
+                // NOPMD: ignore
+            }
+        }
+    }
 
-        // Create a revocation request for a non existing cert, should fail!
-        rev = genRevReq(issuerDN, userDN, new BigInteger("1"), cacert, nonce, transid, true);
-        revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
-        assertNotNull(revReq);
-        bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
-        out.writeObject(revReq);
-        ba = bao.toByteArray();
-        // Send request and receive response
-        resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
-        checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, false);
-        
-        userAdminSession.deleteUser(admin, "cmptest");
+    /** Tests the cmp configuration settings:
+     * cmp.ra.certificateprofile=KeyId
+     * cmp.ra.certificateprofile=ProfileDefault
+     * 
+     * KeyId means that the certificate profile used to issue the certificate is the same as the KeyId sent in the request.
+     * ProfileDefault means that the certificate profile used is taken from the default certificate profile in the end entity profile.
+     */
+    @Test
+    public void test02KeyIdProfiles() throws Exception {
+        final String keyId = "CmpTestKeyIdProfileName";
+        final String keyIdDefault = "CmpTestKeyIdProfileNameDefault";
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "KeyId");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "KeyId");
+        try {
+            final byte[] nonce = CmpMessageHelper.createSenderNonce();
+            final byte[] transid = CmpMessageHelper.createSenderNonce();
+
+            // Create one EE profile and 2 certificate profiles, one of the certificate profiles
+            // (that does not have the same name as KeyId) will be the default in the EE profile.
+            // First we will use "KeyId" for both profiles, and then we will use ProfileDefault for the cert profile
+            CertificateProfile cp1 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            cp1.setUseSubjectAlternativeName(true);
+            // Add a weird CDP, so we are sure this is the profile used
+            final String cdp1 = "http://keyidtest/crl.crl";
+            cp1.setCRLDistributionPointURI(cdp1);
+            cp1.setUseCRLDistributionPoint(true);
+            CertificateProfile cp2 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            cp2.setUseSubjectAlternativeName(false);
+            final String cdp2 = "http://keyidtestDefault/crl.crl";
+            cp2.setCRLDistributionPointURI(cdp2);
+            cp2.setUseCRLDistributionPoint(true);
+            try {
+                certificateProfileSession.addCertificateProfile(admin, keyId, cp1);
+            } catch (CertificateProfileExistsException e) {
+                log.error("Error adding certificate profile: ", e);
+            }
+            try {
+                certificateProfileSession.addCertificateProfile(admin, keyIdDefault, cp2);
+            } catch (CertificateProfileExistsException e) {
+                log.error("Error adding certificate profile: ", e);
+            }
+
+            int cpId1 = certificateProfileSession.getCertificateProfileId(keyId);
+            int cpId2 = certificateProfileSession.getCertificateProfileId(keyIdDefault);
+            // Configure an EndEntity profile with allow CN, O, C in DN
+            // and rfc822Name (uncheck 'Use entity e-mail field' and check
+            // 'Modifyable'), MS UPN in altNames in the end entity profile.
+            EndEntityProfile eep = new EndEntityProfile(true);
+            eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "" + cpId2);
+            eep.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cpId1+";"+cpId2);
+            eep.setModifyable(DnComponents.RFC822NAME, 0, true);
+            eep.setUse(DnComponents.RFC822NAME, 0, false); // Don't use field
+            // from "email" data
+            try {
+                endEntityProfileSession.addEndEntityProfile(admin, keyId, eep);
+            } catch (EndEntityProfileExistsException e) {
+                log.error("Could not create end entity profile.", e);
+            }
+            
+            // In this test userDN contains special, escaped characters to verify
+            // that that works with CMP RA as well
+            PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
+            PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, keyId, 567);
+            assertNotNull(req);
+
+            int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            byte[] resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+            X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+            String altNames = CertTools.getSubjectAlternativeName(cert);
+            assertTrue(altNames.indexOf("upn=fooupn@bar.com") != -1);
+            assertTrue(altNames.indexOf("rfc822name=fooemail@bar.com") != -1);
+            final URL cdpfromcert1 = CertTools.getCrlDistributionPoint(cert);
+            assertEquals("CDP is not correct, it probably means it was not the correct 'KeyId' certificate profile that was used", cdp1, cdpfromcert1.toString());
+            
+            // Update property on server so that we use ProfileDefault as certificate profile, should give a little different result
+            updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ProfileDefault");
+            
+            // Make new request, the certificate should now be produced with the other certificate profile
+            PKIMessage two = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
+            PKIMessage req2 = protectPKIMessage(two, false, PBEPASSWORD, keyId, 567);
+            assertNotNull(req2);
+
+            reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            bao = new ByteArrayOutputStream();
+            out = new DEROutputStream(bao);
+            out.writeObject(req);
+            ba = bao.toByteArray();
+            // Send request and receive response
+            resp = sendCmpHttp(ba, 200);
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, PBEPASSWORD);
+            cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+            altNames = CertTools.getSubjectAlternativeName(cert);
+            assertNull(altNames);
+            final URL cdpfromcert2 = CertTools.getCrlDistributionPoint(cert);
+            assertEquals("CDP is not correct, it probably means it was not the correct 'KeyId' certificate profile that was used", cdp2, cdpfromcert2.toString());            
+        } finally {
+            try {
+                userAdminSession.deleteUser(admin, "cmptest");
+            } catch (NotFoundException e) {
+                // NOPMD: ignore
+            }
+            endEntityProfileSession.removeEndEntityProfile(admin, keyId);
+            certificateProfileSession.removeCertificateProfile(admin, keyId);
+            certificateProfileSession.removeCertificateProfile(admin, keyIdDefault);
+        }
     }
 
     @Test
