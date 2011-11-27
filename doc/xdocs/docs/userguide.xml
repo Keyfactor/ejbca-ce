@@ -829,7 +829,7 @@ There are a number of standard ones, and the possibility to define special ones,
 such as MS UPN, GUID, Krb5PrincipalName.
 </p>
 <p>
-Subject alternative names can be: rfc822Name=&lt;email>, dNSName=&lt;host name>, uri=&lt;http://host.com/>, ipaddress=&lt;address>, upn=&lt;MS UPN>, guid=&lt;MS globally unique id>, directoryName=&lt;LDAP escaped DN>, krb5principal=&lt;Krb5 principal name>
+Subject alternative names can be: rfc822Name=&lt;email>, dNSName=&lt;host name>, uri=&lt;http://host.com/>, ipaddress=&lt;address>, upn=&lt;MS UPN>, guid=&lt;MS globally unique id>, directoryName=&lt;LDAP escaped DN>, krb5principal=&lt;Krb5 principal name>, permanentIdentifier=&lt;Permanent Identifier values&gt;
 </p>
 <strong>IP address</strong>
 <p>An IP address can be either an IPv4 address or an IPv6 address.
@@ -857,6 +857,16 @@ krbtgt/PRIMEKEY.SE@PRIMEKEY.SE
 </source>
 <p>for a kdc.
 </p>
+<strong>Permanent Identifier (RFC 4043)</strong>
+<p>The Permanent Identifier is of the form "identifierValue/assigner" where identifierValue is an optional string and assigner is an optional OID, and should be entered as such in the field. If the identifierValue string contains a '/' (slash) character it should be escaped with an back slash ("\/").
+<br/>Examples:
+</p>
+<source>
+abc0123/1.2.3.4
+abc0123/
+/1.2.3.4
+/
+</source>
 </subsubsection>
 <subsubsection name="Certificate Validity">
 <p>
