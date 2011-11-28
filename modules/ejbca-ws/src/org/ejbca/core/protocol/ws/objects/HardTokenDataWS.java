@@ -52,9 +52,9 @@ public class HardTokenDataWS {
 	private String label = null;
 	private String hardTokenSN = null;
 	private String copyOfSN = null;
-	private List<String> copies = new ArrayList();
-	private List<PinDataWS> pinDatas = new ArrayList();
-	private List<Certificate> certificates = new ArrayList();
+	private List<String> copies = new ArrayList<String>();
+	private List<PinDataWS> pinDatas = new ArrayList<PinDataWS>();
+	private List<Certificate> certificates = new ArrayList<Certificate>();
     @XmlSchemaType(name = "dateTime")
 	private XMLGregorianCalendar createTime = null;
     @XmlSchemaType(name = "dateTime")

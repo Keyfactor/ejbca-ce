@@ -28,7 +28,6 @@ public class OID {
 	 * @param s the string to be tested.
 	 * @return true if s is a OID or if first part of s is a OID and the first character after the OID is '.' in s.
 	 */
-	@SuppressWarnings("unused")
 	public static boolean isStartingWithValidOID(String s) {
 		if ( s==null || s.length()<1 ) {
 			return false;
