@@ -92,6 +92,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileExistsExce
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
@@ -832,6 +833,87 @@ public class NestedMessageContentTest extends CmpTestCase {
         assertEquals("Wrong error message", "Could not verify the RA", errMsg);
         log.info("<test07ExpiredRACert()");
     }
+    
+    @Test
+    public void test08CrmfWrongIssuerAndDoNotCheckAdmin() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
+        
+        updatePropertyOnServer(CmpConfiguration.CONFIG_CHECKADMINAUTHORIZATION, "false");
+
+        //-----------------Creating CRMF request
+        //PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
+        byte[] senderNonce = CmpMessageHelper.createSenderNonce();
+        byte[] transactionID = CmpMessageHelper.createSenderNonce();
+        org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
+        org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
+        assertNotNull(nb);
+        assertNotNull(na);
+        
+        KeyPair keys = null;
+        keys = KeyTools.genKeys("1024", "RSA");
+        PKIMessage crmfMsg = genCertReq(issuerDN, subjectDN, keys, cacert, senderNonce, transactionID, false, null, nb.getDate(), na.getDate(), null);
+        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        crmfMsg.getHeader().setProtectionAlg(pAlg);
+        crmfMsg.getHeader().setSenderKID(new DEROctetString(senderNonce));
+
+        //String adminName = "cmpTestAdmin";
+        //createUser("cmpTestAdmin", "CN=cmpTestAdmin,C=SE", "foo123");
+        KeyPair nonAdminKeys = KeyTools.genKeys("1024", "RSA");
+        //AuthenticationToken adminToken = createAdminToken(admkeys, adminName, "CN=" + adminName + ",C=SE");
+        //Certificate admCert = getCertFromCredentials(adminToken);
+        Certificate nonAdminCert = CertTools.genSelfCert("CN=cmpTestAdmin,C=SE", 365, null, nonAdminKeys.getPrivate(), nonAdminKeys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        addExtraCert(crmfMsg, nonAdminCert);
+        signPKIMessage(crmfMsg, nonAdminKeys);
+        assertNotNull(crmfMsg);
+        int reqID = crmfMsg.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        
+        
+        //------------------Creating NestedMessageContent
+        String reqSubjectDN = "CN=bogusSubjectNested";
+        final byte[] nonce = CmpMessageHelper.createSenderNonce();
+        final byte[] transid = CmpMessageHelper.createSenderNonce();
+        
+        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(reqSubjectDN)), 
+                    new GeneralName(new X509Name(((X509Certificate)cacert).getSubjectDN().getName())));
+        myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
+        // senderNonce
+        myPKIHeader.setSenderNonce(new DEROctetString(nonce));
+        // TransactionId
+        myPKIHeader.setTransactionID(new DEROctetString(transid));
+        //myPKIHeader.addGeneralInfo(new InfoTypeAndValue(ASN1Sequence.getInstance(crmfMsg)));
+
+        
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add( crmfMsg );
+        DERSequence seq = new DERSequence(v);
+        PKIBody myPKIBody = new PKIBody(seq, 20); // NestedMessageContent
+        assertNotNull("Failed to create nested Message PKIBody", myPKIBody);
+        
+        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
+        assertNotNull("Failed to created nested message PKIMessage", myPKIMessage);
+        KeyPair raKeys = KeyTools.genKeys("1024", "RSA");
+        createRACertificate("raCrmfSigner", "foo123", raKeys, null, null);
+        signPKIMessage(myPKIMessage, raKeys);
+            
+            
+        assertNotNull("Failed to create myPKIHeader", myPKIHeader);
+        assertNotNull("myPKIBody is null", myPKIBody);
+        assertNotNull("myPKIMessage is null", myPKIMessage);
+
+        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        final DEROutputStream out = new DEROutputStream(bao);
+        out.writeObject(myPKIMessage);
+        final byte[] ba = bao.toByteArray();
+        // Send request and receive response
+        final byte[] resp = sendCmpHttp(ba, 200);
+        //final byte[] resp = sendCmpHttp(myPKIMessage.getDERObject().toASN1Object().getEncoded(), 200);
+        // do not check signing if we expect a failure (sFailMessage==null)
+        checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, crmfMsg.getHeader().getSenderNonce().getOctets(), crmfMsg.getHeader().getTransactionID().getOctets(), false, null);
+        Certificate cert = checkCmpCertRepMessage(subjectDN, cacert, resp, reqID);
+        assertNotNull("CrmfRequest did not return a certificate", cert);
+        
+        //removeAuthenticationToken(adminToken, admCert, adminName);
+    }
+
     
     @Test
     public void testZZZCleanUp() throws Exception {

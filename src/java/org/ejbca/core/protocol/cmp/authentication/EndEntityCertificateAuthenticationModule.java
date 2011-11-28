@@ -208,21 +208,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             return false;
         }
         
-        //Check that the extraCert is given by the right CA
-        // Verify the signature of the client certificate as well, that it is really issued by this CA
-        Certificate cacert = cainfo.getCertificateChain().iterator().next();
-        try {
-            extraCert.verify(cacert.getPublicKey(), "BC");
-        } catch (Exception e) {
-            errorMessage = "The End Entity certificate attached to the PKIMessage is not issued by the CA '" + cainfo.getName() + "'";
-            if(log.isDebugEnabled()) {
-                log.debug(errorMessage+": "+e.getLocalizedMessage());
-            }
-            return false;                
-        }
-        
         if (CmpConfiguration.getRAOperationMode()) {
-            if (CmpConfiguration.getCheckAdminAuthorization()) {
+            if (CmpConfiguration.getCheckAdminAuthorization() && isIssuedByCA(cainfo)) {
                 // Check that the certificate in the extraCert field exists in the DB. In case of fail, error message would have already been sat and logged.
                 if (getActiveExistingCertInfo(fp) == null) {
                     return false;
@@ -253,9 +240,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 
         } else {
             
-            //Check that the certificate in the extraCert field exists in the DB. In case of fail, error message would have already been sat and logged.
+            //Check that the certificate in the extraCert field exists in the DB and is given by the right CA. In case of fail, error message would have already been sat and logged.
             CertificateInfo certInfo = getActiveExistingCertInfo(fp);
-            if (certInfo == null) {
+            if (!isIssuedByCA(cainfo) || certInfo == null) {
                 return false;
             }
          
@@ -516,6 +503,22 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return info;
     }
     
+    private boolean isIssuedByCA(CAInfo cainfo) {
+        //Check that the extraCert is given by the right CA
+        // Verify the signature of the client certificate as well, that it is really issued by this CA
+        Certificate cacert = cainfo.getCertificateChain().iterator().next();
+        try {
+            extraCert.verify(cacert.getPublicKey(), "BC");
+        } catch (Exception e) {
+            errorMessage = "The End Entity certificate attached to the PKIMessage is not issued by the CA '" + cainfo.getName() + "'";
+            if(log.isDebugEnabled()) {
+                log.debug(errorMessage+": "+e.getLocalizedMessage());
+            }
+            return false;                
+        }
+        return true;
+    }
+    
     private CAInfo getCAInfo(final Certificate extracert) {
         CAInfo cainfo = null;
         try {
@@ -539,4 +542,5 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         
         return cainfo;
     }
+ 
 }
