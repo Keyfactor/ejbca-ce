@@ -288,11 +288,11 @@ public class UserAdminSessionTest extends CaTestCase {
 
         // Set the CA to enforce unique serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(true);
-        caAdminSession.editCA(admin, cainfo);
+        caAdminSession.editCA(admin, cainfo);    
         try {
-            userAdminSession.changeUser(admin, secondUserName, pwd, "C=SE, CN=" + secondUserName + ", SN=" + serialnumber, "rfc822name=" + secondEmail, secondEmail,
-                    false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
-                    UserDataConstants.STATUS_NEW, caid);
+            EndEntityInformation user = new EndEntityInformation(secondUserName, "C=SE, CN=" + secondUserName + ", SN=" + serialnumber, caid, "rfc822name=" + secondEmail, secondEmail,
+                    SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);    
+            userAdminSession.changeUser(admin, user, false);
         } catch (EjbcaException e) {
             assertEquals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, e.getErrorCode());
         }
@@ -302,9 +302,9 @@ public class UserAdminSessionTest extends CaTestCase {
         // Set the CA to NOT enforcing unique subjectDN serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(false);
         caAdminSession.editCA(admin, cainfo);
-        userAdminSession.changeUser(admin, secondUserName, pwd, "C=SE, CN=" + secondUserName + ", SN=" + serialnumber, "rfc822name=" + secondEmail, secondEmail,
-                false, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0,
-                UserDataConstants.STATUS_NEW, caid);
+        EndEntityInformation user = new EndEntityInformation(secondUserName, "C=SE, CN=" + secondUserName + ", SN=" + serialnumber, caid, "rfc822name=" + secondEmail, secondEmail,
+                SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);    
+        userAdminSession.changeUser(admin, user, false);
         assertTrue("The user '" + thisusername + "' was not changed even though unique serialnumber is not enforced", endEntityAccessSession
                 .findUserByEmail(admin, secondEmail).size() > 0);
 
