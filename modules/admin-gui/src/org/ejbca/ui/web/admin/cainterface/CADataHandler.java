@@ -55,7 +55,7 @@ import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -67,7 +67,6 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
 /**
  * A class help administrating CAs. 
  *
- * @author  TomSelleck
  * @version $Id$
  */
 public class CADataHandler implements Serializable {
@@ -81,7 +80,7 @@ public class CADataHandler implements Serializable {
     private AuthenticationToken administrator;
     private ComplexAccessControlSessionLocal complexAccessControlSession;
     private InformationMemory info;
-    private UserAdminSession adminsession;
+    private UserAdminSessionLocal adminsession;
     private GlobalConfigurationSession globalconfigurationsession; 
     private RevocationSessionLocal revocationSession;
     private CertificateProfileSession certificateProfileSession;
@@ -92,7 +91,7 @@ public class CADataHandler implements Serializable {
     public CADataHandler(AuthenticationToken administrator, 
                          CAAdminSession caadminsession, CaSession caSession,
                          EndEntityProfileSession endEntityProfileSession,
-                         UserAdminSession adminsession, 
+                         UserAdminSessionLocal adminsession, 
                          GlobalConfigurationSession globalconfigurationsession,
                          CertificateProfileSession certificateProfileSession,
                          RevocationSessionLocal revocationSession,
@@ -163,14 +162,11 @@ public class CADataHandler implements Serializable {
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
-  public boolean removeCA(int caid) throws AuthorizationDeniedException{
-      
-    boolean caidexits = this.adminsession.checkForCAId(administrator, caid) ||
+  public boolean removeCA(int caid) throws AuthorizationDeniedException{     
+    boolean caidexits = this.adminsession.checkForCAId(caid) ||
                         this.certificateProfileSession.existsCAIdInCertificateProfiles(caid) ||
                         this.endEntityProfileSession.existsCAInEndEntityProfiles(administrator, caid) ||
-                        (complexAccessControlSession.existsCaInAccessRules(caid) && this.complexAccessControlSession.existsCAInAccessUserAspects(caid))
-                    ;
-     
+                        (complexAccessControlSession.existsCaInAccessRules(caid) && this.complexAccessControlSession.existsCAInAccessUserAspects(caid));   
     if(!caidexits){
         caSession.removeCA(administrator, caid);
       info.cAsEdited();

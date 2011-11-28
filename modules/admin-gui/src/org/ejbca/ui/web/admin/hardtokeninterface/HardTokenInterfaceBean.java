@@ -29,6 +29,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
@@ -72,7 +73,7 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
     		hardtokensession = ejb.getHardTokenSession();
     		hardtokenbatchsession = ejb.getHardTokenBatchJobSession();
     		AccessControlSessionLocal authorizationsession = ejb.getAccessControlSession();
-    		UserAdminSession useradminsession = ejb.getUserAdminSession();
+    		UserAdminSessionLocal useradminsession = ejb.getUserAdminSession();
     		CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
     		keyrecoverysession = ejb.getKeyRecoverySession();
     		initialized=true;

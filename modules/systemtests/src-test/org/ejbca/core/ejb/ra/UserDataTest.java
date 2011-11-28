@@ -72,6 +72,7 @@ public class UserDataTest extends CaTestCase {
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private UserAdminProxySessionRemote userAdminProxySession = JndiHelper.getRemoteSession(UserAdminProxySessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
@@ -220,10 +221,10 @@ public class UserDataTest extends CaTestCase {
         userAdminSession.changeUser(admin, user, false);
 
         // Default value should be 1, so it should return 0
-        int counter = userAdminSession.decRequestCounter(admin, username);
+        int counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(0, counter);
         // Default value should be 1, so it should return 0
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(0, counter);
 
         // Now add extended information with allowed requests 2
@@ -241,7 +242,7 @@ public class UserDataTest extends CaTestCase {
         // This requires "Enable end entity profile limitations" to be checked in admin GUI->System configuration
         assertTrue(thrown);
         // decrease the value, since we use the empty end entity profile, the counter will not be used
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(0, counter);
 
         // Test that it works correctly with end entity profiles using the counter
@@ -272,10 +273,10 @@ public class UserDataTest extends CaTestCase {
         }
         assertTrue(thrown);
         // decrease the value
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(0, counter);
         // decrease the value again, default value when the counter is not used is 0
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(0, counter);
 
         // Now allow the counter
@@ -286,16 +287,16 @@ public class UserDataTest extends CaTestCase {
         // This time changeUser will be ok
         userAdminSession.changeUser(admin, user, false);
         // decrease the value
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(1, counter);
         // decrease the value again
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(0, counter);
         // decrease the value again
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(-1, counter);
         // decrease the value again
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(-1, counter);
 
         // Now disallow the counter, it will be deleted from the user
@@ -307,7 +308,7 @@ public class UserDataTest extends CaTestCase {
         user.setExtendedinformation(ei);
         userAdminSession.changeUser(admin, user, false);
         // decrease the value
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(0, counter);
 
         // allow the counter
@@ -321,13 +322,13 @@ public class UserDataTest extends CaTestCase {
         user.setStatus(UserDataConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user, false);
         // decrease the value
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(1, counter);
         // decrease the value again
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(0, counter);
         // decrease the value again
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(-1, counter);
 
         // test setuserstatus it will re-set the counter
@@ -338,19 +339,19 @@ public class UserDataTest extends CaTestCase {
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
         // decrease the value
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(2, counter);
         // decrease the value again
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(1, counter);
         // test setuserstatus again it will not re-set the counter if it is already new
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
         assertEquals(1, counter);
         // decrease the value again
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(0, counter); // sets status to generated
         // decrease the value again
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(-1, counter);
 
         // test setuserstatus again it will re-set the counter since status is generated
@@ -360,7 +361,7 @@ public class UserDataTest extends CaTestCase {
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
         // decrease the value
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(2, counter);
 
         // Also changeUser to new from something else will re-set status, if ei value is 0
@@ -370,7 +371,7 @@ public class UserDataTest extends CaTestCase {
         user.setStatus(UserDataConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user, false);
         // decrease the value
-        counter = userAdminSession.decRequestCounter(admin, username);
+        counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(2, counter);
 
         // Test set and re-set logic

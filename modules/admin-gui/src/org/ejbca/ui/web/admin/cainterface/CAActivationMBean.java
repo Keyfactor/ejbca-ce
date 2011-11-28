@@ -31,7 +31,7 @@ import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -61,7 +61,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private CertificateProfileSession certificateProfileSession;
 	private CAAdminSession caadminsession;
 	private EndEntityProfileSession endEntityProfileSession;
-	private UserAdminSession adminsession;
+	private UserAdminSessionLocal adminsession;
 	private GlobalConfigurationSession globalconfigurationsession;
 	private RevocationSessionLocal revocationSession;
 	private ComplexAccessControlSessionLocal complexAccessControlSession;

@@ -180,7 +180,10 @@ public class EjbcaWSHelper {
             AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
             admin = authenticationSession.authenticate(subject);
             if ((admin != null) && (!allowNonAdmins)) {
-				userAdminSession.checkIfCertificateBelongToUser(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
+                if(!userAdminSession.checkIfCertificateBelongToUser(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert))) {
+                    throw new RuntimeException("Certificate with SN " +  CertTools.getSerialNumber(certificates[0]) + " did not belong to user " + CertTools.getIssuerDN(cert));
+                }
+		
 				if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
 		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
 			        throw new AuthorizationDeniedException(msg);

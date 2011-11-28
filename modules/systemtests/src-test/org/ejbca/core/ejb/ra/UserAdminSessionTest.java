@@ -119,6 +119,7 @@ public class UserAdminSessionTest extends CaTestCase {
     private RoleAccessSessionRemote roleAccessSession = InterfaceCache.getRoleAccessSession();
     private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
     private GlobalConfigurationSessionRemote globalConfSession = InterfaceCache.getGlobalConfigurationSession();
+    private UserAdminProxySessionRemote userAdminProxySession = JndiHelper.getRemoteSession(UserAdminProxySessionRemote.class); 
 
     @BeforeClass
     public static void beforeClass() {
@@ -356,7 +357,7 @@ public class UserAdminSessionTest extends CaTestCase {
         query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
         String caauthstring = null;
         String eeprofilestr = null;
-        Collection<EndEntityInformation> col = userAdminSession.query(admin, query, caauthstring, eeprofilestr, 0);
+        Collection<EndEntityInformation> col = userAdminProxySession.query(admin, query, caauthstring, eeprofilestr, 0);
         assertNotNull(col);
         assertEquals(1, col.size());
         log.trace("<test03_1QueryUser()");

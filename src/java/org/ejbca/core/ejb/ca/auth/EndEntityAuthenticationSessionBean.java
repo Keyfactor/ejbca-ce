@@ -30,9 +30,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
@@ -83,7 +81,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             	throw new ObjectNotFoundException("Could not find username " + username);
             }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
-           	userAdminSession.decRemainingLoginAttempts(admin, username);
+           	userAdminSession.decRemainingLoginAttempts(username);
            	final int status = data.getStatus();
             if ( (status == UserDataConstants.STATUS_NEW) || (status == UserDataConstants.STATUS_FAILED) || (status == UserDataConstants.STATUS_INPROCESS) || (status == UserDataConstants.STATUS_KEYRECOVERY)) {
             	if (log.isDebugEnabled()) {
@@ -97,7 +95,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                 	throw new AuthLoginException(msg);
                 }
                 // Resets the remaining login attempts as this was a successful login
-                userAdminSession.resetRemainingLoginAttempts(admin, username);
+                userAdminSession.resetRemainingLoginAttempts(username);
             	// Log formal message that authentication was successful
                 final String msg = intres.getLocalizedMessage("authentication.authok", username);            	
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -130,14 +128,10 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
 		if (log.isTraceEnabled()) {
 			log.trace(">finishUser(" + data.getUsername() + ", hiddenpwd)");
 		}
-		// This admin can be the public web user, which may not be allowed to change status,
-		// this is a bit ugly, but what can a man do...
-		AuthenticationToken statusadmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("finishUser"));
-		//Admin statusadmin = Admin.getInternalAdmin();
 		try {
 			
 			// See if we are allowed for make more requests than this one. If not user status changed by decRequestCounter
-			int counter = userAdminSession.decRequestCounter(statusadmin, data.getUsername());
+			int counter = userAdminSession.decRequestCounter(data.getUsername());
 			if (counter <= 0) {
 				String msg = intres.getLocalizedMessage("authentication.statuschanged", data.getUsername());
 				log.info(msg);
@@ -149,10 +143,6 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
 			String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
 			log.info(msg);
 			throw new ObjectNotFoundException(e.getMessage());
-		} catch (AuthorizationDeniedException e) {
-			// Should never happen
-			log.error("AuthorizationDeniedException: ", e);
-			throw new EJBException(e);
 		} catch (ApprovalException e) {
 			// Should never happen
 		    log.error("ApprovalException: ", e);

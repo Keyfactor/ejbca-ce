@@ -536,7 +536,7 @@ public class RAInterfaceBean implements Serializable {
         boolean profileused = false;
         int profileid = endEntityProfileSession.getEndEntityProfileId(administrator, name);
         // Check if any users or authorization rule use the profile.
-        profileused = userAdminSession.checkForEndEntityProfileId(administrator, profileid)
+        profileused = userAdminSession.checkForEndEntityProfileId(profileid)
                       || complexAccessControlSession.existsEndEntityProfileInRules(profileid);
         if (!profileused) {
         	profiles.removeEndEntityProfile(name);
