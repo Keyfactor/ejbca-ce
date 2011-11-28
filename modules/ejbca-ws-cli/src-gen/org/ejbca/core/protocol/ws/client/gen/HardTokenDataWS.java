@@ -27,10 +27,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
  * about PIN/PUK codes, hardtoken serial number
  * certificate stored on the card.
  * 
- * 
- * @author Philip Vendil
  *
- * $Id$
+ * @version $Id$
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "hardTokenDataWS", propOrder = {
@@ -52,9 +50,9 @@ public class HardTokenDataWS {
 	private String label = null;
 	private String hardTokenSN = null;
 	private String copyOfSN = null;
-	private List<String> copies = new ArrayList();
-	private List<PinDataWS> pinDatas = new ArrayList();
-	private List<Certificate> certificates = new ArrayList();
+	private List<String> copies = new ArrayList<String>();
+	private List<PinDataWS> pinDatas = new ArrayList<PinDataWS>();
+	private List<Certificate> certificates = new ArrayList<Certificate>();
     @XmlSchemaType(name = "dateTime")
 	private XMLGregorianCalendar createTime = null;
     @XmlSchemaType(name = "dateTime")

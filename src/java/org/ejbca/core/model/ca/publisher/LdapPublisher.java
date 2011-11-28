@@ -477,7 +477,7 @@ public class LdapPublisher extends BasePublisher {
 		LDAPEntry oldEntry = searchOldEntity(null, ldapVersion, lc, crldn, userDN, null);
 
 		LDAPEntry newEntry = null;
-		ArrayList modSet = new ArrayList();
+		ArrayList<LDAPModification> modSet = new ArrayList<LDAPModification>();
 		LDAPAttributeSet attributeSet = null;
 
 		if (oldEntry != null) {
@@ -615,7 +615,7 @@ public class LdapPublisher extends BasePublisher {
 		// Check if the entry is already present, we will update it with the new certificate.
 		final LDAPEntry oldEntry;
 
-		ArrayList modSet = null;
+		ArrayList<LDAPModification> modSet = null;
 
 		if (!CertTools.isCA(cert)) {
 			oldEntry = searchOldEntity(username, ldapVersion, lc, certdn, userDN, email);

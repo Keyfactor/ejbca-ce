@@ -115,7 +115,6 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     }
 
     @Transient
-    @SuppressWarnings("unchecked")
     private LinkedHashMap getData() {
 		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
     }
