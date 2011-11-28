@@ -35,6 +35,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.query.IllegalQueryException;
@@ -62,9 +63,9 @@ public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator 
 	 private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
 	 private CertificateStoreSession certificateStoreSession;
-	 private UserAdminSession userAdminSession;
+	 private UserAdminSessionLocal userAdminSession;
 	 
-    public KISSResponseGenerator(String remoteIP, RequestAbstractType req, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession, CrlStoreSession crlSession, CaSession caSession) {
+    public KISSResponseGenerator(String remoteIP, RequestAbstractType req, CertificateStoreSession certificateStoreSession, UserAdminSessionLocal userAdminSession, CrlStoreSession crlSession, CaSession caSession) {
         super(remoteIP, req, caSession, certificateStoreSession, crlSession);
         this.certificateStoreSession = certificateStoreSession;
         this.userAdminSession = userAdminSession;

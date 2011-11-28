@@ -168,7 +168,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     private static final String USERDATA_CREATED_COL = "timeCreated";
 
     /** Gets the Global Configuration from ra admin session bean */
-    private GlobalConfiguration getGlobalConfiguration(AuthenticationToken admin) {
+    private GlobalConfiguration getGlobalConfiguration() {
         return globalConfigurationSession.getCachedGlobalConfiguration();
     }
 
@@ -257,7 +257,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final int caid = endEntity.getCAId();
         // Check if administrator is authorized to add user to CA.
         assertAuthorizedToCA(admin, caid);
-        final GlobalConfiguration globalConfiguration = getGlobalConfiguration(admin);
+        final GlobalConfiguration globalConfiguration = getGlobalConfiguration();
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to add user.
             assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.CREATE_RIGHTS, caid);
@@ -467,7 +467,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final String username = userDataVO.getUsername();
         // Check if administrator is authorized to edit user to CA.
         assertAuthorizedToCA(admin, caid);
-        final GlobalConfiguration globalConfiguration = getGlobalConfiguration(admin);
+        final GlobalConfiguration globalConfiguration = getGlobalConfiguration();
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
             assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.EDIT_RIGHTS, caid);
@@ -564,7 +564,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             final EditEndEntityApprovalRequest ar = new EditEndEntityApprovalRequest(userDataVO, clearpwd, orguserdata, admin, null,
                     numOfApprovalsRequired, caid, endEntityProfileId);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_CHANGEUSER)) {
-                approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
+                approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration());
                 throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvaledit"));
             }
         }
@@ -670,7 +670,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             final int caid = data1.getCaId();
             caIdLog = String.valueOf(caid);
             assertAuthorizedToCA(admin, caid);
-            if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+            if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
                 assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.DELETE_RIGHTS, caid);
             }
         } else {
@@ -713,7 +713,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection", null) };
 
     @Override
-    public void resetRemainingLoginAttempts(AuthenticationToken admin, String username) throws AuthorizationDeniedException, FinderException {
+    public void resetRemainingLoginAttempts(String username) throws FinderException {
         if (log.isTraceEnabled()) {
             log.trace(">resetRamainingLoginAttempts(" + username + ")");
         }
@@ -721,10 +721,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
             final int caid = data1.getCaId();
-            assertAuthorizedToCA(admin, caid);
             final ExtendedInformation ei = data1.getExtendedInformation();
             if (ei != null) {
-                resetRemainingLoginAttemptsInternal(admin, ei, username, caid);
+                resetRemainingLoginAttemptsInternal(ei, username, caid);
                 data1.setTimeModified(new Date().getTime());
                 data1.setExtendedInformation(ei);
             }
@@ -741,7 +740,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     /**
      * Assumes authorization has already been checked.. Modifies the ExtendedInformation object to reset the remaining login attempts.
      */
-    private void resetRemainingLoginAttemptsInternal(final AuthenticationToken admin, final ExtendedInformation ei, final String username,
+    private void resetRemainingLoginAttemptsInternal(final ExtendedInformation ei, final String username,
             final int caid) {
         if (log.isTraceEnabled()) {
             log.trace(">resetRemainingLoginAttemptsInternal");
@@ -750,10 +749,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (resetValue != -1 || ei.getRemainingLoginAttempts() != -1) {
             ei.setRemainingLoginAttempts(resetValue);
             final String msg = intres.getLocalizedMessage("ra.resettedloginattemptscounter", username, resetValue);
-            Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
-                    String.valueOf(caid), null, username, details);
+            log.info(msg);
         }
         if (log.isTraceEnabled()) {
             log.trace("<resetRamainingLoginAttemptsInternal: " + resetValue);
@@ -761,7 +757,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     }
 
     @Override
-    public void decRemainingLoginAttempts(AuthenticationToken admin, String username) throws AuthorizationDeniedException, FinderException {
+    public void decRemainingLoginAttempts(String username) throws FinderException {
         if (log.isTraceEnabled()) {
             log.trace(">decRemainingLoginAttempts(" + username + ")");
         }
@@ -769,7 +765,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
             final int caid = data1.getCaId();
-            assertAuthorizedToCA(admin, caid);
             final ExtendedInformation ei = data1.getExtendedInformation();
             if (ei != null) {
                 counter = ei.getRemainingLoginAttempts();
@@ -779,11 +774,8 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                     if (data1.getStatus() != UserDataConstants.STATUS_GENERATED) {
                         data1.setStatus(UserDataConstants.STATUS_GENERATED);
                         final String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
-                        Map<String, Object> details = new LinkedHashMap<String, Object>();
-                        details.put("msg", msg);
-                        auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE,
-                                admin.toString(), String.valueOf(caid), null, username, details);
-                        resetRemainingLoginAttemptsInternal(admin, ei, username, caid);
+                        log.info(msg);
+                        resetRemainingLoginAttemptsInternal(ei, username, caid);
                         data1.setTimeModified(new Date().getTime());
                         data1.setExtendedInformation(ei);
                     }
@@ -794,10 +786,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                     ei.setRemainingLoginAttempts(--counter);
                     data1.setExtendedInformation(ei);
                     String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
-                    Map<String, Object> details = new LinkedHashMap<String, Object>();
-                    details.put("msg", msg);
-                    auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
-                            String.valueOf(caid), null, username, details);
+                    log.info(msg);
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("Found a remaining login counter with value UNLIMITED, not decreased in db.");
@@ -815,7 +804,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     }
 
     @Override
-    public int decRequestCounter(AuthenticationToken admin, String username) throws AuthorizationDeniedException, FinderException, ApprovalException,
+    public int decRequestCounter(String username) throws FinderException, ApprovalException,
             WaitingForApprovalException {
         if (log.isTraceEnabled()) {
             log.trace(">decRequestCounter(" + username + ")");
@@ -827,11 +816,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         // Check if administrator is authorized to edit user.
         UserData data1 = UserData.findByUsername(entityManager, username);
         if (data1 != null) {
-            final int caid = data1.getCaId();
-            assertAuthorizedToCA(admin, caid);
-            if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-                assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
-            }
             // Do the work of decreasing the counter
             ExtendedInformation ei = data1.getExtendedInformation();
             if (ei != null) {
@@ -886,7 +870,12 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             throw new FinderException(msg);
         }
         if (counter <= 0) {
-            setUserStatus(admin, data1, UserDataConstants.STATUS_GENERATED);
+            AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Local admin call from UserAdminSessionBean.decRequestCounter"));
+            try {
+                setUserStatus(admin, data1, UserDataConstants.STATUS_GENERATED);
+            } catch (AuthorizationDeniedException e) {
+                log.error("Authorization was denied for an AlwaysAllowLocalAuthenticationToken", e);
+            }
         }
         if (log.isTraceEnabled()) {
             log.trace("<decRequestCounter(" + username + "): " + counter);
@@ -899,28 +888,19 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (log.isTraceEnabled()) {
             log.trace(">cleanUserCertDataSN: " + data.getUsername());
         }
-        // This admin can be the public web user, which may not be allowed to
-        // change status,
-        // this is a bit ugly, but what can a man do...
-        AlwaysAllowLocalAuthenticationToken statusadmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-                "UserAdminSessionBean.cleanUserCertDataSN"));
         try {
-            cleanUserCertDataSN(statusadmin, data.getUsername());
+            cleanUserCertDataSN(data.getUsername());
         } catch (FinderException e) {
             String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
             log.info(msg);
-            throw new ObjectNotFoundException(e.getMessage());
-        } catch (AuthorizationDeniedException e) {
-            // Should never happen
-            log.error("AuthorizationDeniedException: ", e);
-            throw new EJBException(e);
+            throw new ObjectNotFoundException(e.getMessage());   
         } catch (ApprovalException e) {
             // Should never happen
             log.error("ApprovalException: ", e);
             throw new EJBException(e);
         } catch (WaitingForApprovalException e) {
             // Should never happen
-            log.error("ApprovalException: ", e);
+            log.error("WaitingForApprovalException: ", e);
             throw new EJBException(e);
         }
         if (log.isTraceEnabled()) {
@@ -929,7 +909,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     }
 
     @Override
-    public void cleanUserCertDataSN(AuthenticationToken admin, String username) throws AuthorizationDeniedException, FinderException,
+    public void cleanUserCertDataSN(String username) throws FinderException,
             ApprovalException, WaitingForApprovalException {
         if (log.isTraceEnabled()) {
             log.trace(">cleanUserCertDataSN(" + username + ")");
@@ -938,11 +918,6 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             // Check if administrator is authorized to edit user.
             UserData data1 = UserData.findByUsername(entityManager, username);
             if (data1 != null) {
-                final int caid = data1.getCaId();
-                assertAuthorizedToCA(admin, caid);
-                if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
-                    assertAuthorizedToEndEntityProfile(admin, data1.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
-                }
                 final ExtendedInformation ei = data1.getExtendedInformation();
                 if (ei == null) {
                     if (log.isDebugEnabled()) {
@@ -980,7 +955,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         // Check authorization
         final int caid = data.getCaId();
         assertAuthorizedToCA(admin, caid);
-        if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+        if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
             assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
         }
         setUserStatus(admin, data, status);
@@ -997,7 +972,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             final ChangeStatusEndEntityApprovalRequest ar = new ChangeStatusEndEntityApprovalRequest(username, data1.getStatus(), status, admin,
                     null, numOfApprovalsRequired, data1.getCaId(), endEntityProfileId);
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS)) {
-                approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
+                approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration());
                 String msg = intres.getLocalizedMessage("ra.approvaledit");
                 throw new WaitingForApprovalException(msg);
             }
@@ -1013,7 +988,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 // re-set the allowed request counter to the default values
                 resetRequestCounter(admin, false, ei, username, endEntityProfileId);
                 // Reset remaining login counter
-                resetRemainingLoginAttemptsInternal(admin, ei, username, caid);
+                resetRemainingLoginAttemptsInternal(ei, username, caid);
                 // data1.setTimeModified(new Date().getTime());
                 data1.setExtendedInformation(ei);
             }
@@ -1079,7 +1054,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (profile.useAutoGeneratedPasswd()) {
             newpasswd = profile.getAutoGeneratedPasswd();
         }
-        if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+        if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
             // Check if user fulfills it's profile.
             try {
                 profile.doesPasswordFulfillEndEntityProfile(password, true);
@@ -1135,7 +1110,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             throw new FinderException("Could not find user " + username);
         }
         final int caid = data.getCaId();
-        if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+        if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
             // Check if administrator is authorized to edit user.
             assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.EDIT_RIGHTS, caid);
         }
@@ -1165,7 +1140,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         // Authorized?
         final int caid = data.getCaId();
         assertAuthorizedToCA(admin, caid);
-        if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+        if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
             assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid);
         }
         try {
@@ -1176,7 +1151,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                     final RevocationApprovalRequest ar = new RevocationApprovalRequest(true, username, reason, admin, numOfReqApprovals, caid,
                             data.getEndEntityProfileId());
                     if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEANDDELETEUSER)) {
-                        approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
+                        approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration());
                         throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"));
                     }
                 }
@@ -1209,7 +1184,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         final int caid = userData.getCaId();
         assertAuthorizedToCA(admin, caid);
-        if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+        if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
             assertAuthorizedToEndEntityProfile(admin, userData.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid);
         }
         if (userData.getStatus() == UserDataConstants.STATUS_REVOKED) {
@@ -1223,7 +1198,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             final RevocationApprovalRequest ar = new RevocationApprovalRequest(false, username, reason, admin, numOfReqApprovals, caid,
                     userData.getEndEntityProfileId());
             if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKEUSER)) {
-                approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
+                approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration());
                 throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"));
             }
         }
@@ -1321,7 +1296,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
         if (endEntityProfileId != -1) {
             // We can only perform this check if we have a trail of what eep was used..
-            if (getGlobalConfiguration(admin).getEnableEndEntityProfileLimitations()) {
+            if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
                 assertAuthorizedToEndEntityProfile(admin, endEntityProfileId, AccessRulesConstants.REVOKE_RIGHTS, caid);
             }
         }
@@ -1347,7 +1322,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 final RevocationApprovalRequest ar = new RevocationApprovalRequest(certserno, issuerdn, username, reason, admin, numOfReqApprovals,
                         caid, endEntityProfileId);
                 if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_REVOKECERT)) {
-                    approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration(admin));
+                    approvalSession.addApprovalRequest(admin, ar, getGlobalConfiguration());
                     throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"));
                 }
             }
@@ -1388,28 +1363,26 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public void checkIfCertificateBelongToUser(AuthenticationToken admin, BigInteger certificatesnr, String issuerdn)
-            throws AuthorizationDeniedException {
-        if (log.isTraceEnabled()) {
-            log.trace(">checkIfCertificateBelongToUser(" + certificatesnr.toString(16) + ")");
-        }
+    public boolean checkIfCertificateBelongToUser(BigInteger certificatesnr, String issuerdn) {
         if (!WebConfiguration.getRequireAdminCertificateInDatabase()) {
             if (log.isTraceEnabled()) {
                 log.trace("<checkIfCertificateBelongToUser Configured to ignore if cert belongs to user.");
             }
-            return;
+            return true;
         }
         String username = certificateStoreSession.findUsernameByCertSerno(certificatesnr, issuerdn);
         if (username != null) {
             if (UserData.findByUsername(entityManager, username) == null) {
                 String msg = intres.getLocalizedMessage("ra.errorcertnouser", issuerdn, certificatesnr.toString(16));
                 log.info(msg);
-                throw new AuthorizationDeniedException(msg);
+                return false;
+            } else {
+                return true;
             }
+        } else {
+            return false;
         }
-        if (log.isTraceEnabled()) {
-            log.trace("<checkIfCertificateBelongToUser()");
-        }
+       
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -1558,7 +1531,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         String caauthorizationstring = StringTools.strip(caauthorizationstr);
         String endentityprofilestring = StringTools.strip(endentityprofilestr);
         ArrayList<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>();
-        GlobalConfiguration globalconfiguration = getGlobalConfiguration(admin);
+        GlobalConfiguration globalconfiguration = getGlobalConfiguration();
         RAAuthorization raauthorization = null;
         String caauthstring = caauthorizationstring;
         String endentityauth = endentityprofilestring;
@@ -1629,7 +1602,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean checkForEndEntityProfileId(AuthenticationToken admin, int endentityprofileid) {
+    public boolean checkForEndEntityProfileId(int endentityprofileid) {
         if (log.isTraceEnabled()) {
             log.trace(">checkForEndEntityProfileId(" + endentityprofileid + ")");
         }
@@ -1642,7 +1615,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean checkForCertificateProfileId(AuthenticationToken admin, int certificateprofileid) {
+    public boolean checkForCertificateProfileId(int certificateprofileid) {
         if (log.isTraceEnabled()) {
             log.trace(">checkForCertificateProfileId(" + certificateprofileid + ")");
         }
@@ -1655,7 +1628,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean checkForCAId(AuthenticationToken admin, int caid) {
+    public boolean checkForCAId(int caid) {
         if (log.isTraceEnabled()) {
             log.trace(">checkForCAId()");
         }
@@ -1664,7 +1637,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean checkForHardTokenProfileId(AuthenticationToken admin, int profileid) {
+    public boolean checkForHardTokenProfileId(int profileid) {
         if (log.isTraceEnabled()) {
             log.trace(">checkForHardTokenProfileId()");
         }

@@ -24,7 +24,7 @@ import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.util.Base64PutHashMap;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
@@ -34,7 +34,6 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
 /**
  * A class handling the hardtoken profile data.
  *
- * @author  TomSelleck
  * @version $Id$
  */
 public class HardTokenProfileDataHandler implements Serializable {
@@ -44,14 +43,14 @@ public class HardTokenProfileDataHandler implements Serializable {
     private HardTokenSession hardtokensession; 
     private AccessControlSessionLocal authorizationsession;
     private CertificateProfileSession certificateProfileSession;
-    private UserAdminSession useradminsession;
+    private UserAdminSessionLocal useradminsession;
     private CaSession caSession; 
     private AuthenticationToken administrator;
     private InformationMemory info;
     
     /** Creates a new instance of HardTokenProfileDataHandler */
     public HardTokenProfileDataHandler(AuthenticationToken administrator, HardTokenSession hardtokensession, CertificateProfileSession certificatesession, AccessControlSessionLocal authorizationsession, 
-                                       UserAdminSession useradminsession, CaSession caSession, InformationMemory info) {
+            UserAdminSessionLocal useradminsession, CaSession caSession, InformationMemory info) {
        this.hardtokensession = hardtokensession;           
        this.authorizationsession = authorizationsession;
        this.certificateProfileSession = certificatesession;
@@ -106,7 +105,7 @@ public class HardTokenProfileDataHandler implements Serializable {
       
 	  int profileid = getHardTokenProfileId(name);
 	  
-      if(useradminsession.checkForHardTokenProfileId(administrator, profileid)) {
+      if(useradminsession.checkForHardTokenProfileId(profileid)) {
         return true;
       }
 	  if(hardtokensession.existsHardTokenProfileInHardTokenIssuer(administrator, profileid)) {

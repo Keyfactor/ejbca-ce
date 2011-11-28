@@ -21,7 +21,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.crl.CrlStoreSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.w3._2002._03.xkms_.LocateRequestType;
 import org.w3._2002._03.xkms_.LocateResultType;
@@ -40,7 +40,7 @@ public class LocateResponseGenerator extends KISSResponseGenerator {
 	
 	private static final Logger log = Logger.getLogger(LocateResponseGenerator.class);
 
-	public LocateResponseGenerator(String remoteIP, LocateRequestType req, CertificateStoreSession certificateStoreSession, UserAdminSession userAdminSession, CrlStoreSession crlSession, CaSession caSession) {
+	public LocateResponseGenerator(String remoteIP, LocateRequestType req, CertificateStoreSession certificateStoreSession, UserAdminSessionLocal userAdminSession, CrlStoreSession crlSession, CaSession caSession) {
 		super(remoteIP, req, certificateStoreSession, userAdminSession, crlSession, caSession);
 	}
 	

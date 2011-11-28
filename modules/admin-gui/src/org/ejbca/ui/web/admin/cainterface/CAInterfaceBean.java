@@ -59,7 +59,7 @@ import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -93,7 +93,7 @@ public class CAInterfaceBean implements Serializable {
     private CrlStoreSession crlStoreSession;
     private CrlCreateSession crlCreateSession;
     private AccessControlSessionLocal authorizationsession;
-    private UserAdminSession adminsession;
+    private UserAdminSessionLocal adminsession;
     private GlobalConfigurationSession globalconfigurationsession;
     private SignSession signsession;
     private CertificateCreateSessionLocal certcreatesession;
@@ -239,7 +239,7 @@ public class CAInterfaceBean implements Serializable {
         
         if(certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY){
           // Check if any users or profiles use the certificate id.
-          certificateprofileused = adminsession.checkForCertificateProfileId(administrator, certificateprofileid)
+          certificateprofileused = adminsession.checkForCertificateProfileId(certificateprofileid)
                                 || endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(administrator, certificateprofileid)
 								|| hardtokensession.existsCertificateProfileInHardTokenProfiles(administrator, certificateprofileid);
         }else{
