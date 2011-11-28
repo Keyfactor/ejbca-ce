@@ -117,16 +117,16 @@ public class EndEntityInformation implements Serializable {
      * Creates new EndEntityInformation. This constructor should only be used from UserDataSource 
      * implementations. Status and dates aren't used in these cases.
      * 
-     * @param user 
-     * @param dn 
-     * @param caid CA id of the CA that the user is registered with
-     * @param subjectaltname 
-     * @param email 
+     * @param user the unique username.
+     * @param dn the DN the subject is given in his certificate.
+     * @param caid the id of the CA that should be used to issue the users certificate
+     * @param subjectaltname the Subject Alternative Name to be used.
+     * @param email the email of the subject (may be null).
      * @param type one of EndEntityConstants.USER_ENDUSER || ...
-     * @param endentityprofileid 
-     * @param certificateprofileid 
-     * @param tokentype 
-     * @param hardtokenissuerid 
+     * @param endentityprofileid the id number of the end entity profile bound to this user.
+     * @param certificateprofileid the id number of the certificate profile that should be generated for the user.
+     * @param tokentype the type of token to be generated, one of SecConst.TOKEN constants
+     * @param hardtokenissuerid if token should be hard, the id of the hard token issuer, else 0.
      * @param extendedinfo
      */
     public EndEntityInformation(String user, String dn, int caid, String subjectaltname, String email,  int type, int endentityprofileid, int certificateprofileid,
