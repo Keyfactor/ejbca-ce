@@ -176,7 +176,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		}
 	}
 
-	public ResponseMessage handleMessage(final BaseCmpMessage msg) {
+	public ResponseMessage handleMessage(final BaseCmpMessage msg, boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
 		}
@@ -189,7 +189,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 				// If we have usernameGeneratorParams we want to generate usernames automagically for requests
 				// If we are not in RA mode, usernameGeneratorParams will be null
 				if (usernameGenParams != null) {
-					resp = handleRaMessage(msg, crmfreq);
+					resp = handleRaMessage(msg, crmfreq, authenticated);
 				} else {
 					// Try to find the user that is the subject for the request
 					// if extractUsernameComponent is null, we have to find the user from the DN
@@ -219,7 +219,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 						}
 						crmfreq.setUsername(data.getUsername());
                         ICMPAuthenticationModule authenticationModule = null;
-                        Object verified = verifyAndGetAuthModule(msg, crmfreq, data.getUsername(), 0);
+                        Object verified = verifyAndGetAuthModule(msg, crmfreq, data.getUsername(), 0, authenticated);
                         if(verified instanceof ResponseMessage) {
                             return (ResponseMessage) verified;
                         } else {
@@ -294,7 +294,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @throws ClassNotFoundException
 	 * @throws CesecoreException 
 	 */
-	private ResponseMessage handleRaMessage(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq) throws AuthorizationDeniedException, EjbcaException, ClassNotFoundException, CesecoreException {
+	private ResponseMessage handleRaMessage(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq, boolean authenticated) throws AuthorizationDeniedException, EjbcaException, ClassNotFoundException, CesecoreException {
         final int eeProfileId;        // The endEntityProfile to be used when adding users in RA mode.
         final String certProfileName;  // The certificate profile to use when adding users in RA mode.
         final int certProfileId;
@@ -325,7 +325,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         ResponseMessage resp = null; // The CMP response message to be sent back to the client
         //Check the request's authenticity
         ICMPAuthenticationModule authenticationModule = null;
-        Object verified = verifyAndGetAuthModule(msg, crmfreq, null, caId);
+        Object verified = verifyAndGetAuthModule(msg, crmfreq, null, caId, authenticated);
         if(verified instanceof ResponseMessage) {
             return (ResponseMessage) verified;
         } else {
@@ -445,7 +445,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		return resp;
 	}
 	
-	private Object verifyAndGetAuthModule(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq, final String username, final int caId) throws CADoesntExistsException, AuthorizationDeniedException {
+	private Object verifyAndGetAuthModule(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq, final String username, final int caId, boolean authenticated) throws CADoesntExistsException, AuthorizationDeniedException {
         final CAInfo caInfo;
         if (caId == 0) {
             caInfo = null;
@@ -455,7 +455,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, admin, caSession, endEntityAccessSession, certStoreSession, authorizationSession, 
 		                endEntityProfileSession, authenticationProviderSession);
 		ICMPAuthenticationModule authenticationModule = null;
-		if(messageVerifyer.verify(crmfreq.getPKIMessage(), username)) {
+		if(messageVerifyer.verify(crmfreq.getPKIMessage(), username, authenticated)) {
 			authenticationModule = messageVerifyer.getUsedAuthenticationModule();
 		}
 		if(authenticationModule == null) {

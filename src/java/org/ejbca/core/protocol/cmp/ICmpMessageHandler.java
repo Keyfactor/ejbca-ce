@@ -27,6 +27,6 @@ public interface ICmpMessageHandler {
 	 * @param msg input message
 	 * @return response message
 	 */
-	public ResponseMessage handleMessage(BaseCmpMessage msg);
+	public ResponseMessage handleMessage(BaseCmpMessage msg, boolean authenticated);
 
 }

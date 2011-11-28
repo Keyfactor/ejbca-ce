@@ -143,7 +143,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      * 
      * In RA mode:
      *      - A globally configured shared secret for all CAs will be used to authenticate the message.
-     *      - If the globallt shared secret fails, the password set in the CA will be used to authenticate the message.
+     *      - If the globally shared secret fails, the password set in the CA will be used to authenticate the message.
      *  In client mode, the clear-text password set in the pre-registered end entity in the database will be used to 
      *  authenticate the message. 
      * 
@@ -151,9 +151,11 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      * When failed, the error message will be set.
      * 
      * @param msg
+     * @param username
+     * @param authenticated
      * @return true if the message signature was verified successfully and false otherwise.
      */
-    public boolean verifyOrExtract(final PKIMessage msg, final String username) {
+    public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) {
         
         if(msg == null) {
             LOG.error("No PKIMessage was found");
