@@ -109,9 +109,10 @@ public class VerifyPKIMessage {
      * 
      * @param msg PKIMessage to verify
      * @param username that the PKIMessage should match or null
+     * @param authenticated if the CMP message has already been authenticated in another way or not
      * @return True if verification is successful. False otherwise
      */
-    public boolean verify(final PKIMessage msg, final String username) {
+    public boolean verify(final PKIMessage msg, final String username, boolean authenticated) {
         if (log.isTraceEnabled()) {
             log.trace(">verify");
         }
@@ -129,7 +130,7 @@ public class VerifyPKIMessage {
             }
 
             module = getAuthModule(modules[i].trim(), params[i].trim(), msg);
-            if((module != null) && module.verifyOrExtract(msg, username)) {
+            if((module != null) && module.verifyOrExtract(msg, username, authenticated)) {
                 this.authModule = module;
                 ret = true;
                 break;

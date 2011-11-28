@@ -162,9 +162,11 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * When failed, the error message is set.
      * 
      * @param msg PKIMessage
+     * @param username
+     * @param authenticated
      * @return true if the message signature was verified successfully and false otherwise.
      */
-    public boolean verifyOrExtract(final PKIMessage msg, final String username) {
+    public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) {
         
         //Check that there is a certificate in the extraCert field in msg
         final X509CertificateStructure extraCertStruct = msg.getExtraCert(0);
@@ -218,31 +220,38 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
             return false;                
         }
- 
-        if (CmpConfiguration.getRAOperationMode() && CmpConfiguration.getCheckAdminAuthorization()) {
-            
-            //Check that the certificate in the extraCert field exists in the DB. In case of fail, error message would have already been sat and logged.
-            if (getActiveExistingCertInfo(fp) == null) {
-                return false;
-            }
+        
+        if (CmpConfiguration.getRAOperationMode()) {
+            if (CmpConfiguration.getCheckAdminAuthorization()) {
+                // Check that the certificate in the extraCert field exists in the DB. In case of fail, error message would have already been sat and logged.
+                if (getActiveExistingCertInfo(fp) == null) {
+                    return false;
+                }
                 
-            //Check that the request sender is an authorized administrator
-            try {
-                if (!isAuthorized(extraCert, msg, cainfo.getCAId())){
-                    errorMessage = "'" + CertTools.getSubjectDN(extraCert) + "' is not an authorized administrator.";
+                //Check that the request sender is an authorized administrator
+                try {
+                    if (!isAuthorized(extraCert, msg, cainfo.getCAId())){
+                        errorMessage = "'" + CertTools.getSubjectDN(extraCert) + "' is not an authorized administrator.";
+                        if(log.isDebugEnabled()) {
+                            log.debug(errorMessage);
+                        }
+                        return false;           
+                    }
+                } catch (NotFoundException e1) {
+                    errorMessage = e1.getLocalizedMessage();
                     if(log.isDebugEnabled()) {
                         log.debug(errorMessage);
-                    }
-                    return false;           
+                    }   
                 }
-            } catch (NotFoundException e1) {
-                errorMessage = e1.getLocalizedMessage();
+            } else if(!CmpConfiguration.getCheckAdminAuthorization() && !authenticated) {
+                errorMessage = "The CMP message lacks authentication. The CMP message has to be a signed NestedMessageContent";
                 if(log.isDebugEnabled()) {
                     log.debug(errorMessage);
                 }
+                return false;
             }
                 
-        } else if (!CmpConfiguration.getRAOperationMode()) {
+        } else {
             
             //Check that the certificate in the extraCert field exists in the DB. In case of fail, error message would have already been sat and logged.
             CertificateInfo certInfo = getActiveExistingCertInfo(fp);

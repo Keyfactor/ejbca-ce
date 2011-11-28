@@ -111,8 +111,9 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public ResponseMessage dispatch(AuthenticationToken admin, byte[] ba) throws IOException {
-		DERObject derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
-		return dispatch(admin, derObject);
+		//DERObject derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
+	    DERObject derObject = getDERObject(ba);
+		return dispatch(admin, derObject, false);
 	}
 
 	/** The message may have been received by any transport protocol, and is passed here in it's binary ASN.1 form.
@@ -120,7 +121,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	 * @param message der encoded CMP message
 	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occurred
 	 */
-	private ResponseMessage dispatch(AuthenticationToken admin, DERObject derObject) {
+	private ResponseMessage dispatch(AuthenticationToken admin, DERObject derObject, boolean authenticated) {
 		final PKIMessage req;
 		try {
 			req = PKIMessage.getInstance(derObject);
@@ -144,6 +145,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				log.debug(req);
 				//log.debug(ASN1Dump.dumpAsString(req));				
 			}
+
 			BaseCmpMessage cmpMessage = null;
 			ICmpMessageHandler handler = null;
 			int unknownMessageType = -1;
@@ -189,8 +191,11 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                         final DEREncodable nested = nestedMessage.getPKIMessage().getBody().getNested();
                         PKIMessages nestedMessages = PKIMessages.getInstance(nested);
                         org.bouncycastle.asn1.cmp.PKIMessage[] pkiMessages = nestedMessages.toPKIMessageArray();
-                        return dispatch(admin, pkiMessages[0].getDERObject().getDEREncoded());
-                        //return dispatch(admin, nested.getDERObject().getDEREncoded());
+                        
+                        DERObject msgDerObject = getDERObject(pkiMessages[0].getDERObject().getDEREncoded());
+                        return dispatch(admin, msgDerObject, true);
+                      
+                        //return dispatch(admin, pkiMessages[0].getDERObject().getDEREncoded());
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getLocalizedMessage();
                         log.error(errMsg);
@@ -217,7 +222,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				}
 				throw new Exception("Something is null! Handler="+handler+", cmpMessage="+cmpMessage);
 			}
-			final ResponseMessage ret  = handler.handleMessage(cmpMessage);
+			final ResponseMessage ret  = handler.handleMessage(cmpMessage, authenticated);
 			if (ret != null) {
 				log.debug("Received a response message from CmpMessageHandler.");
 			} else {
@@ -228,5 +233,10 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			log.error(intres.getLocalizedMessage("cmp.errorprocess"), e);
 			return null;
 		}
+	}
+	
+	private DERObject getDERObject(byte[] ba) throws IOException {
+	       DERObject derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
+	       return derObject;
 	}
 }

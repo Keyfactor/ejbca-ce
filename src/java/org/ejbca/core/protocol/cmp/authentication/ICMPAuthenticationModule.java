@@ -28,9 +28,10 @@ public interface ICMPAuthenticationModule {
      * 
      * @param msg PKIMessage to verify
      * @param username that the PKIMessage should match or null
+     * @param authenticated if the CMP message has already been authenticated in another way or not
      * @return true of msg was sent by a trusted source, and false otherwise
      */
-    public abstract boolean verifyOrExtract(PKIMessage msg, String username);
+    public abstract boolean verifyOrExtract(PKIMessage msg, String username, boolean authenticated);
     
     /**
      * Returns the name of the used authentication module.

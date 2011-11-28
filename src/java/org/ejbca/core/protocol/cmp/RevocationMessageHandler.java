@@ -101,7 +101,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
         this.endEntityAccessSession = eeAccessSession;
         this.authenticationProviderSession = authProviderSession;
 	}
-	public ResponseMessage handleMessage(BaseCmpMessage msg) {
+	public ResponseMessage handleMessage(BaseCmpMessage msg, boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
 		}
@@ -141,7 +141,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             //Verify the authenticity of the message
             final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, admin, caSession, endEntityAccessSession, certificateStoreSession, authorizationSession, endEntityProfileSession, authenticationProviderSession);
             ICMPAuthenticationModule authenticationModule = null;
-            if(messageVerifyer.verify(msg.getMessage(), null)) {
+            if(messageVerifyer.verify(msg.getMessage(), null, authenticated)) {
                 authenticationModule = messageVerifyer.getUsedAuthenticationModule();
             } else {
 

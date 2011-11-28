@@ -46,9 +46,10 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
      * 
      * @param msg
      * @param username
+     * @param authenticated
      * @return
      */
-    public boolean verifyOrExtract(final PKIMessage msg, final String username) {
+    public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) {
         
         CertReqMsg req = getReq(msg);
         if(req == null) {

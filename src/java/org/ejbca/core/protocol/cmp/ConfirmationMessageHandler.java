@@ -98,7 +98,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
         this.authorizationSession = authSession;
         this.authenticationProviderSession = authProvSession;
 	}
-	public ResponseMessage handleMessage(BaseCmpMessage msg) {
+	public ResponseMessage handleMessage(BaseCmpMessage msg, boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
 		}
@@ -137,7 +137,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
                 //Verify the authenticity of the message
                 VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, admin, caSession, endEntityAccessSession, certificateStoreSession, authorizationSession, endEntityProfileSession, authenticationProviderSession);
                 ICMPAuthenticationModule authenticationModule = null;
-                if(messageVerifyer.verify(msg.getMessage(), null)) {
+                if(messageVerifyer.verify(msg.getMessage(), null, authenticated)) {
                     authenticationModule = messageVerifyer.getUsedAuthenticationModule();
                 }
                 if(authenticationModule == null) {

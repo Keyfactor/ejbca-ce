@@ -135,7 +135,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
      * @throws NoSuchAlgorithmException when failing to read the key from the crmf request
      * @throws NoSuchProviderException when failing to read the key from the crmf request
      */
-    public ResponseMessage handleMessage(final BaseCmpMessage msg) {
+    public ResponseMessage handleMessage(final BaseCmpMessage msg, boolean authenticated) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">handleMessage");
         }
@@ -159,7 +159,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 EndEntityCertificateAuthenticationModule eecmodule = new EndEntityCertificateAuthenticationModule("-");
                 eecmodule.setSession(this.admin, this.caSession, this.certStoreSession, this.authorizationSession, this.endEntityProfileSession, 
                         this.endEntityAccessSession, authenticationProviderSession);
-                if(!eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null)) {
+                if(!eecmodule.verifyOrExtract(crmfreq.getPKIMessage(), null, authenticated)) {
                     String errMsg = eecmodule.getErrorMessage();
                     if( errMsg == null) {
                         errMsg = "Failed to verify the request";
