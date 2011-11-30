@@ -1571,6 +1571,11 @@ public class CertTools {
         return ret;
     } // getPermanentIdentifierAltName
     
+    /**
+     * (This method intentionally has package level visibility to be able to be invoked from JUnit tests.)
+     * @param seq
+     * @return The extension values encoded as an permanentIdentifierString
+     */
     static String getPermanentIdentifierStringFromSequence(ASN1Sequence seq) {
         if (seq != null) {
             // First in sequence is the object identifier, that we must check
@@ -1617,14 +1622,19 @@ public class CertTools {
         return null;
     }
     
-    static String escapePermanentIdentifierValue(String realValue) {
+    private static String escapePermanentIdentifierValue(String realValue) {
         return realValue.replace(PERMANENTIDENTIFIER_SEP, "\\" + PERMANENTIDENTIFIER_SEP);
     }
 
-    static String unescapePermanentIdentifierValue(String escapedValue) {
+    private static String unescapePermanentIdentifierValue(String escapedValue) {
         return escapedValue.replace("\\" + PERMANENTIDENTIFIER, PERMANENTIDENTIFIER);
     }
     
+    /**
+     * (This method intentionally has package level visibility to be able to be invoked from JUnit tests.)
+     * @param permanentIdentifierString
+     * @return A two elements String array with the extension values
+     */
     static String[] getPermanentIdentifierValues(String permanentIdentifierString) {
         String[] result = new String[2];
         int sepPos = permanentIdentifierString.lastIndexOf(PERMANENTIDENTIFIER_SEP);
