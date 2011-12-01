@@ -505,7 +505,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(23, body.getTagNo());
         final String errMsg = body.getError().getPKIStatus().getStatusString().getString(0).getString();
-        final String expectedErrMsg = "CA with id " + CertTools.getIssuerDN(fakeCert).hashCode() + " does not exist.";
+        final String expectedErrMsg = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
         assertEquals(expectedErrMsg, errMsg);
 
         if(log.isTraceEnabled()) {
@@ -546,7 +546,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         }
         
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_CHECKADMINAUTHORIZATION, "false");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
         assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
         
@@ -623,7 +622,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         }
         
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_CHECKADMINAUTHORIZATION, "false");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
         assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "false");
@@ -700,7 +698,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         }
         
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_CHECKADMINAUTHORIZATION, "false");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
         assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "false");

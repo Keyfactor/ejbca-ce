@@ -174,11 +174,18 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             errorMessage = "There is no certificate in the extraCert field in the PKIMessage";
             log.info(errorMessage);
             return false;
+        } else {
+            if(log.isDebugEnabled()) {
+                log.debug("A certificate is found in the extraCert field in the CMP message");
+            }
         }
         
         //Read the extraCert and store it in a local variable
         try {
             extraCert = CertTools.getCertfromByteArray(extraCertStruct.getEncoded());
+            if(log.isDebugEnabled()) {
+                log.debug("Obtaning the certificate from extraCert field was done successfully");
+            }
         } catch (CertificateException e) {
             this.errorMessage = e.getLocalizedMessage();
             if(log.isDebugEnabled()) {
@@ -192,7 +199,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
             return false;
         }
-        
+
+        // Get the fingerprint of extraCert to be used later
         final String fp = CertTools.getFingerprintAsString(extraCert);
         if (fp == null) {
             this.errorMessage = "Could not get the fingerprint of the certificate in the extraCert field in the CMP request";
@@ -200,60 +208,87 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 log.debug(this.errorMessage);
             }
             return false;            
+        } else {
+            if(log.isDebugEnabled()) {
+                log.debug("The certificate in the extraCert field in the CMP message had the fingerprint: " + fp);
+            }
         }
         
-        // Get CA info. In case of fail, error message would have already been set and logged.
-        final CAInfo cainfo = getCAInfo(extraCert);
-        if (cainfo == null) {
-            return false;
-        }
         
-        if (CmpConfiguration.getRAOperationMode()) {
-            if (CmpConfiguration.getCheckAdminAuthorization() && isIssuedByCA(cainfo)) {
-                // Check that the certificate in the extraCert field exists in the DB. In case of fail, error message would have already been sat and logged.
-                if (getActiveExistingCertInfo(fp) == null) {
-                    return false;
+        // Determine whether the CA name is set in the 'cmp.authenticationparameters' config value
+        boolean isCASet = !(StringUtils.equals("-", this.authenticationParameterCAName) || StringUtils.equalsIgnoreCase("A", this.authenticationParameterCAName));
+
+        if(log.isDebugEnabled()) {
+            log.debug("CMP is operating in RA mode: " + CmpConfiguration.getRAOperationMode());
+            log.debug("Issuer CA is set: " + isCASet);
+            log.debug("CMP message already been authenticated: " + authenticated);
+        }
+        CAInfo cainfo = null;
+        CertificateInfo certinfo = null;
+        if(!CmpConfiguration.getRAOperationMode() || isCASet) { // if client mode, or cmp.authenticationparameters in cmp.properties is set in RA mode
+            
+            // Check that extraCert is in the Database
+            certinfo = certSession.getCertificateInfo(fp);
+            if(certinfo == null) {
+                errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
+                if(log.isDebugEnabled()) {
+                    log.debug(errorMessage+". Fingerprint="+fp);
                 }
-                
-                //Check that the request sender is an authorized administrator
-                try {
-                    if (!isAuthorized(extraCert, msg, cainfo.getCAId())){
-                        errorMessage = "'" + CertTools.getSubjectDN(extraCert) + "' is not an authorized administrator.";
-                        if(log.isDebugEnabled()) {
-                            log.debug(errorMessage);
-                        }
-                        return false;           
-                    }
-                } catch (NotFoundException e1) {
-                    errorMessage = e1.getLocalizedMessage();
+                return false;
+            }
+            
+            cainfo = getCAInfo(extraCert, isCASet);
+            if (cainfo == null) {
+                return false;
+            } else {
+                if(log.isDebugEnabled()) {
+                    log.debug("The certificate in extraCert field should be issued by '" + cainfo.getName() + "'");
+                }
+            }
+
+            // Check that extraCert is issued by the right CA, that it is valid and is not revoked
+            if(!isIssuedByCA(cainfo) || !isCertValid(fp) || !isCertActive(certinfo)) {
+                return false;
+            }
+
+        }
+        
+        if(CmpConfiguration.getRAOperationMode() && isCASet) {// RA mode and cmp.authenticationparameters is set to the name of extraCert issuer
+            
+            //Check that the request sender is an authorized administrator
+            try {
+                if (!isAuthorized(extraCert, msg, cainfo.getCAId())){
+                    errorMessage = "'" + CertTools.getSubjectDN(extraCert) + "' is not an authorized administrator.";
                     if(log.isDebugEnabled()) {
                         log.debug(errorMessage);
-                    }   
+                    }
+                    return false;           
                 }
-            } else if(!CmpConfiguration.getCheckAdminAuthorization() && !authenticated) {
-                errorMessage = "The CMP message lacks authentication. The CMP message has to be a signed NestedMessageContent";
+            } catch (NotFoundException e1) {
+                errorMessage = e1.getLocalizedMessage();
                 if(log.isDebugEnabled()) {
                     log.debug(errorMessage);
-                }
+                }   
                 return false;
             }
-                
-        } else {
             
-            //Check that the certificate in the extraCert field exists in the DB and is given by the right CA. In case of fail, error message would have already been sat and logged.
-            CertificateInfo certInfo = getActiveExistingCertInfo(fp);
-            if (!isIssuedByCA(cainfo) || certInfo == null) {
-                return false;
+        } else if(CmpConfiguration.getRAOperationMode() && !isCASet && !authenticated) { // RA mode, extraCert can be given by any CA and the CMP message has not already been authenticated
+            errorMessage = "The CMP message lacks authentication. The CMP message has to be a signed NestedMessageContent";
+            if(log.isDebugEnabled()) {
+                log.debug(errorMessage);
             }
-         
+            return false;            
+            
+        } else if(!CmpConfiguration.getRAOperationMode()) { // client mode
+            
             // Check if this certificate belongs to the user, and set the password of the request to this user's password
             // so it can later be used when issuing the certificate
             if (username != null) {
-                if (!StringUtils.equals(username, certInfo.getUsername())) {
+                if (!StringUtils.equals(username, certinfo.getUsername())) {
                     errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"'.";
                     if(log.isDebugEnabled()) {
                         // Use a different debug message, as not to reveal too much information
-                        final String debugMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"', but to user '"+certInfo.getUsername()+"'.";
+                        final String debugMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"', but to user '"+certinfo.getUsername()+"'.";
                         log.debug(debugMessage);
                     }
                     return false;                
@@ -272,10 +307,10 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                     return false;
                 }
             }
+            
         }
-
         
-        //Begin the verification process.
+        //Begin the signature verification process.
         //Verify the signature of msg using the public key of the certificate we found in the database
         try {
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
@@ -463,21 +498,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         return ret;
     }
-
-    private CertificateInfo getActiveExistingCertInfo(final String fp) {
-        
-        // Check that the certificate is in the database
-        final CertificateInfo info = certSession.getCertificateInfo(fp);
-        if(info == null) {
-            errorMessage = "The certificate attached to the PKIMessage in the extraCert field could not be found in the database.";
-            if(log.isDebugEnabled()) {
-                log.debug(errorMessage+". Fingerprint="+fp);
-            }
-
-            return null;
-        }
-        
-        // Check that the certificate is valid
+    
+    private boolean isCertValid(final String fp) {
         X509Certificate cert = (X509Certificate) certSession.findCertificateByFingerprint(fp);
         try {
             cert.checkValidity();
@@ -487,20 +509,23 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 log.debug(errorMessage+". Fingerprint="+fp);
                 log.debug(e.getLocalizedMessage());
             }
+            return false;
         }
-        
+        return true;
+    }
 
+    private boolean isCertActive(final CertificateInfo certinfo) {
         // Check that the certificate is not revoked
-        if (info.getStatus() != SecConst.CERT_ACTIVE) {
+        if (certinfo.getStatus() != SecConst.CERT_ACTIVE) {
             errorMessage = "The certificate attached to the PKIMessage in the extraCert field is revoked.";
             if(log.isDebugEnabled()) {
-                log.debug(errorMessage+" Username="+info.getUsername());
+                log.debug(errorMessage+" Username="+certinfo.getUsername());
             }
 
-            return null;            
+            return false;
         }
         
-        return info;
+        return true;
     }
     
     private boolean isIssuedByCA(CAInfo cainfo) {
@@ -519,11 +544,10 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         return true;
     }
     
-    private CAInfo getCAInfo(final Certificate extracert) {
+    private CAInfo getCAInfo(final Certificate extracert, boolean isCASet) {
         CAInfo cainfo = null;
         try {
-            //Check that the extraCert is issued by the right CA
-            if (!StringUtils.equals("-", this.authenticationParameterCAName)) {
+            if (isCASet) {
                 cainfo = caSession.getCAInfo(this.admin, this.authenticationParameterCAName);
             } else {
                 cainfo = caSession.getCAInfo(this.admin, CertTools.getIssuerDN(extracert).hashCode());
