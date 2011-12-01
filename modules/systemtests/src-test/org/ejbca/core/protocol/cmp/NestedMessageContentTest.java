@@ -835,10 +835,11 @@ public class NestedMessageContentTest extends CmpTestCase {
     }
     
     @Test
-    public void test08CrmfWrongIssuerAndDoNotCheckAdmin() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
+    public void test09CrmfWrongIssuerAndDoNotCheckAdmin() throws ObjectNotFoundException, InvalidKeyException, SignatureException, AuthorizationDeniedException, EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, Exception {
         
-        updatePropertyOnServer(CmpConfiguration.CONFIG_CHECKADMINAUTHORIZATION, "false");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;foo123");
 
+        
         //-----------------Creating CRMF request
         //PKIMessage crmfMsg = createEESignedCrmfReq(subjectDN);
         byte[] senderNonce = CmpMessageHelper.createSenderNonce();
