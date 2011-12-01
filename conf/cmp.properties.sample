@@ -66,7 +66,11 @@
 # module specified, the corresponding parameters are separated with a ";". The number and order of the parameters should match
 # the number and order of the authentication modules specified. If an authentication module does not require any parameters,
 # "-" should be specified.
-# 
+#
+# Note, for the EndEntityCertificate authentication module, in RA mode, this parameter can either be set to the name of the CA 
+# that issued the endentity certificate (and this will trigger test to authenticate the CMP message), or it can be set to either "-" 
+# or "A" (and this will bypass the authentication tests, however, Ejbca will be expecting an already authenticated CMP message, for 
+# example, that the CMP request would be sent inside a signed NestedMessageContent CMP request)
 # Default:-;-
 #cmp.authenticationparameters=-
 #cmp.authenticationparameters=UID
@@ -83,18 +87,6 @@
 #
 # Default: empty
 #cmp.ra.authenticationsecret=
-
-# When the cmp.authenticationmodule is set to 'EndEntityCertificate', Ejbca can be set to check if the certificate in question 
-# belongs to a registered administrator who has the right authorizations. If this action is set to 'false', no such check will be
-# performed. For RA mode this is highly recommended. For client mode, the value of this setting is not used since the user may only 
-# send CMP requests regarding his own certificate and no one else's.
-#
-# WARNING: It is highly not recommended to set this variable to 'false'. Do NOT set it to 'false' unless you are sure that you know 
-# what you are doing and why.
-#
-# Default: true
-#cmp.checkadminauthorization=true
-#cmp.checkadminauthorization=false
 
 # Allow automatic key update (certificate renewal). Setting this option to 'true' will change the end entity status to 'NEW' to allow the 
 # issuance of a new certificate. Setting it to 'false' will not go through this step, so the KeyUpdate request will fail if the status 
