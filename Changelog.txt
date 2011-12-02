@@ -1,3 +1,26 @@
+EJBCA 5.0.1, 2011-12-02
+---
+Bug
+    [ECA-2396] - More XSS issues
+    [ECA-2402] - Regression: Supervisor role does not authorize the admin to view the log
+    [ECA-2407] - CMP: Allow only NestedMessageContent when an authorized administrator is not required when sending a CMP request
+    [ECA-2414] - CMP: When checkAdminAuthorization is set to 'false', verifying the issuer of extraCert should not be done.
+    [ECA-2416] - CMP message handler tries to create unid req handler
+
+Improvement
+    [ECA-2342] - Check authorization and make methods local-only in UserAdminSession
+    [ECA-2400] - Split xdocs in two separate sites, ejbca.org site and documentation site
+    [ECA-2409] - ProfileDefault for cmp.ra.certificateprofile
+
+New Feature
+    [ECA-1153] - Support for Permanent Identifiers (RFC 4043)
+    [ECA-2410] - Document EJBCA Djigzo intregration
+    [ECA-2411] - Support for authorityInformationAccess in CRLs
+
+Task
+    [ECA-2210] - Verify no-cache settings for CMP over HTTP
+    [ECA-2404] - Add healthcheck doc to admin guide
+
 EJBCA 5.0.0, 2011-11-21
 ---
 Bug
@@ -732,7 +755,7 @@ Bug
     [ECA-1633] - document boolean usepreviouskey in X509CA.signRequest better
     [ECA-1638] - activateca cli does not work for expired CAs
     [ECA-1641] - Expired CAs makes CA cert download from public web fail
- 	* [ECA-1644] - ejbca.sh listcas does not work with CVCAs
+ 	[ECA-1644] - ejbca.sh listcas does not work with CVCAs
  	  
 3.10.0, 2010-03-26
 ---

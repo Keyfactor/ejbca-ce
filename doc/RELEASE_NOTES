@@ -1,5 +1,16 @@
 EJBCA 5.0.1
 -----------
+This minor release primarily fixed some CMP issues, one regression that was introduced in 5.0.0 and introduced
+support for functionality from RFC4043 and RFC4325.
+
+*Noteworthy changes:
+- Support for Permanent Identifiers (RFC4043)
+- Support for authorityInformationAccess in CRLs (RFC4325)
+- Split xdocs in two separate sites, ejbca.org site and documentation site
+- Documentation of EJBCA Djigzo integration
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
 
 EJBCA 5.0.0
 -----------
