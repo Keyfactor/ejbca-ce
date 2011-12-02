@@ -34,7 +34,6 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -238,6 +237,7 @@ public class CAImportExportTest  {
                 "", // Default CRL Dist Point
                 "", // Default CRL Issuer
                 "", // Default OCSP Service Locator  
+                null, // Authority Information Access
                 null, // defaultfreshestcrl
                 true, // Finish User
                 new ArrayList<ExtendedCAServiceInfo>(), //extendedcaservices

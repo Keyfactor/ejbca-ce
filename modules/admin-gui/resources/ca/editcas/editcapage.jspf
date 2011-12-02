@@ -1077,8 +1077,32 @@ function checkallfields(){
        </select>
      </td>
    </tr>
-
-
+   
+   <tr id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <%= ejbcawebbean.getText("EXT_PKIX_AIA_CAISSUERS_URI") %>
+        <%= ejbcawebbean.getHelpReference("/userguide.html#CA%20Issuer%20URI") %>
+      </td>
+      <td width="50%">
+      	<% String authorityInformationAccess = "";
+       /* Note: the code in this section only ever uses a single value for
+          Authority Information Access. According to rfc4325 a CRL should have 
+          support for multiple such values. -mikek
+          */
+       if(x509cainfo != null) {
+    	   List<String> existingCaIssuers = x509cainfo.getAuthorityInformationAccess();
+           if(existingCaIssuers != null) {
+        	   if(existingCaIssuers.size() > 0) {
+        		   authorityInformationAccess = existingCaIssuers.get(0);
+        	   }
+           }
+       }    
+       %>
+        <input type="text" name="<%=TEXTFIELD_AUTHORITYINFORMATIONACCESS%>" size="40" maxlength="256" <% out.write(" value='"+authorityInformationAccess+"'"); %> >
+        
+      </td>
+    </tr>
+      
     <!-- ---------- Services -------------------- -->
 
     <tr  id="Row<%=row++%2%>"> 

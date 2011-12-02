@@ -48,7 +48,6 @@
   static final String BUTTON_IMPORTCA		               = "buttonimportca";
   static final String BUTTON_EXPORTCA		               = "buttonexportca";
   static final String BUTTON_IMPORTCACERT	               = "buttonimportcacert";
-  
 
   static final String SELECT_CAS                           = "selectcas";
   static final String TEXTFIELD_CANAME                     = "textfieldcaname";
@@ -83,6 +82,7 @@
   static final String BUTTON_GENCADEFINEDFRESHESTCRL    = "checkboxgeneratecadefinedfresherstcrl";
   static final String BUTTON_GENDEFAULTOCSPLOCATOR      = "checkbexgeneratedefaultocsplocator";
 
+
   static final String TEXTFIELD_KEYSEQUENCE           = "textfieldkeysequence";
   static final String TEXTFIELD_SUBJECTDN             = "textfieldsubjectdn";
   static final String TEXTFIELD_SUBJECTALTNAME        = "textfieldsubjectaltname";  
@@ -107,6 +107,7 @@
   static final String TEXTFIELD_IMPORTCA_ENCKEYALIAS  = "textfieldimportcaenckeyalias";
   static final String TEXTFIELD_IMPORTCA_NAME		  = "textfieldimportcaname";
   static final String TEXTFIELD_SHAREDCMPRASECRET     = "textfieldsharedcmprasecret";
+  static final String TEXTFIELD_AUTHORITYINFORMATIONACCESS  = "textfieldauthorityinformationaccess";
 
 
   static final String CHECKBOX_AUTHORITYKEYIDENTIFIER             = "checkboxauthoritykeyidentifier";
@@ -609,6 +610,9 @@
              String defaultcrlissuer = request.getParameter(TEXTFIELD_DEFAULTCRLISSUER);
              String defaultocsplocator  = request.getParameter(TEXTFIELD_DEFAULTOCSPLOCATOR);
               
+             List<String> authorityInformationAccess = new ArrayList<String>();
+             authorityInformationAccess.add(request.getParameter(TEXTFIELD_AUTHORITYINFORMATIONACCESS));
+             
              String cadefinedfreshestcrl = "";
              if (request.getParameter(TEXTFIELD_CADEFINEDFRESHESTCRL) != null) {
                  cadefinedfreshestcrl = request.getParameter(TEXTFIELD_CADEFINEDFRESHESTCRL);
@@ -698,7 +702,9 @@
                                                         crlnumbercritical, 
                                                         defaultcrldistpoint,
                                                         defaultcrlissuer,
-                                                        defaultocsplocator, cadefinedfreshestcrl,
+                                                        defaultocsplocator, 
+                                                        authorityInformationAccess,
+                                                        cadefinedfreshestcrl,
                                                         finishuser, extendedcaservices,
                                                         useutf8policytext,
                                                         approvalsettings,
@@ -778,7 +784,9 @@
                                                         crlnumbercritical, 
                                                         defaultcrldistpoint,
                                                         defaultcrlissuer,
-                                                        defaultocsplocator, cadefinedfreshestcrl,
+                                                        defaultocsplocator, 
+                                                        authorityInformationAccess,
+                                                        cadefinedfreshestcrl,
                                                         finishuser, extendedcaservices,
                                                         useutf8policytext,
                                                         approvalsettings,
@@ -1007,6 +1015,9 @@
                 }
              }
              
+            
+            values = request.getParameterValues(SELECT_AVAILABLECRLPUBLISHERS);
+            
             // Info specific for X509 CA
             if(catype == CAInfo.CATYPE_X509){
                                           
@@ -1042,6 +1053,9 @@
              String defaultcrlissuer = request.getParameter(TEXTFIELD_DEFAULTCRLISSUER);
              String defaultocsplocator  = request.getParameter(TEXTFIELD_DEFAULTOCSPLOCATOR);
 
+             List<String> authorityInformationAccess = new ArrayList<String>();
+             authorityInformationAccess.add(request.getParameter(TEXTFIELD_AUTHORITYINFORMATIONACCESS));
+             
              String cadefinedfreshestcrl = "";
              if (request.getParameter(TEXTFIELD_CADEFINEDFRESHESTCRL) != null) {
 			 	cadefinedfreshestcrl = request.getParameter(TEXTFIELD_CADEFINEDFRESHESTCRL);
@@ -1126,7 +1140,9 @@
                                                       crlnumbercritical, 
                                                       defaultcrldistpoint,
                                                       defaultcrlissuer,
-                                                      defaultocsplocator, cadefinedfreshestcrl,
+                                                      defaultocsplocator, 
+                                                      authorityInformationAccess,
+                                                      cadefinedfreshestcrl,
                                                       finishuser,extendedcaservices,
                                                       useutf8policytext,
                                                       approvalsettings,
@@ -1482,7 +1498,9 @@
                                                         authoritykeyidentifiercritical,
                                                         usecrlnumber, 
                                                         crlnumbercritical, 
-                                                        "","","", "", 
+                                                        "","","", 
+                                                        null, 
+                                                        "", 
                                                         finishuser, 
                                                         new ArrayList(),
                                                         useutf8policytext,

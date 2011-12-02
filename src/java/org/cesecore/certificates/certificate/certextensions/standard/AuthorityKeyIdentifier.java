@@ -45,7 +45,7 @@ import org.cesecore.util.CertTools;
  * @version $Id$
  */
 public class AuthorityKeyIdentifier extends StandardCertificateExtension {
-    private static final Logger log = Logger.getLogger(AuthorityInformationAccess.class);
+    private static final Logger log = Logger.getLogger(AuthorityKeyIdentifier.class);
 
     @Override
     public void init(final CertificateProfile certProf) {
