@@ -176,6 +176,12 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		}
 	}
 
+	/**
+	 * @param msg
+     * @param authenticated if the CMP message has already been authenticated in another way or not
+     * 
+     * @return
+	 */
 	public ResponseMessage handleMessage(final BaseCmpMessage msg, boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
@@ -288,6 +294,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * 
 	 * @param msg
 	 * @param crmfreq
+	 * @param authenticated if the CMP message has already been authenticated in another way or not
 	 * @return IResponseMessage that can be sent back to the client
 	 * @throws AuthorizationDeniedException
 	 * @throws EjbcaException
@@ -445,6 +452,17 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		return resp;
 	}
 	
+	/**
+	 * 
+	 * @param msg
+	 * @param crmfreq
+	 * @param username
+	 * @param caId
+	 * @param authenticated if the CMP message has already been authenticated in another way or not
+	 * @return
+	 * @throws CADoesntExistsException
+	 * @throws AuthorizationDeniedException
+	 */
 	private Object verifyAndGetAuthModule(final BaseCmpMessage msg, final CrmfRequestMessage crmfreq, final String username, final int caId, boolean authenticated) throws CADoesntExistsException, AuthorizationDeniedException {
         final CAInfo caInfo;
         if (caId == 0) {
