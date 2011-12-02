@@ -523,8 +523,9 @@ public class X509CATest {
 	    authorityInformationAccess.add("http://example.com/1");
 	    authorityInformationAccess.add("http://example.com/2");
 	    authorityInformationAccess.add("http://example.com/3");
-	    testCa.setAuthorityInformationAccess(authorityInformationAccess);	    
-	    CRL testCrl = testCa.generateCRL(null, 0);	    
+	    testCa.setAuthorityInformationAccess(authorityInformationAccess);
+	    Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
+	    CRL testCrl = testCa.generateCRL(revcerts, 0);	    
 	    Collection<String> result = CertTools.getAuthorityInformationAccess(testCrl);
 	    assertEquals("Number of URLs do not match", authorityInformationAccess.size(), result.size());
 	    for(String url : authorityInformationAccess) {
@@ -542,7 +543,8 @@ public class X509CATest {
     @Test
     public void testAuthorityInformationAccessCrlExtensionWithEmptyList() throws Exception{
         X509CA testCa = createTestCA("CN=foo");    
-        CRL testCrl = testCa.generateCRL(null, 0);      
+        Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
+        CRL testCrl = testCa.generateCRL(revcerts, 0);    
         Collection<String> result = CertTools.getAuthorityInformationAccess(testCrl);
         assertEquals("A list was returned without any values present.", 0, result.size());        
     }
