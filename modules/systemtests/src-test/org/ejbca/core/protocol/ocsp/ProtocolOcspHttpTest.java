@@ -1039,6 +1039,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
                     null, // defaultcrldistpoint
                     null, // defaultcrlissuer
                     null, // defaultocsplocator
+                    null, // Authority Information Access
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
@@ -1141,6 +1142,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
                     null, // defaultcrldistpoint
                     null, // defaultcrlissuer
                     null, // defaultocsplocator
+                    null, // Authority Information Access
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings

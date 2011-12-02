@@ -298,6 +298,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 null, // defaultcrldistpoint
                 null, // defaultcrlissuer
                 null, // defaultocsplocator
+                null, // Authority Information Access
                 null, // defaultfreshestcrl
                 true, // Finish User
                 extendedcaservices, false, // use default utf8 settings
@@ -544,6 +545,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 null, // defaultcrldistpoint
                 null, // defaultcrlissuer
                 null, // defaultocsplocator
+                null, // Authority Information Access
                 null, // defaultfreshestcrl
                 true, // Finish User
                 extendedcaservices, false, // use default utf8 settings

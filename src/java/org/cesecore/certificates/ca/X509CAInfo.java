@@ -53,6 +53,7 @@ public class X509CAInfo extends CAInfo{
 	private boolean useCrlDistributionPointOnCrl;
 	private boolean crlDistributionPointOnCrlCritical;
 	private String cmpRaAuthSecret;
+	private List<String> authorityInformationAccess;
     
     /**
      * Constructor that should be used when creating CA and retrieving CA info.
@@ -63,8 +64,9 @@ public class X509CAInfo extends CAInfo{
     		final String description, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
     		final Collection<Integer> crlpublishers, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical, 
-    		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer, 
-    		final String defaultocspservicelocator, final String cadefinedfreshestcrl, final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
+    		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer,  
+    		final String defaultocspservicelocator, final List<String> authorityInformationAccess, final String cadefinedfreshestcrl, 
+    		final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
     		final boolean useUTF8PolicyText, final Collection<Integer> approvalSettings, final int numOfReqApprovals, final boolean usePrintableStringSubjectDN, 
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
     		final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber,
@@ -131,6 +133,8 @@ public class X509CAInfo extends CAInfo{
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
         this.cmpRaAuthSecret = _cmpRaAuthSecret;
+        this.authorityInformationAccess = authorityInformationAccess;
+        
     }
 
     /**
@@ -141,7 +145,8 @@ public class X509CAInfo extends CAInfo{
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
     		final Collection<Integer> crlpublishers, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
     		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer, 
-    		final String defaultocspservicelocator, final String cadefinedfreshestcrl, final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
+    		final String defaultocspservicelocator, final List<String> authorityInformationAccess,final String cadefinedfreshestcrl, 
+    		final boolean finishuser, final Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
     		final boolean useUTF8PolicyText, final Collection<Integer> approvalSettings, final int numOfReqApprovals, final boolean usePrintableStringSubjectDN, 
     		final boolean useLdapDnOrder, final boolean useCrlDistributionPointOnCrl, final boolean crlDistributionPointOnCrlCritical, final boolean includeInHealthCheck,
     		final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber, final boolean _useCertReqHistory, 
@@ -180,6 +185,7 @@ public class X509CAInfo extends CAInfo{
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
         this.cmpRaAuthSecret = _cmpRaAuthSecret;
+        this.authorityInformationAccess = authorityInformationAccess;
     }
   
   
@@ -240,5 +246,13 @@ public class X509CAInfo extends CAInfo{
   
   public String getCmpRaAuthSecret() { return cmpRaAuthSecret; }
   public void setCmpRaAuthSecret(String cmpRaAuthSecret) { this.cmpRaAuthSecret = cmpRaAuthSecret; }
+
+    public List<String> getAuthorityInformationAccess() {
+        return authorityInformationAccess;
+    }
+
+    public void setAuthorityInformationAccess(List<String> authorityInformationAccess) {
+        this.authorityInformationAccess = authorityInformationAccess;
+    }
   
 }

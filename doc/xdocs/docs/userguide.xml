@@ -686,6 +686,15 @@ The default URL for the internal OCSP responder in EJBCA is http://hostname:8080
 </p>
 </subsubsection>
 
+<subsubsection name="CA Issuer URI">
+<p>
+This value is used for the Authority Information Access CRL Extension as specified in <a href="http://tools.ietf.org/rfc/rfc4325.txt">RFC4325</a>.
+The URI specified in this field must point to a certificate containing file containing either a single certificate (.cer) or a collection of 
+certificates (.p7c).
+
+</p>
+</subsubsection>
+
 <subsubsection name="Use LDAP DN order">
 <p>
 In a certificate the order of the CN components can be put in different order depending on wich standard you abide to.

@@ -298,6 +298,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                                              "", // Default CRL Dist Point
                                              "", // Default CRL Issuer
                                              "", // Default OCSP Service Locator
+                                             null, // Authority Information Access
                                              "", // CA defined freshest CRL
                                              true, // Finish User
                                              extendedcaservices,

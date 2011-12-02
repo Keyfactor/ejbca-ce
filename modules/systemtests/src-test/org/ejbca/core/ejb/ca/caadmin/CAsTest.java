@@ -208,6 +208,7 @@ public class CAsTest extends CaTestCase {
                 null, // defaultcrldistpoint
                 null, // defaultcrlissuer
                 null, // defaultocsplocator
+                null, // Authority Information Access
                 null, // defaultfreshestcrl
                 true, // Finish User
                 extendedcaservices, false, // use default utf8 settings
@@ -362,6 +363,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultcrldistpoint
                     null, // defaultcrlissuer
                     null, // defaultocsplocator
+                    null, // Authority Information Access
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
@@ -480,6 +482,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultcrldistpoint
                     null, // defaultcrlissuer
                     null, // defaultocsplocator
+                    null, // Authority Information Access
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
@@ -586,6 +589,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultcrldistpoint
                     null, // defaultcrlissuer
                     null, // defaultocsplocator
+                    null, // Authority Information Access
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
@@ -696,6 +700,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultcrldistpoint
                     null, // defaultcrlissuer
                     null, // defaultocsplocator
+                    null, // Authority Information Access
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
@@ -1501,6 +1506,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultcrldistpoint
                     null, // defaultcrlissuer
                     null, // defaultocsplocator
+                    null, // Authority Information Access
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
@@ -1643,6 +1649,7 @@ public class CAsTest extends CaTestCase {
                     null, // defaultcrldistpoint
                     null, // defaultcrlissuer
                     null, // defaultocsplocator
+                    null, // Authority Information Access
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
@@ -1876,6 +1883,7 @@ public class CAsTest extends CaTestCase {
                 null, // defaultcrldistpoint
                 null, // defaultcrlissuer
                 null, // defaultocsplocator
+                null, // Authority Information Access
                 null, // defaultfreshestcrl
                 true, // Finish User
                 extendedcaservices, false, // use default utf8 settings

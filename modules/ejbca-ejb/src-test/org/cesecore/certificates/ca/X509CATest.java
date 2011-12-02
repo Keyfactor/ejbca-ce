@@ -410,8 +410,6 @@ public class X509CATest {
         assertEquals(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, catokeninfo.getKeySequenceFormat());
 
 	}
-	
-	
 
 	@Test
 	public void testExtendedCAServices() throws Exception {
@@ -511,6 +509,44 @@ public class X509CATest {
         CRL crl = x509ca.generateCRL(revcerts, 1);
         assertNotNull(crl);
 	}
+	
+	/**
+	 * Test implementation of Authority Information Access CRL Extension 
+	 * according to RFC 4325
+	 * @throws Exception 
+	 */
+	@Test
+	public void testAuthorityInformationAccessCrlExtension() throws Exception {
+	    X509CA testCa = createTestCA("CN=foo");
+	    Collection<String> authorityInformationAccess = new ArrayList<String>();
+	    authorityInformationAccess.add("http://example.com/0");
+	    authorityInformationAccess.add("http://example.com/1");
+	    authorityInformationAccess.add("http://example.com/2");
+	    authorityInformationAccess.add("http://example.com/3");
+	    testCa.setAuthorityInformationAccess(authorityInformationAccess);	    
+	    CRL testCrl = testCa.generateCRL(null, 0);	    
+	    Collection<String> result = CertTools.getAuthorityInformationAccess(testCrl);
+	    assertEquals("Number of URLs do not match", authorityInformationAccess.size(), result.size());
+	    for(String url : authorityInformationAccess) {
+	        if(!result.contains(url)) {
+	            fail("URL " + url + " was not found.");
+	        }
+	    }
+	}
+	
+	   /**
+     * Test implementation of Authority Information Access CRL Extension 
+     * according to RFC 4325
+     * @throws Exception 
+     */
+    @Test
+    public void testAuthorityInformationAccessCrlExtensionWithEmptyList() throws Exception{
+        X509CA testCa = createTestCA("CN=foo");    
+        CRL testCrl = testCa.generateCRL(null, 0);      
+        Collection<String> result = CertTools.getAuthorityInformationAccess(testCrl);
+        assertEquals("A list was returned without any values present.", 0, result.size());        
+    }
+	
 
 	private static X509CA createTestCA(final String cadn) throws Exception {
 		return createTestCA(cadn, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
@@ -551,6 +587,7 @@ public class X509CATest {
                 null, // defaultcrldistpoint
                 null, // defaultcrlissuer
                 null, // defaultocsplocator
+                null, // Authority Information Access
                 null, // defaultfreshestcrl
                 true, // Finish User
                 extendedcaservices, false, // use default utf8 settings

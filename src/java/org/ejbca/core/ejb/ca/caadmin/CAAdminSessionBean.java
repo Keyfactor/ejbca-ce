@@ -164,7 +164,6 @@ import org.ejbca.cvc.CardVerifiableCertificate;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRemote {
 
-    private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CAAdminSessionBean.class);
 
     @PersistenceContext(unitName = "ejbca")
@@ -1289,7 +1288,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             cainfo = new X509CAInfo(subjectdn, caname, SecConst.CA_EXTERNAL, new Date(), subjectaltname, certprofileid, validity,
                     CertTools.getNotAfter(x509CaCertificate), CAInfo.CATYPE_X509, signedby, null, null, description, -1, null, policies, crlperiod,
                     crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, useauthoritykeyidentifier, authoritykeyidentifiercritical,
-                    usecrlnumber, crlnumbercritical, "", "", "", "", finishuser, extendedcaserviceinfos, useutf8policytext, approvalsettings,
+                    usecrlnumber, crlnumbercritical, "", "", "", null, "", finishuser, extendedcaserviceinfos, useutf8policytext, approvalsettings,
                     numofreqapprovals, useprintablestringsubjectdn, useldapdnorder, usecrldistpointoncrl, crldistpointoncrlcritical, false, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
                     false, // isDoEnforceUniqueSubjectDNSerialnumber
@@ -2055,6 +2054,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     "", // Default CRL Dist Point
                     "", // Default CRL Issuer
                     "", // Default OCSP Service Locator
+                    null,  //Authority Information Access
                     "", // CA defined freshest CRL
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings

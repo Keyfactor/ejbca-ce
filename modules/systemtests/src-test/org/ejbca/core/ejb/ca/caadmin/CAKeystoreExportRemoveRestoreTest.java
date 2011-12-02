@@ -494,6 +494,7 @@ public class CAKeystoreExportRemoveRestoreTest {
                 "", // Default CRL Dist Point
                 "", // Default CRL Issuer
                 "", // Default OCSP Service Locator
+                null, // Authority Information Access
                 null, // defaultfreshestcrl
                 true, // Finish User
                 new ArrayList<ExtendedCAServiceInfo>(), // extendedcaservices

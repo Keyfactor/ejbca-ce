@@ -33,6 +33,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.SignatureException;
+import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
@@ -56,7 +57,6 @@ import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -2324,7 +2324,37 @@ public class CertTools {
     }
 
     /**
-     * Returns OCSP URL that is inside AuthorithInformationAccess extension, or null.
+     * This utility method extracts the Authority Information Access Extention's URLs
+     * 
+     * @param crl a CRL to parse
+     * @return the Authority Information Access Extention's URLs, or an empty Collection if none were found
+     */
+    public static Collection<String> getAuthorityInformationAccess(CRL crl) {
+        Collection<String> result = new ArrayList<String>();
+        if(crl instanceof X509CRL) {
+            X509CRL x509crl = (X509CRL) crl;
+            DERObject derObject = getExtensionValue(x509crl,  X509Extensions.AuthorityInfoAccess.getId());
+            if(derObject != null) {
+                AuthorityInformationAccess authorityInformationAccess = AuthorityInformationAccess.getInstance(derObject);
+                AccessDescription[] accessDescriptions = authorityInformationAccess.getAccessDescriptions();
+                if((accessDescriptions != null) && (accessDescriptions.length >0)) {
+                    for(AccessDescription accessDescription : accessDescriptions) {
+                        if(accessDescription.getAccessMethod().equals(X509ObjectIdentifiers.id_ad_caIssuers)) {
+                            GeneralName generalName = accessDescription.getAccessLocation();
+                            if(generalName.getTagNo() == GeneralName.uniformResourceIdentifier) { 
+                                DERIA5String deria5String = DERIA5String.getInstance(generalName.getDERObject());
+                                result.add(deria5String.getString());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Returns OCSP URL that is inside AuthorityInformationAccess extension, or null.
      * 
      * @param cert is the certificate to parse
      * @throws CertificateParsingException
@@ -2344,7 +2374,7 @@ public class CertTools {
                     for (int i = 0; i < ad.length; i++) {
                         if (ad[i].getAccessMethod().equals(X509ObjectIdentifiers.ocspAccessMethod)) {
                             GeneralName gn = ad[i].getAccessLocation();
-                            if (gn.getTagNo() == 6) {
+                            if (gn.getTagNo() == GeneralName.uniformResourceIdentifier) {
                                 DERIA5String str = DERIA5String.getInstance(gn.getDERObject());
                                 ret = str.getString();
                                 break; // no need to go on any further, we got a value
@@ -2359,23 +2389,49 @@ public class CertTools {
         }
         return ret;
     }
-
+    
     /**
-     * Return an Extension DERObject from a certificate
+     * 
+     * @param cert An X509Certificate
+     * @param oid An OID for an extension 
+     * @return an Extension DERObject from a certificate
      */
-    protected static DERObject getExtensionValue(X509Certificate cert, String oid) throws IOException {
+    protected static DERObject getExtensionValue(X509Certificate cert, String oid) {
         if (cert == null) {
             return null;
         }
         byte[] bytes = cert.getExtensionValue(oid);
+        return getDerObjectFromByteArray(bytes);
+
+    } 
+
+    /**
+     * 
+     * @param crl an X509CRL
+     * @param oid An OID for an extension 
+     * @return an Extension DERObject from a CRL
+     */
+    protected static DERObject getExtensionValue(X509CRL crl, String oid) {
+        if (crl == null || oid == null) {
+            return null;
+        }
+        byte[] bytes = crl.getExtensionValue(oid);
+        return getDerObjectFromByteArray(bytes);
+    }
+
+    private static DERObject getDerObjectFromByteArray(byte[] bytes) {
         if (bytes == null) {
             return null;
         }
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(bytes));
-        ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
-        aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        return aIn.readObject();
-    } // getExtensionValue
+        try {
+            ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
+            aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
+            return aIn.readObject();
+        } catch (IOException e) {
+            throw new RuntimeException("Caught an unexected IOException", e);
+        }
+    }
 
     /**
      * Gets a URI string from a GeneralNames structure.

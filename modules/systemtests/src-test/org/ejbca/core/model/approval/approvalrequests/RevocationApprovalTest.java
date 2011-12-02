@@ -227,7 +227,7 @@ public class RevocationApprovalTest extends CaTestCase {
         approvalSettings.add(approvalRequirementType);
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 365, new Date(
                 System.currentTimeMillis() + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catokeninfo, "Used for testing approvals",
-                -1, null, null, 24, 0, 10, 0, new ArrayList<Integer>(), true, false, true, false, "", "", "", "", true, new ArrayList<ExtendedCAServiceInfo>(), false, approvalSettings, 1,
+                -1, null, null, 24, 0, 10, 0, new ArrayList<Integer>(), true, false, true, false, "", "", "", null, "", true, new ArrayList<ExtendedCAServiceInfo>(), false, approvalSettings, 1,
                 false, true, false, false, true, true, true, false, true, true, true, null);
         int caID = cainfo.getCAId();
         try {

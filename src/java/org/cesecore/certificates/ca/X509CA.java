@@ -56,6 +56,8 @@ import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.x509.AccessDescription;
+import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLNumber;
@@ -139,6 +141,7 @@ public class X509CA extends CA implements Serializable {
     protected static final String SUBJECTALTNAME = "subjectaltname";
     protected static final String USEAUTHORITYKEYIDENTIFIER = "useauthoritykeyidentifier";
     protected static final String AUTHORITYKEYIDENTIFIERCRITICAL = "authoritykeyidentifiercritical";
+    protected static final String AUTHORITY_INFORMATION_ACCESS = "authorityinformationaccess";
     protected static final String USECRLNUMBER = "usecrlnumber";
     protected static final String CRLNUMBERCRITICAL = "crlnumbercritical";
     protected static final String DEFAULTCRLDISTPOINT = "defaultcrldistpoint";
@@ -173,6 +176,7 @@ public class X509CA extends CA implements Serializable {
         setUseCrlDistributionPointOnCrl(cainfo.getUseCrlDistributionPointOnCrl());
         setCrlDistributionPointOnCrlCritical(cainfo.getCrlDistributionPointOnCrlCritical());
         setCmpRaAuthSecret(cainfo.getCmpRaAuthSecret());
+        setAuthorityInformationAccess(cainfo.getAuthorityInformationAccess());
         data.put(CA.CATYPE, Integer.valueOf(CAInfo.CATYPE_X509));
         data.put(VERSION, new Float(LATEST_VERSION));
     }
@@ -199,7 +203,7 @@ public class X509CA extends CA implements Serializable {
                 getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), getCAToken(caId).getTokenInfo(), getDescription(),
                 getRevocationReason(), getRevocationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(),
                 getDeltaCRLPeriod(), getCRLPublishers(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),
-                getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getCADefinedFreshestCRL(),
+                getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getAuthorityInformationAccess(), getCADefinedFreshestCRL(),
                 getFinishUser(), externalcaserviceinfos, getUseUTF8PolicyText(), getApprovalSettings(), getNumOfRequiredApprovals(),
                 getUsePrintableStringSubjectDN(), getUseLdapDNOrder(), getUseCrlDistributionPointOnCrl(), getCrlDistributionPointOnCrlCritical(),
                 getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(),
@@ -236,7 +240,16 @@ public class X509CA extends CA implements Serializable {
     public void setAuthorityKeyIdentifierCritical(boolean authoritykeyidentifiercritical) {
         data.put(AUTHORITYKEYIDENTIFIERCRITICAL, Boolean.valueOf(authoritykeyidentifiercritical));
     }
+    
+    @SuppressWarnings("unchecked")
+    public List<String> getAuthorityInformationAccess() {
+        return (List<String>) data.get(AUTHORITY_INFORMATION_ACCESS);
+    }
 
+    public void setAuthorityInformationAccess(Collection<String> authorityInformationAccess) {
+        data.put(AUTHORITY_INFORMATION_ACCESS, authorityInformationAccess);
+    }
+    
     public boolean getUseCRLNumber() {
         return ((Boolean) data.get(USECRLNUMBER)).booleanValue();
     }
@@ -357,7 +370,7 @@ public class X509CA extends CA implements Serializable {
     public void updateCA(CAInfo cainfo) throws IllegalCryptoTokenException {
         super.updateCA(cainfo);
         X509CAInfo info = (X509CAInfo) cainfo;
-
+        setAuthorityInformationAccess(info.getAuthorityInformationAccess());
         setUseAuthorityKeyIdentifier(info.getUseAuthorityKeyIdentifier());
         setAuthorityKeyIdentifierCritical(info.getAuthorityKeyIdentifierCritical());
         setUseCRLNumber(info.getUseCRLNumber());
@@ -919,13 +932,31 @@ public class X509CA extends CA implements Serializable {
             }
         }
 
+             
         // Authority key identifier
-        if (getUseAuthorityKeyIdentifier() == true) {
+        if (getUseAuthorityKeyIdentifier() == true) {      
             SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(getCAToken()
                     .getPublicKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN).getEncoded())).readObject());
             AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
             crlgen.addExtension(X509Extensions.AuthorityKeyIdentifier.getId(), getAuthorityKeyIdentifierCritical(), aki);
         }
+        
+        // Authority Information Access  
+        final ASN1EncodableVector accessList = new ASN1EncodableVector();
+        if (getAuthorityInformationAccess() != null) {
+            for(String url :  getAuthorityInformationAccess()) {   
+                if(StringUtils.isNotEmpty(url)) {
+                    GeneralName accessLocation = new GeneralName(GeneralName.uniformResourceIdentifier, new DERIA5String(url));
+                    accessList.add(new AccessDescription(AccessDescription.id_ad_caIssuers, accessLocation));
+                }
+            }               
+        }
+        if(accessList.size() > 0) {
+            AuthorityInformationAccess authorityInformationAccess = new AuthorityInformationAccess(new DERSequence(accessList));
+            // "This CRL extension MUST NOT be marked critical." according to rfc4325
+            crlgen.addExtension(X509Extensions.AuthorityInfoAccess, false, authorityInformationAccess);
+        }
+                
         // CRLNumber extension
         if (getUseCRLNumber() == true) {
             CRLNumber crlnum = new CRLNumber(BigInteger.valueOf(crlnumber));
