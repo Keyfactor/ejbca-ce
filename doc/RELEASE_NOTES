@@ -1,3 +1,6 @@
+EJBCA 5.0.2
+-----------
+
 EJBCA 5.0.1
 -----------
 This minor release primarily fixed some CMP issues, one regression that was introduced in 5.0.0 and introduced
