@@ -25,6 +25,7 @@ public interface ICmpMessageHandler {
 	/**
 	 * 
 	 * @param msg input message
+	 * @param authenticated if the CMP message has already been authenticated
 	 * @return response message
 	 */
 	public ResponseMessage handleMessage(BaseCmpMessage msg, boolean authenticated);
