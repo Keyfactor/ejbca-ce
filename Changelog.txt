@@ -14,7 +14,7 @@ Improvement
 
 New Feature
     [ECA-1153] - Support for Permanent Identifiers (RFC 4043)
-    [ECA-2410] - Document EJBCA Djigzo intregration
+    [ECA-2410] - Document EJBCA Djigzo integration
     [ECA-2411] - Support for authorityInformationAccess in CRLs
 
 Task
