@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.authorization.access;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -23,7 +24,6 @@ import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.roles.RoleData;
-import org.cesecore.util.Tuplet;
 
 /**
  * This access tree effectively maps the resources that we control. Each node corresponds to a resource level, and the leafs individual resources,
@@ -68,7 +68,7 @@ public class AccessTreeNode {
     private static final Logger log = Logger.getLogger(AccessTreeNode.class);
 
     private String resource;
-    private Collection<Tuplet<RoleData, AccessRuleData>> roleRulePairs;
+    private Collection< AbstractMap.SimpleEntry<RoleData, AccessRuleData>> roleRulePairs;
     private HashMap<String, AccessTreeNode> leafs;
 
     /**
@@ -76,7 +76,7 @@ public class AccessTreeNode {
      */
     public AccessTreeNode(String resource) {
         this.resource = resource;
-        this.roleRulePairs = new ArrayList<Tuplet<RoleData, AccessRuleData>>();
+        this.roleRulePairs = new ArrayList< AbstractMap.SimpleEntry<RoleData, AccessRuleData>>();
         this.leafs = new HashMap<String, AccessTreeNode>();
     }
 
@@ -190,7 +190,7 @@ public class AccessTreeNode {
     public void addAccessRule(String resource, AccessRuleData accessRule, RoleData role) {
 
         if (resource.equals(this.resource)) {
-            roleRulePairs.add(new Tuplet<RoleData, AccessRuleData>(role, accessRule));
+            roleRulePairs.add(new  AbstractMap.SimpleEntry<RoleData, AccessRuleData>(role, accessRule));
         } else {
             String nextsubresource = resource.substring(this.resource.length());
             if ((nextsubresource.toCharArray()[0]) == '/') {
@@ -225,10 +225,10 @@ public class AccessTreeNode {
         if (log.isTraceEnabled()) {
         	log.trace("AccessTreeNode " + resource + " has " + roleRulePairs.size() + " roleRulePairs");
         }
-        for (Tuplet<RoleData, AccessRuleData> roleRulePair : roleRulePairs) {
-            accessUsers = roleRulePair.getFirstElement().getAccessUsers().values();
+        for ( AbstractMap.SimpleEntry<RoleData, AccessRuleData> roleRulePair : roleRulePairs) {
+            accessUsers = roleRulePair.getKey().getAccessUsers().values();
             if (log.isTraceEnabled()) {
-                log.trace("roleRulePair for accessRuleName " + roleRulePair.getSecondElement().getAccessRuleName() + " has " + accessUsers.size()
+                log.trace("roleRulePair for accessRuleName " + roleRulePair.getValue().getAccessRuleName() + " has " + accessUsers.size()
                         + " accessUsers");
             }
             for (AccessUserAspect accessUser : accessUsers) {
@@ -236,7 +236,7 @@ public class AccessTreeNode {
                 if (authenticationToken.matchTokenType(accessUser.getTokenType())) {
                     // And the two principals match (done inside to save on cycles)
                     if (authenticationToken.matches(accessUser)) {
-                        AccessTreeState thisUserState = roleRulePair.getSecondElement().getTreeState();
+                        AccessTreeState thisUserState = roleRulePair.getValue().getTreeState();
                         AccessMatchValue thisUserStatePriority = authenticationToken.getMatchValueFromDatabaseValue(accessUser.getMatchWith());
                         if (log.isTraceEnabled()) {
                             AccessTreeState logState = thisUserState;

@@ -14,6 +14,7 @@ package org.cesecore.util.query;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,7 +25,6 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.PredicateUtils;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.util.QueryParameterException;
-import org.cesecore.util.Tuplet;
 import org.cesecore.util.query.clauses.Order;
 import org.cesecore.util.query.elems.LogicOperator;
 import org.cesecore.util.query.elems.Operation;
@@ -226,15 +226,15 @@ public final class QueryGenerator implements Serializable {
         query.attribute(term.getName()).operator(term.getOperator());
         if (term.getOperator() == RelationalOperator.BETWEEN) {
             @SuppressWarnings("unchecked")
-            final Tuplet<Object, Object> values = (Tuplet<Object, Object>) term
+            final AbstractMap.SimpleEntry<Object, Object> values = (AbstractMap.SimpleEntry<Object, Object>) term
                     .getValue();
             query.parameter(
                     genAndStoreParameter(term.getName(),
-                            values.getFirstElement()))
+                            values.getKey()))
                     .operator(LogicOperator.AND)
                     .parameter(
                             genAndStoreParameter(term.getName(),
-                                    values.getSecondElement()));
+                                    values.getValue()));
         } else if (term.getOperator() != RelationalOperator.NULL
                 && term.getOperator() != RelationalOperator.NOTNULL) {
             query.parameter(genAndStoreParameter(term.getName(),

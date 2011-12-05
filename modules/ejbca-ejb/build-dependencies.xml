@@ -81,7 +81,6 @@
 					<include name="org/cesecore/util/query/*.java"/>
 					<include name="org/cesecore/util/query/clauses/*.java"/>
 					<include name="org/cesecore/util/query/elems/*.java"/>
-					<include name="org/cesecore/util/Tuplet.java"/>
 					<include name="org/cesecore/util/ValueExtractor.java"/>
 					<include name="org/cesecore/util/XmlSerializer.java"/>
 					<include name="org/ejbca/core/ejb/InitialContextBuilder.java"/>					

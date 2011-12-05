@@ -15,6 +15,7 @@ package org.ejbca.ui.cli;
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.SecureRandom;
+import java.util.AbstractMap;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -28,7 +29,6 @@ import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.Tuplet;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderLocal;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
@@ -100,11 +100,11 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
                 throw new CliAuthenticationFailedException("Could not authenticate from CLI, use of default user is prohibited.");
             }
 
-            try {
-                Tuplet<String, SupportedPasswordHashAlgorithm> passwordAndAlgorithm = endEntityAccessSession
+            try {               
+                AbstractMap.SimpleEntry<String, SupportedPasswordHashAlgorithm> passwordAndAlgorithm = endEntityAccessSession
                         .getPasswordAndHashAlgorithmForUser(usernamePrincipal.getName());
-                CliAuthenticationToken result = new CliAuthenticationToken(usernamePrincipal, passwordAndAlgorithm.getFirstElement(),
-                        BCrypt.gensalt(EjbcaConfiguration.getPasswordLogRounds()), referenceId, passwordAndAlgorithm.getSecondElement());
+                CliAuthenticationToken result = new CliAuthenticationToken(usernamePrincipal, passwordAndAlgorithm.getKey(),
+                        BCrypt.gensalt(EjbcaConfiguration.getPasswordLogRounds()), referenceId, passwordAndAlgorithm.getValue());
                 CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(result);
                 /*
                  * It is imperative that a cloned version of the
