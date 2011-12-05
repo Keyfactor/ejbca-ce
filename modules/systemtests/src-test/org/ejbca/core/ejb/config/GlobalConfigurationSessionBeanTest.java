@@ -183,8 +183,9 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
      * already have the right value.
      * 
      * @param enable
+     * @throws AuthorizationDeniedException 
      */
-    private void enableCLI(final boolean enable) {
+    private void enableCLI(final boolean enable) throws AuthorizationDeniedException {
         final GlobalConfiguration config = globalConfigurationSession.flushCache();
         final GlobalConfiguration newConfig;
         if (config.getEnableCommandLineInterface() == enable) {

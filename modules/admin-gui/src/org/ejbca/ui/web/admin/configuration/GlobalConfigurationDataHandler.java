@@ -13,13 +13,14 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
+import java.io.Serializable;
+
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
@@ -28,21 +29,18 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
  * A class handling the saving and loading of global configuration data.
  * By default all data are saved to a database.
  *
- * @author  Philip Vendil
  * @version $Id$
  */
-public class GlobalConfigurationDataHandler implements java.io.Serializable {
+public class GlobalConfigurationDataHandler implements Serializable {
     
-	private static final long serialVersionUID = 2L;
+    private static final long serialVersionUID = 1356001945091476416L;
     private static InitialContext initialContext;	// Expensive to create
 	private GlobalConfigurationSessionLocal globalconfigurationsession;
-    private AccessControlSessionLocal authorizationsession;
     private AuthenticationToken administrator;
 
     /** Creates a new instance of GlobalConfigurationDataHandler */
-    public GlobalConfigurationDataHandler(AuthenticationToken administrator, GlobalConfigurationSessionLocal globalconfigurationsession, AccessControlSessionLocal authorizationsession){
+    public GlobalConfigurationDataHandler(AuthenticationToken administrator, GlobalConfigurationSessionLocal globalconfigurationsession){
         this.globalconfigurationsession = globalconfigurationsession;
-        this.authorizationsession = authorizationsession;
         this.administrator = administrator;
     }
     
@@ -62,8 +60,6 @@ public class GlobalConfigurationDataHandler implements java.io.Serializable {
     }
     
     public void saveGlobalConfiguration(GlobalConfiguration gc) throws AuthorizationDeniedException {
-        if(this.authorizationsession.isAuthorizedNoLogging(administrator, "/super_administrator")) {
-            globalconfigurationsession.saveGlobalConfiguration(administrator,  gc);
-        }
+        globalconfigurationsession.saveGlobalConfiguration(administrator, gc);
     }
 }
