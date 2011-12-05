@@ -110,6 +110,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -229,6 +230,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected final CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
     protected final EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private final GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
+    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     private final PublisherProxySessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
     private final PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
     private final RoleAccessSessionRemote roleAccessSession = InterfaceCache.getRoleAccessSession();
@@ -1369,7 +1371,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
-        globalConfigurationSession.saveGlobalConfigurationRemote(intAdmin, gc);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(intAdmin, gc);
         if (certificateProfileSession.getCertificateProfileId(WSTESTPROFILE) != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, WSTESTPROFILE);
         }
@@ -1443,7 +1445,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         certificateProfileSession.removeCertificateProfile(intAdmin, WSTESTPROFILE);
         gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
-        globalConfigurationSession.saveGlobalConfigurationRemote(intAdmin, gc);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(intAdmin, gc);
 
     }
 
@@ -1624,7 +1626,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         boolean krenabled = gc.getEnableKeyRecovery();
         if (krenabled == true) {
             gc.setEnableKeyRecovery(false);
-            globalConfigurationSession.saveGlobalConfigurationRemote(intAdmin, gc);
+            globalConfigurationProxySession.saveGlobalConfigurationRemote(intAdmin, gc);
         }
 
         boolean trows = false;
@@ -1640,7 +1642,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         // Set key recovery enabled
         gc.setEnableKeyRecovery(true);
-        globalConfigurationSession.saveGlobalConfigurationRemote(intAdmin, gc);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(intAdmin, gc);
 
         trows = false;
         try {

@@ -63,6 +63,7 @@ import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -164,6 +165,7 @@ public class XKMSKRSSTest {
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
+    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     static {
@@ -220,7 +222,7 @@ public class XKMSKRSSTest {
 
         final GlobalConfiguration newGlobalConfig = globalConfigurationSession.getCachedGlobalConfiguration();
         newGlobalConfig.setEnableKeyRecovery(true);
-        globalConfigurationSession.saveGlobalConfigurationRemote(administrator, newGlobalConfig);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(administrator, newGlobalConfig);
 
         // Setup with two new Certificate profiles.
         CertificateProfile profile1 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -1192,7 +1194,7 @@ public class XKMSKRSSTest {
         certificateProfileSession.removeCertificateProfile(administrator, certprofilename1);
         certificateProfileSession.removeCertificateProfile(administrator, certprofilename2);
 
-        globalConfigurationSession.saveGlobalConfigurationRemote(administrator, orgGlobalConfig);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(administrator, orgGlobalConfig);
         caAdminSession.editCA(administrator, orgCaInfo);
     }
 

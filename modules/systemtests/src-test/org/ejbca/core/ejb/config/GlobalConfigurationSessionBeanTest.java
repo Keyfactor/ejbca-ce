@@ -36,6 +36,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -63,6 +64,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     private AccessControlSessionRemote authorizationSession = InterfaceCache.getAccessControlSession();
     private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("GlobalConfigurationSessionBeanTest"));
     private GlobalConfiguration original = null;
+    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
 
     private AuthenticationToken[] nonCliAdmins;
 
@@ -96,7 +98,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        globalConfigurationSession.saveGlobalConfigurationRemote(internalAdmin, original);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, original);
         enableCLI(true);
         internalAdmin = null;
     }
@@ -122,7 +124,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
         // Set a brand new value
         GlobalConfiguration newValue = new GlobalConfiguration();
         newValue.setEjbcaTitle("BAR");
-        globalConfigurationSession.saveGlobalConfigurationRemote(internalAdmin, newValue);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, newValue);
 
         GlobalConfiguration cachedValue = globalConfigurationSession.getCachedGlobalConfiguration();
 
@@ -140,7 +142,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
 
         GlobalConfiguration initial = new GlobalConfiguration();
         initial.setEjbcaTitle("FOO");
-        globalConfigurationSession.saveGlobalConfigurationRemote(internalAdmin, initial);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, initial);
     }
 
     /**
@@ -192,7 +194,7 @@ public class GlobalConfigurationSessionBeanTest extends CaTestCase {
             newConfig = config;
         } else {
             config.setEnableCommandLineInterface(enable);
-            globalConfigurationSession.saveGlobalConfigurationRemote(internalAdmin, config);
+            globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, config);
             newConfig = globalConfigurationSession.flushCache();
         }
         assertEquals("CLI should have been enabled/disabled", enable, newConfig.getEnableCommandLineInterface());

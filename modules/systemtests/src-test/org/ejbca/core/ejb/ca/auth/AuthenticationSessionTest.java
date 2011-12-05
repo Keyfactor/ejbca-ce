@@ -37,6 +37,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -75,6 +76,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
+    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
@@ -194,7 +196,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
         boolean orgkeyrecconfig = config.getEnableKeyRecovery();
         config.setEnableKeyRecovery(true);
-        globalConfigurationSession.saveGlobalConfigurationRemote(internalAdmin, config);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, config);
 
         // create certificate for user
         // Set status to NEW
@@ -222,7 +224,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         keyRecoverySession.removeAllKeyRecoveryData(internalAdmin, username1);
 
         config.setEnableKeyRecovery(orgkeyrecconfig);
-        globalConfigurationSession.saveGlobalConfigurationRemote(internalAdmin, config);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, config);
         log.trace("<test05UnmarkKeyRecoveryOnFinish()");
     }
 

@@ -16,22 +16,22 @@ import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.config.GlobalConfiguration;
 
 /**
- * Remote interface for RaAdminSession.
  * @version $Id$
+ *
  */
 @Remote
-public interface GlobalConfigurationSessionRemote extends GlobalConfigurationSession {
+public interface GlobalConfigurationProxySessionRemote {
 
-    /**
-     * Sets the value for the setting IssueHardwareTokens. This is used by the 
-     * CLI command initializehardtokenissuing and therefor needs remote 
-     * access.
-     * @param admin The administrator.
-     * @param value The value to set.
-     * @throws AuthorizationDeniedException if admin was not authorized to /super_administrator 
-     */
-    void setSettingIssueHardwareTokens(AuthenticationToken admin, boolean value) throws AuthorizationDeniedException;
-	
+    /** Saves the GlobalConfiguration. 
+    *
+    * @param admin an authentication token
+    * @param globconf the new Global Configuration
+    * 
+    * @throws AuthorizationDeniedException if admin was not authorized to /super_administrator 
+    */
+    void saveGlobalConfigurationRemote(AuthenticationToken admin, GlobalConfiguration globconf) throws AuthorizationDeniedException;
+    
 }

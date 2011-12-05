@@ -19,7 +19,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.ejb.EJB;
-import javax.ejb.EJBException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -40,7 +39,6 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.jndi.JndiConstants;
-import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -149,21 +147,6 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             if (log.isTraceEnabled()) {
                 log.trace("<loadGlobalConfiguration()");
             }
-        }
-    }
-
-    @Override
-    public void saveGlobalConfigurationRemote(final AuthenticationToken admin, final GlobalConfiguration globconf) throws AuthorizationDeniedException {
-    	if (log.isTraceEnabled()) {
-            log.trace(">saveGlobalConfigurationRemote()");
-        }
-    	if (EjbcaConfiguration.getIsInProductionMode()) {
-    		throw new EJBException("Configuration can not be altered in production mode.");
-    	} else {
-    		saveGlobalConfiguration(admin, globconf);
-    	}
-    	if (log.isTraceEnabled()) {
-            log.trace("<saveGlobalConfigurationRemote()");
         }
     }
     

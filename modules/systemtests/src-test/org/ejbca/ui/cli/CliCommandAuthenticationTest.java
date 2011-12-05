@@ -29,6 +29,7 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTestHelperSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -48,6 +49,7 @@ public class CliCommandAuthenticationTest {
     private MockCliCommand mockCliCommand;
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = JndiHelper.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = JndiHelper
             .getRemoteSession(CliAuthenticationTestHelperSessionRemote.class);
     private UserAdminSessionRemote userAdminSession = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);
@@ -194,7 +196,7 @@ public class CliCommandAuthenticationTest {
         GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
         boolean oldValue = config.getEnableCommandLineInterface();
         config.setEnableCommandLineInterface(enabled);
-        globalConfigurationSession.saveGlobalConfigurationRemote(internalAdmin, config);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, config);
         return oldValue;
     }
 
@@ -202,7 +204,7 @@ public class CliCommandAuthenticationTest {
         GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
         boolean oldValue = config.getEnableCommandLineInterfaceDefaultUser();
         config.setEnableCommandLineInterfaceDefaultUser(enabled);
-        globalConfigurationSession.saveGlobalConfigurationRemote(internalAdmin, config);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, config);
         return oldValue;
     }
 }
