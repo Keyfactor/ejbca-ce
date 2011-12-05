@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -31,7 +32,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
-import org.cesecore.util.Tuplet;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -61,12 +61,12 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Tuplet<String, SupportedPasswordHashAlgorithm> getPasswordAndHashAlgorithmForUser(String username) throws NotFoundException  {
+    public AbstractMap.SimpleEntry<String, SupportedPasswordHashAlgorithm> getPasswordAndHashAlgorithmForUser(String username) throws NotFoundException  {
         UserData user = UserData.findByUsername(entityManager, username);
         if (user == null) {
             throw new NotFoundException("End Entity of name " + username + " not found in database");
         } else {
-            return new Tuplet<String, SupportedPasswordHashAlgorithm>(user.getPasswordHash(), user.findHashAlgorithm());
+            return new AbstractMap.SimpleEntry<String, SupportedPasswordHashAlgorithm>(user.getPasswordHash(), user.findHashAlgorithm());
         }
     }
     

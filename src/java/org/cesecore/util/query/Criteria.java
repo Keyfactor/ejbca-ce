@@ -13,8 +13,8 @@
 package org.cesecore.util.query;
 
 import java.io.Serializable;
+import java.util.AbstractMap;
 
-import org.cesecore.util.Tuplet;
 import org.cesecore.util.query.clauses.Order;
 import org.cesecore.util.query.elems.LogicOperator;
 import org.cesecore.util.query.elems.Operation;
@@ -69,7 +69,7 @@ public class Criteria implements Serializable {
     public static Elem between(final String name, final Object after,
             final Object before) {
         return new Term(RelationalOperator.BETWEEN, name,
-                new Tuplet<Object, Object>(after, before));
+                new  AbstractMap.SimpleEntry<Object, Object>(after, before));
 
     }
     

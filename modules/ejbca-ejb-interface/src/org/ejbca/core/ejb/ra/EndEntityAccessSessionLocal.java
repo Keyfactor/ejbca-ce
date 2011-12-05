@@ -12,9 +12,10 @@
  *************************************************************************/
 package org.ejbca.core.ejb.ra;
 
+import java.util.AbstractMap;
+
 import javax.ejb.Local;
 
-import org.cesecore.util.Tuplet;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 
@@ -32,5 +33,5 @@ public interface EndEntityAccessSessionLocal extends EndEntityAccessSession {
      * @return the password and algorithm for the sought user. If algorithm is hashed, so will the password be, otherwise cleartext. Null if user was not found.
      * @throws NotFoundException 
      */
-    Tuplet<String, SupportedPasswordHashAlgorithm> getPasswordAndHashAlgorithmForUser(String username) throws NotFoundException;
+    AbstractMap.SimpleEntry<String, SupportedPasswordHashAlgorithm> getPasswordAndHashAlgorithmForUser(String username) throws NotFoundException;
 }

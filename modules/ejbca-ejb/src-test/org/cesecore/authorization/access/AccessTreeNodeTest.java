@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,6 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.roles.RoleData;
-import org.cesecore.util.Tuplet;
 import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.Assert;
@@ -78,12 +78,12 @@ public class AccessTreeNodeTest {
         Field roleRulePairsField = rootNode.getClass().getDeclaredField("roleRulePairs");
         roleRulePairsField.setAccessible(true);
         @SuppressWarnings("unchecked")
-        List<Tuplet<RoleData, AccessRuleData>> roleRulePairs = (List<Tuplet<RoleData, AccessRuleData>>) roleRulePairsField.get(rootNode);
+        List< AbstractMap.SimpleEntry<RoleData, AccessRuleData>> roleRulePairs = (List< AbstractMap.SimpleEntry<RoleData, AccessRuleData>>) roleRulePairsField.get(rootNode);
         Assert.assertFalse("No rule was added to root node", roleRulePairs.size() < 1);
         Assert.assertFalse("More than one rule was added to root node", roleRulePairs.size() > 1);
-        Tuplet<RoleData, AccessRuleData> roleRulePair = roleRulePairs.get(0);
-        Assert.assertEquals("Correct role was not added.", role, roleRulePair.getFirstElement());
-        Assert.assertEquals("Correct rule was not added.", accessRule, roleRulePair.getSecondElement());
+        AbstractMap.SimpleEntry<RoleData, AccessRuleData> roleRulePair = roleRulePairs.get(0);
+        Assert.assertEquals("Correct role was not added.", role, roleRulePair.getKey());
+        Assert.assertEquals("Correct rule was not added.", accessRule, roleRulePair.getValue());
     }
 
     /**
