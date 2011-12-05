@@ -28,7 +28,7 @@ import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.CertTools;
 
 /**
- * Acts like X509CertificateAuthenticationToken, but without the JVM-only check. B
+ * Acts like X509CertificateAuthenticationToken, but without the JVM-only check. 
  * 
  * @version $Id$
  */
