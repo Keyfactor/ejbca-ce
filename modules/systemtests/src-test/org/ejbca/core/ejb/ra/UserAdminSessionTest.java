@@ -75,6 +75,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -119,6 +120,7 @@ public class UserAdminSessionTest extends CaTestCase {
     private RoleAccessSessionRemote roleAccessSession = InterfaceCache.getRoleAccessSession();
     private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
     private GlobalConfigurationSessionRemote globalConfSession = InterfaceCache.getGlobalConfigurationSession();
+    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     private UserAdminProxySessionRemote userAdminProxySession = JndiHelper.getRemoteSession(UserAdminProxySessionRemote.class); 
 
     @BeforeClass
@@ -575,12 +577,12 @@ public class UserAdminSessionTest extends CaTestCase {
             accessControlSession.forceCacheExpire();
             // We must enforce end entity profile limitations for this, with false it should be ok now
             gc.setEnableEndEntityProfileLimitations(false);
-            globalConfSession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
+            globalConfigurationProxySession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
             // Do the same test, now it should work since we are authorized to CA and we don't enforce EE profile authorization
             userAdminSession.changeUser(adminTokenNoAuth, userdata, false);
             // Enforce EE profile limitations
             gc.setEnableEndEntityProfileLimitations(true);
-            globalConfSession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
+            globalConfigurationProxySession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
             // Do the same test, now we should get auth denied on EE profiles instead
             try {
                 userAdminSession.changeUser(adminTokenNoAuth, userdata, false);
@@ -591,7 +593,7 @@ public class UserAdminSessionTest extends CaTestCase {
 
         } finally {
             gc.setEnableEndEntityProfileLimitations(eelimitation);
-            globalConfSession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
+            globalConfigurationProxySession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
             try {
                 userAdminSession.deleteUser(admin, authUsername);
             } catch (Exception e) { // NOPMD

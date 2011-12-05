@@ -33,6 +33,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
+import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -71,6 +72,7 @@ public class UserDataTest extends CaTestCase {
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
+    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private UserAdminProxySessionRemote userAdminProxySession = JndiHelper.getRemoteSession(UserAdminProxySessionRemote.class);
 
@@ -83,7 +85,7 @@ public class UserDataTest extends CaTestCase {
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
         gcEELimitations = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(true);
-        globalConfigurationSession.saveGlobalConfigurationRemote(admin, gc);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(admin, gc);
         createNewUser();
     }
 
@@ -94,7 +96,7 @@ public class UserDataTest extends CaTestCase {
         // Reset the value of "EnableEndEntityProfileLimitations" to whatever it was before we ran test00SetEnableEndEntityProfileLimitations
         GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
         gc.setEnableEndEntityProfileLimitations(gcEELimitations);
-        globalConfigurationSession.saveGlobalConfigurationRemote(admin, gc);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(admin, gc);
 
         // Delete test users we created
 

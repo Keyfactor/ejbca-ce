@@ -33,8 +33,6 @@ import org.ejbca.config.EjbcaConfigurationHolder;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class ConfigurationSessionBean implements ConfigurationSessionRemote {
 
-    private static final long serialVersionUID = 1L;
-
     /** Verify that EJBCA isn't running in production mode. */
     private void assertIsNotInProductionMode() throws EJBException {
         if (EjbcaConfiguration.getIsInProductionMode()) {

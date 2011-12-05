@@ -63,6 +63,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
@@ -114,6 +115,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private final EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     private final HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
     private final GlobalConfigurationSessionRemote raAdminSession = InterfaceCache.getGlobalConfigurationSession();
+    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     
     private final SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
 
@@ -744,7 +746,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         GlobalConfiguration gc = raAdminSession.getCachedGlobalConfiguration();
         boolean originalProfileSetting = gc.getEnableEndEntityProfileLimitations();
         gc.setEnableEndEntityProfileLimitations(false);
-        raAdminSession.saveGlobalConfigurationRemote(intAdmin, gc);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(intAdmin, gc);
         if (certificateProfileSession.getCertificateProfileId("WSTESTPROFILE") != 0) {
             certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
         }
@@ -799,7 +801,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         assertTrue(responses.size() == 2);
         certificateProfileSession.removeCertificateProfile(intAdmin, "WSTESTPROFILE");
         gc.setEnableEndEntityProfileLimitations(originalProfileSetting);
-        raAdminSession.saveGlobalConfigurationRemote(intAdmin, gc);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(intAdmin, gc);
     } // createHardToken
 
     /**
