@@ -24,8 +24,9 @@ import javax.xml.ws.WebFault;
 @WebFault
 public class ApprovalRequestExpiredException extends Exception {
 
+	private static final long serialVersionUID = 170838528150319772L;
 
-	public ApprovalRequestExpiredException() {
+    public ApprovalRequestExpiredException() {
 		super();
 	}
 

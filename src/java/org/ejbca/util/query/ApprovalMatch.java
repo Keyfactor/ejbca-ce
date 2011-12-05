@@ -32,7 +32,8 @@ package org.ejbca.util.query;
 public class ApprovalMatch extends BasicMatch {
     // Public Constants
 
-	public static final int MATCH_WITH_UNIQUEID                      = 0;
+	private static final long serialVersionUID = -4891299802473333801L;
+    public static final int MATCH_WITH_UNIQUEID                      = 0;
     public static final int MATCH_WITH_APPROVALID                    = 1;
     public static final int MATCH_WITH_APPROVALTYPE                  = 2;
     public static final int MATCH_WITH_ENDENTITYPROFILEID            = 3;

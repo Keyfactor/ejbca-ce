@@ -28,6 +28,9 @@ import org.ejbca.config.GlobalConfiguration;
  */
 public class AdminPreference extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     
+    private static final long serialVersionUID = -3408759285870979620L;
+
+
     public static final float LATEST_VERSION = 1;
     
     
@@ -115,9 +118,10 @@ public class AdminPreference extends UpgradeableDataHashMap implements java.io.S
     
     public Object clone() throws CloneNotSupportedException {
       AdminPreference clone = new AdminPreference();
-      HashMap clonedata = (HashMap) clone.saveData();
+      @SuppressWarnings("unchecked")
+    HashMap<Object, Object> clonedata = (HashMap<Object, Object>) clone.saveData();
       
-      Iterator i = (data.keySet()).iterator();
+      Iterator<Object> i = (data.keySet()).iterator();
       while(i.hasNext()){
         Object key = i.next();  
         clonedata.put(key, data.get(key));  
@@ -127,13 +131,12 @@ public class AdminPreference extends UpgradeableDataHashMap implements java.io.S
       return clone;
     }
     
-    /** Implemtation of UpgradableDataHashMap function getLatestVersion */
+    /** Implementation of UpgradableDataHashMap function getLatestVersion */
     public float getLatestVersion(){
        return LATEST_VERSION;  
     }
     
-    /** Implemtation of UpgradableDataHashMap function upgrade. */    
-    
+    /** Implementation of UpgradableDataHashMap function upgrade. */     
     public void upgrade(){
     	if(Float.compare(LATEST_VERSION, getVersion()) != 0) {
     		// New version of the class, upgrade  

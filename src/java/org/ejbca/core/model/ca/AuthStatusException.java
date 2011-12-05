@@ -24,6 +24,8 @@ import org.ejbca.core.EjbcaException;
  * @version $Id$
  */
 public class AuthStatusException extends EjbcaException {
+    private static final long serialVersionUID = -1399828365257002586L;
+
     /**
      * Constructor used to create exception with an errormessage. Calls the same constructor in
      * baseclass <code>Exception</code>.

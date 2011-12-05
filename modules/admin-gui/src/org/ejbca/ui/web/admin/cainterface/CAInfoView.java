@@ -13,6 +13,8 @@
  
 package org.ejbca.ui.web.admin.cainterface;
 
+import java.io.Serializable;
+import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
@@ -36,9 +38,10 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  *
  * @version $Id$
  */
-public class CAInfoView implements java.io.Serializable, Cloneable {
+public class CAInfoView implements Serializable, Cloneable {
 
-	// Public constants.
+	private static final long serialVersionUID = -5154282635821412670L;
+    // Public constants.
 
    public static final int NAME                    = 0;  
    public static final int SUBJECTDN               = 1;   
@@ -209,5 +212,5 @@ public class CAInfoView implements java.io.Serializable, Cloneable {
 
    public CAInfo getCAInfo() { return cainfo;}
    public CATokenInfo getCATokenInfo() { return cainfo.getCATokenInfo(); }
-   public Collection getCertificateChain() { return cainfo.getCertificateChain(); }
+   public Collection<Certificate> getCertificateChain() { return cainfo.getCertificateChain(); }
 }

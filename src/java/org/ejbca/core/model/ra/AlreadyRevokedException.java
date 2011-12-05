@@ -16,14 +16,18 @@ package org.ejbca.core.model.ra;
 import javax.xml.ws.WebFault;
 
 import org.cesecore.ErrorCode;
+import org.ejbca.core.EjbcaException;
 
 /**
  * Exception thrown when a revocation request for an already revoket object is requested.
  */
 @WebFault
-public class AlreadyRevokedException extends org.ejbca.core.EjbcaException {
+public class AlreadyRevokedException extends EjbcaException {
     
-	/**
+	private static final long serialVersionUID = 2290871200008158996L;
+
+
+    /**
      * Creates a new instance of <code>AlreadyRevokedException</code> without detail message.
      */
 	public AlreadyRevokedException() {

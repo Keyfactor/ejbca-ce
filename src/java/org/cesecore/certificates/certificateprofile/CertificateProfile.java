@@ -368,7 +368,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         setUsedCertificateExtensions(new ArrayList<Integer>());
 
         setNumOfReqApprovals(1);
-        setApprovalSettings(Collections.EMPTY_LIST);
+        List<Integer> emptyList = Collections.emptyList();
+        setApprovalSettings(emptyList);
         
      // PrivateKeyUsagePeriod extension
         setUsePrivateKeyUsagePeriodNotBefore(false);
@@ -916,6 +917,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public boolean[] getKeyUsage() {
+        @SuppressWarnings("unchecked")
         ArrayList<Boolean> keyusage = (ArrayList<Boolean>) data.get(KEYUSAGE);
         boolean[] returnval = new boolean[keyusage.size()];
         for (int i = 0; i < keyusage.size(); i++) {
@@ -929,6 +931,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      *            from CertificateConstants.DIGITALSIGNATURE etc
      * @return true or false if the key usage is set or not.
      */
+    @SuppressWarnings("unchecked")
     public boolean getKeyUsage(int keyusageconstant) {
         return ((ArrayList<Boolean>) data.get(KEYUSAGE)).get(keyusageconstant).booleanValue();
     }
@@ -948,6 +951,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * @param value
      *            true or false if the key usage is set or not.
      */
+    @SuppressWarnings("unchecked")
     public void setKeyUsage(int keyusageconstant, boolean value) {
         ((ArrayList<Boolean>) data.get(KEYUSAGE)).set(keyusageconstant, Boolean.valueOf(value));
     }
@@ -990,6 +994,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Extended Key Usage is an arraylist of oid Strings. Usually oids comes from KeyPurposeId in BC. Keep the unchecked java stuff for now, since we
      * have the fallback conversion below in getExtendedKeyUsageAsOIDStrings
      */
+    @SuppressWarnings("rawtypes")
     public void setExtendedKeyUsage(ArrayList extendedkeyusage) {
         data.put(EXTENDEDKEYUSAGE, extendedkeyusage);
     }
@@ -998,6 +1003,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Only used for JUnit testing Keep the unchecked java stuff for now, since we have the fallback conversion below in
      * getExtendedKeyUsageAsOIDStrings
      */
+    @SuppressWarnings("rawtypes")
     protected ArrayList getExtendedKeyUsageArray() {
         return (ArrayList) data.get(EXTENDEDKEYUSAGE);
     }

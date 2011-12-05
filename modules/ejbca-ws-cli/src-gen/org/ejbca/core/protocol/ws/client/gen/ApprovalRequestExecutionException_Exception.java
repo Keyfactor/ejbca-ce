@@ -11,10 +11,9 @@ import javax.xml.ws.WebFault;
  * 
  */
 @WebFault(name = "ApprovalRequestExecutionException", targetNamespace = "http://ws.protocol.core.ejbca.org/")
-public class ApprovalRequestExecutionException_Exception
-    extends Exception
-{
+public class ApprovalRequestExecutionException_Exception extends Exception {
 
+    private static final long serialVersionUID = 8322149806693093967L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

@@ -44,9 +44,6 @@ import org.ejbca.core.model.SecConst;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
 
-    private static final long serialVersionUID = 1L;
-    //private static final Logger log = Logger.getLogger(CAAdminTestSessionRemote.class);
-
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
 

@@ -221,7 +221,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class responseClass, EndEntityInformation suppliedUserData)
+    public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass, EndEntityInformation suppliedUserData)
             throws EjbcaException, CesecoreException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(IRequestMessage)");
@@ -355,7 +355,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public CertificateResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class responseClass,
+    public CertificateResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass,
             FailInfo failInfo, String failText) throws AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException,
             SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
@@ -452,7 +452,7 @@ public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class responseClass) throws AuthStatusException, AuthLoginException,
+    public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass) throws AuthStatusException, AuthLoginException,
             IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException,
             CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {

@@ -676,7 +676,7 @@ public class BasicCertificateExtensionTest {
 		
 		// Without value in userdata it should fail
                 try {
-                    byte[] value = baseExt.getValueEncoded(userData, null, null, null, null);
+                    baseExt.getValueEncoded(userData, null, null, null, null);
                     fail("Should have fail as no dynamic value specified");
                 } catch (CertificateExtentionConfigurationException ex) {
                     assertEquals(intres.getLocalizedMessage("certext.basic.incorrectvalue", 1, "1.2.3"), ex.getMessage());
@@ -727,7 +727,7 @@ public class BasicCertificateExtensionTest {
 		userData.setExtendedinformation(new ExtendedInformation());
 		
                 try {
-                    byte[] value = baseExt.getValueEncoded(userData, null, null, null, null);
+                    baseExt.getValueEncoded(userData, null, null, null, null);
                     fail("Should have fail as both raw and nvalues specified");
                 } catch (CertificateExtentionConfigurationException ex) {
                     assertEquals(intres.getLocalizedMessage("certext.certextmissconfigured", 1), ex.getMessage());

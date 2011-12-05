@@ -160,6 +160,8 @@ public class BatchEnrollmentGUIView extends FrameView {
 
         jTable1.setModel(new AbstractTableModel() {
 
+            private static final long serialVersionUID = -2682163886531760122L;
+
             public int getRowCount() {
                 return requests.size();
             }
@@ -235,6 +237,8 @@ public class BatchEnrollmentGUIView extends FrameView {
 
         endEntitiesComboBox.setRenderer(new DefaultListCellRenderer() {
 
+            private static final long serialVersionUID = 8940720890189526681L;
+
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
                 final Component component =
@@ -256,6 +260,8 @@ public class BatchEnrollmentGUIView extends FrameView {
 
         jTable1.getColumnModel().getColumn(2).setCellRenderer(new DefaultTableCellRenderer() {
 
+            private static final long serialVersionUID = 86357417737074234L;
+
             private JPanel viewPanel = new JPanel(new BorderLayout());
 
             private JButton viewButton = new JButton("...");
@@ -264,7 +270,8 @@ public class BatchEnrollmentGUIView extends FrameView {
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 
                 if (column == 2 && value != null) {
-                    final List<X509Certificate> chain = (List) value;
+                    @SuppressWarnings("unchecked")
+                    final List<X509Certificate> chain = (List<X509Certificate>) value;
                     value = chain.iterator().next().getSubjectDN().getName();
                     super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                     viewPanel = new JPanel(new BorderLayout());
@@ -280,6 +287,8 @@ public class BatchEnrollmentGUIView extends FrameView {
         });
 
         jTable1.getColumnModel().getColumn(4).setCellRenderer(new DefaultTableCellRenderer() {
+
+            private static final long serialVersionUID = -2076423436650116932L;
 
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
@@ -509,6 +518,7 @@ public class BatchEnrollmentGUIView extends FrameView {
                 "", "Request file", "Request signed by", "Requested DN", "End enitity", "Output file", "Result"
             }
         ) {
+            private static final long serialVersionUID = -1739079282180901839L;
             boolean[] canEdit = new boolean [] {
                 false, false, false, false, true, true, false
             };
