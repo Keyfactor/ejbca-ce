@@ -173,7 +173,7 @@ public class EjbcaWebBean implements Serializable {
             //administrator = userAdminSession.getAdmin(certificates[0]);
         } // else we have already defined an administrator, for example in initialize_errorpage
 
-        globaldataconfigurationdatahandler = new GlobalConfigurationDataHandler(administrator, globalConfigurationSession, authorizationSession);
+        globaldataconfigurationdatahandler = new GlobalConfigurationDataHandler(administrator, globalConfigurationSession);
         globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();
         if (informationmemory == null) {
             informationmemory = new InformationMemory(administrator, caAdminSession, caSession, authorizationSession, complexAccessControlSession,

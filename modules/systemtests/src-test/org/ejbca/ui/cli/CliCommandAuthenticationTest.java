@@ -22,6 +22,7 @@ import junit.framework.Assert;
 
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.ejbca.config.EjbcaConfiguration;
@@ -68,7 +69,7 @@ public class CliCommandAuthenticationTest {
     }
 
     @Test
-    public void testWithoutSuppliedDefaultUser() throws ErrorAdminCommandException {
+    public void testWithoutSuppliedDefaultUser() throws ErrorAdminCommandException, AuthorizationDeniedException {
         boolean oldValue = setCliUserEnabled(true);
         try {
             mockCliCommand.execute(new String[] { "foo", "bar" });
@@ -155,9 +156,10 @@ public class CliCommandAuthenticationTest {
     
     /**
      * Test that this works server side as well. 
+     * @throws AuthorizationDeniedException 
      */
     @Test
-    public void testCliDisabledServerSide() {
+    public void testCliDisabledServerSide() throws AuthorizationDeniedException {
         boolean oldValue = setCliEnabled(false);
         try {
             cliAuthenticationProvider.authenticate(null);
@@ -171,9 +173,10 @@ public class CliCommandAuthenticationTest {
     
     /**
      * Test that this works server side as well. 
+     * @throws AuthorizationDeniedException 
      */
     @Test
-    public void testDefaultCliUserDisabled() {
+    public void testDefaultCliUserDisabled() throws AuthorizationDeniedException {
         boolean oldValue = setCliUserEnabled(false);
         try {
             Set<Principal> principals = new HashSet<Principal>();
@@ -187,7 +190,7 @@ public class CliCommandAuthenticationTest {
         }
     }
 
-    private boolean setCliEnabled(boolean enabled) {
+    private boolean setCliEnabled(boolean enabled) throws AuthorizationDeniedException {
         GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
         boolean oldValue = config.getEnableCommandLineInterface();
         config.setEnableCommandLineInterface(enabled);
@@ -195,7 +198,7 @@ public class CliCommandAuthenticationTest {
         return oldValue;
     }
 
-    private boolean setCliUserEnabled(boolean enabled) {
+    private boolean setCliUserEnabled(boolean enabled) throws AuthorizationDeniedException {
         GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
         boolean oldValue = config.getEnableCommandLineInterfaceDefaultUser();
         config.setEnableCommandLineInterfaceDefaultUser(enabled);

@@ -15,6 +15,7 @@ package org.ejbca.core.ejb.config;
 import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.config.GlobalConfiguration;
 
 /**
@@ -24,10 +25,14 @@ import org.ejbca.config.GlobalConfiguration;
 @Remote
 public interface GlobalConfigurationSessionRemote extends GlobalConfigurationSession {
 
-    /** 
-     * Saves the GlobalConfiguration but not when in production mode. 
-     */
-    void saveGlobalConfigurationRemote(AuthenticationToken admin, GlobalConfiguration globconf);
+    /** Saves the GlobalConfiguration. 
+    *
+    * @param admin an authentication token
+    * @param globconf the new Global Configuration
+    * 
+    * @throws AuthorizationDeniedException if admin was not authorized to /super_administrator 
+    */
+    void saveGlobalConfigurationRemote(AuthenticationToken admin, GlobalConfiguration globconf) throws AuthorizationDeniedException;
 
     /**
      * Sets the value for the setting IssueHardwareTokens. This is used by the 
@@ -35,7 +40,8 @@ public interface GlobalConfigurationSessionRemote extends GlobalConfigurationSes
      * access.
      * @param admin The administrator.
      * @param value The value to set.
+     * @throws AuthorizationDeniedException if admin was not authorized to /super_administrator 
      */
-    void setSettingIssueHardwareTokens(AuthenticationToken admin, boolean value);
+    void setSettingIssueHardwareTokens(AuthenticationToken admin, boolean value) throws AuthorizationDeniedException;
 	
 }

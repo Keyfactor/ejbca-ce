@@ -137,7 +137,11 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                         log.debug("No default GlobalConfiguration exists. Trying to create a new one.");
                     }
                     result = new GlobalConfiguration();
-                	saveGlobalConfiguration(internalAdmin, result);
+                    try {
+                        saveGlobalConfiguration(internalAdmin, result);
+                    } catch (AuthorizationDeniedException e) {
+                        throw new RuntimeException("Internal admin was denied access. This should not be able to happen.");
+                    }
                 }
             }
             return result;
@@ -149,7 +153,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
 
     @Override
-    public void saveGlobalConfigurationRemote(final AuthenticationToken admin, final GlobalConfiguration globconf) {
+    public void saveGlobalConfigurationRemote(final AuthenticationToken admin, final GlobalConfiguration globconf) throws AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfigurationRemote()");
         }
@@ -164,10 +168,11 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
     
 	@Override
-    public void saveGlobalConfiguration(AuthenticationToken admin, GlobalConfiguration globconf) {
+    public void saveGlobalConfiguration(AuthenticationToken admin, GlobalConfiguration globconf) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfiguration()");
         }
+        if(this.accessSession.isAuthorizedNoLogging(admin, "/super_administrator")) {
         
         String pk = "0";
         GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, pk);
@@ -205,6 +210,9 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             }
         }
         globalconfigurationCache.setGlobalconfiguration(globconf);
+        } else {
+            throw new AuthorizationDeniedException("Authorization was denied to user " + admin + " to resource /super_administrator. Could not save configuration." );
+        }
         if (log.isTraceEnabled()) {
             log.trace("<saveGlobalConfiguration()");
         }
@@ -226,7 +234,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
 
     @Override
-    public void setSettingIssueHardwareTokens(AuthenticationToken admin, boolean value) {
+    public void setSettingIssueHardwareTokens(AuthenticationToken admin, boolean value) throws AuthorizationDeniedException {
     	final GlobalConfiguration config = flushCache();
     	config.setIssueHardwareTokens(value);
     	saveGlobalConfiguration(admin, config);
