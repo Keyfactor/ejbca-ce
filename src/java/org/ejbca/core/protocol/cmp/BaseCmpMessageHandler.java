@@ -81,16 +81,14 @@ public class BaseCmpMessageHandler {
 				keyId = new String(os.getOctets());
 				LOG.info("UTF-8 not available, using platform default encoding for keyId.");
 			}
-            if (keyId == null) {
-                LOG.error("No KeyId contained in CMP request.");
-            } else {
-                if (!StringUtils.isAsciiPrintable(keyId)) {
-                    keyId = new String(Hex.encode(os.getOctets()));
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("keyId is not asciiPrintable, converting to hex: "+keyId);
-                    }                   
+
+            if (!StringUtils.isAsciiPrintable(keyId)) {
+                keyId = new String(Hex.encode(os.getOctets()));
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("keyId is not asciiPrintable, converting to hex: " + keyId);
                 }
             }
+            
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Found a sender keyId: "+keyId);
 			}

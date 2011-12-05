@@ -65,6 +65,8 @@ import sun.security.pkcs11.SunPKCS11;
  */
 public class ConnectDialog extends javax.swing.JDialog {
 
+    private static final long serialVersionUID = -6727893196486472985L;
+
     /** Logger for this class. */
     private static final Logger LOG = Logger.getLogger(ConnectDialog.class);
 
@@ -440,7 +442,7 @@ public class ConnectDialog extends javax.swing.JDialog {
                 if (TRUSTSTORE_TYPE_PEM.equals(settings.getTruststoreType())) {
                     keystoreTrusted = KeyStore.getInstance("JKS");
                     keystoreTrusted.load(null, null);
-                    final Collection certs = CertTools.getCertsFromPEM(
+                    final Collection<Certificate> certs = CertTools.getCertsFromPEM(
                             new FileInputStream(settings.getTruststoreFile()));
                     int i = 0;
                     for (Object o : certs) {

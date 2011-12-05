@@ -212,7 +212,7 @@ public class CADataHandler implements Serializable {
   /**
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
-  public Map getCAIdToNameMap(){
+  public Map<Integer, String> getCAIdToNameMap(){
     return info.getCAIdToNameMap();
   }
   
@@ -220,7 +220,7 @@ public class CADataHandler implements Serializable {
    *  @throws CryptoTokenAuthenticationFailedException 
    * @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
-  public byte[] makeRequest(int caid, Collection cachain, boolean activatekey, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException{
+  public byte[] makeRequest(int caid, Collection<?> cachain, boolean activatekey, String keystorepass, boolean regenerateKeys) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException{
 	  // usenextkey is not available as an option here
 	  byte[] result = caadminsession.makeRequest(administrator, caid, cachain, regenerateKeys, false, activatekey, keystorepass);
 	  return result;    
@@ -343,11 +343,11 @@ public class CADataHandler implements Serializable {
  
  public void renewAndRevokeXKMSCertificate(int caid) throws CryptoTokenOfflineException, CADoesntExistsException, UnsupportedEncodingException, AuthorizationDeniedException, CertificateRevokeException, IllegalCryptoTokenException, CAOfflineException{
 	 	CAInfo cainfo = caSession.getCAInfo(administrator, caid);
-		Iterator iter = cainfo.getExtendedCAServiceInfos().iterator();
+		Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
 		while(iter.hasNext()){
 		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 		  if(next instanceof XKMSCAServiceInfo){
-		  	List xkmscerts = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
+		  	List<Certificate> xkmscerts = ((XKMSCAServiceInfo) next).getXKMSSignerCertificatePath();
 		  	if (xkmscerts != null) {
 			  	X509Certificate xkmscert = (X509Certificate)xkmscerts.get(0);
 			  	revocationSession.revokeCertificate(administrator,xkmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 
@@ -363,7 +363,7 @@ public class CADataHandler implements Serializable {
 		while(iter.hasNext()){
 		  ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();	
 		  if(next instanceof CmsCAServiceInfo){
-			  List cmscerts = ((CmsCAServiceInfo) next).getCertificatePath();
+			  List<Certificate> cmscerts = ((CmsCAServiceInfo) next).getCertificatePath();
 			  if (cmscerts != null) {
 				  	X509Certificate cmscert = (X509Certificate)cmscerts.get(0);
 					revocationSession.revokeCertificate(administrator,cmscert, cainfo.getCRLPublishers(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, cainfo.getSubjectDN());	  	 

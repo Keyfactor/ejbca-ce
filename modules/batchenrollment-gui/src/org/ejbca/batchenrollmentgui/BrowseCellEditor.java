@@ -34,6 +34,7 @@ import javax.swing.JTextField;
  */
 class BrowseCellEditor extends DefaultCellEditor implements ActionListener {
 
+    private static final long serialVersionUID = -5053007273259271994L;
     private JButton customEditorButton = new JButton("...");
     private JTable table;
     private int row;

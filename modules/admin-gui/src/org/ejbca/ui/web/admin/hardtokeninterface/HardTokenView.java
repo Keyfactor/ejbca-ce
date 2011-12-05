@@ -97,7 +97,7 @@ public class HardTokenView implements java.io.Serializable, Cloneable {
       return tokendata.getCopyOf();	
     }
     
-    public Collection getCopies(){
+    public Collection<String> getCopies(){
       return tokendata.getCopies();	
     }
     

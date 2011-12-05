@@ -15,6 +15,7 @@ public class AuthorizationDeniedException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = 4417138426360904776L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

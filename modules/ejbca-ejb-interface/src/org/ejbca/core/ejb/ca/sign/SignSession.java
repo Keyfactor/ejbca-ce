@@ -180,7 +180,7 @@ public interface SignSession {
      * @see org.cesecore.certificates.certificate.request.ResponseMessage
      * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
-    public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class responseClass, EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException, AuthorizationDeniedException;
+    public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass, EndEntityInformation suppliedUserData) throws EjbcaException, CesecoreException, AuthorizationDeniedException;
 
 	/**
 	 * Requests for a certificate to be created for the passed public key with the passed key
@@ -246,7 +246,7 @@ public interface SignSession {
      * @see org.cesecore.certificates.certificate.request.ResponseMessage
      * @see org.cesecore.certificates.certificate.request.X509ResponseMessage
      */
-    public ResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class responseClass, FailInfo failInfo, String failText) throws AuthLoginException,
+    public ResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass, FailInfo failInfo, String failText) throws AuthLoginException,
             AuthStatusException, IllegalKeyException, CADoesntExistsException, SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException;
 
     /**
@@ -287,6 +287,6 @@ public interface SignSession {
      * @throws CryptoTokenOfflineException 
      * @throws AuthorizationDeniedException 
      */
-    public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class responseClass) throws AuthStatusException, AuthLoginException,
+    public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass) throws AuthStatusException, AuthLoginException,
             IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException, CryptoTokenOfflineException, AuthorizationDeniedException;
 }

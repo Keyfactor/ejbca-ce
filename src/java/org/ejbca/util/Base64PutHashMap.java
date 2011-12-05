@@ -25,6 +25,7 @@ import org.cesecore.util.StringTools;
  * @version $Id$
  */
 public class Base64PutHashMap extends HashMap {
+    private static final long serialVersionUID = 4700506858751520533L;
     public Base64PutHashMap() {
         super();
     }

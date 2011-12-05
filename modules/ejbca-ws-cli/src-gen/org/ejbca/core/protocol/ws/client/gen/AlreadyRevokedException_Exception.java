@@ -15,6 +15,7 @@ public class AlreadyRevokedException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = -4345300383636721687L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

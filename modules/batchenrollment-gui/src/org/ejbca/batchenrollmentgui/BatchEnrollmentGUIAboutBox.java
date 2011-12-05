@@ -22,6 +22,7 @@ import org.jdesktop.application.Action;
  */
 public class BatchEnrollmentGUIAboutBox extends javax.swing.JDialog {
 
+    private static final long serialVersionUID = 6793287674156095702L;
     public BatchEnrollmentGUIAboutBox(java.awt.Frame parent) {
         super(parent);
         initComponents();

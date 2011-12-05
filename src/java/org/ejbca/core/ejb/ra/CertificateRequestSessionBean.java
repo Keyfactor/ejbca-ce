@@ -82,7 +82,6 @@ import org.ejbca.cvc.exception.ParseException;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class CertificateRequestSessionBean implements CertificateRequestSessionRemote, CertificateRequestSessionLocal {
 
-    private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(CertificateRequestSessionBean.class);
 
     /** Internal localization of logs and errors */

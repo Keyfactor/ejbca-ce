@@ -25,8 +25,9 @@ import javax.xml.ws.WebFault;
 @WebFault
 public class ApprovalRequestExecutionException extends Exception {
 
+	private static final long serialVersionUID = 2306275321815465483L;
 
-	public ApprovalRequestExecutionException(String message, Throwable cause) {
+    public ApprovalRequestExecutionException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
