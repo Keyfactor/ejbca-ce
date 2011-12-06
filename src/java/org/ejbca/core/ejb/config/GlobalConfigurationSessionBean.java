@@ -150,51 +150,54 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         }
     }
     
-	@Override
+    @Override
     public void saveGlobalConfiguration(AuthenticationToken admin, GlobalConfiguration globconf) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfiguration()");
         }
-        if(this.accessSession.isAuthorizedNoLogging(admin, "/super_administrator")) {
-        
-        String pk = "0";
-        GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, pk);
-        if (gcdata != null) {
-        	// Save object and create a diff over what has changed
-            @SuppressWarnings("unchecked")
-            Map<Object, Object> orgmap = (Map<Object, Object>)gcdata.getGlobalConfiguration().saveData(); 
-            gcdata.setGlobalConfiguration(globconf);
-            @SuppressWarnings("unchecked")
-            Map<Object, Object> newmap = (Map<Object, Object>)globconf.saveData();             
-			// Get the diff of what changed
-			Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
-			// Make security audit log record
-            String msg = intres.getLocalizedMessage("ra.savedconf", gcdata.getConfigurationId());
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-			for (Map.Entry<Object,Object> entry : diff.entrySet()) {
-				details.put(entry.getKey().toString(), entry.getValue().toString());				
-			}
-            auditSession.log(EjbcaEventTypes.SYSTEMCONF_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
-        } else {
-            // Global configuration doesn't yet exists.
-            try {
-                entityManager.persist(new GlobalConfigurationData(pk, globconf));
-                String msg = intres.getLocalizedMessage("ra.createdconf", pk);
+        if (this.accessSession.isAuthorizedNoLogging(admin, "/")) {
+            String pk = "0";
+            GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, pk);
+            if (gcdata != null) {
+                // Save object and create a diff over what has changed
+                @SuppressWarnings("unchecked")
+                Map<Object, Object> orgmap = (Map<Object, Object>) gcdata.getGlobalConfiguration().saveData();
+                gcdata.setGlobalConfiguration(globconf);
+                @SuppressWarnings("unchecked")
+                Map<Object, Object> newmap = (Map<Object, Object>) globconf.saveData();
+                // Get the diff of what changed
+                Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
+                // Make security audit log record
+                String msg = intres.getLocalizedMessage("ra.savedconf", gcdata.getConfigurationId());
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.SYSTEMCONF_CREATE, EventStatus.SUCCESS, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
-            } catch (Exception e) {
-                String msg = intres.getLocalizedMessage("ra.errorcreateconf");
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                details.put("error", e.getMessage());
-                auditSession.log(EjbcaEventTypes.SYSTEMCONF_CREATE, EventStatus.FAILURE, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+                for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+                    details.put(entry.getKey().toString(), entry.getValue().toString());
+                }
+                auditSession.log(EjbcaEventTypes.SYSTEMCONF_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA,
+                        admin.toString(), null, null, null, details);
+            } else {
+                // Global configuration doesn't yet exists.
+                try {
+                    entityManager.persist(new GlobalConfigurationData(pk, globconf));
+                    String msg = intres.getLocalizedMessage("ra.createdconf", pk);
+                    final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                    details.put("msg", msg);
+                    auditSession.log(EjbcaEventTypes.SYSTEMCONF_CREATE, EventStatus.SUCCESS, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA,
+                            admin.toString(), null, null, null, details);
+                } catch (Exception e) {
+                    String msg = intres.getLocalizedMessage("ra.errorcreateconf");
+                    final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                    details.put("msg", msg);
+                    details.put("error", e.getMessage());
+                    auditSession.log(EjbcaEventTypes.SYSTEMCONF_CREATE, EventStatus.FAILURE, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA,
+                            admin.toString(), null, null, null, details);
+                }
             }
-        }
-        globalconfigurationCache.setGlobalconfiguration(globconf);
+            globalconfigurationCache.setGlobalconfiguration(globconf);
         } else {
-            throw new AuthorizationDeniedException("Authorization was denied to user " + admin + " to resource /super_administrator. Could not save configuration." );
+            throw new AuthorizationDeniedException("Authorization was denied to user " + admin
+                    + " to resource /super_administrator. Could not save configuration.");
         }
         if (log.isTraceEnabled()) {
             log.trace("<saveGlobalConfiguration()");
