@@ -93,7 +93,7 @@
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="va-entity" description="Build EJBCA JPA entity library">
+	<target name="va-entity" depends="ejbca-util" description="Build EJBCA JPA entity library">
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-va" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 

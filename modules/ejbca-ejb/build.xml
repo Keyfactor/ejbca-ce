@@ -53,6 +53,7 @@
 
 	<path id="compile-va-ejb.classpath">
 		<path refid="compile-util.classpath"/>
+		<path refid="lib.ejbca-util.classpath"/>
 		<pathelement location="${mod.va-ejb-interface.lib}"/>
 		<pathelement location="${mod.va-entity.lib}"/>
 		<path path="${build-va-common.dir}"/>
@@ -379,6 +380,7 @@
 	<target name="clean" depends="dependecy-check-clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
 		<delete dir="${build-va.dir}" />
+		<delete dir="${build-va-common.dir}" />
 		<delete dir="${build-util.dir}" />
 		<delete dir="${build-util-signserver.dir}" />
 		<delete dir="${build-common-web.dir}" />
@@ -517,17 +519,13 @@
 	<target name="compile-va-common" depends="with.clover, va-ejb-interface">
 		<mkdir dir="${build-va-common.dir}"/>
 		<javac destdir="${build-va-common.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" classpathref="compile-va-ejb.classpath">
-            <include name="org/cesecore/authentication/tokens/*.java"/>
-		    <include name="org/cesecore/audit/enums/*.java"/>
 			<include name="org/ejbca/core/protocol/certificatestore/CertificateCacheFactory.java"/>
+           	<include name="org/ejbca/ui/web/LimitLengthASN1Reader.java"/>
 			<include name="org/ejbca/ui/web/protocol/RFC4387URL.java"/>
 			<include name="org/ejbca/ui/web/protocol/IHealtChecker.java"/>
 			<include name="org/ejbca/ui/web/pub/cluster/ValidationAuthorityHealthCheck.java"/>
-			<include name="org/ejbca/util/DummyPatternLogger.java"/>
+            <include name="org/ejbca/util/*PatternLogger.java"/>
 		    <include name="org/ejbca/util/HTMLTools.java"/>
-			<include name="org/ejbca/config/EjbcaConfiguration.java"/>
-			<include name="org/ejbca/core/model/InternalEjbcaResources.java"/>
-			<include name="org/cesecore/config/OcspConfiguration.java"/>
 			<include name="org/ejbca/core/protocol/ws/common/CertificateHelper.java"/>
 			<include name="org/ejbca/core/protocol/ws/client/gen/CertificateResponse.java"/>
 			<include name="org/ejbca/core/protocol/ws/client/gen/EjbcaWS.java"/>

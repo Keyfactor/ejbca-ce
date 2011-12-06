@@ -29,6 +29,7 @@
 		<pathelement location="${mod.va-ejb-interface.lib}"/>
 		<pathelement location="${mod.va-common.lib}"/>
 		<pathelement location="${mod.va-entity.lib}" />
+    	<path refid="lib.ejbca-util.classpath"/>
 	</path>
 		
     <target name="clean" description="Clean up this module">
