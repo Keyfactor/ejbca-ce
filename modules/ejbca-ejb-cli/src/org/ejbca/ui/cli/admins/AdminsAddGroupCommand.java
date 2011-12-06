@@ -43,7 +43,7 @@ public class AdminsAddGroupCommand extends BaseAdminsCommand {
         }
         
         try {
-            if (args.length < 4) {
+            if (args.length < 2) {
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of role>");
                 return;
