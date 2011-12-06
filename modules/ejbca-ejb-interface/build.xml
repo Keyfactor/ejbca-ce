@@ -22,6 +22,7 @@
 
 	<path id="va-compile.classpath">
 		<pathelement location="${mod.va-entity.lib}" />
+		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.log4j.classpath"/>
@@ -50,17 +51,12 @@
         <javac destdir="${build-va.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
         	<src path="${src.dir}"/>
-    		<src path="${ejbca.home}/src/java"/>
 			<include name="org/cesecore/certificates/certificate/CertificateStoreSession*.java"/>
 			<include name="org/cesecore/certificates/crl/CrlStoreSession*.java"/>
 			<include name="org/cesecore/audit/log/SecurityEventsLoggerSession.java"/>
 			<include name="org/cesecore/audit/log/SecurityEventsLoggerSessionLocal.java"/>
 			<include name="org/cesecore/authorization/control/AccessControlSession.java"/>
 			<include name="org/cesecore/authorization/control/AccessControlSessionLocal.java"/>
-        	<exclude name="org/cesecore/certificates/certificate/CertificateStore*SessionBean.java" />
-			<exclude name="org/cesecore/certificates/crl/CrlStore*SessionBean.java" />
-			<exclude name="org/cesecore/audit/log/SecurityEventsLoggerSessionBean.java"/>
-			<exclude name="org/cesecore/authorization/control/AccessControlSessionBean.java"/>
         	<include name="org/cesecore/jndi/JndiHelper.java" />
     	</javac>
     </target>

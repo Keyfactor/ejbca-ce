@@ -48,6 +48,7 @@
 		<path refid="common-compile.classpath"/>
 		<path refid="lib.cert-cvc.classpath"/>
 		<path refid="lib.log4j.classpath"/>
+		<path refid="lib.ejbca-util.classpath"/>
 	</path>
 
 	<path id="compile-test.classpath">
@@ -189,7 +190,6 @@
         	encoding="iso8859-1" target="${java.target.version}" classpathref="va-compile.classpath">
         	<include name="org/cesecore/certificates/certificate/CertificateData.java"/>
         	<include name="org/cesecore/certificates/crl/CRLData.java"/>
-        	<src path="${ejbca.home}/src/java"/>
         	<src path="${src.dir}"/>
         </javac>
     </target>
