@@ -266,6 +266,12 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
                 accessrules.add(AccessRulesConstants.VIEWLOGACCESSRULES[i]);
             }
         }
+  
+        for(StandardRules rule : StandardRules.getSecureAuditRelatedRules()) {
+            if(accessControlSession.isAuthorizedNoLogging(authenticationToken, rule.resource())) {
+                accessrules.add(rule.resource());
+            }
+        }
 
         if (usehardtokenissuing) {
             for (int i = 0; i < AccessRulesConstants.HARDTOKENACCESSRULES.length; i++) {

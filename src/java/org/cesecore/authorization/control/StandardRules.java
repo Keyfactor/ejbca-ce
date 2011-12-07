@@ -21,6 +21,7 @@ public enum StandardRules {
 	AUDITLOGSELECT("/secureaudit/auditor/select"),
 	AUDITLOGVERIFY("/secureaudit/auditor/verify"),
 	AUDITLOGLOG("/secureaudit/log"),
+	AUDITLOGBASE("/secureaudit"),
 	CAACCESSBASE("/ca"),
 	CAACCESS("/ca/"),
 	CAACCESSANYCA("/ca/-1"),
@@ -51,5 +52,9 @@ public enum StandardRules {
 	public String toString() {
 		return this.resource;
 	}
+	
+    public static StandardRules[] getSecureAuditRelatedRules() {
+        return new StandardRules[] { AUDITLOGMANAGE, AUDITLOGEXPORT, AUDITLOGSELECT, AUDITLOGVERIFY, AUDITLOGLOG, AUDITLOGBASE };
+    }
 
 }
