@@ -53,6 +53,9 @@ import org.junit.Test;
 /**
  * Tests in this class test aspect of CLI authentication.
  * 
+ * Note that this test does not actually involve the CLI, it just tests the authentication 
+ * that the CLI should use.
+ * 
  * @version $Id$
  * 
  */
