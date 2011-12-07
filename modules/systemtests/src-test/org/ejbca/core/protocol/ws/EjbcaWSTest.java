@@ -119,6 +119,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     
     private final SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
     
+    private final String wsadminRoleName = "WsTEstRole";
+    
     @BeforeClass
     public static void beforeClass() {
     	adminBeforeClass();
@@ -142,7 +144,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     @Test
     public void test00SetupAccessRights() throws Exception {
-        super.setupAccessRights(getRoleName());
+        super.setupAccessRights(wsadminRoleName);
     }
 
     @Test
@@ -707,6 +709,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     
     @Test
     public void test99cleanUpAdmins() throws Exception {
+        super.cleanUpAdmins(wsadminRoleName);
         super.cleanUpAdmins(getRoleName());
     }
 
