@@ -20,6 +20,7 @@ import static org.junit.Assert.assertEquals;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -135,6 +136,7 @@ public class CaRenewCACommandTest extends CaTestCase {
         cal.set(Calendar.MINUTE, 55);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
+        cal.setTimeZone(TimeZone.getTimeZone("GMT+02:00"));
         final String notBefore = "2009-04-15 08:55:00+02:00";
         
         final CaRenewCACommand command = new CaRenewCACommand();
@@ -173,6 +175,7 @@ public class CaRenewCACommandTest extends CaTestCase {
         cal.set(Calendar.MINUTE, 55);
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
+        cal.setTimeZone(TimeZone.getTimeZone("GMT+02:00"));
         final String notBefore = "2009-04-15 08:55:00+02:00";
     	
     	final CaRenewCACommand command = new CaRenewCACommand();
