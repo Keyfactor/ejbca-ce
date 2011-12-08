@@ -24,7 +24,6 @@ import java.io.Serializable;
  * @version $Id$
  *
  */
-
 public interface AccessUserAspect extends Serializable {
 
     int getMatchWith();

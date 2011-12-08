@@ -19,7 +19,6 @@ package org.cesecore.authorization.user.matchvalues;
  * @version $Id$
  *
  */
-
 public interface AccessMatchValue {
 
     /**
