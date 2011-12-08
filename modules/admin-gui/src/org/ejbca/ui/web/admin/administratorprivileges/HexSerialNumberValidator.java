@@ -39,7 +39,7 @@ public class HexSerialNumberValidator implements Validator{
 		}
 		Map<String, String> map = FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
 		for(String key :  map.keySet()) {
-			if (key.contains("matchWith") && map.get(key).equals(X500PrincipalAccessMatchValue.WITH_SERIALNUMBER)) {
+			if (key.contains("matchWith") && X500PrincipalAccessMatchValue.WITH_SERIALNUMBER.equals(X500PrincipalAccessMatchValue.matchFromName(map.get(key)))) {
 				try {
 					new BigInteger((String) object, 16);
 				} catch (NumberFormatException e) {

@@ -115,23 +115,21 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
                 DNFieldExtractor usedExtractor = dnExtractor;
                 X500PrincipalAccessMatchValue matchValue = X500PrincipalAccessMatchValue.matchFromDatabase(accessUser.getMatchWith());
                 if (matchValue == X500PrincipalAccessMatchValue.WITH_SERIALNUMBER) {
+                    try {
                     BigInteger matchValueAsBigInteger = new BigInteger(accessUser.getMatchValue(), 16);
-                    switch (accessUser.getMatchTypeAsType()) {
-                    case TYPE_EQUALCASE:
-                    case TYPE_EQUALCASEINS:
-                        try {
+                        switch (accessUser.getMatchTypeAsType()) {
+                        case TYPE_EQUALCASE:
+                        case TYPE_EQUALCASEINS:
                             returnvalue = matchValueAsBigInteger.equals(certificate.getSerialNumber());
-                        } catch (NumberFormatException nfe) {
-                        }
-                        break;
-                    case TYPE_NOT_EQUALCASE:
-                    case TYPE_NOT_EQUALCASEINS:
-                        try {
+                            break;
+                        case TYPE_NOT_EQUALCASE:
+                        case TYPE_NOT_EQUALCASEINS:
                             returnvalue = !matchValueAsBigInteger.equals(certificate.getSerialNumber());
-                        } catch (NumberFormatException nfe) {
+                            break;
+                        default:
                         }
-                        break;
-                    default:
+                    } catch (NumberFormatException nfe) {
+                        log.info("Invalid matchValue for accessUser when expecting a hex serialNumber: "+accessUser.getMatchValue());
                     }
                 } else if (matchValue == X500PrincipalAccessMatchValue.WITH_FULLDN) {
                     String value = accessUser.getMatchValue();
