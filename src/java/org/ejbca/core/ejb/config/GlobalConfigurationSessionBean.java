@@ -197,7 +197,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
             globalconfigurationCache.setGlobalconfiguration(globconf);
         } else {
             throw new AuthorizationDeniedException("Authorization was denied to user " + admin
-                    + " to resource /super_administrator. Could not save configuration.");
+                    + " to resource /. Could not save configuration.");
         }
         if (log.isTraceEnabled()) {
             log.trace("<saveGlobalConfiguration()");
