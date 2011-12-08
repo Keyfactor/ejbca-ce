@@ -261,7 +261,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void adminSetUpAdmin() throws Exception {
     	super.setUp();
     	if ( !new File(TEST_ADMIN_FILE).exists() ) {
-    		log.debug("Keystore file + '"+TEST_ADMIN_FILE+"' is not existing.");
+    		log.error("Keystore file + '"+TEST_ADMIN_FILE+"' does not exist.");
     		return;
     	}
     	final String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
