@@ -249,6 +249,16 @@ public class X509CertificateAuthenticationTokenTest {
         assertFalse("Shared secret in JVM was not destroyed in local object during serialization.", authenticationToken2.matches(accessUser));
     }
 
+    /** Verify that the token does not match after serialization and deserialization. */
+    @Test
+    public void testBadSerialNumber() {
+        final X509CertificateAuthenticationToken authenticationToken = getAuthenticationToken();
+        int caid = (CertTools.stringToBCDNString(certificate.getIssuerDN().toString())).hashCode();
+        final AccessUserAspect accessUser = new AccessUserAspectData("testRole", caid, X500PrincipalAccessMatchValue.WITH_SERIALNUMBER, AccessMatchType.TYPE_EQUALCASEINS, "qwerty_1");
+        // Will always return false, but not throw an exception
+        assertFalse("matching was succesful, should not have been.", authenticationToken.matches(accessUser));
+    }
+
     /**
      * Produces a standard X509CertificateAuthenticationToken, for internal use.
      * 
