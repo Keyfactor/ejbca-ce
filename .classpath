@@ -96,5 +96,6 @@
 	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jstl.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="conf"/>
+	<classpathentry kind="lib" path="lib/xmlsign/serializer-2.7.1.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
