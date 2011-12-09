@@ -60,6 +60,17 @@
 		<appender-ref ref="AuditLogger"/>
 	</category>
 	
+    <!-- DEBUG is enabled by default from the root category in the end -->
+	<!--
+	<category name="org.ejbca">
+        <priority value="TRACE"/>
+    </category>
+
+    <category name="org.cesecore">
+        <priority value="TRACE"/>
+    </category>
+	-->
+
 	<!-- Limit some debug output, even when debug for EJBCA is enabled -->
 	<category name="org.apache.commons">
 		<priority value="INFO"/>
