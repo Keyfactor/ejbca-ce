@@ -36,30 +36,13 @@
 		Prepare for possible EJBCA plugins that should built and merged into the EAR
 		file.
 	-->
-	<available file="${ejbca.home}/conf/plugin.properties" property="plugin.ejbca.present" />
-    <property file="${ejbca.home}/conf/plugin.properties" />
-	<fail message="File 'plugin.properties' lacks a property setting for 'plugin.ejbca.ant.file'!">
-	    <condition>
-	    	<and>
-		        <isset property="plugin.ejbca.present"/>
-	            <not>
-		    	  <isset property="plugin.ejbca.ant.file"/>
-	            </not>
-	    	</and>
-	    </condition>
-	</fail>
-	<fail message="File specified in 'plugin.properties' is not available!">
-	    <condition>
-	    	<and>
-		        <isset property="plugin.ejbca.present"/>
-	            <not>
-	            	<available file="${plugin.ejbca.ant.file}"/>
-	            </not>
-	    	</and>
-	    </condition>
-	</fail>
-	<property name="plugin.ejbca.lib.dir" value="${ejbca.home}/doesnotexist"/>
-	<property name="plugin.ejbca.mod.dir" value="${ejbca.home}/doesnotexist"/>
+    <property name="ejbca.plugin.gen.path" location="${tmp}/plugin-gen"/>
+	<property name="ejbca.plugin.conf.path" location="${ejbca.home}/conf/plugins"/>
+    <pathconvert property="ejbca.plugin.collection" setonempty="false">
+        <path>
+            <fileset dir="${ejbca.plugin.conf.path}" includes="*.properties" />
+        </path>
+    </pathconvert>
 
 	<!-- Load property files -->	
     <property file="${ejbca.home}/conf/ejbca.properties" />
@@ -192,6 +175,19 @@
 	<property name="crlstore.contextroot" value="/crls" />
 	<property name="certstore.contextroot" value="/certificates" />
 	<property name="ocsp.contextroot" value="/ejbca/publicweb/status" />
+
+	<!-- set hibernate dialect -->
+	<condition property="hibernate.dialect" value="org.hibernate.dialect.DB2Dialect"><equals arg1="${database.name}" arg2="db2"/></condition>
+	<condition property="hibernate.dialect" value="org.hibernate.dialect.DerbyDialect"><equals arg1="${database.name}" arg2="derby"/></condition>
+	<condition property="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"><equals arg1="${database.name}" arg2="hsqldb"/></condition>
+	<condition property="hibernate.dialect" value="org.hibernate.dialect.InformixDialect"><equals arg1="${database.name}" arg2="informix"/></condition>
+	<condition property="hibernate.dialect" value="org.hibernate.dialect.IngresDialect"><equals arg1="${database.name}" arg2="ingres"/></condition>
+	<condition property="hibernate.dialect" value="org.hibernate.dialect.SQLServerDialect"><equals arg1="${database.name}" arg2="mssql"/></condition>
+	<condition property="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"><equals arg1="${database.name}" arg2="mysql"/></condition>
+	<condition property="hibernate.dialect" value="org.hibernate.dialect.Oracle10gDialect"><equals arg1="${database.name}" arg2="oracle"/></condition>
+	<condition property="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"><equals arg1="${database.name}" arg2="postgres"/></condition>
+	<condition property="hibernate.dialect" value="org.hibernate.dialect.SybaseDialect"><equals arg1="${database.name}" arg2="sybase"/></condition>
+	<fail unless="hibernate.dialect" message="Unsupported database type '${database.name}'."/>
 
     <target name="display-properties" description="Show current configuration">
         <echo>

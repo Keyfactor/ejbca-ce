@@ -1,0 +1,69 @@
+#                     plugin.properties
+# 
+# In the EJBCA sub-directory "conf/plugins" you may place any number of files
+# ending with ".properties".   Each of these files will be processed by the
+# standard EJBCA build ANT script and the result will be merged in the
+# "ejbca.ear" file.  
+#
+# The purpose of this is to enable simple extensions of EJBCA which
+# typically would be RA web applications that hooks into the EJBCA "bean"
+# and utility libraries as well as in the AppServer.  The plugin mechanism
+# also makes it easy to extend the EJBCA database schema without bothering
+# about JDBC drivers, login IDs etc.
+#
+# To get this to work there is a "contract" between the plugin and EJBCA
+# which must be honored by the plugin.
+# 
+##############################################################################################
+#
+# EJBCA provides the following properties to the plugin's build script:
+#
+#
+#     ejbca.classpath     Holds a path to all EJBCA & AppServer .jar files
+#
+#     ejbca.app.xml       Holds the path to the EJBCA "application.xml" file
+#
+#     ejbca.dbtype        Holds the type of the EJBCA database (e.g. "mysql")
+#                         which can be used to create DB-specific ORM files
+#                         or exploiting DB-specific SQL extensions
+#
+#     ejbca.hibernate     Holds the hibernate dialect class matching dbtype
+#                         which can be used for creating "persistence.xml"
+#
+#     ejbca.datasource    Holds the JNDI datasource of the EJBCA database
+#                         (e.g. "java:/EjbcaDS") which can be used for creating
+#                         "persistence.xml"
+#
+#     ejbca.gen.path      Holds the path to a temporary root to which plugin
+#                         binaries must be written according to the following:
+#                             Module level .war and ejb .jar: $[ejbca.gen.path}
+#                             Library (utility) .jar        : $[ejbca.gen.path}/lib
+#
+#     ejbca.home          Holds the path to the EJBCA install directory which may be
+#                         used to access resources that are not available through the
+#                         other properties
+#                                
+##############################################################################################
+#
+# A plugin must through its property file in "conf/plugins" provide the following data:
+
+# Mandatory: Path to the ANT build file
+plugin.ejbca.ant.file /home/demo/myplugin/build.xml
+
+# Optional: ANT build "target"
+plugin.ejbca.ant.target every-feature-you-can-imagine
+
+# Optional: Custom properties starting with the prefix "plugin.ejbca.ant.custom."
+# which will be supplied "as is" to the ANT build
+plugin.ejbca.ant.custom.home.sweet.home http://127.0.0.1
+plugin.ejbca.ant.custom.want-warp-speed yes
+
+# Note: In case you want to configure plugins somewhere outside of the EJBCA source
+# tree you can do that by suppling the following definition to the ANT command-line:
+#
+#   -Dejbca.plugin.conf.path=my_config_path
+
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$#
+# Note: Improperly designed plugins can introduce security holes in EJBCA!!!          #
+# Always review the existing code-base when you need access to internal CA resources. #
+#$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$#
