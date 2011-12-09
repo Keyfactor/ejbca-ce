@@ -1389,7 +1389,7 @@ customLog:
 No CA access rule is required.
 </p>
 <ul>
-<li>/log_functionality/log_custom_events (must be configured in advanced mode when editing access rules)</li>
+<li>/secureaudit/log_custom_events (must be configured in advanced mode when editing access rules)</li>
 </ul>
 <p>
 deleteUserDataFromSource:

@@ -21,7 +21,7 @@
 <%@page errorPage="/errorpage.jsp" import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration" %>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
-<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/log_functionality/view_log"); %>
+<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/secureaudit/auditor/select"); %>
 <html>
 <f:view>
 <head>

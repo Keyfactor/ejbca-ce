@@ -35,6 +35,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessTree;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
@@ -261,13 +262,8 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
                 accessrules.add(AccessRulesConstants.STANDARDREGULARACCESSRULES[i]);
             }
         }
-        for (int i = 0; i < AccessRulesConstants.VIEWLOGACCESSRULES.length; i++) {
-            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.VIEWLOGACCESSRULES[i])) {
-                accessrules.add(AccessRulesConstants.VIEWLOGACCESSRULES[i]);
-            }
-        }
   
-        for(StandardRules rule : StandardRules.getSecureAuditRelatedRules()) {
+        for(AuditLogRules rule : AuditLogRules.values()) {
             if(accessControlSession.isAuthorizedNoLogging(authenticationToken, rule.resource())) {
                 accessrules.add(rule.resource());
             }

@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleState;
 
@@ -92,8 +93,7 @@ public class BasicAccessRuleSetDecoder implements Serializable {
         Collection<AccessRuleTemplate> result = new ArrayList<AccessRuleTemplate>();
         for(Integer next : currentOtherRules) {
             if (next.equals(Integer.valueOf(BasicAccessRuleSet.OTHER_VIEWLOG))) {
-                result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWLOG, AccessRuleState.RULE_ACCEPT, true));
-                result.add(new AccessRuleTemplate(StandardRules.AUDITLOGSELECT.resource(), AccessRuleState.RULE_ACCEPT, false));
+                result.add(new AccessRuleTemplate(AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
             } else if (next.equals(Integer.valueOf(BasicAccessRuleSet.OTHER_ISSUEHARDTOKENS))) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, AccessRuleState.RULE_ACCEPT, false));
             }
@@ -104,7 +104,6 @@ public class BasicAccessRuleSetDecoder implements Serializable {
     public static Collection<AccessRuleTemplate> getEndEntityRules(Collection<Integer> currentendentityprofiles, Collection<Integer> currentendentityrules) {
         List<String> endentityrules = new ArrayList<String>();
         Collection<AccessRuleTemplate> result = new ArrayList<AccessRuleTemplate>();
-
         for (Integer next : currentendentityrules) {
             if (next == BasicAccessRuleSet.ENDENTITY_VIEW) {
                 result.add(new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWENDENTITY, AccessRuleState.RULE_ACCEPT, false));

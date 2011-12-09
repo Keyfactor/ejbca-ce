@@ -16,12 +16,6 @@ package org.cesecore.authorization.control;
  * @version $Id$
  */
 public enum StandardRules {
-	AUDITLOGMANAGE ("/secureaudit/management/manage"),
-	AUDITLOGEXPORT("/secureaudit/auditor/export"),
-	AUDITLOGSELECT("/secureaudit/auditor/select"),
-	AUDITLOGVERIFY("/secureaudit/auditor/verify"),
-	AUDITLOGLOG("/secureaudit/log"),
-	AUDITLOGBASE("/secureaudit"),
 	CAACCESSBASE("/ca"),
 	CAACCESS("/ca/"),
 	CAACCESSANYCA("/ca/-1"),
@@ -38,10 +32,9 @@ public enum StandardRules {
 	BACKUP(RECOVERY.resource()+"/backup"),
 	RESTORE(RECOVERY.resource()+"/restore");
 	
-	// TODO: search _ACCESS_RULE
 	private final String resource;
 	
-	StandardRules(String resource) {
+	private StandardRules(String resource) {
         this.resource = resource;
     }
 
@@ -52,9 +45,5 @@ public enum StandardRules {
 	public String toString() {
 		return this.resource;
 	}
-	
-    public static StandardRules[] getSecureAuditRelatedRules() {
-        return new StandardRules[] { AUDITLOGMANAGE, AUDITLOGEXPORT, AUDITLOGSELECT, AUDITLOGVERIFY, AUDITLOGLOG, AUDITLOGBASE };
-    }
 
 }

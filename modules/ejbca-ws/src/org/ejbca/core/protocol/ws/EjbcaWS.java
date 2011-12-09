@@ -74,6 +74,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -2059,8 +2060,8 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try{
 	        // Check authorization to perform custom logging
-			if(!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_LOG_CUSTOM_EVENTS)) {
-            	final String authmsg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_LOG_CUSTOM_EVENTS, null);
+			if(!authorizationSession.isAuthorized(admin, AuditLogRules.LOG_CUSTOM.resource())) {
+            	final String authmsg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AuditLogRules.LOG_CUSTOM.resource(), null);
             	throw new AuthorizationDeniedException(authmsg);
 			}
 

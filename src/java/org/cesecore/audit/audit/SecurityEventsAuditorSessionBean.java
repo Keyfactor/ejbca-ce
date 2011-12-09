@@ -35,7 +35,7 @@ import org.cesecore.audit.log.AuditLogResetException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.query.QueryCriteria;
@@ -68,7 +68,7 @@ public class SecurityEventsAuditorSessionBean implements SecurityEventsAuditorSe
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public List<? extends AuditLogEntry> selectAuditLogs(final AuthenticationToken token, final int startIndex, final int max, final QueryCriteria criteria, final String logDeviceId) throws AuthorizationDeniedException {
-        assertAuthorization(token, StandardRules.AUDITLOGSELECT.resource());
+        assertAuthorization(token, AuditLogRules.VIEW.resource());
     	return AuditDevicesConfig.getDevice(getEjbs(), logDeviceId).selectAuditLogs(token, startIndex, max, criteria, AuditDevicesConfig.getProperties(logDeviceId));
     }
 
@@ -99,7 +99,7 @@ public class SecurityEventsAuditorSessionBean implements SecurityEventsAuditorSe
     public AuditLogExportReport exportAuditLogs(final AuthenticationToken token, final CryptoToken cryptoToken, final Date timestamp,
             final boolean deleteAfterExport, final Map<String, Object> signatureDetails, final String logDeviceId) throws AuditLogExporterException, AuthorizationDeniedException {
     	// StandardRules.AUDITLOGEXPORT export implies StandardRules.AUDITLOGVERIFY.
-        assertAuthorization(token, StandardRules.AUDITLOGEXPORT.resource());
+        assertAuthorization(token, AuditLogRules.EXPORT_LOGS.resource());
         LOG.info("Export of audit logs from device " + logDeviceId + " requested.");
         final Class<? extends AuditExporter> exporter = AuditDevicesConfig.getExporter(logDeviceId);
         final Properties properties = AuditDevicesConfig.getProperties(logDeviceId);
@@ -109,7 +109,7 @@ public class SecurityEventsAuditorSessionBean implements SecurityEventsAuditorSe
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public AuditLogValidationReport verifyLogsIntegrity(final AuthenticationToken token, final Date timestamp, final String logDeviceId) throws AuditLogValidatorException, AuthorizationDeniedException {
-    	assertAuthorization(token, StandardRules.AUDITLOGVERIFY.resource());
+    	assertAuthorization(token, AuditLogRules.VERIFY.resource());
         LOG.info("Validation of audit logs in device " + logDeviceId + " requested.");
     	return AuditDevicesConfig.getDevice(getEjbs(), logDeviceId).verifyLogsIntegrity(token, timestamp, AuditDevicesConfig.getProperties(logDeviceId));
     }
