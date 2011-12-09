@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 
@@ -33,7 +34,7 @@ public enum DefaultRoles {
     CAADMINISTRATOR("CAADMINISTRATOR", 
             new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_CAFUNCTIONALTY, AccessRuleState.RULE_ACCEPT, true), 
-            new AccessRuleTemplate(AccessRulesConstants.REGULAR_LOGFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true), 
+            new AccessRuleTemplate(AuditLogRules.LOG.resource(), AccessRuleState.RULE_ACCEPT, true), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_RAFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, true), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_SYSTEMFUNCTIONALITY, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, AccessRuleState.RULE_ACCEPT, false), 
@@ -47,7 +48,7 @@ public enum DefaultRoles {
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false)),
     SUPERVISOR("SUPERVISOR",
             new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false), 
-            new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWLOG, AccessRuleState.RULE_ACCEPT, true), 
+            new AccessRuleTemplate(AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_VIEWCERTIFICATE, AccessRuleState.RULE_ACCEPT, false)), 
     HARDTOKENISSUER("HARDTOKENISSUER");
 

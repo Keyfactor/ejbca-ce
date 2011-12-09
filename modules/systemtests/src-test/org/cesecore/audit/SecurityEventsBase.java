@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.cesecore.RoleUsingTestCase;
-import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.jndi.JndiHelper;
@@ -68,11 +68,11 @@ public abstract class SecurityEventsBase extends RoleUsingTestCase {
 
         // Add rules to the role, for the resource
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.AUDITLOGEXPORT.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.AUDITLOGVERIFY.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.AUDITLOGSELECT.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.AUDITLOGMANAGE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.AUDITLOGLOG.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), AuditLogRules.EXPORT_LOGS.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), AuditLogRules.VERIFY.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), AuditLogRules.CONFIGURE.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), AuditLogRules.LOG.resource(), AccessRuleState.RULE_ACCEPT, true));
         roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
     }
 

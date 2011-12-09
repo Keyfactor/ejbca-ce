@@ -29,7 +29,7 @@ import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.config.CesecoreConfiguration;
 
 /**
@@ -55,7 +55,7 @@ public class EjbcaAuditorSessionBean implements EjbcaAuditorSessionLocal {
             throw new UnsupportedOperationException("selectAuditLog can only be used with " + IntegrityProtectedDevice.class.getSimpleName());
         }
         // Require that the caller is authorized to AUDITLOGSELECT just like in org.cesecore.audit.audit.SecurityEventsAuditorSessionBean.selectAuditLogs(...)
-        assertAuthorization(token, StandardRules.AUDITLOGSELECT.resource());
+        assertAuthorization(token, AuditLogRules.VIEW.resource());
         // Assert that parameter is alphanumeric or one of ". ?<>!="
         assertLegalSqlString(whereClause, true);
         // Assert that parameter is alphanumeric or one of ". "

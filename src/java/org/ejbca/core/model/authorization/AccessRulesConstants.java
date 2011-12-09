@@ -13,6 +13,7 @@
  
 package org.ejbca.core.model.authorization;
 
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 
 /**
@@ -57,7 +58,7 @@ public abstract class AccessRulesConstants {
     public static final String ROLE_ADMINISTRATOR                         = "/administrator";
     // ROLE_SUPERADMINISTRATOR is only kept here for legacy reasons */
     public static final String ROLE_SUPERADMINISTRATOR                    = "/super_administrator";
-    public static final String ROLE_ROOT                    = "/";
+    public static final String ROLE_ROOT                                  = "/";
     
     
     public static final String REGULAR_CAFUNCTIONALTY                     = StandardRules.CAFUNCTIONALITY.resource();
@@ -81,10 +82,7 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_REVOKEENDENTITY                    = "/ra_functionality/revoke_end_entity";    
     public static final String REGULAR_VIEWENDENTITYHISTORY               = "/ra_functionality/view_end_entity_history";
     public static final String REGULAR_APPROVEENDENTITY                   = "/ra_functionality/approve_end_entity";
-    public static final String REGULAR_LOGFUNCTIONALITY                   = "/log_functionality"; 
-    public static final String REGULAR_VIEWLOG                            = "/log_functionality/view_log"; 
-    public static final String REGULAR_LOGCONFIGURATION                   = "/log_functionality/edit_log_configuration";
-    public static final String REGULAR_LOG_CUSTOM_EVENTS                  = "/log_functionality/log_custom_events"; 
+
     public static final String REGULAR_SYSTEMFUNCTIONALITY                = "/system_functionality";
     public static final String REGULAR_EDITADMINISTRATORPRIVILEDGES       = "/system_functionality/edit_administrator_privileges";
     public static final String REGULAR_EDITSYSTEMCONFIGURATION            = "/system_functionality/edit_systemconfiguration";
@@ -121,29 +119,16 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_REVOKEENDENTITY,
                                                            REGULAR_VIEWENDENTITYHISTORY,
                                                            REGULAR_APPROVEENDENTITY,
-                                                           REGULAR_LOGFUNCTIONALITY,
-                                                           REGULAR_LOG_CUSTOM_EVENTS,  
-                                                           REGULAR_VIEWLOG,
-                                                           REGULAR_LOGCONFIGURATION,
+                                                           AuditLogRules.LOG.resource(),
+                                                           AuditLogRules.LOG_CUSTOM.resource(),  
+                                                           AuditLogRules.VIEW.resource(),
+                                                           AuditLogRules.CONFIGURE.resource(),
                                                            REGULAR_SYSTEMFUNCTIONALITY,
                                                            REGULAR_EDITADMINISTRATORPRIVILEDGES,
                                                            REGULAR_EDITSYSTEMCONFIGURATION};
                                                        
     // Role Access Rules
     public static final  String[] ROLEACCESSRULES = {ROLE_PUBLICWEBUSER, ROLE_ADMINISTRATOR, ROLE_SUPERADMINISTRATOR};
-    
-    public static final String[] VIEWLOGACCESSRULES = { "/log_functionality/view_log/ca_entries",
-                                                        "/log_functionality/view_log/ra_entries",
-                                                        "/log_functionality/view_log/log_entries",
-                                                        "/log_functionality/view_log/publicweb_entries",
-                                                        "/log_functionality/view_log/adminweb_entries",
-                                                        "/log_functionality/view_log/hardtoken_entries",
-                                                        "/log_functionality/view_log/keyrecovery_entries",
-                                                        "/log_functionality/view_log/authorization_entries",
-                                                        "/log_functionality/view_log/approval_entries",
-                                                        "/log_functionality/view_log/services_entries",
-                                                        "/log_functionality/view_log/custom_entries",
-                                                        };
                                                         
     // Hard Token specific accessrules used in authorization module.
     public static final String[] HARDTOKENACCESSRULES = 

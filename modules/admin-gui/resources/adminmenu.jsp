@@ -1,3 +1,4 @@
+<%@page import="org.cesecore.authorization.control.AuditLogRules"%>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="errorpage.jsp" import="org.ejbca.config.GlobalConfiguration,
@@ -6,78 +7,76 @@
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
-<% 
-  // A jsp page that generates the menu after the users access rights 
-  // Initialize environment.
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
- 
-  final String THIS_FILENAME            =   globalconfiguration.getMenuFilename();
+<%
+ 	// A jsp page that generates the menu after the users access rights 
+    // Initialize environment.
+    GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
+   
+    final String THIS_FILENAME            =   globalconfiguration.getMenuFilename();
 
-  final String MAIN_LINK                =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() +globalconfiguration.getMainFilename();
+    final String MAIN_LINK                =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() +globalconfiguration.getMainFilename();
 
-  final String APPROVAL_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "approval/approveactionlist.jsf";
-  
-  final String EDITCA_LINK              =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
-                                                  + "/editcas/editcas.jsp";
-  final String EDITPUBLISHERS_LINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
-                                                  + "/editpublishers/editpublishers.jsp";
+    final String APPROVAL_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "approval/approveactionlist.jsf";
+    
+    final String EDITCA_LINK              =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
+                                                    + "/editcas/editcas.jsp";
+    final String EDITPUBLISHERS_LINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
+                                                    + "/editpublishers/editpublishers.jsp";
 
-  final String CA_LINK                  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
-                                                  + "/cafunctions.jsp";
-  
-  final String CA_ACTIVATION_LINK		=  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
-  												+ "/caactivation.jsf";
-  
-  final String CA_CERTIFICATEPROFILELINK  = ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
-                                                  + "/editcertificateprofiles/editcertificateprofiles.jsp";  
-  final String RA_EDITUSERDATASOURCESLINK =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/edituserdatasources/edituserdatasources.jsp";
-  final String RA_EDITPROFILESLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/editendentityprofiles/editendentityprofiles.jsp";
-  final String RA_ADDENDENTITYLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/addendentity.jsp";
-  final String RA_LISTENDENTITIESLINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/listendentities.jsp";
-  final String HT_EDITHARDTOKENISSUERS_LINK  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getHardTokenPath() 
-                                                  + "/edithardtokenissuers.jsp";
-  final String HT_EDITHARDTOKENPROFILES_LINK  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getHardTokenPath() 
-                                                  + "/edithardtokenprofiles/edithardtokenprofiles.jsp";
-  final String AUDIT_LINK                 =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.jsf";
-  final String LOG_CONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getLogPath() 
-                                                  + "/logconfiguration/logconfiguration.jsp";
-  final String CONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() 
-                                                  + "/configuration.jsp";
-  
-  final String SERVICES_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "services/listservices.jsf";
-  
-  final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() 
-                                                  + "/administratorprivileges.jsf";
-  
-  final String PUBLICWEB_LINK          = ejbcawebbean.getBaseUrl()+"index.jsp";
-  
-  final String MYPREFERENCES_LINK     =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "mypreferences.jsp";
-  final String HELP_LINK                =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getHelpPath() 
-                                                  + "/index_help.html";
+    final String CA_LINK                  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
+                                                    + "/cafunctions.jsp";
+    
+    final String CA_ACTIVATION_LINK		=  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
+    												+ "/caactivation.jsf";
+    
+    final String CA_CERTIFICATEPROFILELINK  = ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
+                                                    + "/editcertificateprofiles/editcertificateprofiles.jsp";  
+    final String RA_EDITUSERDATASOURCESLINK =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/edituserdatasources/edituserdatasources.jsp";
+    final String RA_EDITPROFILESLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/editendentityprofiles/editendentityprofiles.jsp";
+    final String RA_ADDENDENTITYLINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/addendentity.jsp";
+    final String RA_LISTENDENTITIESLINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getRaPath()+"/listendentities.jsp";
+    final String HT_EDITHARDTOKENISSUERS_LINK  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getHardTokenPath() 
+                                                    + "/edithardtokenissuers.jsp";
+    final String HT_EDITHARDTOKENPROFILES_LINK  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getHardTokenPath() 
+                                                    + "/edithardtokenprofiles/edithardtokenprofiles.jsp";
+    final String AUDIT_LINK                 =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "audit/search.jsf";
+    final String LOG_CONFIGURATION_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getLogPath() 
+                                                    + "/logconfiguration/logconfiguration.jsp";
+    final String CONFIGURATION_LINK       =  ejbcawebbean.getBaseUrl() + globalconfiguration.getConfigPath() 
+                                                    + "/configuration.jsp";
+    
+    final String SERVICES_LINK            =   ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "services/listservices.jsf";
+    
+    final String ADMINISTRATORPRIV_LINK   =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAuthorizationPath() 
+                                                    + "/administratorprivileges.jsf";
+    
+    final String PUBLICWEB_LINK          = ejbcawebbean.getBaseUrl()+"index.jsp";
+    
+    final String MYPREFERENCES_LINK     =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "mypreferences.jsp";
+    final String HELP_LINK                =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + globalconfiguration.getHelpPath() 
+                                                    + "/index_help.html";
 
-  final String LOGOUT_LINK                =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "logout";
-
-
-  final String MAIN_RESOURCE                          = "/administrator";
-  final String CABASICFUNCTIONS_RESOURCE              = "/ca_functionality/basic_functions";
-  final String ACTIVATECA_RESOURCE                    = "/ca_functionality/basic_functions/activate_ca";
-  final String EDITCAS_RESOURCE                       = "/super_administrator";
-  final String EDITPUBLISHERS_RESOURCE                = "/super_administrator";
-  final String EDITCERTIFICATEPROFILES_RESOURCE       = "/ca_functionality/edit_certificate_profiles";
-  final String RAEDITUSERDATASOURCES_RESOURCE         = AccessRulesConstants.REGULAR_EDITUSERDATASOURCES;
-  final String RAEDITENDENTITYPROFILES_RESOURCE       = "/ra_functionality/edit_end_entity_profiles";
-  final String RAADDENDENTITY_RESOURCE                = "/ra_functionality/create_end_entity";
-  final String RALISTEDITENDENTITY_RESOURCE           = "/ra_functionality/view_end_entity";
-  final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionality/edit_hardtoken_issuers";
-  final String HTEDITHARDTOKENPROFILES_RESOURCE       = "/hardtoken_functionality/edit_hardtoken_profiles";
-  final String LOGVIEW_RESOURCE                       = "/log_functionality/view_log";
-  final String LOGCONFIGURATION_RESOURCE              = "/log_functionality/edit_log_configuration";
-  final String SYSTEMCONFIGURATION_RESOURCE           = AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION;
-  final String SERVICES_RESOURCE                      = "/super_administrator";
-  final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
+    final String LOGOUT_LINK                =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "logout";
 
 
-%>
+    final String MAIN_RESOURCE                          = "/administrator";
+    final String CABASICFUNCTIONS_RESOURCE              = "/ca_functionality/basic_functions";
+    final String ACTIVATECA_RESOURCE                    = "/ca_functionality/basic_functions/activate_ca";
+    final String EDITCAS_RESOURCE                       = "/super_administrator";
+    final String EDITPUBLISHERS_RESOURCE                = "/super_administrator";
+    final String EDITCERTIFICATEPROFILES_RESOURCE       = "/ca_functionality/edit_certificate_profiles";
+    final String RAEDITUSERDATASOURCES_RESOURCE         = AccessRulesConstants.REGULAR_EDITUSERDATASOURCES;
+    final String RAEDITENDENTITYPROFILES_RESOURCE       = "/ra_functionality/edit_end_entity_profiles";
+    final String RAADDENDENTITY_RESOURCE                = "/ra_functionality/create_end_entity";
+    final String RALISTEDITENDENTITY_RESOURCE           = "/ra_functionality/view_end_entity";
+    final String HTEDITHARDTOKENISSUERS_RESOURCE        = "/hardtoken_functionality/edit_hardtoken_issuers";
+    final String HTEDITHARDTOKENPROFILES_RESOURCE       = "/hardtoken_functionality/edit_hardtoken_profiles";
+    final String LOGVIEW_RESOURCE                       = AuditLogRules.VIEW.resource(); 
+    final String LOGCONFIGURATION_RESOURCE              = AuditLogRules.CONFIGURE.resource();
+    final String SYSTEMCONFIGURATION_RESOURCE           = AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION;
+    final String SERVICES_RESOURCE                      = "/super_administrator";
+    final String ADMINPRIVILEGES_RESOURCE               = "/system_functionality/edit_administrator_privileges";
+ %>
 <%  
   boolean caheaderprinted     =false;
   boolean reportsheaderprinted =false;

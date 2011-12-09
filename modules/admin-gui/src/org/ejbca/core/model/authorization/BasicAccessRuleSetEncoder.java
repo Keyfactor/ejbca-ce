@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
@@ -311,7 +312,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
                                 break;
                             }
                         } else {
-                            if (accessRule.getAccessRuleName().equals(AccessRulesConstants.REGULAR_VIEWLOG)) {
+                            if (accessRule.getAccessRuleName().equals(AuditLogRules.VIEW.resource())) {
                                 if (accessRule.getInternalState() == AccessRuleState.RULE_ACCEPT && accessRule.getRecursive()) {
                                     this.currentotherrules.add(Integer.valueOf(BasicAccessRuleSet.OTHER_VIEWLOG));
                                 } else {

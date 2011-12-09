@@ -22,7 +22,7 @@ import org.cesecore.RoleUsingTestCase;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
@@ -59,7 +59,7 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
         final RoleData role = roleAccessSession.findRole(ROLE_NAME);
         // Add rules to the role, for the resource
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.AUDITLOGSELECT.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
         roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
     }
 
@@ -78,7 +78,7 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
         LOG.trace(">testAuthorization");
         final RoleData role = roleAccessSession.findRole(ROLE_NAME);
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(ROLE_NAME, StandardRules.AUDITLOGSELECT.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(ROLE_NAME, AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
         roleManagementSession.removeAccessRulesFromRole(roleMgmgToken, role, accessRules);
         try {
             ejbcaAuditorSession.selectAuditLog(roleMgmgToken, DEVICE_NAME, 0, 10, null, null, null);
