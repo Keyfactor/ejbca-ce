@@ -34,7 +34,8 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 public abstract class HardTokenProfileWithPINEnvelope extends HardTokenProfile implements IPINEnvelopeSettings{
 		
 	
-	// Protected Constants
+	private static final long serialVersionUID = -3611906956402573441L;
+    // Protected Constants
 	protected static final String PINENVELOPETYPE                = "pinenvelopetype";
 	protected static final String PINENVELOPEFILENAME            = "pinenvelopefilename";
 	protected static final String PINENVELOPEDATA                = "pinenvelopetdata";

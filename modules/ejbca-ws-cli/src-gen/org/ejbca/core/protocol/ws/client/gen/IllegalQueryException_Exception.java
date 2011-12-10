@@ -15,6 +15,7 @@ public class IllegalQueryException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = -4521415625354699430L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

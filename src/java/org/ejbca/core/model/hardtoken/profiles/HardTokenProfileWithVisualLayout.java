@@ -37,7 +37,8 @@ public abstract class HardTokenProfileWithVisualLayout extends HardTokenProfileW
 		
 	// Protected Constants
 
-	protected static final String VISUALLAYOUTTYPE               = "visuallayouttype";
+	private static final long serialVersionUID = -4609931101290447428L;
+    protected static final String VISUALLAYOUTTYPE               = "visuallayouttype";
 	protected static final String VISUALLAYOUTFILENAME           = "visuallayoutfilename";
 	protected static final String VISUALLAYOUTDATA               = "visuallayoutdata";
 

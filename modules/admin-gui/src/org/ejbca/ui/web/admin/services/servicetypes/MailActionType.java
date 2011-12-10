@@ -27,7 +27,8 @@ import org.ejbca.core.model.services.actions.MailAction;
  */
 public class MailActionType extends ActionType {
 	
-	public static final String NAME = "MAILNOTIFICATIONACTION";
+	private static final long serialVersionUID = 5340503998099975329L;
+    public static final String NAME = "MAILNOTIFICATIONACTION";
 
 	public MailActionType(){
 		super("mailaction.jsp", NAME, true);

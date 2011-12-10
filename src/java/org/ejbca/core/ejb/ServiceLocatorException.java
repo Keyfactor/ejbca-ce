@@ -13,6 +13,8 @@ package org.ejbca.core.ejb;
  */
 public class ServiceLocatorException extends RuntimeException {
 
+    private static final long serialVersionUID = -4079132608707751216L;
+
     public ServiceLocatorException() {
         super();
     }

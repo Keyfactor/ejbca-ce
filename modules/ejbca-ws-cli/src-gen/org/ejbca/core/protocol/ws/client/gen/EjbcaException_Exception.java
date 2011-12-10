@@ -15,6 +15,7 @@ public class EjbcaException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = 4376840195655223957L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

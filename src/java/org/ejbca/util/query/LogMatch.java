@@ -32,6 +32,7 @@ package org.ejbca.util.query;
 public class LogMatch extends BasicMatch {
     // Public Constants
 
+    private static final long serialVersionUID = -4306339790741595609L;
     public static final int MATCH_WITH_USERNAME         = 0;
     public static final int MATCH_WITH_ADMINCERTIFICATE = 1;
     public static final int MATCH_WITH_IP               = 2;

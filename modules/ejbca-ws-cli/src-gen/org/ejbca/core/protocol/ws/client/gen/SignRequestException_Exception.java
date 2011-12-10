@@ -15,6 +15,7 @@ public class SignRequestException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = -970785567668827464L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

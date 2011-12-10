@@ -23,6 +23,7 @@ import org.ejbca.core.model.SecConst;
  * @version $Id$
  */
 public class EnhancedEIDHardToken extends HardToken {
+    private static final long serialVersionUID = 9043768992711957547L;
     // Public Constants
 	public static final int THIS_TOKENTYPE  = SecConst.TOKEN_ENHANCEDEID;
     public static final String INITIALSIGNATUREPIN = "INITIALSIGNATUREPIN";

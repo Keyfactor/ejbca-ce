@@ -30,7 +30,8 @@ import org.cesecore.util.StringTools;
  */
 public class KeyRecoveryData implements java.io.Serializable {
 
-	// Public Constructors
+	private static final long serialVersionUID = 6876139737538684832L;
+    // Public Constructors
     public KeyRecoveryData(BigInteger certificatesn, String issuerdn, String username,
                            boolean markedasrecoverable, KeyPair keypair, Certificate certificate) {
         this.certificatesn = certificatesn;

@@ -24,6 +24,9 @@ import org.ejbca.core.EjbcaException;
  */
 public class UserDataSourceConnectionException extends EjbcaException {
     
+    private static final long serialVersionUID = 407640832586446989L;
+
+
     /**
      * Creates a new instance of <code>UserDataSourceConnectionException</code> without detail message.
      */

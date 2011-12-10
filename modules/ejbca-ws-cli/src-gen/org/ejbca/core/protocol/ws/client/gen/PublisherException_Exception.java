@@ -15,6 +15,7 @@ public class PublisherException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = -7469167314501393236L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

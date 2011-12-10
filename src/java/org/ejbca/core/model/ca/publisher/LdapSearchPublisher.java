@@ -17,7 +17,8 @@ import com.novell.ldap.LDAPSearchResults;
 
 public class LdapSearchPublisher extends LdapPublisher {
 	
-	private static final Logger log = Logger.getLogger(LdapSearchPublisher.class);
+	private static final long serialVersionUID = -4593116897226605008L;
+    private static final Logger log = Logger.getLogger(LdapSearchPublisher.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	

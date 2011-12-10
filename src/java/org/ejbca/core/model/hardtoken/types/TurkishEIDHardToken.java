@@ -23,6 +23,8 @@ import org.ejbca.core.model.SecConst;
  * @version $Id$
  */
 public class TurkishEIDHardToken extends HardToken {
+    private static final long serialVersionUID = -8771180471734319021L;
+
     // Public Constants
 	public static final int THIS_TOKENTYPE = SecConst.TOKEN_TURKISHEID;
 	

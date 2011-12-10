@@ -22,7 +22,8 @@ package org.ejbca.ui.web.admin.services.servicetypes;
  */
 public class CertificateExpirationNotifierWorkerType extends BaseEmailNotifyingWorkerType {
 
-	public static final String NAME = "CERTNOTIFICATIONWORKER";
+	private static final long serialVersionUID = -3680823921964522760L;
+    public static final String NAME = "CERTNOTIFICATIONWORKER";
 	
 	
 	public CertificateExpirationNotifierWorkerType(){

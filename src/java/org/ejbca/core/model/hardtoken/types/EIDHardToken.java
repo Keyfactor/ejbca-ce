@@ -23,6 +23,7 @@ import org.ejbca.core.model.SecConst;
  * @version $Id$
  */
 public class EIDHardToken extends HardToken {
+    private static final long serialVersionUID = -3757040668436850815L;
     // Public Constants
     public static final String INITIALBASICPIN = "INITIALBASICPIN";
     public static final String BASICPUK = "BASICPUK";

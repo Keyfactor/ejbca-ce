@@ -28,7 +28,9 @@ import javax.faces.model.SelectItem;
 
 public class SortableSelectItem extends SelectItem implements Comparable{
 
-	public SortableSelectItem(Object arg0, String arg1, String arg2, boolean arg3) {
+	private static final long serialVersionUID = -3282242436064530974L;
+
+    public SortableSelectItem(Object arg0, String arg1, String arg2, boolean arg3) {
 		super(arg0, arg1, arg2, arg3);
 	}
 

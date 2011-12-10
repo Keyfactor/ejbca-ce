@@ -24,6 +24,9 @@ import javax.xml.ws.WebFault;
 @WebFault
 public class HardTokenExistsException extends java.lang.Exception {
     
+    private static final long serialVersionUID = -4147417555483748945L;
+
+
     /**
      * Creates a new instance of <code>HardTokenExistsException</code> without detail message.
      */

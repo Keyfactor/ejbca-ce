@@ -27,6 +27,9 @@ import org.ejbca.core.EjbcaException;
 @WebFault
 public class PublisherException extends EjbcaException {
     
+    private static final long serialVersionUID = 7131460595927889580L;
+
+
     /**
      * Creates a new instance of <code>PublisherException</code> without detail message.
      */

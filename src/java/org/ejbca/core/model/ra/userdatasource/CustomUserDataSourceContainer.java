@@ -34,7 +34,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  * @version $Id$
  */
 public class CustomUserDataSourceContainer extends BaseUserDataSource{
-	private ICustomUserDataSource customuserdatasource = null; 
+	private static final long serialVersionUID = -1356929899319563228L;
+
+    private ICustomUserDataSource customuserdatasource = null; 
 	
 	public static final float LATEST_VERSION = 1;
 	

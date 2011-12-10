@@ -21,6 +21,9 @@ package org.ejbca.core.model.hardtoken;
  */
 public class UnavailableTokenException extends java.lang.Exception {
     
+    private static final long serialVersionUID = 3427797936039132710L;
+
+
     /**
      * Creates a new instance of <code>UnavailableTokenException</code> without detail message.
      */

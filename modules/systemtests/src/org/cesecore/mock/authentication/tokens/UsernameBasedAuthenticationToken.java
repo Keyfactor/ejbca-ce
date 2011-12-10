@@ -13,16 +13,12 @@
 package org.cesecore.mock.authentication.tokens;
 
 import java.security.Principal;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
-import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 
 /**
  * This mock of an authentication token is to provide a simple token to test authentication/authorization based

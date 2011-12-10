@@ -16,7 +16,6 @@ import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashMap;
 
 import javax.ejb.EJBException;
 
@@ -36,6 +35,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;

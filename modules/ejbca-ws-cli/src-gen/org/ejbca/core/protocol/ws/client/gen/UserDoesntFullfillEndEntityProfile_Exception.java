@@ -15,6 +15,7 @@ public class UserDoesntFullfillEndEntityProfile_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = 6972616925192577500L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

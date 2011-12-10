@@ -26,6 +26,8 @@ import org.apache.log4j.Logger;
  * @version $Id$
  */
 public class LanguageProperties extends Properties {  
+    private static final long serialVersionUID = -2652154499847668359L;
+
     private static Logger log = Logger.getLogger(LanguageProperties.class);
     
 	private static final String keyValueSeparators = "=: \t\r\n\f";  

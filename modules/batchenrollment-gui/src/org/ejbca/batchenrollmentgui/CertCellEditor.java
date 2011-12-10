@@ -33,6 +33,7 @@ import javax.swing.JTextField;
  */
 class CertCellEditor extends DefaultCellEditor implements ActionListener {
 
+    private static final long serialVersionUID = 7678239543718973607L;
     private JButton customEditorButton = new JButton("...");
     private JTable table;
     private int row;

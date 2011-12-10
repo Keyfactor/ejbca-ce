@@ -15,6 +15,7 @@ public class HardTokenDoesntExistsException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = -1235267193381390990L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

@@ -24,7 +24,8 @@ import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
  */
 public class UserPasswordExpireWorkerType extends BaseEmailNotifyingWorkerType {
 
-	public static final String NAME = "USERPASSWORDEXPIREWORKER";
+	private static final long serialVersionUID = -3242483317114929799L;
+    public static final String NAME = "USERPASSWORDEXPIREWORKER";
 	
 	public UserPasswordExpireWorkerType(){
 		super(NAME, "userpasswordexpireworker.jsp", UserPasswordExpireWorker.class.getName());

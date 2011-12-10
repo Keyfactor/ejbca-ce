@@ -18,7 +18,6 @@ package org.cesecore.dbprotection;
  */
 public class ProtectionStringBuilder {
 
-	private static final long serialVersionUID = 1L;
 	private static final String SEPARATOR_TAG = "<sep/>";
 	
 	private final StringBuilder sb;

@@ -33,6 +33,7 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
     // Default Values
     
 
+    private static final long serialVersionUID = -7779053482914995083L;
     public static final String TRUE  = "true";
     public static final String FALSE = "false";
 

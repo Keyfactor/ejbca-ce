@@ -23,6 +23,8 @@ import javax.xml.ws.WebFault;
  */
 @WebFault
 public class IllegalQueryException extends java.lang.Exception {
+    private static final long serialVersionUID = 7381251899583534498L;
+
     /**
      * Creates a new instance of <code>IllegalQueryException</code> without detail message.
      */

@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
  * @see org.ejbca.util.query.LogMatch
  */
 public class TimeMatch extends BasicMatch {
+    private static final long serialVersionUID = 555503673432162539L;
     private static final Logger log = Logger.getLogger(TimeMatch.class);
     // Public Constants
 	/** UserMatch Specific Constant */	

@@ -27,6 +27,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
  */
 public abstract class BaseSigningCAServiceInfo extends ExtendedCAServiceInfo implements Serializable {    
        
+    private static final long serialVersionUID = -6607852949410303766L;
     private String subjectdn      = null;
     private String subjectaltname = null;   
 	private String keyspec        = "1024"; // Default key length

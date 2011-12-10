@@ -22,7 +22,9 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
  */
 public class HardTokenEncryptCAServiceInfo extends ExtendedCAServiceInfo implements Serializable {
 
-	public HardTokenEncryptCAServiceInfo(int status) {
+	private static final long serialVersionUID = -6186500870565287684L;
+
+    public HardTokenEncryptCAServiceInfo(int status) {
 		super(status);
 	}
 

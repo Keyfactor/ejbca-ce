@@ -23,7 +23,8 @@ import java.io.Serializable;
  */
 public class TextComparisonView implements Serializable {
 	
-	private  String orgvalue;
+	private static final long serialVersionUID = 47502248806073893L;
+    private  String orgvalue;
 	private  String newvalue;
 	
 	public TextComparisonView(String orgvalue, String newvalue){

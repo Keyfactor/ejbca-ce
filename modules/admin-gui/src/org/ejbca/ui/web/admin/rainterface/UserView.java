@@ -32,6 +32,7 @@ import org.cesecore.util.StringTools;
 public class UserView implements java.io.Serializable, Cloneable, Comparable {
     // Public constants.
 
+   private static final long serialVersionUID = 2390294870669249774L;
    public UserView(){
       userdata = new EndEntityInformation();
       userdata.setType(1);
