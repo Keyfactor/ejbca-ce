@@ -1015,6 +1015,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         return getExtendedKeyUsageAsOIDStrings(false);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private ArrayList<String> getExtendedKeyUsageAsOIDStrings(boolean fromupgrade) {
         ArrayList<String> returnval = new ArrayList<String>();
         // Keep the unchecked java stuff for now, since we have the fallback conversion below
@@ -1109,6 +1110,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Returns a collection of Integer (DNFieldExtractor constants) indicating which subject dn fields that should be used in certificate.
      * 
      */
+    @SuppressWarnings("unchecked")
     public Collection<Integer> getSubjectDNSubSet() {
         return (Collection<Integer>) data.get(SUBJECTDNSUBSET);
     }
@@ -1146,6 +1148,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Returns a collection of Integer (DNFieldExtractor constants) indicating which subject altnames fields that should be used in certificate.
      * 
      */
+    @SuppressWarnings("unchecked")
     public Collection<Integer> getSubjectAltNameSubSet() {
         return (Collection<Integer>) data.get(SUBJECTALTNAMESUBSET);
     }
@@ -1207,6 +1210,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * 
      * If it contains the constant ANYCA then the profile is applicable to all CAs
      */
+    @SuppressWarnings("unchecked")
     public Collection<Integer> getAvailableCAs() {
         return (Collection<Integer>) data.get(AVAILABLECAS);
     }
@@ -1222,6 +1226,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(AVAILABLECAS, availablecas);
     }
 
+    @SuppressWarnings("unchecked")
     public boolean isApplicableToAnyCA() {
         return ((Collection<Integer>) data.get(AVAILABLECAS)).contains(Integer.valueOf(ANYCA));
     }
@@ -1230,6 +1235,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * Returns a Collection of publisher id's (Integer) indicating which publishers a certificate created with this profile should be published to.
      * Never returns null.
      */
+    @SuppressWarnings("unchecked")
     public Collection<Integer> getPublisherList() {
         Object o = data.get(USEDPUBLISHERS);
         if (o == null) {
@@ -1275,6 +1281,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         data.put(CAISSUERS, caIssuers);
     }
 
+    @SuppressWarnings("unchecked")
     public void addCaIssuer(String caIssuer) {
         caIssuer = caIssuer.trim();
         if (caIssuer.length() < 1) {
@@ -1289,6 +1296,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
+    @SuppressWarnings("unchecked")
     public List<String> getCaIssuers() {
         if (data.get(CAISSUERS) == null) {
             return new ArrayList<String>();
@@ -1297,6 +1305,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
         }
     }
 
+    @SuppressWarnings("unchecked")
     public void removeCaIssuer(String caIssuer) {
         if (data.get(CAISSUERS) != null) {
             ((List<String>) data.get(CAISSUERS)).remove(caIssuer);
@@ -1521,6 +1530,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
      * 
      * Autoupgradable method
      */
+    @SuppressWarnings("unchecked")
     public List<Integer> getUsedCertificateExtensions() {
         if (data.get(USEDCERTIFICATEEXTENSIONS) == null) {
             return new ArrayList<Integer>();
@@ -1740,7 +1750,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
                 data.put(USEEXTENDEDKEYUSAGE, Boolean.FALSE);
             }
             if (data.get(EXTENDEDKEYUSAGE) == null) {
-                data.put(EXTENDEDKEYUSAGE, new ArrayList());
+                data.put(EXTENDEDKEYUSAGE, new ArrayList<Object>());
             }
             if (data.get(EXTENDEDKEYUSAGECRITICAL) == null) {
                 data.put(EXTENDEDKEYUSAGECRITICAL, Boolean.FALSE);
