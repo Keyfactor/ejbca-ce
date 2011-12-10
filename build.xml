@@ -202,6 +202,8 @@
             <path refid="lib.bouncycastle.classpath"/>
             <path refid="lib.ldap.classpath"/>
         </path>
+    	<delete dir="${ejbca.plugin.tmp.path}"/>
+    	<mkdir dir="${ejbca.plugin.tmp.path}"/>
 	    <script language="javascript"> <![CDATA[
 	        var antcall = project.createTask ("ant");
 
@@ -257,7 +259,12 @@
 			prop = antcall.createProperty ();
 		    prop.setName ("ejbca.gen.path");
 		    prop.setValue (project.getProperty ("ejbca.plugin.gen.path"));
-	
+
+	    	// A path to use as you like
+			prop = antcall.createProperty ();
+		    prop.setName ("ejbca.tmp.path");
+		    prop.setValue (project.getProperty ("ejbca.plugin.tmp.path"));
+
 			// The path to the EJBCA install directory
 			prop = antcall.createProperty ();
 		    prop.setName ("ejbca.home");
