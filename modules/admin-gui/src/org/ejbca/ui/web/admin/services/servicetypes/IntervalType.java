@@ -23,7 +23,9 @@ package org.ejbca.ui.web.admin.services.servicetypes;
  */
 public abstract class IntervalType extends ServiceType {
 
-	public IntervalType(String subViewPage, String name, boolean translatable) {
+	private static final long serialVersionUID = 8886202461182296185L;
+
+    public IntervalType(String subViewPage, String name, boolean translatable) {
 		super(subViewPage, name, translatable);
 	}
 

@@ -27,7 +27,9 @@ import java.util.Properties;
  */
 public class CustomIntervalType extends IntervalType {
 	
-	public static final String NAME = "CUSTOMINTERVAL";
+	private static final long serialVersionUID = -8378607303311336382L;
+
+    public static final String NAME = "CUSTOMINTERVAL";
 	
 	public CustomIntervalType() {
 		super("custominterval.jsp", NAME, true);

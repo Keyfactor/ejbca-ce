@@ -36,7 +36,9 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
  */
 public class ViewCAInfoJSPHelper implements java.io.Serializable {
 		 
-	public static final String CA_PARAMETER             = "caid";
+	private static final long serialVersionUID = 109073226626366410L;
+
+    public static final String CA_PARAMETER             = "caid";
 
 	public static final String CERTSERNO_PARAMETER      = "certsernoparameter"; 
 	  

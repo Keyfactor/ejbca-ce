@@ -15,6 +15,7 @@ public class NotFoundException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = 7252945749884898206L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

@@ -29,25 +29,31 @@ import java.security.spec.ECPoint;
 class OcspUtilMockups {
 
 	static class MockPublicKey implements PublicKey {
-		public String getAlgorithm() { return null; }
+		private static final long serialVersionUID = -4013203244823237833L;
+        public String getAlgorithm() { return null; }
 		public byte[] getEncoded() { return null; }
 		public String getFormat() { return null; }		
 	}
 	
-	static class MockNotSupportedPublicKey extends MockPublicKey {}
+	static class MockNotSupportedPublicKey extends MockPublicKey {
+
+        private static final long serialVersionUID = -1581225714530911930L;}
 	
 	static class MockRSAPublicKey extends MockPublicKey implements RSAPublicKey {
-		public BigInteger getPublicExponent() { return null; }
+		private static final long serialVersionUID = -7007214647477555127L;
+        public BigInteger getPublicExponent() { return null; }
 		public BigInteger getModulus() { return null; }
 	}
 	
 	static class MockDSAPublicKey extends MockPublicKey implements DSAPublicKey {
-		public BigInteger getY() { return null; }
+		private static final long serialVersionUID = -4836689240118231347L;
+        public BigInteger getY() { return null; }
 		public DSAParams getParams() { return null; }
 	}
 	
 	static class MockECDSAPublicKey extends MockPublicKey implements ECPublicKey {
-		public ECPoint getW() { return null; }
+		private static final long serialVersionUID = 4817366061662221244L;
+        public ECPoint getW() { return null; }
 		public ECParameterSpec getParams() { return null; }
 	}
 	

@@ -21,6 +21,9 @@ package org.ejbca.core.model.ra.userdatasource;
  */
 public class UserDataSourceExistsException extends java.lang.Exception {
     
+    private static final long serialVersionUID = 6503674547430557485L;
+
+
     /**
      * Creates a new instance of <code>PublisherExistsException</code> without detail message.
      */

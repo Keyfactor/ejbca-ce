@@ -32,6 +32,8 @@ package org.ejbca.util.query;
 public class UserMatch extends BasicMatch {
     // Public Constants
 
+    private static final long serialVersionUID = 5458563135026714888L;
+
     public static final int MATCH_NONE                     = -1;
 
     public static final int MATCH_WITH_USERNAME            = 0;

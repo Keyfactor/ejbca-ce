@@ -19,6 +19,8 @@ package org.ejbca.ui.cli;
  * @version $Id$
  */
 public class IllegalAdminCommandException extends org.ejbca.core.EjbcaException {
+    private static final long serialVersionUID = -5604111464417974618L;
+
     /**
      * Creates a new instance of IllegalAdminCommandException
      *

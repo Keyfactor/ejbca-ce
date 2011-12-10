@@ -24,8 +24,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.util.query.IllegalQueryException;
-import org.ejbca.util.query.Query;
 
 /**
  * Local interface for UserAdminSession.

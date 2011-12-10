@@ -15,7 +15,6 @@ package org.ejbca.ui.web.protocol;
 
 import java.net.HttpURLConnection;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
@@ -23,7 +22,6 @@ import org.bouncycastle.util.Arrays;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.certificatestore.HashID;
-import org.ejbca.util.HTMLTools;
 import org.junit.Assert;
 
 /**

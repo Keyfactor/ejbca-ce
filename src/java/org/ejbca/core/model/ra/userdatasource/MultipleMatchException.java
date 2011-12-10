@@ -28,6 +28,8 @@ import org.ejbca.core.EjbcaException;
 @WebFault
 public class MultipleMatchException extends EjbcaException {
     
+    private static final long serialVersionUID = 5191918316722890271L;
+
     /**
      * Creates a new instance of <code>MultipleMatchException</code> without detail message.
      */

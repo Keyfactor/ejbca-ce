@@ -21,6 +21,9 @@ package org.ejbca.core.model.hardtoken;
  */
 public class HardTokenProfileDoesntExistsException extends java.lang.Exception {
     
+    private static final long serialVersionUID = 4861014979943948334L;
+
+
     /**
      * Creates a new instance of <code>HardTokenIssuerDoesntExistsException</code> without detail message.
      */

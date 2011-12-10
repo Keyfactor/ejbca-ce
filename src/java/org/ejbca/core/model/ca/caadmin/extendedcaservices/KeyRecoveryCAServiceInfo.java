@@ -23,7 +23,9 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
  */
 public class KeyRecoveryCAServiceInfo extends ExtendedCAServiceInfo implements Serializable {
 
-	public KeyRecoveryCAServiceInfo(int status) {
+	private static final long serialVersionUID = 2005286169126704029L;
+
+    public KeyRecoveryCAServiceInfo(int status) {
 		super(status);
 	}
 

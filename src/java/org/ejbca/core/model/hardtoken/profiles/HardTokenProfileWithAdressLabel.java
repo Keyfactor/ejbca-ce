@@ -34,7 +34,8 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 public abstract class HardTokenProfileWithAdressLabel extends HardTokenProfileWithReceipt implements IAdressLabelSettings{
 		
 	
-	// Protected Constants
+	private static final long serialVersionUID = 6349060371407093333L;
+    // Protected Constants
 	protected static final String ADRESSLABELTYPE                = "adresslabeltype";
 	protected static final String ADRESSLABELFILENAME            = "adresslabelfilename";
 	protected static final String ADRESSLABELDATA                = "adresslabeldata";

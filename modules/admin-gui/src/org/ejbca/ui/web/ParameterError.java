@@ -14,10 +14,13 @@
 
 /**
  * Used for parameter errors on web pageges.
- * @author lars
+ * 
+ * @version $Id$
  *
  */
 public class ParameterError extends Exception {
+
+    private static final long serialVersionUID = -8861455593395367960L;
 
     /**
      * @param message string to be displayed on the error page of the admin web GUI.

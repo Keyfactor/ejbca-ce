@@ -22,7 +22,9 @@ package org.ejbca.core.model.services;
  */
 public class ServiceExecutionFailedException extends Exception {
 
-	public ServiceExecutionFailedException(String message, Throwable cause) {
+	private static final long serialVersionUID = 383213793956902294L;
+
+    public ServiceExecutionFailedException(String message, Throwable cause) {
 		super(message, cause);
 	}
 

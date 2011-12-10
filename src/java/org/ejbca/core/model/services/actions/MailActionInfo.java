@@ -24,7 +24,8 @@ import org.ejbca.core.model.services.ActionInfo;
  */
 public class MailActionInfo implements ActionInfo {
 	
-	private String reciever = null;
+	private static final long serialVersionUID = -6111022918482039456L;
+    private String reciever = null;
 	private String subject = null;
 	private String message = null;
 	private boolean isLoggingEnabled = true;

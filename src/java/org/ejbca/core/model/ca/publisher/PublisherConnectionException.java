@@ -24,6 +24,9 @@ import org.ejbca.core.EjbcaException;
  */
 public class PublisherConnectionException extends EjbcaException {
     
+    private static final long serialVersionUID = -7709220093705684945L;
+
+
     /**
      * Creates a new instance of <code>PublisherConnectionException</code> without detail message.
      */

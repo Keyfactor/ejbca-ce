@@ -30,6 +30,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
  */
 
 public class CertReqHistory implements Serializable{
+    private static final long serialVersionUID = -5449568418691275341L;
     private String fingerprint;
     private String serialNumber;
     private String issuerDN;

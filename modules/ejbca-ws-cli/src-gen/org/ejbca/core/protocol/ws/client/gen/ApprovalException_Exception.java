@@ -15,6 +15,7 @@ public class ApprovalException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = 6654503918544081918L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

@@ -32,6 +32,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
  */
 public class EndEntityProfileNameProxy implements java.io.Serializable {
     
+    private static final long serialVersionUID = 7866894775948690845L;
     private HashMap profilenamestore;
     private EndEntityProfileSession endEntityProfileSession;
     private AuthenticationToken   administrator;

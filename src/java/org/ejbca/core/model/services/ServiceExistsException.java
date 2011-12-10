@@ -19,7 +19,9 @@ package org.ejbca.core.model.services;
  */
 public class ServiceExistsException extends Exception {
 
-	public ServiceExistsException(String msg) {
+	private static final long serialVersionUID = -5167041356644200485L;
+
+    public ServiceExistsException(String msg) {
 		super(msg);
 	}
 }

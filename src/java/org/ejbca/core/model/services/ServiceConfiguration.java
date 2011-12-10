@@ -33,6 +33,7 @@ import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
  */
 public class ServiceConfiguration extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
+    private static final long serialVersionUID = -3094484762673017432L;
     private static final Logger log = Logger.getLogger(ServiceConfiguration.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();

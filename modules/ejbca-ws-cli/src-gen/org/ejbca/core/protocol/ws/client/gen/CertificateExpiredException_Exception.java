@@ -15,6 +15,7 @@ public class CertificateExpiredException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = 5931967967052796466L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

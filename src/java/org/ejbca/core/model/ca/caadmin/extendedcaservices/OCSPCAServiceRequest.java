@@ -31,7 +31,9 @@ import org.cesecore.config.OcspConfiguration;
  */
 public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Serializable {    
     
-	public static final Logger m_log = Logger.getLogger(OCSPCAServiceRequest.class);
+	private static final long serialVersionUID = 8154162667035332666L;
+
+    public static final Logger m_log = Logger.getLogger(OCSPCAServiceRequest.class);
 	
     private OCSPReq req = null;
     private ArrayList responseList = null;

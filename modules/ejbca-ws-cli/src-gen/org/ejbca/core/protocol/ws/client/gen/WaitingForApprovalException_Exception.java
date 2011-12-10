@@ -15,6 +15,7 @@ public class WaitingForApprovalException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = 6073955944966194312L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

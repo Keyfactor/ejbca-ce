@@ -19,6 +19,8 @@ package org.ejbca.ui.cli;
  * @version $Id$
  */
 public class ErrorAdminCommandException extends org.ejbca.core.EjbcaException {
+    private static final long serialVersionUID = -6765140792703909521L;
+
     /**
      * Creates a new instance of ErrorAdminCommandException
      *

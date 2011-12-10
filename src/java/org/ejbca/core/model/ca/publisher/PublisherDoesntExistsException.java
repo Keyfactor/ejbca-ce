@@ -21,6 +21,9 @@ package org.ejbca.core.model.ca.publisher;
  */
 public class PublisherDoesntExistsException extends java.lang.Exception {
     
+    private static final long serialVersionUID = 8116025667365391659L;
+
+
     /**
      * Creates a new instance of <code>PublisherDoesntExistsException</code> without detail message.
      */
