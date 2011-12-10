@@ -22,14 +22,15 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.UserTransaction;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
@@ -81,6 +82,9 @@ public class StartServicesServlet extends HttpServlet {
     private SecurityEventsLoggerSessionLocal logSession;
     @EJB
     private ComplexAccessControlSessionLocal complexAccessControlSession;
+    
+    @Resource
+    private UserTransaction tx;
     
     // Since timers are reloaded at server startup, we can leave them in the database. This was a workaround for WebLogic.
     // By skipping this we don't need application server (read JBoss) specific config for what this module depends on.
@@ -178,6 +182,10 @@ public class StartServicesServlet extends HttpServlet {
         details.put("msg", iMsg);
         logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);				
 
+        // Initialize authorization system, if not done already
+        log.trace(">init ComplexAccessControlSession to check for initial root role");
+        complexAccessControlSession.initializeAuthorizationModule();
+
         log.trace(">init calling ServiceSession.load");
         try {
         	serviceSession.load();
@@ -190,33 +198,39 @@ public class StartServicesServlet extends HttpServlet {
         try {
         	certificateProfileSession.initializeAndUpgradeProfiles();
         } catch (Exception e) {
-        	log.error("Error creating CAAdminSession: ", e);
+        	log.error("Error initializing certificate profiles: ", e);
         }
         
         // Load EndEntity profiles at startup to upgrade them if needed
         // And add this node to list of nodes
         log.trace(">init loading EndEntityProfile to check for upgrades");
         try {
-        	//Admin admin = new Admin(Admin.TYPE_CACOMMANDLINE_USER, "StartServicesServlet");
-        	endEntityProfileSession.initializeAndUpgradeProfiles(admin);
-        	
-        	// Add this node's hostname to list of nodes
-            log.trace(">init checking if this node is in the list of nodes");
-            final GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
-            final Set<String> nodes = config.getNodesInCluster();
-            final String hostname = getHostName();
-            if (hostname != null && !nodes.contains(hostname)) {
-            	log.debug("Adding this node the list of nodes");
-            	nodes.add(hostname);
-            	config.setNodesInCluster(nodes);
-            	globalConfigurationSession.saveGlobalConfiguration(admin, config);
-            }
+        	endEntityProfileSession.initializeAndUpgradeProfiles(admin);        	
         } catch (Exception e) {
-        	log.error("Error creating CAAdminSession: ", e);
+        	log.error("Error initializing end entity profiles: ", e);
         }
         
-        log.trace(">init ComplexAccessControlSession to check for initial root role");
-        complexAccessControlSession.initializeAuthorizationModule();
+        // Add this node's hostname to list of nodes
+        log.trace(">init checking if this node is in the list of nodes");
+        try {
+            // Requires a transaction in order to create the initial global configuration
+            tx.begin();
+            try {
+                final GlobalConfiguration config = globalConfigurationSession.getCachedGlobalConfiguration();
+                final Set<String> nodes = config.getNodesInCluster();
+                final String hostname = getHostName();
+                if (hostname != null && !nodes.contains(hostname)) {
+                    log.debug("Adding this node the list of nodes");
+                    nodes.add(hostname);
+                    config.setNodesInCluster(nodes);
+                    globalConfigurationSession.saveGlobalConfiguration(admin, config);
+                }
+            } finally {
+                tx.commit();
+            }
+        } catch (Exception e) {
+            log.error("Error adding host to node list in global configuration: ", e);
+        } 
 
         log.trace(">init SignSession to check for unique issuerDN,serialNumber index");
         // Call the check for unique index, since first invocation will perform the database

@@ -151,24 +151,24 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
     }
     
     @Override
-    public void saveGlobalConfiguration(AuthenticationToken admin, GlobalConfiguration globconf) throws AuthorizationDeniedException {
+    public void saveGlobalConfiguration(final AuthenticationToken admin, final GlobalConfiguration globconf) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfiguration()");
         }
         if (this.accessSession.isAuthorizedNoLogging(admin, "/")) {
-            String pk = "0";
-            GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, pk);
+            final String pk = "0";
+            final GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, pk);
             if (gcdata != null) {
                 // Save object and create a diff over what has changed
                 @SuppressWarnings("unchecked")
-                Map<Object, Object> orgmap = (Map<Object, Object>) gcdata.getGlobalConfiguration().saveData();
+                final Map<Object, Object> orgmap = (Map<Object, Object>) gcdata.getGlobalConfiguration().saveData();
                 gcdata.setGlobalConfiguration(globconf);
                 @SuppressWarnings("unchecked")
-                Map<Object, Object> newmap = (Map<Object, Object>) globconf.saveData();
+                final Map<Object, Object> newmap = (Map<Object, Object>) globconf.saveData();
                 // Get the diff of what changed
-                Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
+                final Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);
                 // Make security audit log record
-                String msg = intres.getLocalizedMessage("ra.savedconf", gcdata.getConfigurationId());
+                final String msg = intres.getLocalizedMessage("ra.savedconf", gcdata.getConfigurationId());
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 for (Map.Entry<Object, Object> entry : diff.entrySet()) {
@@ -180,13 +180,14 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
                 // Global configuration doesn't yet exists.
                 try {
                     entityManager.persist(new GlobalConfigurationData(pk, globconf));
-                    String msg = intres.getLocalizedMessage("ra.createdconf", pk);
+                    final String msg = intres.getLocalizedMessage("ra.createdconf", pk);
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
                     auditSession.log(EjbcaEventTypes.SYSTEMCONF_CREATE, EventStatus.SUCCESS, EjbcaModuleTypes.GLOBALCONF, EjbcaServiceTypes.EJBCA,
                             admin.toString(), null, null, null, details);
                 } catch (Exception e) {
-                    String msg = intres.getLocalizedMessage("ra.errorcreateconf");
+                    final String msg = intres.getLocalizedMessage("ra.errorcreateconf");
+                    log.info(msg, e);
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
                     details.put("error", e.getMessage());
