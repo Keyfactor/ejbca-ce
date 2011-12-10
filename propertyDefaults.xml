@@ -37,6 +37,7 @@
 		file.
 	-->
     <property name="ejbca.plugin.gen.path" location="${tmp}/plugin-gen"/>
+    <property name="ejbca.plugin.tmp.path" location="${tmp}/plugin-tmp"/>
 	<property name="ejbca.plugin.conf.path" location="${ejbca.home}/conf/plugins"/>
     <pathconvert property="ejbca.plugin.collection" setonempty="false">
         <path>

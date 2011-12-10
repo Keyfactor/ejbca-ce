@@ -34,10 +34,13 @@
 #                         (e.g. "java:/EjbcaDS") which can be used for creating
 #                         "persistence.xml"
 #
-#     ejbca.gen.path      Holds the path to a temporary root to which plugin
-#                         binaries must be written according to the following:
+#     ejbca.gen.path      Holds the path to a directory to which plugin binaries
+#                         must be written according to the following:
 #                             Module level .war and ejb .jar: $[ejbca.gen.path}
 #                             Library (utility) .jar        : $[ejbca.gen.path}/lib
+#
+#     ejbca.tmp.path      Holds the path to a freshly created ("clean") temporary 
+#                         directory which a plugin may use during its build process
 #
 #     ejbca.home          Holds the path to the EJBCA install directory which may be
 #                         used to access resources that are not available through the
