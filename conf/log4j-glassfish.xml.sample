@@ -78,6 +78,9 @@
 	<category name="org.apache.myfaces">
 		<priority value="INFO"/>
 	</category>
+	<category name="org.hibernate.jdbc">
+		<priority value="INFO"/>
+	</category>
 	<category name="org.hibernate.ejb">
 		<priority value="INFO"/>
 	</category>
