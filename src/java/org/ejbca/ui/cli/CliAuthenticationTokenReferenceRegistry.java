@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 
 /**
@@ -37,6 +38,8 @@ import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
  */
 public enum CliAuthenticationTokenReferenceRegistry {
     INSTANCE;
+
+    private static final Logger log = Logger.getLogger(CliAuthenticationTokenReferenceRegistry.class);
 
     private Map<Long, CliAuthenticationToken> tokenRegistry;
 
@@ -66,6 +69,9 @@ public enum CliAuthenticationTokenReferenceRegistry {
      */
     public void registerToken(CliAuthenticationToken token) {
         tokenRegistry.put(token.getReferenceNumber(), token);
+        if (log.isTraceEnabled()) {
+            log.trace("Registered new CliAuthenticationToken: "+token+", with reference number: "+token.getReferenceNumber());
+        }
     }
 
     /**
@@ -76,6 +82,9 @@ public enum CliAuthenticationTokenReferenceRegistry {
     public boolean unregisterToken(Long referenceNumber) {
         if (tokenRegistry.containsKey(referenceNumber)) {
             tokenRegistry.remove(referenceNumber);
+            if (log.isTraceEnabled()) {
+                log.trace("Unregistered CliAuthenticationToken with reference number: "+referenceNumber);
+            }
             return true;
         } else {
             return false;

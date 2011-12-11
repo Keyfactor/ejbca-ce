@@ -191,10 +191,10 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
             }
             if (!authorizedToCA(admin, data.getCaId())) {
                 if (requestedUsername == null) {
-                    final String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(data.getCaId()));
+                    final String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(data.getCaId()), admin.toString());
                     throw new AuthorizationDeniedException(msg);
                 } else {
-                    final String msg = intres.getLocalizedMessage("ra.errorauthcaexist", Integer.valueOf(data.getCaId()), requestedUsername);
+                    final String msg = intres.getLocalizedMessage("ra.errorauthcaexist", Integer.valueOf(data.getCaId()), requestedUsername, admin.toString());
                     throw new AuthorizationDeniedException(msg);
                 }
             }

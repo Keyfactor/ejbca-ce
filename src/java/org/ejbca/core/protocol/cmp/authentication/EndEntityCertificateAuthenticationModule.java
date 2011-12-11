@@ -385,8 +385,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         AuthenticationToken reqAuthToken = authenticationProviderSession.authenticate(subject);
         
         if (!authorizedToCA(reqAuthToken, caid)) {
-            errorMessage = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
-            log.info("Admin " + username + " is not authorized for CA " + caid);
+            errorMessage = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid), reqAuthToken.toString());
+            log.info(errorMessage);
             return false;
         }
         

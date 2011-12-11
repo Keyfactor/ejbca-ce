@@ -78,22 +78,7 @@
 	<category name="org.apache.myfaces">
 		<priority value="INFO"/>
 	</category>
-	<category name="org.hibernate.jdbc">
-		<priority value="INFO"/>
-	</category>
-	<category name="org.hibernate.ejb">
-		<priority value="INFO"/>
-	</category>
-	<category name="org.hibernate.cfg">
-		<priority value="INFO"/>
-	</category>
-	<category name="org.hibernate.impl.SessionFactoryImpl">
-		<priority value="INFO"/>
-	</category>
-	<category name="org.hibernate.hql.ast.AST">
-		<priority value="INFO"/>
-	</category>
-	<category name="org.hibernate.pretty.Printer">
+	<category name="org.hibernate">
 		<priority value="INFO"/>
 	</category>
 
