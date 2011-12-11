@@ -4959,6 +4959,33 @@ Modify the pages (directly or by using a separate tree), rebuild and redeploy. T
 changes should show on http://<i>ejbcahost</i>:8080/ejbca.
 </p>
 </subsection>
+<subsection name="Plug-in interfaces">
+<p>There are several plug-in interfaces where you can extend functionality using your own classes:
+</p>
+<ul>
+<li><a href="#Custom%20publishers">Publishers</a>.</li>
+<li><a href="#Writing%20Customized%20Services">Services</a>.</li>
+<li><a href="#Framework%20for%20External%20User%20Data%20Sources">External User Data Sources</a>.</li>
+<li><a href="#Custom%20Certificate%20Extensions">Custom Certificate Extensions</a>.</li>
+<li><a href="#Email%20notifications">Custom email notification recipients</a>.</li>
+</ul>
+<p>
+And of course, since it is open source you can modify anything you like, or use any of the interfaces and create your own add-ons.
+See below for how to easily manage such add-ons and plugins.
+</p>
+</subsection>
+
+<subsection name="EJBCA plugin build system">
+<p>
+In case you (for example) want to extend the RA functionality considerably, possibly including additional
+database tables as well, you may consider using the EJBCA plugin scheme which provides custom
+applications with the core EJBCA environment data. In the directory src/samples/plugins you will find
+a couple of complete demo plugins that can be added to an existing EJBCA installation
+without any configuration. See the src/samples/plugins/README file for details.
+</p>
+<p>Plugins are built and packaged together with the rest of the EJBCA components into the "ejbca.ear" file.</p>
+</subsection>
+
 <subsection name="Adding your own rules to regulate the values of End Entity Fields">
 <p>
 It is possible to define a set of rules to control the format of the End Entity fields. For example, it is possible to ensure that 
@@ -4975,17 +5002,6 @@ To avoid losing these rules when updating the EJBCA version, the new FieldValida
 Please see the "Handling changes in a separate tree" section above.
 </p>
 </subsection>
-</section>
-
-<section name="EJBCA Plugins">
-<p>
-In case you (for example) want to extend the RA functionality considerably, possibly including additional
-database tables as well, you may consider using the EJBCA plugin scheme which provides custom
-applications with the core EJBCA environment data. In the directory src/samples/plugins you will find
-a couple of complete demo plugins that can be added to an existing EJBCA installation
-without any configuration. See the src/samples/plugins/README file for details.
-</p>
-<p>Plugins are built and packaged together with the rest of the EJBCA components into the "ejbca.ear" file.</p>
 </section>
 
 <section name="Using the demo servlet">
