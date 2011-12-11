@@ -16,7 +16,6 @@
     	                <isset property="ejbca.hibernate"/>
 	                    <isset property="ejbca.datasource"/>
 					    <isset property="ejbca.classpath"/>
-					    <isset property="ejbca.classpath"/>
 					    <equals	arg1="${plugin.ejbca.ant.custom.testparam}" arg2="did we get this"/>
 		              	<available file="${ejbca.gen.path}"/>
 		                <available file="${ejbca.tmp.path}"/>
