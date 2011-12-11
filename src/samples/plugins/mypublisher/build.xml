@@ -1,0 +1,35 @@
+<project name="MyPublisher" default="dist" basedir=".">
+
+  <!-- set global properties for this build -->
+  <property name="src.dir" value="src"/>
+  <property name="bin.dir" value="${ejbca.tmp.path}"/>
+  <property name="dist.lib.dir"  value="${ejbca.gen.path}/lib"/>
+  <property name="target-jar" value="my-publisher.jar"/>
+  <property name="debug" value="on"/>
+	
+  <path id="compile.classpath">
+    <pathelement path="${ejbca.classpath}"/>
+  </path>
+
+  <target name="help">
+    <echo message="Available targets are help and dist."/>
+  </target>
+
+  <target name="dist">
+  	<echo message="Building EJBCA MyPublisher plugin"/>
+    <!-- Compile the java code from ${src.dir} into ${bin.dir} -->
+    <javac srcdir="${src.dir}"
+    	   debug="${debug}"
+    	   destdir="${bin.dir}"
+    	   classpathref="compile.classpath"
+    	   includeantruntime="false">
+       <compilerarg value="-Xlint:-path"/>
+    </javac>
+
+    <!-- Put everything from ${bin.dir} into the jar file -->
+	<jar jarfile="${dist.lib.dir}/${target-jar}">
+		<fileset dir="${bin.dir}"/>
+	</jar>
+   </target>
+
+</project>
