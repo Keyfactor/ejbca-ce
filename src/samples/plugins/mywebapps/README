@@ -1,0 +1,15 @@
+WebApp EJBCA Plugin Demo - EJBCA 5.X
+====================================
+
+This sample plugin installs a webapp at the URL: http://localhost:8080/ejbca/pluginweb
+
+The web apps illustrates the plugin scheme including how to access internal
+EJBCA CA resources.
+
+One of the applications extends the EJBCA database with another table and
+accesses it using an entity bean, EJB3 and Hiberbate.  That is, the same
+stuff that EJBCA is made of.
+
+For details on how to get the plugin embedded in EJBCA look into the file
+EJBCAINSTALLDIR/conf/plugins/plugin.properties.sample
+

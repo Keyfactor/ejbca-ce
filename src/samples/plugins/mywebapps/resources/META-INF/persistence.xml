@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="1.0"
+    xmlns="http://java.sun.com/xml/ns/persistence"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/persistence
+    http://java.sun.com/xml/ns/persistence/persistence_1_0.xsd">
+    <persistence-unit name="plugin" transaction-type="JTA">
+        <provider>org.hibernate.ejb.HibernatePersistence</provider>
+        <jta-data-source>@1@</jta-data-source>        
+        <mapping-file>META-INF/orm-database.xml</mapping-file>
+        <properties>
+            <property name="hibernate.dialect" value="@2@"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/> <!-- validate | update | create | create-drop -->
+            <property name="hibernate.query.jpaql_strict_compliance" value="true"/>
+        </properties>
+    </persistence-unit>
+</persistence>

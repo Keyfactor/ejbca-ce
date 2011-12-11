@@ -1,0 +1,14 @@
+This directory contains a couple of sample plugins that can be used as
+a starting point for building "real" EJBCA plugins.  Real plugins should
+preferably be built outside of the EJBCA source tree.
+
+By performing
+
+    ant deploy -Dejbca.plugin.conf.path=ABSOLUTEPATHTOEJBCA/src/samples/plugins
+
+all the sample plugins will be added to EJBCA without any configuration.
+
+The file EJBCA/conf/plugins/plugin.properties.sample describes how
+a plugin build gets access to the EJBCA environment.
+ 
+ 

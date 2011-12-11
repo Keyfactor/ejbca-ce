@@ -1,0 +1,90 @@
+<project name="Plugin Web" default="dist" basedir=".">
+
+	<!-- set global properties for this build -->
+	<property name="src.dir" value="src"/>
+	<property name="temp.class.dir" value="${ejbca.tmp.path}/classes"/>
+	<property name="temp.resource.dir" value="${ejbca.tmp.path}/resources"/>
+	<property name="web.dir" value="web"/>
+	<property name="resource.dir" value="resources"/>
+	<property name="dist.lib.dir"  value="${ejbca.gen.path}/lib"/>
+	<property name="dist.mod.dir"  value="${ejbca.gen.path}"/>
+	<property name="entity-jar" value="my-entities.jar"/>
+	<property name="ejb-jar" value="my-ejbs.jar"/>
+	<property name="servlet-war" value="my-servlets.war"/>
+	<property name="debug" value="on"/>
+
+	<echo message="GEN=${ejbca.gen.path}"/>
+	<echo message="TMP=${ejbca.tmp.path}"/>
+	<echo message="APP.XML=${ejbca.app.xml}"/>
+	<echo message="DBTYPE=${ejbca.dbtype}"/>
+	<echo message="HIBERNATE=${ejbca.hibernate}"/>
+	<echo message="DATASOURCE=${ejbca.datasource}"/>
+	<echo message="HOME=${ejbca.home}"/>
+
+	<path id="compile.classpath">
+		<pathelement path="${ejbca.classpath}"/>
+	</path>
+	
+	<target name="help">
+		<echo message="Available targets are help and dist."/>
+	</target>
+
+	<target name="dist">
+		<echo message="Building EJBCA Web App plugin"/>
+		<!-- Compile the java code from ${src.dir} into ${bin.dir} -->
+		<mkdir dir="${temp.class.dir}" />
+		<javac srcdir="${src.dir}"
+	    	   debug="${debug}"
+	    	   destdir="${temp.class.dir}"
+	    	   classpathref="compile.classpath"
+	    	   includeantruntime="false">
+			<compilerarg value="-Xlint:-path"/>
+		</javac>
+
+		<!-- Create the ejb jar -->
+		<jar jarfile="${dist.mod.dir}/${ejb-jar}">
+			<fileset dir="${temp.class.dir}">
+				<include name="**/ejb/*"/>
+	        </fileset>
+		</jar>
+
+		<!-- Create the web war -->
+		<war jarfile="${dist.mod.dir}/${servlet-war}" webxml="web.xml">
+			<classes dir="${temp.class.dir}">
+				<include name="**/web/*"/>
+	        </classes>
+			<fileset dir="${web.dir}"/>
+		</war>
+
+		<!-- Create the entity jar -->
+		<mkdir dir="${temp.resource.dir}" />
+		<copy todir="${temp.resource.dir}">
+			<fileset dir="${resource.dir}"/>
+		</copy>
+		<replace file="${temp.resource.dir}/META-INF/persistence.xml" token="@1@" value="${ejbca.datasource}"/>
+		<replace file="${temp.resource.dir}/META-INF/persistence.xml" token="@2@" value="${ejbca.hibernate}"/>
+		<jar jarfile="${dist.lib.dir}/${entity-jar}">
+			<fileset dir="${temp.class.dir}">
+				<include name="**/entity/*"/>
+	        </fileset>
+			<fileset dir="${temp.resource.dir}"/>
+		</jar>
+
+		<!-- Update application.xml -->
+		<replace file="${ejbca.app.xml}">
+		  <replacetoken><![CDATA[</application>]]></replacetoken>
+		  <replacevalue><![CDATA[    <module>
+            <ejb>my-ejbs.jar</ejb>
+    </module>
+    <module>
+        <web>
+            <web-uri>my-servlets.war</web-uri>
+            <context-root>/ejbca/pluginweb</context-root>
+        </web>
+    </module>
+</application>]]></replacevalue>
+		</replace>
+
+	</target>
+
+</project>
