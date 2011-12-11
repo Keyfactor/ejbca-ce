@@ -10,6 +10,5 @@ One of the applications extends the EJBCA database with another table and
 accesses it using an entity bean, EJB3 and Hiberbate.  That is, the same
 stuff that EJBCA is made of.
 
-For details on how to get the plugin embedded in EJBCA look into the file
-EJBCAINSTALLDIR/conf/plugins/plugin.properties.sample
+Note that this plugin adds a table "MyCounterData" to the EJBCA database schema.
 

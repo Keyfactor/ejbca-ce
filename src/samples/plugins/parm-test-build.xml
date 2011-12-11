@@ -8,7 +8,7 @@
 
 	<target name="test-me">
 		<echo message="Plugin Interface Tester Executing!"/> 
-        <fail message="Plugin build property error'!">
+        <fail message="Plugin build property error!">
             <condition>
                 <not>
                 	<and>

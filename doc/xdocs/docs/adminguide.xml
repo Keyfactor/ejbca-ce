@@ -4977,6 +4977,17 @@ Please see the "Handling changes in a separate tree" section above.
 </subsection>
 </section>
 
+<section name="EJBCA Plugins">
+<p>
+In case you (for example) want to extend the RA functionality considerably, possibly including additional
+database tables as well, you may consider using the EJBCA plugin scheme which provides custom
+applications with the core EJBCA environment data. In the directory src/samples/plugins you will find
+a couple of complete demo plugins that can be added to an existing EJBCA installation
+without any configuration. See the src/samples/plugins/README file for details.
+</p>
+<p>Plugins are built and packaged together with the rest of the EJBCA components into the "ejbca.ear" file.</p>
+</section>
+
 <section name="Using the demo servlet">
 <p>
 It is a demo servlet that will accept any incoming post, create a user with a unique username, and instantly
