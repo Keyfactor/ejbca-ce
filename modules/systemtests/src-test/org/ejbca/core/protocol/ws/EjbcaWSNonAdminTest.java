@@ -118,10 +118,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @BeforeClass
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        System.setProperty("javax.net.ssl.trustStore", TEST_NONADMIN_FILE);
-        System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
-        System.setProperty("javax.net.ssl.keyStore", TEST_NONADMIN_FILE);
-        System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
     }
 
     @Before
@@ -142,6 +138,12 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         if (new File(TEST_NONADMIN_FILE).exists()) {
             String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
             log.info("Contacting webservice at " + urlstr);
+            
+            System.setProperty("javax.net.ssl.trustStore", TEST_NONADMIN_FILE);
+            System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
+            System.setProperty("javax.net.ssl.keyStore", TEST_NONADMIN_FILE);
+            System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
+            
             QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
             EjbcaWSService service = new EjbcaWSService(new URL(urlstr), qname);
             ejbcaraws = service.getEjbcaWSPort();

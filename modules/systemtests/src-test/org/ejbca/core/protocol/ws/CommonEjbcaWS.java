@@ -252,10 +252,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected static void adminBeforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();    	
-        System.setProperty("javax.net.ssl.trustStore", TEST_ADMIN_FILE);
-        System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
-        System.setProperty("javax.net.ssl.keyStore", TEST_ADMIN_FILE);
-        System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
     }
 
     protected void adminSetUpAdmin() throws Exception {
@@ -266,6 +262,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     	}
     	final String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
     	log.info("Contacting webservice at " + urlstr);
+    	
+        System.setProperty("javax.net.ssl.trustStore", TEST_ADMIN_FILE);
+        System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
+        System.setProperty("javax.net.ssl.keyStore", TEST_ADMIN_FILE);
+        System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
+        
     	QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
     	EjbcaWSService service = new EjbcaWSService(new URL(urlstr), qname);
     	this.ejbcaraws = service.getEjbcaWSPort();
