@@ -7,7 +7,7 @@
 	</target>
 
 	<target name="test-me">
-		<echo message="Plugin Interface Tester Executing!"/> 
+		<echo message="Plugin Builder Tester Executing!"/> 
         <fail message="Plugin build property error!">
             <condition>
                 <not>

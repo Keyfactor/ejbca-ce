@@ -9,12 +9,8 @@ import org.apache.log4j.Logger;
 
 import com.example.entity.MyCounterData;
 
-import com.example.web.Counter;
-
 import javax.persistence.PersistenceContext;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.persistence.Persistence;
 
 import javax.annotation.PostConstruct;
 
