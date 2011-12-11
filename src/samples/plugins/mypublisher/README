@@ -1,13 +1,10 @@
 Minimal EJBCA plugin for EJBCA 5
 ================================
 
-This sample contains a minimal EJBCA custom publisher.
+This sample contains a minimal EJBCA "custom publisher".
 It can be configured in the Admin GUI using the path:
 
        com.example.mypublisher.MyPublisher
 
-For details on how to get the plugin embedded in EJBCA look into the file
-EJBCAINSTALLDIR/conf/plugins/plugin.properties.sample
-
-Only the property "plugin.ejbca.ant.file" needs to be configured to run this
-sample.
+After install, you should be able to "Save and Test Connection"
+in the publisher GUI. 
