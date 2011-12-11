@@ -184,7 +184,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     /** Checks CA authorization and logs an official error if not and throws and AuthorizationDeniedException */
     private void assertAuthorizedToCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         if (!authorizedToCA(admin, caid)) {
-            final String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid));
+            final String msg = intres.getLocalizedMessage("ra.errorauthca", Integer.valueOf(caid), admin.toString());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),

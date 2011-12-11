@@ -335,7 +335,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             log.error("CA certificate not available in database!!");
             return false;
         }
-        log.trace("<createTestCA");
+        log.trace("<createTestCA: "+info.getCAId());
         return true;
     }
 

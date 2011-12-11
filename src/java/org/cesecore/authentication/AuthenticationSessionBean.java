@@ -20,6 +20,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
@@ -43,6 +44,8 @@ import org.cesecore.jndi.JndiConstants;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class AuthenticationSessionBean implements AuthenticationSessionLocal, AuthenticationSessionRemote {
 
+    private static final Logger log = Logger.getLogger(AuthenticationSessionBean.class);
+
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
     
@@ -63,6 +66,9 @@ public class AuthenticationSessionBean implements AuthenticationSessionLocal, Au
             HashMap<String, Object> message = new LinkedHashMap<String, Object>();
             message.put("message", "Subject " + subject + " could not be authenticated.");
             securityEventsLogger.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE, subject.toString(), null, null, null, message);
+        } 
+        if (log.isDebugEnabled()) {
+            log.debug("Authenticated subject with result: "+result);
         }
      
         return result;

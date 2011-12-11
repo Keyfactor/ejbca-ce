@@ -106,6 +106,9 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
                 CliAuthenticationToken result = new CliAuthenticationToken(usernamePrincipal, passwordAndAlgorithm.getKey(),
                         BCrypt.gensalt(EjbcaConfiguration.getPasswordLogRounds()), referenceId, passwordAndAlgorithm.getValue());
                 CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(result);
+                if (log.isDebugEnabled()) {
+                    log.debug("User " + usernamePrincipal.getName() + " authenticated.");
+                }
                 /*
                  * It is imperative that a cloned version of the
                  * CliAuthenticationToken is returned, not containing the SHA1
