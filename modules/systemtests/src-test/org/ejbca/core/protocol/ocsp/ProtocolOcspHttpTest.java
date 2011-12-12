@@ -707,10 +707,9 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
                 os.write(input[i]);
             }
         } catch (IOException e) {
-            log.info("Socket wrote " + i + " bytes before throwing an IOException.");
-
-            // Windows throws an IOException when trying to write more bytes to
-            // the server than it should. Linux does not.
+            log.info("Socket wrote " + i + " bytes before throwing an IOException.", e);
+            // Windows/Glassfish throws an IOException when trying to write more bytes to
+            // the server than it should. JBoss/Linux does not.
             assertTrue("Tried to write more than it should to the server (>1000), "+i, i > 1000);
             return;
         }
@@ -782,7 +781,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
                 os.write(input[i]);
             }
         } catch (IOException e) {
-            log.info("Socket wrote " + i + " bytes before throwing an IOException.");
+            log.info("Socket wrote " + i + " bytes before throwing an IOException.", e);
         }
         // Reading the response.
         InputStream ins = socket.getInputStream();
