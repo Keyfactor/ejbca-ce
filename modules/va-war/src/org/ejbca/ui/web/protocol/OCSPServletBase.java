@@ -431,6 +431,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		String method = request.getMethod();
 		String remoteAddress = request.getRemoteAddr();
 		final int n = request.getContentLength();
+		// Expect n might be -1 for HTTP GET requests
 		if (m_log.isDebugEnabled()) {
 			m_log.debug(">checkAndGetRequestBytes. Received "+method+" request with content length: "+n+" from "+remoteAddress);		
 		}

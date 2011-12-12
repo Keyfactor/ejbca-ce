@@ -823,12 +823,27 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         byte[] buf = new byte[LimitLengthASN1Reader.MAX_REQUEST_SIZE * 2];
         Arrays.fill(buf, (byte) 123);
         buf = concatByteArrays(validOcspReq, buf);
+        // This should return an error because we only allow content length of 100000 bytes
         response = sendRawRequestToOcsp(buf.length, buf, false);
         assertEquals("Incorrect response status.", OCSPRespGenerator.MALFORMED_REQUEST, response.getStatus());
         // Now try with a fake HTTP content-length header
         try {
             response = sendRawRequestToOcsp(validOcspReq.length, buf, false);
-            fail("Was able to send a lot of data with a fake HTTP Content-length without any error.");
+            // When sending a large request body with a too short content-length the serves sees this as two streaming
+            // requests. The first request will be read and processed by EJBCA normally and sent back, but the
+            // second one will not be a valid request so the server will send back an error.
+            // Glassfish actually sends back a "400 Bad request". Our reading code in sendRawRequestToOcsp
+            // does not handle multiple streaming responses so it will barf on the second one.
+            // This is different for JBoss and Glassfish though, with JBoss we will get a IOException trying 
+            // to read the response, while for Glassfish we will get the response with 0 bytes from the 400 response
+            
+            // Only glassfish will come here, with a non-null response, but of length 2(/r/n?). JBoss (4, 5, 6) will go to the 
+            // IOException below
+            if (response.getEncoded().length > 2) {
+                // Actually this error message is wrong, since it is our client that does not handle streaming responses
+                // where the first response should be good.
+                fail("Was able to send a lot of data with a fake HTTP Content-length without any error.");
+            }
         } catch (IOException e) {
         }
         // Try sneaking through a payload that is just under the limit. The
@@ -837,7 +852,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         Arrays.fill(buf, (byte) 123);
         buf = concatByteArrays(validOcspReq, buf);
         response = sendRawRequestToOcsp(buf.length, buf, false);
-        assertEquals("Server rejected malicious request. (This might be a good thing!)", OCSPRespGenerator.SUCCESSFUL, response.getStatus());
+        assertEquals("Server accepted malicious request. (This might be a good thing!)", OCSPRespGenerator.SUCCESSFUL, response.getStatus());
         log.trace("<test20MaliciousOcspRequest");
     }
 

@@ -361,7 +361,9 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      */
     public void test14CorruptGetRequests() throws Exception {
         // An array of zeros cannot be right..
-        helper.sendOCSPGet(new byte[4096], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
+        // A GET request larger than 2048 works on JBoss but not on Glassfish, 
+        // GF only gives "unexpected end of file", i.e. it closes the connection
+        helper.sendOCSPGet(new byte[2048], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
         // Send an empty GET request: .../ocsp/{nothing}
         helper.sendOCSPGet(new byte[0], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
         // Test too large requests
