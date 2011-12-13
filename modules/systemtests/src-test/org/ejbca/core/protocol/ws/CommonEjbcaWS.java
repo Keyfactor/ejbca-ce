@@ -302,10 +302,10 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         RoleData role = roleAccessSession.findRole(wsadminRoleName);
         if (role == null) {
         	log.info("Creating new role: "+wsadminRoleName);
-            role = roleManagementSession.create(roleMgmgToken, wsadminRoleName);
+            role = roleManagementSession.create(intAdmin, wsadminRoleName);
             final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
             accessRules.add(new AccessRuleData(wsadminRoleName, "/", AccessRuleState.RULE_ACCEPT, true));
-            role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+            role = roleManagementSession.addAccessRulesToRole(intAdmin, role, accessRules);
         }
         for (AccessUserAspectData accessUser : role.getAccessUsers().values()) {
         	if (accessUser.getMatchValue().equals(TEST_ADMIN_USERNAME)) {
@@ -2620,7 +2620,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             // Remove from admin group
     	RoleData role = roleAccessSession.findRole(wsadminRoleName);
     	if (role != null) {
-    		roleManagementSession.remove(roleMgmgToken, role);
+    		roleManagementSession.remove(intAdmin, role);
 			accessControlSession.forceCacheExpire();
     	}
     	if (userAdminSession.existsUser(TEST_ADMIN_USERNAME)) {
