@@ -57,6 +57,7 @@ public abstract class ClientToolBox {
         		new EjbcaWsRaCli(), 
         		new CvcWsRaCli(), 
         		new CMPTest(),
+        		new CMPKeyUpdateStressTest(),
         		new SCEPTest(),
                 new OCSPActivate(),
                 new DBManager()
