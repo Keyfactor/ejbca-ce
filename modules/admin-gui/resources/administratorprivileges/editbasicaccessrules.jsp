@@ -176,6 +176,7 @@ function checkallfields(){
  
     if(currentrole == '<%= DefaultRoles.CUSTOM.getName()%>'){
       alert("<%= ejbcawebbean.getText("SELECTAROLE", true) %>");
+      return false;
     }
  
     if(currentrole == '<%= DefaultRoles.SUPERVISOR.getName()%>'){

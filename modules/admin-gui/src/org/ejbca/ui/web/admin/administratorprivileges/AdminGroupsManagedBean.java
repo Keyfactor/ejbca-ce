@@ -55,7 +55,9 @@ import org.ejbca.ui.web.admin.configuration.AuthorizationDataHandler;
  * @version $Id$
  */
 public class AdminGroupsManagedBean extends BaseManagedBean {
-    private static final long serialVersionUID = 1L;
+
+    private static final long serialVersionUID = 1227489070299372101L;
+
     private static final Logger log = Logger.getLogger(AdminGroupsManagedBean.class);
 
     private final EjbLocalHelper ejb = new EjbLocalHelper();
@@ -425,11 +427,17 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     /**
      * Save the current state of the access rules and invalidate caches
      * 
-     * @throws RoleNotFoundException
+     * @throws RoleNotFoundException if the current role for some reason doesn't exist
+     * @throws InvalidRoleTemplateException if rules were added to the role using an invalid template
      */
-    public void saveAccessRules() throws RoleNotFoundException {
+    public void saveAccessRules() throws RoleNotFoundException, InvalidRoleTemplateException {
         BasicAccessRuleSetDecoder barsd = new BasicAccessRuleSetDecoder(currentRoleTemplate.getName(), currentCAs, currentEndEntityRules,
                 currentEndEntityProfiles, currentOtherRules);
+        
+        if(currentRoleTemplate.equals(DefaultRoles.CUSTOM.getName())) {
+            throw new InvalidRoleTemplateException("Attempting to add rules to a rule using the Custom role template from basic mode is invalid.");
+        }
+        
         try {
             //Using a map in order to weed out duplicates. 
             Map<Integer, AccessRuleData> rulesToReplaceWith = new HashMap<Integer, AccessRuleData>();
