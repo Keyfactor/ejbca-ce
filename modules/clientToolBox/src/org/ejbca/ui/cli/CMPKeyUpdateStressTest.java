@@ -238,13 +238,6 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
             return message;
         }
         
-        private byte[] sendCmp(final byte[] message, final SessionData sessionData) throws Exception {
-            if ( StressTest.this.isHttp ) {
-                return sendCmpHttp(message);
-            }
-            return null;
-        }
-        
         private byte[] sendCmpHttp(final byte[] message) throws Exception {
             final CMPSendHTTP send = CMPSendHTTP.doIt(message, StressTest.this.hostName, StressTest.this.port, StressTest.this.urlPath, false);
             if ( send.responseCode!=HttpURLConnection.HTTP_OK ) {
