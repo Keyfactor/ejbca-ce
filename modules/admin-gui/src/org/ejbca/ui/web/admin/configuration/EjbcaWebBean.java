@@ -74,7 +74,6 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
-import org.ejbca.core.ejb.roles.ComplexRoleManagementSessionLocal;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.HTMLTools;
@@ -115,7 +114,6 @@ public class EjbcaWebBean implements Serializable {
     private final CertificateProfileSessionLocal certificateProfileSession = ejb.getCertificateProfileSession();
     private final CertificateStoreSessionLocal certificateStoreSession = ejb.getCertificateStoreSession();
     private final ComplexAccessControlSessionLocal complexAccessControlSession = ejb.getComplexAccessControlSession();
-    private final ComplexRoleManagementSessionLocal complexRoleManagementSession = ejb.getComplexRoleManagementSession();
     private final EndEntityProfileSessionLocal endEntityProfileSession = ejb.getEndEntityProfileSession();
     private final HardTokenSessionLocal hardTokenSession = ejb.getHardTokenSession();
     private final SecurityEventsLoggerSessionLocal auditSession = ejb.getSecurityEventsLoggerSession();
@@ -178,10 +176,10 @@ public class EjbcaWebBean implements Serializable {
         if (informationmemory == null) {
             informationmemory = new InformationMemory(administrator, caAdminSession, caSession, authorizationSession, complexAccessControlSession,
                     endEntityProfileSession, hardTokenSession, publisherSession, userDataSourceSession, certificateProfileSession,
-                    globalConfigurationSession, globalconfiguration);
+                    globalConfigurationSession, roleManagementSession, globalconfiguration);
         }
-        authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, roleAccessSession, roleManagementSession, complexRoleManagementSession,
-                authorizationSession, complexAccessControlSession);
+        authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, roleAccessSession, roleManagementSession,
+                authorizationSession);
 
     }
 

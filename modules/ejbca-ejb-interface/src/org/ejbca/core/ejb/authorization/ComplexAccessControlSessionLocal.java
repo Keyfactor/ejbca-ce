@@ -12,12 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authorization;
 
-import java.util.Collection;
-
 import javax.ejb.Local;
-
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.roles.RoleData;
 
 /**
  * @version $Id$
@@ -28,12 +23,6 @@ public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSe
 
     public static final String SUPERADMIN_ROLE = "Super Administrator Role";
     
-    /**
-     * Returns a Collection of role names authorized to the resource,
-     * it also only returns only the admin groups the administrator is authorized to edit.
-     */
-    Collection<RoleData> getAuthorizedAdminGroups(AuthenticationToken admin, String resource);
-
     /**
      * Creates a super administrator role and a default CLI user. A role and default CLI user is needed in order
      * to do operations with the CLI (command line interface).  
@@ -55,16 +44,5 @@ public interface ComplexAccessControlSessionLocal extends ComplexAccessControlSe
      * @return true if profile exists in any of the accessrules.
      */
     boolean existsEndEntityProfileInRules(int profileid);
-    
-    /**
-     * Help function to existsCAInRules, checks if ca id exists among
-     * accessrules.
-     */
-    boolean existsCaInAccessRules(int caid);
-    
-    /**
-     * Checks if caid exists among entities in
-     * AccessUserAspectData.
-     */
-     boolean existsCAInAccessUserAspects(int caId);
+   
 }

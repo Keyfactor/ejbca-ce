@@ -15,6 +15,7 @@ package org.cesecore.roles.management;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,12 +33,16 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.access.AccessTree;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleExistsException;
 import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
@@ -400,6 +405,117 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    /*
+     * FIXME: Test this method! 
+     */
+    public Collection<RoleData> getAllRolesAuthorizedToEdit(AuthenticationToken authenticationToken) {
+        List<RoleData> result = new ArrayList<RoleData>();
+        for (RoleData role : roleAccessSession.getAllRoles()) {
+            if (isAuthorizedToEditRole(authenticationToken, role)) {
+                result.add(role);
+            }
+        }
+        return result;
+    }
+    
+    @Override
+    /*
+     * FIXME: Test this method! 
+     */
+    public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
+        if(role==null) {
+            return false;
+        }
+        
+        // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
+        for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
+            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {
+                return false;
+            }
+        }
+        // Secondly, examine all resources in this role and establish access rights
+        for (AccessRuleData accessRule : role.getAccessRules().values()) {
+            String rule = accessRule.getAccessRuleName();
+            // Check only CA rules
+            if (rule.startsWith(StandardRules.CAACCESS.resource())) {
+                if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, rule)) {
+                    return false;
+                }
+            }
+        }
+        // Everything's A-OK, role is good.
+        return true;
+    }
+    
+    @Override
+    public Collection<RoleData> getAuthorizedRoles(AuthenticationToken admin, String resource) {
+        ArrayList<RoleData> authissueingadmgrps = new ArrayList<RoleData>();
+        // Look for Roles that have access rules that allows the group access to the rule below.
+        Collection<RoleData> roles = getAllRolesAuthorizedToEdit(admin);
+        Collection<RoleData> onerole = new ArrayList<RoleData>();
+        for (RoleData role : roles) {
+            // We want to check all roles if they are authorized, we can do that with a "private" AccessTree.
+            // Probably quite inefficient but...
+            AccessTree tree = new AccessTree();
+            onerole.clear();
+            onerole.add(role);
+            tree.buildTree(onerole);
+            // Create an AlwaysAllowAuthenticationToken just to find out if there is
+            // an access rule for the requested resource
+            AlwaysAllowLocalAuthenticationToken token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("isGroupAuthorized"));
+            if (tree.isAuthorized(token, resource)) {
+                authissueingadmgrps.add(role);
+            }
+        }
+        return authissueingadmgrps;
+    }
+
+    @Override
+    public RoleData replaceAccessRulesInRole(final AuthenticationToken authenticationToken, final RoleData role,
+            final Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
+        authorizedToEditRole(authenticationToken, role.getRoleName());
+        
+        RoleData result = roleAccessSession.findRole(role.getPrimaryKey());
+        if (result == null) {
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
+            throw new RoleNotFoundException(msg);
+        }
+       
+        Map<Integer, AccessRuleData> rulesFromResult = result.getAccessRules();
+        Map<Integer, AccessRuleData> rulesToResult = new HashMap<Integer, AccessRuleData>();
+        for(AccessRuleData rule : accessRules) {
+            if(AccessRuleData.generatePrimaryKey(role.getRoleName(), rule.getAccessRuleName()) != rule.getPrimaryKey()) {
+                throw new Error("Role " + role.getRoleName() + " did not match up with the role that created this rule.");
+            }
+           Integer ruleKey = rule.getPrimaryKey();
+            if(rulesFromResult.containsKey(ruleKey)) {
+                AccessRuleData newRule = accessRuleManagement.setState(rule, rule.getInternalState(), rule.getRecursive());
+                rulesFromResult.remove(ruleKey);
+                rulesToResult.put(newRule.getPrimaryKey(), newRule);
+            } else {
+                try {
+                    accessRuleManagement.createRule(rule.getAccessRuleName(), result.getRoleName(), rule.getInternalState(), rule.getRecursive());                   
+                } catch (AccessRuleExistsException e) {
+                    throw new Error("Access rule exists, but wasn't found in persistence in previous call.", e);
+                }
+                rulesToResult.put(rule.getPrimaryKey(), rule);
+            } 
+          
+        }
+        //And for whatever remains:
+        accessRuleManagement.remove(rulesFromResult.values());
+
+        result.setAccessRules(rulesToResult);
+        result = entityManager.merge(result);
+        accessTreeUpdateSession.signalForAccessTreeUpdate();
+        accessControlSession.forceCacheExpire();
+        
+        return result;
+    }
+    
+    
     private Integer findFreeRoleId() {
         final ProfileID.DB db = new ProfileID.DB() {
             @Override

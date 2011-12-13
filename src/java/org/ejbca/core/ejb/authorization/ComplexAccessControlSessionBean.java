@@ -28,11 +28,8 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.access.AccessTree;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
@@ -136,7 +133,6 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         }
     }
 
-
     public void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException,
             AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException {
         if (log.isTraceEnabled()) {
@@ -172,69 +168,6 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         if (log.isTraceEnabled()) {
             log.trace("<initializeAuthorizationModule(" + caid + ", " + superAdminCN);
         }
-    }
-
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    /*
-     * FIXME: Test this method! 
-     */
-    public Collection<RoleData> getAllRolesAuthorizedToEdit(AuthenticationToken authenticationToken) {
-        List<RoleData> result = new ArrayList<RoleData>();
-        for (RoleData role : roleAccessSession.getAllRoles()) {
-            if (isAuthorizedToEditRole(authenticationToken, role)) {
-                result.add(role);
-            }
-        }
-        return result;
-    }
-
-    /**
-     * Method used to return an ArrayList of Integers indicating which CAids an administrator is authorized to access.
-     * 
-     * @return Collection of Integer
-     */
-    public Collection<Integer> getAuthorizedCAIds(AuthenticationToken admin) {
-        List<Integer> returnval = new ArrayList<Integer>();
-        for (Integer caid : caSession.getAvailableCAs()) {
-            if (accessControlSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid.toString())) {
-                returnval.add(caid);
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Admin not authorized to CA: " + caid);
-                }
-            }
-        }
-        return returnval;
-    }
-
-    @Override
-    /*
-     * FIXME: Test this method! 
-     */
-    public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
-        if(role==null) {
-            return false;
-        }
-        
-        // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
-        for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
-            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {
-                return false;
-            }
-        }
-        // Secondly, examine all resources in this role and establish access rights
-        for (AccessRuleData accessRule : role.getAccessRules().values()) {
-            String rule = accessRule.getAccessRuleName();
-            // Check only CA rules
-            if (rule.startsWith(StandardRules.CAACCESS.resource())) {
-                if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, rule)) {
-                    return false;
-                }
-            }
-        }
-        // Everything's A-OK, role is good.
-        return true;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -370,29 +303,6 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         return returnval;
     }
 
-    @Override
-    public Collection<RoleData> getAuthorizedAdminGroups(AuthenticationToken admin, String resource) {
-        ArrayList<RoleData> authissueingadmgrps = new ArrayList<RoleData>();
-        // Look for Roles that have access rules that allows the group access to the rule below.
-        Collection<RoleData> roles = getAllRolesAuthorizedToEdit(admin);
-        Collection<RoleData> onerole = new ArrayList<RoleData>();
-        for (RoleData role : roles) {
-            // We want to check all roles if they are authorized, we can do that with a "private" AccessTree.
-            // Probably quite inefficient but...
-            AccessTree tree = new AccessTree();
-            onerole.clear();
-            onerole.add(role);
-            tree.buildTree(onerole);
-            // Create an AlwaysAllowAuthenticationToken just to find out if there is
-            // an access rule for the requested resource
-            AlwaysAllowLocalAuthenticationToken token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("isGroupAuthorized"));
-            if (tree.isAuthorized(token, resource)) {
-                authissueingadmgrps.add(role);
-            }
-        }
-        return authissueingadmgrps;
-    }
-
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean existsEndEntityProfileInRules(int profileid) {
@@ -408,29 +318,24 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         }
         return count > 0;
     }
-
-    @Override
-    public boolean existsCaInAccessRules(int caid) {
-        if (log.isTraceEnabled()) {
-            log.trace(">existsCAInAccessRules(" + caid + ")");
+    
+    /**
+     * Method used to return an ArrayList of Integers indicating which CAids an administrator is authorized to access.
+     * 
+     * @return Collection of Integer
+     */
+    private Collection<Integer> getAuthorizedCAIds(AuthenticationToken admin) {
+        List<Integer> returnval = new ArrayList<Integer>();
+        for (Integer caid : caSession.getAvailableCAs()) {
+            if (accessControlSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid.toString())) {
+                returnval.add(caid);
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Admin not authorized to CA: " + caid);
+                }
+            }
         }
-        String whereClause = "accessRule = '" + StandardRules.CAACCESSBASE.resource() + "/" + caid + "' OR accessRule LIKE '"
-                + StandardRules.CAACCESSBASE.resource() + "/" + caid + "/%'";
-        Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRulesData a WHERE " + whereClause);
-        long count = ValueExtractor.extractLongValue(query.getSingleResult());
-        if (log.isTraceEnabled()) {
-            log.trace("<existsCAInAccessRules(" + caid + "): " + count);
-        }
-        return count > 0;
-    }
-
-    @Override
-    public boolean existsCAInAccessUserAspects(int caId) {
-        final Query query = entityManager.createQuery("SELECT COUNT(a) FROM AccessUserAspectData a WHERE a.caId=:caId");
-        query.setParameter("caId", caId);
-        long count = ValueExtractor.extractLongValue(query.getSingleResult());
-
-        return count > 0;
+        return returnval;
     }
 
 }

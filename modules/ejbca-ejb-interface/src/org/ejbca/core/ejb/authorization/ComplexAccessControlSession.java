@@ -17,7 +17,6 @@ import java.util.Collection;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
-import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 
@@ -38,25 +37,6 @@ public interface ComplexAccessControlSession {
 	 * @throws AccessRuleNotFoundException 
 	 */
     void initializeAuthorizationModule(AuthenticationToken admin, int caid, String superAdminCN) throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException;
-    
-    /**
-     * Retrieves a list of the roles which the given subject is authorized to edit, by checking if that subject has rights to the CA's behind all
-     * access user aspects in that role, and all CA-based rules
-     * 
-     * @param authenticationToken An authentication token for the subject
-     * @return a list of roles which the subject is authorized to edit.
-     */
-    Collection<RoleData> getAllRolesAuthorizedToEdit(AuthenticationToken authenticationToken);
-
-    /**
-     * Examines if the current user is authorized to edit a role. It checks all access user aspects (and checks access to the CA's issuing them), as
-     * well as all CA based rules within the role.
-     * 
-     * @param authenticationToken an authentication token for the subject to check
-     * @param role the role to check against.
-     * @return true if the subject has access.
-     */
-    boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role);
 
     /**
      * Method used to return an Collection of Integers indicating which end entity profiles the administrator is authorized to view.

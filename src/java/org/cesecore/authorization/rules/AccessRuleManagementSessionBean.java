@@ -21,9 +21,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
+import org.apache.log4j.Logger;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.QueryResultWrapper;
+import org.cesecore.util.ValueExtractor;
 
 /**
  * Implementation of AccessRuleManagementSession class
@@ -37,6 +40,8 @@ import org.cesecore.util.QueryResultWrapper;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class AccessRuleManagementSessionBean implements AccessRuleManagementSessionLocal {
 
+    private static final Logger log = Logger.getLogger(AccessRuleManagementSessionBean.class);
+    
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
@@ -92,6 +97,21 @@ public class AccessRuleManagementSessionBean implements AccessRuleManagementSess
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public void persistRule(AccessRuleData rule) {
         entityManager.persist(rule);
+    }
+    
+    @Override
+    public boolean existsCaInAccessRules(int caid) {
+        if (log.isTraceEnabled()) {
+            log.trace(">existsCAInAccessRules(" + caid + ")");
+        }
+        String whereClause = "accessRule = '" + StandardRules.CAACCESSBASE.resource() + "/" + caid + "' OR accessRule LIKE '"
+                + StandardRules.CAACCESSBASE.resource() + "/" + caid + "/%'";
+        Query query = entityManager.createNativeQuery("SELECT COUNT(*) FROM AccessRulesData a WHERE " + whereClause);
+        long count = ValueExtractor.extractLongValue(query.getSingleResult());
+        if (log.isTraceEnabled()) {
+            log.trace("<existsCAInAccessRules(" + caid + "): " + count);
+        }
+        return count > 0;
     }
 
 }

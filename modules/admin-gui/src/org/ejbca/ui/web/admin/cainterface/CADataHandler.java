@@ -31,6 +31,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
+import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -51,7 +53,6 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
@@ -75,32 +76,40 @@ public class CADataHandler implements Serializable {
 
     private static final Logger log = Logger.getLogger(CADataHandler.class);
 
+    private AuthenticationToken administrator;
+    private InformationMemory info;
+    
+    private AccessRuleManagementSessionLocal accessRuleManagementSession;
+    private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
     private CAAdminSession caadminsession; 
     private CaSession caSession;
-    private AuthenticationToken administrator;
-    private ComplexAccessControlSessionLocal complexAccessControlSession;
-    private InformationMemory info;
-    private UserAdminSessionLocal adminsession;
-    private GlobalConfigurationSession globalconfigurationsession; 
-    private RevocationSessionLocal revocationSession;
     private CertificateProfileSession certificateProfileSession;
     private EndEntityProfileSession endEntityProfileSession;
+    private UserAdminSessionLocal endEntitySession;
+    private GlobalConfigurationSession globalconfigurationsession; 
+    private RevocationSessionLocal revocationSession;
+   
+  
+    
     private EjbcaWebBean ejbcawebbean;
     
     /** Creates a new instance of CertificateProfileDataHandler */
     public CADataHandler(AuthenticationToken administrator, 
-                         CAAdminSession caadminsession, CaSession caSession,
-                         EndEntityProfileSession endEntityProfileSession,
-                         UserAdminSessionLocal adminsession, 
-                         GlobalConfigurationSession globalconfigurationsession,
-                         CertificateProfileSession certificateProfileSession,
-                         RevocationSessionLocal revocationSession,
-                         ComplexAccessControlSessionLocal complexAccessControlSession,
-                         EjbcaWebBean ejbcawebbean) {
+            AccessRuleManagementSessionLocal accessRuleManagementSession,
+            AccessUserAspectManagerSessionLocal accessUserAspectManagerSession,
+            CAAdminSession caadminsession, CaSession caSession,
+            EndEntityProfileSession endEntityProfileSession,
+            UserAdminSessionLocal endEntitySession, 
+            GlobalConfigurationSession globalconfigurationsession,
+            CertificateProfileSession certificateProfileSession,
+            RevocationSessionLocal revocationSession,
+            EjbcaWebBean ejbcawebbean) {
                             
+       this.accessRuleManagementSession = accessRuleManagementSession;
+       this.accessUserAspectManagerSession = accessUserAspectManagerSession;
        this.caadminsession = caadminsession; 
        this.caSession = caSession;
-       this.adminsession = adminsession;
+       this.endEntitySession = endEntitySession;
        this.certificateProfileSession = certificateProfileSession;
        this.endEntityProfileSession = endEntityProfileSession;
        this.globalconfigurationsession = globalconfigurationsession;
@@ -108,7 +117,6 @@ public class CADataHandler implements Serializable {
        this.administrator = administrator;          
        this.info = ejbcawebbean.getInformationMemory();       
        this.ejbcawebbean = ejbcawebbean;
-       this.complexAccessControlSession = complexAccessControlSession;
     }
     
   /**
@@ -163,10 +171,10 @@ public class CADataHandler implements Serializable {
    *  @see org.ejbca.core.ejb.ca.caadmin.CAAdminSessionBean
    */  
   public boolean removeCA(int caid) throws AuthorizationDeniedException{     
-    boolean caidexits = this.adminsession.checkForCAId(caid) ||
+    boolean caidexits = this.endEntitySession.checkForCAId(caid) ||
                         this.certificateProfileSession.existsCAIdInCertificateProfiles(caid) ||
                         this.endEntityProfileSession.existsCAInEndEntityProfiles(administrator, caid) ||
-                        (complexAccessControlSession.existsCaInAccessRules(caid) && this.complexAccessControlSession.existsCAInAccessUserAspects(caid));   
+                        (accessRuleManagementSession.existsCaInAccessRules(caid) && this.accessUserAspectManagerSession.existsCAInAccessUserAspects(caid));   
     if(!caidexits){
         caSession.removeCA(administrator, caid);
       info.cAsEdited();

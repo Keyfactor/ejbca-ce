@@ -57,7 +57,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
             if (args.length < 6) {         
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
-                Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(
+                Collection<RoleData> adminGroups = ejb.getRoleManagementSession().getAllRolesAuthorizedToEdit(
                         getAdmin(cliUserName, cliPassword));
                 Collections.sort((List<RoleData>) adminGroups);
                 String availableGroups = "";
