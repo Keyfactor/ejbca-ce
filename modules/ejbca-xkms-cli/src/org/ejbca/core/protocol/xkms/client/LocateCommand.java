@@ -118,7 +118,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
             boolean validate = getValidate(args[ARG_VALIDATEFLAG]);
             boolean pEMEncoding = usePEMEncoding(args[ARG_ENCODING]);
             String keyUsage = getKeyUsage(args[ARG_KEYUSAGE]);
-            Collection respondWith = getResponseWith(args[ARG_RESPONDWITH]);
+            Collection<String> respondWith = getResponseWith(args[ARG_RESPONDWITH]);
             String outputPath = "";
             if(args.length >= ARG_OUTPUTPATH +1){
             	if(args[ARG_OUTPUTPATH] != null){
@@ -150,7 +150,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
             if(validate){
             	ValidateRequestType validationRequestType = xKMSObjectFactory.createValidateRequestType();
             	validationRequestType.setId(reqId);
-                Iterator iter = respondWith.iterator();
+                Iterator<String> iter = respondWith.iterator();
                 while(iter.hasNext()){
                 	validationRequestType.getRespondWith().add((String) iter.next());
                 }
@@ -165,7 +165,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
             }else{
             	LocateRequestType locateRequestType = xKMSObjectFactory.createLocateRequestType();
             	locateRequestType.setId(reqId);
-                Iterator iter = respondWith.iterator();
+                Iterator<String> iter = respondWith.iterator();
                 while(iter.hasNext()){
                 	locateRequestType.getRespondWith().add((String) iter.next());
                 }
@@ -181,9 +181,9 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 
             if(keyBindings.size() > 0){
             	getPrintStream().println("\n  The query matched " + keyBindings.size() + " certificates :");
-            	Iterator iter = keyBindings.iterator();
+            	Iterator<UnverifiedKeyBindingType> iter = keyBindings.iterator();
             	while(iter.hasNext()){
-            		UnverifiedKeyBindingType next = (UnverifiedKeyBindingType) iter.next();
+            		UnverifiedKeyBindingType next = iter.next();
             		displayAndOutputCert(next, outputPath, pEMEncoding);            		
             		if(next instanceof KeyBindingType){
             			displayStatus((KeyBindingType) next);
@@ -202,9 +202,9 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
  
 
 	private void displayAndOutputCert(UnverifiedKeyBindingType next, String outputPath, boolean pEMEncoding) throws CertificateException, CRLException, IOException {
-		List keyInfos = next.getKeyInfo().getContent();
+		List<Object> keyInfos = next.getKeyInfo().getContent();
 
-		Iterator iter = keyInfos.iterator();
+		Iterator<Object> iter = keyInfos.iterator();
 		while(iter.hasNext()){
 			Object obj = iter.next();
 			if(obj instanceof JAXBElement){

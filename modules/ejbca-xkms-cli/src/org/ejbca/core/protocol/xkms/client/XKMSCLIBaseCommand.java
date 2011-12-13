@@ -229,8 +229,8 @@ public abstract class XKMSCLIBaseCommand {
      * @param arg
      * @return a collection of Strings containging respond with constatns
      */
-    protected Collection getResponseWith(String arg) {
-    	ArrayList retval = new ArrayList();
+    protected Collection<String> getResponseWith(String arg) {
+    	ArrayList<String> retval = new ArrayList<String>();
 		
     	if(arg.equalsIgnoreCase(RESPONDWITH_X509CERT)){
     		retval.add(XKMSConstants.RESPONDWITH_X509CERT);
@@ -421,13 +421,14 @@ public abstract class XKMSCLIBaseCommand {
 		}
 	}
 
-	protected List getCertsFromKeyBinding(KeyBindingType keyBinding) throws CertificateException {
-		ArrayList retval = new ArrayList();
+	protected List<Certificate> getCertsFromKeyBinding(KeyBindingType keyBinding) throws CertificateException {
+		ArrayList<Certificate> retval = new ArrayList<Certificate>();
 		
-		JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBinding.getKeyInfo().getContent().get(0);		
-		Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+		@SuppressWarnings("unchecked")
+        JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBinding.getKeyInfo().getContent().get(0);		
+		Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 		while(iter2.hasNext()){
-			JAXBElement next = (JAXBElement) iter2.next();					
+			JAXBElement<?> next = (JAXBElement<?>) iter2.next();					
 			if(next.getName().getLocalPart().equals("X509Certificate")){
 			  byte[] encoded = (byte[]) next.getValue();
 			  Certificate nextCert = CertTools.getCertfromByteArray(encoded);
