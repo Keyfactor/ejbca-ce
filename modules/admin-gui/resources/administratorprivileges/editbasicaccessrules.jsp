@@ -42,8 +42,13 @@ function roleupdated(){
   var selectcas = document.getElementById('basicRules:selectcas');
   var selectrole = document.getElementById('basicRules:selectrole');
   var selectendentityrules = document.getElementById('basicRules:selectendentityrules');
-  var selectendentityprofiles = document.getElementById('basicRules:selectendentityprofiles');
+  var selectendentityprofiles = document.getElementById('basicRules:selectendentityprofiles');  
   var selectother = document.getElementById('basicRules:selectother');
+  
+  numofother = selectother.length;
+  for( i=numofother-1; i >= 0; i-- ){
+     selectother.options[i]=null;
+  }
 	
   var currentrole = selectrole.options[selectrole.options.selectedIndex].value;  
  
@@ -68,10 +73,6 @@ function roleupdated(){
          selectendentityprofiles.options[i].selected=false;
     }
  
-    numofother = selectother.length;
-    for( i=numofother-1; i >= 0; i-- ){
-       selectother.options[i]=null;
-    }
   }
   
   if(currentrole == '<%=DefaultRoles.SUPERADMINISTRATOR.getName() %>'){
