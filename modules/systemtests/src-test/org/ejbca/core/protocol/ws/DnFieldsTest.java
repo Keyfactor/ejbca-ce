@@ -20,6 +20,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 
+import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -27,12 +28,14 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
@@ -59,12 +62,16 @@ import org.junit.Test;
  */
 public class DnFieldsTest extends CommonEjbcaWS {
 
+    private static final Logger log = Logger.getLogger(DnFieldsTest.class);
+    
     private static final String PROFILE_NAME = "TW";
     
     private CertificateProfileSessionRemote certificateProfileSession = JndiHelper.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = JndiHelper.getRemoteSession(EndEntityProfileSessionRemote.class);
     
     private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("DnFieldsTest"));
+    
+    private final String wsadminRoleName = "WsTEstRole";
     
     @BeforeClass
     public static void beforeClass() {
@@ -73,14 +80,31 @@ public class DnFieldsTest extends CommonEjbcaWS {
  
     @Before
     public void setUp() throws Exception {
+        setupAccessRights(wsadminRoleName);
         adminSetUpAdmin();
-        endEntityProfileSession.addEndEntityProfile(internalAdmin, PROFILE_NAME, new EndEntityProfile());
-        certificateProfileSession.addCertificateProfile(internalAdmin, PROFILE_NAME, new CertificateProfile());
+        
+        if(certificateProfileSession.getCertificateProfile(PROFILE_NAME) == null) {
+            certificateProfileSession.addCertificateProfile(internalAdmin, PROFILE_NAME, new CertificateProfile());
+        }
+        
+        EndEntityProfile endEntityProfile = new EndEntityProfile();
+        endEntityProfile.addField(DnComponents.DNEMAIL);
+        endEntityProfile.addField(DnComponents.COUNTRY);
+        endEntityProfile.addField(DnComponents.RFC822NAME);     
+        endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certificateProfileSession.getCertificateProfileId(PROFILE_NAME)));
+        endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+        if (endEntityProfileSession.getEndEntityProfile(internalAdmin, PROFILE_NAME) == null) {
+            endEntityProfileSession.addEndEntityProfile(internalAdmin, PROFILE_NAME, endEntityProfile);
+        }
+      
+       
     }
     
     @After
     public void tearDown() throws Exception {
         super.tearDown();
+        super.cleanUpAdmins(wsadminRoleName);
+        
         if (endEntityProfileSession.getEndEntityProfile(internalAdmin, PROFILE_NAME) != null) {
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, PROFILE_NAME);
         }
@@ -96,8 +120,9 @@ public class DnFieldsTest extends CommonEjbcaWS {
             UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception {
 
         UserMatch um = new UserMatch(UserMatch.MATCH_WITH_USERNAME, UserMatch.MATCH_TYPE_EQUALS, "tomcat");
-        for (UserDataVOWS ud : ejbcaraws.findUser(um))
-            System.out.println("User: " + ud.getSubjectDN());
+        for (UserDataVOWS ud : ejbcaraws.findUser(um)) {
+            log.info("User: " + ud.getSubjectDN());
+        }
 
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         String p10 = new String(Base64.encode(new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys
@@ -108,7 +133,6 @@ public class DnFieldsTest extends CommonEjbcaWS {
         user.setClearPwd(false);
         user.setSubjectDN("E=boss@fire.com,CN=Tester,C=SE");
         user.setCaName("AdminCA1");
-        user.setEmail ("boss@fire.com");
         user.setSubjectAltName("rfc822name=boss@fire.com");
         user.setTokenType(UserDataVOWS.TOKEN_TYPE_USERGENERATED);
         user.setEndEntityProfileName(PROFILE_NAME);
