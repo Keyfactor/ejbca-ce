@@ -4815,10 +4815,11 @@ This is very useful in a cluster when you can take cluster nodes in and out of r
 If an error is detected one or several of the following error messages is reported.
 </p>
 <ul>
-<li>"Error Virtual Memory is about to run out, currently free memory : number" - The JVM is about to run out of memory.</li>
-<li>"Error creating connection to EJBCA Database" - JDBC Connection to the database failed, this might occur if DB craches or network is down.</li>
-<li>"Error CA Token is disconnected: CAName" - This is a sign of hardware problems with one or several of the hard ca tokens in the node.</li>
-<li>"Cannot connect to publisher: PublisherName" - This is reported when a test connection to one of the publishers failed.</li>
+<li>"MEM: Error Virtual Memory is about to run out, currently free memory : number" - The JVM is about to run out of memory.</li>
+<li>"DB: Error creating connection to database" - JDBC Connection to the database failed, this might occur if DB craches or network is down.</li>
+<li>"CA: Error CA Token is disconnected: CAName" - This is a sign of hardware problems with one or several of the hard ca tokens in the node.</li>
+<li>"MAINT: DOWN_FOR_MAINTENANCE" - This is reported when the healthcheck.maintenancefile is used and the node is set to be off line.</li>
+<li>"Error when testing the connection with publisher: PublisherName" - This is reported when a test connection to one of the publishers failed.</li>
 </ul>
 </section>
 
