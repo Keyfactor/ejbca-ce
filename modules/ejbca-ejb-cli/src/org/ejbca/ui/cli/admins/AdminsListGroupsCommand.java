@@ -47,7 +47,7 @@ public class AdminsListGroupsCommand extends BaseAdminsCommand {
         }
         
         try {
-            Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));            
+            Collection<RoleData> adminGroups = ejb.getRoleManagementSession().getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));            
             Collections.sort((List<RoleData>) adminGroups);
             for (RoleData adminGroup : adminGroups) {                
                 int numberOfAdmins = adminGroup.getAccessUsers().size();

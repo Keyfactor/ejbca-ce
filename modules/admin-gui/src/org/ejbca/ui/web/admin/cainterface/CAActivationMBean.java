@@ -21,13 +21,14 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
+import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
@@ -57,6 +58,9 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private String authenticationcode;
 	private List<CAWrapper> caInfoList;
 	private AuthenticationToken administrator;
+	
+    private AccessRuleManagementSessionLocal accessRuleManagementSession;
+    private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
 	private CaSession caSession;
 	private CertificateProfileSession certificateProfileSession;
 	private CAAdminSession caadminsession;
@@ -64,7 +68,6 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private UserAdminSessionLocal adminsession;
 	private GlobalConfigurationSession globalconfigurationsession;
 	private RevocationSessionLocal revocationSession;
-	private ComplexAccessControlSessionLocal complexAccessControlSession;
 	
 	public static final String MAKEOFFLINE = "makeoffline";
 	public static final String ACTIVATE    = "activate";
@@ -83,6 +86,8 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		try {
 			administrator = webBean.getAdminObject();
 			EjbLocalHelper ejb = new EjbLocalHelper();
+			this.accessRuleManagementSession = ejb.getAccessRuleManagementSession();
+			this.accessUserAspectManagerSession = ejb.getAccessUserAspectSession();
 			caadminsession = ejb.getCaAdminSession();
 			caSession = ejb.getCaSession();
 			adminsession = ejb.getUserAdminSession();
@@ -90,11 +95,10 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			certificateProfileSession = ejb.getCertificateProfileSession();
 			endEntityProfileSession = ejb.getEndEntityProfileSession();
 			revocationSession = ejb.getRevocationSession();
-			complexAccessControlSession = ejb.getComplexAccessControlSession();
 			
-            cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession,
+            cadatahandler = new CADataHandler(administrator, accessRuleManagementSession, accessUserAspectManagerSession, caadminsession, caSession, endEntityProfileSession, adminsession,
                     globalconfigurationsession, certificateProfileSession, revocationSession,
-                    complexAccessControlSession, webBean);
+                    webBean);
             caInfoList = new ArrayList<CAWrapper>();
 	initializeWrappers();
 		} catch (Exception e){

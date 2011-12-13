@@ -30,6 +30,8 @@ import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
+import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -50,7 +52,6 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
@@ -93,6 +94,8 @@ public class CAInterfaceBean implements Serializable {
     private CrlStoreSession crlStoreSession;
     private CrlCreateSession crlCreateSession;
     private AccessControlSessionLocal authorizationsession;
+    private AccessRuleManagementSessionLocal accessRuleManagementSession;
+    private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
     private UserAdminSessionLocal adminsession;
     private GlobalConfigurationSession globalconfigurationsession;
     private SignSession signsession;
@@ -106,7 +109,6 @@ public class CAInterfaceBean implements Serializable {
     private CertificateProfileSession certificateProfileSession;
     private EndEntityProfileSession endEntityProfileSession;
     private RevocationSessionLocal revocationSession;
-	private ComplexAccessControlSessionLocal complexAccessControlSession;
     private boolean initialized;
     private AuthenticationToken administrator;
     private InformationMemory informationmemory;
@@ -123,6 +125,8 @@ public class CAInterfaceBean implements Serializable {
     // Public methods
     public void initialize(EjbcaWebBean ejbcawebbean) {
         if(!initialized){
+            this.accessRuleManagementSession = ejb.getAccessRuleManagementSession();
+            this.accessUserAspectManagerSession = ejb.getAccessUserAspectSession();
           caSession = ejb.getCaSession();
           certificatesession = ejb.getCertificateStoreSession();
           certreqhistorysession = ejb.getCertReqHistorySession();
@@ -142,11 +146,10 @@ public class CAInterfaceBean implements Serializable {
           revocationSession = ejb.getRevocationSession();
           this.informationmemory = ejbcawebbean.getInformationMemory();
           this.administrator = ejbcawebbean.getAdminObject();
-          complexAccessControlSession = ejb.getComplexAccessControlSession();
             
           certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caSession, certificateProfileSession, informationmemory);;
-            cadatahandler = new CADataHandler(administrator, caadminsession, caSession, endEntityProfileSession, adminsession, globalconfigurationsession,
-                    certificateProfileSession, revocationSession, complexAccessControlSession, ejbcawebbean);
+            cadatahandler = new CADataHandler(administrator, accessRuleManagementSession, accessUserAspectManagerSession,caadminsession, caSession, endEntityProfileSession, adminsession, globalconfigurationsession,
+                    certificateProfileSession, revocationSession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificateProfileSession,  informationmemory);
           isUniqueIndex = certcreatesession.isUniqueCertificateSerialNumberIndex();
           initialized =true;

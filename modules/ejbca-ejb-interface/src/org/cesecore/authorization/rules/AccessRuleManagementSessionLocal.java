@@ -38,5 +38,13 @@ public interface AccessRuleManagementSessionLocal {
     void remove(Collection<AccessRuleData> accessRules);
 
     AccessRuleData setState(AccessRuleData rule, AccessRuleState state, boolean isRecursive);
+    
+    /**
+     * Check if any CA exists among the existing rules.
+     * 
+     * @param caid the ID of the CA to search for
+     * @return true if the CA exists among the existing rules.
+     */
+    boolean existsCaInAccessRules(int caid);
 
 }

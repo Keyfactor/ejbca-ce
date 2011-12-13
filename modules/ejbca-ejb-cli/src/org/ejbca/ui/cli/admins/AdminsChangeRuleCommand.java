@@ -54,7 +54,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
             if (args.length < 5) {
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of group> <access rule> <rule> <recursive>");
-                Collection<RoleData> adminGroups = ejb.getComplexAccessControlSession().getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));
+                Collection<RoleData> adminGroups = ejb.getRoleManagementSession().getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));
                 Collections.sort((List<RoleData>) adminGroups);
                 String availableGroups = "";
                 for (RoleData adminGroup : adminGroups) {

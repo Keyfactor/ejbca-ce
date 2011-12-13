@@ -13,10 +13,12 @@
 package org.cesecore.roles.management;
 
 import java.security.cert.Certificate;
+import java.util.Collection;
 
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 
@@ -37,5 +39,11 @@ public interface RoleManagementSessionLocal extends RoleManagementSession {
      * 
      */
     void initializeAccessWithCert(AuthenticationToken authenticationToken, String roleName, Certificate certificate) throws RoleExistsException, RoleNotFoundException;
+    
+    /**
+     * Returns a Collection of role names authorized to the resource,
+     * it also only returns only the admin groups the administrator is authorized to edit.
+     */
+    Collection<RoleData> getAuthorizedRoles(AuthenticationToken admin, String resource);
 
 }

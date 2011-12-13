@@ -35,6 +35,8 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.management.RoleManagementSession;
+import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSession;
@@ -74,6 +76,7 @@ public class InformationMemory implements Serializable {
     private UserDataSourceSession userdatasourcesession = null;
     private CertificateProfileSession certificateProfileSession;
     private ComplexAccessControlSession complexAccessControlSession;
+    private RoleManagementSession roleManagementSession;
 
     // Memory variables.
     RAAuthorization raauthorization = null;
@@ -81,7 +84,7 @@ public class InformationMemory implements Serializable {
     HardTokenAuthorization hardtokenauthorization = null;
 
     Map<Integer, String> caidtonamemap = null;
-    Map<Integer, HashMap<Integer, List>> endentityavailablecas = null;
+    Map<Integer, HashMap<Integer, List<Integer>>> endentityavailablecas = null;
     Map<Integer, String> publisheridtonamemap = null;
 
     TreeMap<String, Integer> authgroups = null;
@@ -98,7 +101,7 @@ public class InformationMemory implements Serializable {
     public InformationMemory(AuthenticationToken administrator, CAAdminSession caadminsession, CaSessionLocal caSession, AccessControlSessionLocal authorizationsession,
             ComplexAccessControlSessionLocal complexAccessControlSession, EndEntityProfileSession endEntityProfileSession,
             HardTokenSession hardtokensession, PublisherSessionLocal publishersession, UserDataSourceSession userdatasourcesession,
-            CertificateProfileSession certificateProfileSession, GlobalConfigurationSession globalConfigurationSession,
+            CertificateProfileSession certificateProfileSession, GlobalConfigurationSession globalConfigurationSession, RoleManagementSessionLocal roleManagementSession,
             GlobalConfiguration globalconfiguration) {
         this.caadminsession = caadminsession;
         this.casession = caSession;
@@ -111,8 +114,9 @@ public class InformationMemory implements Serializable {
         this.raauthorization = new RAAuthorization(administrator, globalConfigurationSession, authorizationsession, complexAccessControlSession,
                 caSession, endEntityProfileSession);
         this.caauthorization = new CAAuthorization(administrator, caSession, authorizationsession, certificateProfileSession);
-        this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, complexAccessControlSession);
+        this.hardtokenauthorization = new HardTokenAuthorization(administrator, hardtokensession, authorizationsession, roleManagementSession);
         this.complexAccessControlSession = complexAccessControlSession;
+        this.roleManagementSession = roleManagementSession;
     }
 
     public String getCertificateProfileName(int id) {
@@ -290,14 +294,14 @@ public class InformationMemory implements Serializable {
      * @returns a HashMap of CertificateProfileId to Collection. It returns a set of avialable CAs per certificate profile.
      */
 
-    public Map<Integer, List> getEndEntityAvailableCAs(int endentityprofileid) {
+    public HashMap<Integer, List<Integer>> getEndEntityAvailableCAs(int endentityprofileid) {
         if (endentityavailablecas == null) {
             // Build new structure.
             Collection<Integer> authorizedcas = getAuthorizedCAIds();
 
             HashMap<Integer, CertificateProfile> certproftemp = new HashMap<Integer, CertificateProfile>();
 
-            endentityavailablecas = new HashMap<Integer, HashMap<Integer, List>>();
+            endentityavailablecas = new HashMap<Integer, HashMap<Integer, List<Integer>>>();
 
             for (Integer nextendentityprofileid : endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator)) {
                 EndEntityProfile endentityprofile = endEntityProfileSession.getEndEntityProfile(administrator, nextendentityprofileid.intValue());
@@ -313,7 +317,7 @@ public class InformationMemory implements Serializable {
                 }
 
                 values = endentityprofile.getValue(EndEntityProfile.AVAILCERTPROFILES, 0).split(EndEntityProfile.SPLITCHAR);
-                HashMap<Integer, List> certificateprofilemap = new HashMap<Integer, List>();
+                HashMap<Integer, List<Integer>> certificateprofilemap = new HashMap<Integer, List<Integer>>();
                 for (int i = 0; i < values.length; i++) {
                     Integer nextcertprofileid = Integer.valueOf(values[i]);
                     CertificateProfile certprofile = (CertificateProfile) certproftemp.get(nextcertprofileid);
@@ -404,7 +408,7 @@ public class InformationMemory implements Serializable {
         if (authgroups == null) {
             authgroups = new TreeMap<String, Integer>();
 
-            for (RoleData role : complexAccessControlSession.getAllRolesAuthorizedToEdit(administrator)) {
+            for (RoleData role : roleManagementSession.getAllRolesAuthorizedToEdit(administrator)) {
                 authgroups.put(role.getRoleName(), Integer.valueOf(role.getPrimaryKey()));
             }
         }

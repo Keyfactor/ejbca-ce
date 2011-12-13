@@ -156,5 +156,37 @@ public interface RoleManagementSession {
      */
     RoleData removeSubjectsFromRole(AuthenticationToken authenticationToken, RoleData role, Collection<AccessUserAspectData> subjects)
             throws RoleNotFoundException, AuthorizationDeniedException;
-
+    
+    
+    /**
+     * Retrieves a list of the roles which the given subject is authorized to edit, by checking if that subject has rights to the CA's behind all
+     * access user aspects in that role, and all CA-based rules
+     * 
+     * @param authenticationToken An authentication token for the subject
+     * @return a list of roles which the subject is authorized to edit.
+     */
+    Collection<RoleData> getAllRolesAuthorizedToEdit(AuthenticationToken authenticationToken);
+    
+    /**
+     * Examines if the current user is authorized to edit a role. It checks all access user aspects (and checks access to the CA's issuing them), as
+     * well as all CA based rules within the role.
+     * 
+     * @param authenticationToken an authentication token for the subject to check
+     * @param role the role to check against.
+     * @return true if the subject has access.
+     */
+    boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role);
+    
+    /**
+     * Replaces the existing access rules in the given role by removing the old ones and adding the list of new ones.
+     * 
+     * @param authenticationToken for authorization purposes.
+     * @param role the role in question.
+     * @param accessRules A Collection of access rules to replace with.
+     * @return the same role.
+     * @throws AuthorizationDeniedException if authorization was denied.
+     * @throws RoleNotFoundException if the supplied role was not found in persistence. 
+     */
+    RoleData replaceAccessRulesInRole(final AuthenticationToken authenticationToken, final RoleData role, final Collection<AccessRuleData> accessRules)
+            throws AuthorizationDeniedException, RoleNotFoundException;
 }

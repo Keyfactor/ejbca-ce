@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -311,6 +312,42 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
         } finally {
             roleManagementSession.remove(authenticationToken, kip);
             roleManagementSession.remove(authenticationToken, cubert);
+        }
+    }
+    
+    /**
+     * This test creates a role with two rules, one which will be replaced and the other removed because it isn't included new 
+     * collection of rules to replace the old ones. Additionally, the new collection will contain a rule not existing previously,
+     * which should be added. Lastly, the rule existing both before and after the operation should have its value changed to the 
+     * new value provided. 
+     * 
+     * @throws RoleExistsException
+     * @throws AuthorizationDeniedException
+     * @throws AccessRuleNotFoundException
+     * @throws RoleNotFoundException
+     */
+    @Test
+    public void testReplaceAccessRulesInRole() throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException,
+            RoleNotFoundException {
+        RoleData ralph = roleManagementSession.create(roleMgmgToken, "Ralph");
+        try {
+            Collection<AccessRuleData> accessRules = new LinkedList<AccessRuleData>();
+            accessRules.add(new AccessRuleData(ralph.getRoleName(), "/ToBeMerged", AccessRuleState.RULE_ACCEPT, false));
+            AccessRuleData toBeRemoved = new AccessRuleData(ralph.getRoleName(), "/ToBeRemoved", AccessRuleState.RULE_ACCEPT, false);
+            accessRules.add(toBeRemoved);
+            ralph = roleManagementSession.addAccessRulesToRole(roleMgmgToken, ralph, accessRules);
+            accessRules = new LinkedList<AccessRuleData>();
+            AccessRuleData toBeMerged = new AccessRuleData(ralph.getRoleName(), "/ToBeMerged", AccessRuleState.RULE_DECLINE, false);
+            AccessRuleData toBeAdded = new AccessRuleData(ralph.getRoleName(), "/ToBeAdded", AccessRuleState.RULE_DECLINE, false);
+            accessRules.add(toBeMerged);
+            accessRules.add(toBeAdded);
+            ralph = roleManagementSession.replaceAccessRulesInRole(roleMgmgToken, ralph, accessRules);
+            assertNotNull("Rule to be merged was removed", ralph.getAccessRules().get(toBeMerged.getPrimaryKey()));
+            assertEquals("Rule to be merged was not merged", AccessRuleState.RULE_DECLINE, ralph.getAccessRules().get(toBeMerged.getPrimaryKey()).getInternalState());
+            assertNotNull("Rule to be added was not added", ralph.getAccessRules().get(toBeAdded.getPrimaryKey()));
+            assertNull("Rule to be removed was not removed", ralph.getAccessRules().get(toBeRemoved.getPrimaryKey()));
+        } finally {
+            roleManagementSession.remove(roleMgmgToken, ralph);
         }
     }
 }
