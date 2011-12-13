@@ -350,15 +350,18 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	data.put(Integer.valueOf(FIELDBOUNDRARY_USE + offset), use);
     	data.put(Integer.valueOf(FIELDBOUNDRARY_MODIFYABLE + offset), modifyable);
     	if (DnComponents.isDnProfileField(parameterName)) {
-    		final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
+    		@SuppressWarnings("unchecked")
+            final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
     		final Integer val = Integer.valueOf((NUMBERBOUNDRARY*parameter) + size);
     		fieldorder.add(val);
     	} else if (DnComponents.isAltNameField(parameterName)) {
-    		final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
+    		@SuppressWarnings("unchecked")
+            final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
     		final Integer val = Integer.valueOf((NUMBERBOUNDRARY*parameter) + size);
     		fieldorder.add(val);
     	} else if (DnComponents.isDirAttrField(parameterName)) {
-    		final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
+    		@SuppressWarnings("unchecked")
+            final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
     		final Integer val = Integer.valueOf((NUMBERBOUNDRARY*parameter) + size);
     		fieldorder.add(val);
     	}
@@ -388,19 +391,22 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		final String param = getParameter(parameter);
     		// Remove last element from Subject DN order list.
     		if (DnComponents.isDnProfileField(param)) {
-    			final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
+    			@SuppressWarnings("unchecked")
+                final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
     			final int value = (NUMBERBOUNDRARY*parameter) + size -1;
     			fieldorder.remove(Integer.valueOf(value));
     		}
     		// Remove last element from Subject AltName order list.
     		if (DnComponents.isAltNameField(param)) {
-    			final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
+    			@SuppressWarnings("unchecked")
+                final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
     			final int value = (NUMBERBOUNDRARY*parameter) + size -1;	//number;
     			fieldorder.remove(Integer.valueOf(value));
     		}
     		// Remove last element from Subject DirAttr order list.
     		if (DnComponents.isDirAttrField(param)) {
-    			final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
+    			@SuppressWarnings("unchecked")
+                final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
     			final int value = (NUMBERBOUNDRARY*parameter) + size -1;	//number;
     			fieldorder.remove(Integer.valueOf(value));
     		}
@@ -426,7 +432,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
 	private ArrayList<Integer> checkAndUpgradeWithNewFields(final int parameter) {
-		final ArrayList<Integer> arr = (ArrayList<Integer>)data.get(NUMBERARRAY);
+		@SuppressWarnings("unchecked")
+        final ArrayList<Integer> arr = (ArrayList<Integer>)data.get(NUMBERARRAY);
     	// This is an automatic upgrade function, if we have dynamically added new fields
     	if (parameter >= arr.size()) {
     		if (log.isDebugEnabled()) {
@@ -508,14 +515,17 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	return isModifyable(getParameterNumber(parameter), number);
     }
 
+    @SuppressWarnings("unchecked")
     public int getSubjectDNFieldOrderLength(){
     	return ((ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER)).size();
     }
 
+    @SuppressWarnings("unchecked")
     public int getSubjectAltNameFieldOrderLength(){
     	return ((ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER)).size();
     }
 
+    @SuppressWarnings("unchecked")
     public int getSubjectDirAttrFieldOrderLength(){
         return ((ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER)).size();
     }
@@ -526,7 +536,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
      */
     public int[] getSubjectDNFieldsInOrder(final int index) {
     	final int[] returnval = new int[2];
-    	final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
+    	@SuppressWarnings("unchecked")
+        final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDNFIELDORDER);
     	final int i = fieldorder.get(index).intValue();
     	returnval[NUMBER] = i % NUMBERBOUNDRARY;
     	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
@@ -535,7 +546,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public int[] getSubjectAltNameFieldsInOrder(final int index) {
     	int[] returnval = new int[2];
-    	final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
+    	@SuppressWarnings("unchecked")
+        final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTALTNAMEFIELDORDER);
     	final int i = fieldorder.get(index).intValue();
     	returnval[NUMBER] = i % NUMBERBOUNDRARY;
     	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
@@ -544,7 +556,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 
     public int[] getSubjectDirAttrFieldsInOrder(final int index) {
     	final int[] returnval = new int[2];
-    	final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
+    	@SuppressWarnings("unchecked")
+        final ArrayList<Integer> fieldorder = (ArrayList<Integer>) data.get(SUBJECTDIRATTRFIELDORDER);
     	final int i = fieldorder.get(index).intValue();
     	returnval[NUMBER] = i % NUMBERBOUNDRARY;
     	returnval[FIELDTYPE] = i / NUMBERBOUNDRARY;
@@ -660,13 +673,15 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     }
 
     public List<UserNotification> getUserNotifications() {
-    	List<UserNotification> l = (List<UserNotification>)data.get(USERNOTIFICATIONS);
+    	@SuppressWarnings("unchecked")
+        List<UserNotification> l = (List<UserNotification>)data.get(USERNOTIFICATIONS);
     	if (l == null) {
     		l = new ArrayList<UserNotification>();
     	}
     	return l;
     }
 
+    @SuppressWarnings("unchecked")
     public void addUserNotification(final UserNotification notification) {
     	if (data.get(USERNOTIFICATIONS) == null) {
     		setUserNotifications(new ArrayList<UserNotification>(0));
@@ -682,6 +697,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     }
 
+    @SuppressWarnings("unchecked")
     public void removeUserNotification(final UserNotification notification) {
     	if (data.get(USERNOTIFICATIONS) != null) {
     		((List<UserNotification>) data.get(USERNOTIFICATIONS)).remove(notification);
@@ -1313,6 +1329,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             log.info(msg);
             // New version of the class, upgrade
             if (getVersion() < 1) {
+                @SuppressWarnings("unchecked")
                 ArrayList<Integer> numberarray = (ArrayList<Integer>) data.get(NUMBERARRAY);
                 while (numberarray.size() < 37) {
                    numberarray.add(Integer.valueOf(0));
@@ -1320,6 +1337,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 data.put(NUMBERARRAY,numberarray);
             }
             if (getVersion() < 2) {
+                @SuppressWarnings("unchecked")
                 ArrayList<Integer> numberarray = (ArrayList<Integer>) data.get(NUMBERARRAY);
                 while (numberarray.size() < 39) {
                    numberarray.add(Integer.valueOf(0));
@@ -1337,6 +1355,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
                 //setNotificationMessage("");
             }
             if (getVersion() < 4) {
+                @SuppressWarnings("unchecked")
                 ArrayList<Integer> numberoffields = (ArrayList<Integer>) data.get(NUMBERARRAY);                
                 for (int i =numberoffields.size(); i < dataConstants.size(); i++) {
                   numberoffields.add(Integer.valueOf(0));
@@ -1353,6 +1372,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             }
             // Support for Subject Directory Attributes field in profile version 6
             if (getVersion() < 6) {
+                @SuppressWarnings("unchecked")
                 ArrayList<Integer> numberoffields = (ArrayList<Integer>) data.get(NUMBERARRAY);                
                 for(int i =numberoffields.size(); i < dataConstants.size(); i++){
                   numberoffields.add(Integer.valueOf(0));
@@ -1370,6 +1390,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             }
             // Support for Start Time and End Time field in profile version 7
             if (getVersion() < 7) {
+                @SuppressWarnings("unchecked")
                 ArrayList<Integer> numberoffields = (ArrayList<Integer>) data.get(NUMBERARRAY);                
                 for(int i =numberoffields.size(); i < dataConstants.size(); i++){
                 	numberoffields.add(Integer.valueOf(0));
@@ -1408,6 +1429,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
             }
             // Support for allowed requests in profile version 9
             if (getVersion() < 9) {
+                @SuppressWarnings("unchecked")
                 ArrayList<Integer> numberoffields = (ArrayList<Integer>) data.get(NUMBERARRAY);                
                 for(int i =numberoffields.size(); i < dataConstants.size(); i++){
                 	numberoffields.add(Integer.valueOf(0));
@@ -1874,12 +1896,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 	}
 	
     private void incrementFieldnumber(final int parameter){
-    	final ArrayList<Integer> numberarray = (ArrayList<Integer>) data.get(NUMBERARRAY);
+    	@SuppressWarnings("unchecked")
+        final ArrayList<Integer> numberarray = (ArrayList<Integer>) data.get(NUMBERARRAY);
     	numberarray.set(parameter, Integer.valueOf(numberarray.get(parameter).intValue() + 1));
     }
 
     private void decrementFieldnumber(final int parameter){
-    	final ArrayList<Integer> numberarray = (ArrayList<Integer>) data.get(NUMBERARRAY);
+    	@SuppressWarnings("unchecked")
+        final ArrayList<Integer> numberarray = (ArrayList<Integer>) data.get(NUMBERARRAY);
     	numberarray.set(parameter, Integer.valueOf(numberarray.get(parameter).intValue() - 1));
     }
 
