@@ -193,7 +193,7 @@ public class ScepRequestGenerator {
         CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
 
         // add authenticated attributes...status, transactionId, sender- and more...
-        Hashtable attributes = new Hashtable();
+        Hashtable<DERObjectIdentifier, Attribute> attributes = new Hashtable<DERObjectIdentifier, Attribute>();
         DERObjectIdentifier oid;
         Attribute attr;
         DERSet value;
@@ -223,7 +223,7 @@ public class ScepRequestGenerator {
         }
 
         // Add our signer info and sign the message
-        ArrayList certList = new ArrayList();
+        ArrayList<X509Certificate> certList = new ArrayList<X509Certificate>();
         certList.add(cert);
         CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(certList), "BC");
         gen1.addCertificatesAndCRLs(certs);

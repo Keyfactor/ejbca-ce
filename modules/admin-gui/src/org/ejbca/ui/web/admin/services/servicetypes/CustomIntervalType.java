@@ -64,7 +64,7 @@ public class CustomIntervalType extends IntervalType {
 		return classPath;
 	}
 
-	public Properties getProperties(ArrayList errorMessages) throws IOException{
+	public Properties getProperties(ArrayList<String> errorMessages) throws IOException{
 		Properties retval = new Properties();
 	    retval.load(new ByteArrayInputStream(getPropertyText().getBytes()));		
 		return retval;

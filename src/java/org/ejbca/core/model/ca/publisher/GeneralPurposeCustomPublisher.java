@@ -132,7 +132,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
                 throw new PublisherException(msg);
             }
             // Run internal method to create tempfile and run the command
-            List arguments = new ArrayList(); // <String>
+            List<String> arguments = new ArrayList<String>(); // <String>
             arguments.add(String.valueOf(type));
             try {
                 arguments.add(CertTools.getSubjectDN(incert));
@@ -171,7 +171,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
             throw new PublisherException(msg);
         }
 
-        List additionalArguments = new ArrayList();
+        List<String> additionalArguments = new ArrayList<String>();
 
         if (calclulateDeltaCrlLocally) {
             X509CRL crl;
@@ -213,7 +213,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
             throw new PublisherException(msg);
         }
         // Run internal method to create tempfile and run the command
-        List arguments = new ArrayList(); // <String>
+        List<String> arguments = new ArrayList<String>(); // <String>
         arguments.add(String.valueOf(reason));
         try {
             arguments.add(CertTools.getSubjectDN(cert));
@@ -292,7 +292,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
      *            Added to the command after the tempfiles name
      * @throws PublisherException
      */
-    private void runWithTempFile(String externalCommand, byte[] bytes, boolean failOnCode, boolean failOnOutput, List additionalArguments)
+    private void runWithTempFile(String externalCommand, byte[] bytes, boolean failOnCode, boolean failOnOutput, List<String> additionalArguments)
             throws PublisherException {
         // Create temporary file
         File tempFile = null;

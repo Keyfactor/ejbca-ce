@@ -154,7 +154,7 @@ public class LdapPublisher extends BasePublisher {
 		setCRLAttribute(DEFAULT_CRLATTRIBUTE);
 		setDeltaCRLAttribute(DEFAULT_DELTACRLATTRIBUTE);
 		setARLAttribute(DEFAULT_ARLATTRIBUTE);     
-		setUseFieldInLdapDN(new ArrayList());
+		setUseFieldInLdapDN(new ArrayList<Integer>());
 		// By default use only one certificate for each user
 		setAddMultipleCertificates(false);
 		setRemoveRevokedCertificates(true);
@@ -295,11 +295,11 @@ public class LdapPublisher extends BasePublisher {
 
     		// PART 3: MODIFICATION AND ADDITION OF NEW USERS
     		// Try all the listed servers
-    		Iterator servers = getHostnameList().iterator();
+    		Iterator<String> servers = getHostnameList().iterator();
     		boolean connectionFailed;
     		do {
     			connectionFailed = false;
-    			String currentServer = (String) servers.next();
+    			String currentServer = servers.next();
     			try {
     				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
     				lc.connect(currentServer, Integer.parseInt(getPort()));
@@ -510,11 +510,11 @@ public class LdapPublisher extends BasePublisher {
 			newEntry = new LDAPEntry(dn, attributeSet);
 		}
 		// Try all the listed servers
-		Iterator servers = getHostnameList().iterator();
+		Iterator<String> servers = getHostnameList().iterator();
 		boolean connectionFailed;
 		do {
 			connectionFailed = false;
-			String currentServer = (String) servers.next();
+			String currentServer = servers.next();
 			try {
 				TCPTool.probeConnectionLDAP(currentServer, Integer.parseInt(getPort()), getConnectionTimeOut());	// Avoid waiting for halfdead-servers
 				// connect to the server
@@ -722,11 +722,11 @@ public class LdapPublisher extends BasePublisher {
 	protected LDAPEntry searchOldEntity(String username, int ldapVersion, LDAPConnection lc, String certDN, String userDN, String email) throws PublisherException {
 		LDAPEntry oldEntry = null; // return value
 		// Try all the listed servers
-		final Iterator servers = getHostnameList().iterator();
+		final Iterator<String> servers = getHostnameList().iterator();
 		boolean connectionFailed;
 		do {
 			connectionFailed = false;
-			final String currentServer = (String) servers.next();
+			final String currentServer = servers.next();
 			if (log.isDebugEnabled()) {
 				log.debug("Current server is: "+currentServer);
 			}
@@ -1128,7 +1128,8 @@ public class LdapPublisher extends BasePublisher {
 	 * 
 	 * @return Collection of (Integer) containing DNFieldExtractor constants.
 	 */
-	public Collection<Integer> getUseFieldInLdapDN(){
+	@SuppressWarnings("unchecked")
+    public Collection<Integer> getUseFieldInLdapDN(){
 		return (Collection<Integer>) data.get(USEFIELDINLDAPDN);
 	}
 
@@ -1142,7 +1143,7 @@ public class LdapPublisher extends BasePublisher {
 	 * 
 	 * @return Collection of (Integer) containing DNFieldExtractor constants.
 	 */
-	public void setUseFieldInLdapDN(Collection usefieldinldapdn){
+	public void setUseFieldInLdapDN(Collection<Integer> usefieldinldapdn){
 		data.put(USEFIELDINLDAPDN, usefieldinldapdn);
 	}    
 
@@ -1621,7 +1622,8 @@ public class LdapPublisher extends BasePublisher {
 	/** 
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#clone()
 	 */
-	public Object clone() throws CloneNotSupportedException {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+    public Object clone() throws CloneNotSupportedException {
 		LdapPublisher clone = new LdapPublisher();
 		HashMap clonedata = (HashMap) clone.saveData();
 

@@ -18,6 +18,7 @@ import java.security.cert.CertPath;
 import java.security.cert.CertPathValidator;
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.CertStore;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.PKIXParameters;
@@ -341,7 +342,7 @@ public class XKMSProvider implements Provider<Source> {
 							}
 
 							CAInfo cAInfo = caSession.getCAInfo(intAdmin, cAId);
-							Collection cACertChain = cAInfo.getCertificateChain();
+							Collection<Certificate> cACertChain = cAInfo.getCertificateChain();
 							// Check issuer and validity						
 							X509Certificate rootCert = null;
 							Iterator iter = cACertChain.iterator();
