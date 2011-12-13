@@ -155,7 +155,8 @@
 #healthcheck.dbquery=Select 1 From CertificateData where fingerprint='XX'
 
 # Parameter specifying IP addresses authorized to access the healthcheck
-# servlet. Use ';' for between multiple IPs. 
+# servlet. Use ';' for between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1. 
 # Default: 127.0.0.1 
 #healthcheck.authorizedips=127.0.0.1
 
