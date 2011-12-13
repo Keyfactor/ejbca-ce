@@ -30,7 +30,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 public abstract class StandardCertificateExtension extends CertificateExtension {
 	
 	/**
-	 * Method that initialises the CertificateExtension
+	 * Method that initializes the CertificateExtension
 	 * 
 	 * @param certProf certificateprofile that defines if this extension is used and critical
 	 */
