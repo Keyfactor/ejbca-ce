@@ -25,7 +25,9 @@ import java.util.Properties;
  */
 public class NoActionType extends ActionType {
 	
-	public static final String NAME = "NOACTION";
+	private static final long serialVersionUID = -5063026816886312970L;
+
+    public static final String NAME = "NOACTION";
 	
 	private transient Properties properties = new Properties();
 	
@@ -41,7 +43,7 @@ public class NoActionType extends ActionType {
 		return org.ejbca.core.model.services.actions.NoAction.class.getName();
 	}
 
-	public Properties getProperties(ArrayList errorMessages) throws IOException {		
+	public Properties getProperties(ArrayList<String> errorMessages) throws IOException {		
 		return properties;
 	}
 	

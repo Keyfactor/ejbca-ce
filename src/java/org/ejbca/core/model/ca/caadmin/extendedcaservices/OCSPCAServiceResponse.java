@@ -29,21 +29,22 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
  */
 public class OCSPCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
              
-    private List ocspcertificatechain = null;
+    private static final long serialVersionUID = 6902833915867802344L;
+    private List<X509Certificate> ocspcertificatechain = null;
     private BasicOCSPResp basicResp = null;
     
         
-    public OCSPCAServiceResponse(BasicOCSPResp basicResp, List ocspsigningcertificatechain) {
+    public OCSPCAServiceResponse(BasicOCSPResp basicResp, List<X509Certificate> ocspsigningcertificatechain) {
         this.basicResp = basicResp;
         this.ocspcertificatechain = ocspsigningcertificatechain;
     }    
            
     public X509Certificate getOCSPSigningCertificate() { return (X509Certificate) this.ocspcertificatechain.get(0); }
-	public Collection getOCSPSigningCertificateChain() { 
+	public Collection<X509Certificate> getOCSPSigningCertificateChain() { 
         if (ocspcertificatechain != null) {
             return this.ocspcertificatechain;
         }
-        return new ArrayList();
+        return new ArrayList<X509Certificate>();
     }
     public BasicOCSPResp getBasicOCSPResp() { return this.basicResp; }
         

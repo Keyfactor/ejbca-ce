@@ -74,7 +74,7 @@ public class ProtocolOcspHttpPerfTest {
     
     // For getting random serial numbers
     private static String sernofile = "/home/tomas/sernos.txt";
-	private static ArrayList sernos = new ArrayList();
+	private static ArrayList<BigInteger> sernos = new ArrayList<BigInteger>();
     private static Random random = new Random();
     private static int sernosize;
     

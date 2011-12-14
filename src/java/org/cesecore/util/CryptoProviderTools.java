@@ -92,6 +92,7 @@ public final class CryptoProviderTools {
         // Also remove the CVC provider
         Security.removeProvider("CVC");
     }
+    @SuppressWarnings("unchecked")
     public static synchronized void installBCProvider() {
     	
         // A flag that ensures that we install the parameters for implcitlyCA only when we have installed a new provider

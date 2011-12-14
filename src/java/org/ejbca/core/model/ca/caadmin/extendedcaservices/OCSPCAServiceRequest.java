@@ -15,6 +15,7 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
 import java.security.PrivateKey;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,7 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.config.OcspConfiguration;
+import org.ejbca.core.protocol.ocsp.OCSPResponseItem;
 
 /**
  * Class used when requesting OCSP related services from a CA.  
@@ -36,7 +38,7 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
     public static final Logger m_log = Logger.getLogger(OCSPCAServiceRequest.class);
 	
     private OCSPReq req = null;
-    private ArrayList responseList = null;
+    private ArrayList<OCSPResponseItem> responseList = null;
     private X509Extensions exts = null;
     private String sigAlg = "SHA1WithRSA";
     private boolean includeChain = true;
@@ -45,10 +47,10 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
     
     // Parameters that are used when we use the CAs private key to sign responses
     private PrivateKey privKey = null;
-    private List certificateChain = null;
+    private List<Certificate> certificateChain = null;
     
     /** Constructor for OCSPCAServiceRequest */                   
-    public OCSPCAServiceRequest(OCSPReq req, ArrayList responseList, X509Extensions exts, String sigAlg, boolean includeChain) {
+    public OCSPCAServiceRequest(OCSPReq req, ArrayList<OCSPResponseItem> responseList, X509Extensions exts, String sigAlg, boolean includeChain) {
         this.req = req;
         this.responseList = responseList;
         this.exts = exts;
@@ -61,7 +63,7 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
     public X509Extensions getExtensions() {
     	return exts;
     }
-    public ArrayList getResponseList() {
+    public ArrayList<OCSPResponseItem> getResponseList() {
     	return responseList;
     }
     public String getSigAlg() {
@@ -79,10 +81,10 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
      * 
      * @return List with certificates or null, if another chain should be used
      */
-	public List getCertificateChain() {
+	public List<Certificate> getCertificateChain() {
 		return certificateChain;
 	}
-	public void setCertificateChain(List certificatechain) {
+	public void setCertificateChain(List<Certificate> certificatechain) {
 		this.certificateChain = certificatechain;
 	}
     /** Used when the CA passes a private key (reference) for use when signing with the CAs signature key
