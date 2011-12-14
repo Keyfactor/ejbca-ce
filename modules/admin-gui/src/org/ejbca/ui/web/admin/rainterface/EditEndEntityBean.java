@@ -27,7 +27,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
  * 
  * Currently only used for extension data.
  *
- * @author Markus Kilas
  * @version $Id$
  */
 public class EditEndEntityBean {
@@ -48,7 +47,8 @@ public class EditEndEntityBean {
          * @param extensionData properties to parse and store.
          * @throws IOException 
          */
-	public void setExtensionData(String extensionData) {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+    public void setExtensionData(String extensionData) {
 		Properties properties = new Properties();
                 try {
                     properties.load(new StringReader(extensionData));
@@ -89,7 +89,8 @@ public class EditEndEntityBean {
 		if (extendedInformation == null) {
 			result = "";
 		} else {
-			Map data = (Map) extendedInformation.getData();
+			@SuppressWarnings("rawtypes")
+            Map data = (Map) extendedInformation.getData();
 			Properties properties = new Properties();
 			
 			for (Object o : data.keySet()) {
@@ -128,6 +129,7 @@ public class EditEndEntityBean {
     public Map<String, String> getExtensionDataAsMap() {
         final Map<String, String> result = new HashMap<String, String>();
         if (extendedInformation != null) {
+            @SuppressWarnings("rawtypes")
             Map data = (Map) extendedInformation.getData();
             for (Object o : data.keySet()) {
                 String key = (String) o;
