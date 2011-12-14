@@ -72,7 +72,7 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
 	 * @throws MalformedRequestException if the number of bytes read is less than length, i.e. asn.1 length tag was invalid
 	 */
 	private byte[] readTopASN1(int length) throws IOException, MalformedRequestException {
-        // This small code snippet is inspired/copied by apache IO utils to Tomas Gustavsson...
+        // This small code snippet is inspired/copied from apache IO utils by Tomas Gustavsson...
         byte[] buf = new byte[length]; // buf of length length, normal optimal case is only one read operation below
         int n = 0;
         int bytesRead = 0;
