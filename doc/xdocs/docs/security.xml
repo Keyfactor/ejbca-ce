@@ -49,20 +49,8 @@ Check out: <a href="http://community.jboss.org/wiki/SecureJBoss">SecureJBoss</a>
 <p>You should also make sure all sensitive files can only be read by the JBoss user. These files are for example the server.xml 
 file where the password for the SSL keystores are stored.
 </p>
-</section>
 
-<section name="Setting up SSL">
-<p>
-To set upp SSL communication for all HTTP traffic to the server 
-follow the instructions for installing EJBCA, this will set up HTTPS 
-for the admin-GUI automatically.
- </p><p>
-This will set up an SSL port open for the public at 8442 and an SSL port
-which require client certificate to access the Admin GUI at 8443.
-</p>
-</section>
-
-<section name="Configuring for security">
+<subsection name="Configuring for security">
 <p>
 The easiest way to keep the installation secure is to block all default JBOSS ports
  (1099, 1476, 4444, 8082, 8083) from the outside and only allow traffic to Tomcat ports (8442 and 8443).
@@ -78,6 +66,19 @@ See <a href="http://www.jboss.org/">JBoss documentation</a> for a list of ports 
  security in JBOSS/EJB and for how to set up SSL with JBOSS.
 See this <a href="http://www.javaworld.com/javaworld/jw-08-2001/jw-0831-jaas_p.html">JavaWorld article</a> for more
  examples about setting up role-permissions.
+</p>
+</subsection>
+
+</section>
+
+<section name="Setting up SSL">
+<p>
+To set upp SSL communication for all HTTP traffic to the server 
+follow the instructions for installing EJBCA, this will set up HTTPS 
+for the admin-GUI automatically.
+ </p><p>
+This will set up an SSL port open for the public at 8442 and an SSL port
+which require client certificate to access the Admin GUI at 8443.
 </p>
 </section>
 
@@ -179,6 +180,71 @@ text or possible encrypted (application server specific) passwords.
 </p>
 </subsection>
 </section>
+
+<section name="Database integrity protection">
+
+<p>Database integrity protection consists of one additional column in all protected tables, "rowProtection".</p>
+<p>
+Versions and keyid are used, embedded in the rowProtection line, to be flexible. 
+Versions allow tables to change because the entity class can create "version 2" of the protect string with new fields, but still verify "version 1" 
+rows without the additional field. ProtectData can change the algorithm used, etc. by updating the protection version to "2" etc. 
+Protection key can be changed because you define keyid of the crypto token and always verifies using a specific keyid, protecting using a specified (in config) keyid.
+</p>
+ 
+<subsection name="Configuration">
+<p>
+Database integrity protection should be configured before EJBCA is installed and used the first time, otherwise you will insert unprotected data in the database, 
+and when configured for database protection, using that data will fail.
+</p><p>
+Database protection is configured in the file:
+</p>
+<source>
+src/main/resources/databaseprotection.properties
+</source>
+</subsection>
+
+<subsection name="Limitations">
+<ul>
+<li>One limitation on the application using this protection scheme is that we can now not do bulk updates using a JPQ query with UPDATE where xyz. This is because the @Pre/Post events are not triggered for JPA beans when doing that. This is a limitation that can be severe in very large installations;</li>
+<li>We can not do direct database updates, this is of course the whole idea of the database protection, but it is also a limitation nonetheless;</li>
+<li>When using an HSM for the protection, only digital signature protection is currently available, not HMAC.</li>
+</ul>
+</subsection>
+
+<subsection name="Integrity protected security audit">
+<p>
+The IntegrityProtectedDevice security audit implementation stores the log entries to the database and relies on the Database Integrity Protection in 
+EJBCA for protecting the authenticity of the log events. Each log event is given an identifier consisting of a "nodeId" and a "sequenceNumber" that 
+is part of the integrity protected data. The nodeId is configurable and must be unique for each JVM in a cluster with shared database access. 
+The "sequenceNumber" is unique per nodeId and starts with 0. The sequenceNumber for a node (JVM) is read when the first log entry is written to this 
+device and then kept in memory for duration of the JVM's lifetime.
+</p><p>
+The security of this implementation relies on: 
+<ul>
+<li>Database integrity protection token.</li>
+<li>The sequence number in memory for each node (JVM).</li>
+</ul>
+</p><p>
+Using a sequence number will prevent that a single log entry is removed without detection being possible. Keeping the sequence number in the JVM will 
+prevent that all log entries up to a previous point in time is removed without detection being possible.
+</p>
+<p>
+This implementation can not detect: 
+<ul>
+<li>Removal of all the latest log entries for a node up to a previous point in time if the node's JVM is not running.</li>
+<li>Forged log entries if the database integrity protection token is compromised.</li>
+</ul>
+</p><p>
+The motivation for this design is that each node (JVM) does not have to wait for other nodes in a (shared database only) cluster. 
+Internally in each JVM the only locking between threads happens when the sequence number is atomically updated. This will allow horizontal scaling to a 
+very high degree without any JVM-to-JVM communication when the shared database supports row-locking.
+</p><p>
+When using this implementation the integrity of each fetched log entry is always validated when loaded from the database, but full validation with checks 
+for missing sequenceNumbers are not performed.
+</p>
+</subsection>
+</section>
+
 <section name="Datasource passwords">
 <p>
 If you do not like to have your DataSource password available in clear text in EjbcaDS.xml, 
