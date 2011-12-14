@@ -66,22 +66,35 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
 	}
 	/**
 	 * Read the 'value' of the top ASN1 object and append it to the already read 'tag' and 'value'
-	 * @param length nr of value bytes
+	 * @param length nr of value bytes that we should read
 	 * @return the top ASN1 object
 	 * @throws IOException
-	 * @throws MalformedRequestException
+	 * @throws MalformedRequestException if the number of bytes read is not the same as the number of bytes the asn.1 object should contain, i.e. asn.1 length tag was invalid
 	 */
 	private byte[] readTopASN1(int length) throws IOException, MalformedRequestException {
-		final byte value[] = new byte[length];
-		final int readLength = read(value);
-		if ( readLength != length ) {
-			final String msg = intres.getLocalizedMessage("request.notcorrectasn1length", Integer.valueOf(length), Integer.valueOf(readLength));
-			m_log.info(msg);
-			throw new MalformedRequestException(msg);
-		}
-		this.baos.write(value);
-		this.baos.flush();
-		return this.baos.toByteArray();
+        // This small code snippet is inspired/copied by apache IO utils to Tomas Gustavsson...
+        byte[] buf = new byte[1024];
+        int n = 0;
+        int bytesRead = 0;
+        // We must always read until it returns -1
+        while (-1 != (n = read(buf))) {
+            bytesRead += n;
+            if (bytesRead > length) {
+                // If we have read more bytes than we should have, the asn.1 was incorrect and this might be some type of attempt to perform buffer overflow
+                final String msg = intres.getLocalizedMessage("request.notcorrectasn1length", Integer.valueOf(length), Integer.valueOf(bytesRead));
+                m_log.info(msg);
+                throw new MalformedRequestException(msg);
+            }
+            this.baos.write(buf, 0, n);
+        }
+        if (bytesRead != length) {
+            // If we have read less bytes than we should have, the asn.1 was incorrect and this might be some type of attempt to perform buffer overflow
+            final String msg = intres.getLocalizedMessage("request.notcorrectasn1length", Integer.valueOf(length), Integer.valueOf(bytesRead));
+            m_log.info(msg);
+            throw new MalformedRequestException(msg);
+        }
+        this.baos.flush();
+        return this.baos.toByteArray();
 	}
 
 	/** Reads all bytes for the first ASN.1 object in the stream. Limits the size that is ever read to MAX_REQUEST_SIZE.
