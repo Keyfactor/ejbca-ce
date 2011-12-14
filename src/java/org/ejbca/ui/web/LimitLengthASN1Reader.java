@@ -28,7 +28,7 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * Example usage:
  * <pre>
  * final ServletInputStream in = request.getInputStream(); // ServletInputStream does not have to be closed, container handles this
- * ret = new LimitLengthServletPostReader(in, n).readFirstASN1Object();
+ * ret = new LimitLengthASN1Reader(in, n).readFirstASN1Object();
  * </pre>
  * 
  * @version $Id$
@@ -69,21 +69,19 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
 	 * @param length nr of value bytes that we should read
 	 * @return the top ASN1 object
 	 * @throws IOException
-	 * @throws MalformedRequestException if the number of bytes read is not the same as the number of bytes the asn.1 object should contain, i.e. asn.1 length tag was invalid
+	 * @throws MalformedRequestException if the number of bytes read is less than length, i.e. asn.1 length tag was invalid
 	 */
 	private byte[] readTopASN1(int length) throws IOException, MalformedRequestException {
         // This small code snippet is inspired/copied by apache IO utils to Tomas Gustavsson...
-        byte[] buf = new byte[1024];
+        byte[] buf = new byte[length]; // buf of length length, normal optimal case is only one read operation below
         int n = 0;
         int bytesRead = 0;
-        // We must always read until it returns -1
-        while (-1 != (n = read(buf))) {
+        // We must always read until it returns -1, make sure we read maximum bytesRead bytes
+        while (-1 != (n = read(buf, 0, length-bytesRead))) {
             bytesRead += n;
-            if (bytesRead > length) {
-                // If we have read more bytes than we should have, the asn.1 was incorrect and this might be some type of attempt to perform buffer overflow
-                final String msg = intres.getLocalizedMessage("request.notcorrectasn1length", Integer.valueOf(length), Integer.valueOf(bytesRead));
-                m_log.info(msg);
-                throw new MalformedRequestException(msg);
+            if (bytesRead >= length) {
+                // We read as much as we should, stop reading
+                break;
             }
             this.baos.write(buf, 0, n);
         }
