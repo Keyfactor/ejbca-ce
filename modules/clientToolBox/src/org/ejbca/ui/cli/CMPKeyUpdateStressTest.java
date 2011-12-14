@@ -98,8 +98,8 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
 /**
  * Used to stress test the CMP interface.
- * @author primelars
- * @version $Id: CMPTest.java 11982 2011-05-16 13:36:33Z primelars $
+ * @author aveen
+ * @version $Id$
  *
  */
 class CMPKeyUpdateStressTest extends ClientToolBox {
@@ -529,15 +529,7 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
             public String getJobTimeDescription() {
                 return "Get certificate";
             }
-            /*
-            private void addExtraCert(PKIMessage msg, Certificate cert) throws CertificateEncodingException, IOException{
-                ByteArrayInputStream    bIn = new ByteArrayInputStream(cert.getEncoded());
-                ASN1InputStream         dIn = new ASN1InputStream(bIn);
-                ASN1Sequence extraCertSeq = (ASN1Sequence)dIn.readObject();
-                X509CertificateStructure extraCert = new X509CertificateStructure(ASN1Sequence.getInstance(extraCertSeq));
-                msg.addExtraCert(extraCert);
-            }
-            */
+
         }        
         
         class SessionData {
@@ -551,36 +543,7 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
             SessionData() {
                 super();
             }
-            /*
-            Socket getSocket() throws UnknownHostException, IOException {
-                if ( StressTest.this.isHttp ) {
-                    return null;
-                }
-                if ( this.socket==null || this.socket.isClosed() || !this.socket.isBound() || !this.socket.isConnected() || this.socket.isInputShutdown() || this.socket.isOutputShutdown() ) {
-                    StressTest.this.performanceTest.getLog().info("New socket created for thread with '"+this.transid+"'.");
-                    this.socket = new Socket(StressTest.this.hostName, StressTest.this.port);
-                    this.socket.setKeepAlive(true);
-                }
-                return this.socket;
-            }
-            */
-            /*
-            private String getRandomAllDigitString( int length ) {
-                final String s = Integer.toString( StressTest.this.performanceTest.getRandom().nextInt() );
-                return s.substring(s.length()-length);
-            }
-            private String getFnrLra() {
-                return getRandomAllDigitString(6)+getRandomAllDigitString(5)+'-'+getRandomAllDigitString(5);
-            }
-            private int getRandomAndRepeated() {
-                // Initialize with some new value every time the test is started
-                // Return the same value once in a while so we have multiple requests for the same username
-                if ( this.lastNextInt==0 || howOftenToGenerateSameUsername==0 || StressTest.this.performanceTest.getRandom().nextInt()%howOftenToGenerateSameUsername!=0 ) {
-                    this.lastNextInt = StressTest.this.performanceTest.getRandom().nextInt();
-                }
-                return this.lastNextInt;
-            }
-            */
+
             void newSession() {
                 //this.userDN = "CN=CMP Test User Nr "+getRandomAndRepeated()+",serialNumber="+getFnrLra();
                 StressTest.this.performanceTest.getRandom().nextBytes(this.nonce);
