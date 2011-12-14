@@ -4647,6 +4647,7 @@ You can find information about configuring log4j on JBoss in the EJBCA <a href="
 <p>
 The integrity protected log device stores audit record in the AuditRecordData table in the database. 
 The record can be protected using either HMAC or digital signatures. See conf/cesecore.properties for configuration options.
+See <a href="security.html#Database%20integrity%20protection">Database integrity protection</a> for more information.
 </p>
 </subsection>
 <subsection name="OldLogDevice">
