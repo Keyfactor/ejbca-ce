@@ -680,7 +680,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         // The first byte indicate that this is a sequence. Necessary to past
         // the first test as an accepted OCSP object.
         data[0] = (byte) DERTags.SEQUENCE;
-        // The second byte indicates the number of the following bytes are more
+        // The second byte indicates the number if the following bytes are more
         // than can be represented by one byte and will be represented by 3
         // bytes instead.
         data[1] = (byte) 0x83;
@@ -704,13 +704,14 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         // Send data byte for byte.
         OutputStream os = socket.getOutputStream();
         try {
-            for (i = 0; i < input.length; i++) {
-                os.write(input[i]);
-            }
+            os.write(input);
+//            for (i = 0; i < input.length; i++) {
+//                os.write(input[i]);
+//            }
         } catch (IOException e) {
             log.info("Socket wrote " + i + " bytes before throwing an IOException.", e);
-            // Windows/Glassfish throws an IOException when trying to write more bytes to
-            // the server than it should. JBoss/Linux does not.
+            // Windows throws an IOException when trying to write more bytes to
+            // the server than it should. JBoss on Linux does not.
             assertTrue("Tried to write more than it should to the server (>1000), "+i, i > 1000);
             return;
         }
@@ -778,9 +779,10 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         // Send data byte for byte.
         OutputStream os = socket.getOutputStream();
         try {
-            for (i = 0; i < input.length; i++) {
-                os.write(input[i]);
-            }
+            os.write(input);
+//          for (i = 0; i < input.length; i++) {
+//              os.write(input[i]);
+//          }
         } catch (IOException e) {
             log.info("Socket wrote " + i + " bytes before throwing an IOException.", e);
         }
