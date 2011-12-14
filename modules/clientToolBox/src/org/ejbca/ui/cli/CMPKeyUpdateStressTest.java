@@ -210,6 +210,7 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
                                new GeneralName(new X509Name(this.cacert.getSubjectDN().getName())) );
             myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
             myPKIHeader.setSenderNonce(new DEROctetString(sessionData.getNonce()));
+            myPKIHeader.setSenderKID(new DEROctetString(sessionData.getNonce()));
             myPKIHeader.setTransactionID(new DEROctetString(sessionData.getTransId()));
 
             final PKIBody myPKIBody = new PKIBody(myCertReqMessages, 7); // key update request
