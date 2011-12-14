@@ -27,6 +27,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.jndi.JndiHelper;
@@ -65,6 +66,7 @@ public class DnFieldsTest extends CommonEjbcaWS {
     private static final Logger log = Logger.getLogger(DnFieldsTest.class);
     
     private static final String PROFILE_NAME = "TW";
+    private static final String TEST_USERNAME = "tester";
     
     private CertificateProfileSessionRemote certificateProfileSession = JndiHelper.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = JndiHelper.getRemoteSession(EndEntityProfileSessionRemote.class);
@@ -105,6 +107,11 @@ public class DnFieldsTest extends CommonEjbcaWS {
         super.tearDown();
         super.cleanUpAdmins(wsadminRoleName);
         
+        if (userAdminSession.existsUser(TEST_USERNAME)) {
+            // Remove user
+            userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        }
+
         if (endEntityProfileSession.getEndEntityProfile(internalAdmin, PROFILE_NAME) != null) {
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, PROFILE_NAME);
         }
@@ -128,7 +135,7 @@ public class DnFieldsTest extends CommonEjbcaWS {
         String p10 = new String(Base64.encode(new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys
                 .getPublic(), new DERSet(), keys.getPrivate()).getEncoded()));
         UserDataVOWS user = new UserDataVOWS();
-        user.setUsername("tester");
+        user.setUsername(TEST_USERNAME);
         user.setPassword("foo123");
         user.setClearPwd(false);
         user.setSubjectDN("E=boss@fire.com,CN=Tester,C=SE");
