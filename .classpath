@@ -76,6 +76,7 @@
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-core.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/dom4j-1.6.1.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations.jar"/>
+    <classpathentry kind="lib" path="lib/hibernate/hibernate-annotations.jar"/>
 	<classpathentry kind="lib" path="lib/ext/junit-4.8.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/easymock/easymock-3.0.jar"/>
@@ -85,7 +86,6 @@
 	<classpathentry kind="var" path="JBOSS5_HOME/client/jbossall-client.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/client/activation.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-system.jar"/>
-	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-logging-log4j.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-system-jmx.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-j2se.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/lib/jboss-kernel.jar"/>
@@ -94,6 +94,7 @@
 	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-api.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jsf-libs/jsf-impl.jar"/>
 	<classpathentry kind="var" path="JBOSS5_HOME/server/default/deploy/jbossweb.sar/jstl.jar"/>
+	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-logging-log4j.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="conf"/>
 	<classpathentry kind="lib" path="lib/xmlsign/serializer-2.7.1.jar"/>
