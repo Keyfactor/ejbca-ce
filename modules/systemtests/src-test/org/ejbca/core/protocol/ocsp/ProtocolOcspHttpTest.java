@@ -47,6 +47,7 @@ import javax.ejb.ObjectNotFoundException;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTags;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -270,7 +271,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
         log.debug("ocspTestCert.getSerialNumber() = " + ocspTestCert.getSerialNumber());
-        Hashtable exts = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -356,7 +357,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             // And an OCSP request
             OCSPReqGenerator gen = new OCSPReqGenerator();
             gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-            Hashtable exts = new Hashtable();
+            Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
             X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
             exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
             gen.setRequestExtensions(new X509Extensions(exts));
@@ -447,7 +448,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             // And an OCSP request
             OCSPReqGenerator gen = new OCSPReqGenerator();
             gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ecdsacacert, ocspTestCert.getSerialNumber()));
-            Hashtable exts = new Hashtable();
+            Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
             X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
             exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
             gen.setRequestExtensions(new X509Extensions(exts));
@@ -488,7 +489,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             // And an OCSP request
             OCSPReqGenerator gen = new OCSPReqGenerator();
             gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ecdsacacert, ocspTestCert.getSerialNumber()));
-            Hashtable exts = new Hashtable();
+            Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
             X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
             exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
             gen.setRequestExtensions(new X509Extensions(exts));
@@ -599,7 +600,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ecdsacacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -632,7 +633,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
 
-        Hashtable exts = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -914,7 +915,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -1046,7 +1047,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     0, // DeltaCRLPeriod
-                    new ArrayList(), true, // Authority Key Identifier
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
                     false, // CRL Number Critical
@@ -1057,7 +1058,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
-                    new ArrayList(), // Approvals Settings
+                    new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default
@@ -1095,7 +1096,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             }
 
             ret = true;
-            Collection coll = info.getCertificateChain();
+            Collection<?> coll = info.getCertificateChain();
             Object[] certs = coll.toArray();
             cacert = (X509Certificate) certs[0];
         } catch (CAExistsException pee) {
@@ -1149,7 +1150,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     0, // DeltaCRLPeriod
-                    new ArrayList(), true, // Authority Key Identifier
+                    new ArrayList<Integer>(), true, // Authority Key Identifier
                     false, // Authority Key Identifier Critical
                     true, // CRL Number
                     false, // CRL Number Critical
@@ -1160,7 +1161,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
                     null, // defaultfreshestcrl
                     true, // Finish User
                     extendedcaservices, false, // use default utf8 settings
-                    new ArrayList(), // Approvals Settings
+                    new ArrayList<Integer>(), // Approvals Settings
                     1, // Number of Req approvals
                     false, // Use UTF8 subject DN by default
                     true, // Use LDAP DN order by default

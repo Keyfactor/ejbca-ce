@@ -49,7 +49,7 @@ public class RenewCAWorkerType extends BaseEmailNotifyingWorkerType {
 	/** Overrides
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
 	 */
-	public Properties getProperties(ArrayList errorMessages) throws IOException {
+	public Properties getProperties(ArrayList<String> errorMessages) throws IOException {
 		Properties ret = super.getProperties(errorMessages);
 		if(renewkeys){
 			ret.setProperty(RenewCAWorker.PROP_RENEWKEYS, "TRUE");

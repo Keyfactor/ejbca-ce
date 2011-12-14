@@ -81,8 +81,8 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
      *    	         :           }
      *    	         :         }
      */
-    private ArrayList getMSRequestInfo() {
-        ArrayList ret = new ArrayList(); 
+    private ArrayList<String> getMSRequestInfo() {
+        ArrayList<String> ret = new ArrayList<String>(); 
         if (pkcs10 == null) {
         	log.error("PKCS10 not inited!");
         	return ret;
@@ -100,7 +100,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
             	return ret;
             }
             DERSequence seq = (DERSequence) DERSequence.getInstance(values.getObjectAt(0));
-            Enumeration enumeration = seq.getObjects();
+            Enumeration<?> enumeration = seq.getObjects();
             while (enumeration.hasMoreElements()) {
             	Object current = enumeration.nextElement();
             	if (current instanceof DERPrintableString) {
@@ -113,7 +113,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
             		ret.add("Unsupported type: " + current.getClass().getName());
             	}
             }
-            Iterator iter = ret.iterator();
+            Iterator<String> iter = ret.iterator();
             while (iter.hasNext()) {
             	log.info("TEMP-DEBUG-: " + iter.next());
             }
@@ -127,7 +127,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
      * This is probably the machine from where the reqeust was made.
      */
     public String getMSRequestInfoDNS() {
-    	ArrayList ri = getMSRequestInfo();
+    	ArrayList<String> ri = getMSRequestInfo();
     	if (ri.size() != 0) {
     		return (String) ri.get(1);
     	} else {
@@ -157,7 +157,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
         }
         ASN1Set set = attr.getAttrValues();
         DERSequence seq = (DERSequence) DERSequence.getInstance(set.getObjectAt(0));
-        Enumeration enumeration = seq.getObjects();
+        Enumeration<?> enumeration = seq.getObjects();
         while (enumeration.hasMoreElements()) {
         	DERSequence seq2 = (DERSequence) DERSequence.getInstance(enumeration.nextElement());
         	DERObjectIdentifier oid = (DERObjectIdentifier) seq2.getObjectAt(0);
@@ -196,7 +196,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
         if (attr != null) {
             ASN1Set set = attr.getAttrValues();
             DERSequence seq = (DERSequence) DERSequence.getInstance(set.getObjectAt(0));
-            Enumeration enumeration = seq.getObjects();
+            Enumeration<?> enumeration = seq.getObjects();
             while (enumeration.hasMoreElements()) {
             	DERSequence seq2 = (DERSequence) DERSequence.getInstance(enumeration.nextElement());
             	DERObjectIdentifier oid = (DERObjectIdentifier) seq2.getObjectAt(0);
@@ -206,7 +206,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
             			ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(dos.getOctets()));
             			while (ais.available()>0) {
                 			DERSequence seq3 = (DERSequence) ais.readObject();
-                			Enumeration enum1 = seq3.getObjects();
+                			Enumeration<?> enum1 = seq3.getObjects();
                 			while (enum1.hasMoreElements()) {
                 				DERTaggedObject dto = (DERTaggedObject) enum1.nextElement();
                 				if (dto.getTagNo() == 0) {

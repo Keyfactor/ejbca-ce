@@ -70,7 +70,7 @@ public class MailActionType extends ActionType {
 	/**
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
 	 */
-	public Properties getProperties(ArrayList errorMessages) throws IOException {		
+	public Properties getProperties(ArrayList<String> errorMessages) throws IOException {		
 		Properties properties = new Properties();
 		if(senderAddress == null || senderAddress.trim().equals("")){
 			errorMessages.add("MAILACTIONSENDERADDRESSERR");

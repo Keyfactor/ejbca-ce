@@ -28,11 +28,12 @@ import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
  * @version $Id$
  */
 public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
-	private static final long serialVersionUID = 1L;
 	
-	public static final String NAME = "PUBLISHQUEUEWORKER";
+	private static final long serialVersionUID = -5012349995138960737L;
 
-	private List selectedPublisherIdsToCheck = new ArrayList();
+    public static final String NAME = "PUBLISHQUEUEWORKER";
+
+	private List<String> selectedPublisherIdsToCheck = new ArrayList<String>();
 
 	public PublishQueueWorkerType(){
 		super(NAME, "publishqueueprocessworker.jsp", PublishQueueProcessWorker.class.getName());
@@ -45,13 +46,13 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 	/** Overrides
 	 * @see org.ejbca.ui.web.admin.services.servicetypes.ServiceType#getProperties()
 	 */
-	public Properties getProperties(ArrayList errorMessages) throws IOException {
+	public Properties getProperties(ArrayList<String> errorMessages) throws IOException {
 		Properties ret = super.getProperties(errorMessages);
 		
-		Iterator iter = selectedPublisherIdsToCheck.iterator();		
+		Iterator<String> iter = selectedPublisherIdsToCheck.iterator();		
 		String publisherIdString = "";
 		while(iter.hasNext()){
-			String pubid = (String) iter.next();
+			String pubid = iter.next();
 			if(!pubid.trim().equals("")){
 			  if(publisherIdString.equals("")){
 				  publisherIdString = pubid;
@@ -70,17 +71,17 @@ public class PublishQueueWorkerType extends BaseEmailNotifyingWorkerType {
 	public void setProperties(Properties properties) throws IOException {
 		super.setProperties(properties);
 
-		selectedPublisherIdsToCheck = new ArrayList();
+		selectedPublisherIdsToCheck = new ArrayList<String>();
 		String[] publisherIdsToCheck = properties.getProperty(PublishQueueProcessWorker.PROP_PUBLISHER_IDS,"").split(";");
 		for(int i=0;i<publisherIdsToCheck.length;i++){
 			selectedPublisherIdsToCheck.add(publisherIdsToCheck[i]);
 		}
 	}
 
-	public List getSelectedPublisherIdsToCheck() {
+	public List<String> getSelectedPublisherIdsToCheck() {
 		return selectedPublisherIdsToCheck;
 	}
-	public void setSelectedPublisherIdsToCheck(List selectedPublisherIdsToCheck) {
+	public void setSelectedPublisherIdsToCheck(List<String> selectedPublisherIdsToCheck) {
 		this.selectedPublisherIdsToCheck = selectedPublisherIdsToCheck;
 	}
 

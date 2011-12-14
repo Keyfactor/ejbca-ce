@@ -62,13 +62,13 @@ public class ServiceTypeManager implements java.io.Serializable {
 	private static Logger log = Logger.getLogger(ServiceTypeManager.class);
 	
 	// static variables common for the application
-	private static HashMap availableTypesByName = new HashMap();
-	private static HashMap availableTypesByClassPath = new HashMap();
-	private static ArrayList workerTypes = new ArrayList();
+	private static HashMap<String, ServiceType> availableTypesByName = new HashMap<String, ServiceType>();
+	private static HashMap<String, ServiceType> availableTypesByClassPath = new HashMap<String, ServiceType>();
+	private static ArrayList<ServiceType> workerTypes = new ArrayList<ServiceType>();
 	
 
-	private HashMap localAvailableTypesByName;
-	private HashMap localAvailableTypesByClassPath;
+	private HashMap<?, ?> localAvailableTypesByName;
+	private HashMap<?, ?> localAvailableTypesByClassPath;
 	private ArrayList<ServiceType> localWorkerTypes;
 	
 	static{
@@ -85,7 +85,8 @@ public class ServiceTypeManager implements java.io.Serializable {
 		ServiceTypeManager.registerServiceType(new PublishQueueWorkerType());
 	}
 
-	public  ServiceTypeManager(){
+	@SuppressWarnings("unchecked")
+    public  ServiceTypeManager(){
 		// Create a deep clone of the static global data.
 		try{
 		  ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -95,9 +96,9 @@ public class ServiceTypeManager implements java.io.Serializable {
 		  oos.writeObject(workerTypes);
 		  ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 		  ObjectInputStream ois = new ObjectInputStream(bais);
-		  localAvailableTypesByName = (HashMap) ois.readObject();
-		  localAvailableTypesByClassPath = (HashMap) ois.readObject();
-		  localWorkerTypes = (ArrayList) ois.readObject();
+		  localAvailableTypesByName = (HashMap<?, ?>) ois.readObject();
+		  localAvailableTypesByClassPath = (HashMap<?, ?>) ois.readObject();
+		  localWorkerTypes = (ArrayList<ServiceType>) ois.readObject();
 		}catch(IOException e){
 			log.error(e);
 		} catch (ClassNotFoundException e) {

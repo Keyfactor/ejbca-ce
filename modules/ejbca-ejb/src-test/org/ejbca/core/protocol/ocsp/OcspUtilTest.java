@@ -27,6 +27,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
+import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
@@ -84,14 +85,14 @@ public class OcspUtilTest {
 		// An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, racert.getSerialNumber()));
-        Hashtable exts = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
         OCSPReq req = gen.generate();
 
         // A response to create
-		ArrayList responseList = new ArrayList();
+		ArrayList<OCSPResponseItem> responseList = new ArrayList<OCSPResponseItem>();
 		CertificateID certId = req.getRequestList()[0].getCertID();
 		responseList.add(new OCSPResponseItem(certId, new UnknownStatus(), 0));
 

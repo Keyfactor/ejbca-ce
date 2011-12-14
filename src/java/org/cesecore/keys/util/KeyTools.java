@@ -945,6 +945,7 @@ public final class KeyTools {
      * @throws IOException
      *             if neither the IAIK or the SUN provider can be created
      */
+    @SuppressWarnings("unchecked")
     private static Provider getP11Provider(final InputStream is, final Properties prop) throws IOException {
 
         // We will construct the PKCS11 provider (sun.security..., or iaik...) using reflection, because

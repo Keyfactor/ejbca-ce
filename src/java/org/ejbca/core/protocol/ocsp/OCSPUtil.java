@@ -93,10 +93,11 @@ public class OCSPUtil {
                 ASN1OctetString oct = ext.getValue();
                 try {
                     ASN1Sequence seq = ASN1Sequence.getInstance(new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
-                    Enumeration en = seq.getObjects();
+                    @SuppressWarnings("unchecked")
+                    Enumeration<DERObjectIdentifier> en = seq.getObjects();
                     boolean supportsResponseType = false;
                     while (en.hasMoreElements()) {
-                        DERObjectIdentifier oid = (DERObjectIdentifier) en.nextElement();
+                        DERObjectIdentifier oid = en.nextElement();
                         //m_log.debug("Found oid: "+oid.getId());
                         if (oid.equals(OCSPObjectIdentifiers.id_pkix_ocsp_basic)) {
                             // This is the response type we support, so we are happy! Break the loop.
@@ -120,9 +121,9 @@ public class OCSPUtil {
     	BasicOCSPResp returnval = null;
     	BasicOCSPRespGenerator basicRes = null;
     	basicRes = OCSPUtil.createOCSPResponse(serviceReq.getOCSPrequest(), signerCert, respIdType);
-    	ArrayList responses = serviceReq.getResponseList();
+    	ArrayList<OCSPResponseItem> responses = serviceReq.getResponseList();
     	if (responses != null) {
-    		Iterator iter = responses.iterator();
+    		Iterator<OCSPResponseItem> iter = responses.iterator();
     		while (iter.hasNext()) {
         		OCSPResponseItem item = (OCSPResponseItem)iter.next();
             	basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), item.getNextUpdate(), null);    			
@@ -370,9 +371,9 @@ public class OCSPUtil {
      * @param req OCSPReq
      * @return a Hashtable, can be empty nut not null
      */
-    public static Hashtable getStandardResponseExtensions(OCSPReq req) {
+    public static Hashtable<DERObjectIdentifier, X509Extension> getStandardResponseExtensions(OCSPReq req) {
         X509Extensions reqexts = req.getRequestExtensions();
-        Hashtable table = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> table = new Hashtable<DERObjectIdentifier, X509Extension>();
         if (reqexts != null) {
         	// Table of extensions to include in the response
             X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
@@ -384,11 +385,11 @@ public class OCSPUtil {
     	return table;
     }
     
-    public static Hashtable getCertificatesFromDirectory(String certificateDir) throws IOException {
+    public static Hashtable<String, X509Certificate> getCertificatesFromDirectory(String certificateDir) throws IOException {
     	// read all files from trustDir, expect that they are PEM formatted certificates
     	CryptoProviderTools.installBCProviderIfNotAvailable();
     	File dir = new File(certificateDir);
-    	Hashtable trustedCerts  = new Hashtable();
+    	Hashtable<String, X509Certificate> trustedCerts  = new Hashtable<String, X509Certificate>();
     	if (dir == null || dir.isDirectory() == false) {
     		m_log.error(dir.getCanonicalPath()+ " is not a directory.");
     		throw new IllegalArgumentException(dir.getCanonicalPath()+ " is not a directory.");                
