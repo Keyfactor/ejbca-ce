@@ -98,9 +98,6 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
 /**
  * Used to stress test the CMP interface.
- * @author aveen
- * @version $Id$
- *
  */
 class CMPKeyUpdateStressTest extends ClientToolBox {
     /** Internal localization of logs and errors */
