@@ -114,7 +114,6 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
         final private X509Certificate cacert;
         final private CertificateFactory certificateFactory;
         final private Provider bcProvider = new BouncyCastleProvider();
-        final private String keyId;
         final private String hostName;
         final private int port;
         final private boolean isHttp;
@@ -130,7 +129,6 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
                     final InputStream certInputStream,
                     final int numberOfThreads,
                     final int waitTime,
-                    final String _keyId,
                     final String _urlPath,
                     final String _resultCertFilePrefix,
                     final PrivateKey _oldKey,
@@ -139,7 +137,6 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
             this.hostName = _hostName;
             this.certificateFactory = CertificateFactory.getInstance("X.509", this.bcProvider);
             this.cacert = (X509Certificate)this.certificateFactory.generateCertificate(certInputStream);
-            this.keyId = _keyId;
             this.port = _port;
             this.isHttp = _isHttp;
             this.urlPath = _urlPath;
@@ -633,7 +630,7 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
         final String urlPath;
         final String resultFilePrefix;
         if ( args.length < 6 ) {
-            System.out.println(args[0]+" <host name> <CA certificate file name> <keystore (p12)> <keystore password> <friendlyname in keystore> [<number of threads>] [<wait time (ms) between each thread is started>] [<KeyId to be sent to server>] [<port>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
+            System.out.println(args[0]+" <host name> <CA certificate file name> <keystore (p12)> <keystore password> <friendlyname in keystore> [<number of threads>] [<wait time (ms) between each thread is started>] [<port>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
             System.out.println("EJBCA build configutation requirements: cmp.operationmode=normal, cmp.allowraverifypopo=true, cmp.allowautomatickeyupdate=true, cmp.allowupdatewithsamekey=true");
 //            System.out.println("EJBCA build configuration optional: cmp.ra.certificateprofile=KeyId cmp.ra.endentityprofile=KeyId (used when the KeyId argument should be used as profile name).");
             System.out.println("Ejbca expects the following: There exists an end entity with a generated certificate. The end entity's certificate and its private key are stored in the keystore used " +
@@ -649,11 +646,10 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
         certNameInKeystore = args[5];
         numberOfThreads = args.length>6 ? Integer.parseInt(args[6].trim()):1;
         waitTime = args.length>7 ? Integer.parseInt(args[7].trim()):0;
-        keyId = args.length>8 ? args[8].trim():"EMPTY";
-        port = args.length>9 ? Integer.parseInt(args[9].trim()):8080;
+        port = args.length>8 ? Integer.parseInt(args[8].trim()):8080;
 //        isHttp = true;
-        urlPath = args.length>10 && args[10].toLowerCase().indexOf("null")<0 ? args[10].trim():null;
-        resultFilePrefix = args.length>11 ? args[11].trim() : null;
+        urlPath = args.length>9 && args[9].toLowerCase().indexOf("null")<0 ? args[9].trim():null;
+        resultFilePrefix = args.length>10 ? args[10].trim() : null;
 
         CryptoProviderTools.installBCProviderIfNotAvailable();
         
@@ -706,7 +702,7 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
                 return;
             }
 //            Security.addProvider(new BouncyCastleProvider());
-            new StressTest(hostName, port, true, new FileInputStream(certFile), numberOfThreads, waitTime, keyId, urlPath, resultFilePrefix, oldCertKey, extracert);
+            new StressTest(hostName, port, true, new FileInputStream(certFile), numberOfThreads, waitTime, urlPath, resultFilePrefix, oldCertKey, extracert);
         } catch (Exception e) {
             e.printStackTrace();
         }
