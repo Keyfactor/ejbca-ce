@@ -78,7 +78,6 @@ public class CmpServlet extends HttpServlet {
          POST
          <binary CMP message>
          */
-        byte[] ba = new byte[Math.min(LimitLengthASN1Reader.MAX_REQUEST_SIZE, request.getContentLength())];
         try {
             final ServletInputStream sin = request.getInputStream();
             // This small code snippet is inspired/copied by apache IO utils to Tomas Gustavsson...
