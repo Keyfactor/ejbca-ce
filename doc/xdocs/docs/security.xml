@@ -199,7 +199,7 @@ and when configured for database protection, using that data will fail.
 Database protection is configured in the file:
 </p>
 <source>
-src/main/resources/databaseprotection.properties
+conf/databaseprotection.properties
 </source>
 </subsection>
 
