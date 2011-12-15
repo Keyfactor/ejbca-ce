@@ -53,6 +53,7 @@ import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignatureException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
@@ -484,27 +485,27 @@ public class KRSSResponseGenerator extends
 		boolean retval = false;
 		
 		try {
-			CAInfo cAInfo = casession.getCAInfo(pubAdmin, CertTools.getIssuerDN(cert).hashCode());
-			if(cAInfo != null){		
-				Collection<Certificate> caCertChain = cAInfo.getCertificateChain();
-				Iterator<Certificate> iter = caCertChain.iterator();
-				
-				boolean revoked = false;				
-				if (certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), cert.getSerialNumber())) {
-					revoked = true;
-				}
-				
-				while(iter.hasNext()){
-					X509Certificate cACert = (X509Certificate) iter.next();
-					if (certificateStoreSession.isRevoked(CertTools.getIssuerDN(cACert), cACert.getSerialNumber())) {
-						revoked = true;
-					}
-				}
-				
-				if(!revoked){
-				  retval = verifyCert(caCertChain, null, cert);
-				}
-			}
+		    CAInfo cAInfo = casession.getCAInfo(pubAdmin, CertTools.getIssuerDN(cert).hashCode());
+		    Collection<Certificate> caCertChain = cAInfo.getCertificateChain();
+		    Iterator<Certificate> iter = caCertChain.iterator();
+
+		    boolean revoked = false;				
+		    if (certificateStoreSession.isRevoked(CertTools.getIssuerDN(cert), cert.getSerialNumber())) {
+		        revoked = true;
+		    }
+
+		    while(iter.hasNext()){
+		        X509Certificate cACert = (X509Certificate) iter.next();
+		        if (certificateStoreSession.isRevoked(CertTools.getIssuerDN(cACert), cACert.getSerialNumber())) {
+		            revoked = true;
+		        }
+		    }
+
+		    if(!revoked){
+		        retval = verifyCert(caCertChain, null, cert);
+		    }
+		} catch (CADoesntExistsException e) {
+            log.info("CA with id "+CertTools.getIssuerDN(cert).hashCode()+" does not exist");
 		} catch (Exception e) {
 			log.error("Exception during certificate validation: ", e);
 		}

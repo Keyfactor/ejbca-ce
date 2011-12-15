@@ -17,6 +17,7 @@ import java.io.FileInputStream;
 import java.util.List;
 import java.util.Properties;
 
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.ui.cli.BaseCommand;
@@ -72,7 +73,9 @@ public class ImportDataCommand extends BaseCommand {
         	}
         	String significantIssuerDN = props.getProperty("significantissuerdn");
         	int cAId = significantIssuerDN.hashCode();
-        	if(ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), cAId) == null){
+        	try {
+        	    ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), cAId);
+        	}catch (CADoesntExistsException e) {
         		throw new IllegalAdminCommandException("Error, the property significantissuerdn '" + significantIssuerDN +  "' does not exist as CA in the system.");
         	}
         	// Create the importer

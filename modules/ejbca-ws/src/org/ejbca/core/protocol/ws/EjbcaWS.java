@@ -707,52 +707,52 @@ public class EjbcaWS implements IEjbcaWS {
 						// Subject and issuerDN is CN=Mnemonic,C=Country
 						String dn = "CN="+caRef.getMnemonic()+",C="+caRef.getCountry();
 						log.debug("Authenticated request is not self signed, we will try to verify it using a CVCA certificate: "+dn);
-						CAInfo info = caSession.getCAInfo(admin, CertTools.stringToBCDNString(dn).hashCode());
-						if (info != null) {
-							Collection<java.security.cert.Certificate> certs = info.getCertificateChain();
-							if (certs != null) {
-								log.debug("Found "+certs.size()+" certificates in chain for CA with DN: "+dn);							
-								Iterator<java.security.cert.Certificate> iterator = certs.iterator();
-								if (iterator.hasNext()) {
-									// The CA certificate is first in chain
-									java.security.cert.Certificate cert = iterator.next();
-									if (log.isDebugEnabled()) {
-										log.debug("Trying to verify the outer signature with a CVCA certificate, fp: "+CertTools.getFingerprintAsString(cert));										
-									}
-									try {
-										// The CVCA certificate always contains the full key parameters, no need to du any EC curve parameter magic here
-										authreq.verify(cert.getPublicKey());
-										log.debug("Verified outer signature");
-										verifiedOuter = true; 
-										// Yes we did it, we can move on to the next step because the outer signature was actually created with some old certificate
-										if (!ejbhelper.checkValidityAndSetUserPassword(admin, cert, username, password)) {
-											// If the CA certificate was not valid, we are not happy									
-											String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), "CA certificate not valid for CA: "+info.getCAId());            	
-											log.info(msg);
-											throw new AuthorizationDeniedException(msg);
-										}							
-									} catch (InvalidKeyException e) {
-										String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
-										log.warn(msg, e);
-									} catch (CertificateException e) {
-										String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
-										log.warn(msg, e);
-									} catch (NoSuchAlgorithmException e) {
-										String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
-										log.warn(msg, e);
-									} catch (NoSuchProviderException e) {
-										String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
-										log.warn(msg, e);
-									} catch (SignatureException e) {
-										String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
-										log.warn(msg, e);
-									}							
-								}								
-							} else {
-								log.info("No CA certificate found to authenticate request: "+dn);
-							}
-						} else {
-							log.info("No CA found to authenticate request: "+dn);
+						try {
+						    CAInfo info = caSession.getCAInfo(admin, CertTools.stringToBCDNString(dn).hashCode());
+						    Collection<java.security.cert.Certificate> certs = info.getCertificateChain();
+						    if (certs != null) {
+						        log.debug("Found "+certs.size()+" certificates in chain for CA with DN: "+dn);							
+						        Iterator<java.security.cert.Certificate> iterator = certs.iterator();
+						        if (iterator.hasNext()) {
+						            // The CA certificate is first in chain
+						            java.security.cert.Certificate cert = iterator.next();
+						            if (log.isDebugEnabled()) {
+						                log.debug("Trying to verify the outer signature with a CVCA certificate, fp: "+CertTools.getFingerprintAsString(cert));										
+						            }
+						            try {
+						                // The CVCA certificate always contains the full key parameters, no need to du any EC curve parameter magic here
+						                authreq.verify(cert.getPublicKey());
+						                log.debug("Verified outer signature");
+						                verifiedOuter = true; 
+						                // Yes we did it, we can move on to the next step because the outer signature was actually created with some old certificate
+						                if (!ejbhelper.checkValidityAndSetUserPassword(admin, cert, username, password)) {
+						                    // If the CA certificate was not valid, we are not happy									
+						                    String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), "CA certificate not valid for CA: "+info.getCAId());            	
+						                    log.info(msg);
+						                    throw new AuthorizationDeniedException(msg);
+						                }							
+						            } catch (InvalidKeyException e) {
+						                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+						                log.warn(msg, e);
+						            } catch (CertificateException e) {
+						                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+						                log.warn(msg, e);
+						            } catch (NoSuchAlgorithmException e) {
+						                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+						                log.warn(msg, e);
+						            } catch (NoSuchProviderException e) {
+						                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+						                log.warn(msg, e);
+						            } catch (SignatureException e) {
+						                String msg = intres.getLocalizedMessage("cvc.error.outersignature", holderRef.getConcatenated(), e.getMessage());            	
+						                log.warn(msg, e);
+						            }							
+						        }								
+						    } else {
+						        log.info("No CA certificate found to authenticate request: "+dn);
+						    }
+						}catch (CADoesntExistsException e) {
+						    log.info("No CA found to authenticate request: "+dn);
 						}
 					}
 					// if verification failed because we could not verify the outer signature at all it is an error
