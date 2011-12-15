@@ -41,6 +41,10 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 #securityeventsaudit.deviceproperty.1.export.fetchsize=1000
 #securityeventsaudit.deviceproperty.1.validate.fetchsize=1000
 
+# Nodeid used for integrity protected audit log. If not set the hostname of local host is used.
+# Default: not set
+#cluster.nodeid=
+
 # When upgrading a 100% up-time cluster, all nodes should be deployed with db.keepjbossserialization=true.
 # Once all nodes are running > 4.0, set to true to increase efficiency and portability.
 # Default: false
