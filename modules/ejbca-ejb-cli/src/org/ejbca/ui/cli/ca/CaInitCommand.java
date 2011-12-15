@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -208,8 +209,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger().info("CA token properties: "+catokenproperties);
             getLogger().info("Signed by: "+(signedByCAId == CAInfo.SELFSIGNED ? "self signed " : signedByCAId));
             if (signedByCAId != CAInfo.SELFSIGNED) {
-            	CAInfo signedBy = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), signedByCAId);
-            	if (signedBy == null) {
+                try {
+                    ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), signedByCAId);
+                } catch (CADoesntExistsException e) {
                 	throw new IllegalArgumentException("CA with id "+signedByCAId+" does not exist.");            		
             	}
             }

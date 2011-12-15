@@ -211,9 +211,7 @@ public class CADataHandler implements Serializable {
     // temporate        
     CAInfoView cainfoview = null; 
     CAInfo cainfo = caSession.getCAInfo(administrator, caid);
-    if(cainfo != null) {
-      cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap());
-    }
+    cainfoview = new CAInfoView(cainfo, ejbcawebbean, info.getPublisherIdToNameMap());
     return cainfoview;  
   }
 
