@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -223,8 +224,13 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         Collection<Integer> cas = cprofile.getAvailableCAs();
                                         ArrayList<Integer> casToRemove = new ArrayList<Integer>();
                                         for (Integer currentCA : cas) {
-                                        	if (currentCA != CertificateProfile.ANYCA && ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), currentCA) == null) {
-                                        		casToRemove.add(currentCA);
+                                            // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
+                                        	if (currentCA != CertificateProfile.ANYCA)  {
+                                        	    try {
+                                        	        ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), currentCA);
+                                        	    } catch (CADoesntExistsException e) {
+                                                    casToRemove.add(currentCA);
+                                        	    }
                                         	}
                                         }
                                         for (Integer toRemove : casToRemove) {
