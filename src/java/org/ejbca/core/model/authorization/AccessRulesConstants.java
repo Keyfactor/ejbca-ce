@@ -75,17 +75,17 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_RAFUNCTIONALITY                    = "/ra_functionality";
     public static final String REGULAR_EDITENDENTITYPROFILES              = "/ra_functionality/edit_end_entity_profiles";
     public static final String REGULAR_EDITUSERDATASOURCES                = "/ra_functionality/edit_user_data_sources";
-    public static final String REGULAR_VIEWENDENTITY                      = "/ra_functionality/view_end_entity";    
-    public static final String REGULAR_CREATEENDENTITY                    = "/ra_functionality/create_end_entity";
-    public static final String REGULAR_EDITENDENTITY                      = "/ra_functionality/edit_end_entity";
-    public static final String REGULAR_DELETEENDENTITY                    = "/ra_functionality/delete_end_entity";
-    public static final String REGULAR_REVOKEENDENTITY                    = "/ra_functionality/revoke_end_entity";    
-    public static final String REGULAR_VIEWENDENTITYHISTORY               = "/ra_functionality/view_end_entity_history";
-    public static final String REGULAR_APPROVEENDENTITY                   = "/ra_functionality/approve_end_entity";
+    public static final String REGULAR_VIEWENDENTITY                      = "/ra_functionality"+VIEW_RIGHTS;    
+    public static final String REGULAR_CREATEENDENTITY                    = "/ra_functionality"+CREATE_RIGHTS;
+    public static final String REGULAR_EDITENDENTITY                      = "/ra_functionality"+EDIT_RIGHTS ;
+    public static final String REGULAR_DELETEENDENTITY                    = "/ra_functionality"+DELETE_RIGHTS;
+    public static final String REGULAR_REVOKEENDENTITY                    = "/ra_functionality"+REVOKE_RIGHTS;    
+    public static final String REGULAR_VIEWENDENTITYHISTORY               = "/ra_functionality"+HISTORY_RIGHTS;
+    public static final String REGULAR_APPROVEENDENTITY                   = "/ra_functionality"+APPROVAL_RIGHTS;
 
-    public static final String REGULAR_SYSTEMFUNCTIONALITY                = "/system_functionality";
-    public static final String REGULAR_EDITADMINISTRATORPRIVILEDGES       = "/system_functionality/edit_administrator_privileges";
-    public static final String REGULAR_EDITSYSTEMCONFIGURATION            = "/system_functionality/edit_systemconfiguration";
+    public static final String REGULAR_SYSTEMFUNCTIONALITY                = StandardRules.SYSTEMFUNCTIONALITY.resource();
+    public static final String REGULAR_EDITADMINISTRATORPRIVILEDGES       = StandardRules.EDITROLES.resource();
+    public static final String REGULAR_EDITSYSTEMCONFIGURATION            = StandardRules.SYSTEMFUNCTIONALITY.resource()+"/edit_systemconfiguration";
 
     public static final String REGULAR_VIEWHARDTOKENS                     = "/ra_functionality" + HARDTOKEN_RIGHTS;
     public static final String REGULAR_VIEWPUKS                           = "/ra_functionality" + HARDTOKEN_PUKDATA_RIGHTS;

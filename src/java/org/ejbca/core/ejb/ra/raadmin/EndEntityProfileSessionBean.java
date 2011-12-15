@@ -27,10 +27,13 @@ import javax.ejb.TransactionAttributeType;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.jndi.JndiConstants;
@@ -40,6 +43,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 
@@ -433,4 +437,53 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         }
         return foundfree;
     }
+    
+    /**
+     * Help function that checks if administrator is authorized to edit profile.
+     * @param profile is the end entity profile or null for SecConst.EMPTY_ENDENTITYPROFILE
+     * @param editcheck is true for edit, add, remove, clone and rename operations. false for get.
+     */    
+    private void authorizedToProfile(final AuthenticationToken admin, final EndEntityProfile profile)  throws AuthorizationDeniedException {
+        if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES) && profile != null) {
+            final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
+            final String availablecasstring = profile.getValue(EndEntityProfile.AVAILCAS, 0);
+            if (StringUtils.isNotEmpty(availablecasstring)) {
+                /*
+                 * Go through all available CAs in the profile and check
+                 * that the administrator is authorized to all CAs specified
+                 * in the profile If ALLCAS is selected in the end entity
+                 * profile, we must check that the administrator is
+                 * authorized to all CAs in the system.
+                 */
+                String[] availablecas = profile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
+                /*
+                 * If availablecas contains SecConst ALLCAS, change
+                 * availablecas /to be a list of all CAs
+                 */
+                if (ArrayUtils.contains(availablecas, String.valueOf(SecConst.ALLCAS))) {
+                    Collection<Integer> allcaids = caSession.getAvailableCAs();
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Available CAs in end entity profile contains ALLCAS, lising all CAs in the system instead. There are "
+                                + allcaids.size() + " CAs in the system");
+                    }
+                    availablecas = new String[allcaids.size()];
+                    int index = 0;
+                    for (Integer id : allcaids) {
+                        availablecas[index++] = id.toString();
+                    }
+                }
+                for (int j = 0; j < availablecas.length; j++) {
+                    Integer caid = Integer.valueOf(availablecas[j]);
+                    if (!authorizedcaids.contains(caid)) {
+                        final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
+                        throw new AuthorizationDeniedException(msg);
+                    }
+                }
+            }
+        } else {
+            final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, admin.toString());
+            throw new AuthorizationDeniedException(msg);
+        }
+    }
+
 }

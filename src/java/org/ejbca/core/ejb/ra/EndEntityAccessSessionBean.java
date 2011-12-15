@@ -180,11 +180,11 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
                 // Check if administrator is authorized to view user.
                 if (!authorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.VIEW_RIGHTS)) {
                     if (requestedUsername == null) {
-                        final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()));
+                        final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(data.getEndEntityProfileId()), admin.toString());
                         throw new AuthorizationDeniedException(msg);
                     } else {
                         final String msg = intres.getLocalizedMessage("ra.errorauthprofileexist", Integer.valueOf(data.getEndEntityProfileId()),
-                                requestedUsername);
+                                requestedUsername, admin.toString());
                         throw new AuthorizationDeniedException(msg);
                     }
                 }

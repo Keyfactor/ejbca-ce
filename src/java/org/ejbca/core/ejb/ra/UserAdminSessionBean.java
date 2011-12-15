@@ -213,7 +213,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     private void assertAuthorizedToEndEntityProfile(final AuthenticationToken admin, final int endEntityProfileId, final String accessRule,
             final int caId) throws AuthorizationDeniedException {
         if (!authorizedToEndEntityProfile(admin, endEntityProfileId, accessRule)) {
-            final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(endEntityProfileId));
+            final String msg = intres.getLocalizedMessage("ra.errorauthprofile", Integer.valueOf(endEntityProfileId), admin.toString());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EventTypes.ACCESS_CONTROL, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
