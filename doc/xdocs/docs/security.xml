@@ -183,18 +183,17 @@ text or possible encrypted (application server specific) passwords.
 
 <section name="Database integrity protection">
 
-<p>Database integrity protection consists of one additional column in all protected tables, "rowProtection".</p>
+<p>Database integrity protection consists of an additional column in all protected tables, "rowProtection".</p>
 <p>
-Versions and keyid are used, embedded in the rowProtection line, to be flexible. 
-Versions allow tables to change because the entity class can create "version 2" of the protect string with new fields, but still verify "version 1" 
-rows without the additional field. ProtectData can change the algorithm used, etc. by updating the protection version to "2" etc. 
-Protection key can be changed because you define keyid of the crypto token and always verifies using a specific keyid, protecting using a specified (in config) keyid.
+In order to be flexible, versions and keyid are embedded in the rowProtection line. Versions allow the tables themselves to be modified safely because the entity class can create 
+"version 2" of the protect string with new fields, but still verify "version 1" and other legacy versions rows without the additional field. ProtectData can update the algorithm used, 
+etc. by iterating the version number. The protection key can be changed because the user defines the keyid of the crypto token and always verifies using a specific keyid, protecting using a specified (in config) keyid.
 </p>
  
 <subsection name="Configuration">
 <p>
-Database integrity protection should be configured before EJBCA is installed and used the first time, otherwise you will insert unprotected data in the database, 
-and when configured for database protection, using that data will fail.
+Database integrity protection should be configured before EJBCA is installed and used the first time, otherwise unprotected data will be inserted into the database; 
+once the system is configured for database protection, using that data will fail.
 </p><p>
 Database protection is configured in the file:
 </p>
