@@ -1191,7 +1191,10 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
         			if ( fieldValue.indexOf('@') == -1 ) {
         				throw new UserDoesntFullfillEndEntityProfile(DnComponents.dnIdToProfileName(dnid) + " does not seem to be in something@somthingelse format.");
         			}
-        			fieldValue = fieldValue.split("@")[1];
+        			//Don't split RFC822NAME addresses. 
+        			if(!DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid))) {
+        			    fieldValue = fieldValue.split("@")[1];
+        			}
     			} else {
         			// Check that postalAddress has #der_encoding_in_hex format, i.e. a full der sequence in hex format
         			if ( DnComponents.POSTALADDRESS.equals(DnComponents.dnIdToProfileName(dnid))) {
@@ -1216,8 +1219,13 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 	    					//	Match with every value in field-array
 	    					for ( int m=0; m<subjectsToProcess.length; m++ ) {
 	    						if ( subjectsToProcess[m] != null && profileCrossOffList[l] != MATCHED_FIELD ) {
-	    							if ( !(!getUse(profileID, l) && DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid))) ) {
-	    								if ( fields.getField(dnFieldExtractorID, m).equals(email) ){
+	    							//TODO: Simplify the below boolean logic !(!x && y) = (x || ~y)	    				
+	    						    if ( !(!getUse(profileID, l) && DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid))) ) {
+	    						         /*
+	                                     * IF the component is E-Mail (not RFC822NAME) 
+	                                     * OR if it is RFC822NAME AND E-Mail field from DN should be used 
+	                                     */
+	    								if (fields.getField(dnFieldExtractorID, m).equals(email) ){
 	    									subjectsToProcess[m] = null;
 	    									profileCrossOffList[l] = MATCHED_FIELD;
 	    								}
@@ -1228,36 +1236,37 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 	    			}
 	    		}
 			}
-    		// For every field of this type in profile (start with required and non-modifiable, 2 + 1)
-    		for ( int k=3; k>=0; k--) {
-    			// For every value in profile
-    			for ( int l=0; l<profileCrossOffList.length; l++ ) {
-    				if ( profileCrossOffList[l] == k ) {
-    					// Match with every value in field-array
-    					for ( int m=0; m<subjectsToProcess.length; m++ ) {
-    						if ( subjectsToProcess[m] != null && profileCrossOffList[l] != MATCHED_FIELD ) {
-        						// Match actual value if required + non-modifiable or non-modifiable
-        						if ( (k == (REQUIRED_FIELD + NONMODIFYABLE_FIELD) || k == (NONMODIFYABLE_FIELD)) ) {
-        							// Try to match with all possible values
-        							String[] fixedValues = getValue(profileID, l).split(SPLITCHAR);
-        							for ( int n=0; n<fixedValues.length; n++) {
-        								if ( subjectsToProcess[m] != null && subjectsToProcess[m].equals(fixedValues[n]) ) {
-        	    							// Remove matched pair
-        	    							subjectsToProcess[m] = null;
-        	    							profileCrossOffList[l] = MATCHED_FIELD;
-        								}
-        							}
-           						// Otherwise just match present fields
-        						} else {
-        							// Remove matched pair
-        							subjectsToProcess[m] = null;
-        							profileCrossOffList[l] = MATCHED_FIELD;
-        						}
-    						}
-    					}
-    				}
-    			}
-    		}
+            // For every field of this type in profile (start with required and non-modifiable, 2 + 1)
+            for (int k = 3; k >= 0; k--) {
+                // For every value in profile
+                for (int l = 0; l < profileCrossOffList.length; l++) {
+                    if (profileCrossOffList[l] == k) {
+                        // Match with every value in field-array
+                        for (int m = 0; m < subjectsToProcess.length; m++) {
+                            if (subjectsToProcess[m] != null && profileCrossOffList[l] != MATCHED_FIELD) {
+                                // Match actual value if required + non-modifiable or non-modifiable
+                                if ((k == (REQUIRED_FIELD + NONMODIFYABLE_FIELD) || k == (NONMODIFYABLE_FIELD))) {
+                                    // Try to match with all possible values
+                                    String[] fixedValues = getValue(profileID, l).split(SPLITCHAR);
+                                    for (int n = 0; n < fixedValues.length; n++) {
+                                        if (subjectsToProcess[m] != null && subjectsToProcess[m].equals(fixedValues[n])) {
+                                            // Remove matched pair
+                                            subjectsToProcess[m] = null;
+                                            profileCrossOffList[l] = MATCHED_FIELD;
+                                        }
+                                    }
+
+                                    // Otherwise just match present fields
+                                } else {
+                                    // Remove matched pair
+                                    subjectsToProcess[m] = null;
+                                    profileCrossOffList[l] = MATCHED_FIELD;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
     		// If not all fields in profile were found
     		for ( int j=0; j< nof; j++ ) {
     			if ( subjectsToProcess[j] != null ) {
