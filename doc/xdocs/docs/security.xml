@@ -181,7 +181,7 @@ text or possible encrypted (application server specific) passwords.
 </subsection>
 </section>
 
-<section name="Database integrity protection">
+<section name="Database Integrity Protection">
 
 <p>Database integrity protection consists of an additional column in all protected tables, "rowProtection".</p>
 <p>
@@ -210,7 +210,7 @@ conf/databaseprotection.properties
 </ul>
 </subsection>
 
-<subsection name="Integrity protected security audit">
+<subsection name="Integrity Protected Security Audit">
 <p>
 The IntegrityProtectedDevice security audit implementation stores the log entries to the database and relies on the Database Integrity Protection in 
 EJBCA for protecting the authenticity of the log events. Each log event is given an identifier consisting of a "nodeId" and a "sequenceNumber" that 
@@ -252,7 +252,7 @@ conf/databaseprotection.properties
 </subsection>
 </section>
 
-<section name="Datasource passwords">
+<section name="Datasource Passwords">
 <p>
 If you do not like to have your DataSource password available in clear text in EjbcaDS.xml, 
 there is an article in the JBoss Wiki about encrypting them:
