@@ -101,7 +101,8 @@ public class CertificateProfileDataHandler implements Serializable {
     public void cloneCertificateProfile(String originalname, String newname) throws CertificateProfileExistsException, AuthorizationDeniedException {
         if (authorizedToProfileName(originalname, false)) {
             try {
-            	certificateProfileSession.cloneCertificateProfile(administrator, originalname, newname, caSession.getAvailableCAs(administrator));
+                // Use null as authorizedCaIds, so we will copy the profile exactly as the template, including available CAs
+            	certificateProfileSession.cloneCertificateProfile(administrator, originalname, newname, null);
             	this.info.certificateProfilesEdited();
 			} catch (CertificateProfileDoesNotExistException e) {
 				// NOPMD: ignore do nothing
