@@ -187,7 +187,8 @@ text or possible encrypted (application server specific) passwords.
 <p>
 In order to be flexible, versions and keyid are embedded in the rowProtection line. Versions allow the tables themselves to be modified safely because the entity class can create 
 "version 2" of the protect string with new fields, but still verify "version 1" and other legacy versions rows without the additional field. ProtectData can update the algorithm used, 
-etc. by iterating the version number. The protection key can be changed because the user defines the keyid of the crypto token and always verifies using a specific keyid, protecting using a specified (in config) keyid.
+etc. by iterating the version number. The protection key can be changed because the user defines the keyid of the crypto token and always verifies using a specific keyid.
+The keyids are specified in configuration and multiple keyids can be active at any moment.
 </p>
  
 <subsection name="Configuration">
