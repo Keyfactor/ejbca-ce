@@ -242,6 +242,14 @@ very high degree without any JVM-to-JVM communication when the shared database s
 When using this implementation the integrity of each fetched log entry is always validated when loaded from the database, but full validation with checks 
 for missing sequenceNumbers are not performed.
 </p>
+<p>
+Configuration of integrity protected log device is in the files:
+</p>
+<source>
+conf/cesecore.properties
+conf/databaseprotection.properties
+</source>
+
 </subsection>
 </section>
 
