@@ -76,14 +76,14 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
         byte[] buf = new byte[length]; // buf of length length, normal optimal case is only one read operation below
         int n = 0;
         int bytesRead = 0;
-        // We must always read until it returns -1, make sure we read maximum bytesRead bytes
+        // We must always read until it returns -1, make sure we read maximum length bytes
         while (-1 != (n = read(buf, 0, length-bytesRead))) {
             bytesRead += n;
+            this.baos.write(buf, 0, n);
             if (bytesRead >= length) {
                 // We read as much as we should, stop reading
                 break;
             }
-            this.baos.write(buf, 0, n);
         }
         if (bytesRead != length) {
             // If we have read less bytes than we should have, the asn.1 was incorrect and this might be some type of attempt to perform buffer overflow
@@ -136,13 +136,13 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
 			}
 			// Read content-length bytes from stream
 			if (m_log.isTraceEnabled()) {
-				m_log.trace("Got content-length: "+Integer.valueOf(this.contentLength));
+				m_log.trace("Got content-length: "+this.contentLength);
 			}
 			return readTopASN1(this.contentLength-tlByteLength); // 'tlByteLength' bytes already read. 'this.contentLength <= MAX_REQUEST_SIZE' tested above.
 		}
 		// defined length, just read as many bytes as the length tag says
 		if (m_log.isTraceEnabled()) {
-			m_log.trace("Got ASN1 length: "+Integer.valueOf(length));
+			m_log.trace("Got ASN1 length: "+length);
 		}
 		return readTopASN1(length);
 	}
