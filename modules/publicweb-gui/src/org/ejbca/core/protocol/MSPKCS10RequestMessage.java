@@ -146,10 +146,6 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
         // Get attributes
         CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
         AttributeTable attributes = new AttributeTable(info.getAttributes());
-        if (attributes == null) {
-        	log.error("No attributes!");
-            return null;
-        }
         Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
         if (attr == null) {
         	log.error("Cannot find request extension.");
@@ -188,10 +184,6 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
         // Get attributes
         CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
         AttributeTable attributes = new AttributeTable(info.getAttributes());
-        if (attributes == null) {
-        	log.error("No attributes!");
-            return ret;
-        }
         Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
         if (attr != null) {
             ASN1Set set = attr.getAttrValues();
