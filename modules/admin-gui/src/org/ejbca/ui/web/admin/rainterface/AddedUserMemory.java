@@ -19,28 +19,30 @@
 package org.ejbca.ui.web.admin.rainterface;
 
 import java.io.Serializable;
-import java.util.Vector;
+import java.util.LinkedList;
 
 
 /**
  * A class used to remember a RA Admins last added users. It's use is in the adduser.jsp to list
  * previously added users give the RA admins a better overlook of the his work.
  *
- * @author TomSelleck
+
  * @version $Id$
  */
 public class AddedUserMemory implements Serializable {
-	private static final long serialVersionUID = 1L;
-	// Public Constants
+
+    private static final long serialVersionUID = 1864439727928588230L;
+
     public static final int MEMORY_SIZE = 100; // Remember the 100 last users. 
 
-    // Public Methods
+    // Private fields
+    private LinkedList<UserView> memory = null;
 
     /**
      * Creates a new instance of AddedUserMemory
      */
     public AddedUserMemory() {
-        memory = new Vector<UserView>();
+        memory = new LinkedList<UserView>();
     }
 
     /**
@@ -50,9 +52,8 @@ public class AddedUserMemory implements Serializable {
      */
     public void addUser(UserView user) {
         memory.add(user);
-
         while (memory.size() > MEMORY_SIZE) {
-            memory.remove(0);
+            memory.removeFirst();
         }
     }
 
@@ -81,7 +82,7 @@ public class AddedUserMemory implements Serializable {
         int j = 0;
 
         for (int i = memory.size() - 1; i >= endindex; i--) {
-            returnval[j] = memory.elementAt(i);
+            returnval[j] = memory.get(i);
             j++;
         }
 
@@ -94,11 +95,9 @@ public class AddedUserMemory implements Serializable {
      * @param user the stringarray representation of the user to change.
      */
     public void changeUser(UserView user) {
-        int i;
-
         // Find user in memory.
-        for (i = 0; i < memory.size(); i++) {
-            if ((memory.elementAt(i)).getUsername().equals(user.getUsername())) {
+        for (int i = 0; i < memory.size(); i++) {
+            if ((memory.get(i)).getUsername().equals(user.getUsername())) {
                 memory.set(i, user);
 
                 break;
@@ -106,6 +105,14 @@ public class AddedUserMemory implements Serializable {
         }
     }
 
-    // Private fields
-    private Vector<UserView> memory = null;
+    public void removeUser(String userName) {
+     // Find user in memory.
+        for (int i = 0; i < memory.size(); i++) {
+            if ((memory.get(i)).getUsername().equals(userName)) {
+                memory.remove(i);
+                break;
+            }
+        }
+    }
+  
 }

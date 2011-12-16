@@ -182,9 +182,10 @@ public class RAInterfaceBean implements Serializable {
     public boolean deleteUsers(String[] usernames) throws NotFoundException, RemoveException {
       log.trace(">deleteUsers()");
       boolean success = true;
-      for (int i=0; i < usernames.length; i++) {
+      for (String username : usernames) {
     	  try {
-    		  userAdminSession.deleteUser(administrator, usernames[i]);
+    		  userAdminSession.deleteUser(administrator, username);
+    		  addedusermemory.removeUser(username);
     	  } catch(AuthorizationDeniedException e) {
     		  success = false;
     	  }
