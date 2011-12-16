@@ -40,7 +40,7 @@ public interface ICustomUserDataSource {
 	/**
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#fetch(AuthenticationToken, String)
 	 */   
-	public Collection fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException;
+	public Collection<UserDataSourceVO> fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException;
 	
 	/**
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#removeUserData(AuthenticationToken, String, boolean)

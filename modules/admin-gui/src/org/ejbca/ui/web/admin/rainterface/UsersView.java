@@ -26,7 +26,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 
 /**
  * A class representing a set of users
- * @author  philip
+ * 
  * @version $Id$
  */
 public class UsersView implements Serializable {
@@ -46,7 +46,7 @@ public class UsersView implements Serializable {
       Collections.sort(users); 
     }
     
-    public UsersView(Collection importusers, HashMap caidtonamemap){ 
+    public UsersView(Collection<EndEntityInformation> importusers, HashMap caidtonamemap){ 
       users = new ArrayList<UserView>();
       sortby = new SortBy();
       

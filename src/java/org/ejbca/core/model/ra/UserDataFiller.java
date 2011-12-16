@@ -104,7 +104,7 @@ public class UserDataFiller {
 			throw new RuntimeException(ine);
 		}
         int numberofsubjectdnfields = profile.getSubjectDNFieldOrderLength();
-        List rdnList = new ArrayList(numberofsubjectdnfields);
+        List<Rdn> rdnList = new ArrayList<Rdn>(numberofsubjectdnfields);
         int[] fielddata = null;
         String value;
         //Build profile's DN
@@ -131,11 +131,11 @@ public class UserDataFiller {
 		}
         profiledn = new DistinguishedName(rdnList);
 
-        Map dnMap = new HashMap();
+        Map<String, String> dnMap = new HashMap<String, String>();
         if (profile.getUse(DnComponents.DNEMAIL, 0)) {
             dnMap.put(DnComponents.DNEMAIL, entityEmail);
         }
-//        return  profiledn.mergeDN(userdn, true, dnMap).toString();
+        
         return  CertTools.stringToBCDNString(profiledn.mergeDN(userdn, true, dnMap).toString());
     }
  
@@ -159,7 +159,7 @@ public class UserDataFiller {
 			throw new RuntimeException(ine);
 		}
         int numberofsubjectAltNamefields = profile.getSubjectAltNameFieldOrderLength();
-        List rdnList = new ArrayList(numberofsubjectAltNamefields);
+        List<Rdn> rdnList = new ArrayList<Rdn>(numberofsubjectAltNamefields);
         int[] fielddata = null;
         String value;
         //Build profile's Alt Name
@@ -186,11 +186,11 @@ public class UserDataFiller {
 		}
         profileAltName = new DistinguishedName(rdnList);
 
-        Map dnMap = new HashMap();
+        Map<String, String> dnMap = new HashMap<String, String>();
         if (profile.getUse(DnComponents.RFC822NAME, 0)) {
             dnMap.put(DnComponents.RFC822NAME, entityEmail);
         }
-//        return  profileAltName.mergeDN(userAltName, true, dnMap).toString();
+
         return  CertTools.stringToBCDNString(profileAltName.mergeDN(userAltName, true, dnMap).toString());
     }
 }
