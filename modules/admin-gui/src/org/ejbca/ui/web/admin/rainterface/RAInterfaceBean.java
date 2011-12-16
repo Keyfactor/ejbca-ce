@@ -52,7 +52,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -102,7 +102,7 @@ public class RAInterfaceBean implements Serializable {
     private CertificateProfileSession certificateProfileSession;
     private CertificateStoreSession certificatesession;
     private EndEntityAccessSessionLocal endEntityAccessSession;
-    private EndEntityProfileSession endEntityProfileSession;
+    private EndEntityProfileSessionLocal endEntityProfileSession;
     private HardTokenSession hardtokensession;
     private KeyRecoverySession keyrecoverysession;
     private UserAdminSessionLocal userAdminSession;
@@ -141,7 +141,7 @@ public class RAInterfaceBean implements Serializable {
     		caSession = ejb.getCaSession();
     		authorizationsession = ejb.getAccessControlSession();
     		endEntityProfileSession = ejb.getEndEntityProfileSession();
-    		this.profiles = new EndEntityProfileDataHandler(administrator,authorizationsession, caSession, endEntityProfileSession, informationmemory);
+    		this.profiles = new EndEntityProfileDataHandler(administrator, endEntityProfileSession, informationmemory);
     		hardtokensession = ejb.getHardTokenSession();
     		keyrecoverysession = ejb.getKeyRecoverySession();
     		userdatasourcesession = ejb.getUserDataSourceSession();

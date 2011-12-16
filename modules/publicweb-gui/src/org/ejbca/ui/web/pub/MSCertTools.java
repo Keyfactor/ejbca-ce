@@ -216,7 +216,7 @@ public class MSCertTools {
 	}
 
     public static int getOrCreateEndEndtityProfile(AuthenticationToken admin, int templateIndex, int certProfileId, int caid, String usernameShort,
-            String fetchedSubjectDN, AdminPreferenceSession raAdminSession, EndEntityProfileSession endEntityProfileSession) {
+            String fetchedSubjectDN, AdminPreferenceSession raAdminSession, EndEntityProfileSession endEntityProfileSession) throws AuthorizationDeniedException {
 		// Create end endity profile if neccesary
 		String endEntityProfileName = "Autoenroll-" + SUPPORTEDCERTIFICATETEMPLATES[templateIndex];
 

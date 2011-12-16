@@ -75,12 +75,12 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     private SecurityEventsLoggerSessionLocal auditSession;
     
     @Override
-    public void addEndEntityProfile(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) throws EndEntityProfileExistsException {
+    public void addEndEntityProfile(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) throws AuthorizationDeniedException, EndEntityProfileExistsException {
         addEndEntityProfile(admin, findFreeEndEntityProfileId(), profilename, profile);
     }
 
     @Override
-    public void addEndEntityProfile(final AuthenticationToken admin, final int profileid, final String profilename, final EndEntityProfile profile) throws EndEntityProfileExistsException {
+    public void addEndEntityProfile(final AuthenticationToken admin, final int profileid, final String profilename, final EndEntityProfile profile) throws AuthorizationDeniedException, EndEntityProfileExistsException {
         if (profilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
             final String msg = INTRES.getLocalizedMessage("ra.erroraddprofilefixed", profilename, EMPTY_ENDENTITYPROFILENAME);
             LOG.info(msg);
@@ -94,6 +94,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         	LOG.info(msg);
             throw new EndEntityProfileExistsException(msg);
         } else {
+            // Check authorization before adding
+            authorizedToProfile(admin, profile);
             try {
                 entityManager.persist(new EndEntityProfileData(Integer.valueOf(profileid), profilename, profile));
                 flushProfileCache();
@@ -112,13 +114,13 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public void changeEndEntityProfile(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) {
+    public void changeEndEntityProfile(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) throws AuthorizationDeniedException {
         internalChangeEndEntityProfileNoFlushCache(admin, profilename, profile);
         flushProfileCache();
     }
 
     @Override
-    public void cloneEndEntityProfile(final AuthenticationToken admin, final String orgname, final String newname) throws EndEntityProfileExistsException {
+    public void cloneEndEntityProfile(final AuthenticationToken admin, final String orgname, final String newname) throws AuthorizationDeniedException, EndEntityProfileExistsException {
         if (newname.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorcloneprofile", newname, orgname);
         	LOG.info(msg);
@@ -128,9 +130,12 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, orgname);
             boolean success = false;
             if (pdl != null) {
+                // Check authorization before cloning
+                final EndEntityProfile profile = pdl.getProfile();
+                authorizedToProfile(admin, profile);
             	try {
             		final int profileid = findFreeEndEntityProfileId();
-            		entityManager.persist(new EndEntityProfileData(profileid, newname, (EndEntityProfile) pdl.getProfile().clone()));
+            		entityManager.persist(new EndEntityProfileData(profileid, newname, (EndEntityProfile)profile.clone()));
             		flushProfileCache();
             		final String msg = INTRES.getLocalizedMessage("ra.clonedprofile", newname, orgname);
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -357,12 +362,14 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public void internalChangeEndEntityProfileNoFlushCache(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) {
+    public void internalChangeEndEntityProfileNoFlushCache(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) throws AuthorizationDeniedException {
     	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
         if (pdl == null) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorchangeprofile", profilename);
         	LOG.info(msg);
         } else {
+            // Check authorization before editing
+            authorizedToProfile(admin, profile);
             pdl.setProfile(profile);
             // Get the diff of what changed
             Map<Object, Object> diff = pdl.getProfile().diff(profile);
@@ -378,33 +385,35 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public void removeEndEntityProfile(final AuthenticationToken admin, final String profilename) {
+    public void removeEndEntityProfile(final AuthenticationToken admin, final String profilename) throws AuthorizationDeniedException {
     	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
-    	try {
     		if (pdl == null) {
     			if (LOG.isDebugEnabled()) {
     				LOG.debug("Trying to remove an end entity profile that does not exist: "+profilename);                		
     			}
     		} else {
-    			entityManager.remove(pdl);
-    			flushProfileCache();
-    			final String msg = INTRES.getLocalizedMessage("ra.removedprofile", profilename);
-    			final Map<String, Object> details = new LinkedHashMap<String, Object>();
-    			details.put("msg", msg);
-    			auditSession.log(EjbcaEventTypes.RA_REMOVEEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+    		    // Check authorization before removing
+                authorizedToProfile(admin, pdl.getProfile());
+    		    try {
+    		        entityManager.remove(pdl);
+    		        flushProfileCache();
+    		        final String msg = INTRES.getLocalizedMessage("ra.removedprofile", profilename);
+    		        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+    		        details.put("msg", msg);
+    		        auditSession.log(EjbcaEventTypes.RA_REMOVEEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+    		    } catch (Exception e) {
+    		        LOG.error("Error was caught when trying to remove end entity profile " + profilename, e);
+    		        final String msg = INTRES.getLocalizedMessage("ra.errorremoveprofile", profilename);
+    		        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+    		        details.put("msg", msg);
+    		        details.put("error", e.getMessage());
+    		        auditSession.log(EjbcaEventTypes.RA_REMOVEEEPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+    		    }
     		}
-    	} catch (Exception e) {
-    		LOG.error("Error was caught when trying to remove end entity profile " + profilename, e);
-    		final String msg = INTRES.getLocalizedMessage("ra.errorremoveprofile", profilename);
-    		final Map<String, Object> details = new LinkedHashMap<String, Object>();
-    		details.put("msg", msg);
-    		details.put("error", e.getMessage());
-    		auditSession.log(EjbcaEventTypes.RA_REMOVEEEPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
-    	}
     }
 
     @Override
-    public void renameEndEntityProfile(final AuthenticationToken admin, final String oldprofilename, final String newprofilename) throws EndEntityProfileExistsException {
+    public void renameEndEntityProfile(final AuthenticationToken admin, final String oldprofilename, final String newprofilename) throws AuthorizationDeniedException, EndEntityProfileExistsException {
         if (newprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME) || oldprofilename.trim().equalsIgnoreCase(EMPTY_ENDENTITYPROFILENAME)) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);
         	LOG.info(msg);
@@ -416,6 +425,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             	final String msg = INTRES.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);
             	LOG.info(msg);
             } else {
+                // Check authorization before renaming
+                authorizedToProfile(admin, pdl.getProfile());
                 pdl.setProfileName(newprofilename);
                 flushProfileCache();
                 final String msg = INTRES.getLocalizedMessage("ra.renamedprofile", oldprofilename, newprofilename);
@@ -427,6 +438,48 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         	final String msg = INTRES.getLocalizedMessage("ra.errorrenameprofile", oldprofilename, newprofilename);
         	LOG.info(msg);
             throw new EndEntityProfileExistsException();
+        }
+    }
+
+    @Override
+    public void authorizedToProfileCas(final AuthenticationToken admin, final EndEntityProfile profile) throws AuthorizationDeniedException {
+        if (profile == null) {
+            return;
+        }
+        final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
+        final String availablecasstring = profile.getValue(EndEntityProfile.AVAILCAS, 0);
+        if (StringUtils.isNotEmpty(availablecasstring)) {
+            /*
+             * Go through all available CAs in the profile and check
+             * that the administrator is authorized to all CAs specified
+             * in the profile If ALLCAS is selected in the end entity
+             * profile, we must check that the administrator is
+             * authorized to all CAs in the system.
+             */
+            String[] availablecas = profile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
+            /*
+             * If availablecas contains SecConst ALLCAS, change
+             * availablecas /to be a list of all CAs
+             */
+            if (ArrayUtils.contains(availablecas, String.valueOf(SecConst.ALLCAS))) {
+                Collection<Integer> allcaids = caSession.getAvailableCAs();
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Available CAs in end entity profile contains ALLCAS, lising all CAs in the system instead. There are "
+                            + allcaids.size() + " CAs in the system");
+                }
+                availablecas = new String[allcaids.size()];
+                int index = 0;
+                for (Integer id : allcaids) {
+                    availablecas[index++] = id.toString();
+                }
+            }
+            for (int j = 0; j < availablecas.length; j++) {
+                Integer caid = Integer.valueOf(availablecas[j]);
+                if (!authorizedcaids.contains(caid)) {
+                    final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
+                    throw new AuthorizationDeniedException(msg);
+                }
+            }
         }
     }
 
@@ -445,41 +498,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
      */    
     private void authorizedToProfile(final AuthenticationToken admin, final EndEntityProfile profile)  throws AuthorizationDeniedException {
         if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES) && profile != null) {
-            final HashSet<Integer> authorizedcaids = new HashSet<Integer>(caSession.getAvailableCAs(admin));
-            final String availablecasstring = profile.getValue(EndEntityProfile.AVAILCAS, 0);
-            if (StringUtils.isNotEmpty(availablecasstring)) {
-                /*
-                 * Go through all available CAs in the profile and check
-                 * that the administrator is authorized to all CAs specified
-                 * in the profile If ALLCAS is selected in the end entity
-                 * profile, we must check that the administrator is
-                 * authorized to all CAs in the system.
-                 */
-                String[] availablecas = profile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
-                /*
-                 * If availablecas contains SecConst ALLCAS, change
-                 * availablecas /to be a list of all CAs
-                 */
-                if (ArrayUtils.contains(availablecas, String.valueOf(SecConst.ALLCAS))) {
-                    Collection<Integer> allcaids = caSession.getAvailableCAs();
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("Available CAs in end entity profile contains ALLCAS, lising all CAs in the system instead. There are "
-                                + allcaids.size() + " CAs in the system");
-                    }
-                    availablecas = new String[allcaids.size()];
-                    int index = 0;
-                    for (Integer id : allcaids) {
-                        availablecas[index++] = id.toString();
-                    }
-                }
-                for (int j = 0; j < availablecas.length; j++) {
-                    Integer caid = Integer.valueOf(availablecas[j]);
-                    if (!authorizedcaids.contains(caid)) {
-                        final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
-                        throw new AuthorizationDeniedException(msg);
-                    }
-                }
-            }
+            authorizedToProfileCas(admin, profile);
         } else {
             final String msg = INTRES.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, admin.toString());
             throw new AuthorizationDeniedException(msg);

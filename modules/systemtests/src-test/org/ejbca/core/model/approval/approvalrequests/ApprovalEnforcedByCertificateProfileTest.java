@@ -509,7 +509,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     }
 
     private int createEndEntityProfile(AuthenticationToken admin, String endEntityProfileName, int[] certProfiles)
-            throws EndEntityProfileExistsException {
+            throws EndEntityProfileExistsException, AuthorizationDeniedException {
         EndEntityProfile profile;
         endEntityProfileSession.removeEndEntityProfile(admin, endEntityProfileName);
 

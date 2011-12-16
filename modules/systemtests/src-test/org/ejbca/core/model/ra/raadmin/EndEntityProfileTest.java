@@ -15,25 +15,50 @@ package org.ejbca.core.model.ra.raadmin;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.security.KeyPair;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
+import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.jndi.JndiHelper;
+import org.cesecore.keys.util.KeyTools;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.CertTools;
+import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -41,18 +66,36 @@ import org.junit.Test;
  *
  * @version $Id$
  */
-public class EndEntityProfileTest {
+public class EndEntityProfileTest extends RoleUsingTestCase {
     private static final Logger log = Logger.getLogger(EndEntityProfileTest.class);
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EndEntityProfileTest"));
 
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
-    
+    private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
+    private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
+    private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    @BeforeClass
+    public static void setUpCryptoProvider() throws Exception {
+        CryptoProviderTools.installBCProvider();
+    }
+
     @Before
     public void setUp() throws Exception {
+        // Set up base role that can edit roles
+        setUpAuthTokenAndRole("EndEntityProfileSessionTest");
+
+        // Now we have a role that can edit roles, we can edit this role to include more privileges
+        RoleData role = roleAccessSession.findRole("EndEntityProfileSessionTest");
+
+        // Add rules to the role
+        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, AccessRuleState.RULE_ACCEPT, true));
+        roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
     }
 
     @After
     public void tearDown() throws Exception {
+        tearDownRemoveRole();
     }
 
     /**
@@ -69,8 +112,9 @@ public class EndEntityProfileTest {
             EndEntityProfile profile = new EndEntityProfile();
             profile.addField(DnComponents.ORGANIZATIONUNIT);
 
-            endEntityProfileSession.addEndEntityProfile(admin, "TEST", profile);
-
+            endEntityProfileSession.addEndEntityProfile(roleMgmgToken, "TEST", profile);
+            EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, "TEST");
+            assertNotNull(eep);
             ret = true;
         } catch (EndEntityProfileExistsException pee) {
         }
@@ -91,7 +135,11 @@ public class EndEntityProfileTest {
 
         boolean ret = false;
         try {
-            endEntityProfileSession.renameEndEntityProfile(admin, "TEST", "TEST2");
+            endEntityProfileSession.renameEndEntityProfile(roleMgmgToken, "TEST", "TEST2");
+            EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, "TEST");
+            assertNull(eep);
+            eep = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, "TEST2");
+            assertNotNull(eep);
             ret = true;
         } catch (EndEntityProfileExistsException pee) {
         }
@@ -112,7 +160,11 @@ public class EndEntityProfileTest {
 
         boolean ret = false;
         try {
-            endEntityProfileSession.cloneEndEntityProfile(admin, "TEST2", "TEST");
+            endEntityProfileSession.cloneEndEntityProfile(roleMgmgToken, "TEST2", "TEST");
+            EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, "TEST");
+            assertNotNull(eep);
+            eep = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, "TEST2");
+            assertNotNull(eep);
             ret = true;
         } catch (EndEntityProfileExistsException pee) {
         }
@@ -131,14 +183,18 @@ public class EndEntityProfileTest {
     public void test04EditEndEntityProfile() throws Exception {
         log.trace(">test04EditEndEntityProfile()");
 
-        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(admin, "TEST");
+        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, "TEST");
         assertTrue("Retrieving EndEntityProfile failed", profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT) == 1);
 
         profile.addField(DnComponents.ORGANIZATIONUNIT);
         assertEquals(profile.getNumberOfField(DnComponents.ORGANIZATIONUNIT), 2);
 
         // Change the profile, if save fails it should throw an exception
-        endEntityProfileSession.changeEndEntityProfile(admin, "TEST", profile);
+        endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, "TEST", profile);
+
+        EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, "TEST");
+        assertNotNull(eep);
+        assertEquals(eep.getNumberOfField(DnComponents.ORGANIZATIONUNIT), 2);
 
         log.trace("<test04EditEndEntityProfile()");
     }
@@ -154,8 +210,12 @@ public class EndEntityProfileTest {
         log.trace(">test05removeEndEntityProfiles()");
         boolean ret = false;
         try {
-            endEntityProfileSession.removeEndEntityProfile(admin, "TEST");
-            endEntityProfileSession.removeEndEntityProfile(admin, "TEST2");
+            endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, "TEST");
+            endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, "TEST2");
+            EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, "TEST");
+            assertNull(eep);
+            eep = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, "TEST2");
+            assertNull(eep);
             ret = true;
         } catch (Exception pee) {
         }
@@ -179,9 +239,9 @@ public class EndEntityProfileTest {
         boolean returnValue = true;
         // Create testprofile
         EndEntityProfile profile = new EndEntityProfile();
-        endEntityProfileSession.addEndEntityProfile(admin, testProfileName, profile);
+        endEntityProfileSession.addEndEntityProfile(roleMgmgToken, testProfileName, profile);
         // Add two dynamic fields
-        profile = endEntityProfileSession.getEndEntityProfile(admin, testProfileName);
+        profile = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, testProfileName);
         profile.addField(DnComponents.ORGANIZATIONUNIT);
         profile.addField(DnComponents.ORGANIZATIONUNIT);
         profile.setValue(DnComponents.ORGANIZATIONUNIT, 0, testString1);
@@ -190,19 +250,19 @@ public class EndEntityProfileTest {
         profile.addField(DnComponents.DNSNAME);
         profile.setValue(DnComponents.DNSNAME, 0, testString1);
         profile.setValue(DnComponents.DNSNAME, 1, testString2);
-        endEntityProfileSession.changeEndEntityProfile(admin, testProfileName, profile);
+        endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, testProfileName, profile);
         // Remove first field
-        profile = endEntityProfileSession.getEndEntityProfile(admin, testProfileName);
+        profile = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, testProfileName);
         profile.removeField(DnComponents.ORGANIZATIONUNIT, 0);
         profile.removeField(DnComponents.DNSNAME, 0);
-        endEntityProfileSession.changeEndEntityProfile(admin, testProfileName, profile);
+        endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, testProfileName, profile);
         // Test if changes are what we expected
-        profile = endEntityProfileSession.getEndEntityProfile(admin, testProfileName);
+        profile = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, testProfileName);
         returnValue &= testString2.equals(profile.getValue(DnComponents.ORGANIZATIONUNIT, 0));
         returnValue &= testString2.equals(profile.getValue(DnComponents.DNSNAME, 0));
         assertTrue("Adding and removing dynamic fields to profile does not work properly.", returnValue);
         // Remove profile
-        endEntityProfileSession.removeEndEntityProfile(admin, testProfileName);
+        endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, testProfileName);
         log.trace("<test06testEndEntityProfilesDynamicFields()");
     } // test06testEndEntityProfilesDynamicFields
 
@@ -287,44 +347,47 @@ public class EndEntityProfileTest {
     public void test10CardnumberRequired() throws CertificateProfileExistsException, AuthorizationDeniedException {
     	log.trace(">test10CardnumberRequired()");
 
-        int caid = "CN=TEST EndEntityProfile,O=PrimeKey,C=SE".hashCode();
-    	
-        endEntityProfileSession.removeEndEntityProfile(admin, "TESTCARDNUMBER");
-        EndEntityProfile profile = new EndEntityProfile();
-        profile.addField(EndEntityProfile.CARDNUMBER);
-        profile.setRequired(EndEntityProfile.CARDNUMBER, 0, true);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(caid));
+    	try {
+    	    int caid = "CN=TEST EndEntityProfile,O=PrimeKey,C=SE".hashCode();
 
-        String cardnumber = "foo123";
-        boolean ret = false;
-        try {
-            endEntityProfileSession.addEndEntityProfile(admin, "TESTCARDNUMBER", profile);
-        } catch (EndEntityProfileExistsException pee) {}    
-            
-        profile = endEntityProfileSession.getEndEntityProfile(admin, "TESTCARDNUMBER");
-            
-        EndEntityInformation userdata = new EndEntityInformation("foo", "CN=foo", caid, "", "", SecConst.USER_ENDUSER, endEntityProfileSession.getEndEntityProfileId(admin, "TESTCARDNUMBER"), SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
-        userdata.setPassword("foo123");
-        try {
-			profile.doesUserFullfillEndEntityProfile(userdata, false);
-		} catch (UserDoesntFullfillEndEntityProfile e) {
-			log.debug(e.getMessage());
-	        ret = true;
-		}
-		assertTrue("User fullfilled the End Entity Profile even though the cardnumber was not sett", ret);
-            
-		ret = false;
-        userdata.setCardNumber(cardnumber);
-        try {
-			profile.doesUserFullfillEndEntityProfile(userdata, false);
-			ret = true;
-		} catch (UserDoesntFullfillEndEntityProfile e) {
-			log.debug(e.getMessage());
-			ret = false;
-		}
-        assertTrue("User did not full fill the End Entity Profile even though the card number was sett", ret);
-        
-        log.trace("<test10CardnumberRequired()");
+    	    EndEntityProfile profile = new EndEntityProfile();
+    	    profile.addField(EndEntityProfile.CARDNUMBER);
+    	    profile.setRequired(EndEntityProfile.CARDNUMBER, 0, true);
+    	    profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
+    	    String cardnumber = "foo123";
+    	    boolean ret = false;
+    	    try {
+    	        endEntityProfileSession.addEndEntityProfile(roleMgmgToken, "TESTCARDNUMBER", profile);
+    	    } catch (EndEntityProfileExistsException pee) {
+    	        // NOPMD
+    	    }    
+
+    	    profile = endEntityProfileSession.getEndEntityProfile(roleMgmgToken, "TESTCARDNUMBER");
+
+    	    EndEntityInformation userdata = new EndEntityInformation("foo", "CN=foo", caid, "", "", SecConst.USER_ENDUSER, endEntityProfileSession.getEndEntityProfileId(roleMgmgToken, "TESTCARDNUMBER"), SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+    	    userdata.setPassword("foo123");
+    	    try {
+    	        profile.doesUserFullfillEndEntityProfile(userdata, false);
+    	    } catch (UserDoesntFullfillEndEntityProfile e) {
+    	        log.debug(e.getMessage());
+    	        ret = true;
+    	    }
+    	    assertTrue("User fullfilled the End Entity Profile even though the cardnumber was not sett", ret);
+
+    	    ret = false;
+    	    userdata.setCardNumber(cardnumber);
+    	    try {
+    	        profile.doesUserFullfillEndEntityProfile(userdata, false);
+    	        ret = true;
+    	    } catch (UserDoesntFullfillEndEntityProfile e) {
+    	        log.debug(e.getMessage());
+    	        ret = false;
+    	    }
+    	    assertTrue("User did not full fill the End Entity Profile even though the card number was sett", ret);
+    	} finally {
+    	    endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, "TESTCARDNUMBER");
+    	}
+    	log.trace("<test10CardnumberRequired()");
     }
 
     /** Test if we can detect that a End Entity Profile references to CA IDs and Certificate Profile IDs. */
@@ -333,20 +396,23 @@ public class EndEntityProfileTest {
         log.trace(">test11EndEntityProfileReferenceDetection()");
         final String NAME = "EndEntityProfileReferenceDetection";
         try {
+            // Get a CA that really does exist, otherwise we will not be "authorized" to this CA
+            final Collection<Integer> caIds = caSession.getAvailableCAs();
+            final int caid = caIds.iterator().next();
         	try {
         		EndEntityProfile profile = new EndEntityProfile();
         		profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, ""+1337);
-        		profile.setValue(EndEntityProfile.AVAILCAS, 0, ""+1338);
-        		endEntityProfileSession.addEndEntityProfile(admin, NAME, profile);
+        		profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(caid));
+        		endEntityProfileSession.addEndEntityProfile(roleMgmgToken, NAME, profile);
         	} catch (EndEntityProfileExistsException pee) {
         		log.warn("Failed to add Certificate Profile " + NAME + ". Assuming this is caused from a previous failed test..");
         	}
-        	assertTrue("Unable to detect that Certificate Profile Id was present in End Entity Profile.", endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(admin, 1337));
-        	assertFalse("Unable to detect that Certificate Profile Id was not present in End Entity Profile.", endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(admin, 7331));
-        	assertTrue("Unable to detect that CA Id was present in Certificate Profile.", endEntityProfileSession.existsCAInEndEntityProfiles(admin, 1338));
-        	assertFalse("Unable to detect that CA Id was not present in Certificate Profile.", endEntityProfileSession.existsCAInEndEntityProfiles(admin, 8331));
+        	assertTrue("Unable to detect that Certificate Profile Id was present in End Entity Profile.", endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(roleMgmgToken, 1337));
+        	assertFalse("Unable to detect that Certificate Profile Id was not present in End Entity Profile.", endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(roleMgmgToken, 7331));
+        	assertTrue("Unable to detect that CA Id was present in Certificate Profile.", endEntityProfileSession.existsCAInEndEntityProfiles(roleMgmgToken, caid));
+        	assertFalse("Unable to detect that CA Id was not present in Certificate Profile.", endEntityProfileSession.existsCAInEndEntityProfiles(roleMgmgToken, 8331));
         } finally {
-        	endEntityProfileSession.removeEndEntityProfile(admin, NAME);
+        	endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, NAME);
         }
         log.trace("<test11EndEntityProfileReferenceDetection()");
     }
@@ -357,36 +423,101 @@ public class EndEntityProfileTest {
         log.trace(">test12OperationsOnEmptyProfile()");
     	final EndEntityProfile profile = new EndEntityProfile();
         try {
-        	endEntityProfileSession.addEndEntityProfile(admin, EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME, profile);
+        	endEntityProfileSession.addEndEntityProfile(roleMgmgToken, EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME, profile);
         	fail("Was able to add profile named " + EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
         } catch (EndEntityProfileExistsException pee) {
         	// Expected
         }
         try {
-        	final int eepId = endEntityProfileSession.getEndEntityProfileId(admin, EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
-        	endEntityProfileSession.addEndEntityProfile(admin, eepId, "somerandomname", profile);
+        	final int eepId = endEntityProfileSession.getEndEntityProfileId(roleMgmgToken, EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
+        	endEntityProfileSession.addEndEntityProfile(roleMgmgToken, eepId, "somerandomname", profile);
         	fail("Was able to add profile with EEP Id " + eepId);
         } catch (EndEntityProfileExistsException pee) {
         	// Expected
         }
         try {
-        	endEntityProfileSession.cloneEndEntityProfile(admin, "ignored", EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
+        	endEntityProfileSession.cloneEndEntityProfile(roleMgmgToken, "ignored", EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
         	fail("Clone to " + EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME + " did not throw EndEntityProfileExistsException");
         } catch (EndEntityProfileExistsException pee) {
         	// Expected
         }
         try {
-        	endEntityProfileSession.renameEndEntityProfile(admin, "ignored", EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
+        	endEntityProfileSession.renameEndEntityProfile(roleMgmgToken, "ignored", EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME);
         	fail("Rename to " + EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME + " did not throw EndEntityProfileExistsException");
         } catch (EndEntityProfileExistsException pee) {
         	// Expected
         }
         try {
-        	endEntityProfileSession.renameEndEntityProfile(admin, EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME, "ignored"	);
+        	endEntityProfileSession.renameEndEntityProfile(roleMgmgToken, EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME, "ignored"	);
         	fail("Rename from " + EndEntityProfileSessionRemote.EMPTY_ENDENTITYPROFILENAME + " did not throw EndEntityProfileExistsException");
         } catch (EndEntityProfileExistsException pee) {
         	// Expected
         }
         log.trace("<test12OperationsOnEmptyProfile()");
     }
+    
+    @Test
+    public void test08Authorization() throws Exception {
+        
+        final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test EndEntityProfileSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
+
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        credentials.add(certificate);
+        Set<X500Principal> principals = new HashSet<X500Principal>();
+        principals.add(certificate.getSubjectX500Principal());
+
+        AuthenticationToken adminTokenNoAuth = new X509CertificateAuthenticationToken(principals, credentials);
+
+        try {
+            EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH");
+            assertNull(eep);
+            EndEntityProfile profile = new EndEntityProfile();
+            endEntityProfileSession.addEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH", profile);
+            eep = endEntityProfileSession.getEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH");
+            assertNotNull(eep);
+            
+            try {
+                endEntityProfileSession.addEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH1", profile);
+                assertTrue("should throw", false);
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD
+            }
+            try {
+                endEntityProfileSession.cloneEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH", "TESTEEPROFNOAUTH1");                assertTrue("should throw", false);
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD
+            }
+            try {
+                endEntityProfileSession.renameEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH", "TESTEEPROFNOAUTH1");
+                assertTrue("should throw", false);
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD
+            }
+            try {
+                endEntityProfileSession.removeEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH");
+                assertTrue("should throw", false);
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD
+            }
+            try {
+                // EE profiles checks for authorization to the CAs that are present as AVAILCAs.
+                // if we try to use a non existing CaId, the admin will not be authorized to this, because it is not one
+                // of the admins authorizedCAs
+                EndEntityProfile profileWithBadCaId = new EndEntityProfile();
+                profileWithBadCaId.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(1337));
+                profileWithBadCaId.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(1337));
+                endEntityProfileSession.addEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH2", profileWithBadCaId);
+                assertTrue("should throw", false);
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD
+            }
+        } finally {
+            endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH");
+            endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH1");
+            endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH2");
+        }
+    }
+
 }
