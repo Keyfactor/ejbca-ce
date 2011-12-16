@@ -7,8 +7,9 @@ that the old EJBCA rules have been converted to the newer CESeCore rules, while 
 in the new Secure Audit logging have been removed (all old rules matching /log_functionality/view_log/*_entries). 
 Thus in the new logging system it is no longer possible to add rules to a role allowing that rule to only view a
 certain type of log event depending on what entry that event was registered as. Old rules are upgraded during 
-<ant post-upgrade>, which means that Supervisor roles won't work until this step is performed. 
-
+<ant post-upgrade>, which means that Supervisor roles won't work until this step is performed. Installations made in
+5.0.0 or 5.0.1 need to be upgraded manually (see UPGRADE document), while installations upgraded from 4.0.x will have
+their rules upgraded as part of the standard upgrade procedure. 
 
 EJBCA 5.0.1
 -----------
