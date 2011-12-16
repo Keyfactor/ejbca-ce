@@ -23,11 +23,18 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 5.0.x to EJBCA 5.0.2
+--------------------------------
+Due to a bug found in EJBCA's logging rules (ECA-2408), rules in new installations made for versions 5.0.0
+and 5.0.1 need to be manually upgraded with an SQL script. This script can be found attached top the issue
+at https://jira.primekey.se/browse/ECA-2408
+Installations upgraded from 4.0.x are upgraded automatically. 
+
 From EJBCA 4.0.x to EJBCA 5.0.x
 --------------------------------
 Support for the old LogEntryData has been dropped in EJBCA 5.0 and is replaced by a new AuditRecordData. 
 If you need to old audit records export the logs before upgrading. There is also a tool to export them after upgrade.
-The new audit log function have the capabilitiy for audit record protection, at the same time as being cluster friendly. 
+The new audit log function have the capability for audit record protection, at the same time as being cluster friendly. 
 
 EJBCA 5.0 introduces a new access control mechanism that can provide more functionality and more well defined operations.
 Some of the older access rules, such as the super administrator, has changed and needs to be modified in the post-upgrade step.
