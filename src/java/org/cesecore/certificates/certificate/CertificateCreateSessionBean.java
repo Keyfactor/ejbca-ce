@@ -64,6 +64,7 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -127,7 +128,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
     @Override
     public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData, final RequestMessage req,
-            final Class responseClass) throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException,
+            final Class<? extends ResponseMessage> responseClass) throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException,
             CADoesntExistsException, CertificateCreateException, CesecoreException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(IRequestMessage)");

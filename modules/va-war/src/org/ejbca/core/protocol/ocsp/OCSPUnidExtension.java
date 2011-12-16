@@ -33,6 +33,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.ocsp.CertificateStatus;
@@ -155,7 +156,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
      * @param status CertificateStatus the status the certificate has according to the OCSP responder, null means the cert is good
 	 * @return X509Extension that will be added to responseExtensions by OCSP responder, or null if an error occurs
 	 */
-	public Hashtable process(HttpServletRequest request, X509Certificate cert, CertificateStatus status) {
+	public Hashtable<DERObjectIdentifier, X509Extension> process(HttpServletRequest request, X509Certificate cert, CertificateStatus status) {
         if (m_log.isTraceEnabled()) {
             m_log.trace(">process()");            
         }
@@ -221,7 +222,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
 		String errMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", request.getRemoteAddr(), request.getRemoteHost(), fnr, sn);
         m_log.info(errMsg);
         FnrFromUnidExtension ext = new FnrFromUnidExtension(fnr);
-        Hashtable ret = new Hashtable();
+        Hashtable<DERObjectIdentifier, X509Extension> ret = new Hashtable<DERObjectIdentifier, X509Extension>();
         ret.put(FnrFromUnidExtension.FnrFromUnidOid, new X509Extension(false, new DEROctetString(ext)));
 		return ret;
 	}

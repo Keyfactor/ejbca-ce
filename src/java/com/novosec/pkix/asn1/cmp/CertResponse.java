@@ -71,7 +71,8 @@ public class CertResponse implements DEREncodable
 	
     public CertResponse( ASN1Sequence seq )
     {
-      Enumeration e = seq.getObjects();
+      @SuppressWarnings("unchecked")
+    Enumeration<Object> e = seq.getObjects();
 
       certReqId = DERInteger.getInstance( e.nextElement() );
       status = PKIStatusInfo.getInstance( e.nextElement() );

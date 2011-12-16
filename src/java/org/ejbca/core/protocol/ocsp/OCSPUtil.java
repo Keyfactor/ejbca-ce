@@ -378,7 +378,6 @@ public class OCSPUtil {
         	// Table of extensions to include in the response
             X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
             if (null != ext) {
-                //m_log.debug("Found extension Nonce");
                 table.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
             }
         }
