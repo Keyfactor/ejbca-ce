@@ -44,7 +44,7 @@ public class CertReqMsg implements DEREncodable
 {
     CertRequest       certReq;
     ProofOfPossession pop;
-    Vector            regInfos = new Vector();
+    Vector<AttributeTypeAndValue>            regInfos = new Vector<AttributeTypeAndValue>();
 
     public static CertReqMsg getInstance( ASN1TaggedObject obj, boolean explicit )
     {
@@ -67,7 +67,8 @@ public class CertReqMsg implements DEREncodable
 	
     public CertReqMsg( ASN1Sequence seq )
     {
-      Enumeration e = seq.getObjects();
+      @SuppressWarnings("unchecked")
+    Enumeration<Object> e = seq.getObjects();
       this.certReq = CertRequest.getInstance(e.nextElement());
 
       Object obj = null;

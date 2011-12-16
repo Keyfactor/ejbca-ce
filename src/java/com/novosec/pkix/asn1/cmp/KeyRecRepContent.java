@@ -48,8 +48,8 @@ public class KeyRecRepContent implements DEREncodable
 {
   PKIStatusInfo            status;
   X509CertificateStructure newSigCert;
-  Vector                   caCerts      = new Vector();
-  Vector                   keyPairHists = new Vector();
+    Vector<X509CertificateStructure> caCerts = new Vector<X509CertificateStructure>();
+    Vector<CertifiedKeyPair> keyPairHists = new Vector<CertifiedKeyPair>();
 
   public static KeyRecRepContent getInstance(ASN1TaggedObject obj, boolean explicit)
   {
@@ -72,7 +72,8 @@ public class KeyRecRepContent implements DEREncodable
 
   public KeyRecRepContent(ASN1Sequence seq)
   {
-    Enumeration e = seq.getObjects();
+    @SuppressWarnings("unchecked")
+    Enumeration<Object> e = seq.getObjects();
 
     status = PKIStatusInfo.getInstance(e.nextElement());
 

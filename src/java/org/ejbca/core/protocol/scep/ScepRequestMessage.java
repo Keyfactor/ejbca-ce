@@ -187,8 +187,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
         try {
             CMSSignedData csd = new CMSSignedData(scepmsg);
             SignerInformationStore infoStore = csd.getSignerInfos();
-            Collection signers = infoStore.getSigners();
-            Iterator iter = signers.iterator();
+            @SuppressWarnings("unchecked")
+            Collection<SignerInformation> signers = infoStore.getSigners();
+            Iterator<SignerInformation> iter = signers.iterator();
             if (iter.hasNext()) {
             	SignerInformation si = (SignerInformation)iter.next();
             	preferredDigestAlg = si.getDigestAlgOID();
@@ -239,11 +240,11 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                 }
             }
 
-            Enumeration sis = sd.getSignerInfos().getObjects();
+            Enumeration<?> sis = sd.getSignerInfos().getObjects();
 
             if (sis.hasMoreElements()) {
                 SignerInfo si = new SignerInfo((ASN1Sequence) sis.nextElement());
-                Enumeration attr = si.getAuthenticatedAttributes().getObjects();
+                Enumeration<?> attr = si.getAuthenticatedAttributes().getObjects();
 
                 while (attr.hasMoreElements()) {
                     Attribute a = new Attribute((ASN1Sequence) attr.nextElement());
@@ -251,7 +252,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                     	log.debug("Found attribute: " + a.getAttrType().getId());
                     }
                     if (a.getAttrType().getId().equals(id_senderNonce)) {
-                        Enumeration values = a.getAttrValues().getObjects();
+                        Enumeration<?> values = a.getAttrValues().getObjects();
                         ASN1OctetString str = ASN1OctetString.getInstance(values.nextElement());
                         senderNonce = new String(Base64.encode(str.getOctets(), false));
                         if (log.isDebugEnabled()) {
@@ -259,7 +260,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                         }
                     }
                     if (a.getAttrType().getId().equals(id_transId)) {
-                        Enumeration values = a.getAttrValues().getObjects();
+                        Enumeration<?> values = a.getAttrValues().getObjects();
                         DERPrintableString str = DERPrintableString.getInstance(values.nextElement());
                         transactionId = str.getString();
                         if (log.isDebugEnabled()) {
@@ -267,7 +268,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                         }
                     }
                     if (a.getAttrType().getId().equals(id_messageType)) {
-                        Enumeration values = a.getAttrValues().getObjects();
+                        Enumeration<?> values = a.getAttrValues().getObjects();
                         DERPrintableString str = DERPrintableString.getInstance(values.nextElement());
                         messageType = Integer.parseInt(str.getString());
                         if (log.isDebugEnabled()) {
@@ -297,7 +298,7 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
                     if (ctoid.equals(CMSObjectIdentifiers.envelopedData.getId())) {
                         envData = new EnvelopedData((ASN1Sequence) envEncData.getContent());
                         ASN1Set recipientInfos = envData.getRecipientInfos();
-                        Enumeration e = recipientInfos.getObjects();
+                        Enumeration<?> e = recipientInfos.getObjects();
                         while (e.hasMoreElements()) {
                             RecipientInfo ri = RecipientInfo.getInstance(e.nextElement());
                             KeyTransRecipientInfo recipientInfo = KeyTransRecipientInfo.getInstance(ri.getInfo());
@@ -356,8 +357,9 @@ public class ScepRequestMessage extends PKCS10RequestMessage implements RequestM
 
         CMSEnvelopedData ed = new CMSEnvelopedData(envEncData);
         RecipientInformationStore recipients = ed.getRecipientInfos();
-        Collection c = recipients.getRecipients();
-        Iterator it = c.iterator();
+        @SuppressWarnings("unchecked")
+        Collection<RecipientInformation> c = recipients.getRecipients();
+        Iterator<RecipientInformation> it = c.iterator();
         byte[] decBytes = null;
 
         while (it.hasNext()) {

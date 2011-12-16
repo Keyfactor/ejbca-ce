@@ -72,7 +72,8 @@ public class OOBCertHash implements DEREncodable
 	
     public OOBCertHash( ASN1Sequence seq )
     {
-      Enumeration e = seq.getObjects();
+      @SuppressWarnings("unchecked")
+    Enumeration<Object> e = seq.getObjects();
       
       while( e.hasMoreElements() )
       {

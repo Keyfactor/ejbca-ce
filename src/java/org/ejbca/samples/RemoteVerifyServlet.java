@@ -61,6 +61,8 @@ import org.ejbca.ui.web.RequestHelper;
  * @version $Id$
  */
 public class RemoteVerifyServlet extends HttpServlet {
+    private static final long serialVersionUID = -2870243590371650403L;
+
     private static Logger log = Logger.getLogger(RemoteVerifyServlet.class);
 
     /** Status code for successful communication */
@@ -109,7 +111,7 @@ public class RemoteVerifyServlet extends HttpServlet {
      * Basic structure containing users. Top level keyed on instance gives new Hashtable keyed on
      * username with String[] = { password, result } as data.
      */
-    protected static Hashtable users;
+    protected static Hashtable<String, String[]> users;
 
     /**
      * Delimiter between parts in DN
@@ -170,7 +172,7 @@ public class RemoteVerifyServlet extends HttpServlet {
             return;
         }
 
-        Enumeration dnParts = new StringTokenizer(dnPartsString, DNPART_DELIMITER);
+        Enumeration<Object> dnParts = new StringTokenizer(dnPartsString, DNPART_DELIMITER);
 
         while (dnParts.hasMoreElements()) {
             String dnPart = (String) dnParts.nextElement();
@@ -281,7 +283,7 @@ public class RemoteVerifyServlet extends HttpServlet {
 
         RequestHelper.setDefaultCharacterEncoding(req);
         try {
-            Map params = req.getParameterMap();
+            Map<?, ?> params = req.getParameterMap();
 
             if (params.containsKey(STATUS_KEY)) {
                 out.println("\n");
@@ -378,7 +380,7 @@ public class RemoteVerifyServlet extends HttpServlet {
         // Will this work with content length == -1 ?? (Unknown length)
         // Don't know, but -1 is possible only if we have a GET
         // and we KNOW this is a POST :-)
-        Map params = req.getParameterMap();
+        Map<?, ?> params = req.getParameterMap();
 
         try {
             // Extract parameters from client
@@ -451,13 +453,13 @@ public class RemoteVerifyServlet extends HttpServlet {
                     debugLog("GRANTING request for '" + username + "'");
 
                     // loop over all elements in resultHash, print one by one
-                    Hashtable resultParams = result.getResult();
+                    Hashtable<String, String> resultParams = result.getResult();
                     String key;
 
                     // Standard code for printing a Hash.
-                    for (Enumeration keys = resultParams.keys(); keys.hasMoreElements();) {
-                        key = (String) keys.nextElement();
-                        out.println(key + "=" + ((String) resultParams.get(key)));
+                    for (Enumeration<String> keys = resultParams.keys(); keys.hasMoreElements();) {
+                        key = keys.nextElement();
+                        out.println(key + "=" + resultParams.get(key));
                     }
                 } else { // rejected.
                     increaseRejected();
@@ -544,7 +546,7 @@ public class RemoteVerifyServlet extends HttpServlet {
      */
     protected synchronized void loadUserDB() {
         // First we clear cached users.
-        Hashtable oldEnUsers = users;
+        Hashtable<String, String[]> oldEnUsers = users;
         users = null;
 
         BufferedReader in = null;
@@ -565,7 +567,7 @@ public class RemoteVerifyServlet extends HttpServlet {
                     readMore = false;
                 } else {
                     if (!line.startsWith(LINE_COMMENT)) {
-                        Enumeration lineParts = new StringTokenizer(line, RECORD_SEPARATOR);
+                        Enumeration<Object> lineParts = new StringTokenizer(line, RECORD_SEPARATOR);
                         String username = (String) lineParts.nextElement();
                         debugLog("loadUserDB: username=" + username);
 
@@ -612,7 +614,7 @@ public class RemoteVerifyServlet extends HttpServlet {
     protected void addUserData(String username, String[] userData) {
         if (users == null) {
             debugLog("addUserData: Creating new users.");
-            users = new Hashtable();
+            users = new Hashtable<String, String[]>();
         }
 
         debugLog("addUserData: Adding '" + username);
