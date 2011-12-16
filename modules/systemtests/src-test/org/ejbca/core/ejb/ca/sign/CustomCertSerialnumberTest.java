@@ -108,7 +108,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILKEYSTORE, 0, Integer.toString(SecConst.TOKEN_SOFT_BROWSERGEN));
         assertTrue(profile.getUse(EndEntityProfile.CERTSERIALNR, 0));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "FOOEEPROFILE", profile);
-        fooEEProfileId = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "FOOEEPROFILE");
+        fooEEProfileId = endEntityProfileSession.getEndEntityProfileId("FOOEEPROFILE");
       
     }
 

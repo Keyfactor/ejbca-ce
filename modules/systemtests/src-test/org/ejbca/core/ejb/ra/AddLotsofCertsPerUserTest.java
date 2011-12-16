@@ -158,7 +158,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             }
 
             int cid = certificateProfileSession.getCertificateProfileId(certificateProfileName);
-            int eid = endEntityProfileSession.getEndEntityProfileId(administrator, endEntityProfileName);
+            int eid = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
             if (eid == 0) {
                 EndEntityProfile endEntityProfile = new EndEntityProfile(true);
                 endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cid);
@@ -166,7 +166,7 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
                 // endEntityProfile.setValue(EndEntityProfile.ENDTIME, 0,
                 // "0:0:10");
                 endEntityProfileSession.addEndEntityProfile(administrator, endEntityProfileName, endEntityProfile);
-                eid = endEntityProfileSession.getEndEntityProfileId(administrator, endEntityProfileName);
+                eid = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
             }
             userdata.setEndEntityProfileId(eid);
             ExtendedInformation extendedInformation = new ExtendedInformation();

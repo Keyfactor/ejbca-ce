@@ -295,7 +295,7 @@ public class EjbcaWSHelper {
 			throw new CADoesntExistsException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
 		}
 		
-		final int endentityprofileid = endEntityProfileSession.getEndEntityProfileId(admin,userdata.getEndEntityProfileName());
+		final int endentityprofileid = endEntityProfileSession.getEndEntityProfileId(userdata.getEndEntityProfileName());
 		if(endentityprofileid == 0){
 			throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, 
                 "Error End Entity profile " + userdata.getEndEntityProfileName() + " does not exist.");
@@ -448,7 +448,7 @@ public class EjbcaWSHelper {
 		}
 		dataWS.setCaName(caname);
 		
-		String endentityprofilename = endEntityProfileSession.getEndEntityProfileName(admin,userdata.getEndEntityProfileId());
+		String endentityprofilename = endEntityProfileSession.getEndEntityProfileName(userdata.getEndEntityProfileId());
 		if(endentityprofilename == null){
 			String message = "Error End Entity profile id " + userdata.getEndEntityProfileId() + " does not exist. User: "+username;
 			log.error(message);
@@ -619,7 +619,7 @@ public class EjbcaWSHelper {
 		Query retval = new Query(Query.TYPE_USERQUERY);		  		
 		switch(usermatch.getMatchwith()){
 		  case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
-			  String endentityprofilename = Integer.toString(endEntityProfileSession.getEndEntityProfileId(admin,usermatch.getMatchvalue()));
+			  String endentityprofilename = Integer.toString(endEntityProfileSession.getEndEntityProfileId(usermatch.getMatchvalue()));
 			  retval.add(usermatch.getMatchwith(),usermatch.getMatchtype(),endentityprofilename);
 			  break;
 		  case UserMatch.MATCH_WITH_CERTIFICATEPROFILE:

@@ -409,7 +409,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
             if (currentProfile == BasicAccessRuleSet.ENDENTITYPROFILE_ALL) {
                 list.add(new SelectItem(currentProfile, getEjbcaWebBean().getText("ALL")));
             } else {
-                list.add(new SelectItem(currentProfile, ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(), currentProfile)));
+                list.add(new SelectItem(currentProfile, ejb.getEndEntityProfileSession().getEndEntityProfileName(currentProfile)));
             }
         }
         return list;
@@ -525,7 +525,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
         AccessRuleData accessRule = (AccessRuleData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("accessRule");
         String resource = accessRule.getAccessRuleName();
         // Check if it is a profile rule, then replace profile id with profile name.
-        Map<Integer, String> profileMap = ejb.getEndEntityProfileSession().getEndEntityProfileIdToNameMap(getAdmin());
+        Map<Integer, String> profileMap = ejb.getEndEntityProfileSession().getEndEntityProfileIdToNameMap();
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX 

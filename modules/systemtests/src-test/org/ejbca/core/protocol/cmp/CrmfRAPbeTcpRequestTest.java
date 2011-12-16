@@ -154,7 +154,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
             }
         }
         int cpId = certificateProfileSession.getCertificateProfileId(CPNAME);
-        if (endEntityProfileSession.getEndEntityProfile(admin, EEPNAME) == null) {
+        if (endEntityProfileSession.getEndEntityProfile(EEPNAME) == null) {
             // Configure an EndEntity profile (CmpRA) with allow CN, O, C in DN and rfc822Name (uncheck 'Use entity e-mail field' and check
             // 'Modifyable'), MS UPN in altNames in the end entity profile.
             EndEntityProfile eep = new EndEntityProfile(true);

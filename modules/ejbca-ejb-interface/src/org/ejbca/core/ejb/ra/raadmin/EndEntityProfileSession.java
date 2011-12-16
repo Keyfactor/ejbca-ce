@@ -87,7 +87,7 @@ public interface EndEntityProfileSession {
     Collection<Integer> getAuthorizedEndEntityProfileIds(AuthenticationToken admin);
 
     /** @return mapping of profile id (Integer) to profile name (String). */
-    Map<Integer, String> getEndEntityProfileIdToNameMap(AuthenticationToken admin);
+    Map<Integer, String> getEndEntityProfileIdToNameMap();
 
     /** Clear and reload end entity profile caches. */
     void flushProfileCache();
@@ -96,53 +96,42 @@ public interface EndEntityProfileSession {
      * Finds a end entity profile by id.
      * @return EndEntityProfile (cloned) or null if it does not exist
      */
-    EndEntityProfile getEndEntityProfile(AuthenticationToken admin, int id);
+    EndEntityProfile getEndEntityProfile(int id);
 
     /**
      * Get a copy of an EndEntityProfile.
      * @return EndEntityProfile (cloned) or null if it does not exist
      */
-    EndEntityProfile getEndEntityProfile(AuthenticationToken admin, java.lang.String profilename);
+    EndEntityProfile getEndEntityProfile(java.lang.String profilename);
 
     /**
      * Returns a end entity profiles id, given it's profilename
      * @return the id or 0 if profile cannot be found.
      */
-    int getEndEntityProfileId(AuthenticationToken admin, java.lang.String profilename);
+    int getEndEntityProfileId(java.lang.String profilename);
 
     /**
      * Returns a end entity profiles name given it's id.
      * @return profile's name or null if profile id does not exist.
      */
-    String getEndEntityProfileName(AuthenticationToken admin, int id);
+    String getEndEntityProfileName(int id);
 
     /**
      * Method to check if a CertificateProfile exists in any of the end entity
      * profiles. Used to avoid desynchronization of certificate profile data.
-     * 
      * @param certificateprofileid the CertificateProfile's id to search for.
+     * 
      * @return true if CertificateProfile exists in any EndEntityProfile.
      */
-    boolean existsCertificateProfileInEndEntityProfiles(AuthenticationToken admin, int certificateprofileid);
+    boolean existsCertificateProfileInEndEntityProfiles(int certificateprofileid);
 
     /**
      * Method to check if a CA exists in any of the end entity profiles. Used to
      * avoid desynchronization of CA data.
-     * 
      * @param caid the caid to search for.
+     * 
      * @return true if CA exists in any of the end entity profiles.
      */
-    boolean existsCAInEndEntityProfiles(AuthenticationToken admin, int caid);
-
-    /**
-     * A method designed to be called at startup time to (possibly) upgrade end
-     * entity profiles. This method will read all End Entity Profiles and as a
-     * side-effect upgrade them if the version if changed for upgrade. Can have
-     * a side-effect of upgrading a profile, therefore the Required transaction
-     * setting.
-     * 
-     * @param admin administrator calling the method
-     */
-    void initializeAndUpgradeProfiles(AuthenticationToken admin);
+    boolean existsCAInEndEntityProfiles(int caid);
 
 }

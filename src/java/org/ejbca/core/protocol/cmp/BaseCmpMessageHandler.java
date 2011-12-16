@@ -106,7 +106,7 @@ public class BaseCmpMessageHandler {
 			}
 			endEntityProfile = keyId;
 		} 
-		ret = endEntityProfileSession.getEndEntityProfileId(admin, endEntityProfile);
+		ret = endEntityProfileSession.getEndEntityProfileId(endEntityProfile);
 		if (ret == 0) {
 			final String msg = "No end entity profile found with name: "+endEntityProfile;
 			LOG.info(msg);
@@ -126,7 +126,7 @@ public class BaseCmpMessageHandler {
 				LOG.debug("Using default CA from End Entity Profile CA when adding users in RA mode.");
 			}
 			// get default CA id from end entity profile
-			final EndEntityProfile eeProfile = endEntityProfileSession.getEndEntityProfile(admin, eeProfileId);
+			final EndEntityProfile eeProfile = endEntityProfileSession.getEndEntityProfile(eeProfileId);
 			ret = eeProfile.getDefaultCA();
 			if (ret == -1) {
 				LOG.error("No default CA id for end entity profile: "+eeProfileId);
@@ -163,7 +163,7 @@ public class BaseCmpMessageHandler {
 		String certificateProfile = CmpConfiguration.getRACertificateProfile();
 		if (StringUtils.equals(certificateProfile, "ProfileDefault")) {
             // get default certificate profile id from end entity profile
-            final EndEntityProfile eeProfile = endEntityProfileSession.getEndEntityProfile(admin, eeProfileId);
+            final EndEntityProfile eeProfile = endEntityProfileSession.getEndEntityProfile(eeProfileId);
             if (eeProfile == null) {
                 final String msg = INTRES.getLocalizedMessage("store.errorcertprofilenotexist", eeProfileId);
                 LOG.info(msg);

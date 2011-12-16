@@ -111,7 +111,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			int endentityprofileid = SecConst.EMPTY_ENDENTITYPROFILE;
 			if (eeprofile != null) {
 				getLogger().debug("Searching for End Entity Profile " + eeprofile);
-				endentityprofileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(cliUserName, cliPassword), eeprofile);
+				endentityprofileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(eeprofile);
 				if (endentityprofileid == 0) {
 					getLogger().error("End Entity Profile " + eeprofile + " does not exist.");
 					throw new Exception("End Entity Profile '" + eeprofile + "' does not exist.");
@@ -138,7 +138,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			getLogger().info("CA Name: " + caname);
 			getLogger().info("Certificate Profile: " + ejb.getCertificateProfileSession().getCertificateProfileName(certificateprofileid));
 			getLogger().info("End Entity Profile: " +
-			        ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(cliUserName, cliPassword), endentityprofileid));
+			        ejb.getEndEntityProfileSession().getEndEntityProfileName(endentityprofileid));
 			
 			String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
 			if (subjectAltName != null) {
@@ -226,7 +226,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			Iterator<Integer> iter = eps.iterator();
 			while (iter.hasNext()) {
 				int epid = ((Integer)iter.next()).intValue();
-				endEntityProfiles += (endEntityProfiles.length()==0?"":", ") + "\"" + ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(cliUserName, cliPassword), epid) + "\"";
+				endEntityProfiles += (endEntityProfiles.length()==0?"":", ") + "\"" + ejb.getEndEntityProfileSession().getEndEntityProfileName(epid) + "\"";
 			}
 		}
 		catch (Exception e) {

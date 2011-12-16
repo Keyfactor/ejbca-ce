@@ -243,7 +243,7 @@ public class CAInterfaceBean implements Serializable {
         if(certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY){
           // Check if any users or profiles use the certificate id.
           certificateprofileused = adminsession.checkForCertificateProfileId(certificateprofileid)
-                                || endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(administrator, certificateprofileid)
+                                || endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(certificateprofileid)
 								|| hardtokensession.existsCertificateProfileInHardTokenProfiles(administrator, certificateprofileid);
         }else{
            certificateprofileused = caadminsession.existsCertificateProfileInCAs(certificateprofileid);

@@ -1034,7 +1034,7 @@ public class EjbcaWS implements IEjbcaWS {
 			  boolean loadkeys = (userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
 			  log.debug("loadkeys: "+loadkeys);
 			  int endEntityProfileId = userdata.getEndEntityProfileId();
-			  EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(admin, endEntityProfileId);
+			  EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
 			  boolean reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
 			  log.debug("reusecertificate: "+reusecertificate);
 
@@ -1425,7 +1425,7 @@ public class EjbcaWS implements IEjbcaWS {
 			endEntityProfileId = userDataVO.getEndEntityProfileId();
 			userExists = true;
 		}else{
-			endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(intAdmin, userDataWS.getEndEntityProfileName());	    	  
+			endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(userDataWS.getEndEntityProfileName());	    	  
 			if(endEntityProfileId == 0){
 				throw EjbcaWSHelper.getEjbcaException("Error given end entity profile : " + userDataWS.getEndEntityProfileName() +" could not be found",
 						logger, ErrorCode.EE_PROFILE_NOT_EXISTS, null);
@@ -2239,7 +2239,7 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try {
 			Collection<Integer> ids = endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin);
-			final Map<Integer,String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap(admin);			
+			final Map<Integer,String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap();			
 			for (final Integer id : ids) {
 				ret.put(idtonamemap.get(id), id);
 			}
@@ -2263,7 +2263,7 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try {
-			EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(admin, entityProfileId);
+			EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(entityProfileId);
 			if (profile != null) {				
 				String value = profile.getValue(EndEntityProfile.AVAILCERTPROFILES,0);
 				if (value != null) {
@@ -2293,7 +2293,7 @@ public class EjbcaWS implements IEjbcaWS {
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try {
-			EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(admin, entityProfileId);
+			EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(entityProfileId);
 			if (profile != null) {
 				Collection<String> cas = profile.getAvailableCAs(); // list of CA ids available in profile
 				HashMap<Integer,String> map = caSession.getCAIdToNameMap();

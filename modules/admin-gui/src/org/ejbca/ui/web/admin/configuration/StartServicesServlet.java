@@ -205,7 +205,7 @@ public class StartServicesServlet extends HttpServlet {
         // And add this node to list of nodes
         log.trace(">init loading EndEntityProfile to check for upgrades");
         try {
-        	endEntityProfileSession.initializeAndUpgradeProfiles(admin);        	
+        	endEntityProfileSession.initializeAndUpgradeProfiles();        	
         } catch (Exception e) {
         	log.error("Error initializing end entity profiles: ", e);
         }

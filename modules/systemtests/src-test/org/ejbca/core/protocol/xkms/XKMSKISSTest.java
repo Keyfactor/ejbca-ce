@@ -179,7 +179,7 @@ public class XKMSKISSTest {
         } catch (EndEntityProfileExistsException e) {
             log.info("Endentityprofile XKMSTESTPROFILE already exists.");
         }
-        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(administrator, "XKMSTESTPROFILE");
+        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId("XKMSTESTPROFILE");
 
         username1 = genUserName();
         String pwd = "foo123";

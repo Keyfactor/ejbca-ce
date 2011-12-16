@@ -358,7 +358,7 @@ public class BatchMakeP12 extends BaseCommand {
         KeyPair rsaKeys = null;
         X509Certificate orgCert = null;
         if (getUseKeyRecovery(cliUserName, cliPassword) && keyrecoverflag) {
-            boolean reusecertificate = ejb.getEndEntityProfileSession().getEndEntityProfile(getAdmin(cliUserName, cliPassword), data.getEndEntityProfileId()).getReUseKeyRecoveredCertificate();
+            boolean reusecertificate = ejb.getEndEntityProfileSession().getEndEntityProfile(data.getEndEntityProfileId()).getReUseKeyRecoveredCertificate();
             // Recover Keys
 
             KeyRecoveryData recoveryData = ejb.getKeyRecoverySession().keyRecovery(getAdmin(cliUserName, cliPassword), data.getUsername(), data.getEndEntityProfileId());

@@ -221,7 +221,7 @@ public class KRSSResponseGenerator extends
 				KeyRecoveryData keyData = null;
 				boolean reusecertificate = false;
 				if(loadkeys){
-					EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(pubAdmin, userDataVO.getEndEntityProfileId());
+					EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(userDataVO.getEndEntityProfileId());
 					reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
 
 					// used saved keys.

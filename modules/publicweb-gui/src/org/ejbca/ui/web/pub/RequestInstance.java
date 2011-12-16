@@ -162,7 +162,7 @@ public class RequestInstance {
 
 			int endEntityProfileId = data.getEndEntityProfileId();
 			int certificateProfileId = data.getCertificateProfileId();
-			EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(administrator, endEntityProfileId);
+			EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
 			boolean reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
 			// Set a new certificate profile, if we have requested one specific
 			if (StringUtils.isNotEmpty(certprofile)) {

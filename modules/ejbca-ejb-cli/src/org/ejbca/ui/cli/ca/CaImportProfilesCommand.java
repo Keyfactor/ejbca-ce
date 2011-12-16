@@ -113,10 +113,10 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                 // can insert a mapping in certificateProfileIdMapping when we have created a new id
                                 int oldprofileid = -1; 
                                 if (entityprofile) {
-                                    if (ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(cliUserName, cliPassword), profilename) != SecConst.PROFILE_NO_PROFILE) {
+                                    if (ejb.getEndEntityProfileSession().getEndEntityProfileId(profilename) != SecConst.PROFILE_NO_PROFILE) {
                                     	getLogger().error("Entity profile '"+profilename+"' already exist in database.");
                                         error = true;
-                                    } else if (ejb.getEndEntityProfileSession().getEndEntityProfile(getAdmin(cliUserName, cliPassword), profileid) != null) {
+                                    } else if (ejb.getEndEntityProfileSession().getEndEntityProfile(profileid) != null) {
                                         int newprofileid = ejb.getEndEntityProfileSession().findFreeEndEntityProfileId();
                                         getLogger().warn("Entity profileid '"+profileid+"' already exist in database. Using " + newprofileid + " instead.");
                                         profileid = newprofileid;

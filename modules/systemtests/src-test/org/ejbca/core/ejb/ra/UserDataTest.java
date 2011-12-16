@@ -257,7 +257,7 @@ public class UserDataTest extends CaTestCase {
             profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + caid);
             profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
             endEntityProfileSession.addEndEntityProfile(admin, "TESTREQUESTCOUNTER", profile);
-            pid = endEntityProfileSession.getEndEntityProfileId(admin, "TESTREQUESTCOUNTER");
+            pid = endEntityProfileSession.getEndEntityProfileId("TESTREQUESTCOUNTER");
         } catch (EndEntityProfileExistsException pee) {
             assertTrue("Can not create end entity profile", false);
         }
@@ -282,7 +282,7 @@ public class UserDataTest extends CaTestCase {
         assertEquals(0, counter);
 
         // Now allow the counter
-        EndEntityProfile ep = endEntityProfileSession.getEndEntityProfile(admin, pid);
+        EndEntityProfile ep = endEntityProfileSession.getEndEntityProfile(pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "2");
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
@@ -302,7 +302,7 @@ public class UserDataTest extends CaTestCase {
         assertEquals(-1, counter);
 
         // Now disallow the counter, it will be deleted from the user
-        ep = endEntityProfileSession.getEndEntityProfile(admin, pid);
+        ep = endEntityProfileSession.getEndEntityProfile(pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, false);
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
         ei = user.getExtendedinformation();
@@ -314,7 +314,7 @@ public class UserDataTest extends CaTestCase {
         assertEquals(0, counter);
 
         // allow the counter
-        ep = endEntityProfileSession.getEndEntityProfile(admin, pid);
+        ep = endEntityProfileSession.getEndEntityProfile(pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "2");
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
@@ -335,7 +335,7 @@ public class UserDataTest extends CaTestCase {
 
         // test setuserstatus it will re-set the counter
         userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
-        ep = endEntityProfileSession.getEndEntityProfile(admin, pid);
+        ep = endEntityProfileSession.getEndEntityProfile(pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
@@ -357,7 +357,7 @@ public class UserDataTest extends CaTestCase {
         assertEquals(-1, counter);
 
         // test setuserstatus again it will re-set the counter since status is generated
-        ep = endEntityProfileSession.getEndEntityProfile(admin, pid);
+        ep = endEntityProfileSession.getEndEntityProfile(pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
@@ -473,62 +473,62 @@ public class UserDataTest extends CaTestCase {
         EndEntityProfile profile2 = new EndEntityProfile();
         profile2.setPrinterName("bar");
         endEntityProfileSession.addEndEntityProfile(admin, PROFILE_CACHE_NAME_2, profile2);
-        int pid = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_1);
-        String name = endEntityProfileSession.getEndEntityProfileName(admin, pid);
-        int pid1 = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_1);
-        String name1 = endEntityProfileSession.getEndEntityProfileName(admin, pid1);
+        int pid = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_1);
+        String name = endEntityProfileSession.getEndEntityProfileName(pid);
+        int pid1 = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_1);
+        String name1 = endEntityProfileSession.getEndEntityProfileName(pid1);
         assertEquals(pid, pid1);
         assertEquals(name, name1);
-        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(admin, pid);
+        EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(pid);
         assertEquals("foo", profile.getPrinterName());
-        profile = endEntityProfileSession.getEndEntityProfile(admin, name);
+        profile = endEntityProfileSession.getEndEntityProfile(name);
         assertEquals("foo", profile.getPrinterName());
 
-        int pid2 = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_2);
-        String name2 = endEntityProfileSession.getEndEntityProfileName(admin, pid2);
-        profile = endEntityProfileSession.getEndEntityProfile(admin, pid2);
+        int pid2 = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_2);
+        String name2 = endEntityProfileSession.getEndEntityProfileName(pid2);
+        profile = endEntityProfileSession.getEndEntityProfile(pid2);
         assertEquals("bar", profile.getPrinterName());
-        profile = endEntityProfileSession.getEndEntityProfile(admin, name2);
+        profile = endEntityProfileSession.getEndEntityProfile(name2);
         assertEquals("bar", profile.getPrinterName());
 
         // flush caches and make sure it is read correctly again
         endEntityProfileSession.flushProfileCache();
 
-        int pid3 = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_1);
-        String name3 = endEntityProfileSession.getEndEntityProfileName(admin, pid3);
+        int pid3 = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_1);
+        String name3 = endEntityProfileSession.getEndEntityProfileName(pid3);
         assertEquals(pid1, pid3);
         assertEquals(name1, name3);
-        profile = endEntityProfileSession.getEndEntityProfile(admin, pid3);
+        profile = endEntityProfileSession.getEndEntityProfile(pid3);
         assertEquals("foo", profile.getPrinterName());
-        profile = endEntityProfileSession.getEndEntityProfile(admin, name3);
+        profile = endEntityProfileSession.getEndEntityProfile(name3);
         assertEquals("foo", profile.getPrinterName());
 
-        int pid4 = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_2);
-        String name4 = endEntityProfileSession.getEndEntityProfileName(admin, pid4);
+        int pid4 = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_2);
+        String name4 = endEntityProfileSession.getEndEntityProfileName(pid4);
         assertEquals(pid2, pid4);
         assertEquals(name2, name4);
-        profile = endEntityProfileSession.getEndEntityProfile(admin, pid4);
+        profile = endEntityProfileSession.getEndEntityProfile(pid4);
         assertEquals("bar", profile.getPrinterName());
-        profile = endEntityProfileSession.getEndEntityProfile(admin, name4);
+        profile = endEntityProfileSession.getEndEntityProfile(name4);
         assertEquals("bar", profile.getPrinterName());
 
         // Remove a profile and make sure it is not cached still
         endEntityProfileSession.removeEndEntityProfile(admin, PROFILE_CACHE_NAME_1);
-        profile = endEntityProfileSession.getEndEntityProfile(admin, pid1);
+        profile = endEntityProfileSession.getEndEntityProfile(pid1);
         assertNull(profile);
-        int pid5 = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_1);
+        int pid5 = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_1);
         assertEquals(0, pid5);
-        String name5 = endEntityProfileSession.getEndEntityProfileName(admin, pid5);
+        String name5 = endEntityProfileSession.getEndEntityProfileName(pid5);
         assertNull(name5);
 
         // But the other, non-removed profile should still be there
-        int pid6 = endEntityProfileSession.getEndEntityProfileId(admin, PROFILE_CACHE_NAME_2);
-        String name6 = endEntityProfileSession.getEndEntityProfileName(admin, pid6);
+        int pid6 = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_2);
+        String name6 = endEntityProfileSession.getEndEntityProfileName(pid6);
         assertEquals(pid2, pid6);
         assertEquals(name2, name6);
-        profile = endEntityProfileSession.getEndEntityProfile(admin, pid6);
+        profile = endEntityProfileSession.getEndEntityProfile(pid6);
         assertEquals("bar", profile.getPrinterName());
-        profile = endEntityProfileSession.getEndEntityProfile(admin, name6);
+        profile = endEntityProfileSession.getEndEntityProfile(name6);
         assertEquals("bar", profile.getPrinterName());
     } // test07EndEntityProfileMappings
 
@@ -546,11 +546,11 @@ public class UserDataTest extends CaTestCase {
         long cachetime = EjbcaConfiguration.getCacheEndEntityProfileTime();
         assertEquals(1000, cachetime);
         // Make sure profile has the right value from the beginning
-        EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(admin, PROFILE_CACHE_NAME_2);
+        EndEntityProfile eep = endEntityProfileSession.getEndEntityProfile(PROFILE_CACHE_NAME_2);
         eep.setAllowMergeDnWebServices(false);
         endEntityProfileSession.changeEndEntityProfile(admin, PROFILE_CACHE_NAME_2, eep);
         // Read profile
-        eep = endEntityProfileSession.getEndEntityProfile(admin, PROFILE_CACHE_NAME_2);
+        eep = endEntityProfileSession.getEndEntityProfile(PROFILE_CACHE_NAME_2);
         boolean value = eep.getAllowMergeDnWebServices();
         assertFalse(value);
 
@@ -562,14 +562,14 @@ public class UserDataTest extends CaTestCase {
 
         // Wait 2 seconds and try again, now the cache should have been updated
         Thread.sleep(2000);
-        eep = endEntityProfileSession.getEndEntityProfile(admin, PROFILE_CACHE_NAME_2);
+        eep = endEntityProfileSession.getEndEntityProfile(PROFILE_CACHE_NAME_2);
         value = eep.getAllowMergeDnWebServices();
         assertTrue(value);
 
         // Changing using the regular method however should immediately flush the cache
         eep.setAllowMergeDnWebServices(false);
         endEntityProfileSession.changeEndEntityProfile(admin, PROFILE_CACHE_NAME_2, eep);
-        eep = endEntityProfileSession.getEndEntityProfile(admin, PROFILE_CACHE_NAME_2);
+        eep = endEntityProfileSession.getEndEntityProfile(PROFILE_CACHE_NAME_2);
         value = eep.getAllowMergeDnWebServices();
         assertFalse(value);
     }

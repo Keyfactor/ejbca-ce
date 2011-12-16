@@ -24,6 +24,15 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 @Local
 public interface EndEntityProfileSessionLocal extends EndEntityProfileSession {
 
+    /**
+     * A method designed to be called at startup time to (possibly) upgrade end
+     * entity profiles. This method will read all End Entity Profiles and as a
+     * side-effect upgrade them if the version if changed for upgrade. Can have
+     * a side-effect of upgrading a profile, therefore the Required transaction
+     * setting.
+     */
+    void initializeAndUpgradeProfiles();
+
     /** Helper method that checks if an administrator is authorized to all CAs present in the profiles "available CAs"
      * 
      * @param admin administrator to check

@@ -222,7 +222,7 @@ public class MSCertTools {
 
 		boolean newEndEntityProfile = false;
 		endEntityProfileSession.removeEndEntityProfile(admin, endEntityProfileName);	// TODO: This for debug and really inefficient..
-		EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(admin, endEntityProfileName);
+		EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileName);
 
 		if (endEntityProfile == null) {
 			endEntityProfile = new EndEntityProfile(false);
@@ -279,7 +279,7 @@ public class MSCertTools {
 			}
 		}
 		endEntityProfileSession.changeEndEntityProfile(admin, endEntityProfileName, endEntityProfile);
-		return endEntityProfileSession.getEndEntityProfileId(admin, endEntityProfileName);
+		return endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
 	}
 
 	

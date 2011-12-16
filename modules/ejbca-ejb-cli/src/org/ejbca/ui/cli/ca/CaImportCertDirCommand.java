@@ -94,7 +94,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			getLogger().info("CA: " + issuer);
 			// Fetch End Entity Profile info
 			getLogger().debug("Searching for End Entity Profile " + eeProfile);
-			final int endEntityProfileId = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(cliUserName, cliPassword), eeProfile);
+			final int endEntityProfileId = ejb.getEndEntityProfileSession().getEndEntityProfileId(eeProfile);
 			if (endEntityProfileId == 0) {
 				getLogger().error("End Entity Profile " + eeProfile + " does not exist.");
 				throw new Exception("End Entity Profile '" + eeProfile + "' does not exist.");

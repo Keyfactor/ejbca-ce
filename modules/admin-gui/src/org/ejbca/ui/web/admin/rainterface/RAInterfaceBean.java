@@ -534,7 +534,7 @@ public class RAInterfaceBean implements Serializable {
     /** Returns false if profile is used by any user or in authorization rules. */
     public boolean removeEndEntityProfile(String name) throws AuthorizationDeniedException {
         boolean profileused = false;
-        int profileid = endEntityProfileSession.getEndEntityProfileId(administrator, name);
+        int profileid = endEntityProfileSession.getEndEntityProfileId(name);
         // Check if any users or authorization rule use the profile.
         profileused = userAdminSession.checkForEndEntityProfileId(profileid)
                       || complexAccessControlSession.existsEndEntityProfileInRules(profileid);

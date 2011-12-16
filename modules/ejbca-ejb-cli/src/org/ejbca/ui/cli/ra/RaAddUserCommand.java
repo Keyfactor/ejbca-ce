@@ -92,7 +92,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 Map<Integer, String> certificateprofileidtonamemap = ejb.getCertificateProfileSession().getCertificateProfileIdToNameMap();
 
                 Collection<Integer> endentityprofileids = ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword));
-                Map<Integer, String> endentityprofileidtonamemap = ejb.getEndEntityProfileSession().getEndEntityProfileIdToNameMap(getAdmin(cliUserName, cliPassword));
+                Map<Integer, String> endentityprofileidtonamemap = ejb.getEndEntityProfileSession().getEndEntityProfileIdToNameMap();
 
                 if (usehardtokens) {
                     getLogger().info(
@@ -189,7 +189,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             if (args.length > 10) {
                 // Use certificate type and end entity profile.
-                profileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(cliUserName, cliPassword), args[10]);
+                profileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(args[10]);
                 getLogger().info("Using entity profile: " + args[10] + ", with id: " + profileid);
             }
 

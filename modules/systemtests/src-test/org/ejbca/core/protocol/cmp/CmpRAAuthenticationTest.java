@@ -143,7 +143,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "ProfileDefault");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEP_1);
         // Create EEP
-        if (InterfaceCache.getEndEntityProfileSession().getEndEntityProfile(ADMIN, EEP_1) == null) {
+        if (InterfaceCache.getEndEntityProfileSession().getEndEntityProfile(EEP_1) == null) {
             // Configure an EndEntity profile that allows CN, O, C in DN and rfc822Name, MS UPN in altNames.
             EndEntityProfile eep = new EndEntityProfile(true);
             eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER);

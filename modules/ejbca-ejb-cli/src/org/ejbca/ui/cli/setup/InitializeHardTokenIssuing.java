@@ -212,7 +212,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * @throws Exception
      */
     private void createSuperAdminTokenUser(String cliUserName, String cliPassword, int caid) throws Exception {
-        int endentityprofileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(getAdmin(cliUserName, cliPassword), ADMINTOKENENDENTITYPROFILE);
+        int endentityprofileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(ADMINTOKENENDENTITYPROFILE);
         int certificateprofileid = SecConst.CERTPROFILE_FIXED_ENDUSER;
         int tokenid = ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(cliUserName, cliPassword), ADMINTOKENPROFILENAME);
         int hardtokenissuerid = ejb.getHardTokenSession().getHardTokenIssuerId(getAdmin(cliUserName, cliPassword), ISSUERALIAS);

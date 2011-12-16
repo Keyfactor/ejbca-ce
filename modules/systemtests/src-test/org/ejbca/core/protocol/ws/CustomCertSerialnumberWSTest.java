@@ -95,7 +95,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
                 this.certificateProfileSession.addCertificateProfile(intAdmin, CERTIFICATE_PROFILE, profile);
                 certProfID = this.certificateProfileSession.getCertificateProfileId(CERTIFICATE_PROFILE);
             }
-            if ( this.endEntityProfileSession.getEndEntityProfile(intAdmin, END_ENTITY_PROFILE)!=null ) {
+            if ( this.endEntityProfileSession.getEndEntityProfile(END_ENTITY_PROFILE)!=null ) {
                 this.endEntityProfileSession.removeEndEntityProfile(intAdmin, END_ENTITY_PROFILE);
             }
             {

@@ -130,7 +130,7 @@ public class RAAuthorization implements Serializable {
      */
     public String getEndEntityProfileAuthorizationString(boolean includeparanteses){
       if(authendentityprofilestring==null){
-    	Collection<Integer> profileIds = new ArrayList<Integer>(endEntityProfileSession.getEndEntityProfileIdToNameMap(admin).keySet());
+    	Collection<Integer> profileIds = new ArrayList<Integer>(endEntityProfileSession.getEndEntityProfileIdToNameMap().keySet());
       	Collection<Integer> result = this.complexAccessControlSession.getAuthorizedEndEntityProfileIds(admin, AccessRulesConstants.VIEW_RIGHTS, profileIds);     	
       	result.retainAll(this.endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin));
       	Iterator<Integer> iter = result.iterator();
@@ -154,7 +154,7 @@ public class RAAuthorization implements Serializable {
     public TreeMap<String, Integer> getAuthorizedEndEntityProfileNames(){
     	if (authprofilenames==null){
     		authprofilenames = new TreeMap<String, Integer>();
-    		final Map<Integer, String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap(admin);
+    		final Map<Integer, String> idtonamemap = endEntityProfileSession.getEndEntityProfileIdToNameMap();
     		for (final Integer id : endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin)) {
     			authprofilenames.put(idtonamemap.get(id), id);
     		}
@@ -187,7 +187,7 @@ public class RAAuthorization implements Serializable {
     
 	public TreeMap<String, Integer> authEndEntityProfileNames(String rights) {
 		final TreeMap<String, Integer> returnval = new TreeMap<String, Integer>();
-		final Map<Integer, String> profilemap = this.endEntityProfileSession.getEndEntityProfileIdToNameMap(admin);
+		final Map<Integer, String> profilemap = this.endEntityProfileSession.getEndEntityProfileIdToNameMap();
 		for (final Integer next : endEntityProfileSession.getAuthorizedEndEntityProfileIds(admin)) {
 			if (this.endEntityAuthorization(admin, next.intValue(), rights)) {
 				returnval.put(profilemap.get(next), next);
