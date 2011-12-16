@@ -485,7 +485,14 @@ public class EndEntityProfileTest extends RoleUsingTestCase {
                 // NOPMD
             }
             try {
-                endEntityProfileSession.cloneEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH", "TESTEEPROFNOAUTH1");                assertTrue("should throw", false);
+                endEntityProfileSession.changeEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH", profile);
+                assertTrue("should throw", false);
+            } catch (AuthorizationDeniedException e) {
+                // NOPMD
+            }
+            try {
+                endEntityProfileSession.cloneEndEntityProfile(adminTokenNoAuth, "TESTEEPROFNOAUTH", "TESTEEPROFNOAUTH1");
+                assertTrue("should throw", false);
             } catch (AuthorizationDeniedException e) {
                 // NOPMD
             }
@@ -501,18 +508,28 @@ public class EndEntityProfileTest extends RoleUsingTestCase {
             } catch (AuthorizationDeniedException e) {
                 // NOPMD
             }
+            // EE profiles checks for authorization to the CAs that are present as AVAILCAs.
+            // So we have to deny the admin specifically for a certain CA
+            Collection<Integer> caids = caSession.getAvailableCAs();
+            int caid = caids.iterator().next();
+            profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(1337));
+            profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(caid));
+            // It should work now
+            endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH", profile);
+            // Add a deny rule to the role
+            RoleData role = roleAccessSession.findRole("EndEntityProfileSessionTest");
+            List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+            accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESS.resource() + caid, AccessRuleState.RULE_DECLINE, false));
+            roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
             try {
-                // EE profiles checks for authorization to the CAs that are present as AVAILCAs.
-                // if we try to use a non existing CaId, the admin will not be authorized to this, because it is not one
-                // of the admins authorizedCAs
-                EndEntityProfile profileWithBadCaId = new EndEntityProfile();
-                profileWithBadCaId.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(1337));
-                profileWithBadCaId.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(1337));
-                endEntityProfileSession.addEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH2", profileWithBadCaId);
+                // Now it should fail
+                endEntityProfileSession.changeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH", profile);
                 assertTrue("should throw", false);
             } catch (AuthorizationDeniedException e) {
                 // NOPMD
             }
+            // Remove the deny rule again so we can remove the profile later on
+            roleManagementSession.removeAccessRulesFromRole(roleMgmgToken, role, accessRules);
         } finally {
             endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH");
             endEntityProfileSession.removeEndEntityProfile(roleMgmgToken, "TESTEEPROFNOAUTH1");
