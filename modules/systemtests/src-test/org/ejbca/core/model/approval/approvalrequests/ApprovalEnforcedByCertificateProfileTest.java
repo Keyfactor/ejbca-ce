@@ -530,7 +530,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         profile.setValue(EndEntityProfile.DEFAULTCA, 0, Integer.valueOf(approvalCAID).toString());
         endEntityProfileSession.addEndEntityProfile(admin, endEntityProfileName, profile);
 
-        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(admin1, endEntityProfileName);
+        int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);
         assertTrue(endEntityProfileId != 0);
 
         return endEntityProfileId;

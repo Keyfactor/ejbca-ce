@@ -206,7 +206,7 @@ public class DemoCertReqServlet extends HttpServlet {
         String tmp = null;
         int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
         if ((tmp = request.getParameter("entityprofile")) != null) {
-            eProfileId = endEntityProfileSession.getEndEntityProfileId(admin, request.getParameter("entityprofile"));
+            eProfileId = endEntityProfileSession.getEndEntityProfileId(request.getParameter("entityprofile"));
             if (eProfileId == 0) {
                 throw new ServletException("No such end entity profile: " + tmp);
             }

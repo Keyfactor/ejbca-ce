@@ -378,7 +378,7 @@ public class SignSessionTest extends CaTestCase {
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "FOOEEPROFILE", profile);
-        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "FOOEEPROFILE");
+        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId("FOOEEPROFILE");
 
     	// Make user that we know...
     	if (!userAdminSession.existsUser("foo")) {
@@ -742,7 +742,7 @@ public class SignSessionTest extends CaTestCase {
         profile.addField(DnComponents.UPN);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTMULALTNAME", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTMULALTNAME");
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTMULALTNAME");
 
         // Change a user that we know...
         userAdminSession.changeUser(internalAdmin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
@@ -832,7 +832,7 @@ public class SignSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTQC", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTQC");
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTQC");
 
         // Change a user that we know...
         userAdminSession.changeUser(internalAdmin, "foo", "foo123", "C=SE,CN=qc", null, "foo@anatom.nu", false, eeprofile, cprofile, SecConst.USER_ENDUSER,
@@ -891,7 +891,7 @@ public class SignSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
         profile.setUse(EndEntityProfile.CARDNUMBER, 0, true);
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTVALOVERRIDE", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTVALOVERRIDE");
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTVALOVERRIDE");
         // Change a user that we know...
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,CN=validityoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -1426,7 +1426,7 @@ public class SignSessionTest extends CaTestCase {
         profile.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         profile.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTREQUESTCOUNTER", profile);
-        pid = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTREQUESTCOUNTER");
+        pid = endEntityProfileSession.getEndEntityProfileId("TESTREQUESTCOUNTER");
 
         // Change already existing user
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
@@ -1609,7 +1609,7 @@ public class SignSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTDNORDER", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTDNORDER");
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTDNORDER");
 
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=PrimeKey,CN=dnorder", rsacaid, null, "foo@primekey.se", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
@@ -1840,7 +1840,7 @@ public class SignSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTDNOVERRIDE", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTDNOVERRIDE");
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTDNOVERRIDE");
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,CN=dnoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
@@ -1908,7 +1908,7 @@ public class SignSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTEXTENSIONOVERRIDE");
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTEXTENSIONOVERRIDE");
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
@@ -2037,7 +2037,7 @@ public class SignSessionTest extends CaTestCase {
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cprofile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTSIGALG", profile);
-        int eeprofile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "TESTSIGALG");
+        int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTSIGALG");
         EndEntityInformation user = new EndEntityInformation("foo", "C=SE,CN=testsigalg", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
@@ -2306,7 +2306,7 @@ public class SignSessionTest extends CaTestCase {
         eeProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         eeProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certProfileId));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, EEPROFILE_PRIVKEYUSAGEPERIOD, eeProfile);
-        final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(internalAdmin, EEPROFILE_PRIVKEYUSAGEPERIOD);
+        final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(EEPROFILE_PRIVKEYUSAGEPERIOD);
         final EndEntityInformation user = new EndEntityInformation(USER_PRIVKEYUSAGEPERIOD, DN_PRIVKEYUSAGEPERIOD, rsacaid, null, "fooprivatekeyusae@example.com", SecConst.USER_ENDUSER, eeProfileId, certProfileId,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");

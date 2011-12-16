@@ -169,7 +169,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             }
         }
         final int cpId = this.certificateProfileSession.getCertificateProfileId(CPNAME);
-        if (this.endEntityProfileSession.getEndEntityProfile(this.admin, EEPNAME) == null) {
+        if (this.endEntityProfileSession.getEndEntityProfile(EEPNAME) == null) {
             final EndEntityProfile eep = new EndEntityProfile(true);
             eep.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cpId);
             try {

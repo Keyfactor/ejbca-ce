@@ -483,7 +483,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             profile.setValue(EndEntityProfile.ISSUANCEREVOCATIONREASON, 0, "" + RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             endEntityProfileSession.removeEndEntityProfile(intAdmin, WS_EEPROF_EI);
             endEntityProfileSession.addEndEntityProfile(intAdmin, WS_EEPROF_EI, profile);
-            endEntityProfileSession.getEndEntityProfileId(intAdmin, WS_EEPROF_EI);
+            endEntityProfileSession.getEndEntityProfileId(WS_EEPROF_EI);
         } catch (EndEntityProfileExistsException pee) {
         	log.error("Error creating end entity profile: ", pee);
             assertTrue("Can not create end entity profile", false);
@@ -1667,7 +1667,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         profile.setReUseKeyRecoveredCertificate(true);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(intAdmin, "KEYRECOVERY", profile);
-        assertTrue("Unable to kreate KEYRECOVERY end entity profile.", endEntityProfileSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY") != 0);
+        assertTrue("Unable to kreate KEYRECOVERY end entity profile.", endEntityProfileSession.getEndEntityProfileId("KEYRECOVERY") != 0);
 
         // Add a new user, set token to P12, status to new and end entity
         // profile to key recovery
@@ -1770,7 +1770,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void getAvailableCertificateProfiles() throws Exception {
 
-        int id = endEntityProfileSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY");
+        int id = endEntityProfileSession.getEndEntityProfileId("KEYRECOVERY");
         // First try to get something that does not exist, it should return array with size 0, not throw an exception
         List<NameAndId> profs = ejbcaraws.getAvailableCertificateProfiles(000222);
         assertEquals(0, profs.size());
@@ -1790,7 +1790,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     protected void getAvailableCAsInProfile() throws Exception {
 
-        int id = endEntityProfileSession.getEndEntityProfileId(intAdmin, "KEYRECOVERY");
+        int id = endEntityProfileSession.getEndEntityProfileId("KEYRECOVERY");
         log.info("id: " + id);
         // First try to get something that does not exist, it should return array with size 0, not throw an exception
         List<NameAndId> cas = ejbcaraws.getAvailableCAsInProfile(000222);

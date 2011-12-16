@@ -89,8 +89,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
                     //getLogger().debug("Skipping export fixed end entity profile with id '"+profileid+"'.");
                 } else {
-                	String profilename = ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(cliUserName, cliPassword), profileid);
-                    EndEntityProfile profile = ejb.getEndEntityProfileSession().getEndEntityProfile(getAdmin(cliUserName, cliPassword), profileid);
+                	String profilename = ejb.getEndEntityProfileSession().getEndEntityProfileName(profileid);
+                    EndEntityProfile profile = ejb.getEndEntityProfileSession().getEndEntityProfile(profileid);
                     if (profile == null) {
                     	getLogger().error("Error : Couldn't find entity profile '"+profilename+"'-"+profileid+" in database.");
                     } else {

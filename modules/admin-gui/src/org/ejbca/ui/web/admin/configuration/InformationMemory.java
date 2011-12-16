@@ -304,7 +304,7 @@ public class InformationMemory implements Serializable {
             endentityavailablecas = new HashMap<Integer, HashMap<Integer, List<Integer>>>();
 
             for (Integer nextendentityprofileid : endEntityProfileSession.getAuthorizedEndEntityProfileIds(administrator)) {
-                EndEntityProfile endentityprofile = endEntityProfileSession.getEndEntityProfile(administrator, nextendentityprofileid.intValue());
+                EndEntityProfile endentityprofile = endEntityProfileSession.getEndEntityProfile(nextendentityprofileid.intValue());
                 String[] values = endentityprofile.getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
                 ArrayList<Integer> endentityprofileavailcas = new ArrayList<Integer>();
                 for (int i = 0; i < values.length; i++) {

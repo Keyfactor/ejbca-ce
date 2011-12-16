@@ -95,7 +95,7 @@ public class DnFieldsTest extends CommonEjbcaWS {
         endEntityProfile.addField(DnComponents.RFC822NAME);     
         endEntityProfile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(certificateProfileSession.getCertificateProfileId(PROFILE_NAME)));
         endEntityProfile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
-        if (endEntityProfileSession.getEndEntityProfile(internalAdmin, PROFILE_NAME) == null) {
+        if (endEntityProfileSession.getEndEntityProfile(PROFILE_NAME) == null) {
             endEntityProfileSession.addEndEntityProfile(internalAdmin, PROFILE_NAME, endEntityProfile);
         }
       
@@ -112,7 +112,7 @@ public class DnFieldsTest extends CommonEjbcaWS {
             userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         }
 
-        if (endEntityProfileSession.getEndEntityProfile(internalAdmin, PROFILE_NAME) != null) {
+        if (endEntityProfileSession.getEndEntityProfile(PROFILE_NAME) != null) {
             endEntityProfileSession.removeEndEntityProfile(internalAdmin, PROFILE_NAME);
         }
         if(certificateProfileSession.getCertificateProfile(PROFILE_NAME) != null) {

@@ -173,7 +173,7 @@ public class CADataHandler implements Serializable {
   public boolean removeCA(int caid) throws AuthorizationDeniedException{     
     boolean caidexits = this.endEntitySession.checkForCAId(caid) ||
                         this.certificateProfileSession.existsCAIdInCertificateProfiles(caid) ||
-                        this.endEntityProfileSession.existsCAInEndEntityProfiles(administrator, caid) ||
+                        this.endEntityProfileSession.existsCAInEndEntityProfiles(caid) ||
                         (accessRuleManagementSession.existsCaInAccessRules(caid) && this.accessUserAspectManagerSession.existsCAInAccessUserAspects(caid));   
     if(!caidexits){
         caSession.removeCA(administrator, caid);

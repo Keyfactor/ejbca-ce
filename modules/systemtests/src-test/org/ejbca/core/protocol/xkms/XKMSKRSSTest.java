@@ -247,7 +247,7 @@ public class XKMSKRSSTest {
         endentityprofile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
 
         endEntityProfileSession.addEndEntityProfile(administrator, endentityprofilename, endentityprofile);
-        final int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(administrator, endentityprofilename);
+        final int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(endentityprofilename);
 
         final String pwd = "foo123";
         final int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
@@ -296,7 +296,7 @@ public class XKMSKRSSTest {
                 log.info("User already exists in the database.");
             } else {
                 userAdminSession.addUser(administrator, userName, pwd, CertTools.stringToBCDNString(dn), subjectaltname1, email1, false,
-                        endEntityProfileSession.getEndEntityProfileId(administrator, endentityprofilename), certificatetypeid, type, token,
+                        endEntityProfileSession.getEndEntityProfileId(endentityprofilename), certificatetypeid, type, token,
                         hardtokenissuerid, caid);
             }
             userAdminSession.setClearTextPassword(administrator, userName, pwd);
@@ -749,7 +749,7 @@ public class XKMSKRSSTest {
 
 	@Test
     public void test12SimpleRecover() throws Exception {
-        userAdminSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(administrator, endentityprofilename), cert2);
+        userAdminSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(endentityprofilename), cert2);
         userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
         recoverRequestType.setId("700");
@@ -809,7 +809,7 @@ public class XKMSKRSSTest {
 
 	@Test
     public void test13RecoverWrongPassword() throws Exception {
-        userAdminSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(administrator, endentityprofilename), cert2);
+        userAdminSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(endentityprofilename), cert2);
         userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
         recoverRequestType.setId("701");

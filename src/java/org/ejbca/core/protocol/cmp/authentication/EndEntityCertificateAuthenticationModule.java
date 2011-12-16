@@ -490,7 +490,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
             endEntityProfile = keyId;
         } 
-        ret = eeProfileSession.getEndEntityProfileId(admin, endEntityProfile);
+        ret = eeProfileSession.getEndEntityProfileId(endEntityProfile);
         if (ret == 0) {
             errorMessage = "No end entity profile found with name: "+endEntityProfile;
             log.info(errorMessage);

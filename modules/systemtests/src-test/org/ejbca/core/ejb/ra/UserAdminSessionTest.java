@@ -497,7 +497,7 @@ public class UserAdminSessionTest extends CaTestCase {
         profile.setAllowMergeDnWebServices(true);
 
         endEntityProfileSession.addEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
-        int profileId = endEntityProfileSession.getEndEntityProfileId(admin, "TESTMERGEWITHWS");
+        int profileId = endEntityProfileSession.getEndEntityProfileId("TESTMERGEWITHWS");
 
         EndEntityInformation addUser = new EndEntityInformation(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null,
                 UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, profileId, SecConst.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),

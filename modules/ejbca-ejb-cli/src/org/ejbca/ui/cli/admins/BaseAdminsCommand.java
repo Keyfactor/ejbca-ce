@@ -33,12 +33,12 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileName(authenticationToken, Integer.parseInt(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX
+                        + ejb.getEndEntityProfileSession().getEndEntityProfileName(Integer.parseInt(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX
                                 .length())));
             } else {
                 String tmpString = resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileName(authenticationToken, Integer.parseInt(tmpString.substring(0, tmpString.indexOf('/'))))
+                        + ejb.getEndEntityProfileSession().getEndEntityProfileName(Integer.parseInt(tmpString.substring(0, tmpString.indexOf('/'))))
                         + tmpString.substring(tmpString.indexOf('/'));
             }
         }
@@ -79,11 +79,11 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileId(authenticationToken, resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()));
+                        + ejb.getEndEntityProfileSession().getEndEntityProfileId(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()));
             } else {
                 String tmpString = resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileId(authenticationToken, tmpString.substring(0, tmpString.indexOf('/')))
+                        + ejb.getEndEntityProfileSession().getEndEntityProfileId(tmpString.substring(0, tmpString.indexOf('/')))
                         + tmpString.substring(tmpString.indexOf('/'));
             }
         }

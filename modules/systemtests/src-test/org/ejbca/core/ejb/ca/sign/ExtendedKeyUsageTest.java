@@ -130,7 +130,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE", profile);
-        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "EXTKEYUSAGEEEPROFILE");
+        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId("EXTKEYUSAGEEEPROFILE");
 
         createOrEditUser(fooCertProfile, fooEEProfile);
 
@@ -159,7 +159,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         final EndEntityProfile profile = new EndEntityProfile(true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(fooCertProfile));
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE", profile);
-        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId(internalAdmin, "EXTKEYUSAGEEEPROFILE");
+        final int fooEEProfile = endEntityProfileSession.getEndEntityProfileId("EXTKEYUSAGEEEPROFILE");
 
         createOrEditUser(fooCertProfile, fooEEProfile);
 

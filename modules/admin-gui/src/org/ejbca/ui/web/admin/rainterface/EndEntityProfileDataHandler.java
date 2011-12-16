@@ -74,20 +74,20 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
     
       /** Method to get a reference to a end entity profile.*/ 
     public EndEntityProfile getEndEntityProfile(int id) throws AuthorizationDeniedException{  
-        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(administrator, id); 
+        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(id); 
         endEntityProfileSession.authorizedToProfileCas(administrator, profile);
         return profile;
     }      
           
     public EndEntityProfile getEndEntityProfile(String profilename) throws AuthorizationDeniedException{
-        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(administrator, profilename);
+        final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(profilename);
         endEntityProfileSession.authorizedToProfileCas(administrator, profile);
         return profile;
     }
    
       
     public int getEndEntityProfileId(String profilename){
-      return endEntityProfileSession.getEndEntityProfileId(administrator, profilename);  
+      return endEntityProfileSession.getEndEntityProfileId(profilename);  
     }
        
 }

@@ -140,7 +140,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 			caname = "AuthDenied";
 		}
 		retval.add(new ApprovalDataText("CA", caname, true, false));
-		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(admin, newuserdata.getEndEntityProfileId()),true,false));		
+		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(newuserdata.getEndEntityProfileId()),true,false));		
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(newuserdata.getCertificateProfileId()),true,false));
 		retval.add(ApprovalRequestHelper.getTokenName(hardTokenSession, admin,newuserdata.getTokenType()));
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(admin, newuserdata.getHardTokenIssuerId())));
@@ -181,7 +181,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 			caname = "AuthDenied";
 		}
 		retval.add(new ApprovalDataText("CA", caname, true, false));
-		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(admin, orguserdata.getEndEntityProfileId()), true, false));		
+		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(orguserdata.getEndEntityProfileId()), true, false));		
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(orguserdata.getCertificateProfileId()), true, false));
 		retval.add(ApprovalRequestHelper.getTokenName(hardTokenSession, admin,orguserdata.getTokenType()));
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(admin,orguserdata.getHardTokenIssuerId())));

@@ -161,7 +161,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean existsCertificateProfileInEndEntityProfiles(final AuthenticationToken admin, final int profileid) {
+    public boolean existsCertificateProfileInEndEntityProfiles(final int profileid) {
         String[] availprofiles = null;
         boolean exists = false;
         final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
@@ -180,7 +180,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean existsCAInEndEntityProfiles(final AuthenticationToken admin, final int caid) {
+    public boolean existsCAInEndEntityProfiles(final int caid) {
         String[] availablecas = null;
         boolean exists = false;
         final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
@@ -225,7 +225,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public EndEntityProfile getEndEntityProfile(final AuthenticationToken admin, final String profilename) {
+    public EndEntityProfile getEndEntityProfile(final String profilename) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfile(" + profilename + ")");
         }
@@ -235,7 +235,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         } else {
         	final Integer id = profileCache.getNameIdMapCache(entityManager).get(profilename);
         	if (id != null) {
-        		returnval = getEndEntityProfile(admin, id);
+        		returnval = getEndEntityProfile(id);
         	}
         }
         if (LOG.isTraceEnabled()) {
@@ -282,7 +282,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public EndEntityProfile getEndEntityProfile(final AuthenticationToken admin, final int id) {
+    public EndEntityProfile getEndEntityProfile(final int id) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfile(" + id + ")");
         }
@@ -309,7 +309,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public int getEndEntityProfileId(final AuthenticationToken admin, final String profilename) {
+    public int getEndEntityProfileId(final String profilename) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfileId(" + profilename + ")");
         }
@@ -326,7 +326,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public String getEndEntityProfileName(final AuthenticationToken admin, final int id) {
+    public String getEndEntityProfileName(final int id) {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfilename(" + id + ")");
         }
@@ -339,7 +339,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public Map<Integer, String> getEndEntityProfileIdToNameMap(final AuthenticationToken admin) {
+    public Map<Integer, String> getEndEntityProfileIdToNameMap() {
         if (LOG.isTraceEnabled()) {
             LOG.trace("><getEndEntityProfileIdToNameMap");
         }
@@ -347,7 +347,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public void initializeAndUpgradeProfiles(final AuthenticationToken admin) {
+    public void initializeAndUpgradeProfiles() {
     	final Collection<EndEntityProfileData> result = EndEntityProfileData.findAll(entityManager);
     	final Iterator<EndEntityProfileData> iter = result.iterator();
         while (iter.hasNext()) {

@@ -127,7 +127,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 			caname = "AuthDenied";
 		}
 		retval.add(new ApprovalDataText("CA", caname, true, false));
-		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(admin, userdata.getEndEntityProfileId()),true,false));		
+		retval.add(new ApprovalDataText("ENDENTITYPROFILE", endEntityProfileSession.getEndEntityProfileName(userdata.getEndEntityProfileId()),true,false));		
 		retval.add(new ApprovalDataText("CERTIFICATEPROFILE", certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId()),true,false));
 		retval.add(ApprovalRequestHelper.getTokenName(hardTokenSession, admin,userdata.getTokenType()));
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(admin, userdata.getHardTokenIssuerId())));

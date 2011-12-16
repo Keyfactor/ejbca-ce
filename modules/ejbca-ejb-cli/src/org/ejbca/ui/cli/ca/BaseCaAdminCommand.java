@@ -190,7 +190,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		final StringBuilder existingCas = new StringBuilder();
 		try {
 			for (final Integer nextId : ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword))) {
-				final String caName = ejb.getEndEntityProfileSession().getEndEntityProfileName(getAdmin(cliUserName, cliPassword), nextId.intValue());
+				final String caName = ejb.getEndEntityProfileSession().getEndEntityProfileName(nextId.intValue());
 				if (existingCas.length()>0) {
 					existingCas.append(", ");
 				}
