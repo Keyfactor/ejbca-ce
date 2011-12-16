@@ -75,15 +75,19 @@ public abstract class AccessRulesConstants {
     public static final String REGULAR_RAFUNCTIONALITY                    = "/ra_functionality";
     public static final String REGULAR_EDITENDENTITYPROFILES              = "/ra_functionality/edit_end_entity_profiles";
     public static final String REGULAR_EDITUSERDATASOURCES                = "/ra_functionality/edit_user_data_sources";
-    public static final String REGULAR_VIEWENDENTITY                      = "/ra_functionality"+VIEW_RIGHTS;    
+    public static final String REGULAR_APPROVEENDENTITY                   = "/ra_functionality"+APPROVAL_RIGHTS;
+    // REGULAR_REVOKEENDENTITY is used when revoking the certificate of a user
+    public static final String REGULAR_REVOKEENDENTITY                    = "/ra_functionality"+REVOKE_RIGHTS;    
+    // The rules below seem to be for rights to certificates, and ae mostly used from WS for token certificates and CMP for token certificates
+    // You can question if these are valid and right?
+    // Some of them are unused if you check references here, but admin GUI contains directly the string /ra_functionality instead, just to make things hard
+    public static final String REGULAR_VIEWENDENTITY                      = "/ra_functionality"+VIEW_RIGHTS; // Unused, but exists as "raw" string
     public static final String REGULAR_CREATEENDENTITY                    = "/ra_functionality"+CREATE_RIGHTS;
     public static final String REGULAR_EDITENDENTITY                      = "/ra_functionality"+EDIT_RIGHTS ;
-    public static final String REGULAR_DELETEENDENTITY                    = "/ra_functionality"+DELETE_RIGHTS;
-    public static final String REGULAR_REVOKEENDENTITY                    = "/ra_functionality"+REVOKE_RIGHTS;    
-    public static final String REGULAR_VIEWENDENTITYHISTORY               = "/ra_functionality"+HISTORY_RIGHTS;
-    public static final String REGULAR_APPROVEENDENTITY                   = "/ra_functionality"+APPROVAL_RIGHTS;
+    public static final String REGULAR_DELETEENDENTITY                    = "/ra_functionality"+DELETE_RIGHTS; // Unused, but exists as "raw" string
+    public static final String REGULAR_VIEWENDENTITYHISTORY               = "/ra_functionality"+HISTORY_RIGHTS; // Unused, but exists as "raw" string
 
-    public static final String REGULAR_SYSTEMFUNCTIONALITY                = StandardRules.SYSTEMFUNCTIONALITY.resource();
+    public static final String REGULAR_SYSTEMFUNCTIONALITY                = StandardRules.SYSTEMFUNCTIONALITY.resource(); // Unused but the "raw" string /system_functionality is present in admin GUI pages
     public static final String REGULAR_EDITADMINISTRATORPRIVILEDGES       = StandardRules.EDITROLES.resource();
     public static final String REGULAR_EDITSYSTEMCONFIGURATION            = StandardRules.SYSTEMFUNCTIONALITY.resource()+"/edit_systemconfiguration";
 
