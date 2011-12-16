@@ -87,7 +87,7 @@ public class RequestMessageUtils {
 		return ret;
 	}
 
-	public static CertificateResponseMessage createResponseMessage(Class responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider){
+	public static CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider){
 	    CertificateResponseMessage ret = null;
 		// Create the response message and set all required fields
 		try {

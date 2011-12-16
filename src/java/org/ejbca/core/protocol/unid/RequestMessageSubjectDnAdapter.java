@@ -30,6 +30,7 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509Principal;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 
@@ -166,7 +167,7 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 		return this.original.getRequestId();
 	}
 	@Override
-	public CertificateResponseMessage createResponseMessage(Class responseClass,
+	public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass,
 			RequestMessage req, Certificate cert, PrivateKey signPriv,
 			String provider) {
 		return this.original.createResponseMessage(responseClass, req, cert, signPriv, provider);

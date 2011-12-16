@@ -345,7 +345,7 @@ public class XKMSProvider implements Provider<Source> {
 							Collection<Certificate> cACertChain = cAInfo.getCertificateChain();
 							// Check issuer and validity						
 							X509Certificate rootCert = null;
-							Iterator iter = cACertChain.iterator();
+							Iterator<Certificate> iter = cACertChain.iterator();
 							while(iter.hasNext()){
 								X509Certificate cert = (X509Certificate) iter.next();
 								if(cert.getIssuerDN().equals(cert.getSubjectDN())){

@@ -248,7 +248,7 @@ public interface RequestMessage extends Serializable {
      * @param provider
      * @return IResponseMessage
      */
-    public CertificateResponseMessage createResponseMessage(Class responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider);
+    public CertificateResponseMessage createResponseMessage(Class<? extends ResponseMessage> responseClass, RequestMessage req, Certificate cert, PrivateKey signPriv, String provider);
 
     
 }

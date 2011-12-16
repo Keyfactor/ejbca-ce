@@ -211,7 +211,7 @@ public class SVGImageManipulator {
     		String hardtokensn, String hardtokensnwithoutprefix,
     		String copyoftokensn, String copyoftokensnwithoutprefix,
     		String startdate, String enddate, SVGDocument clone){
-    	Collection texts = new ArrayList();
+    	Collection<Node> texts = new ArrayList<Node>();
     	NodeList list = clone.getDocumentElement().getElementsByTagName(tagName);
     	int numberofelements = list.getLength();	  
     	for(int i=0; i<numberofelements; i++){
@@ -238,7 +238,7 @@ public class SVGImageManipulator {
     			}
     		}
     	}
-  	  Iterator iter = texts.iterator();
+  	  Iterator<Node> iter = texts.iterator();
 	  String data = "";
 	  while(iter.hasNext()){
 	  	GenericText text = (GenericText) iter.next(); 

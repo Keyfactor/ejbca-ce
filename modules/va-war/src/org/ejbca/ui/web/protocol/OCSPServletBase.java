@@ -109,7 +109,9 @@ import org.ejbca.util.IPatternLogger;
  */
 public abstract class OCSPServletBase extends HttpServlet implements ISaferAppenderListener { 
 
-	private static final Logger m_log = Logger.getLogger(OCSPServletBase.class);
+	private static final long serialVersionUID = -6214465452158073038L;
+
+    private static final Logger m_log = Logger.getLogger(OCSPServletBase.class);
 	
 	/** Internal localization of logs and errors */
 	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -138,7 +140,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	 */
 	private final Collection<String> m_extensionOids = OcspConfiguration.getExtensionOids();
 	private final Collection<String> m_extensionClasses = OcspConfiguration.getExtensionClasses();
-	private HashMap m_extensionMap = null;
+	private HashMap<String, IOCSPExtension> m_extensionMap = null;
 	private final boolean mDoAuditLog = OcspConfiguration.getAuditLog();
 	private final boolean mDoTransactionLog = OcspConfiguration.getTransactionLog();
 
@@ -194,7 +196,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	abstract ICertificateCache createCertificateCache();
 
 
-	private BasicOCSPResp signOCSPResponse(OCSPReq req, ArrayList responseList, X509Extensions exts, X509Certificate cacert)
+	private BasicOCSPResp signOCSPResponse(OCSPReq req, ArrayList<OCSPResponseItem> responseList, X509Extensions exts, X509Certificate cacert)
 	throws CADoesntExistsException, ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException, AuthorizationDeniedException {
 
 	    // Call extended CA services to get our OCSP stuff
@@ -203,7 +205,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	    OCSPCAServiceResponse caserviceresp = extendedService(this.m_internalAdmin, this.data.getCaid(cacert), ocspservicerequest);
 	    // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
 	    if (m_log.isDebugEnabled()) {
-	        Collection coll = caserviceresp.getOCSPSigningCertificateChain();
+	        Collection<X509Certificate> coll = caserviceresp.getOCSPSigningCertificateChain();
 	        m_log.debug("Cert chain for OCSP signing is of size " + coll.size());            	
 	    }
 	    return caserviceresp.getBasicOCSPResp();
@@ -672,7 +674,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				}
 
 				// Add standard response extensions
-				Hashtable responseExtensions = OCSPUtil.getStandardResponseExtensions(req);
+				Hashtable<DERObjectIdentifier, X509Extension> responseExtensions = OCSPUtil.getStandardResponseExtensions(req);
             	transactionLogger.paramPut(ITransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
             	auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
 				// Look over the status requests
@@ -794,7 +796,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 						transactionLogger.writeln();
 					}
 					// Look for extension OIDs
-					Iterator iter = m_extensionOids.iterator();
+					Iterator<String> iter = m_extensionOids.iterator();
 					while (iter.hasNext()) {
 						String oidstr = (String)iter.next();
 						DERObjectIdentifier oid = new DERObjectIdentifier(oidstr);
