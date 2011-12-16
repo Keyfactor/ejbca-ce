@@ -50,6 +50,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -110,7 +111,7 @@ public class OCSPUnidClient {
 	    this.certChain = certs!=null ? Arrays.asList(certs).toArray(new X509Certificate[0]) : null;
         this.nonce = new byte[16];
 	    {
-	        final Hashtable exts = new Hashtable();
+	        final Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
 	        final SecureRandom randomSource = SecureRandom.getInstance("SHA1PRNG");
 	        randomSource.nextBytes(nonce);
 	        final X509Extension nonceext = new X509Extension(false, new DEROctetString(nonce));
@@ -140,11 +141,11 @@ public class OCSPUnidClient {
         if (ksfilename != null) {
 	        ks = KeyStore.getInstance("PKCS12", "BC");
 	        ks.load(new FileInputStream(ksfilename), pwd.toCharArray());			
-            Enumeration en = ks.aliases();
+            Enumeration<String> en = ks.aliases();
             String alias = null;
             // If this alias is a trusted certificate entry, we don't want to fetch that, we want the key entry
             while ( (alias==null || ks.isCertificateEntry(alias)) && en.hasMoreElements() ) {
-                alias = (String)en.nextElement();
+                alias = en.nextElement();
             }
             final Certificate[] certs = KeyTools.getCertChain(ks, alias);
             if (certs == null) {

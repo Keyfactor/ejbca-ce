@@ -44,8 +44,8 @@ import org.bouncycastle.asn1.x509.X509CertificateStructure;
  */
 public class CertRepMessage implements DEREncodable
 {
-    Vector caPubs    = new Vector();
-    Vector responses = new Vector();
+    Vector<X509CertificateStructure> caPubs    = new Vector<X509CertificateStructure>();
+    Vector<CertResponse> responses = new Vector<CertResponse>();
 
     public static CertRepMessage getInstance( ASN1TaggedObject obj, boolean explicit )
     {
@@ -68,7 +68,8 @@ public class CertRepMessage implements DEREncodable
 	
     public CertRepMessage( ASN1Sequence seq )
     {
-      Enumeration e = seq.getObjects();
+      @SuppressWarnings("unchecked")
+    Enumeration<Object> e = seq.getObjects();
       
       Object obj = e.nextElement();
       
