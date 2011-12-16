@@ -93,7 +93,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
 	 * Other must have both
 	 * AccessRulesConstants.
 	 *  /ra_functionality/keyrecovery
-	 *  and /endentityprofilesrules/<endentityprofile>/ keyrecovery
+	 *  and /endentityprofilesrules/<endentityprofile>/keyrecovery
 	 *  
 	 * 
 	 * @param admin
