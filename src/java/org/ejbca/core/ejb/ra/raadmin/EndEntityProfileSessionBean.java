@@ -35,6 +35,7 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.ProfileID;
@@ -189,12 +190,16 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         	final EndEntityProfileData ep = i.next();
             availablecas = ep.getProfile().getValue(EndEntityProfile.AVAILCAS, 0).split(EndEntityProfile.SPLITCHAR);
             for (int j = 0; j < availablecas.length; j++) {
-                if (Integer.parseInt(availablecas[j]) == caid) {
-                    exists = true;
-                    if (LOG.isDebugEnabled()) {
-                        LOG.debug("CA exists in entity profile " + ep.getProfileName());
+                if (StringUtils.isNotEmpty(availablecas[j])) {
+                    if (Integer.parseInt(availablecas[j]) == caid) {
+                        exists = true;
+                        if (LOG.isDebugEnabled()) {
+                            LOG.debug("CA exists in entity profile " + ep.getProfileName());
+                        }
+                        break;
                     }
-                    break;
+                } else if (LOG.isDebugEnabled()) {
+                    LOG.debug("One of the availableCAs is empty string, fishy, but we ignore it. EE profile: "+ep.getProfileName());
                 }
             }
         }
@@ -476,8 +481,15 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             for (int j = 0; j < availablecas.length; j++) {
                 Integer caid = Integer.valueOf(availablecas[j]);
                 if (!authorizedcaids.contains(caid)) {
-                    final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
-                    throw new AuthorizationDeniedException(msg);
+                    // We want to allow removal of the EE profile if the CA does not exists, it can happen that a rogue CAId
+                    // sneaks in under "availableCAs" in the profile. So make a double check here, and let it pass if the CA does not exist
+                    try {
+                        caSession.verifyExistenceOfCA(caid);
+                        final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
+                        throw new AuthorizationDeniedException(msg);
+                    } catch (CADoesntExistsException e) {
+                        LOG.info("Admin was not authorized to CA "+caid+", but this CA does not even exist so we allow it.");
+                    }
                 }
             }
         }
