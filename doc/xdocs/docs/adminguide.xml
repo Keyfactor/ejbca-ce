@@ -4619,6 +4619,32 @@ public class SomeAdvancedCertificateExtension extends CertificateExtension {
 </section>
 
 <section name="Logging">
+<subsection name="Security Audit log vs System log">
+<p>A PKI system have two different type of log:
+</p>
+<ul>
+<li>Security Audit Log  - Use for PKI auditors to audit important security PKI events that the system performed.</li>
+<li>System Log - Used to monitor daily operations in the system, debug and track down errors etc.</li>
+</ul>
+<p>
+The Security Audit Log is specified in detail what it does log, and it does not log other things. 
+The Security Audit log logs important events such as "Certificate issued", "Certificate Profile edited", "Administrator accessed resource".
+One of the most important aspects to consider is that the Security Audit log does <strong>not</strong> log things that do not happen. 
+Things that do not happen are for example invalid requests that the system rejects, becuase the PKI system did not perform any important
+auditable event.
+</p>
+<p>
+The System Log logs all events that are interesting to monitor, such as rejecting invalid requests, reading profiles etc.
+</p>
+<p>
+The main purpose of the Security Audit Log is to provide information to an auditor, and the auditor wants to know what the system has done, what certificates were issued etc, 
+but is not so interested in what the system did not do.
+</p>
+<p>
+The Security Audit Log is stored in the database and the System Log is stroed in log files. By default the System Log also contains the Security Audit Log, but this can be configured.
+</p>
+</subsection>
+<subsection name="Security Audit Log">
 <p>
 The are two different logging devices available for official security audit events
 (creation of certificate etc). These devices should not be
@@ -4632,7 +4658,8 @@ What log devices to use, can be configured in conf/cesecore.properties.
 It is recommended to only allow new log-posts to the database-tables. More
 information on this can be found in doc/howto/HOWTO-database.txt.
 </p>
-<subsection name="Log4JLogDevice">
+</subsection>
+<subsubsection name="Log4JLogDevice">
 <p>
 Appends the information from the offical event to the console or file. This is
 the same target where all the other info/debug output is sent to. There are no
@@ -4642,15 +4669,15 @@ back to EJBCA for display in the Admin GUI.
 <p>
 You can find information about configuring log4j on JBoss in the EJBCA <a href="http://wiki.ejbca.org/ejbca-install#toc5">wiki</a>.
 </p>
-</subsection>
-<subsection name="IntegrityProtectedDevice">
+</subsubsection>
+<subsubsection name="IntegrityProtectedDevice">
 <p>
 The integrity protected log device stores audit record in the AuditRecordData table in the database. 
 The record can be protected using either HMAC or digital signatures. See conf/cesecore.properties for configuration options.
 See <a href="security.html#Database%20integrity%20protection">Database integrity protection</a> for more information.
 </p>
-</subsection>
-<subsection name="OldLogDevice">
+</subsubsection>
+<subsubsection name="OldLogDevice">
 <p>
 The old log device, as it was called in EJBCA 4.0 is no longer available.</p>
 <p>
@@ -4672,6 +4699,44 @@ for further instructions on how to run it.
 OldLogDevice stores log-events in the database. Viewed events can
 be exported from the Admin GUI.
 </p>
+</subsubsection>
+<subsection name="System Log">
+<p>The system log is logged using Log4J, and has several different levels of log. You can configure which log level is actually logged.
+</p>
+<ul>
+<li>ERROR - Errors that should cause the IT staff to look into the system. It could be fatal so the system stopped working.</li>
+<li>WARNING - Warnings about misconfiguration. The system is still working, but functionality could be degraded.</li>
+<li>INFO - Informational messages that are interesting for monitoring purposes and statistic purposes.</li>
+<li>DEBUG - Debug information useful to see details of what is happening in the system.</li>
+<li>TRACE - Trace information that can be useful to track down bugs or small missconfigurations. Very rich output showing detailed trace of what happpens in the system code.</li>
+</ul>
+<p>
+Configuration of the System log depends on what application server you are using. See the <a href="installation.html">installation</a> section for information about your application server.
+There are a few places where it is configured:
+</p>
+<ul>
+<li>$APPSRV_HOME/server/default/conf/jboss-log4j.xml - For JBoss 5</li>
+<li>conf/log4j-(appserver-name).xml - For JBoss 6, Glassfish etc</li>
+</ul>
+<p>In general log4j configuraton to log different levels of EJBCA events can be done like this:
+</p>
+<source>
+&lt;category name="org.ejbca"&gt;
+   &lt;priority value="INFO"/&gt;
+&lt;/category&gt;
+
+&lt;category name="org.cesecore"&gt;
+   &lt;priority value="INFO"/&gt;
+&lt;/category&gt;
+
+&lt;root&gt;
+   &lt;priority value="ERROR"/&gt;
+   &lt;appender-ref ref="FILE"/&gt;
+&lt;/root&gt;
+</source>
+<p>
+This will log EJBCA (and CESeCore) event of INFO level, while only logging other types of events (such as JBoss/Hibernate etc) only at ERROR level.
+</p>    
 </subsection>
 </section>
 
