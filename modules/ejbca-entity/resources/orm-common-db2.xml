@@ -57,7 +57,7 @@
             <basic fetch="EAGER" name="thisUpdate"><column name="thisUpdate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="nextUpdate"><column name="nextUpdate" column-definition="BIGINT" nullable="false"/></basic>
             <basic fetch="EAGER" name="deltaCRLIndicator"><column name="deltaCRLIndicator" column-definition="INTEGER" nullable="false"/></basic>
-            <basic fetch="EAGER" name="base64Crl"><column name="base64Crl" column-definition="CLOB" nullable="false"/><lob/></basic>
+            <basic fetch="EAGER" name="base64Crl"><column name="base64Crl" column-definition="CLOB(100M)" nullable="false"/><lob/></basic>
             <basic fetch="EAGER" name="rowProtection"><column name="rowProtection" column-definition="CLOB(10K)"/><lob/></basic>
             <version name="rowVersion"><column name="rowVersion" column-definition="INTEGER" nullable="false"/></version>
         </attributes>
