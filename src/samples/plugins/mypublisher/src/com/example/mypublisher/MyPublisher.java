@@ -27,7 +27,7 @@ import org.ejbca.core.model.ca.publisher.PublisherConnectionException;
 /**
  * This is a class used for plugin testing and example purposes.
  * It is supposed to illustrate how to implement a custom publisher in EJBCA 5.
- *  
+ * @version $Id$
  *
  */
 public class MyPublisher implements ICustomPublisher{
