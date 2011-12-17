@@ -28,7 +28,7 @@
          int:     INTEGER
          long:    BIGINT
          String:  VARCHAR(254)
-         CLOB:    CLOB(10K) and CLOB = CLOB(2G) 
+         CLOB:    CLOB(10K) and CLOB = CLOB(1M) 
          Object:  BLOB(1M) and BLOB(200K)
 
          Exceptions:
