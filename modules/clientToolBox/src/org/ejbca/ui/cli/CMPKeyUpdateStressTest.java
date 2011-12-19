@@ -234,54 +234,53 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
             final byte[] salt = "foo123".getBytes();
             final DEROctetString derSalt = new DEROctetString(salt);
             final PKIMessage ret;
-            {
-                // Create the PasswordBased protection of the message
-                final PKIHeader head = msg.getHeader();
-                head.setSenderKID(new DEROctetString("EMPTY".getBytes()));
-                final DERInteger iteration = new DERInteger(iterationCount);
+            
+            // Create the PasswordBased protection of the message
+            final PKIHeader head = msg.getHeader();
+            head.setSenderKID(new DEROctetString("EMPTY".getBytes()));
+            final DERInteger iteration = new DERInteger(iterationCount);
 
-                // Create the new protected return message
-                String objectId = "1.2.840.113533.7.66.13";
-                if (badObjectId) {
-                    objectId += ".7";
-                }
-                final PBMParameter pp = new PBMParameter(derSalt, owfAlg, iteration, macAlg);
-                final AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new DERObjectIdentifier(objectId), pp);
-                head.setProtectionAlg(pAlg);
-
-                final PKIBody body = msg.getBody();
-                ret = new PKIMessage(head, body);
+            // Create the new protected return message
+            String objectId = "1.2.840.113533.7.66.13";
+            if (badObjectId) {
+                objectId += ".7";
             }
-            {
-                // Calculate the protection bits
-                final byte[] raSecret = password.getBytes();
-                byte basekey[] = new byte[raSecret.length + salt.length];
-                for (int i = 0; i < raSecret.length; i++) {
-                    basekey[i] = raSecret[i];
-                }
-                for (int i = 0; i < salt.length; i++) {
-                    basekey[raSecret.length + i] = salt[i];
-                }
-                // Construct the base key according to rfc4210, section 5.1.3.1
-                final MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId(), this.bcProvider);
-                for (int i = 0; i < iterationCount; i++) {
-                    basekey = dig.digest(basekey);
-                    dig.reset();
-                }
-                // For HMAC/SHA1 there is another oid, that is not known in BC, but the result is the same so...
-                final String macOid = macAlg.getObjectId().getId();
-                final byte[] protectedBytes = ret.getProtectedBytes();
-                final Mac mac = Mac.getInstance(macOid, this.bcProvider);
-                final SecretKey key = new SecretKeySpec(basekey, macOid);
-                mac.init(key);
-                mac.reset();
-                mac.update(protectedBytes, 0, protectedBytes.length);
-                final byte[] out = mac.doFinal();
-                final DERBitString bs = new DERBitString(out);
+            final PBMParameter pp = new PBMParameter(derSalt, owfAlg, iteration, macAlg);
+            final AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new DERObjectIdentifier(objectId), pp);
+            head.setProtectionAlg(pAlg);
 
-                // Finally store the protection bytes in the msg
-                ret.setProtection(bs);
+            final PKIBody body = msg.getBody();
+            ret = new PKIMessage(head, body);
+
+            // Calculate the protection bits
+            final byte[] raSecret = password.getBytes();
+            byte basekey[] = new byte[raSecret.length + salt.length];
+            for (int i = 0; i < raSecret.length; i++) {
+                basekey[i] = raSecret[i];
             }
+            for (int i = 0; i < salt.length; i++) {
+                basekey[raSecret.length + i] = salt[i];
+            }
+            // Construct the base key according to rfc4210, section 5.1.3.1
+            final MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId(), this.bcProvider);
+            for (int i = 0; i < iterationCount; i++) {
+                basekey = dig.digest(basekey);
+                dig.reset();
+            }
+            // For HMAC/SHA1 there is another oid, that is not known in BC, but the result is the same so...
+            final String macOid = macAlg.getObjectId().getId();
+            final byte[] protectedBytes = ret.getProtectedBytes();
+            final Mac mac = Mac.getInstance(macOid, this.bcProvider);
+            final SecretKey key = new SecretKeySpec(basekey, macOid);
+            mac.init(key);
+            mac.reset();
+            mac.update(protectedBytes, 0, protectedBytes.length);
+            final byte[] out = mac.doFinal();
+            final DERBitString bs = new DERBitString(out);
+
+            // Finally store the protection bytes in the msg
+            ret.setProtection(bs);
+
             return ret;
         }
 
