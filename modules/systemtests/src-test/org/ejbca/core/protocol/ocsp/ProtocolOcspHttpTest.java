@@ -705,14 +705,11 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         OutputStream os = socket.getOutputStream();
         try {
             os.write(input);
-//            for (i = 0; i < input.length; i++) {
-//                os.write(input[i]);
-//            }
         } catch (IOException e) {
             log.info("Socket threw an IOException.", e);
             // Windows throws an IOException when trying to write more bytes to
             // the server than it should. JBoss on Linux does not.
-//            assertTrue("Tried to write more than it should to the server (>1000), "+i, i > 1000);
+            // assertTrue("Tried to write more than it should to the server (>1000), "+i, i > 1000);
             return;
         }
         // Reading the response.
@@ -780,9 +777,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         OutputStream os = socket.getOutputStream();
         try {
             os.write(input);
-//          for (i = 0; i < input.length; i++) {
-//              os.write(input[i]);
-//          }
         } catch (IOException e) {
             log.info("Socket threw an IOException.", e);
         }
