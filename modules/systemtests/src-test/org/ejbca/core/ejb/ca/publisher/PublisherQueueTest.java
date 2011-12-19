@@ -335,6 +335,7 @@ public class PublisherQueueTest {
         assertEquals(1, actual.length);
         assertEquals(1, actual[0]);
 
+        log.debug("Sleeping at: "+System.currentTimeMillis());
         // Wait a while and then add some more data
         try {
             Thread.sleep(2000);
@@ -343,9 +344,10 @@ public class PublisherQueueTest {
         }
         // Another entry in the queue, at least 1s after the first one
         publisherQueueSession.addQueueData(456789, PublisherConst.PUBLISH_TYPE_CERT, "XX", null, PublisherConst.STATUS_PENDING);
+        log.debug("Added new data at: "+System.currentTimeMillis());
 
         actual = publisherQueueSession.getPendingEntriesCountForPublisherInIntervals(456789, new int[] { 0, 1, 10, 0 }, new int[] { 1, 10, -1, -1 }); //new int[]{0, 1, 10});
-        log.debug("actual=" + Arrays.toString(actual));
+        log.debug("Returned at "+System.currentTimeMillis()+", actual=" + Arrays.toString(actual));
         assertEquals(4, actual.length);
         assertEquals(1, actual[0]); // (0, 1) s  = 1
         assertEquals(1, actual[1]); // (1, 10) s = 1
