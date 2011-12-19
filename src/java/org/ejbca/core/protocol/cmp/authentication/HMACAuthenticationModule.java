@@ -270,11 +270,12 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                 final CertConfirmContent certConf = getCertConfirm(msg);
                 if (certConf != null) {
                     byte[] certhash = certConf.getCertHash().getOctets();
-                    final String fp = new String(Hex.encode(certhash));
+                    //final String fp = new String(Hex.encode(certhash));
+                    final String fphex = new String(certhash);
                     if (LOG.isDebugEnabled()) {
-                        LOG.debug("Looking for issued certificate with fingerprint: "+fp);
+                        LOG.debug("Looking for issued certificate with fingerprint: "+fphex);
                     }
-                    Certificate cert = certStoreSession.findCertificateByFingerprint(fp);
+                    Certificate cert = certStoreSession.findCertificateByFingerprint(fphex);
                     subjectDN = CertTools.getSubjectDN(cert);
                     issuerDN = CertTools.getIssuerDN(cert);
                 } else {
