@@ -115,6 +115,7 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -304,7 +305,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         	log.info("Creating new role: "+wsadminRoleName);
             role = roleManagementSession.create(intAdmin, wsadminRoleName);
             final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-            accessRules.add(new AccessRuleData(wsadminRoleName, "/", AccessRuleState.RULE_ACCEPT, true));
+            accessRules.add(new AccessRuleData(wsadminRoleName, AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true));
             role = roleManagementSession.addAccessRulesToRole(intAdmin, role, accessRules);
         }
         for (AccessUserAspectData accessUser : role.getAccessUsers().values()) {

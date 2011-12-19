@@ -327,7 +327,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     /**
      * In EJBCA 5.0 we have introduced a new authorization rule system.
-     * The old "/super_administrator" rule is replaced by a rule to access "/" with recursive=true.
+     * The old "/super_administrator" rule is replaced by a rule to access "/" (AccessRulesConstants.ROLE_ROOT) with recursive=true.
      * therefore we must insert a new access rule in the database in all roles that have super_administrator access.
      * 
      * We have also added a column to the table AdminEntityData: tokenType

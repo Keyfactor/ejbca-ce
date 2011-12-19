@@ -18,6 +18,7 @@ import static org.junit.Assert.assertNull;
 import junit.framework.Assert;
 
 import org.cesecore.jndi.JndiHelper;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.junit.Test;
 
 /**
@@ -41,7 +42,7 @@ public class AccessRuleManagementSessionBeanTest {
     @Test
     public void testCrud() throws AccessRuleExistsException {
 
-        final String accessruleName = "/";
+        final String accessruleName = AccessRulesConstants.ROLE_ROOT;
         final String roleName = "Hamlet";
 
         Assert.assertNotNull("AccessRuleManagementSession was not retrieved from JNDI context succesfully.", accessRuleManagementSession);

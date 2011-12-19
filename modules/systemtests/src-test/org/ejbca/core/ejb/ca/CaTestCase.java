@@ -78,6 +78,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
@@ -135,7 +136,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             role = roleManagementSession.create(roleMgmgToken, roleName);
         }
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(roleName, "/", AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true));
         role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
 
         final List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
