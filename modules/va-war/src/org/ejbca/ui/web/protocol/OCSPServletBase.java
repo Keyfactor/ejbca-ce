@@ -174,7 +174,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			if (m_log.isDebugEnabled()) {
 				m_log.debug("Loaded "+mTrustedReqSigIssuers == null ? "0":mTrustedReqSigIssuers.size()+" CA-certificates as trusted for OCSP-request signing");        	
 			}
-			m_trustDirValidTo = m_signTrustValidTime>0 ? new Date().getTime()+m_signTrustValidTime : Long.MAX_VALUE;;
+			m_trustDirValidTo = m_signTrustValidTime>0 ? new Date().getTime()+m_signTrustValidTime : Long.MAX_VALUE;
 		}
 		if(m_reqRestrictMethod == OcspConfiguration.RESTRICTONSIGNER) {
 			if (mTrustedReqSigSigners != null && m_trustDirValidTo > new Date().getTime()) {
@@ -184,7 +184,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 			if (m_log.isDebugEnabled()) {
 				m_log.debug("Loaded "+mTrustedReqSigSigners == null ? "0":mTrustedReqSigSigners.size()+" Signer-certificates as trusted for OCSP-request signing");        	
 			}
-			m_trustDirValidTo = m_signTrustValidTime>0 ? new Date().getTime()+m_signTrustValidTime : Long.MAX_VALUE;;
+			m_trustDirValidTo = m_signTrustValidTime>0 ? new Date().getTime()+m_signTrustValidTime : Long.MAX_VALUE;
 		}
 	}
 
@@ -546,10 +546,10 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		}
 		final String remoteAddress = request.getRemoteAddr();
 		auditLogger.paramPut(IAuditLogger.OCSPREQUEST, ""); // No request bytes yet
-		auditLogger.paramPut(IPatternLogger.LOG_ID, new Integer(localTransactionID));
+		auditLogger.paramPut(IPatternLogger.LOG_ID, Integer.valueOf(localTransactionID));
 		auditLogger.paramPut(IPatternLogger.SESSION_ID, this.m_SessionID);
 		auditLogger.paramPut(IOCSPLogger.CLIENT_IP, remoteAddress);
-		transactionLogger.paramPut(IPatternLogger.LOG_ID, new Integer(localTransactionID));
+		transactionLogger.paramPut(IPatternLogger.LOG_ID, Integer.valueOf(localTransactionID));
 		transactionLogger.paramPut(IPatternLogger.SESSION_ID, this.m_SessionID);
 		transactionLogger.paramPut(IOCSPLogger.CLIENT_IP, remoteAddress);
 
@@ -820,7 +820,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 											// Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
 											responseExtensions.putAll(retext);
 										} else {
-											String errMsg = intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(),  new Integer(extObj.getLastErrorCode()));
+											String errMsg = intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(),  Integer.valueOf(extObj.getLastErrorCode()));
 											m_log.error(errMsg);
 										}
 									}
@@ -882,7 +882,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 				transactionLogger.paramPut(ITransactionLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 				transactionLogger.writeln();
 				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
-			} catch (Throwable e) {
+			} catch (Throwable e) { // NOPMD, we really want to catch everything here
 			    	transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());

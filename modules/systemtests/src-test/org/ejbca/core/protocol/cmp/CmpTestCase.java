@@ -129,14 +129,14 @@ public abstract class CmpTestCase extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
     private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
 
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         super.setUp();
         String httpServerPubHttp = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
         CMP_HOST = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME);
         httpReqPath = "http://" + CMP_HOST + ":" + httpServerPubHttp + "/ejbca";
     }
     
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDown();
     }
 
@@ -369,9 +369,7 @@ public abstract class CmpTestCase extends CaTestCase {
         // Calculate the protection bits
         byte[] raSecret = password.getBytes();
         byte[] basekey = new byte[raSecret.length + salt.length];
-        for (int i = 0; i < raSecret.length; i++) {
-            basekey[i] = raSecret[i];
-        }
+        System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
         for (int i = 0; i < salt.length; i++) {
             basekey[raSecret.length + i] = salt[i];
         }
@@ -530,9 +528,7 @@ public abstract class CmpTestCase extends CaTestCase {
             // log.info("Salt is: "+new String(salt));
             byte[] raSecret = pbeSecret.getBytes();
             byte[] basekey = new byte[raSecret.length + salt.length];
-            for (int i = 0; i < raSecret.length; i++) {
-                basekey[i] = raSecret[i];
-            }
+            System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
             for (int i = 0; i < salt.length; i++) {
                 basekey[raSecret.length + i] = salt[i];
             }

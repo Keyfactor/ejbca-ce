@@ -51,30 +51,18 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 
 	private static final long serialVersionUID = -2660384552215596717L;
 
-	private EjbcaJSFHelper jsfHelper;
 	private EjbcaWebBean webBean;
 	private CADataHandler cadatahandler;
 	private CAInterfaceBean caBean;
 	private String authenticationcode;
 	private List<CAWrapper> caInfoList;
-	private AuthenticationToken administrator;
-	
-    private AccessRuleManagementSessionLocal accessRuleManagementSession;
-    private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
-	private CaSession caSession;
-	private CertificateProfileSession certificateProfileSession;
-	private CAAdminSession caadminsession;
-	private EndEntityProfileSession endEntityProfileSession;
-	private UserAdminSessionLocal adminsession;
-	private GlobalConfigurationSession globalconfigurationsession;
-	private RevocationSessionLocal revocationSession;
 	
 	public static final String MAKEOFFLINE = "makeoffline";
 	public static final String ACTIVATE    = "activate";
 	public static final String KEEPCURRENT = "keepcurrent";
 
 	public CAActivationMBean () {
-		jsfHelper = EjbcaJSFHelper.getBean();
+	    EjbcaJSFHelper jsfHelper = EjbcaJSFHelper.getBean();
 		webBean = jsfHelper.getEjbcaWebBean();
 		new ViewCAInfoJSPHelper();
 		caBean = new CAInterfaceBean();
@@ -84,17 +72,17 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 			log.error("Error initializing bean: ", e);
 		}
 		try {
-			administrator = webBean.getAdminObject();
-			EjbLocalHelper ejb = new EjbLocalHelper();
-			this.accessRuleManagementSession = ejb.getAccessRuleManagementSession();
-			this.accessUserAspectManagerSession = ejb.getAccessUserAspectSession();
-			caadminsession = ejb.getCaAdminSession();
-			caSession = ejb.getCaSession();
-			adminsession = ejb.getUserAdminSession();
-			globalconfigurationsession = ejb.getGlobalConfigurationSession();
-			certificateProfileSession = ejb.getCertificateProfileSession();
-			endEntityProfileSession = ejb.getEndEntityProfileSession();
-			revocationSession = ejb.getRevocationSession();
+		    final AuthenticationToken administrator = webBean.getAdminObject();
+			final EjbLocalHelper ejb = new EjbLocalHelper();
+		    final AccessRuleManagementSessionLocal accessRuleManagementSession = ejb.getAccessRuleManagementSession();
+		    final AccessUserAspectManagerSessionLocal accessUserAspectManagerSession = ejb.getAccessUserAspectSession();
+			final CAAdminSession caadminsession = ejb.getCaAdminSession();
+			final CaSession caSession = ejb.getCaSession();
+			final UserAdminSessionLocal adminsession = ejb.getUserAdminSession();
+			final GlobalConfigurationSession globalconfigurationsession = ejb.getGlobalConfigurationSession();
+			final CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
+			final EndEntityProfileSession endEntityProfileSession = ejb.getEndEntityProfileSession();
+			final RevocationSessionLocal revocationSession = ejb.getRevocationSession();
 			
             cadatahandler = new CADataHandler(administrator, accessRuleManagementSession, accessUserAspectManagerSession, caadminsession, caSession, endEntityProfileSession, adminsession,
                     globalconfigurationsession, certificateProfileSession, revocationSession,

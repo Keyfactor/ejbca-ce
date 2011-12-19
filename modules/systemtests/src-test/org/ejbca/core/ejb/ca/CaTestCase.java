@@ -118,7 +118,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     public abstract String getRoleName();
 
-    public void setUp() throws Exception {
+    protected void setUp() throws Exception {
         roleName = getRoleName();
         super.setUpAuthTokenAndRole(getRoleName());
         removeTestCA(); // We cant be sure this CA was not left over from
@@ -146,7 +146,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         accessControlSession.forceCacheExpire();
     }
 
-    public void tearDown() throws Exception {
+    protected void tearDown() throws Exception {
         super.tearDownRemoveRole();
         removeTestCA();
         RoleData role = roleAccessSession.findRole(roleName);
