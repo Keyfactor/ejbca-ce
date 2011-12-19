@@ -772,10 +772,10 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
         final String resultFilePrefix;
         if ( args.length < 5 ) {
             System.out.println(args[0]+" <host name> <keystore (p12)> <keystore password> <friendlyname in keystore> [<number of threads>] [<wait time (ms) between each thread is started>] [<port>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
-            System.out.println("EJBCA build configutation requirements: cmp.operationmode=normal, cmp.allowraverifypopo=true, cmp.allowautomatickeyupdate=true, cmp.allowupdatewithsamekey=true");
+            System.out.println("EJBCA build configuration requirements: cmp.operationmode=normal, cmp.allowraverifypopo=true, cmp.allowautomatickeyupdate=true, cmp.allowupdatewithsamekey=true");
 //            System.out.println("EJBCA build configuration optional: cmp.ra.certificateprofile=KeyId cmp.ra.endentityprofile=KeyId (used when the KeyId argument should be used as profile name).");
             System.out.println("Ejbca expects the following: There exists an end entity with a generated certificate. The end entity's certificate and its private key are stored in the keystore used " +
-            		"in the commandline. The end entity's certificate's 'friendly name' in the keystore is the one used in the command line. Such keystor can be obtained, for example, by specifying " +
+            		"in the commandline. The end entity's certificate's 'friendly name' in the keystore is the one used in the command line. Such keystore can be obtained, for example, by specifying " +
             		"the token to be 'P12' when creating the end entity and then download the keystore by choosing 'create keystore' from the public web");
             return;
         }
