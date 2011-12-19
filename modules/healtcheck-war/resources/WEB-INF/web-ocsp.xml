@@ -23,7 +23,7 @@
 
     <servlet-mapping>
         <servlet-name>ExtOCSPHealthCheckServlet</servlet-name>
-        <url-pattern>/extocsphealth</url-pattern>
+        <url-pattern>/vahealth</url-pattern>
     </servlet-mapping>
 
     <security-constraint>
