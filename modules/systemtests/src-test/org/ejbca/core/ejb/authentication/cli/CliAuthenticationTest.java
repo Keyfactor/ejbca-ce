@@ -42,6 +42,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.CliAuthenticationToken;
 import org.ejbca.ui.cli.CliUserAccessMatchValue;
@@ -85,7 +86,7 @@ public class CliAuthenticationTest {
         subjects.add(defaultCliUserAspect);
         roleManagementSession.addSubjectsToRole(internalToken, role, subjects);
 
-        AccessRuleData rule = new AccessRuleData(CLI_TEST_ROLENAME, "/", AccessRuleState.RULE_ACCEPT, true);
+        AccessRuleData rule = new AccessRuleData(CLI_TEST_ROLENAME, AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true);
         List<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
         newrules.add(rule);
         roleManagementSession.addAccessRulesToRole(internalToken, role, newrules);
@@ -108,7 +109,7 @@ public class CliAuthenticationTest {
         CliAuthenticationToken authenticationToken = (CliAuthenticationToken) authenticationSession.authenticate(subject, cliAuthenticationProvider);
         // Set hashed value anew in order to send back
         authenticationToken.setSha1HashFromCleartextPassword(CliAuthenticationTestHelperSessionRemote.PASSWORD);
-        assertTrue(accessControlSession.isAuthorized(authenticationToken, "/"));
+        assertTrue(accessControlSession.isAuthorized(authenticationToken, AccessRulesConstants.ROLE_ROOT));
     }
 
     @Test
@@ -122,7 +123,7 @@ public class CliAuthenticationTest {
         // Set hashed value anew in order to send back
         authenticationToken.setSha1HashFromCleartextPassword(CliAuthenticationTestHelperSessionRemote.PASSWORD);
         assertFalse("Old-style hash value was not used (BCrypt prefix detected).", authenticationToken.getSha1Hash().startsWith(CryptoTools.BCRYPT_PREFIX));
-        assertTrue(accessControlSession.isAuthorized(authenticationToken, "/"));
+        assertTrue(accessControlSession.isAuthorized(authenticationToken, AccessRulesConstants.ROLE_ROOT));
     }
 
 }

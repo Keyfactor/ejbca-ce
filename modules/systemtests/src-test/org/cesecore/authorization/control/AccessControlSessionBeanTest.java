@@ -37,6 +37,7 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,7 +80,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
                     AccessMatchType.TYPE_EQUALCASE, "SE"));
             roleManagementSession.addSubjectsToRole(roleMgmgToken, nerfHerder, accessUsers);          
             List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();       
-            accessRules.add(new AccessRuleData(nerfHerder.getRoleName(), "/", AccessRuleState.RULE_NOTUSED, false));            
+            accessRules.add(new AccessRuleData(nerfHerder.getRoleName(), AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_NOTUSED, false));            
             accessRules.add(new AccessRuleData(nerfHerder.getRoleName(), "/acceptRecursive", AccessRuleState.RULE_ACCEPT, true));
             accessRules.add(new AccessRuleData(nerfHerder.getRoleName(), "/accept", AccessRuleState.RULE_ACCEPT, false));
             accessRules.add(new AccessRuleData(nerfHerder.getRoleName(), "/decline", AccessRuleState.RULE_DECLINE, false));
@@ -98,7 +99,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
             accessRules.add(new AccessRuleData(nerfHerder.getRoleName(), "/decline/decline", AccessRuleState.RULE_DECLINE, false));    
             roleManagementSession.addAccessRulesToRole(roleMgmgToken, nerfHerder, accessRules);            
 
-            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/"));
+            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, AccessRulesConstants.ROLE_ROOT));
            
             assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive"));            
             assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/accept"));

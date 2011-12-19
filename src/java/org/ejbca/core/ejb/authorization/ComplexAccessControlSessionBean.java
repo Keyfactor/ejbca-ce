@@ -108,7 +108,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         }
 
         Map<Integer, AccessRuleData> rules = role.getAccessRules();
-        AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, "/", AccessRuleState.RULE_ACCEPT, true);
+        AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true);
         if (!rules.containsKey(rule.getPrimaryKey())) {
             log.debug("Adding new rule '/' to " + SUPERADMIN_ROLE + ".");
             Map<Integer, AccessRuleData> newrules = new HashMap<Integer, AccessRuleData>();
@@ -147,7 +147,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
             roleMgmtSession.create(admin, SUPERADMIN_ROLE);
         }
         Map<Integer, AccessRuleData> rules = role.getAccessRules();
-        AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, "/", AccessRuleState.RULE_ACCEPT, true);
+        AccessRuleData rule = new AccessRuleData(SUPERADMIN_ROLE, AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true);
         if (!rules.containsKey(rule.getPrimaryKey())) {
             log.debug("Adding new rule '/' to " + SUPERADMIN_ROLE + ".");
             Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
