@@ -155,7 +155,7 @@ public class GlobalConfigurationSessionBean implements GlobalConfigurationSessio
         if (log.isTraceEnabled()) {
             log.trace(">saveGlobalConfiguration()");
         }
-        if (this.accessSession.isAuthorizedNoLogging(admin, "/")) {
+        if (this.accessSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
             final String pk = "0";
             final GlobalConfigurationData gcdata = GlobalConfigurationData.findByConfigurationId(entityManager, pk);
             if (gcdata != null) {
