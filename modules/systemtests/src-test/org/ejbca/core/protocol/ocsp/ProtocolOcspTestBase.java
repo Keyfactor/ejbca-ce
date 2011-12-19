@@ -108,7 +108,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      * @throws Exception
      *             error
      */
-    public void test04OcspUnknown() throws Exception {
+    protected void test04OcspUnknown() throws Exception {
         log.trace(">test04OcspUnknown()");
         loadUserCert(caid);
         // An OCSP request for an unknown certificate (not exist in db)
@@ -135,7 +135,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      * @throws Exception
      *             error
      */
-    public void test05OcspUnknownCA() throws Exception {
+    protected void test05OcspUnknownCA() throws Exception {
         log.trace(">test05OcspUnknownCA()");
         loadUserCert(caid);
         // An OCSP request for a certificate from an unknwon CA
@@ -156,7 +156,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
         log.trace("<test05OcspUnknownCA()");
     }
 
-    public void test06OcspSendWrongContentType() throws Exception {
+    protected void test06OcspSendWrongContentType() throws Exception {
         loadUserCert(caid);
         // An OCSP request for a certificate from an unknwon CA
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -176,7 +176,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
     
     }
 
-    public void test10MultipleRequests() throws Exception {
+    protected void test10MultipleRequests() throws Exception {
         // Tests that we handle multiple requests in one OCSP request message
     
         loadUserCert(caid);
@@ -220,7 +220,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      * OCSPResponse ::= SEQUENCE { responseStatus OCSPResponseStatus,
      * responseBytes [0] EXPLICIT ResponseBytes OPTIONAL }
      */
-    public void test11MalformedRequest() throws Exception {
+    protected void test11MalformedRequest() throws Exception {
         loadUserCert(caid);
         OCSPReqGenerator gen = new OCSPReqGenerator();
         // Add 101 OCSP requests.. the Servlet will consider a request with more
@@ -242,7 +242,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
         assertNull("No SingleResps should be returned.", singleResps);
     }
 
-    public void test12CorruptRequests() throws Exception {
+    protected void test12CorruptRequests() throws Exception {
         log.trace(">test12CorruptRequests()");
         loadUserCert(caid);
         // An OCSP request, ocspTestCert is already created in earlier tests
@@ -314,7 +314,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
     /**
      * Just verify that a simple GET works.
      */
-    public void test13GetRequests() throws Exception {
+    protected void test13GetRequests() throws Exception {
         loadUserCert(caid);
         // See if the OCSP Servlet can read non-encoded requests
         final String plainReq = httpReqPath
@@ -359,7 +359,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
     /**
      * Send a bunch of faulty requests
      */
-    public void test14CorruptGetRequests() throws Exception {
+    protected void test14CorruptGetRequests() throws Exception {
         // An array of zeros cannot be right..
         // A GET request larger than 2048 works on JBoss but not on Glassfish, 
         // GF only gives "unexpected end of file", i.e. it closes the connection
@@ -387,7 +387,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      * clients from this, but the server should be RFC 2560 compatible and
      * support this as long as the total request URL is smaller than 256 bytes.
      */
-    public void test15MultipleGetRequests() throws Exception {
+    protected void test15MultipleGetRequests() throws Exception {
         loadUserCert(caid);
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -408,7 +408,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
         cacert = getCaCert(ocspTestCert);
     }
     
-    protected X509Certificate getTestCert(boolean isRevoked) throws Exception {
+    protected X509Certificate getTestCert(boolean isRevoked) {
         try {
             Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByUsername("ocspTest");
             Iterator<Certificate> i = certs.iterator();
@@ -419,7 +419,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
                     return cert;
                 }
             }
-        } catch (Throwable e) {
+        } catch (Exception e) {
             log.debug("", e);
         }
         assertNotNull("To run this test you must have at least one active and one revoked end user cert in the database. (Could not fetch certificate.)", null);
