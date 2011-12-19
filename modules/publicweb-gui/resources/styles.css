@@ -100,7 +100,8 @@ acronym { border-bottom: none; }
 
 .menucontainer {
     float: left;
-    background-color: #EEEEEE;
+    /*background-color: #EEEEEE;*/
+    background-color: #ffffff;
     margin: 0px;
     width: 250px;
     height: 100%;
@@ -162,16 +163,18 @@ acronym { border-bottom: none; }
 /* HEADER */
 
 #header {
-	height: 100px;
+	/*height: 100px;*/
 	margin: 0em;
 	padding: 0em;
-    border-bottom: 1px solid #DDD;
-	background-color: #005B88;
+	border-bottom: 1px dashed #688B9A;
+    /*border-bottom: 1px solid #DDD;*/
+	/*background-color: #005B88;*/
+    background-color: #f4f2f2;	
 	color: #FFF;
 	overflow: hidden;
 }
 #header div#banner {
-	height: 84px;
+	/*height: 84px;*/
 	margin: 8px 8px;
 	padding: 0em;
 	/* For IMG ALT */
