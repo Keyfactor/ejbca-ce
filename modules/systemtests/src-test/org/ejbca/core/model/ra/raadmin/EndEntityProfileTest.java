@@ -231,7 +231,7 @@ public class EndEntityProfileTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-    public void test06testEndEntityProfilesDynamicFields() throws Exception {
+    public void testEndEntityProfilesDynamicFields() throws Exception {
         log.trace(">test06testEndEntityProfilesDynamicFields()");
         String testProfileName = "TESTDYNAMICFIELDS";
         String testString1 = "testString1";
@@ -273,7 +273,7 @@ public class EndEntityProfileTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-    public void test07PasswordAutoGeneration() throws Exception {
+    public void testPasswordAutoGeneration() throws Exception {
         log.trace(">test07PasswordAutoGeneration()");
         // Create testprofile
         EndEntityProfile profile = new EndEntityProfile();
@@ -297,7 +297,7 @@ public class EndEntityProfileTest extends RoleUsingTestCase {
      *             error
      */
     @Test
-   public void test08FieldIds() throws Exception {
+   public void testFieldIds() throws Exception {
         log.trace(">test08FieldIds()");
         EndEntityProfile profile = new EndEntityProfile();
 
@@ -320,7 +320,7 @@ public class EndEntityProfileTest extends RoleUsingTestCase {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Test
-    public void test09Clone() throws Exception {
+    public void testClone() throws Exception {
         EndEntityProfile profile = new EndEntityProfile();
         EndEntityProfile clone = (EndEntityProfile)profile.clone();
         HashMap profmap = (HashMap)profile.saveData();
@@ -344,7 +344,7 @@ public class EndEntityProfileTest extends RoleUsingTestCase {
      * @throws AuthorizationDeniedException 
      */
     @Test
-    public void test10CardnumberRequired() throws CertificateProfileExistsException, AuthorizationDeniedException {
+    public void testCardnumberRequired() throws CertificateProfileExistsException, AuthorizationDeniedException {
     	log.trace(">test10CardnumberRequired()");
 
     	try {
@@ -392,7 +392,7 @@ public class EndEntityProfileTest extends RoleUsingTestCase {
 
     /** Test if we can detect that a End Entity Profile references to CA IDs and Certificate Profile IDs. */
     @Test
-   public void test11EndEntityProfileReferenceDetection() throws Exception {
+   public void testEndEntityProfileReferenceDetection() throws Exception {
         log.trace(">test11EndEntityProfileReferenceDetection()");
         final String NAME = "EndEntityProfileReferenceDetection";
         try {
@@ -419,7 +419,7 @@ public class EndEntityProfileTest extends RoleUsingTestCase {
 
     /** Test if we can detect that a End Entity Profile references to CA IDs and Certificate Profile IDs. */
     @Test
-   public void test12OperationsOnEmptyProfile() throws Exception {
+   public void testOperationsOnEmptyProfile() throws Exception {
         log.trace(">test12OperationsOnEmptyProfile()");
     	final EndEntityProfile profile = new EndEntityProfile();
         try {
@@ -457,7 +457,7 @@ public class EndEntityProfileTest extends RoleUsingTestCase {
     }
     
     @Test
-    public void test08Authorization() throws Exception {
+    public void testAuthorization() throws Exception {
         
         final KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test EndEntityProfileSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
