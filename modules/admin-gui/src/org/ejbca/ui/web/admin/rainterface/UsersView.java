@@ -38,7 +38,7 @@ public class UsersView implements Serializable {
       sortby = new SortBy();
     }
     
-    public UsersView(EndEntityInformation importuser, HashMap caidtonamemap){
+    public UsersView(EndEntityInformation importuser, HashMap<Integer, String> caidtonamemap){
       users = new ArrayList<UserView>();
       sortby = new SortBy();        
       users.add(new UserView(importuser, caidtonamemap)); 
@@ -46,7 +46,7 @@ public class UsersView implements Serializable {
       Collections.sort(users); 
     }
     
-    public UsersView(Collection<EndEntityInformation> importusers, HashMap caidtonamemap){ 
+    public UsersView(Collection<EndEntityInformation> importusers, HashMap<Integer, String>caidtonamemap){ 
       users = new ArrayList<UserView>();
       sortby = new SortBy();
       
@@ -106,7 +106,7 @@ public class UsersView implements Serializable {
       Collections.sort(this.users);
     }
     
-    public void setUsers(EndEntityInformation[] users, Map caidtonamemap) {
+    public void setUsers(EndEntityInformation[] users, Map<Integer, String> caidtonamemap) {
       UserView user;  
       this.users.clear();
       if(users !=null && users.length > 0){ 
@@ -119,7 +119,7 @@ public class UsersView implements Serializable {
       }
     }
 
-    public void setUsers(Collection<EndEntityInformation> importusers, Map caidtonamemap) { 
+    public void setUsers(Collection<EndEntityInformation> importusers, Map<Integer, String> caidtonamemap) { 
         
       UserView user;  
       Iterator<EndEntityInformation> i;  

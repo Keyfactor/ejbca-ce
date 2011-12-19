@@ -21,9 +21,6 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.StringTools;
 
-
-
-
 /**
  * A class representing a web interface view of a user in the ra user database.
  *
@@ -42,9 +39,9 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
    }
 
 
-    public UserView(EndEntityInformation newuserdata, Map caidtonamemap){
+    public UserView(EndEntityInformation newuserdata, Map<Integer, String> caidtonamemap){
       userdata = newuserdata;
-      this.caname = (String) caidtonamemap.get(Integer.valueOf(newuserdata.getCAId()));
+      this.caname = caidtonamemap.get(Integer.valueOf(newuserdata.getCAId()));
       subjectdnfields = new DNFieldExtractor(userdata.getDN(), DNFieldExtractor.TYPE_SUBJECTDN);
       subjectaltnames = new DNFieldExtractor(userdata.getSubjectAltName(), DNFieldExtractor.TYPE_SUBJECTALTNAME);
       String dirattrs = userdata.getExtendedinformation() != null ? userdata.getExtendedinformation().getSubjectDirectoryAttributes() : null;
