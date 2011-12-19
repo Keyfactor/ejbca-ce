@@ -25,7 +25,7 @@ public class WebOcspHealthCheckTest extends WebHealthTestAbstract {
     @Before
     public void setUp() throws Exception {
         httpPort = "8080"; 
-        httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/vahealthcheck/extocsphealth";
+        httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/vahealthcheck/vahealth";
     }
 
     @After
