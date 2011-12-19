@@ -31,7 +31,7 @@ public class UserDataConstants {
     public static final int STATUS_KEYRECOVERY  = 70; // The user is should use key recovery functions in next certificate generation.
     
     /** These string values maps a status code to a language string in the admin GUI language property files */
-    private static final HashMap STATUS_TEXT_TRANS = new HashMap();
+    private static final HashMap<Integer, String> STATUS_TEXT_TRANS = new HashMap<Integer, String>();
     static {
     	STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_NEW),"STATUSNEW");
     	STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_FAILED),"STATUSFAILED"); 
@@ -53,7 +53,7 @@ public class UserDataConstants {
     }
 
     /** These string values maps a status code to a plain string */
-    private static final HashMap STATUS_TEXT = new HashMap();
+    private static final HashMap<Integer, String> STATUS_TEXT = new HashMap<Integer, String>();
     static {
     	STATUS_TEXT.put(Integer.valueOf(STATUS_NEW),"NEW");
     	STATUS_TEXT.put(Integer.valueOf(STATUS_FAILED),"FAILED"); 

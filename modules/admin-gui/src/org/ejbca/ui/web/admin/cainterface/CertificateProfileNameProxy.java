@@ -25,13 +25,14 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
  */
 public class CertificateProfileNameProxy implements java.io.Serializable {
     
-    private HashMap certificateprofilenamestore;
+    private static final long serialVersionUID = -8362730983248532144L;
+    private HashMap<Integer, String> certificateprofilenamestore;
     private CertificateProfileSession certificateProfileSession;
 
     /** Creates a new instance of ProfileNameProxy */
     public CertificateProfileNameProxy(CertificateProfileSession certificateProfileSession){
       this.certificateProfileSession = certificateProfileSession;
-      certificateprofilenamestore = new HashMap(); 
+      certificateprofilenamestore = new HashMap<Integer, String>(); 
     }
     
     /**

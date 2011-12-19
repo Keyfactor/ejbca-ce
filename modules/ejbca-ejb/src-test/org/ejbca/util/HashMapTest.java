@@ -20,7 +20,7 @@ public class HashMapTest {
 
     @Test
 	public void testHashMapNormal() throws Exception {
-        HashMap a = new HashMap();
+        HashMap<String, Comparable> a = new HashMap<String, Comparable>();
         a.put("foo0", Boolean.valueOf(false));
         a.put("foo1", "fooString");
         a.put("foo2", Integer.valueOf(2));
@@ -35,7 +35,7 @@ public class HashMapTest {
         //log.error(data);
         
         java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
-        HashMap b = (HashMap) decoder.readObject();
+        HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
         decoder.close();
         assertEquals(((Boolean)b.get("foo0")).booleanValue(),false);
         assertEquals(((Boolean)b.get("foo3")).booleanValue(),true);
@@ -46,7 +46,7 @@ public class HashMapTest {
 	
     @Test
     public void testHashMapStrangeChars() throws Exception {
-        HashMap a = new HashMap();
+        HashMap<String, Comparable> a = new HashMap<String, Comparable>();
         a.put("foo0", Boolean.valueOf(false));
         a.put("foo1", "\0001\0002fooString");
         a.put("foo2", Integer.valueOf(2));
@@ -62,7 +62,7 @@ public class HashMapTest {
 
         try {
             java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
-            HashMap b = (HashMap) decoder.readObject();
+            HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             decoder.close();         
             assertEquals(((Boolean)b.get("foo0")).booleanValue(),false);
         // We can get two different errors, I don't know if it is different java versions or what...
@@ -86,13 +86,13 @@ public class HashMapTest {
     }
     @Test
     public void testHashMapStrangeCharsSafe() throws Exception {
-        HashMap h = new HashMap();
+        HashMap<String, Comparable> h = new HashMap<String, Comparable>();
         h.put("foo0", Boolean.valueOf(false));
         h.put("foo1", "\0001\0002fooString");
         h.put("foo2", Integer.valueOf(2));
         h.put("foo3", Boolean.valueOf(true));
         h.put("foo4", "");
-        HashMap a = new Base64PutHashMap();
+        HashMap<String, Comparable> a = new Base64PutHashMap();
         a.putAll(h);
         
         // Write to XML
@@ -105,9 +105,9 @@ public class HashMapTest {
 
         try {
             java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
-            HashMap b = (HashMap) decoder.readObject();
+            HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             decoder.close();    
-            HashMap c = new Base64GetHashMap(b);
+            HashMap<?, ?> c = new Base64GetHashMap(b);
             assertEquals(((Boolean)c.get("foo0")).booleanValue(),false);
             assertEquals(((Boolean)c.get("foo3")).booleanValue(),true);
             assertEquals(((String)c.get("foo1")),"\0001\0002fooString");
@@ -120,13 +120,13 @@ public class HashMapTest {
     }
     @Test
     public void testHashMapNormalCharsSafe() throws Exception {
-        HashMap h = new HashMap();
+        HashMap<String, Comparable> h = new HashMap<String, Comparable>();
         h.put("foo0", Boolean.valueOf(false));
         h.put("foo1", "fooString");
         h.put("foo2", Integer.valueOf(2));
         h.put("foo3", Boolean.valueOf(true));
         h.put("foo4", "");
-        HashMap a = new Base64PutHashMap();
+        HashMap<String, Comparable> a = new Base64PutHashMap();
         a.putAll(h);
         
         // Write to XML
@@ -139,9 +139,9 @@ public class HashMapTest {
 
         try {
             java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
-            HashMap b = (HashMap) decoder.readObject();
+            HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             decoder.close();    
-            HashMap c = new Base64GetHashMap(b);
+            HashMap<?, ?> c = new Base64GetHashMap(b);
             assertEquals(((Boolean)c.get("foo0")).booleanValue(),false);
             assertEquals(((Boolean)c.get("foo3")).booleanValue(),true);
             assertEquals(((String)c.get("foo4")),"");
