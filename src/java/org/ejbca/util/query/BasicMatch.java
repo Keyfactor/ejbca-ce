@@ -22,7 +22,6 @@ package org.ejbca.util.query;
  * A base class used by Query class to build a query. Inherited by UserMatch, TimeMatch and
  * LogMatch. Main function is getQueryString which is abstract and must be overloaded.
  *
- * @author tomselleck
  * @version $Id$
  *
  * @see org.ejbca.util.query.UserMatch

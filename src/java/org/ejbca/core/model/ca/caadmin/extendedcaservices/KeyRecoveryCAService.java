@@ -36,7 +36,8 @@ import org.ejbca.core.model.InternalEjbcaResources;
  */
 public class KeyRecoveryCAService extends ExtendedCAService implements Serializable {
 
-	private static Logger log = Logger.getLogger(KeyRecoveryCAService.class);
+	private static final long serialVersionUID = 2400252746958812175L;
+    private static Logger log = Logger.getLogger(KeyRecoveryCAService.class);
 	/** Internal localization of logs and errors */
 	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 

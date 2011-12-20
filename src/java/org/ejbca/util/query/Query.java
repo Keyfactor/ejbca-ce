@@ -18,6 +18,7 @@
  */
 package org.ejbca.util.query;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Vector;
@@ -32,13 +33,12 @@ import org.cesecore.util.StringTools;
  * getQueryString which returns a string which should be placed in the 'WHERE' clause of a SQL
  * statement.
  *
- * @author tomselleck
  * @version $Id$
  */
-public class Query implements java.io.Serializable {
-	
-	private static final long serialVersionUID = -1L;
-	
+public class Query implements Serializable {
+
+    private static final long serialVersionUID = 2020709050743730820L;
+ 
     private static Logger log = Logger.getLogger(Query.class);
     // Public Constants.
     public static final int TYPE_LOGQUERY = 0;
@@ -49,6 +49,16 @@ public class Query implements java.io.Serializable {
     public static final int CONNECTOR_ANDNOT = 2;
     public static final int CONNECTOR_ORNOT = 3;
 
+
+    // Private Constants.
+    static final String[] CONNECTOR_SQL_NAMES = { " AND ", " OR ", " AND NOT ", " OR NOT " };
+
+    // Private fields.
+    private Vector<BasicMatch> matches = null; // Should only contain BasicMatch objects.
+    private Vector<Integer> connectors = null; // Should only containg CONNECTOR constants.
+    protected int type = 0;
+    private boolean hasIllegalSqlChars = false;
+    
     // Public methods.
 
     /**
@@ -58,8 +68,8 @@ public class Query implements java.io.Serializable {
      *        class.
      */
     public Query(int type) {
-        matches = new Vector();
-        connectors = new Vector();
+        matches = new Vector<BasicMatch>();
+        connectors = new Vector<Integer>();
         this.type = type;
     }
 
@@ -199,10 +209,10 @@ public class Query implements java.io.Serializable {
      */
     public boolean isLegalQuery() {
         boolean returnval = true;
-        Iterator i = matches.iterator();
+        Iterator<BasicMatch> i = matches.iterator();
 
         while (i.hasNext()) {
-        	BasicMatch match = (BasicMatch) i.next();
+        	BasicMatch match = i.next();
             returnval = returnval && match.isLegalQuery();
             if (!returnval) {
             	log.error("Query is illegal: "+match.getQueryString());
@@ -228,12 +238,4 @@ public class Query implements java.io.Serializable {
         return hasIllegalSqlChars;
     }
 
-    // Private Constants.
-    static final String[] CONNECTOR_SQL_NAMES = { " AND ", " OR ", " AND NOT ", " OR NOT " };
-
-    // Private fields.
-    private Vector matches = null; // Should only contain BasicMatch objects.
-    private Vector connectors = null; // Should only containg CONNECTOR constants.
-    protected int type = 0;
-    private boolean hasIllegalSqlChars = false;
 }

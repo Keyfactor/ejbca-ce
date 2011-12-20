@@ -52,7 +52,7 @@ public class PKIMessage implements DEREncodable
     PKIHeader      header;
     PKIBody        body;
     DERBitString   protection;
-    Vector         extraCerts = new Vector();
+    Vector<X509CertificateStructure>         extraCerts = new Vector<X509CertificateStructure>();
     byte           protectedBytes[];
 
     public static PKIMessage getInstance( ASN1TaggedObject obj, boolean explicit )
@@ -76,7 +76,8 @@ public class PKIMessage implements DEREncodable
   
     public PKIMessage( ASN1Sequence seq )
     {
-      Enumeration e = seq.getObjects();
+      @SuppressWarnings("unchecked")
+    Enumeration<Object> e = seq.getObjects();
       
 /*
       header     = PKIHeader.getInstance( e.nextElement() );

@@ -40,7 +40,7 @@ import org.bouncycastle.asn1.x509.CertificateList;
  */
 public class CRLAnnContent implements DEREncodable
 {
-    Vector certificateLists = new Vector();
+    Vector<CertificateList> certificateLists = new Vector<CertificateList>();
 
     public static CRLAnnContent getInstance( ASN1TaggedObject obj, boolean explicit )
     {
@@ -63,7 +63,8 @@ public class CRLAnnContent implements DEREncodable
 
     public CRLAnnContent( ASN1Sequence seq )
     {
-        Enumeration e = seq.getObjects();
+        @SuppressWarnings("unchecked")
+        Enumeration<Object> e = seq.getObjects();
         while (e.hasMoreElements())
         {
             CertificateList s = CertificateList.getInstance(e.nextElement());

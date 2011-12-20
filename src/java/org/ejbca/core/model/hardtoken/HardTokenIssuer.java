@@ -78,6 +78,7 @@ public  class HardTokenIssuer extends UpgradeableDataHashMap implements Serializ
     public void upgrade(){	
     }
     
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Object clone() throws CloneNotSupportedException {
       HardTokenIssuer clone = new HardTokenIssuer();
       HashMap clonedata = (HashMap) clone.saveData();

@@ -266,7 +266,8 @@ public class PKCS10RequestMessage implements RequestMessage {
         if (xname == null) {
         	log.info("No requestDN in request, probably we could not read/parse/decrypt request.");
         } else {
-            Vector cnValues = xname.getValues(X509Name.CN);
+            @SuppressWarnings("unchecked")
+            Vector<String> cnValues = xname.getValues(X509Name.CN);
             if (cnValues.size() == 0) {
             	log.info("No CN in DN: "+xname.toString());
             } else {

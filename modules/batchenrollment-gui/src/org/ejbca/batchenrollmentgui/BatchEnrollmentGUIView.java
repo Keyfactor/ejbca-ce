@@ -347,6 +347,7 @@ public class BatchEnrollmentGUIView extends FrameView {
         try {
             dt.addDropTargetListener(new DropTargetAdapter() {
 
+                @SuppressWarnings("unchecked")
                 public void drop(DropTargetDropEvent dtde) {
                     final Transferable tr = dtde.getTransferable();
                     final DataFlavor[] flavors = tr.getTransferDataFlavors();
@@ -1179,7 +1180,8 @@ public class BatchEnrollmentGUIView extends FrameView {
             // Runs on the EDT.  Update the GUI based on
             // the result computed by doInBackground().
             if (result instanceof Vector) {
-                final Vector<UserDataVOWS> newUsers = (Vector) result;
+                @SuppressWarnings("unchecked")
+                final Vector<UserDataVOWS> newUsers = (Vector<UserDataVOWS>) result;
                 endEntities = newUsers;
 
                 if (LOG.isDebugEnabled()) {

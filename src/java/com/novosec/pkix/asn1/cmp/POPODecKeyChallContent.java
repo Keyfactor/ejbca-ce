@@ -38,7 +38,7 @@ import org.bouncycastle.asn1.DERSequence;
  */
 public class POPODecKeyChallContent implements DEREncodable
 {
-  Vector challenges = new Vector();
+  Vector<Challenge> challenges = new Vector<Challenge>();
 
   public static POPODecKeyChallContent getInstance(ASN1TaggedObject obj, boolean explicit)
   {
@@ -61,7 +61,8 @@ public class POPODecKeyChallContent implements DEREncodable
 
   public POPODecKeyChallContent(ASN1Sequence seq)
   {
-    Enumeration e = seq.getObjects();
+    @SuppressWarnings("unchecked")
+    Enumeration<Object> e = seq.getObjects();
 
     while (e.hasMoreElements()) {
       challenges.addElement( Challenge.getInstance(e.nextElement()) );

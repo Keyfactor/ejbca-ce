@@ -44,7 +44,7 @@ import org.bouncycastle.asn1.DERSequence;
 public class PKIPublicationInfo implements DEREncodable
 {
     DERInteger   action;
-    Vector       pubInfos = new Vector();
+    Vector<SinglePubInfo>       pubInfos = new Vector<SinglePubInfo>();
 
     public static PKIPublicationInfo getInstance( ASN1TaggedObject obj, boolean explicit )
     {

@@ -39,7 +39,7 @@ import org.bouncycastle.asn1.DERSequence;
  */
 public class RevReqContent implements DEREncodable
 {
-    Vector revDetails = new Vector();
+    Vector<RevDetails> revDetails = new Vector<RevDetails>();
 
     public static RevReqContent getInstance( ASN1TaggedObject obj, boolean explicit )
     {
@@ -62,7 +62,8 @@ public class RevReqContent implements DEREncodable
 
     public RevReqContent( ASN1Sequence seq )
     {
-      Enumeration e = seq.getObjects();
+      @SuppressWarnings("unchecked")
+    Enumeration<Object> e = seq.getObjects();
       
       while (e.hasMoreElements()) {
         revDetails.addElement(RevDetails.getInstance(e.nextElement()));

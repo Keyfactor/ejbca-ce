@@ -166,7 +166,7 @@ public class P12toPEM {
             in.close();
         }
         // Fid the key private key entry in the keystore
-        Enumeration e = ks.aliases();
+        Enumeration<String> e = ks.aliases();
         Object o = null;
         PrivateKey serverPrivKey = null;
 

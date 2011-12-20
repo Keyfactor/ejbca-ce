@@ -40,7 +40,7 @@ import org.bouncycastle.asn1.DERUTF8String;
  */
 public class PKIFreeText implements DEREncodable
 {
-    Vector freeTextStrings = new Vector();
+    Vector<DERUTF8String> freeTextStrings = new Vector<DERUTF8String>();
 
     public static PKIFreeText getInstance( ASN1TaggedObject obj, boolean explicit )
     {
@@ -63,9 +63,10 @@ public class PKIFreeText implements DEREncodable
 
     public PKIFreeText( ASN1Sequence seq )
     {
-        Enumeration e = seq.getObjects();
+        @SuppressWarnings("unchecked")
+        Enumeration<Object> e = seq.getObjects();
         while (e.hasMoreElements()) {
-            freeTextStrings.addElement(e.nextElement());
+            freeTextStrings.addElement((DERUTF8String) e.nextElement());
         }
     }
 
@@ -82,7 +83,7 @@ public class PKIFreeText implements DEREncodable
     public DERUTF8String getString(int nr)
     {
       if (freeTextStrings.size() > nr) {
-        return (DERUTF8String)freeTextStrings.elementAt(nr);
+        return freeTextStrings.elementAt(nr);
       }
 
       return null;
