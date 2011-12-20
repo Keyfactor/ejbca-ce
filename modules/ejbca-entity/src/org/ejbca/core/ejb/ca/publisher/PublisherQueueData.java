@@ -272,6 +272,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
     }
     
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<PublisherQueueData> findDataByFingerprint(EntityManager entityManager, String fingerprint) {
     	final Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.fingerprint=:fingerprint");
     	query.setParameter("fingerprint", fingerprint);
@@ -282,6 +283,7 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
      * @param maxRows If set > 0, limits the number of rows fetched.
      * 
      * @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<PublisherQueueData> findDataByPublisherIdAndStatus(EntityManager entityManager, int publisherId, int publishStatus, int maxRows) {
     	final Query query = entityManager.createQuery("SELECT a FROM PublisherQueueData a WHERE a.publisherId=:publisherId AND a.publishStatus=:publishStatus");
     	query.setParameter("publisherId", publisherId);
@@ -302,7 +304,8 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
 	/**
 	 * @return the count of pending entries for a publisher in the specified intervals.
 	 */
-	public static List<Integer> findCountOfPendingEntriesForPublisher(EntityManager entityManager, int publisherId, int[] lowerBounds, int[] upperBounds) {
+	@SuppressWarnings("unchecked")
+    public static List<Integer> findCountOfPendingEntriesForPublisher(EntityManager entityManager, int publisherId, int[] lowerBounds, int[] upperBounds) {
     	StringBuilder sql = new StringBuilder();
     	long now = new Date().getTime();
     	for(int i = 0; i < lowerBounds.length; i++) {

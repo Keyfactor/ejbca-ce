@@ -140,9 +140,10 @@ public class CustomPublisherContainer extends BasePublisher{
 	/** 
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#clone()
 	 */
-	public Object clone() throws CloneNotSupportedException {
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+    public Object clone() throws CloneNotSupportedException {
 		CustomPublisherContainer clone = new CustomPublisherContainer();
-		HashMap clonedata = (HashMap) clone.saveData();
+        HashMap clonedata = (HashMap) clone.saveData();
 
 		Iterator i = (data.keySet()).iterator();
 		while(i.hasNext()){

@@ -48,9 +48,9 @@ import com.novosec.pkix.asn1.crmf.CertId;
 
 public class RevRepContent implements DEREncodable
 {
-    Vector status    = new Vector();
-    Vector revCerts  = new Vector();
-    Vector crls      = new Vector();
+    Vector<PKIStatusInfo> status    = new Vector<PKIStatusInfo>();
+    Vector<CertId> revCerts  = new Vector<CertId>();
+    Vector<CertificateList> crls      = new Vector<CertificateList>();
 
     public static RevRepContent getInstance( ASN1TaggedObject obj, boolean explicit )
     {
@@ -71,11 +71,12 @@ public class RevRepContent implements DEREncodable
         throw new IllegalArgumentException("unknown object in factory");
     }
 
+    @SuppressWarnings("unchecked")
     public RevRepContent( ASN1Sequence seq )
     {
-      Enumeration e = seq.getObjects();
+      Enumeration<Object> e = seq.getObjects();
       
-      Enumeration estatus = ((ASN1Sequence)e.nextElement()).getObjects();
+      Enumeration<Object> estatus = ((ASN1Sequence)e.nextElement()).getObjects();
       while (estatus.hasMoreElements()) {
         status.addElement( PKIStatusInfo.getInstance( estatus.nextElement() ) );
       }
@@ -88,14 +89,14 @@ public class RevRepContent implements DEREncodable
         {
           case 0: 
 //            Enumeration erevcerts = ((ASN1Sequence)e.nextElement()).getObjects();
-          Enumeration erevcerts = ((ASN1Sequence)obj.getObject()).getObjects();
+          Enumeration<Object> erevcerts = ((ASN1Sequence)obj.getObject()).getObjects();
             while (erevcerts.hasMoreElements()) {
               revCerts.addElement( CertId.getInstance( erevcerts.nextElement() ) );
             }
             break;
           case 1: 
 //            Enumeration ecrls = ((ASN1Sequence)e.nextElement()).getObjects();
-          Enumeration ecrls = ((ASN1Sequence)obj.getObject()).getObjects();
+          Enumeration<Object> ecrls = ((ASN1Sequence)obj.getObject()).getObjects();
             while (ecrls.hasMoreElements()) {
               crls.addElement( CertificateList.getInstance( ecrls.nextElement() ) );
             }

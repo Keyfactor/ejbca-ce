@@ -340,7 +340,8 @@ public class BasicCertificateExtensionTest {
 		assertTrue(value.getClass().toString(),value instanceof DERSequence);
 		DERSequence seq = (DERSequence)value;
 		assertEquals(3, seq.size());
-		Enumeration<DEREncodable> e = seq.getObjects();
+		@SuppressWarnings("unchecked")
+        Enumeration<DEREncodable> e = seq.getObjects();
 		int i = 1;
 		while(e.hasMoreElements()) {
 			DEREncodable v = e.nextElement();
@@ -480,6 +481,7 @@ public class BasicCertificateExtensionTest {
 	 * The static values should be used if no value was specified in ExtendedInformation.
 	 * The values from ExtendedInformation should be used if present.
 	 */
+        @SuppressWarnings("unchecked")
         @Test
 	public void test15DynamicTrueStaticNvalues() throws Exception {
 		Properties props = new Properties();
@@ -500,10 +502,10 @@ public class BasicCertificateExtensionTest {
 		assertTrue(value.getClass().toString(),value instanceof DERSequence);
 		DERSequence seq = (DERSequence)value;
 		assertEquals(3, seq.size());
-		Enumeration e = seq.getObjects();
+        Enumeration<DEREncodable> e = seq.getObjects();
 		int i = 1;
 		while (e.hasMoreElements()) {
-			DEREncodable v = (DEREncodable)e.nextElement();
+			DEREncodable v = e.nextElement();
 			assertTrue(v.getClass().toString(), v instanceof DERPrintableString);
 			String str = ((DERPrintableString) v).getString();
 			assertEquals(str, "The static value " + i++);        

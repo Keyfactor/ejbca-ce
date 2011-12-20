@@ -125,7 +125,7 @@ public class AutoEnrollServlet extends HttpServlet {
 
 	        if (debugRequest) {
 	            debugInfo += "getAttributeNames:\n";
-	            Enumeration enumeration = request.getAttributeNames();
+	            Enumeration<?> enumeration = request.getAttributeNames();
 	            while (enumeration.hasMoreElements()) {
 	                String temp = enumeration.nextElement().toString();
 	                debugInfo += temp + " = " + request.getAttribute(temp) + "\n";

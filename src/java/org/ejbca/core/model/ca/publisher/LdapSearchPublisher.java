@@ -1,3 +1,16 @@
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
 package org.ejbca.core.model.ca.publisher;
 
 import java.io.UnsupportedEncodingException;
@@ -14,6 +27,12 @@ import com.novell.ldap.LDAPConnection;
 import com.novell.ldap.LDAPEntry;
 import com.novell.ldap.LDAPException;
 import com.novell.ldap.LDAPSearchResults;
+
+/**
+ * 
+ * @version $Id$
+ *
+ */
 
 public class LdapSearchPublisher extends LdapPublisher {
 	
@@ -57,11 +76,11 @@ public class LdapSearchPublisher extends LdapPublisher {
         LDAPEntry oldEntry = null; // return value
 
 		// Try all the listed servers
-		Iterator servers = getHostnameList().iterator();
+		Iterator<String> servers = getHostnameList().iterator();
 		boolean connectionFailed;
 		do {
 			connectionFailed = false;
-			String currentServer = (String) servers.next();
+			String currentServer = servers.next();
 	        // PARTE 1: Search for an existing entry in the LDAP directory
 			//  If it exists, s�lo se a�adir� al DN la parte del certificado (PARTE 2)
 			//  if not exist, se a�adir� toda una entrada LDAP nueva (PARTE 2)
@@ -213,11 +232,12 @@ public class LdapSearchPublisher extends LdapPublisher {
 	/**
 	 * @see org.ejbca.core.model.ca.publisher.BasePublisher#clone()
 	 */
-	public Object clone() throws CloneNotSupportedException {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+    public Object clone() throws CloneNotSupportedException {
 		LdapSearchPublisher clone = new LdapSearchPublisher();
-		HashMap clonedata = (HashMap) clone.saveData();
+        HashMap clonedata = (HashMap) clone.saveData();
 		
-		Iterator i = (data.keySet()).iterator();
+		Iterator<Object> i = (data.keySet()).iterator();
 		while (i.hasNext()) {
 			Object key = i.next();
 			clonedata.put(key, data.get(key));
