@@ -101,34 +101,34 @@ import com.novosec.pkix.asn1.crmf.ProofOfPossession;
  * Used to stress test the CMP interface.
  * @version $Id$
  */
-class CMPKeyUpdateStressTest extends ClientToolBox {
+public class CMPKeyUpdateStressTest extends ClientToolBox {
     /** Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
-    static private class StressTest {
-        final PerformanceTest performanceTest;
+    private static class StressTest {
+        private final PerformanceTest performanceTest;
 
-        final private PrivateKey oldKey;
-        final private KeyPair newKeyPair;
-        final private Certificate extraCert;
-        final private X509Certificate cacert;
-        final private String eepassword;
-        final private CertificateFactory certificateFactory;
-        final private Provider bcProvider = new BouncyCastleProvider();
-        final private String hostName;
-        final private int port;
-        final String urlPath;
-        final String resultCertFilePrefix;
-        boolean isSign;
-        boolean firstTime = true;
+        private final PrivateKey oldKey;
+        private final KeyPair newKeyPair;
+        private final Certificate extraCert;
+        private final X509Certificate cacert;
+        private final String eepassword;
+        private final CertificateFactory certificateFactory;
+        private final Provider bcProvider = new BouncyCastleProvider();
+        private final String hostName;
+        private final int port;
+        private final String urlPath;
+        private final String resultCertFilePrefix;
+        private boolean isSign;
+        private boolean firstTime = true;
 
-        StressTest(final String _hostName, final int _port, final int numberOfThreads, final int waitTime, final String _urlPath,
-                final String _resultCertFilePrefix, final String _eepassword, final Certificate _cacert, final PrivateKey _oldKey,
+        public StressTest(final String _hostName, final int _port, final int numberOfThreads, final int waitTime, final String _urlPath,
+                final String _resultCertFilePrefix, final String _eepassword, final X509Certificate _cacert, final PrivateKey _oldKey,
                 final Certificate _extraCert) throws Exception {
 
             this.hostName = _hostName;
             this.certificateFactory = CertificateFactory.getInstance("X.509", this.bcProvider);
-            this.cacert = (X509Certificate) _cacert;
+            this.cacert = _cacert;
             this.eepassword = _eepassword;
             this.port = _port;
             this.urlPath = _urlPath;
@@ -303,9 +303,7 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
         }
 
         private boolean checkCmpResponseGeneral(final byte[] retMsg, final SessionData sessionData, final boolean requireProtection) throws Exception {
-            //
             // Parse response message
-            //
             final PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
             if (respObject == null) {
                 StressTest.this.performanceTest.getLog().error("No command response message.");
@@ -437,9 +435,7 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
 
         private X509Certificate checkCmpCertRepMessage(final SessionData sessionData, final byte[] retMsg, final int requestId) throws IOException,
                 CertificateException {
-            //
             // Parse response message
-            //
             final PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
             if (respObject == null) {
                 StressTest.this.performanceTest.getLog().error("No PKIMessage for certificate received.");
@@ -524,9 +520,7 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
         }
 
         private boolean checkCmpPKIConfirmMessage(final SessionData sessionData, final byte retMsg[]) throws IOException {
-            //
             // Parse response message
-            //
             final PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(retMsg)).readObject());
             if (respObject == null) {
                 StressTest.this.performanceTest.getLog().error("Not possbile to get response message.");
@@ -576,7 +570,6 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
         }
 
         private PKIMessage genCertConfirm(final SessionData sessionData, final String hash) {
-
             PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(CertTools.getSubjectDN(this.extraCert))),
                     new GeneralName(new X509Name(this.cacert.getSubjectDN().getName())));
             myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
@@ -592,9 +585,9 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
         }
 
         private class GetCertificate implements Command {
-            final private SessionData sessionData;
+            private final SessionData sessionData;
 
-            GetCertificate(final SessionData sd) {
+            private GetCertificate(final SessionData sd) {
                 this.sessionData = sd;
             }
 
@@ -653,9 +646,9 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
         }
 
         private class SendConfirmMessageToCA implements Command {
-            final private SessionData sessionData;
+            private final SessionData sessionData;
 
-            SendConfirmMessageToCA(final SessionData sd) {
+            private SendConfirmMessageToCA(final SessionData sd) {
                 this.sessionData = sd;
             }
 
@@ -666,8 +659,6 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
                     StressTest.this.performanceTest.getLog().error("Not possible to generate PKIMessage.");
                     return false;
                 }
-                //final String password = PBEPASSWORD;
-                //final String password = StressTest.this.performanceTest.getRandom().nextInt()%10!=0 ? PBEPASSWORD : PBEPASSWORD+"a";
                 final PKIMessage confirm = protectPKIMessage(con, false, eepassword);
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
                 final DEROutputStream out = new DEROutputStream(bao);
@@ -685,7 +676,6 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
                 if (!checkCmpPKIConfirmMessage(this.sessionData, resp)) {
                     return false;
                 }
-                //StressTest.this.performanceTest.getLog().info("User with DN '"+this.sessionData.getUserDN()+"' finished.");
                 return true;
             }
 
@@ -694,9 +684,9 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
             }
         }
 
-        class SessionData {
-            final private byte[] nonce = new byte[16];
-            final private byte[] transid = new byte[16];
+        private class SessionData {
+            private final byte[] nonce = new byte[16];
+            private final byte[] transid = new byte[16];
             private int reqId;
             private String newcertfp;
 
@@ -763,7 +753,6 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
                             + " <host name> <keystore (p12)> <keystore password> <friendlyname in keystore> [<number of threads>] [<wait time (ms) between each thread is started>] [<port>] [<URL path of servlet. use 'null' to get EJBCA (not proxy) default>] [<certificate file prefix. set this if you want all received certificates stored on files>]");
             System.out
                     .println("EJBCA build configuration requirements: cmp.operationmode=normal, cmp.allowraverifypopo=true, cmp.allowautomatickeyupdate=true, cmp.allowupdatewithsamekey=true");
-            //            System.out.println("EJBCA build configuration optional: cmp.ra.certificateprofile=KeyId cmp.ra.endentityprofile=KeyId (used when the KeyId argument should be used as profile name).");
             System.out
                     .println("Ejbca expects the following: There exists an end entity with a generated certificate. The end entity's certificate and its private key are stored in the keystore used "
                             + "in the commandline. The end entity's certificate's 'friendly name' in the keystore is the one used in the command line. Such keystore can be obtained, for example, by specifying "
@@ -795,7 +784,6 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
             PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(key.getEncoded());
             KeyFactory keyFactory = KeyFactory.getInstance("RSA");
             oldCertKey = keyFactory.generatePrivate(keySpec);
-            //extracert = keyStore.getCertificate(certNameInKeystore);
 
             Certificate[] certs = keyStore.getCertificateChain(certNameInKeystore);
             extracert = certs[0];
@@ -825,16 +813,12 @@ class CMPKeyUpdateStressTest extends ClientToolBox {
         }
 
         try {
-            //            Security.addProvider(new BouncyCastleProvider());
-            new StressTest(hostName, port, numberOfThreads, waitTime, urlPath, resultFilePrefix, keystorePassword, cacert, oldCertKey, extracert);
+            new StressTest(hostName, port, numberOfThreads, waitTime, urlPath, resultFilePrefix, keystorePassword, (X509Certificate) cacert, oldCertKey, extracert);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.cli.ClientToolBox#getName()
-     */
     @Override
     protected String getName() {
         return "CMPKeyUpdateStressTest";
