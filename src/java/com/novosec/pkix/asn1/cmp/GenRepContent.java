@@ -39,7 +39,7 @@ import org.bouncycastle.asn1.DERSequence;
  */
 public class GenRepContent implements DEREncodable
 {
-    Vector infoTypesAndValues = new Vector();
+    Vector<InfoTypeAndValue> infoTypesAndValues = new Vector<InfoTypeAndValue>();
 
     public static GenRepContent getInstance( ASN1TaggedObject obj, boolean explicit )
     {
@@ -62,7 +62,8 @@ public class GenRepContent implements DEREncodable
 
     public GenRepContent( ASN1Sequence seq )
     {
-        Enumeration e = seq.getObjects();
+        @SuppressWarnings("unchecked")
+        Enumeration<Object> e = seq.getObjects();
         while (e.hasMoreElements())
         {
             InfoTypeAndValue s = InfoTypeAndValue.getInstance(e.nextElement());

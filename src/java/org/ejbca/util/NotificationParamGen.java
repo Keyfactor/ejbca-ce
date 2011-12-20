@@ -26,14 +26,13 @@ import org.cesecore.util.ValidityDate;
  * ${NL}                           = New Line in message
  * ${DATE} or ${current.DATE}      = The current date
  * 
- * @author Philip Vendil 2006 sep 26
  *
  * @version $Id$
  */
 
 public class NotificationParamGen {
 
-  private HashMap params = new HashMap();	
+  private HashMap<String, String> params = new HashMap<String, String>();	
   
   /** regexp pattern to match ${identifier} patterns */
   private final static Pattern PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
@@ -46,7 +45,7 @@ public class NotificationParamGen {
   /**
    * Method used to retrieve the populated parameter HashMap with the notification text.
    */
-  public HashMap getParams(){
+  public HashMap<String, String> getParams(){
 	  return params;
   }
 
@@ -91,13 +90,13 @@ public class NotificationParamGen {
    * @param input the input content to be interpolated
    * @return the interpolated content
    */
-  public static String interpolate(HashMap patterns, String input) {
+  public static String interpolate(HashMap<String, String> patterns, String input) {
       final Matcher m = PATTERN.matcher(input);
       final StringBuffer sb = new StringBuffer(input.length());
       while (m.find()) {
           // when the pattern is ${identifier}, group 0 is 'identifier'
           String key = m.group(1);
-          String value = (String)patterns.get(key);
+          String value = patterns.get(key);
           // if the pattern does exists, replace it by its value
           // otherwise keep the pattern ( it is group(0) )
           if (value != null) {

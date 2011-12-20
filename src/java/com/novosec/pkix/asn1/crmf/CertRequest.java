@@ -44,7 +44,7 @@ public class CertRequest implements DEREncodable
 {
     DERInteger   certReqId;
     CertTemplate certTemplate;
-    Vector       controls = new Vector();
+    Vector<AttributeTypeAndValue>       controls = new Vector<AttributeTypeAndValue>();
 
     public static CertRequest getInstance( ASN1TaggedObject obj, boolean explicit )
     {

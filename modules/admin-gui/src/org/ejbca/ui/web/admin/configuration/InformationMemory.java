@@ -243,7 +243,7 @@ public class InformationMemory implements Serializable {
      */
     public EndEntityProfileNameProxy getEndEntityProfileNameProxy() {
         if (endentityprofilenameproxy == null) {
-            endentityprofilenameproxy = new EndEntityProfileNameProxy(administrator, endEntityProfileSession);
+            endentityprofilenameproxy = new EndEntityProfileNameProxy(endEntityProfileSession);
         }
         return endentityprofilenameproxy;
     }

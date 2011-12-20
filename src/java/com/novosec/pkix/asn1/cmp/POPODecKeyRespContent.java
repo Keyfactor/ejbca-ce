@@ -40,7 +40,7 @@ import org.bouncycastle.asn1.DERSequence;
  */
 public class POPODecKeyRespContent implements DEREncodable
 {
-  Vector integers = new Vector();
+  Vector<DERInteger> integers = new Vector<DERInteger>();
 
   public static POPODecKeyRespContent getInstance(ASN1TaggedObject obj, boolean explicit)
   {
@@ -63,10 +63,11 @@ public class POPODecKeyRespContent implements DEREncodable
 
   public POPODecKeyRespContent(ASN1Sequence seq)
   {
-    Enumeration e = seq.getObjects();
+    @SuppressWarnings("unchecked")
+    Enumeration<Object> e = seq.getObjects();
 
     while (e.hasMoreElements()) {
-      integers.addElement( e.nextElement() );
+      integers.addElement( (DERInteger) e.nextElement() );
     }
   }
 
@@ -83,7 +84,7 @@ public class POPODecKeyRespContent implements DEREncodable
   public DERInteger getInteger(int nr)
   {
     if (integers.size() > nr) {
-      return (DERInteger) integers.elementAt(nr);
+      return integers.elementAt(nr);
     }
 
     return null;

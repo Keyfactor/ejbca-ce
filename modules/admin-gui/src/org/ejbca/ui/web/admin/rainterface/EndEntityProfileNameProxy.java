@@ -21,7 +21,6 @@ package org.ejbca.ui.web.admin.rainterface;
 
 import java.util.HashMap;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 
 /**
@@ -33,17 +32,15 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 public class EndEntityProfileNameProxy implements java.io.Serializable {
     
     private static final long serialVersionUID = 7866894775948690845L;
-    private HashMap profilenamestore;
+    private HashMap<Integer, String> profilenamestore;
     private EndEntityProfileSession endEntityProfileSession;
-    private AuthenticationToken   administrator;
 
     /** Creates a new instance of ProfileNameProxy */
-    public EndEntityProfileNameProxy(AuthenticationToken administrator, EndEntityProfileSession endEntityProfileSession){
+    public EndEntityProfileNameProxy(EndEntityProfileSession endEntityProfileSession){
               // Get the RaAdminSession instance.
       this.endEntityProfileSession = endEntityProfileSession;
       
-      profilenamestore = new HashMap(); 
-      this.administrator = administrator;  
+      profilenamestore = new HashMap<Integer, String>(); 
     }
     
     /**

@@ -38,7 +38,7 @@ import org.bouncycastle.asn1.DERSequence;
  */
 public class CertReqMessages implements DEREncodable
 {
-    Vector certReqMsgs = new Vector();
+    Vector<CertReqMsg> certReqMsgs = new Vector<CertReqMsg>();
 
     public static CertReqMessages getInstance( ASN1TaggedObject obj, boolean explicit )
     {
