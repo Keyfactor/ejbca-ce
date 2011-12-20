@@ -70,7 +70,7 @@ public class PKIHeader implements DEREncodable
     DEROctetString       senderNonce;
     DEROctetString       recipNonce;
     PKIFreeText          freeText;
-    Vector               generalInfos = new Vector();
+    Vector<InfoTypeAndValue>               generalInfos = new Vector<InfoTypeAndValue>();
 
     public static PKIHeader getInstance( ASN1TaggedObject obj, boolean explicit )
     {

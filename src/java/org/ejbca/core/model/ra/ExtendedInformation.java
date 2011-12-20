@@ -241,11 +241,12 @@ public class ExtendedInformation extends UpgradeableDataHashMap implements java.
     	data.put(CUSTOMDATA + key,value);
     }
     
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public Object clone() throws CloneNotSupportedException {
       ExtendedInformation clone = new ExtendedInformation();
-      HashMap clonedata = (HashMap) clone.saveData();
+    HashMap clonedata = (HashMap) clone.saveData();
 
-      Iterator i = (data.keySet()).iterator();
+      Iterator<Object> i = (data.keySet()).iterator();
       while(i.hasNext()){
         Object key = i.next();
         clonedata.put(key, data.get(key));

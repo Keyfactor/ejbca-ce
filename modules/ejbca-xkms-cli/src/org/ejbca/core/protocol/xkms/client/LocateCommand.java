@@ -181,7 +181,8 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 
             if(keyBindings.size() > 0){
             	getPrintStream().println("\n  The query matched " + keyBindings.size() + " certificates :");
-            	Iterator<UnverifiedKeyBindingType> iter = keyBindings.iterator();
+            	@SuppressWarnings("unchecked")
+                Iterator<UnverifiedKeyBindingType> iter = keyBindings.iterator();
             	while(iter.hasNext()){
             		UnverifiedKeyBindingType next = iter.next();
             		displayAndOutputCert(next, outputPath, pEMEncoding);            		
@@ -208,10 +209,12 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		while(iter.hasNext()){
 			Object obj = iter.next();
 			if(obj instanceof JAXBElement){
-				JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) obj; 
-				Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+				@SuppressWarnings("unchecked")
+                JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) obj; 
+				Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 				while(iter2.hasNext()){
-					JAXBElement next2 = (JAXBElement) iter2.next();					
+					@SuppressWarnings("unchecked")
+                    JAXBElement<byte[]> next2 = (JAXBElement<byte[]>) iter2.next();					
 					String filename = "";
 					if(next2.getName().getLocalPart().equals("X509Certificate")){
 						byte[] encoded = (byte[]) next2.getValue();
@@ -221,7 +224,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 						if(pEMEncoding){
 							filename = outputPath + CertTools.getPartFromDN(CertTools.getSubjectDN(nextCert), "CN") + ".pem";
 							FileOutputStream fos = new FileOutputStream(filename);
-							ArrayList certs = new ArrayList();
+							ArrayList<Certificate> certs = new ArrayList<Certificate>();
 							certs.add(nextCert);
 							byte[] pemData = CertTools.getPEMFromCerts(certs);
 							fos.write(pemData);

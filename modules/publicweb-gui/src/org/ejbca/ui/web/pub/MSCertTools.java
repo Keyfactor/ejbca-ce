@@ -254,9 +254,9 @@ public class MSCertTools {
 				if (GET_SUBJECTDN_FROM_AD.equals(requiredFields[i])) {
 					DNFieldExtractor dnfe = new DNFieldExtractor(fetchedSubjectDN, DNFieldExtractor.TYPE_SUBJECTDN);
 					// Loop through all fields in DN
-					HashMap hmFields = dnfe.getNumberOfFields();
+					HashMap<Integer, Integer> hmFields = dnfe.getNumberOfFields();
 					for (int j=0; j<100; j++) {	// TODO: 100 is really an internal constant..
-						Integer fieldsOfType = (Integer) hmFields.get(Integer.valueOf(j));
+						Integer fieldsOfType = hmFields.get(Integer.valueOf(j));
 						if (fieldsOfType != null) {
 							log.info("fieldsOfType="+fieldsOfType);
 							for (int k = 0; k<fieldsOfType; k++) {

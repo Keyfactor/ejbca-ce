@@ -264,6 +264,7 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
      * @param emptyclone
      */
     
+    @SuppressWarnings("rawtypes")
     public void clone(EIDProfile emptyclone){
 		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
 
@@ -272,7 +273,7 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 			oos.writeObject(this.saveData());
 			oos.close();
 			ObjectInputStream ois = new ObjectInputStream(new java.io.ByteArrayInputStream(baos.toByteArray()));
-			HashMap cloneddata = (HashMap) ois.readObject();		
+            HashMap cloneddata = (HashMap) ois.readObject();		
 			ois.close();
 			emptyclone.loadData(cloneddata);
 		}catch(Exception e){

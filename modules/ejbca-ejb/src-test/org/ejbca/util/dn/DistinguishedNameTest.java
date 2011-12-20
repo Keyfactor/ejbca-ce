@@ -98,7 +98,7 @@ public class DistinguishedNameTest {
 
         final String EXPECTED = "RFC822NAME=vkn@linagora.com,IPADDRESS=208.77.188.166,UNIFORMRESOURCEID=other.uri";
         subjectAltName = createNewSubjectAltName();
-        Map dnMap = new HashMap();
+        Map<String, String> dnMap = new HashMap<String, String>();
         dnMap.put(DnComponents.RFC822NAME, "entitymail@linagora.com");
         DistinguishedName altName = subjectAltName.mergeDN(otherSubjectAltName, false, dnMap);
 
@@ -116,7 +116,7 @@ public class DistinguishedNameTest {
 
     	final String EXPECTED = "RFC822NAME=vkn@linagora.com,IPADDRESS=208.77.188.166,UNIFORMRESOURCEID=other.uri";
         subjectAltName = createNewSubjectAltName();
-        Map dnMap = new HashMap();
+        Map<String, String> dnMap = new HashMap<String, String>();
         dnMap.put(DnComponents.RFC822NAME, "entitymail@linagora.com");
         DistinguishedName altName = subjectAltName.mergeDN(otherSubjectAltName, false, dnMap);
 
@@ -131,7 +131,7 @@ public class DistinguishedNameTest {
 
     	final String EXPECTED = "RFC822NAME=linagora.mail@linagora.com,IPADDRESS=777.77.777.777,UNIFORMRESOURCEID=other.uri";
         subjectAltName = createNewSubjectAltName();
-        Map dnMap = new HashMap();
+        Map<String, String> dnMap = new HashMap<String, String>();
         DistinguishedName altName = subjectAltName.mergeDN(otherSubjectAltName, true, dnMap);
 
         assertEquals(EXPECTED, altName.toString());
@@ -147,7 +147,7 @@ public class DistinguishedNameTest {
     	final String EXPECTED = "RFC822NAME=entitymail@linagora.com,IPADDRESS=777.77.777.777,UNIFORMRESOURCEID=other.uri";
         DistinguishedName san = new DistinguishedName(_OTHER_SUBJECT_ALT_NAME);
         subjectAltName = createNewSubjectAltName();
-        Map dnMap = new HashMap();
+        Map<String, String> dnMap = new HashMap<String, String>();
         dnMap.put(DnComponents.RFC822NAME, "entitymail@linagora.com");
         DistinguishedName altName = subjectAltName.mergeDN(san, true, dnMap);
 

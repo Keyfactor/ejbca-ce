@@ -37,7 +37,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
 	 * A hashmap is good because it serializes nicely and data can be upgraded without changing
 	 * serialversion uid
 	 */
-    private HashMap data;
+    private HashMap<String, String> data;
 
     /**
      * Determines if a de-serialized file is compatible with this class.
@@ -67,11 +67,11 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     private static final String   NOTIFICATIONEVENTS     = "NOTIFICATIONEVENTS";
 
     public UserNotification() {
-    	data = new HashMap();
+    	data = new HashMap<String, String>();
     }
     
     public UserNotification(String sender, String rcpt, String subject, String message, String events) {
-    	data = new HashMap();
+    	data = new HashMap<String, String>();
     	setNotificationSender(sender);
     	setNotificationSubject(subject);
     	setNotificationMessage(message);
