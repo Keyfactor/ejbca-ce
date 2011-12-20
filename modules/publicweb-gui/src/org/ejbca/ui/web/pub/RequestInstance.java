@@ -84,7 +84,10 @@ public class RequestInstance {
 	private GlobalConfigurationSession globalConfigurationSession;
 	private EndEntityAccessSession endEntityAccessSession;
 	
-	private Map<String, Object> params = null;
+	/** HttpServletrequest.getParametersMap has changed from Map<String,Object> to Map<String,String[]> so 
+	 * we can not be type safe here */
+	@SuppressWarnings("unchecked")
+    private Map params = null;
 	
 	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAuthenticationSessionLocal authenticationSession, EndEntityAccessSession endEntityAccessSession, CaSessionLocal caSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession,
@@ -102,7 +105,7 @@ public class RequestInstance {
 		this.globalConfigurationSession = globalConfigurationSession;
 	}
 
-	void doPost(HttpServletRequest request, HttpServletResponse response)
+    void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
 		ServletDebug debug = new ServletDebug(request, response);
 		boolean usekeyrecovery = false;
@@ -401,7 +404,8 @@ public class RequestInstance {
 	 * @throws IOException
 	 *             If input stream of uploaded object can not be read
 	 */
-	private void setParameters(HttpServletRequest request) throws FileUploadException, IOException {
+	@SuppressWarnings("unchecked")
+    private void setParameters(HttpServletRequest request) throws FileUploadException, IOException {
 		if (FileUpload.isMultipartContent(request)) {
 			params = new HashMap();
 			DiskFileUpload upload = new DiskFileUpload();
@@ -472,8 +476,8 @@ public class RequestInstance {
 		File fout = new File(tempDirectory + System.getProperty("file.separator") + username + ".p12");
 		FileOutputStream certfile = new FileOutputStream(fout);
 
-		Enumeration en = ks.aliases();
-		String alias = (String) en.nextElement();
+		Enumeration<String> en = ks.aliases();
+		String alias = en.nextElement();
 		// Then get the certificates
 		Certificate[] certs = KeyTools.getCertChain(ks, alias);
 		// The first one (certs[0]) is the users cert and the last
