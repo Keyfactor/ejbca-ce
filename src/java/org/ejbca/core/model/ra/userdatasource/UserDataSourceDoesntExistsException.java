@@ -22,11 +22,13 @@ package org.ejbca.core.model.ra.userdatasource;
 /**
  * An exception thrown when someone tries to remove or change a userdata source that doesn't exits
  *
- * @author  Philip Vendil
  * @version $Id$
  */
-public class UserDataSourceDoesntExistsException extends java.lang.Exception {
+public class UserDataSourceDoesntExistsException extends Exception {
     
+    private static final long serialVersionUID = 8654136983737750543L;
+
+
     /**
      * Creates a new instance of <code>UserDataSourceDoesntExistsException</code> without detail message.
      */
