@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.security.cert.CertStore;
+import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -145,6 +146,7 @@ public class CmsCAServiceTest extends CaTestCase {
         assertNotNull(resp);
         CMSSignedData csd = new CMSSignedData(respdoc);
         SignerInformationStore infoStore = csd.getSignerInfos();
+        @SuppressWarnings("unchecked")
         Collection<SignerInformation> signers = infoStore.getSigners();
         Iterator<SignerInformation> iter = signers.iterator();
         if (iter.hasNext()) {
@@ -159,7 +161,7 @@ public class CmsCAServiceTest extends CaTestCase {
             assertEquals("CN=TEST", issuer.getName());
         }
         CertStore store = csd.getCertificatesAndCRLs("Collection", "BC");
-        Collection certs = store.getCertificates(null);
+        Collection<? extends Certificate> certs = store.getCertificates(null);
         assertEquals(2, certs.size());
 
         CMSProcessable cp = csd.getSignedContent();

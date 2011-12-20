@@ -328,7 +328,7 @@ public class XKMSProvider implements Provider<Source> {
 						org.apache.xml.security.signature.XMLSignature xmlVerifySig = new org.apache.xml.security.signature.XMLSignature(xmlSigElement, null);
 
 						org.apache.xml.security.keys.KeyInfo keyInfo = xmlVerifySig.getKeyInfo();
-						java.security.cert.X509Certificate verCert = keyInfo.getX509Certificate();
+						X509Certificate verCert = keyInfo.getX509Certificate();
 
 
 						// Check signature
@@ -336,7 +336,7 @@ public class XKMSProvider implements Provider<Source> {
 							// Check that the issuer is among accepted issuers
 							int cAId = CertTools.getIssuerDN(verCert).hashCode();
 
-							Collection acceptedCAIds = XKMSConfig.getAcceptedCA(intAdmin, caSession);
+							Collection<Integer> acceptedCAIds = XKMSConfig.getAcceptedCA(intAdmin, caSession);
 							if(!acceptedCAIds.contains(Integer.valueOf(cAId))){
 								throw new Exception("Error XKMS request signature certificate isn't among the list of accepted CA certificates");
 							}
@@ -358,7 +358,7 @@ public class XKMSProvider implements Provider<Source> {
 								throw new CertPathValidatorException("Error Root CA cert not found in cACertChain"); 
 							}
 
-							List list = new ArrayList();
+							List<Object> list = new ArrayList<Object>();
 							list.add(verCert);
 							list.add(cACertChain);
 
@@ -367,12 +367,12 @@ public class XKMSProvider implements Provider<Source> {
 							CertStore store = CertStore.getInstance("Collection", ccsp);
 
 							//validating path
-							List certchain = new ArrayList();
+							List<Certificate> certchain = new ArrayList<Certificate>();
 							certchain.addAll(cACertChain);
 							certchain.add(verCert);
 							CertPath cp = CertificateFactory.getInstance("X.509","BC").generateCertPath(certchain);
 
-							Set trust = new HashSet();
+							Set<TrustAnchor> trust = new HashSet<TrustAnchor>();
 							trust.add(new TrustAnchor(rootCert, null));
 
 							CertPathValidator cpv = CertPathValidator.getInstance("PKIX","BC");

@@ -121,7 +121,7 @@ public class ReissueCommand extends XKMSCLIBaseCommand implements IAdminCommand{
             
                 if(reissueResultType.getKeyBinding().size() >0){
                 	KeyBindingType keyBinding = reissueResultType.getKeyBinding().get(0);                	
-                	List certs = getCertsFromKeyBinding(keyBinding);
+                	List<X509Certificate> certs = getCertsFromKeyBinding(keyBinding);
                 	  
                 	X509Certificate userCert = getUserCert(certs);                	
                 	certs.remove(userCert);
@@ -162,11 +162,11 @@ public class ReissueCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		return ks;
 	}
 
-	private X509Certificate getUserCert(Collection certs) {
+	private X509Certificate getUserCert(Collection<X509Certificate> certs) {
 		X509Certificate retval = null;
-		Iterator iter = certs.iterator();
+		Iterator<X509Certificate> iter = certs.iterator();
 		while(iter.hasNext()){
-			X509Certificate next = (X509Certificate) iter.next();
+			X509Certificate next = iter.next();
 			if(next.getBasicConstraints() == -1){
 				retval = next;
 				break;
@@ -176,7 +176,7 @@ public class ReissueCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		return retval;
 	}
 
-	private void createKeyStore(String alias, X509Certificate userCert, List caCerts, PrivateKey privKey, String password, String encoding, String outputPath) throws Exception {
+	private void createKeyStore(String alias, X509Certificate userCert, List<X509Certificate> caCerts, PrivateKey privKey, String password, String encoding, String outputPath) throws Exception {
 		boolean createJKS = false;		
 		if(encoding.equals(ENCODING_JKS)){
 			createJKS = true;
@@ -184,7 +184,7 @@ public class ReissueCommand extends XKMSCLIBaseCommand implements IAdminCommand{
         
         Certificate[] caChain = new Certificate[caCerts.size()];
         for(int i=0;i<caCerts.size();i++){
-        	caChain[i] = (Certificate) caCerts.get(i);
+        	caChain[i] = caCerts.get(i);
         }
 		
         // Store keys and certificates in keystore.

@@ -107,9 +107,10 @@ public class PublisherData extends ProtectedData implements Serializable {
 	/**
 	 * Method that saves the publisher data to database.
 	 */
-	public void setPublisher(BasePublisher publisher) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+    public void setPublisher(BasePublisher publisher) {
 		// We must base64 encode string for UTF safety
-		HashMap a = new Base64PutHashMap();
+        HashMap a = new Base64PutHashMap();
 		a.putAll((HashMap)publisher.saveData());
 		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
 		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
@@ -191,7 +192,8 @@ public class PublisherData extends ProtectedData implements Serializable {
 	}
 
 	/** @return return the query results as a List. */
-	public static List<PublisherData> findAll(EntityManager entityManager) {
+	@SuppressWarnings("unchecked")
+    public static List<PublisherData> findAll(EntityManager entityManager) {
 		final Query query = entityManager.createQuery("SELECT a FROM PublisherData a");
 		return query.getResultList();
 	}

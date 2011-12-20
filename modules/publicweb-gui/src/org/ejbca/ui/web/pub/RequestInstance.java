@@ -84,6 +84,8 @@ public class RequestInstance {
 	private GlobalConfigurationSession globalConfigurationSession;
 	private EndEntityAccessSession endEntityAccessSession;
 	
+	private Map<String, Object> params = null;
+	
 	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAuthenticationSessionLocal authenticationSession, EndEntityAccessSession endEntityAccessSession, CaSessionLocal caSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession,
 			SignSessionLocal signSession, UserAdminSessionLocal userAdminSession, GlobalConfigurationSession globalConfigurationSession) {
@@ -173,7 +175,7 @@ public class RequestInstance {
 				if ( (id > 0) ) {
 					if (id != certificateProfileId) {
 						// Check if it is in allowed profiles in the entity profile
-						Collection c = endEntityProfile.getAvailableCertificateProfileIds();
+						Collection<String> c = endEntityProfile.getAvailableCertificateProfileIds();
 						if (c.contains(String.valueOf(id))) {
 							data.setCertificateProfileId(id);
 							// This admin can be the public web user, which may not be allowed to change status,
@@ -365,10 +367,10 @@ public class RequestInstance {
 				log.debug(iMsg, e);
 				iMsg = intres.getLocalizedMessage("certreq.parameters", e1.getMessage());
 				debug.print(iMsg + ":\n");
-				Set paramNames = params.keySet();
-				Iterator iter = paramNames.iterator();
+				Set<String> paramNames = params.keySet();
+				Iterator<String> iter = paramNames.iterator();
 				while (iter.hasNext()) {
-					String name = (String)iter.next();
+					String name = iter.next();
 					String parameter = getParameter(name);
 					if (!StringUtils.equals(name, "password")) {
 						debug.print(HTMLTools.htmlescape(name) + ": '" + HTMLTools.htmlescape(parameter) + "'\n");                	
@@ -387,8 +389,6 @@ public class RequestInstance {
 			return;
 		}
 	}
-
-	private Map params = null;
 
 	/**
 	 * Method creating a Map of request values, designed to handle both
