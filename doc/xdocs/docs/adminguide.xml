@@ -5049,6 +5049,7 @@ database tables as well, you may consider using the EJBCA plugin scheme which pr
 applications with the core EJBCA environment data. In the directory src/samples/plugins you will find
 a couple of complete demo plugins that can be added to an existing EJBCA installation
 without any configuration. See the src/samples/plugins/README file for details.
+Also see conf/plugins/plugin.properties.sample for instructions how to layout and configure your plugins.
 </p>
 <p>Plugins are built and packaged together with the rest of the EJBCA components into the "ejbca.ear" file.</p>
 </subsection>
