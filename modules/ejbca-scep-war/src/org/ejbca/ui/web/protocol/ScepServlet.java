@@ -15,6 +15,7 @@ package org.ejbca.ui.web.protocol;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Iterator;
@@ -203,14 +204,14 @@ public class ScepServlet extends HttpServlet {
                 
                 // CA_IDENT is the message for this request to indicate which CA we are talking about
                 log.debug("Got SCEP cert request for CA '" + message + "'");
-                Collection certs = null;
+                Collection<Certificate> certs = null;
                 CAInfo cainfo = casession.getCAInfo(administrator, message);
                 if (cainfo != null) {
                     certs = cainfo.getCertificateChain();
                 }
                 if ((certs != null) && (certs.size() > 0)) {
                     // CAs certificate is in the first position in the Collection
-                    Iterator iter = certs.iterator();
+                    Iterator<Certificate> iter = certs.iterator();
                     X509Certificate cert = (X509Certificate) iter.next();
                     log.debug("Sent certificate for CA '" + message + "' to SCEP client.");
                     RequestHelper.sendNewX509CaCert(cert.getEncoded(), response);

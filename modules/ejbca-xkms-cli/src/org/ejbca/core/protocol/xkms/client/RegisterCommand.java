@@ -155,7 +155,7 @@ public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand
             
                 if(registerResultType.getKeyBinding().size() >0){
                 	KeyBindingType keyBinding = registerResultType.getKeyBinding().get(0);                	
-                	List certs = getCertsFromKeyBinding(keyBinding);
+                	List<X509Certificate> certs = getCertsFromKeyBinding(keyBinding);
                 	  
                 	X509Certificate userCert = getUserCert(certs);                	
                 	certs.remove(userCert);
@@ -178,11 +178,11 @@ public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand
         }
     }
 
-    private X509Certificate getUserCert(Collection certs) {
+    private X509Certificate getUserCert(Collection<X509Certificate> certs) {
 		X509Certificate retval = null;
-		Iterator iter = certs.iterator();
+		Iterator<X509Certificate> iter = certs.iterator();
 		while(iter.hasNext()){
-			X509Certificate next = (X509Certificate) iter.next();
+			X509Certificate next = iter.next();
 			if(next.getBasicConstraints() == -1){
 				retval = next;
 				break;
@@ -192,7 +192,7 @@ public class RegisterCommand extends XKMSCLIBaseCommand implements IAdminCommand
 		return retval;
 	}
 
-	private void createKeyStore(X509Certificate userCert, List caCerts, PrivateKey privKey, String password, String encoding, String outputPath) throws Exception {
+	private void createKeyStore(X509Certificate userCert, List<X509Certificate> caCerts, PrivateKey privKey, String password, String encoding, String outputPath) throws Exception {
 		boolean createJKS = false;
 		boolean createPEM = false;
 		if(encoding.equals(ENCODING_JKS)){

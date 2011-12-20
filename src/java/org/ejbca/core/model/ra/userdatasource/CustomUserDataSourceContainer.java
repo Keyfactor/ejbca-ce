@@ -122,11 +122,12 @@ public class CustomUserDataSourceContainer extends BaseUserDataSource{
 	/** 
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#clone()
 	 */
-	public Object clone() throws CloneNotSupportedException {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+    public Object clone() throws CloneNotSupportedException {
 		CustomUserDataSourceContainer clone = new CustomUserDataSourceContainer();
 		HashMap clonedata = (HashMap) clone.saveData();
 
-		Iterator i = (data.keySet()).iterator();
+        Iterator i = (data.keySet()).iterator();
 		while(i.hasNext()){
 			Object key = i.next();
 			clonedata.put(key, data.get(key));
@@ -144,7 +145,7 @@ public class CustomUserDataSourceContainer extends BaseUserDataSource{
 	/** 
 	 * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource#fetch(AuthenticationToken, String)
 	 */
-	public Collection fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException {		
+	public Collection<UserDataSourceVO> fetch(AuthenticationToken admin, String searchstring) throws UserDataSourceException {		
 		return getCustomUserDataSource().fetch(admin,searchstring);
 	}
 	

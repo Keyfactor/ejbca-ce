@@ -117,7 +117,7 @@ public class RevokeCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		
 		if(certEncoding.equals(ENCODING_PEM)){			
 			try {
-				Collection certs = CertTools.getCertsFromPEM(filename);
+				Collection<Certificate> certs = CertTools.getCertsFromPEM(filename);
 				if(certs.size() > 0){
 					retval = (X509Certificate) certs.iterator().next();
 				}

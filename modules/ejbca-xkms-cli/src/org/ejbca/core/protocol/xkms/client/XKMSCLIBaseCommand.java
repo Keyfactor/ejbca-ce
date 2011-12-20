@@ -421,8 +421,8 @@ public abstract class XKMSCLIBaseCommand {
 		}
 	}
 
-	protected List<Certificate> getCertsFromKeyBinding(KeyBindingType keyBinding) throws CertificateException {
-		ArrayList<Certificate> retval = new ArrayList<Certificate>();
+	protected List<X509Certificate> getCertsFromKeyBinding(KeyBindingType keyBinding) throws CertificateException {
+		List<X509Certificate> retval = new ArrayList<X509Certificate>();
 		
 		@SuppressWarnings("unchecked")
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBinding.getKeyInfo().getContent().get(0);		
@@ -431,7 +431,7 @@ public abstract class XKMSCLIBaseCommand {
 			JAXBElement<?> next = (JAXBElement<?>) iter2.next();					
 			if(next.getName().getLocalPart().equals("X509Certificate")){
 			  byte[] encoded = (byte[]) next.getValue();
-			  Certificate nextCert = CertTools.getCertfromByteArray(encoded);
+			  X509Certificate nextCert =  (X509Certificate) CertTools.getCertfromByteArray(encoded);
 			  retval.add(nextCert);
 			}
 		}	

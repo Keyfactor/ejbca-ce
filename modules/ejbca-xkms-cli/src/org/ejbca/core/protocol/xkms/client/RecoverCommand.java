@@ -36,10 +36,6 @@ import org.w3._2002._03.xkms_.ObjectFactory;
 import org.w3._2002._03.xkms_.RecoverRequestType;
 import org.w3._2002._03.xkms_.RecoverResultType;
 
-
-
-
-
 /**
  * Performes KRSS recover calls to an web service.
  *
@@ -56,9 +52,7 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 	private static final int ARG_PASSWORD           = 3;	
 	private static final int ARG_ENCODING           = 4;
 	private static final int ARG_OUTPUTPATH         = 5;
-	    
-   
-	
+
     /**
      * Creates a new instance of RaAddUserCommand
      *
@@ -123,7 +117,7 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
             
                 if(recoverResultType.getKeyBinding().size() >0){
                 	KeyBindingType keyBinding = recoverResultType.getKeyBinding().get(0);                	
-                	List certs = getCertsFromKeyBinding(keyBinding);
+                	List<X509Certificate> certs = getCertsFromKeyBinding(keyBinding);
                 	  
                 	X509Certificate userCert = getUserCert(certs);                	
                 	certs.remove(userCert);
@@ -152,7 +146,7 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		
 		if(certEncoding.equals(ENCODING_PEM)){			
 			try {
-				Collection certs = CertTools.getCertsFromPEM(filename);
+				Collection<Certificate> certs = CertTools.getCertsFromPEM(filename);
 				if(certs.size() > 0){
 					retval = (X509Certificate) certs.iterator().next();
 				}
@@ -191,11 +185,11 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
     	return null;
 	}
 
-	private X509Certificate getUserCert(Collection certs) {
+	private X509Certificate getUserCert(Collection<X509Certificate> certs) {
 		X509Certificate retval = null;
-		Iterator iter = certs.iterator();
+		Iterator<X509Certificate> iter = certs.iterator();
 		while(iter.hasNext()){
-			X509Certificate next = (X509Certificate) iter.next();
+			X509Certificate next = iter.next();
 			if(next.getBasicConstraints() == -1){
 				retval = next;
 				break;
@@ -205,7 +199,7 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 		return retval;
 	}
 
-	private void createKeyStore(X509Certificate userCert, List caCerts, PrivateKey privKey, String password, String encoding, String outputPath) throws Exception {
+	private void createKeyStore(X509Certificate userCert, List<X509Certificate> caCerts, PrivateKey privKey, String password, String encoding, String outputPath) throws Exception {
 		boolean createJKS = false;
 		boolean createPEM = false;
 		if(encoding.equals(ENCODING_JKS)){
@@ -219,7 +213,7 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
         
         Certificate[] caChain = new Certificate[caCerts.size()];
         for(int i=0;i<caCerts.size();i++){
-        	caChain[i] = (Certificate) caCerts.get(i);
+        	caChain[i] = caCerts.get(i);
         }
 		
         // Store keys and certificates in keystore.
@@ -281,8 +275,6 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
     	return null;
 	}
 
-
-	
 	protected void usage() {
 		getPrintStream().println("Command used to recover the private key of a certificate");
 		getPrintStream().println("Usage : recover <cert file name> <cert encoding (der|pem)> <password> <keystore encoding pem|p12|jks> <outputpath (optional)> \n\n");
@@ -295,6 +287,4 @@ public class RecoverCommand extends XKMSCLIBaseCommand implements IAdminCommand{
         
             	        
 	}
-
-
 }

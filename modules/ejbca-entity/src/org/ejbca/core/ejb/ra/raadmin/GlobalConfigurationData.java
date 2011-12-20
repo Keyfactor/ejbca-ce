@@ -80,12 +80,14 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	@Override
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
-	@Transient
+	@SuppressWarnings("rawtypes")
+    @Transient
 	private HashMap getData() {
 		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
 	}
 	
-	private void setData(HashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
+	@SuppressWarnings("rawtypes")
+    private void setData(HashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 
 	/** 
 	 * Method that returns the global configuration and updates it if necessary.
@@ -100,7 +102,8 @@ public class GlobalConfigurationData extends ProtectedData implements Serializab
 	/** 
 	 * Method that saves the global configuration to database.
 	 */
-	public void setGlobalConfiguration(GlobalConfiguration globalconfiguration){
+	@SuppressWarnings("rawtypes")
+    public void setGlobalConfiguration(GlobalConfiguration globalconfiguration){
 		setData((HashMap) globalconfiguration.saveData());   
 	}
 
