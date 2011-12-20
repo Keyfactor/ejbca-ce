@@ -1218,9 +1218,8 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
 	    				if ( profileCrossOffList[l] == k ) {
 	    					//	Match with every value in field-array
 	    					for ( int m=0; m<subjectsToProcess.length; m++ ) {
-	    						if ( subjectsToProcess[m] != null && profileCrossOffList[l] != MATCHED_FIELD ) {
-	    							//TODO: Simplify the below boolean logic !(!x && y) = (x || ~y)	    				
-	    						    if ( !(!getUse(profileID, l) && DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid))) ) {
+	    						if ( subjectsToProcess[m] != null && profileCrossOffList[l] != MATCHED_FIELD ) {				
+	    						    if (getUse(profileID, l) || !DnComponents.RFC822NAME.equals(DnComponents.dnIdToProfileName(dnid))) {
 	    						         /*
 	                                     * IF the component is E-Mail (not RFC822NAME) 
 	                                     * OR if it is RFC822NAME AND E-Mail field from DN should be used 
