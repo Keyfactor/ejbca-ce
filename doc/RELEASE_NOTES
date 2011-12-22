@@ -11,16 +11,6 @@ certain type of log event depending on what entry that event was registered as. 
 5.0.0 or 5.0.1 need to be upgraded manually (see UPGRADE document), while installations upgraded from 4.0.x will have
 their rules upgraded as part of the standard upgrade procedure. 
 
-EJBCA 4.0.7
------------
-This is a maintenance release with a few bug fixes and a new feature. In all X issues have been resolved.
-
-* Noteworthy changes:
-- The VA health-check URL is now what it is claimed to be in the property file. You will need to reconfigure devices monitoring this URL.
-
-Read the full Changelog for details.
-For upgrade instructions, please see UPGRADE
-
 EJBCA 5.0.1
 -----------
 This minor release primarily fixed some CMP issues, one regression that was introduced in 5.0.0 and introduced
@@ -61,6 +51,22 @@ So if you require uptime and roll-back capabilities, only allow to create new ap
 - 'Users' are now ubiquitously referred to as 'End Entities'.
 - Usage of access rules have in some cases changed, and some new access rules have been added (edit publishers). After an 
 upgrade to 5.0, verify your roles and privileges.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE
+
+EJBCA 4.0.7
+-----------
+This is a maintenance release with a few bug fixes and a new feature. In all X issues have been resolved.
+
+* Noteworthy changes:
+- Fixed a bug reading large OCSP requests over HTTP 1.1 using chunked encoding.
+- Fixed a few minor XSS issues.
+- Fixed an issue where building the Validation Authority (VA) failed on specific platforms.
+- The VA health-check URL is now what it is claimed to be in the property file. You will need to reconfigure devices monitoring this URL.
+- Documented EJBCA integration with Djigzo
+- Added a plug-in build system.
+- Improved support for Chinese in the admin GUI.
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE

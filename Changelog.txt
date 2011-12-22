@@ -127,6 +127,21 @@ Task
     [ECA-2320] - Merge changes from CESECORE-197
     [ECA-2324] - Merge changes from CESECORE-269 to EJBCA
 
+EJBCA 4.0.7, 2011-12-23
+---
+New Feature
+    [ECA-2410] - Document EJBCA Djigzo intregration
+    [ECA-2430] - Plugin build system
+    [ECA-2434] - Add CMP KeyUpdate stress test in clientToolBox
+
+Bug
+    [ECA-2197] - VA build fails sometimes
+    [ECA-2396] - More XSS issues
+    [ECA-2429] - Inconsistency in VA health-check properties comment and used URL
+    [ECA-2435] - Chinese charaters doesn't work in "Edit End Entity Profles" for DN attributes
+    [ECA-2436] - Reading OCSP messages over http1.1 with chunked encoding can fail
+    [ECA-2444] - CMP Revoke Response Message is unprotected sometimes
+
 EJBCA 4.0.6, 2011-11-17
 ---
 
