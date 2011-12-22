@@ -205,7 +205,9 @@ public final class EjbcaConfigurationHolder {
 		}
 		if (str.length() != 0) {
 			ret = str.toString();
-		}
+        } else {
+            ret = ConfigurationHolder.getDefaultValue(property);
+        }
 		return ret;
 	}
 	

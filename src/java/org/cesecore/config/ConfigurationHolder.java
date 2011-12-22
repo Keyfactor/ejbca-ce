@@ -222,6 +222,8 @@ public final class ConfigurationHolder {
         }
         if (str.length() != 0) {
             ret = str.toString();
+        } else {
+            ret = defaultValues.getString(property);
         }
         return ret;
     }
