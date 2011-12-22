@@ -52,6 +52,8 @@ public class ConfigurationHolderTest {
             // Create a configuration file
             fw.write("property1=foo\n");
             fw.write("property2=${property1}bar\n");
+            // Make sure we handle comma in values
+            fw.write("property3=EN,DE,FR\n");
             fw.close();
             // We haven't read it so it should still not contain our property
             val = ConfigurationHolder.getString("property1");
@@ -63,6 +65,14 @@ public class ConfigurationHolderTest {
             // An expanded string "${property1}bar" will be expanded with the value from "property1" (foo)
             val = ConfigurationHolder.getString("property2");
             assertEquals("foobar", val);
+            // Make sure we handle comma in values
+            val = ConfigurationHolder.getString("property3");
+            assertEquals("EN,DE,FR", val);
+            // Make sure we handle comma in default values
+            val = ConfigurationHolder.getString("intresources.preferredlanguage");
+            assertEquals("EN", val);
+            val = ConfigurationHolder.getString("test.comma.in.defaultvalue");
+            assertEquals("EN,DE,FR", val);
         } finally {
             f.deleteOnExit();
         }

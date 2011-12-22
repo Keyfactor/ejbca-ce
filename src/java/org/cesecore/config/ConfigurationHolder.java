@@ -208,9 +208,12 @@ public final class ConfigurationHolder {
      */
     public static String getString(final String property) {
         // Commons configuration interprets ','-separated values as an array of Strings, but we need the whole String for example SubjectDNs.
-        final String ret;
+        String ret = null;
         final StringBuilder str = new StringBuilder();
-        final String rets[] = instance().getStringArray(property);
+        String rets[] = instance().getStringArray(property);
+        if (rets.length == 0) {
+            rets = defaultValues.getStringArray(property);
+        }
         for (int i = 0; i < rets.length; i++) {
             if (i != 0) {
                 str.append(',');
@@ -219,8 +222,6 @@ public final class ConfigurationHolder {
         }
         if (str.length() != 0) {
             ret = str.toString();
-        } else {
-            ret = getDefaultValue(property);
         }
         return ret;
     }
