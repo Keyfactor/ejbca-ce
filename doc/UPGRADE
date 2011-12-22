@@ -106,6 +106,9 @@ Read RELEASE_NOTES carefully in order to see if any particular changes might eff
 If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
+NOTE: In 4.0.7 the healthcheck URL for the VA, was changed. See conf/va.properties.sample for details how to reconfigure 
+your healthcheck URL.
+
 From EJBCA 3.11.x to EJBCA 4.0.x
 --------------------------------
 If you installed fresh on or upgraded to EJBCA 3.11.0 or EJBCA 3.11.1 on MySQL, start by reading
