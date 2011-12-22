@@ -149,7 +149,7 @@ public class KRSSResponseGenerator extends
 					retval= KeyFactory.getInstance("RSA").generatePublic(rSAPublicKeySpec);
 				}
 				if(element.getValue() instanceof X509DataType){
-					Iterator iter = ((X509DataType) element.getValue()).getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+					Iterator<Object> iter = ((X509DataType) element.getValue()).getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 					while(iter.hasNext()){
 						JAXBElement next = (JAXBElement) iter.next();					
 						if(next.getName().getLocalPart().equals("X509Certificate")){

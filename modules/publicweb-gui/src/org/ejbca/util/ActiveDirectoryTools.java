@@ -17,6 +17,7 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.ejbca.config.GlobalConfiguration;
 
+import com.novell.ldap.LDAPAttribute;
 import com.novell.ldap.LDAPConnection;
 import com.novell.ldap.LDAPEntry;
 import com.novell.ldap.LDAPException;
@@ -78,7 +79,8 @@ public class ActiveDirectoryTools {
 				// List all props just for fun.. (TODO: Remove this..)
 				entry = lc.read(requestedDN);
 				if (entry != null) {
-					Iterator iter = entry.getAttributeSet().iterator();
+					@SuppressWarnings("unchecked")
+                    Iterator<LDAPAttribute> iter = entry.getAttributeSet().iterator();
 					while (iter.hasNext()) {
 						log.info(".. " + iter.next().toString().replaceAll("[^A-Za-z]", ""));
 					}

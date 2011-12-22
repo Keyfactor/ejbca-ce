@@ -16,17 +16,15 @@ package org.ejbca.ui.web.admin.configuration;
 import javax.faces.model.SelectItem;
 
 /**
- * An extention to the SelectItem class that is
+ * An extension to the SelectItem class that is
  * sortable, used by select lists that should be alphabetic
  * order. 
  * 
- * 
- * @author Philip Vendil 2006 sep 27
  *
  * @version $Id$
  */
 
-public class SortableSelectItem extends SelectItem implements Comparable{
+public class SortableSelectItem extends SelectItem implements Comparable<SelectItem>{
 
 	private static final long serialVersionUID = -3282242436064530974L;
 
@@ -42,10 +40,10 @@ public class SortableSelectItem extends SelectItem implements Comparable{
 		super(arg0, arg1);
 	}
 
-	public int compareTo(Object arg0) {
+	public int compareTo(SelectItem arg0) {
 		int retval = 0;
 		if(arg0 instanceof SelectItem){
-			return this.getLabel().compareTo(((SelectItem) arg0).getLabel());
+			return this.getLabel().compareTo(arg0.getLabel());
 		}
 		return retval;
 	}

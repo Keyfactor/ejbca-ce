@@ -77,11 +77,11 @@ public class FindCertsCommand extends EJBCAWSRABaseCommand implements IAdminComm
             		getPrintStream().println("No certificate could be found for user");
             	}else{
             		getPrintStream().println(result.size() + " certificate found, written to " + outputPath);
-            		Iterator iter = result.iterator();
+            		Iterator<Certificate> iter = result.iterator();
             		int i=0;
             		while(iter.hasNext()){
             			i++;
-            			Certificate cert = (Certificate) iter.next();
+            			Certificate cert = iter.next();
             			if(encoding.equals("DER")){
             			    FileOutputStream fos = new FileOutputStream(outputPath + "/" + username + "-" + i +".cer");
             			    fos.write(CertificateHelper.getCertificate(cert.getCertificateData()).getEncoded());

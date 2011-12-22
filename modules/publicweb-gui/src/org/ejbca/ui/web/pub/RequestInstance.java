@@ -411,9 +411,8 @@ public class RequestInstance {
 			DiskFileUpload upload = new DiskFileUpload();
 			upload.setSizeMax(10000);
 			upload.setSizeThreshold(9999);
-			List items;
-			items = upload.parseRequest(request);
-			Iterator iter = items.iterator();
+            List<FileItem> items = upload.parseRequest(request);
+			Iterator<FileItem> iter = items.iterator();
 			while (iter.hasNext()) {
 				FileItem item = (FileItem) iter.next();
 				if (item.isFormField()) {

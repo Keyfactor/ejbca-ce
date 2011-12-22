@@ -297,11 +297,12 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 		}		
 	}
 	
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public Object clone() throws CloneNotSupportedException {
         ServiceConfiguration clone = new ServiceConfiguration();
         HashMap clonedata = (HashMap) clone.saveData();
 
-        Iterator i = (data.keySet()).iterator();
+        Iterator<Object> i = (data.keySet()).iterator();
         while(i.hasNext()){
           Object key = i.next();
           clonedata.put(key, data.get(key));

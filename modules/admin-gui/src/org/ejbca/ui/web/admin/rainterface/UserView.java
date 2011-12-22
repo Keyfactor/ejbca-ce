@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.admin.rainterface;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
@@ -26,7 +27,7 @@ import org.cesecore.util.StringTools;
  *
  * @version $Id$
  */
-public class UserView implements java.io.Serializable, Cloneable, Comparable {
+public class UserView implements Serializable, Comparable<UserView> {
 
     private static final long serialVersionUID = 2390294870669249774L;
 
@@ -269,57 +270,57 @@ public class UserView implements java.io.Serializable, Cloneable, Comparable {
         }
     }
 
-    public int compareTo(Object obj) {
+    public int compareTo(UserView obj) {
         int returnvalue = -1;
         int sortby = this.sortby.getSortBy();
         switch (sortby) {
         case SortBy.USERNAME:
-            returnvalue = getUsername().compareTo(((UserView) obj).getUsername());
+            returnvalue = getUsername().compareTo(obj.getUsername());
             break;
         case SortBy.COMMONNAME:
-            returnvalue = this.commonname.compareTo(((UserView) obj).getCommonName());
+            returnvalue = this.commonname.compareTo(obj.getCommonName());
             break;
         case SortBy.SERIALNUMBER:
-            returnvalue = getSubjectDNField(DNFieldExtractor.SN, 0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.SN, 0));
+            returnvalue = getSubjectDNField(DNFieldExtractor.SN, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.SN, 0));
             break;
         case SortBy.TITLE:
-            returnvalue = getSubjectDNField(DNFieldExtractor.T, 0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.T, 0));
+            returnvalue = getSubjectDNField(DNFieldExtractor.T, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.T, 0));
             break;
         case SortBy.ORGANIZATIONUNIT:
-            returnvalue = getSubjectDNField(DNFieldExtractor.OU, 0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.OU, 0));
+            returnvalue = getSubjectDNField(DNFieldExtractor.OU, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.OU, 0));
             break;
         case SortBy.ORGANIZATION:
-            returnvalue = getSubjectDNField(DNFieldExtractor.O, 0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.O, 0));
+            returnvalue = getSubjectDNField(DNFieldExtractor.O, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.O, 0));
             break;
         case SortBy.LOCALE:
-            returnvalue = getSubjectDNField(DNFieldExtractor.L, 0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.L, 0));
+            returnvalue = getSubjectDNField(DNFieldExtractor.L, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.L, 0));
             break;
         case SortBy.STATE:
-            returnvalue = getSubjectDNField(DNFieldExtractor.ST, 0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.ST, 0));
+            returnvalue = getSubjectDNField(DNFieldExtractor.ST, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.ST, 0));
             break;
         case SortBy.DOMAINCOMPONENT:
-            returnvalue = getSubjectDNField(DNFieldExtractor.DC, 0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.DC, 0));
+            returnvalue = getSubjectDNField(DNFieldExtractor.DC, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.DC, 0));
             break;
         case SortBy.COUNTRY:
-            returnvalue = getSubjectDNField(DNFieldExtractor.C, 0).compareTo(((UserView) obj).getSubjectDNField(DNFieldExtractor.C, 0));
+            returnvalue = getSubjectDNField(DNFieldExtractor.C, 0).compareTo(obj.getSubjectDNField(DNFieldExtractor.C, 0));
             break;
         case SortBy.EMAIL:
-            returnvalue = getEmail().compareTo(((UserView) obj).getEmail());
+            returnvalue = getEmail().compareTo(obj.getEmail());
             break;
         case SortBy.STATUS:
-            returnvalue = (Integer.valueOf(getStatus())).compareTo(Integer.valueOf(((UserView) obj).getStatus()));
+            returnvalue = (Integer.valueOf(getStatus())).compareTo(Integer.valueOf(obj.getStatus()));
             break;
         case SortBy.TIMECREATED:
-            returnvalue = getTimeCreated().compareTo(((UserView) obj).getTimeCreated());
+            returnvalue = getTimeCreated().compareTo(obj.getTimeCreated());
             break;
         case SortBy.TIMEMODIFIED:
-            returnvalue = getTimeModified().compareTo(((UserView) obj).getTimeModified());
+            returnvalue = getTimeModified().compareTo(obj.getTimeModified());
             break;
         case SortBy.CA:
-            returnvalue = getCAName().compareTo(((UserView) obj).getCAName());
+            returnvalue = getCAName().compareTo(obj.getCAName());
             break;
         default:
-            returnvalue = getUsername().compareTo(((UserView) obj).getUsername());
+            returnvalue = getUsername().compareTo(obj.getUsername());
 
         }
         if (this.sortby.getSortOrder() == SortBy.DECENDING) {

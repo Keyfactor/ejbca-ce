@@ -24,11 +24,9 @@ import java.io.Serializable;
 /**
  * This is a value class containing the data relating to a hard token issuer sent between server and clients.
  * 
- * 
- * @author TomSelleck
  * @version $Id$
  */
-public class HardTokenIssuerData implements Serializable, Comparable {
+public class HardTokenIssuerData implements Serializable, Comparable<HardTokenIssuerData> {
 
     private static final long serialVersionUID = 4736415526364602434L;
 
@@ -76,8 +74,8 @@ public class HardTokenIssuerData implements Serializable, Comparable {
         this.hardtokenissuer = hardtokenissuer;
     }
 
-    public int compareTo(Object obj) {
-        return this.alias.compareTo(((HardTokenIssuerData) obj).getAlias());
+    public int compareTo(HardTokenIssuerData obj) {
+        return this.alias.compareTo(obj.getAlias());
     }
 
 }

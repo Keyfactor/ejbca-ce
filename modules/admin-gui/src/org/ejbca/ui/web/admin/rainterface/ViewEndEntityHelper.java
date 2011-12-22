@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.web.admin.rainterface;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -34,14 +35,14 @@ import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 /**
  * Helper class for the View End Entity Page, parses the request and performs apporiate actions.
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 
-public class ViewEndEntityHelper implements java.io.Serializable{
+public class ViewEndEntityHelper implements Serializable{
 
 	
-	public static final String USER_PARAMETER                = "username";
+	private static final long serialVersionUID = 7172234379584156296L;
+    public static final String USER_PARAMETER                = "username";
 	public static final String TIMESTAMP_PARAMETER           = "timestamp";
 	
 	public static final String BUTTON_CLOSE                  = "buttonclose";
@@ -115,7 +116,7 @@ public class ViewEndEntityHelper implements java.io.Serializable{
         initialized = true;
         
         if(ejbcawebbean.getGlobalConfiguration().getIssueHardwareTokens()){
-            TreeMap hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();
+            TreeMap<String, Integer> hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();
 
             tokentexts = new String[RAInterfaceBean.tokentexts.length + hardtokenprofiles.keySet().size()];
             tokenids   = new int[tokentexts.length];
@@ -123,7 +124,7 @@ public class ViewEndEntityHelper implements java.io.Serializable{
               tokentexts[i]= RAInterfaceBean.tokentexts[i];
               tokenids[i] = RAInterfaceBean.tokenids[i];
             }
-            Iterator iter = hardtokenprofiles.keySet().iterator();
+            Iterator<String> iter = hardtokenprofiles.keySet().iterator();
             int index=0;
             while(iter.hasNext()){       
               String name = (String) iter.next();
@@ -217,7 +218,7 @@ public class ViewEndEntityHelper implements java.io.Serializable{
     		  if(currentuser != null){
     			  currentexists = 1;  
     		  }
-    		  List hist = cabean.getCertReqUserDatas(username);
+    		  List<CertReqHistory> hist = cabean.getCertReqUserDatas(username);
     		  
     		  userdatas = new UserView[hist.size() +currentexists];
     		  

@@ -118,13 +118,13 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             	
             	List<UserDataVOWS> result = getEjbcaRAWS().findUser(match);
             	
-            	Iterator iter = result.iterator();
+            	Iterator<UserDataVOWS> iter = result.iterator();
             	if(result==null || result.size() == 0){
             		getPrintStream().println("No matching users could be found in database");
             	}else{
             		getPrintStream().println("The following users found in database :");
             		for(int i=0;i<result.size();i++){
-        			    UserDataVOWS next = (UserDataVOWS) iter.next();
+        			    UserDataVOWS next = iter.next();
                         getPrintStream().println("\nUser : " + (i +1));
                         getPrintStream().println("  Username: "+next.getUsername());
                         getPrintStream().println("  Subject DN: "+next.getSubjectDN());

@@ -17,7 +17,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeMap;
@@ -97,7 +96,20 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     public static final String PAGE_USERDATASOURCE                  = "userdatasourcepage.jspf";
     public static final String PAGE_USERDATASOURCES                 = "userdatasourcespage.jspf";
 
-	
+    public boolean  userdatasourceexists       = false;
+    public boolean  userdatasourcedeletefailed = false;
+    public boolean  connectionmessage = false;
+    public boolean  connectionsuccessful = false;
+    public String   connectionerrormessage = "";
+    public boolean  issuperadministrator = false;
+    public BaseUserDataSource userdatasourcedata = null;
+    public String userdatasourcename = null;
+    
+    private boolean initialized=false;
+    private TreeMap<String, Integer> modifyableFieldTexts = null;
+    private UserDataSourceSession userdatasourcesession = null;
+    private AuthenticationToken admin = null;
+    private EjbcaWebBean ejbcawebbean = null;
 
 
 
@@ -338,23 +350,20 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     }
 
     
-    public TreeMap getAuthorizedUserDataSourceNames(){
-    	TreeMap retval = new TreeMap();
+    public TreeMap<String, Integer> getAuthorizedUserDataSourceNames(){
+    	TreeMap<String, Integer> retval = new TreeMap<String, Integer>();
     	
-    	Collection authorizedsources = userdatasourcesession.getAuthorizedUserDataSourceIds(admin,false);
-    	Iterator iter = authorizedsources.iterator();
-    	while(iter.hasNext()){
-    		Integer id = (Integer) iter.next();
+    	Collection<Integer> authorizedsources = userdatasourcesession.getAuthorizedUserDataSourceIds(admin,false);
+        for(Integer id : authorizedsources) {
     		retval.put(userdatasourcesession.getUserDataSourceName(admin,id.intValue()),id);
-    	}
-    	
+    	}  	
     	
     	return retval;
     }
     
-    public TreeMap getModifyableFieldTexts(){
+    public TreeMap<String, Integer> getModifyableFieldTexts(){
     	if(modifyableFieldTexts ==null){
-    		modifyableFieldTexts = new TreeMap();
+    		modifyableFieldTexts = new TreeMap<String, Integer>();
     		
     		String subjectdntext = ejbcawebbean.getText("CERT_SUBJECTDN");
     		String subjectaltnametext = ejbcawebbean.getText("EXT_ABBR_SUBJECTALTNAME");
@@ -406,20 +415,5 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
     	}
     	return modifyableFieldTexts;
     }
-
-    private boolean initialized=false;
-    public boolean  userdatasourceexists       = false;
-    public boolean  userdatasourcedeletefailed = false;
-    public boolean  connectionmessage = false;
-    public boolean  connectionsuccessful = false;
-    public String   connectionerrormessage = "";
-    public boolean  issuperadministrator = false;
-    public BaseUserDataSource userdatasourcedata = null;
-    public String userdatasourcename = null;
-    private TreeMap modifyableFieldTexts = null;
-    private UserDataSourceSession userdatasourcesession = null;
-	private AuthenticationToken admin = null;
-	private EjbcaWebBean ejbcawebbean = null;
-
 
 }

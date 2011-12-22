@@ -261,6 +261,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	return ret;
     }
 
+    @SuppressWarnings("rawtypes")
     @Override
     public void postMigrateDatabase400SmallTables() {
     	// LogConfiguration removed for EJBCA 5.0, so no upgrade of that needed
@@ -299,7 +300,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 	 * @param cpd
 	 * @return
 	 */
-	private HashMap getDataUnsafe(Serializable s) {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+    private HashMap getDataUnsafe(Serializable s) {
 		HashMap h = null; 
 		try {
 			h = JBossUnmarshaller.extractObject(LinkedHashMap.class, s);
@@ -312,6 +314,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 		return h;
 	}
     
+    @SuppressWarnings("rawtypes")
     @Override
     public void postMigrateDatabase400HardTokenData(List<String> subSet) {
     	for (String tokenSN : subSet) {
@@ -339,6 +342,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
      * @throws AccessRuleNotFoundException 
      * 
      */
+    @SuppressWarnings("unchecked")
     private boolean migrateDatabase500(String dbtype) {
     	log.error("(this is not an error) Starting upgrade from ejbca 4.0.x to ejbca 5.0.x");
     	boolean ret = true;
@@ -358,7 +362,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 					for (Integer type : extendedServiceTypes) {
 						ExtendedCAServiceInfo info = ca.getExtendedCAServiceInfo(type);
 						if (info == null) {
-							HashMap data = ca.getExtendedCAServiceData(type);
+							@SuppressWarnings("rawtypes")
+                            HashMap data = ca.getExtendedCAServiceData(type);
 							switch (type) {
 							case ExtendedCAServiceTypes.TYPE_OCSPEXTENDEDSERVICE:
 								data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, OCSPCAService.class.getName());

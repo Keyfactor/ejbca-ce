@@ -135,11 +135,13 @@ public class PublisherQueueVolatileData extends UpgradeableDataHashMap implement
     	}
     }
     
+    @SuppressWarnings("unchecked")
     public Object clone() throws CloneNotSupportedException {
       PublisherQueueVolatileData clone = new PublisherQueueVolatileData();
-      HashMap clonedata = (HashMap) clone.saveData();
+      @SuppressWarnings("rawtypes")
+    HashMap clonedata = (HashMap) clone.saveData();
 
-      Iterator i = (data.keySet()).iterator();
+      Iterator<Object> i = (data.keySet()).iterator();
       while(i.hasNext()){
         Object key = i.next();
         clonedata.put(key, data.get(key));
