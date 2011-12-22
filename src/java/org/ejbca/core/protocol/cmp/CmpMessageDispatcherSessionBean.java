@@ -28,6 +28,7 @@ import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.cmp.PKIMessages;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.request.FailInfo;
@@ -141,6 +142,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			int tagno = body.getTagNo();
 			if (log.isDebugEnabled()) {
 				log.debug("Received CMP message with pvno="+header.getPvno()+", sender="+header.getSender().toString()+", recipient="+header.getRecipient().toString());
+				log.debug("The CMP message is already authenticated: " + authenticated);
 				log.debug("Body is of type: "+tagno);
 				log.debug(req);
 				//log.debug(ASN1Dump.dumpAsString(req));				
@@ -173,7 +175,13 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				break;
 			case 11:
 				// Revocation request (rr, Revocation Request)
-				handler = new RevocationMessageHandler(admin, userAdminSession, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession);
+			    CA ca = null;
+			    try {
+			        ca = caSession.getCA(admin, req.getHeader().getRecipient().getName().toString().hashCode());
+			    } catch (Exception e) {
+			        log.error(e.getLocalizedMessage());
+			    }
+				handler = new RevocationMessageHandler(admin, ca, userAdminSession, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
             case 20:

@@ -34,16 +34,20 @@ import org.bouncycastle.asn1.x509.X509Name;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSession;
+import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.SignRequestException;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
@@ -81,6 +85,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 	//private String raAuthenticationSecret = null;
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
+	private CA ca;
 	
 	private UserAdminSession userAdminSession;
     private CertificateStoreSession certificateStoreSession;
@@ -88,12 +93,13 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
     private EndEntityAccessSession endEntityAccessSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
 	
-	public RevocationMessageHandler(AuthenticationToken admin, UserAdminSession userAdminSession, CaSession caSession, 
+	public RevocationMessageHandler(AuthenticationToken admin, CA ca, UserAdminSession userAdminSession, CaSession caSession, 
 	            EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession, CertificateStoreSession certStoreSession,
 	            AccessControlSession authSession, EndEntityAccessSession eeAccessSession,  WebAuthenticationProviderSessionLocal authProviderSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		//raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 		responseProtection = CmpConfiguration.getResponseProtection();
+		this.ca = ca;
 		// Get EJB beans, we can not use local beans here because the MBean used for the TCP listener does not work with that
 		this.userAdminSession = userAdminSession;
         this.certificateStoreSession = certStoreSession;
@@ -105,6 +111,12 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		if (LOG.isTraceEnabled()) {
 			LOG.trace(">handleMessage");
 		}
+		
+		if (ca == null) {
+		    String errmsg = "CA '" + msg.getRecipient().getName().toString().hashCode() + "' (DN: " + msg.getRecipient().getName().toString() + ") is unknown";
+            return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, errmsg);
+		}
+		
 		ResponseMessage resp = null;
 		// if version == 1 it is cmp1999 and we should not return a message back
 		// Try to find a HMAC/SHA1 protection key
@@ -274,6 +286,13 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 				}
 	    		if (StringUtils.equals(responseProtection, "pbe") && (owfAlg != null) && (macAlg != null) && (keyId != null) && (cmpRaAuthSecret != null) ) {
 	    			rresp.setPbeParameters(keyId, cmpRaAuthSecret, owfAlg, macAlg, iterationCount);
+	    		} else {
+	    		    try {
+                        rresp.setSignKeyInfo(ca.getCACertificate(), ca.getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), ca.getCAToken().getCryptoToken().getSignProviderName());
+                    } catch (CryptoTokenOfflineException e) {
+                        LOG.error(e.getLocalizedMessage(), e);
+                    } catch (IllegalCryptoTokenException e) {
+                        LOG.error(e.getLocalizedMessage(), e);                    }
 	    		}
 	    		resp = rresp;
 				try {
