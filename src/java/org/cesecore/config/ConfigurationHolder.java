@@ -230,7 +230,12 @@ public final class ConfigurationHolder {
         instance();
         return defaultValues.getString(property);
     }
-    
+
+    public static String[] getDefaultValueArray(final String property) {
+        instance();
+        return defaultValues.getStringArray(property);
+    }
+
     /**
      * Return a the expanded version of a property. E.g. property1=foo property2=${property1}bar would return "foobar" for property2
      * 
