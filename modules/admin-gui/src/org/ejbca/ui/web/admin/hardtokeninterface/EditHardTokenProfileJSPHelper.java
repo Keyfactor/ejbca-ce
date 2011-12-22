@@ -173,11 +173,12 @@ public class EditHardTokenProfileJSPHelper implements java.io.Serializable {
 		  DiskFileUpload upload = new DiskFileUpload();
 		  upload.setSizeMax(2000000);                   
 		  upload.setSizeThreshold(1999999);
-		  List /* FileItem */ items = upload.parseRequest(request);     
+		  @SuppressWarnings("unchecked")
+        List<FileItem> items = upload.parseRequest(request);     
 
-		  Iterator iter = items.iterator();
+		  Iterator<FileItem> iter = items.iterator();
 		  while (iter.hasNext()) {     
-		  FileItem item = (FileItem) iter.next();
+		  FileItem item = iter.next();
 
 		    if (item.isFormField()) {         
 			  if(item.getFieldName().equals(ACTION)) {

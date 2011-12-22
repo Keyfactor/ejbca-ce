@@ -139,15 +139,13 @@ public final class FileTools {
     	Arrays.sort(files, new FileComp());
     }
     
-    private static class FileComp implements Comparator {
+    private static class FileComp implements Comparator<File> {
     	private final Collator c = Collator.getInstance();
 
-    	public int compare(final Object o1, final Object o2) {
-    		if(o1 == o2) {
+    	public int compare(final File f1, final File f2) {
+    		if(f1 == f2) {
     			return 0;
     		}
-    		final File f1 = (File) o1;
-    		final File f2 = (File) o2;
     		if(f1.isDirectory() && f2.isFile()) {
     			return -1;
     		}

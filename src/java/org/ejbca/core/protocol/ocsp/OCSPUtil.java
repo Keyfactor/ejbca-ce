@@ -131,7 +131,8 @@ public class OCSPUtil {
     	}
     	X509Extensions exts = serviceReq.getExtensions();
     	if (exts != null) {
-    		Enumeration oids = exts.oids();
+    		@SuppressWarnings("unchecked")
+            Enumeration<DERObjectIdentifier> oids = exts.oids();
     		if (oids.hasMoreElements()) {
     	    	basicRes.setResponseExtensions(exts);    			
     		}
@@ -425,7 +426,7 @@ public class OCSPUtil {
      * @param trustedCerts the list (Hashtable) to look in
      * @return true if cert is in trustedCerts, false otherwise
      */
-    public static boolean checkCertInList(X509Certificate cert, Hashtable trustedCerts) {
+    public static boolean checkCertInList(X509Certificate cert, Hashtable<String, X509Certificate> trustedCerts) {
     	//String key = CertTools.getIssuerDN(cert)+";"+cert.getSerialNumber().toString(16);
     	String key =  cert.getIssuerDN()+";"+cert.getSerialNumber().toString(16);
     	Object found = trustedCerts.get(key);

@@ -467,7 +467,7 @@ public class XKMSKISSTest {
             keyInfoType = nextKeyBinding.getKeyInfo();
             assertTrue(keyInfoType.getContent().size() > 0);
             JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
-            Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+            Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
             while (iter2.hasNext()) {
                 JAXBElement next = (JAXBElement) iter2.next();
                 assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
@@ -556,7 +556,7 @@ public class XKMSKISSTest {
             assertTrue(keyInfoType.getContent().size() > 0);
             JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
             assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 2);
-            Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+            Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
             while (iter2.hasNext()) {
                 JAXBElement next = (JAXBElement) iter2.next();
                 assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
@@ -594,7 +594,7 @@ public class XKMSKISSTest {
             assertTrue(keyInfoType.getContent().size() > 0);
             JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
             assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 2);
-            Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+            Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
             while (iter2.hasNext()) {
                 JAXBElement next = (JAXBElement) iter2.next();
                 // log.debug("next.getName().getLocalPart(): "+next.getName().getLocalPart());
@@ -631,7 +631,7 @@ public class XKMSKISSTest {
             assertTrue(keyInfoType.getContent().size() > 0);
             JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
             assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 1);
-            Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+            Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
             while (iter2.hasNext()) {
                 JAXBElement next = (JAXBElement) iter2.next();
                 assertTrue(next.getName().getLocalPart().equals("X509CRL"));
@@ -666,7 +666,7 @@ public class XKMSKISSTest {
             assertTrue(keyInfoType.getContent().size() > 0);
             JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
             assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 3);
-            Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+            Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
             while (iter2.hasNext()) {
                 JAXBElement next = (JAXBElement) iter2.next();
                 if (next.getName().getLocalPart().equals("X509CRL")) {
@@ -808,7 +808,7 @@ public class XKMSKISSTest {
             keyInfoType = nextKeyBinding.getKeyInfo();
             assertTrue(keyInfoType.getContent().size() > 0);
             JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
-            Iterator iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+            Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
             while (iter2.hasNext()) {
                 JAXBElement next = (JAXBElement) iter2.next();
                 assertTrue(next.getName().getLocalPart().equals("X509Certificate"));

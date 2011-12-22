@@ -122,8 +122,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	private final int m_reqRestrictMethod = OcspConfiguration.getRestrictSignaturesByMethod();
 	private final int m_signTrustValidTime = OcspConfiguration.getSignTrustValidTimeInSeconds();
 	/** A list of CA's trusted for issuing certificates for signing requests */
-	private Hashtable mTrustedReqSigIssuers;
-	private Hashtable mTrustedReqSigSigners;
+	private Hashtable<String, X509Certificate> mTrustedReqSigIssuers;
+	private Hashtable<String, X509Certificate>  mTrustedReqSigSigners;
 	/** Marks if the CAs certificate chain should be included in the OCSP response or not 
 	 */
 	private final boolean m_includeChain = OcspConfiguration.getIncludeCertChain();
@@ -289,9 +289,9 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		if (m_extensionClasses.size() != m_extensionOids.size()) {
 			throw new ServletException("Number of extension classes does not match no of extension oids.");        	
 		}
-		Iterator iter = m_extensionClasses.iterator();
-		Iterator iter2 = m_extensionOids.iterator();
-		m_extensionMap = new HashMap();
+		Iterator<String> iter = m_extensionClasses.iterator();
+		Iterator<String> iter2 = m_extensionOids.iterator();
+		m_extensionMap = new HashMap<String, IOCSPExtension>();
 		while (iter.hasNext()) {
 			String clazz = (String)iter.next();
 			String oid = (String)iter2.next();
@@ -815,7 +815,7 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 									cert = (X509Certificate)this.data.certificateStoreSession.findCertificateByIssuerAndSerno(cacert.getSubjectDN().getName(), certId.getSerialNumber());
 									if (cert != null) {
 										// Call the OCSP extension
-										Hashtable retext = extObj.process(request, cert, certStatus);
+										Hashtable<DERObjectIdentifier, X509Extension> retext = extObj.process(request, cert, certStatus);
 										if (retext != null) {
 											// Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
 											responseExtensions.putAll(retext);

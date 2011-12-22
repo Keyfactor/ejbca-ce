@@ -27,7 +27,7 @@ import java.util.Map;
  * 
  * @version $Id$
  */
-public class Base64PutHashMap extends LinkedHashMap {
+public class Base64PutHashMap extends LinkedHashMap<String, Object> {
 
     private static final long serialVersionUID = 785586648964618032L;
 
@@ -35,11 +35,11 @@ public class Base64PutHashMap extends LinkedHashMap {
         super();
     }
 
-    public Base64PutHashMap(Map m) {
+    public Base64PutHashMap(Map<String, Object> m) {
         super(m);
     }
 
-    public Object put(Object key, Object value) {
+    public Object put(String key, Object value) {
         if (value == null) {
             return super.put(key, value);
         }

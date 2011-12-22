@@ -18,6 +18,7 @@ import org.junit.Test;
  */
 public class HashMapTest {
 
+    @SuppressWarnings("rawtypes")
     @Test
 	public void testHashMapNormal() throws Exception {
         HashMap<String, Comparable> a = new HashMap<String, Comparable>();
@@ -44,6 +45,7 @@ public class HashMapTest {
 
 	}
 	
+    @SuppressWarnings("rawtypes")
     @Test
     public void testHashMapStrangeChars() throws Exception {
         HashMap<String, Comparable> a = new HashMap<String, Comparable>();
@@ -84,6 +86,7 @@ public class HashMapTest {
             assertTrue(false);        	        	
         }
     }
+    @SuppressWarnings("rawtypes")
     @Test
     public void testHashMapStrangeCharsSafe() throws Exception {
         HashMap<String, Comparable> h = new HashMap<String, Comparable>();
@@ -92,7 +95,7 @@ public class HashMapTest {
         h.put("foo2", Integer.valueOf(2));
         h.put("foo3", Boolean.valueOf(true));
         h.put("foo4", "");
-        HashMap<String, Comparable> a = new Base64PutHashMap();
+        HashMap<String, Object> a = new Base64PutHashMap();
         a.putAll(h);
         
         // Write to XML
@@ -118,6 +121,7 @@ public class HashMapTest {
             assertTrue(false);
         }
     }
+    @SuppressWarnings("rawtypes")
     @Test
     public void testHashMapNormalCharsSafe() throws Exception {
         HashMap<String, Comparable> h = new HashMap<String, Comparable>();
@@ -126,7 +130,7 @@ public class HashMapTest {
         h.put("foo2", Integer.valueOf(2));
         h.put("foo3", Boolean.valueOf(true));
         h.put("foo4", "");
-        HashMap<String, Comparable> a = new Base64PutHashMap();
+        HashMap<String, Object> a = new Base64PutHashMap();
         a.putAll(h);
         
         // Write to XML

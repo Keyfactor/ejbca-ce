@@ -216,7 +216,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
 
                 CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
                 // Add the issued certificate to the signed portion of the CMS (as signer, degenerate case)
-                ArrayList certList = new ArrayList();
+                ArrayList<Object> certList = new ArrayList<Object>();
                 if (crl != null) {
                     log.debug("Adding CRL to response message (inner signer)");
                     certList.add(crl);
@@ -273,7 +273,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
 
             // add authenticated attributes...status, transactionId, sender- and recipientNonce and more...
-            Hashtable attributes = new Hashtable();
+            Hashtable<DERObjectIdentifier, Attribute> attributes = new Hashtable<DERObjectIdentifier, Attribute>();
             DERObjectIdentifier oid;
             Attribute attr;
             DERSet value;

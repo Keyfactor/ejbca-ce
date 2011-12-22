@@ -86,7 +86,7 @@ public class CAInfoView implements Serializable, Cloneable {
    
    private CAInfo          cainfo   = null;
    
-    public CAInfoView(CAInfo cainfo, EjbcaWebBean ejbcawebbean, Map publishersidtonamemap){
+    public CAInfoView(CAInfo cainfo, EjbcaWebBean ejbcawebbean, Map<Integer, String> publishersidtonamemap){
       this.cainfo = cainfo;  
         
       if (cainfo instanceof X509CAInfo) {
@@ -95,23 +95,23 @@ public class CAInfoView implements Serializable, Cloneable {
         cainfodata[SUBJECTALTNAME] = ((X509CAInfo) cainfo).getSubjectAltName();
 
 		cainfodata[CRLPUBLISHERS] = "";
-        Iterator iter = ((X509CAInfo) cainfo).getCRLPublishers().iterator();
-        if(iter.hasNext()) {
-        	cainfodata[CRLPUBLISHERS] = (String) publishersidtonamemap.get(iter.next()); 
+        Iterator<Integer> publisherIds = ((X509CAInfo) cainfo).getCRLPublishers().iterator();
+        if(publisherIds.hasNext()) {
+        	cainfodata[CRLPUBLISHERS] = publishersidtonamemap.get(publisherIds.next()); 
         } else {
         	cainfodata[CRLPUBLISHERS] = ejbcawebbean.getText("NONE");
         }
         
-        while(iter.hasNext()) {
-			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " + (String) publishersidtonamemap.get(iter.next());
+        while(publisherIds.hasNext()) {
+			cainfodata[CRLPUBLISHERS] = cainfodata[CRLPUBLISHERS] + ", " + (String) publishersidtonamemap.get(publisherIds.next());
         }
         
 		cainfodata[OCSPSPACER]          = "&nbsp;"; // blank line
 		
 		boolean active = false;		
-		iter = ((X509CAInfo) cainfo).getExtendedCAServiceInfos().iterator();
-		while(iter.hasNext()){
-	      ExtendedCAServiceInfo next = (ExtendedCAServiceInfo) iter.next();
+		Iterator<ExtendedCAServiceInfo> extendedServiceInfoIterator = ((X509CAInfo) cainfo).getExtendedCAServiceInfos().iterator();
+		while(publisherIds.hasNext()){
+	      ExtendedCAServiceInfo next = extendedServiceInfoIterator.next();
 	      if(next instanceof OCSPCAServiceInfo){
 	      	active = next.getStatus() == ExtendedCAServiceInfo.STATUS_ACTIVE;
 	      }

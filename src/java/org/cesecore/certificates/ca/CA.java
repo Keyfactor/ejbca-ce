@@ -313,6 +313,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(CRLOVERLAPTIME, new Long(crlOverlapTime));
     }
 
+    @SuppressWarnings("unchecked")
     public Collection<Integer> getCRLPublishers() {
         return ((Collection<Integer>) data.get(CRLPUBLISHERS));
     }
@@ -337,10 +338,11 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         CAToken ret = CATokenCacheManager.instance().getCAToken(caid);
         if (ret == null) {
             // Not cached we have to create the crypto token
-            HashMap tokendata = (HashMap) data.get(CATOKENDATA);
+            @SuppressWarnings("unchecked")
+            HashMap<String, String> tokendata = (HashMap<String, String>) data.get(CATOKENDATA);
             ret = new CAToken(tokendata, caid);
-            String signaturealg = (String) tokendata.get(CAToken.SIGNATUREALGORITHM);
-            String encryptionalg = (String) tokendata.get(CAToken.ENCRYPTIONALGORITHM);
+            String signaturealg = tokendata.get(CAToken.SIGNATUREALGORITHM);
+            String encryptionalg = tokendata.get(CAToken.ENCRYPTIONALGORITHM);
             String keysequence = CAToken.DEFAULT_KEYSEQUENCE;
             Object seqo = tokendata.get(CAToken.SEQUENCE);
             if (seqo != null) {
@@ -405,6 +407,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      */
     public Collection<Certificate> getRequestCertificateChain() {
         if (requestcertchain == null) {
+            @SuppressWarnings("unchecked")
             Collection<String> storechain = (Collection<String>) data.get(REQUESTCERTCHAIN);
             if (storechain != null) {
                 Iterator<String> iter = storechain.iterator();
@@ -448,6 +451,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      */
     public Collection<Certificate> getCertificateChain() {
         if (certificatechain == null) {
+            @SuppressWarnings("unchecked")
             Collection<String> storechain = (Collection<String>) data.get(CERTIFICATECHAIN);
             if (storechain == null) {
                 return null;
@@ -598,6 +602,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * 
      * @return Collection of Integer, never null
      */
+    @SuppressWarnings("unchecked")
     public Collection<Integer> getApprovalSettings() {
         if (data.get(APPROVALSETTINGS) == null) {
             return new ArrayList<Integer>();
@@ -846,12 +851,13 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         return service.extendedService(request);
     }
 
+    @SuppressWarnings("rawtypes")
     public HashMap getExtendedCAServiceData(int type) {
         HashMap serviceData = (HashMap) data.get(EXTENDEDCASERVICE + type); 
         return serviceData;
     }
 
-    public void setExtendedCAServiceData(int type, HashMap serviceData) {
+    public void setExtendedCAServiceData(int type, @SuppressWarnings("rawtypes") HashMap serviceData) {
         data.put(EXTENDEDCASERVICE + type, serviceData);
     }
 
@@ -860,7 +866,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         try {
             returnval = (ExtendedCAService) extendedcaservicemap.get(Integer.valueOf(type));
             if (returnval == null) {
-            	HashMap serviceData = getExtendedCAServiceData(type);
+            	@SuppressWarnings("rawtypes")
+                HashMap serviceData = getExtendedCAServiceData(type);
                 if (serviceData != null) {
                     // We must have run upgrade on the extended CA services for this to work
                     String implClassname = (String) serviceData.get(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS);
@@ -896,6 +903,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         return returnval;
     }
 
+    @SuppressWarnings("rawtypes")
     public void setExtendedCAService(ExtendedCAService extendedcaservice) {
         ExtendedCAServiceInfo info = extendedcaservice.getExtendedCAServiceInfo();
         setExtendedCAServiceData(info.getType(), (HashMap)extendedcaservice.saveData());
@@ -906,6 +914,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * Returns a Collection of ExternalCAServices (int) added to this CA.
      * 
      */
+    @SuppressWarnings("unchecked")
     public Collection<Integer> getExternalCAServiceTypes() {
         if (data.get(EXTENDEDCASERVICES) == null) {
             return new ArrayList<Integer>();

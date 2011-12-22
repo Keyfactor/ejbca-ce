@@ -102,9 +102,9 @@ public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator 
 			if(keyInfoType.getContent().size() > 0 ){							
 				JAXBElement<X509DataType> x509DataType = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
 
-				Iterator iter = x509DataType.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
+				Iterator<Object> iter = x509DataType.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 				while(iter.hasNext()){
-					JAXBElement next = (JAXBElement) iter.next();					
+					JAXBElement next =  (JAXBElement) iter.next();					
 					if(next.getName().getLocalPart().equals("X509Certificate")){
 						byte[] encoded = (byte[]) next.getValue();
 
