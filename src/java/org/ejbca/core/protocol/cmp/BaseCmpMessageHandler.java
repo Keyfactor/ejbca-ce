@@ -23,7 +23,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.internal.InternalResources;
 import org.ejbca.config.CmpConfiguration;
@@ -56,14 +56,14 @@ public class BaseCmpMessageHandler {
 	protected static final int CMP_GET_CA_FROM_KEYID   = -2;
 
 	protected AuthenticationToken admin;
-	protected CaSession caSession;
+	protected CaSessionLocal caSession;
 	protected EndEntityProfileSession endEntityProfileSession;
 	protected CertificateProfileSession certificateProfileSession;
 
 	protected BaseCmpMessageHandler() {
 	}
 
-	protected BaseCmpMessageHandler(final AuthenticationToken admin, CaSession caSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
+	protected BaseCmpMessageHandler(final AuthenticationToken admin, CaSessionLocal caSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
 		this.admin = admin;
 		this.caSession = caSession;
 		this.endEntityProfileSession = endEntityProfileSession;
