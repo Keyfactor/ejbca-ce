@@ -466,10 +466,12 @@ public class XKMSKISSTest {
             UnverifiedKeyBindingType nextKeyBinding = iter.next();
             keyInfoType = nextKeyBinding.getKeyInfo();
             assertTrue(keyInfoType.getContent().size() > 0);
+            @SuppressWarnings("unchecked")
             JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
             Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
             while (iter2.hasNext()) {
-                JAXBElement next = (JAXBElement) iter2.next();
+                @SuppressWarnings("unchecked")
+                JAXBElement<byte[]> next = (JAXBElement<byte[]>) iter2.next();
                 assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
                 byte[] encoded = (byte[]) next.getValue();
                 Certificate nextCert = CertTools.getCertfromByteArray(encoded);
@@ -554,11 +556,13 @@ public class XKMSKISSTest {
             // should be 1 if the xml is correct.
             // assertTrue(keyInfoType.getContent().size() > 1 );
             assertTrue(keyInfoType.getContent().size() > 0);
+            @SuppressWarnings("unchecked")
             JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
             assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 2);
             Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
             while (iter2.hasNext()) {
-                JAXBElement next = (JAXBElement) iter2.next();
+                @SuppressWarnings("unchecked")
+                JAXBElement<byte[]> next = (JAXBElement<byte[]>) iter2.next();
                 assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
                 byte[] encoded = (byte[]) next.getValue();
                 Certificate nextCert = CertTools.getCertfromByteArray(encoded);
@@ -592,12 +596,13 @@ public class XKMSKISSTest {
             // modified by dai 20090209 same as above
             // assertTrue(keyInfoType.getContent().size() > 1 );
             assertTrue(keyInfoType.getContent().size() > 0);
+            @SuppressWarnings("unchecked")
             JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
             assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 2);
             Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
             while (iter2.hasNext()) {
-                JAXBElement next = (JAXBElement) iter2.next();
-                // log.debug("next.getName().getLocalPart(): "+next.getName().getLocalPart());
+                @SuppressWarnings("unchecked")
+                JAXBElement<byte[]> next = (JAXBElement<byte[]>) iter2.next();
                 assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
                 byte[] encoded = (byte[]) next.getValue();
                 Certificate nextCert = CertTools.getCertfromByteArray(encoded);
@@ -629,11 +634,13 @@ public class XKMSKISSTest {
             // modified by dai 20090209 same as above
             // assertTrue(keyInfoType.getContent().size() > 1 );
             assertTrue(keyInfoType.getContent().size() > 0);
+            @SuppressWarnings("unchecked")
             JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
             assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 1);
             Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
             while (iter2.hasNext()) {
-                JAXBElement next = (JAXBElement) iter2.next();
+                @SuppressWarnings("unchecked")
+                JAXBElement<byte[]> next = (JAXBElement<byte[]>) iter2.next();
                 assertTrue(next.getName().getLocalPart().equals("X509CRL"));
                 byte[] encoded = (byte[]) next.getValue();
                 X509CRL nextCRL = CertTools.getCRLfromByteArray(encoded);
@@ -664,11 +671,13 @@ public class XKMSKISSTest {
             // modified by dai 20090209 same as above
             // assertTrue(keyInfoType.getContent().size() > 1 );
             assertTrue(keyInfoType.getContent().size() > 0);
+            @SuppressWarnings("unchecked")
             JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
             assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 3);
             Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
             while (iter2.hasNext()) {
-                JAXBElement next = (JAXBElement) iter2.next();
+                @SuppressWarnings("unchecked")
+                JAXBElement<byte[]> next = (JAXBElement<byte[]>) iter2.next();
                 if (next.getName().getLocalPart().equals("X509CRL")) {
                     byte[] encoded = (byte[]) next.getValue();
                     X509CRL nextCRL = CertTools.getCRLfromByteArray(encoded);
@@ -705,6 +714,7 @@ public class XKMSKISSTest {
             // modified by dai 20090209 same as above
             // assertTrue(keyInfoType.getContent().size() > 1 );
             assertTrue(keyInfoType.getContent().size() > 0);
+            @SuppressWarnings("unchecked")
             JAXBElement<String> jAXBString = (JAXBElement<String>) keyInfoType.getContent().get(0);
             assertTrue(jAXBString.getName().getLocalPart().equals("KeyName"));
             assertTrue(CertTools.stringToBCDNString(jAXBString.getValue()) + " = " + CertTools.stringToBCDNString(dn2), CertTools.stringToBCDNString(
@@ -731,12 +741,11 @@ public class XKMSKISSTest {
             UnverifiedKeyBindingType nextKeyBinding = iter.next();
             keyInfoType = nextKeyBinding.getKeyInfo();
             assertTrue("" + keyInfoType.getContent().size(), keyInfoType.getContent().size() > 0);
+            @SuppressWarnings("unchecked")
             JAXBElement<KeyValueType> jAXBKeyValue = (JAXBElement<KeyValueType>) keyInfoType.getContent().get(0);
             assertTrue(jAXBKeyValue.getName().getLocalPart(), jAXBKeyValue.getName().getLocalPart().equals("KeyValue"));
-            // modified by dai 20090209 same as above
-            // assertTrue(""+jAXBKeyValue.getValue().getContent().size(),jAXBKeyValue.getValue().getContent().size()
-            // > 1);
             assertTrue("" + jAXBKeyValue.getValue().getContent().size(), jAXBKeyValue.getValue().getContent().size() > 0);
+            @SuppressWarnings("unchecked")
             JAXBElement<RSAKeyValueType> rSAKeyValueType = (JAXBElement<RSAKeyValueType>) jAXBKeyValue.getValue().getContent().get(0);
             assertTrue(rSAKeyValueType.getName().getLocalPart(), rSAKeyValueType.getName().getLocalPart().equals("RSAKeyValue"));
             BigInteger exp = new BigInteger(rSAKeyValueType.getValue().getExponent());
@@ -807,10 +816,12 @@ public class XKMSKISSTest {
             UnverifiedKeyBindingType nextKeyBinding = iter.next();
             keyInfoType = nextKeyBinding.getKeyInfo();
             assertTrue(keyInfoType.getContent().size() > 0);
+            @SuppressWarnings("unchecked")
             JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
             Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
             while (iter2.hasNext()) {
-                JAXBElement next = (JAXBElement) iter2.next();
+                @SuppressWarnings("unchecked")
+                JAXBElement<byte[]> next = (JAXBElement<byte[]>) iter2.next();
                 assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
                 byte[] encoded = (byte[]) next.getValue();
                 Certificate nextCert = CertTools.getCertfromByteArray(encoded);

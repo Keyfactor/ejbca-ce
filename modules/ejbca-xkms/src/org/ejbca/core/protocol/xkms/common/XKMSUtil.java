@@ -199,7 +199,8 @@ public class XKMSUtil {
         
         xmlCipher.doFinal(envelopedDoc,rootElement,true);      
 
-        JAXBElement unmarshalledData = (JAXBElement) unmarshaller.unmarshal(envelopedDoc.getDocumentElement().getFirstChild());
+        @SuppressWarnings("unchecked")
+        JAXBElement<EncryptedDataType> unmarshalledData = (JAXBElement<EncryptedDataType>) unmarshaller.unmarshal(envelopedDoc.getDocumentElement().getFirstChild());
         
         EncryptedDataType encryptedDataType = (EncryptedDataType) unmarshalledData.getValue();
         privateKeyType = xKMSObjectFactory.createPrivateKeyType();

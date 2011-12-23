@@ -350,11 +350,13 @@ public class XKMSKRSSTest {
         KeyBindingType keyBindingType = registerResultType.getKeyBinding().get(0);
         assertTrue(keyBindingType.getStatus().getValidReason().size() == 4);
 
+        @SuppressWarnings("unchecked")
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBindingType.getKeyInfo().getContent().get(0);
         assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 2);
         Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
         while (iter2.hasNext()) {
-            JAXBElement next = (JAXBElement) iter2.next();
+            @SuppressWarnings("unchecked")
+            JAXBElement<byte[]> next = (JAXBElement<byte[]>) iter2.next();
             assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
             byte[] encoded = (byte[]) next.getValue();
             Certificate nextCert = CertTools.getCertfromByteArray(encoded);
@@ -399,12 +401,14 @@ public class XKMSKRSSTest {
         KeyBindingType keyBindingType = registerResultType.getKeyBinding().get(0);
         assertTrue(keyBindingType.getStatus().getValidReason().size() == 4);
 
+        @SuppressWarnings("unchecked")
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBindingType.getKeyInfo().getContent().get(0);
         assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 1);
         Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 
         while (iter2.hasNext()) {
-            JAXBElement next = (JAXBElement) iter2.next();
+            @SuppressWarnings("unchecked")
+            JAXBElement<byte[]> next = (JAXBElement<byte[]>) iter2.next();
             assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
             byte[] encoded = (byte[]) next.getValue();
             Certificate nextCert = CertTools.getCertfromByteArray(encoded);
@@ -631,11 +635,13 @@ public class XKMSKRSSTest {
         keyBindingType = reissueResultType.getKeyBinding().get(0);
         assertTrue(keyBindingType.getStatus().getValidReason().size() == 4);
 
+        @SuppressWarnings("unchecked")
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBindingType.getKeyInfo().getContent().get(0);
         assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 2);
         Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
         while (iter2.hasNext()) {
-            JAXBElement next = (JAXBElement) iter2.next();
+            @SuppressWarnings("unchecked")
+            JAXBElement<byte[]> next = (JAXBElement<byte[]>) iter2.next();
             assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
             byte[] encoded = (byte[]) next.getValue();
             Certificate nextCert = CertTools.getCertfromByteArray(encoded);
@@ -783,12 +789,14 @@ public class XKMSKRSSTest {
         keyBindingType = recoverResultType.getKeyBinding().get(0);
         assertTrue(keyBindingType.getStatus().getValidReason().size() == 4);
 
+        @SuppressWarnings("unchecked")
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBindingType.getKeyInfo().getContent().get(0);
         assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 2);
         Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 
         while (iter2.hasNext()) {
-            JAXBElement next = (JAXBElement) iter2.next();
+            @SuppressWarnings("unchecked")
+            JAXBElement<byte[]> next = (JAXBElement<byte[]>) iter2.next();
             assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
             byte[] encoded = (byte[]) next.getValue();
             Certificate nextCert = CertTools.getCertfromByteArray(encoded);
@@ -1030,12 +1038,14 @@ public class XKMSKRSSTest {
         assertEquals("Wrong number of ValidReason in KeyBinding: ", 3, keyBindingType.getStatus().getValidReason().size());	// TODO: Was 3 in EJBCA 3.11?? Why has this changed?
         assertEquals("Wrong number of InvalidReason in KeyBinding: ", 1, keyBindingType.getStatus().getInvalidReason().size());	// TODO: Was 1 in EJBCA 3.11?? Why has this changed?
 
+        @SuppressWarnings("unchecked")
         JAXBElement<X509DataType> jAXBX509Data = (JAXBElement<X509DataType>) keyBindingType.getKeyInfo().getContent().get(0);
         assertTrue(jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().size() == 1);
         Iterator<Object> iter2 = jAXBX509Data.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 
         while (iter2.hasNext()) {
-            JAXBElement next = (JAXBElement) iter2.next();
+            @SuppressWarnings("unchecked")
+            JAXBElement<byte[]> next = (JAXBElement<byte[]>) iter2.next();
             assertTrue(next.getName().getLocalPart().equals("X509Certificate"));
             byte[] encoded = (byte[]) next.getValue();
             Certificate nextCert = CertTools.getCertfromByteArray(encoded);

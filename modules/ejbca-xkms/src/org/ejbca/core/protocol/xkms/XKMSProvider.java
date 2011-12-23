@@ -99,6 +99,7 @@ import org.w3._2002._03.xkms_.RegisterResultType;
 import org.w3._2002._03.xkms_.ReissueRequestType;
 import org.w3._2002._03.xkms_.ReissueResultType;
 import org.w3._2002._03.xkms_.RequestAbstractType;
+import org.w3._2002._03.xkms_.ResultType;
 import org.w3._2002._03.xkms_.RevokeRequestType;
 import org.w3._2002._03.xkms_.RevokeResultType;
 import org.w3._2002._03.xkms_.ValidateRequestType;
@@ -176,7 +177,8 @@ public class XKMSProvider implements Provider<Source> {
 	/**
 	 * The main method performing the actual calls
 	 */
-	public Source invoke(Source request) {
+	@SuppressWarnings("unchecked")
+    public Source invoke(Source request) {
 		Source response = null;
 		
 		MessageContext msgContext = wsContext.getMessageContext();		
@@ -203,7 +205,7 @@ public class XKMSProvider implements Provider<Source> {
 		boolean respMecSign = false;
 		try {
 			//JAXBElement jAXBRequest = (JAXBElement) unmarshaller.unmarshal(request);
-			JAXBElement jAXBRequest = (JAXBElement) unmarshaller.unmarshal(requestDoc.cloneNode(true));
+			JAXBElement<RequestAbstractType> jAXBRequest = (JAXBElement<RequestAbstractType>) unmarshaller.unmarshal(requestDoc.cloneNode(true));
 			JAXBElement jAXBResult = null;
 			if(jAXBRequest.getValue() instanceof RequestAbstractType){
 				respMecSign = ((RequestAbstractType)jAXBRequest.getValue()).getResponseMechanism().contains(XKMSConstants.RESPONSMEC_REQUESTSIGNATUREVALUE);
@@ -254,40 +256,40 @@ public class XKMSProvider implements Provider<Source> {
 		return response;
 	}
 
-	private JAXBElement validate(String remoteIP, ValidateRequestType value, boolean requestVerifies) {
+	private JAXBElement<ValidateResultType> validate(String remoteIP, ValidateRequestType value, boolean requestVerifies) {
 		ValidateResponseGenerator gen = new ValidateResponseGenerator(remoteIP, value, certificateStoreSession, userAdminSession, crlSession, caSession);
 		JAXBElement<ValidateResultType> validateresult = xKMSObjectFactory.createValidateResult(gen.getResponse(requestVerifies));
 		return validateresult;
 	}
 	
-	private JAXBElement locate(String remoteIP, LocateRequestType value, boolean requestVerifies) {
+	private JAXBElement<LocateResultType> locate(String remoteIP, LocateRequestType value, boolean requestVerifies) {
 		LocateResponseGenerator gen = new LocateResponseGenerator(remoteIP, value, certificateStoreSession, userAdminSession, crlSession, caSession);
 		JAXBElement<LocateResultType> locateresult = xKMSObjectFactory.createLocateResult(gen.getResponse(requestVerifies));
 		return locateresult;
 	}
 	
-	private JAXBElement register(String remoteIP, RegisterRequestType value, boolean requestVerifies, Document requestDoc) {
+	private JAXBElement<RegisterResultType> register(String remoteIP, RegisterRequestType value, boolean requestVerifies, Document requestDoc) {
 		RegisterResponseGenerator gen = new RegisterResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		JAXBElement<RegisterResultType> registerresult = xKMSObjectFactory.createRegisterResult(gen.getResponse(requestVerifies));
 		return registerresult;
 	}
 	
-	private JAXBElement reissue(String remoteIP, ReissueRequestType value, boolean requestVerifies, Document requestDoc) {
+	private JAXBElement<ReissueResultType> reissue(String remoteIP, ReissueRequestType value, boolean requestVerifies, Document requestDoc) {
 		ReissueResponseGenerator gen = new ReissueResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		JAXBElement<ReissueResultType> reissueresult = xKMSObjectFactory.createReissueResult(gen.getResponse(requestVerifies));
 		return reissueresult;
 	}
 	
-	private JAXBElement recover(String remoteIP, RecoverRequestType value, boolean requestVerifies, Document requestDoc) {
+	private JAXBElement<RecoverResultType> recover(String remoteIP, RecoverRequestType value, boolean requestVerifies, Document requestDoc) {
 		RecoverResponseGenerator gen = new RecoverResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		JAXBElement<RecoverResultType> recoverresult = xKMSObjectFactory.createRecoverResult(gen.getResponse(requestVerifies));
 		return recoverresult;
 	}
 	
-	private JAXBElement revoke(String remoteIP, RevokeRequestType value, boolean requestVerifies, Document requestDoc) {
+	private JAXBElement<RevokeResultType> revoke(String remoteIP, RevokeRequestType value, boolean requestVerifies, Document requestDoc) {
 		RevokeResponseGenerator gen = new RevokeResponseGenerator(remoteIP, value,requestDoc, caSession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		JAXBElement<RevokeResultType> recoverresult = xKMSObjectFactory.createRevokeResult(gen.getResponse(requestVerifies));
