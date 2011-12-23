@@ -754,6 +754,9 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertFalse("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
         confSession.updateProperty(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
         
+        confSession.updateProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature");
+        assertTrue("The response protection was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_RESPONSEPROTECTION, "signature"));
+
         String clientUsername = "clientTestUser";
         String clientDN = "CN=" + clientUsername + ",C=SE";
         createUser(clientUsername, clientDN, clientPassword);
@@ -774,7 +777,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         final byte[] ba = bao.toByteArray();
         // Send request and receive response
         final byte[] resp = sendCmpHttp(ba, 200);        
-        checkCmpResponseGeneral(resp, issuerDN, clientDN, cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader().getTransactionID().getOctets(), false, null);
+        checkCmpResponseGeneral(resp, issuerDN, clientDN, cacert, req.getHeader().getSenderNonce().getOctets(), req.getHeader().getTransactionID().getOctets(), true, null);
         Certificate cert1 = checkCmpCertRepMessage(clientDN, cacert, resp, req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue());
         assertNotNull("Crmf request did not return a certificate", cert1);
 
@@ -791,7 +794,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         byte[] ba2 = bao2.toByteArray();
         // Send request and receive response
         byte[] respNoIssuer = sendCmpHttp(ba2, 200);        
-        checkCmpResponseGeneral(respNoIssuer, issuerDN, clientDN, cacert, reqNoIssuer.getHeader().getSenderNonce().getOctets(), reqNoIssuer.getHeader().getTransactionID().getOctets(), false, null);
+        checkCmpResponseGeneral(respNoIssuer, issuerDN, clientDN, cacert, reqNoIssuer.getHeader().getSenderNonce().getOctets(), reqNoIssuer.getHeader().getTransactionID().getOctets(), true, null);
         Certificate cert2 = checkCmpCertRepMessage(clientDN, cacert, respNoIssuer, reqNoIssuer.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue());
         assertNotNull("Crmf request did not return a certificate", cert2);
 
@@ -806,9 +809,8 @@ public class AuthenticationModulesTest extends CmpTestCase {
         byte[] ba3 = bao3.toByteArray();
         // Send request and receive response
         byte[] resp3 = sendCmpHttp(ba3, 200);
-        checkCmpResponseGeneral(resp3, issuerDN, userDN, cacert, nonce, transid, false, null);
+        checkCmpResponseGeneral(resp3, issuerDN, userDN, cacert, nonce, transid, true, null);
         checkCmpPKIConfirmMessage(userDN, cacert, resp3);
-
     }
     
     @Test
