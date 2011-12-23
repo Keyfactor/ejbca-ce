@@ -597,7 +597,7 @@ class CMPTest extends ClientToolBox {
             }
             final PKIHeader header = respObject.getHeader();
             if ( header.getSender().getTagNo()!=4 ) {
-                StressTest.this.performanceTest.getLog().error("Wrong tag in respnse message header. Is "+header.getSender().getTagNo()+" should be 4.");
+                StressTest.this.performanceTest.getLog().error("Wrong tag in response message header. Is "+header.getSender().getTagNo()+" should be 4.");
                 return false;
             }
             {
