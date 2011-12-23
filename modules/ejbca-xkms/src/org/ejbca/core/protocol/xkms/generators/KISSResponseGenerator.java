@@ -34,7 +34,6 @@ import org.cesecore.certificates.crl.CrlStoreSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.ra.UserAdminSession;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
@@ -100,11 +99,13 @@ public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator 
 			
 			
 			if(keyInfoType.getContent().size() > 0 ){							
-				JAXBElement<X509DataType> x509DataType = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
+				@SuppressWarnings("unchecked")
+                JAXBElement<X509DataType> x509DataType = (JAXBElement<X509DataType>) keyInfoType.getContent().get(0);
 
 				Iterator<Object> iter = x509DataType.getValue().getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 				while(iter.hasNext()){
-					JAXBElement next =  (JAXBElement) iter.next();					
+					@SuppressWarnings("unchecked")
+                    JAXBElement<byte[]> next =  (JAXBElement<byte[]>) iter.next();					
 					if(next.getName().getLocalPart().equals("X509Certificate")){
 						byte[] encoded = (byte[]) next.getValue();
 

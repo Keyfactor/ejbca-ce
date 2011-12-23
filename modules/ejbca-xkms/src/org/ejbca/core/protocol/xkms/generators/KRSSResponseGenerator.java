@@ -142,18 +142,21 @@ public class KRSSResponseGenerator extends
 	
 		if(GeneralizedKRSSMessageHelper.getKeyBindingAbstractType(req).getKeyInfo() != null && GeneralizedKRSSMessageHelper.getKeyBindingAbstractType(req).getKeyInfo().getContent().get(0) != null){
 			try{
-				JAXBElement element = (JAXBElement) GeneralizedKRSSMessageHelper.getKeyBindingAbstractType(req).getKeyInfo().getContent().get(0);
+				@SuppressWarnings("unchecked")
+                JAXBElement<Object> element = (JAXBElement<Object>) GeneralizedKRSSMessageHelper.getKeyBindingAbstractType(req).getKeyInfo().getContent().get(0);
 				if(element.getValue() instanceof RSAKeyValueType && registerRequest){
-					RSAKeyValueType rSAKeyValueType  = (RSAKeyValueType) ((JAXBElement) GeneralizedKRSSMessageHelper.getKeyBindingAbstractType(req).getKeyInfo().getContent().get(0)).getValue();        
+					@SuppressWarnings("unchecked")
+                    RSAKeyValueType rSAKeyValueType  = ((JAXBElement<RSAKeyValueType>) GeneralizedKRSSMessageHelper.getKeyBindingAbstractType(req).getKeyInfo().getContent().get(0)).getValue();        
 					RSAPublicKeySpec rSAPublicKeySpec = new RSAPublicKeySpec(new BigInteger(rSAKeyValueType.getModulus()), new BigInteger(rSAKeyValueType.getExponent()));        
 					retval= KeyFactory.getInstance("RSA").generatePublic(rSAPublicKeySpec);
 				}
 				if(element.getValue() instanceof X509DataType){
 					Iterator<Object> iter = ((X509DataType) element.getValue()).getX509IssuerSerialOrX509SKIOrX509SubjectName().iterator();
 					while(iter.hasNext()){
-						JAXBElement next = (JAXBElement) iter.next();					
+						@SuppressWarnings("unchecked")
+                        JAXBElement<byte[]> next = (JAXBElement<byte[]>) iter.next();					
 						if(next.getName().getLocalPart().equals("X509Certificate")){
-							byte[] encoded = (byte[]) next.getValue();
+							byte[] encoded = next.getValue();
 
 							try {
 								X509Certificate nextCert = (X509Certificate)CertTools.getCertfromByteArray(encoded);
@@ -502,7 +505,7 @@ public class KRSSResponseGenerator extends
 		    }
 
 		    if(!revoked){
-		        retval = verifyCert(caCertChain, null, cert);
+		        retval = verifyCert(caCertChain, cert);
 		    }
 		} catch (CADoesntExistsException e) {
             log.info("CA with id "+CertTools.getIssuerDN(cert).hashCode()+" does not exist");
@@ -519,67 +522,61 @@ public class KRSSResponseGenerator extends
 	}
 
 
- /**
-  * method that verifies the certificate and returns an error message
-  * @param cACertChain
-  * @param trustedCRLs
-  * @param cert
-  * @return  true if everything is OK
-  */
-	private boolean verifyCert(Collection<Certificate> cACertChain, Collection trustedCRLs, X509Certificate usercert){
-    
-     boolean retval = false;
-             
-     try{                	        	                   	
-     	X509Certificate rootCert = null;
-     	Iterator<Certificate> iter = cACertChain.iterator();
-     	while(iter.hasNext()){
-     		X509Certificate cert = (X509Certificate) iter.next();
-     		if(cert.getIssuerDN().equals(cert.getSubjectDN())){
-     			rootCert = cert;
-     			break;
-     		}
-     	}
-     	
-     	if(rootCert == null){
-     		throw new CertPathValidatorException("Error Root CA cert not found in cACertChain"); 
-     	}
-     	
-     	List<Certificate> list = new ArrayList<Certificate>();
-     	list.add(usercert);
-     	list.addAll(cACertChain);
-     	if(trustedCRLs != null){
-     		list.addAll(trustedCRLs);
-     	}
-     	
-     	CollectionCertStoreParameters ccsp = new CollectionCertStoreParameters(list);
-     	CertStore store = CertStore.getInstance("Collection", ccsp);
-     	
-     	//validating path
-     	List<Certificate> certchain = new ArrayList<Certificate>();
-     	certchain.addAll(cACertChain);
-     	certchain.add(usercert);
-     	CertPath cp = CertificateFactory.getInstance("X.509","BC").generateCertPath(certchain);
-     	
-     	Set<TrustAnchor> trust = new HashSet<TrustAnchor>();
-     	trust.add(new TrustAnchor(rootCert, null));
-     	
-     	CertPathValidator cpv = CertPathValidator.getInstance("PKIX","BC");
-     	PKIXParameters param = new PKIXParameters(trust);
-     	param.addCertStore(store);
-     	param.setDate(new Date());
-     	if(trustedCRLs == null){
-     		param.setRevocationEnabled(false);
-     	}else{
-     		param.setRevocationEnabled(true);
-     	}
-     	cpv.validate(cp, param);
-     	retval = true;
-     } catch(Exception e){
-    	 log.error(intres.getLocalizedMessage("xkms.errorverifyingcert"),e);			
-     } 
-		return retval;
-	}
+    /**
+     * method that verifies the certificate and returns an error message
+     * @param cACertChain
+     * @param trustedCRLs
+     * @param cert
+     * @return  true if everything is OK
+     */
+    private boolean verifyCert(Collection<Certificate> cACertChain, X509Certificate usercert) {
+
+        boolean retval = false;
+
+        try {
+            X509Certificate rootCert = null;
+            Iterator<Certificate> iter = cACertChain.iterator();
+            while (iter.hasNext()) {
+                X509Certificate cert = (X509Certificate) iter.next();
+                if (cert.getIssuerDN().equals(cert.getSubjectDN())) {
+                    rootCert = cert;
+                    break;
+                }
+            }
+
+            if (rootCert == null) {
+                throw new CertPathValidatorException("Error Root CA cert not found in cACertChain");
+            }
+
+            List<Certificate> list = new ArrayList<Certificate>();
+            list.add(usercert);
+            list.addAll(cACertChain);
+
+            CollectionCertStoreParameters ccsp = new CollectionCertStoreParameters(list);
+            CertStore store = CertStore.getInstance("Collection", ccsp);
+
+            //validating path
+            List<Certificate> certchain = new ArrayList<Certificate>();
+            certchain.addAll(cACertChain);
+            certchain.add(usercert);
+            CertPath cp = CertificateFactory.getInstance("X.509", "BC").generateCertPath(certchain);
+
+            Set<TrustAnchor> trust = new HashSet<TrustAnchor>();
+            trust.add(new TrustAnchor(rootCert, null));
+
+            CertPathValidator cpv = CertPathValidator.getInstance("PKIX", "BC");
+            PKIXParameters param = new PKIXParameters(trust);
+            param.addCertStore(store);
+            param.setDate(new Date());
+            param.setRevocationEnabled(false);
+
+            cpv.validate(cp, param);
+            retval = true;
+        } catch (Exception e) {
+            log.error(intres.getLocalizedMessage("xkms.errorverifyingcert"), e);
+        }
+        return retval;
+    }
     
 	/**
 	 * Method that checks that the given respondWith specification is valid.
