@@ -160,12 +160,7 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
                 log.error(e.getLocalizedMessage(), e);
             } catch (SignatureException e) {
                 log.error(e.getLocalizedMessage(), e);
-            }
-		//	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		//	DEROutputStream mout = new DEROutputStream( baos );
-		//	mout.writeObject( myPKIMessage );
-		//	mout.close();
-		//	responseMessage = baos.toByteArray();			
+            }		
 		}
 		return true;
 	}
