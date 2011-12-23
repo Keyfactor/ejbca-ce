@@ -18,7 +18,6 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 
-import javax.ejb.EJBException;
 import javax.ejb.FinderException;
 
 import org.apache.commons.lang.StringUtils;
@@ -36,8 +35,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSession;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
@@ -59,7 +57,6 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
@@ -85,7 +82,6 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 	//private String raAuthenticationSecret = null;
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
-	private CA ca;
 	
 	private UserAdminSession userAdminSession;
     private CertificateStoreSession certificateStoreSession;
@@ -93,14 +89,12 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
     private EndEntityAccessSession endEntityAccessSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
 	
-	public RevocationMessageHandler(final AuthenticationToken admin, final CA ca, final UserAdminSession userAdminSession, final CaSession caSession, 
+	public RevocationMessageHandler(final AuthenticationToken admin, final UserAdminSession userAdminSession, final CaSessionLocal caSession, 
 	        final EndEntityProfileSession endEntityProfileSession, final CertificateProfileSession certificateProfileSession, final CertificateStoreSession certStoreSession,
 	        final AccessControlSession authSession, final EndEntityAccessSession eeAccessSession, final WebAuthenticationProviderSessionLocal authProviderSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		//raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 		responseProtection = CmpConfiguration.getResponseProtection();
-		this.ca = ca;
-		// Get EJB beans, we can not use local beans here because the MBean used for the TCP listener does not work with that
 		this.userAdminSession = userAdminSession;
         this.certificateStoreSession = certStoreSession;
         this.authorizationSession = authSession;
@@ -112,10 +106,16 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 			LOG.trace(">handleMessage");
 		}
 		
-		if (ca == null) {
-		    final String errmsg = "CA '" + msg.getRecipient().getName().toString().hashCode() + "' (DN: " + msg.getRecipient().getName().toString() + ") is unknown";
-            return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, errmsg);
-		}
+        CA ca = null;
+        try {
+            ca = caSession.getCA(admin, msg.getHeader().getRecipient().getName().toString().hashCode());
+        } catch (CADoesntExistsException e) {
+            final String errMsg = "CA with DN '" + msg.getHeader().getRecipient().getName().toString() + "' is unknown";
+            return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg);
+        } catch (AuthorizationDeniedException e) {
+            LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
+            return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
+        }
 		
 		ResponseMessage resp = null;
 		// if version == 1 it is cmp1999 and we should not return a message back
@@ -129,28 +129,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
             ResponseStatus status = ResponseStatus.FAILURE;
             FailInfo failInfo = FailInfo.BAD_MESSAGE_CHECK;
             String failText = null;
-            CAInfo caInfo = null;
-			try {
-			    final int eeProfileId = getUsedEndEntityProfileId(keyId);
-			    final int caId = getUsedCaId(keyId, eeProfileId);
-				caInfo = caSession.getCAInfo(admin, caId);
-			} catch (NotFoundException e) {
-				LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
-				return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-			} catch (EJBException e) {
-                String errMsg = INTRES.getLocalizedMessage(CMP_ERRORADDUSER);
-				LOG.error(errMsg, e);                   
-				return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-			} catch (CADoesntExistsException e) {
-                LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
-                return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-            } catch (AuthorizationDeniedException e) {
-                LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
-                return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-            }
 
             //Verify the authenticity of the message
-            final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, admin, caSession, endEntityAccessSession, certificateStoreSession, authorizationSession, endEntityProfileSession, authenticationProviderSession);
+            final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(ca.getCAInfo(), admin, caSession, endEntityAccessSession, certificateStoreSession, authorizationSession, endEntityProfileSession, authenticationProviderSession);
             ICMPAuthenticationModule authenticationModule = null;
             if(messageVerifyer.verify(msg.getMessage(), null, authenticated)) {
                 authenticationModule = messageVerifyer.getUsedAuthenticationModule();
@@ -169,7 +150,6 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
                 owfAlg = hmacmodule.getCmpPbeVerifyer().getOwfOid();
                 macAlg = hmacmodule.getCmpPbeVerifyer().getMacOid();
             }
-
 
             cmpRaAuthSecret = authenticationModule.getAuthenticationString();
             if (cmpRaAuthSecret != null) {

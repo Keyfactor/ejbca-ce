@@ -28,7 +28,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSession;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
@@ -123,11 +123,10 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @param signSession
 	 * @param userAdminSession
 	 */
-	public CrmfMessageHandler(final AuthenticationToken admin, CaSession caSession, CertificateProfileSession certificateProfileSession, CertificateRequestSession certificateRequestSession,
+	public CrmfMessageHandler(final AuthenticationToken admin, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession, CertificateRequestSession certificateRequestSession,
 			EndEntityAccessSession endEntityAccessSession, EndEntityProfileSession endEntityProfileSession, SignSession signSession, CertificateStoreSession certStoreSession, 
 			AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
-		// Get EJB beans, we can not use local beans here because the TCP listener does not work with that
 		this.signSession = signSession;
 		this.certificateRequestSession = certificateRequestSession;
 		this.endEntityAccessSession = endEntityAccessSession;

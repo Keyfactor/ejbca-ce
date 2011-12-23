@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.cmp;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -25,6 +26,7 @@ import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERInteger;
+import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.cesecore.certificates.ca.SignRequestException;
@@ -153,18 +155,38 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
 		} else {
             try {
-                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate) signCert, signKey, digestAlg, provider);
+                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate)signCert, signKey, digestAlg, provider);
             } catch (CertificateEncodingException e) {
+                log.error("Failed to sign CMPRevokeResponseMessage");
                 log.error(e.getLocalizedMessage(), e);
+                responseMessage = getUnprotectedResponseMessage(myPKIMessage);
             } catch (SecurityException e) {
+                log.error("Failed to sign CMPRevokeResponseMessage");
                 log.error(e.getLocalizedMessage(), e);
+                responseMessage = getUnprotectedResponseMessage(myPKIMessage);
             } catch (SignatureException e) {
+                log.error("Failed to sign CMPRevokeResponseMessage");
                 log.error(e.getLocalizedMessage(), e);
-            }		
+                responseMessage = getUnprotectedResponseMessage(myPKIMessage);
+            }
 		}
 		return true;
 	}
 
+	private byte[] getUnprotectedResponseMessage(PKIMessage msg) {
+	    byte[] resp = null;
+	    try {
+	        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	        final DEROutputStream mout = new DEROutputStream( baos );
+	        mout.writeObject( msg );
+	        mout.close();
+	        resp = baos.toByteArray();
+	    } catch (IOException e) {
+	        log.error(e.getLocalizedMessage(), e);
+	    }
+	    return resp;
+	}
+	   
 	@Override
 	public boolean requireSignKeyInfo() {
 		return false;
