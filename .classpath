@@ -70,6 +70,7 @@
 	<classpathentry kind="lib" path="lib/cert-cvc.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/xmlsec-1.4.3.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/xalan-2.7.1.jar"/>
+	<classpathentry kind="lib" path="lib/xmlsign/serializer-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/libidn.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/ejb3-persistence.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager.jar"/>
@@ -97,6 +98,5 @@
 	<classpathentry kind="var" path="JBOSS5_HOME/client/jboss-logging-log4j.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="conf"/>
-	<classpathentry kind="lib" path="lib/xmlsign/serializer-2.7.1.jar"/>
 	<classpathentry kind="output" path="out/classes"/>
 </classpath>
