@@ -214,7 +214,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         if (roleAccessSession.findRole(newName) == null) {
             // Authorized to edit roles?
             authorizedToEditRole(authenticationToken, role.getRoleName());
-
+            final String oldName = role.getRoleName();
             role.setRoleName(newName);
 
             result = entityManager.merge(role);
@@ -222,7 +222,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
             accessTreeUpdateSession.signalForAccessTreeUpdate();
             accessControlSession.forceCacheExpire();
 
-            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.admingrouprenamed", role.getRoleName(), newName);
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.admingrouprenamed", oldName, result.getRoleName());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             securityEventsLogger.log(EventTypes.ROLE_RENAMING, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
