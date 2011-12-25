@@ -57,7 +57,7 @@ For upgrade instructions, please see UPGRADE
 
 EJBCA 4.0.7
 -----------
-This is a maintenance release with a few bug fixes and a new feature. In all X issues have been resolved.
+This is a maintenance release with a few bug fixes and a new feature. In all 10 issues have been resolved.
 
 * Noteworthy changes:
 - Fixed a bug reading large OCSP requests over HTTP 1.1 using chunked encoding.
