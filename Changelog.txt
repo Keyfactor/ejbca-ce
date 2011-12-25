@@ -127,7 +127,7 @@ Task
     [ECA-2320] - Merge changes from CESECORE-197
     [ECA-2324] - Merge changes from CESECORE-269 to EJBCA
 
-EJBCA 4.0.7, 2011-12-23
+EJBCA 4.0.7, 2011-12-25
 ---
 New Feature
     [ECA-2410] - Document EJBCA Djigzo intregration
