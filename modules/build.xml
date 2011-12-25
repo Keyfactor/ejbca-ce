@@ -83,7 +83,6 @@
 		<delete>
 			<fileset dir="${modules.basedir}/dist" includes="*"/>
 		</delete>
-        <delete dir="${modules.basedir}/dist" />
 	</target>
 	
 	<target name="ejbca-entity" depends="ejbca-util" description="Build EJBCA JPA entity library">
