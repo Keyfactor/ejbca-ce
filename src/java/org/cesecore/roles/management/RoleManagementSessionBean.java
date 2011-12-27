@@ -253,15 +253,19 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         }
 
         Map<Integer, AccessRuleData> rules = result.getAccessRules();
+        Collection<AccessRuleData> rulesAdded = new ArrayList<AccessRuleData>();
+        Collection<AccessRuleData> rulesMerged = new ArrayList<AccessRuleData>();
         for (AccessRuleData accessRule : accessRules) {
             // If this rule isn't persisted, persist it.
             if (accessRuleManagement.find(accessRule.getPrimaryKey()) == null) {
                 accessRuleManagement.persistRule(accessRule);
+                rulesAdded.add(accessRule);
             }
             // If the rule exists, then merely update its values.
             if (rules.containsKey(accessRule.getPrimaryKey())) {
                 rules.remove(accessRule.getPrimaryKey());
                 accessRule = accessRuleManagement.setState(accessRule, accessRule.getInternalState(), accessRule.getRecursive());
+                rulesMerged.add(accessRule);
             }
             rules.put(accessRule.getPrimaryKey(), accessRule);
         }
@@ -271,11 +275,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         accessControlSession.forceCacheExpire();
 
-        final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.accessrulesadded", result.getRoleName());
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
-        details.put("msg", msg);
-        securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_ADDITION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
-                authenticationToken.toString(), null, null, null, details);
+        logAccessRulesAdded(authenticationToken, role.getRoleName(), rulesAdded);
 
         return result;
     }
@@ -318,12 +318,8 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         accessControlSession.forceCacheExpire();
 
-        final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.accessrulesremoved", role.getRoleName());
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
-        details.put("msg", msg);
-        securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
-                authenticationToken.toString(), null, null, null, details);
-
+        logAccessRulesRemoved(authenticationToken, role.getRoleName(), accessRules);
+        
         return result;
     }
 
@@ -485,6 +481,8 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
        
         Map<Integer, AccessRuleData> rulesFromResult = result.getAccessRules();
         Map<Integer, AccessRuleData> rulesToResult = new HashMap<Integer, AccessRuleData>();
+        //Lists for loggins purposes.
+        Collection<AccessRuleData> newRules = new ArrayList<AccessRuleData>();
         for(AccessRuleData rule : accessRules) {
             if(AccessRuleData.generatePrimaryKey(role.getRoleName(), rule.getAccessRuleName()) != rule.getPrimaryKey()) {
                 throw new Error("Role " + role.getRoleName() + " did not match up with the role that created this rule.");
@@ -494,27 +492,50 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
                 AccessRuleData newRule = accessRuleManagement.setState(rule, rule.getInternalState(), rule.getRecursive());
                 rulesFromResult.remove(ruleKey);
                 rulesToResult.put(newRule.getPrimaryKey(), newRule);
+                //TODO: We should log changed rules here.
             } else {
                 try {
-                    accessRuleManagement.createRule(rule.getAccessRuleName(), result.getRoleName(), rule.getInternalState(), rule.getRecursive());                   
+                    newRules.add(accessRuleManagement.createRule(rule.getAccessRuleName(), result.getRoleName(), rule.getInternalState(),
+                            rule.getRecursive()));
                 } catch (AccessRuleExistsException e) {
                     throw new Error("Access rule exists, but wasn't found in persistence in previous call.", e);
                 }
                 rulesToResult.put(rule.getPrimaryKey(), rule);
-            } 
+            }
           
         }
+        logAccessRulesAdded(authenticationToken, role.getRoleName(), newRules);
+        
         //And for whatever remains:
         accessRuleManagement.remove(rulesFromResult.values());
-
         result.setAccessRules(rulesToResult);
         result = entityManager.merge(result);
+        logAccessRulesRemoved(authenticationToken, role.getRoleName(), rulesFromResult.values());       
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         accessControlSession.forceCacheExpire();
         
         return result;
     }
     
+    private void logAccessRulesRemoved(AuthenticationToken authenticationToken, String rolename, Collection<AccessRuleData> removedRules) {
+        if (removedRules.size() > 0) {
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.accessrulesremoved", rolename);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                    authenticationToken.toString(), null, null, null, details);
+        }
+    }
+    
+    private void logAccessRulesAdded(AuthenticationToken authenticationToken, String rolename, Collection<AccessRuleData> addedRules) {
+        if(addedRules.size() > 0) {
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.accessrulesadded", rolename);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_ADDITION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                    authenticationToken.toString(), null, null, null, details);
+        }
+    }
     
     private Integer findFreeRoleId() {
         final ProfileID.DB db = new ProfileID.DB() {
