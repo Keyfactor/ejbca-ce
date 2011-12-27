@@ -482,7 +482,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
         Map<Integer, AccessRuleData> rulesFromResult = result.getAccessRules();
         Map<Integer, AccessRuleData> rulesToResult = new HashMap<Integer, AccessRuleData>();
-        //Lists for loggins purposes.
+        //Lists for logging purposes.
         Collection<AccessRuleData> newRules = new ArrayList<AccessRuleData>();
         Collection<AccessRuleData> changedRules = new ArrayList<AccessRuleData>();
         for (AccessRuleData rule : accessRules) {
