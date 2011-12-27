@@ -278,7 +278,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             log.trace(">addPublisher(name: " + name + ")");
         }
         addPublisher(admin, findFreePublisherId(), name, publisher);
-        log.trace("<addPublisher()");
+        if (log.isTraceEnabled()) {
+            log.trace("<addPublisher()");
+        }
     }
 
     @Override
@@ -286,32 +288,31 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         if (log.isTraceEnabled()) {
             log.trace(">addPublisher(name: " + name + ", id: " + id + ")");
         }
+        addPublisherInternal(admin, id, name, publisher);
+        final String msg = intres.getLocalizedMessage("publisher.addedpublisher", name);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", msg);
+        auditSession.log(EjbcaEventTypes.PUBLISHER_CREATION, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
+        if (log.isTraceEnabled()) {
+            log.trace("<addPublisher()");
+        }
+    }
+
+    private void addPublisherInternal(AuthenticationToken admin, int id, String name, BasePublisher publisher) throws AuthorizationDeniedException, PublisherExistsException {
         authorizedToEditPublisher(admin, name);
-        boolean success = false;
         if (PublisherData.findByName(entityManager, name) == null) {
             if (PublisherData.findById(entityManager, Integer.valueOf(id)) == null) {
-                try {
-                	entityManager.persist(new PublisherData(Integer.valueOf(id), name, publisher));
-                    success = true;
-                } catch (Exception e) {
-                    String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", name);
-                    log.error(msg, e);
-                }
+                entityManager.persist(new PublisherData(Integer.valueOf(id), name, publisher));
+            } else {
+                final String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", id);
+                log.info(msg);
+                throw new PublisherExistsException();
             }
-        }
-        if (success) {
-            String msg = intres.getLocalizedMessage("publisher.addedpublisher", name);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.PUBLISHER_CREATION, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
         } else {
-            String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", name);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.PUBLISHER_CREATION, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
+            final String msg = intres.getLocalizedMessage("publisher.erroraddpublisher", name);
+            log.info(msg);
             throw new PublisherExistsException();
         }
-        log.trace("<addPublisher()");
     }
 
     @Override
@@ -323,16 +324,18 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         
         PublisherData htp = PublisherData.findByName(entityManager, name);
         if (htp != null) {
+            final Map<Object, Object> diff = getPublisher(htp).diff(publisher);
             htp.setPublisher(publisher);
             String msg = intres.getLocalizedMessage("publisher.changedpublisher", name);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
+            for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+                details.put(entry.getKey().toString(), entry.getValue().toString());
+            }
             auditSession.log(EjbcaEventTypes.PUBLISHER_CHANGE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
         } else {
             String msg = intres.getLocalizedMessage("publisher.errorchangepublisher", name);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.PUBLISHER_CHANGE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
+            log.info(msg);
         }
         log.trace("<changePublisher()");
     }
@@ -349,16 +352,14 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
         	}
             try {
                 publisherdata = (BasePublisher) getPublisher(htp).clone();
-                addPublisher(admin, newname, publisherdata);
-                String msg = intres.getLocalizedMessage("publisher.clonedpublisher", newname, oldname);
+                addPublisherInternal(admin, findFreePublisherId(), newname, publisherdata);
+                final String msg = intres.getLocalizedMessage("publisher.clonedpublisher", newname, oldname);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.PUBLISHER_CLONE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
+                auditSession.log(EjbcaEventTypes.PUBLISHER_CREATION, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
             } catch (PublisherExistsException f) {
-                String msg = intres.getLocalizedMessage("publisher.errorclonepublisher", newname, oldname);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.PUBLISHER_CLONE, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
+                final String msg = intres.getLocalizedMessage("publisher.errorclonepublisher", newname, oldname);
+                log.info(msg);
                 throw f;
             } catch (CloneNotSupportedException e) {
                 // Severe error, should never happen
@@ -388,10 +389,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("publisher.errorremovepublisher", name);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            details.put("error", e.getMessage());
-            auditSession.log(EjbcaEventTypes.PUBLISHER_REMOVAL, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
+            log.info(msg, e);
         }
         log.trace("<removePublisher()");
     }
@@ -417,9 +415,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             auditSession.log(EjbcaEventTypes.PUBLISHER_RENAME, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
         } else {
             String msg = intres.getLocalizedMessage("publisher.errorrenamepublisher", oldname, newname);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.PUBLISHER_RENAME, EventStatus.FAILURE, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);            
+            log.info(msg);
             throw new PublisherExistsException();
         }
         log.trace("<renamePublisher()");
