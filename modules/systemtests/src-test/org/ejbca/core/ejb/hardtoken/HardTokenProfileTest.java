@@ -177,7 +177,7 @@ public class HardTokenProfileTest {
 
         int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
         String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
-        String rolename = "testGetAuthorizedToHardTokenIssuer";
+        String rolename = "testGetAuthorizedToHardTokenProfile";
         RoleData role = roleManagementSession.create(internalAdmin, rolename);
         final String alias = "spacemonkeys";
         try {
