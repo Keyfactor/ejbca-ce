@@ -166,16 +166,18 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         }
         AdminPreferencesData apdata = AdminPreferencesData.findById(entityManager, DEFAULTUSERPREFERENCE);
         if (apdata != null) {
+            final Map<Object, Object> diff = apdata.getAdminPreference().diff(defaultadminpreference);
             apdata.setAdminPreference(defaultadminpreference);
-            String msg = intres.getLocalizedMessage("ra.defaultadminprefsaved");
+            final String msg = intres.getLocalizedMessage("ra.defaultadminprefsaved");
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
+            for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+                details.put(entry.getKey().toString(), entry.getValue().toString());
+            }
             auditSession.log(EjbcaEventTypes.RA_DEFAULTADMINPREF, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
         } else {
-            String msg = intres.getLocalizedMessage("ra.errorsavedefaultadminpref");
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.RA_DEFAULTADMINPREF, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            final String msg = intres.getLocalizedMessage("ra.errorsavedefaultadminpref");
+            log.info(msg);
             throw new EJBException(msg);
         }
         if (log.isTraceEnabled()) {
@@ -194,6 +196,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         boolean ret = false;
         AdminPreferencesData apdata1 = AdminPreferencesData.findById(entityManager, certificatefingerprint);
         if (apdata1 != null) {
+            final Map<Object, Object> diff = apdata1.getAdminPreference().diff(adminpreference);
             apdata1.setAdminPreference(adminpreference);
             // Earlier we used to remove and re-add the adminpreferences data
             // I don't know why, but that did not work on Oracle AS, so lets
@@ -215,19 +218,20 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
              * +certificatefingerprint); }
              */
             if (dolog) {
-                String msg = intres.getLocalizedMessage("ra.changedadminpref", certificatefingerprint);
+                final String msg = intres.getLocalizedMessage("ra.changedadminpref", certificatefingerprint);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
+                for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+                    details.put(entry.getKey().toString(), entry.getValue().toString());
+                }
                 auditSession.log(EjbcaEventTypes.RA_EDITADMINPREF, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
             }
             ret = true;
         } else {
             ret = false;
             if (dolog) {
-                String msg = intres.getLocalizedMessage("ra.adminprefnotfound", certificatefingerprint);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.RA_EDITADMINPREF, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+                final String msg = intres.getLocalizedMessage("ra.adminprefnotfound", certificatefingerprint);
+                log.info(msg);
             }
         }
         if (log.isTraceEnabled()) {
