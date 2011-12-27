@@ -13,17 +13,34 @@
 
 package org.ejbca.core.ejb.hardtoken;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.authorization.user.AccessMatchType;
+import org.cesecore.authorization.user.AccessUserAspectData;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.jndi.JndiHelper;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
+import org.cesecore.roles.RoleData;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.profiles.EnhancedEIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
@@ -43,6 +60,8 @@ public class HardTokenProfileTest {
     private static Logger log = Logger.getLogger(HardTokenProfileTest.class);
 
     private HardTokenSessionRemote hardTokenSession = InterfaceCache.getHardTokenSession();
+    private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
+    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
 
     private static int SVGFILESIZE = 512 * 1024; // 1/2 Mega char
 
@@ -58,7 +77,7 @@ public class HardTokenProfileTest {
     }
 
     @Test
-    public void test01AddHardTokenProfile() throws HardTokenProfileExistsException {
+    public void test01AddHardTokenProfile() throws HardTokenProfileExistsException, AuthorizationDeniedException {
 
         final SwedishEIDProfile swedishProfileOrg = new SwedishEIDProfile();
         final EnhancedEIDProfile enhancedProfileOrg = new EnhancedEIDProfile();
@@ -149,6 +168,68 @@ public class HardTokenProfileTest {
         }
         assertTrue("Removing Hard Token Profile failed", ret);
         log.trace("<test05removeHardTokenProfiles()");
+    }
+
+    @Test
+    public void testIsAuthorizedToHardTokenProfile() throws Exception {
+        TestX509CertificateAuthenticationToken admin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
+                .authenticate(new AuthenticationSubject(null, null));
+
+        int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
+        String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
+        String rolename = "testGetAuthorizedToHardTokenIssuer";
+        RoleData role = roleManagementSession.create(internalAdmin, rolename);
+        final String alias = "spacemonkeys";
+        try {
+            Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
+            subjects.add(new AccessUserAspectData(rolename, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
+            role = roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);
+            Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+            accessRules.add(new AccessRuleData(rolename, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, AccessRuleState.RULE_ACCEPT, false));
+            role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
+            HardTokenProfile profile = new SwedishEIDProfile();
+            hardTokenSession.addHardTokenProfile(internalAdmin, alias, profile);
+            
+            // Test authorization to edit with an unauthorized admin
+            try {
+                hardTokenSession.addHardTokenProfile(admin, alias, profile);
+                fail("admin should not have been authorized to edit profile");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Administrator is not authorized to resource /hardtoken_functionality/edit_hardtoken_profiles. Msg: .", e.getMessage());
+            }
+            // Test authorization to edit with an unauthorized admin
+            try {
+                hardTokenSession.changeHardTokenProfile(admin, alias, profile);
+                fail("admin should not have been authorized to edit profile");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Administrator is not authorized to resource /hardtoken_functionality/edit_hardtoken_profiles. Msg: .", e.getMessage());
+            }
+            // Test authorization to edit with an unauthorized admin
+            try {
+                hardTokenSession.cloneHardTokenProfile(admin, alias, "newmonkeys");
+                fail("admin should not have been authorized to edit profile");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Administrator is not authorized to resource /hardtoken_functionality/edit_hardtoken_profiles. Msg: .", e.getMessage());
+            }
+            // Test authorization to edit with an unauthorized admin
+            try {
+                hardTokenSession.removeHardTokenProfile(admin, alias);
+                fail("admin should not have been authorized to edit profile");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Administrator is not authorized to resource /hardtoken_functionality/edit_hardtoken_profiles. Msg: .", e.getMessage());
+            }
+            // Test authorization to edit with an unauthorized admin
+            try {
+                hardTokenSession.renameHardTokenProfile(admin, alias, "renamedmonkey");
+                fail("admin should not have been authorized to edit profile");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Administrator is not authorized to resource /hardtoken_functionality/edit_hardtoken_profiles. Msg: .", e.getMessage());
+            }
+
+        } finally {
+            hardTokenSession.removeHardTokenProfile(internalAdmin, alias);
+            roleManagementSession.remove(internalAdmin, rolename);
+        }
     }
 
     private String createSVGData() {
