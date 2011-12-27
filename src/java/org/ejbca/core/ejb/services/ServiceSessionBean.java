@@ -71,8 +71,8 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.services.IInterval;
@@ -180,34 +180,35 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">addService(name: " + name + ", id: " + id + ")");
         }
+        boolean success = addServiceInternal(admin, id, name, serviceConfiguration);
+        if (success) {
+            final String msg = intres.getLocalizedMessage("services.serviceadded", name);
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.SERVICE_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
+                    admin.toString(), null, null, null, details);
+        } else {
+            final String msg = intres.getLocalizedMessage("services.erroraddingservice", name);
+            log.info(msg);
+            throw new ServiceExistsException(msg);
+        }
+        log.trace("<addService()");
+    }
+    
+    private boolean addServiceInternal(AuthenticationToken admin, int id, String name, ServiceConfiguration serviceConfiguration) throws ServiceExistsException {
         boolean success = false;
         if (isAuthorizedToEditService(admin)) {
             if (serviceDataSession.findByName(name) == null) {
                 if (serviceDataSession.findById(Integer.valueOf(id)) == null) {
-                    try {
-                        serviceDataSession.addServiceData(id, name, serviceConfiguration);
-                        success = true;
-                    } catch (Exception e) {
-                        log.error("Unexpected error creating new service: ", e);
-                    }
+                    serviceDataSession.addServiceData(id, name, serviceConfiguration);
+                    success = true;
                 }
-            }
-            if (success) {
-                final String msg = intres.getLocalizedMessage("services.serviceadded", name);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.SERVICE_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), null, null, null, details);
-            } else {
-                final String msg = intres.getLocalizedMessage("services.erroraddingservice", name);
-                log.info(msg);
-                throw new ServiceExistsException(msg);
             }
         } else {
             final String msg = intres.getLocalizedMessage("services.notauthorizedtoadd", name);
             log.info(msg);
         }
-        log.trace("<addService()");
+        return success;
     }
 
     @Override
@@ -225,7 +226,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         try {
             servicedata = (ServiceConfiguration) htp.getServiceConfiguration().clone();
             if (isAuthorizedToEditService(admin)) {
-                addService(admin, newname, servicedata);
+                addServiceInternal(admin, findFreeServiceId(), newname, servicedata);
                 final String msg = intres.getLocalizedMessage("services.servicecloned", newname, oldname);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -628,33 +629,36 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">changeService(name: " + name + ")");
         }
-        boolean success = false;
         if (isAuthorizedToEditService(admin)) {
-            if (serviceDataSession.updateServiceConfiguration(name, serviceConfiguration)) {
-                success = true;
+            ServiceData oldservice = serviceDataSession.findByName(name);
+            if (oldservice != null) {
+                final Map<Object, Object> diff = oldservice.getServiceConfiguration().diff(serviceConfiguration);
+                if (serviceDataSession.updateServiceConfiguration(name, serviceConfiguration)) {
+                    final String msg = intres.getLocalizedMessage("services.serviceedited", name);
+                    if (noLogging) {
+                        log.info(msg);
+                    } else {
+                        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                        details.put("msg", msg);
+                        for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+                            details.put(entry.getKey().toString(), entry.getValue().toString());
+                        }
+                        auditSession.log(EjbcaEventTypes.SERVICE_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
+                                intAdmin.toString(), null, null, null, details);
+                    }
+                } else {
+                    String msg = intres.getLocalizedMessage("services.serviceedited", name);
+                    if (noLogging) {
+                        log.error(msg);
+                    } else {
+                        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                        details.put("msg", msg);
+                        auditSession.log(EjbcaEventTypes.SERVICE_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
+                                intAdmin.toString(), null, null, null, details);
+                    }
+                }
             } else {
                 log.error("Can not find service to change: " + name);
-            }
-            if (success) {
-                String msg = intres.getLocalizedMessage("services.serviceedited", name);
-                if (!noLogging) {
-                    final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                    details.put("msg", msg);
-                    auditSession.log(EjbcaEventTypes.SERVICE_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                            intAdmin.toString(), null, null, null, details);
-                } else {
-                    log.info(msg);
-                }
-            } else {
-                String msg = intres.getLocalizedMessage("services.serviceedited", name);
-                if (!noLogging) {
-                    final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                    details.put("msg", msg);
-                    auditSession.log(EjbcaEventTypes.SERVICE_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA,
-                            intAdmin.toString(), null, null, null, details);
-                } else {
-                    log.error(msg);
-                }
             }
         } else {
             String msg = intres.getLocalizedMessage("services.notauthorizedtoedit", name);
