@@ -225,7 +225,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     	authorizedToEditUserDataSource(admin, name, userdatasource);
     	UserDataSourceData htp = UserDataSourceData.findByName(entityManager, name);
     	if (htp != null) {
-            final BaseUserDataSource oldsource = htp.getCachedUserDataSource();
+            final BaseUserDataSource oldsource = getUserDataSource(htp);
             final Map<Object, Object> diff = oldsource.diff(userdatasource);
             
     	    htp.setUserDataSource(userdatasource);
