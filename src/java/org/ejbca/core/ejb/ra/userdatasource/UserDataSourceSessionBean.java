@@ -146,29 +146,25 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public void testConnection(AuthenticationToken admin, int userdatasourceid) throws UserDataSourceConnectionException {
+    public void testConnection(AuthenticationToken admin, int userdatasourceid) throws UserDataSourceConnectionException, AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
             log.trace(">testConnection(id: " + userdatasourceid + ")");
     	}
     	UserDataSourceData pdl = UserDataSourceData.findById(entityManager, userdatasourceid);
     	if (pdl != null) {
-        	BaseUserDataSource userdatasource = getUserDataSource(pdl);
-        	if(isAuthorizedToEditUserDataSource(admin,userdatasource)){
-        		try {
-        			userdatasource.testConnection(admin);
-        			String msg = intres.getLocalizedMessage("userdatasource.testedcon", pdl.getName());
-        			log.info(msg);
-        		} catch (UserDataSourceConnectionException pe) {
-        			String msg = intres.getLocalizedMessage("userdatasource.errortestcon", pdl.getName());
-        			log.info(msg);
-        			throw pe;
-        		}
-        	}else{
-    			String msg = intres.getLocalizedMessage("userdatasource.errortestconauth", pdl.getName());
-    			log.info(msg);
-        	}
+    	    BaseUserDataSource userdatasource = getUserDataSource(pdl);
+    	    authorizedToEditUserDataSource(admin, pdl.getName(), userdatasource);
+    	    try {
+    	        userdatasource.testConnection(admin);
+    	        String msg = intres.getLocalizedMessage("userdatasource.testedcon", pdl.getName());
+    	        log.info(msg);
+    	    } catch (UserDataSourceConnectionException pe) {
+    	        String msg = intres.getLocalizedMessage("userdatasource.errortestcon", pdl.getName());
+    	        log.info(msg);
+    	        throw pe;
+    	    }
     	} else {
-			String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", Integer.valueOf(userdatasourceid));
+    	    String msg = intres.getLocalizedMessage("userdatasource.erroruserdatasourceexist", Integer.valueOf(userdatasourceid));
 			log.info(msg);
         }
     	if (log.isTraceEnabled()) {
@@ -177,7 +173,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public void addUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException {
+    public void addUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException, AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
             log.trace(">addUserDataSource(name: " + name + ")");
     	}
@@ -186,69 +182,70 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public void addUserDataSource(AuthenticationToken admin, int id, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException {
+    public void addUserDataSource(AuthenticationToken admin, int id, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException, AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
             log.trace(">addUserDataSource(name: " + name + ", id: " + id + ")");
     	}
-        boolean success = false;
-        if (isAuthorizedToEditUserDataSource(admin,userdatasource)) {
-        	if (UserDataSourceData.findByName(entityManager, name) == null) {
-        		if (UserDataSourceData.findById(entityManager, id) == null) {
-        			try {
-        				entityManager.persist(new UserDataSourceData(Integer.valueOf(id), name, userdatasource));
-        				success = true;
-        			} catch (Exception e) {
-        				log.error("Unexpected error creating new user data source: ", e);
-        			}
-        		}
-        	}
-        	if (success) {
-    			String msg = intres.getLocalizedMessage("userdatasource.addedsource", name);            	
-	            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-	            details.put("msg", msg);
-	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEADD, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
-        	} else {
-    			String msg = intres.getLocalizedMessage("userdatasource.erroraddsource", name);
-    			log.info(msg);
-        		throw new UserDataSourceExistsException();
-        	}
-        } else {
-			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);
-			log.info(msg);
+    	try {
+    	    addUserDataSourceInternal(admin, id, name, userdatasource);
+    	    String msg = intres.getLocalizedMessage("userdatasource.addedsource", name);            	
+    	    final Map<String, Object> details = new LinkedHashMap<String, Object>();
+    	    details.put("msg", msg);
+    	    auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEADD, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+        } catch (UnsupportedEncodingException e) {
+            log.info("UnsupportedEncodingException adding user data source "+name+", "+id+": ", e);
+            throw new EJBException(e);
         }
-        log.trace("<addUserDataSource()");
+    	log.trace("<addUserDataSource()");
+    }
+
+    private void addUserDataSourceInternal(AuthenticationToken admin, int id, String name, BaseUserDataSource userdatasource)
+            throws AuthorizationDeniedException, UserDataSourceExistsException, UnsupportedEncodingException {
+    	authorizedToEditUserDataSource(admin, name, userdatasource);
+    	if (UserDataSourceData.findByName(entityManager, name) == null) {
+    	    if (UserDataSourceData.findById(entityManager, id) == null) {
+    	        entityManager.persist(new UserDataSourceData(Integer.valueOf(id), name, userdatasource));
+    	    } else {
+                String msg = intres.getLocalizedMessage("userdatasource.erroraddsource", id);
+                log.info(msg);
+                throw new UserDataSourceExistsException();    	        
+    	    }
+    	} else {
+            String msg = intres.getLocalizedMessage("userdatasource.erroraddsource", name);
+            log.info(msg);
+            throw new UserDataSourceExistsException();    	    
+    	}
     }
 
     @Override
-    public void changeUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) {
+    public void changeUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) throws AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
             log.trace(">changeUserDataSource(name: " + name + ")");
     	}
-        boolean success = false;
-        if(isAuthorizedToEditUserDataSource(admin,userdatasource)){
-        	UserDataSourceData htp = UserDataSourceData.findByName(entityManager, name);
-        	if (htp != null) {
-        		htp.setUserDataSource(userdatasource);
-        		success = true;
-        	}
-        	if (success) {
-    			String msg = intres.getLocalizedMessage("userdatasource.changedsource", name);            	
-	            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-	            details.put("msg", msg);
-	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEEDIT, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
-        	} else {
-    			String msg = intres.getLocalizedMessage("userdatasource.errorchangesource", name);
-    			log.info(msg);
-        	}
-        }else{
-			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);
-			log.info(msg);
-        }
-        log.trace("<changeUserDataSource()");
+    	authorizedToEditUserDataSource(admin, name, userdatasource);
+    	UserDataSourceData htp = UserDataSourceData.findByName(entityManager, name);
+    	if (htp != null) {
+            final BaseUserDataSource oldsource = htp.getCachedUserDataSource();
+            final Map<Object, Object> diff = oldsource.diff(userdatasource);
+            
+    	    htp.setUserDataSource(userdatasource);
+    	    
+            final String msg = intres.getLocalizedMessage("userdatasource.changedsource", name);                
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+                details.put(entry.getKey().toString(), entry.getValue().toString());
+            }
+            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEEDIT, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+    	} else {
+    	    String msg = intres.getLocalizedMessage("userdatasource.errorchangesource", name);
+    	    log.info(msg);
+    	}
+    	log.trace("<changeUserDataSource()");
     }
 
     @Override
-    public void cloneUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException {
+    public void cloneUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException, AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
             log.trace(">cloneUserDataSource(name: " + oldname + ")");
     	}
@@ -260,23 +257,19 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
             throw new EJBException(msg);
         }
         try {
-        	userdatasourcedata = (BaseUserDataSource) getUserDataSource(htp).clone();
-        	if(isAuthorizedToEditUserDataSource(admin,userdatasourcedata)){                   		
-        		try {
-        			addUserDataSource(admin, newname, userdatasourcedata);
-        			String msg = intres.getLocalizedMessage("userdatasource.clonedsource", newname, oldname);            	
-    	            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-    	            details.put("msg", msg);
-    	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEADD, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
-        		} catch (UserDataSourceExistsException f) {
-        			String msg = intres.getLocalizedMessage("userdatasource.errorclonesource", newname, oldname);
-        			log.info(msg, f);
-        			throw f;
-        		}        		
-        	}else{
-    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", oldname);
-    			log.info(msg);
-        	}            
+            userdatasourcedata = (BaseUserDataSource) getUserDataSource(htp).clone();
+            authorizedToEditUserDataSource(admin, newname, userdatasourcedata);                 		
+            try {
+                addUserDataSourceInternal(admin, findFreeUserDataSourceId(), newname, userdatasourcedata);
+                String msg = intres.getLocalizedMessage("userdatasource.clonedsource", newname, oldname);            	
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEADD, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            } catch (UnsupportedEncodingException f) {
+                String msg = intres.getLocalizedMessage("userdatasource.errorclonesource", newname, oldname);
+                log.info(msg, f);
+                throw new EJBException(f);
+            }        		
         } catch (CloneNotSupportedException e) {
 			String msg = intres.getLocalizedMessage("userdatasource.errorclonesource", newname, oldname);            	
             log.error(msg, e);
@@ -286,38 +279,30 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     }
 
     @Override
-    public boolean removeUserDataSource(AuthenticationToken admin, String name) {
+    public boolean removeUserDataSource(AuthenticationToken admin, String name) throws AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
     		log.trace(">removeUserDataSource(name: " + name + ")");
     	}
     	boolean retval = false;
     	UserDataSourceData htp = UserDataSourceData.findByName(entityManager, name);
-    	try {
-    		if (htp == null) {
-    			throw new Exception("No such UserDataSource.");
-    		}
-    		BaseUserDataSource userdatasource = getUserDataSource(htp);
-    		if(isAuthorizedToEditUserDataSource(admin,userdatasource)){
-    			entityManager.remove(htp);
-    			String msg = intres.getLocalizedMessage("userdatasource.removedsource", name);            	
-	            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-	            details.put("msg", msg);
-	            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEREMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
-    			retval = true;
-    		}else{
-    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name); 
-    			log.info(msg);
-    		}
-    	} catch (Exception e) {
-    		String msg = intres.getLocalizedMessage("userdatasource.errorremovesource", name);
-    		log.info(msg, e);
+    	if (htp != null) {
+            BaseUserDataSource userdatasource = getUserDataSource(htp);
+            authorizedToEditUserDataSource(admin, name, userdatasource);
+            entityManager.remove(htp);
+            String msg = intres.getLocalizedMessage("userdatasource.removedsource", name);              
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.RA_USERDATASOURCEREMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            retval = true;
+    	} else {
+            log.info("No such UserDataSource. trying to remove: "+name);
     	}
     	log.trace("<removeUserDataSource()");
     	return retval;
     }
 
     @Override
-    public void renameUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException {
+    public void renameUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException, AuthorizationDeniedException {
     	if (log.isTraceEnabled()) {
             log.trace(">renameUserDataSource(from " + oldname + " to " + newname + ")");
     	}
@@ -325,14 +310,10 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         if (UserDataSourceData.findByName(entityManager, newname) == null) {
         	UserDataSourceData htp = UserDataSourceData.findByName(entityManager, oldname);
         	if (htp != null) {
-            	if(isAuthorizedToEditUserDataSource(admin,getUserDataSource(htp))){
-                  htp.setName(newname);
-                  success = true;
-            	}else{
-        			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", oldname);    
-        			log.info(msg);
-            	}
-            }
+        	    authorizedToEditUserDataSource(admin, oldname, getUserDataSource(htp));
+        	    htp.setName(newname);
+        	    success = true;
+        	}
         }
         if (success) {
         	String msg = intres.getLocalizedMessage("userdatasource.renamedsource", oldname, newname);            	
@@ -395,11 +376,13 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         UserDataSourceData udsd = UserDataSourceData.findByName(entityManager, name);
         if (udsd != null) {
         	BaseUserDataSource result = getUserDataSource(udsd);
-            if(isAuthorizedToEditUserDataSource(admin,result)){
-            	returnval = result;
-            }else{
-    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);
-    			log.info(msg);
+            try {
+                authorizedToEditUserDataSource(admin, name, result);
+                returnval = result;
+            } catch (AuthorizationDeniedException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Admin not authorized to user data source, not returning: "+e.getMessage());
+                }
             }
         }
         return returnval;
@@ -412,11 +395,13 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         UserDataSourceData udsd = UserDataSourceData.findById(entityManager, id);
         if (udsd != null) {
         	BaseUserDataSource result = getUserDataSource(udsd);
-            if(isAuthorizedToEditUserDataSource(admin,result)){
-            	returnval = result;
-            }else{
-    			String msg = intres.getLocalizedMessage("userdatasource.errornotauth", Integer.valueOf(id)); 
-    			log.info(msg);
+            try {
+                authorizedToEditUserDataSource(admin, udsd.getName(), result);
+                returnval = result;
+            } catch (AuthorizationDeniedException e) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Admin not authorized to user data source, not returning: "+e.getMessage());
+                }
             }
         }
         return returnval;
@@ -505,26 +490,29 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * 3. Only the superadmin should have edit access to user data sources with 'ANYCA' set
      * 4. Administrators should be authorized to all the user data source applicable cas.
      * 
-     * @return true if the administrator is authorized
+     * @throws AuthorizationDeniedException if the administrator is not authorized
      */
-    private boolean isAuthorizedToEditUserDataSource(AuthenticationToken admin, BaseUserDataSource userdatasource) {
+    private void authorizedToEditUserDataSource(final AuthenticationToken admin, final String name, final BaseUserDataSource userdatasource) throws AuthorizationDeniedException {
 
+        boolean ret = false;
         if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
-            return true;
+            ret = true;
         }
 
         if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)
                 && authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES)) {
             if (userdatasource.getApplicableCAs().contains(Integer.valueOf(BaseUserDataSource.ANYCA))) {
-                return false;
+                ret = false;
             }
             Collection<Integer> authorizedcas = caSession.getAvailableCAs(admin);
             if (authorizedcas.containsAll(userdatasource.getApplicableCAs())) {
-                return true;
+                ret =  true;
             }
         }
-
-        return false;
+        if (!ret) {
+            final String msg = intres.getLocalizedMessage("userdatasource.errornotauth", name);
+            throw new AuthorizationDeniedException(msg);
+        }
     }
 
     private int findFreeUserDataSourceId() {

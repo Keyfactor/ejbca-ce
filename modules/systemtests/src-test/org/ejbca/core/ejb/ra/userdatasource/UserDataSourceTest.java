@@ -13,17 +13,25 @@
 
 package org.ejbca.core.ejb.ra.userdatasource;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Set;
+
+import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -63,6 +71,11 @@ public class UserDataSourceTest extends CaTestCase {
     private RoleManagementSessionRemote roleManagementSessionRemote = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
     private UserDataSourceSessionRemote userDataSourceSession = InterfaceCache.getUserDataSourceSession();
+
+    @Override
+    public String getRoleName() {
+        return ROLENAME;
+    }
 
     @Before
     public void setUp() throws Exception {
@@ -167,9 +180,69 @@ public class UserDataSourceTest extends CaTestCase {
         log.trace("<test06removeUserDataSources()");
     }
 
-    @Override
-    public String getRoleName() {
-        // TODO Auto-generated method stub
-        return null;
+    @Test
+    public void testIsAuthorizedToUserDataSource() throws Exception {
+        final String rolename = "testIsAuthorizedToUserDataSource";
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new X500Principal("CN="+rolename));
+        TestX509CertificateAuthenticationToken adminNoAuth = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
+                .authenticate(new AuthenticationSubject(principals, null));
+
+        final int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
+        final String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
+        RoleData role = roleManagementSessionRemote.create(internalAdmin, rolename);
+        final String alias = "spacemonkeys";
+        try {
+            Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
+            subjects.add(new AccessUserAspectData(rolename, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
+            role = roleManagementSessionRemote.addSubjectsToRole(internalAdmin, role, subjects);
+            Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+            // Not authorized to user data sources
+            accessRules.add(new AccessRuleData(rolename, AccessRulesConstants.REGULAR_EDITENDENTITYPROFILES, AccessRuleState.RULE_ACCEPT, true));
+            role = roleManagementSessionRemote.addAccessRulesToRole(internalAdmin, role, accessRules);
+
+            CustomUserDataSourceContainer userdatasource = new CustomUserDataSourceContainer();
+            userdatasource.setClassPath("org.ejbca.core.model.ra.userdatasource.DummyCustomUserDataSource");
+            userdatasource.setDescription("Used in Junit Test, Remove this one");
+
+            // Test authorization to edit with an unauthorized admin
+            try {
+                userDataSourceSession.addUserDataSource(adminNoAuth, alias, userdatasource);
+                fail("admin should not have been authorized to edit user data source");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Error, not authorized to user data source spacemonkeys.", e.getMessage());
+            }
+            try {
+                userDataSourceSession.changeUserDataSource(adminNoAuth, alias, userdatasource);
+                fail("admin should not have been authorized to edit user data source");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Error, not authorized to user data source spacemonkeys.", e.getMessage());
+            }
+            // Add so we can try to clone, remove and rename
+            userDataSourceSession.addUserDataSource(internalAdmin, alias, userdatasource);
+            try {
+                userDataSourceSession.cloneUserDataSource(adminNoAuth, alias, "newmonkeys");
+                fail("admin should not have been authorized to edit user data source");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Error, not authorized to user data source newmonkeys.", e.getMessage());
+            }
+            try {
+                userDataSourceSession.removeUserDataSource(adminNoAuth, alias);
+                fail("admin should not have been authorized to edit user data source");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Error, not authorized to user data source spacemonkeys.", e.getMessage());
+            }
+            try {
+                userDataSourceSession.renameUserDataSource(adminNoAuth, alias, "renamedmonkey");
+                fail("admin should not have been authorized to edit user data source");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Error, not authorized to user data source spacemonkeys.", e.getMessage());
+            }
+
+        } finally {
+            userDataSourceSession.removeUserDataSource(internalAdmin, alias);
+            roleManagementSessionRemote.remove(internalAdmin, rolename);
+        }
     }
+
 }

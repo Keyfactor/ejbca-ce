@@ -60,41 +60,48 @@ public interface UserDataSourceSession {
      * Test the connection to a user data source.
      *
      * @param userdatasourceid the id of the userdatasource to test.
+	 * @throws AuthorizationDeniedException 
      * @see org.ejbca.core.model.ra.userdatasource.BaseUserDataSource
      */
-    public void testConnection(AuthenticationToken admin, int userdatasourceid) throws UserDataSourceConnectionException;
+    public void testConnection(AuthenticationToken admin, int userdatasourceid) throws UserDataSourceConnectionException, AuthorizationDeniedException;
 
     /**
      * Adds a user data source to the database.
      * @throws UserDataSourceExistsException if user data source already exists
+     * @throws AuthorizationDeniedException 
      */
-    public void addUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException;
+    public void addUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException, AuthorizationDeniedException;
 
     /**
      * Adds a user data source to the database. Used for importing and exporting
      * profiles from xml-files.
      * 
      * @throws UserDataSourceExistsException if user data source already exists.
+     * @throws AuthorizationDeniedException 
      */
-    public void addUserDataSource(AuthenticationToken admin, int id, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException;
+    public void addUserDataSource(AuthenticationToken admin, int id, String name, BaseUserDataSource userdatasource) throws UserDataSourceExistsException, AuthorizationDeniedException;
 
-    /** Updates user data source data. */
-    public void changeUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource);
+    /** Updates user data source data. 
+     * @throws AuthorizationDeniedException */
+    public void changeUserDataSource(AuthenticationToken admin, String name, BaseUserDataSource userdatasource) throws AuthorizationDeniedException;
 
     /**
      * Adds a user data source with the same content as the original.
      * @throws UserDataSourceExistsException if user data source already exists
+     * @throws AuthorizationDeniedException 
      */
-    public void cloneUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException;
+    public void cloneUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException, AuthorizationDeniedException;
 
-    /** Removes a user data source. */
-    public boolean removeUserDataSource(AuthenticationToken admin, String name);
+    /** Removes a user data source. 
+     * @throws AuthorizationDeniedException */
+    public boolean removeUserDataSource(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
 
     /**
      * Renames a user data source
      * @throws UserDataSourceExistsException if user data source already exists
+     * @throws AuthorizationDeniedException 
      */
-    public void renameUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException;
+    public void renameUserDataSource(AuthenticationToken admin, String oldname, String newname) throws UserDataSourceExistsException, AuthorizationDeniedException;
 
     /**
      * Retrieves a Collection of id:s (Integer) to authorized user data sources.
