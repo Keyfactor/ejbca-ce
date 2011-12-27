@@ -22,7 +22,6 @@ import org.cesecore.audit.enums.EventType;
  */
 public enum EjbcaEventTypes implements EventType {
     PUBLISHER_CHANGE,
-    PUBLISHER_CLONE,
     PUBLISHER_CREATION,
     PUBLISHER_REMOVAL,
     PUBLISHER_RENAME,
