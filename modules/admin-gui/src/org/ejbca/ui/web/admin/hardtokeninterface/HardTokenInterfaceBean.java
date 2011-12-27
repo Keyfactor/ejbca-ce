@@ -150,7 +150,7 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         return hardtokensession.getHardTokenIssuerData(admin, id);
     }
     
-    public void addHardTokenIssuer(String alias, int admingroupid) throws HardTokenIssuerExistsException {
+    public void addHardTokenIssuer(String alias, int admingroupid) throws HardTokenIssuerExistsException, AuthorizationDeniedException {
         Iterator<RoleData> iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
         while (iter.hasNext()) {
             if (iter.next().getPrimaryKey() == admingroupid) {
@@ -162,7 +162,7 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         }      
     }
     
-    public void changeHardTokenIssuer(String alias, HardTokenIssuer hardtokenissuer) throws HardTokenIssuerDoesntExistsException {
+    public void changeHardTokenIssuer(String alias, HardTokenIssuer hardtokenissuer) throws HardTokenIssuerDoesntExistsException, AuthorizationDeniedException {
         if(informationmemory.authorizedToHardTokenIssuer(alias)){	          	
             if(!hardtokensession.changeHardTokenIssuer(admin, alias, hardtokenissuer)) {
                 throw new HardTokenIssuerDoesntExistsException();
@@ -171,8 +171,9 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         }
     }
     
-    /** Returns false if profile is used by any user or in authorization rules. */
-    public boolean removeHardTokenIssuer(String alias) {		
+    /** Returns false if profile is used by any user or in authorization rules. 
+     * @throws AuthorizationDeniedException */
+    public boolean removeHardTokenIssuer(String alias) throws AuthorizationDeniedException {		
         boolean issuerused = false;
         if(informationmemory.authorizedToHardTokenIssuer(alias)){
             int issuerid = hardtokensession.getHardTokenIssuerId(admin, alias);
@@ -186,7 +187,7 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         return !issuerused;	
     }
     
-    public void renameHardTokenIssuer(String oldalias, String newalias, int newadmingroupid) throws HardTokenIssuerExistsException {
+    public void renameHardTokenIssuer(String oldalias, String newalias, int newadmingroupid) throws HardTokenIssuerExistsException, AuthorizationDeniedException {
         if(informationmemory.authorizedToHardTokenIssuer(oldalias)){	        
             if(!hardtokensession.renameHardTokenIssuer(admin, oldalias, newalias, newadmingroupid)) {
                 throw new HardTokenIssuerExistsException();
@@ -195,7 +196,7 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         }   
     }
     
-    public void cloneHardTokenIssuer(String oldalias, String newalias, int newadmingroupid) throws HardTokenIssuerExistsException {
+    public void cloneHardTokenIssuer(String oldalias, String newalias, int newadmingroupid) throws HardTokenIssuerExistsException, AuthorizationDeniedException {
         if(informationmemory.authorizedToHardTokenIssuer(oldalias)){    	        
             if(!hardtokensession.cloneHardTokenIssuer(admin, oldalias, newalias, newadmingroupid)) {
                 throw new HardTokenIssuerExistsException();

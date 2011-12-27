@@ -63,6 +63,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceResponse;
 import org.ejbca.core.model.hardtoken.HardTokenData;
@@ -120,62 +121,75 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void addHardTokenProfile(AuthenticationToken admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException {
+    public void addHardTokenProfile(AuthenticationToken admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenProfile(name: " + name + ")");
         }
         addHardTokenProfile(admin, findFreeHardTokenProfileId(), name, profile);
-        log.trace("<addHardTokenProfile()");
+        if (log.isTraceEnabled()) {
+            log.trace("<addHardTokenProfile()");
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void addHardTokenProfile(AuthenticationToken admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException {
+    public void addHardTokenProfile(AuthenticationToken admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenProfile(name: " + name + ", id: " + profileid + ")");
         }
+        addHardTokenProfileInternal(admin, profileid, name, profile);
+        final String msg = intres.getLocalizedMessage("hardtoken.addedprofile", name);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", msg);
+        auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+        if (log.isTraceEnabled()) {
+            log.trace("<addHardTokenProfile()");
+        }
+    }
 
+    private void addHardTokenProfileInternal(AuthenticationToken admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException, AuthorizationDeniedException {
+        authorizedToEditProfile(admin);
         if (HardTokenProfileData.findByName(entityManager, name) == null && HardTokenProfileData.findByPK(entityManager, profileid) == null) {
             entityManager.persist(new HardTokenProfileData(profileid, name, profile));
-            String msg = intres.getLocalizedMessage("hardtoken.addedprofile", name);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
         } else {
-            String msg = intres.getLocalizedMessage("hardtoken.erroraddprofile", name);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            final String msg = intres.getLocalizedMessage("hardtoken.erroraddprofile", name);
+            log.info(msg);
             throw new HardTokenProfileExistsException();
         }
-        log.trace("<addHardTokenProfile()");
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void changeHardTokenProfile(AuthenticationToken admin, String name, HardTokenProfile profile) {
+    public void changeHardTokenProfile(AuthenticationToken admin, String name, HardTokenProfile profile) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">changeHardTokenProfile(name: " + name + ")");
         }
+        authorizedToEditProfile(admin);
         HardTokenProfileData htp = HardTokenProfileData.findByName(entityManager, name);
         if (htp != null) {
+            // Make a diff what has changed
+            final HardTokenProfile oldhtp = getHardTokenProfile(htp);
+            final Map<Object, Object> diff = oldhtp.diff(profile);
             htp.setHardTokenProfile(profile);
-            String msg = intres.getLocalizedMessage("hardtoken.editedprofile", name);
+            final String msg = intres.getLocalizedMessage("hardtoken.editedprofile", name);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
+            for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+                details.put(entry.getKey().toString(), entry.getValue().toString());
+            }
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
         } else {
-            String msg = intres.getLocalizedMessage("hardtoken.erroreditprofile", name);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            final String msg = intres.getLocalizedMessage("hardtoken.erroreditprofile", name);
+            log.info(msg);
         }
-        log.trace("<changeHardTokenProfile()");
+        if (log.isTraceEnabled()) {
+            log.trace("<changeHardTokenProfile()");
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void cloneHardTokenProfile(AuthenticationToken admin, String oldname, String newname) throws HardTokenProfileExistsException {
+    public void cloneHardTokenProfile(AuthenticationToken admin, String oldname, String newname) throws HardTokenProfileExistsException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">cloneHardTokenProfile(name: " + oldname + ")");
         }
@@ -183,30 +197,31 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         try {
             HardTokenProfile profiledata = (HardTokenProfile) getHardTokenProfile(htp).clone();
             try {
-                addHardTokenProfile(admin, newname, profiledata);
-                String msg = intres.getLocalizedMessage("hardtoken.clonedprofile", newname, oldname);
+                addHardTokenProfileInternal(admin, findFreeHardTokenProfileId(), newname, profiledata);
+                final String msg = intres.getLocalizedMessage("hardtoken.clonedprofile", newname, oldname);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
             } catch (HardTokenProfileExistsException f) {
-                String msg = intres.getLocalizedMessage("hardtoken.errorcloneprofile", newname, oldname);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+                final String msg = intres.getLocalizedMessage("hardtoken.errorcloneprofile", newname, oldname);
+                log.info(msg);
                 throw f;
             }
         } catch (CloneNotSupportedException e) {
             throw new EJBException(e);
         }
-        log.trace("<cloneHardTokenProfile()");
+        if (log.isTraceEnabled()) {
+            log.trace("<cloneHardTokenProfile()");
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void removeHardTokenProfile(AuthenticationToken admin, String name) {
+    public void removeHardTokenProfile(AuthenticationToken admin, String name) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">removeHardTokenProfile(name: " + name + ")");
         }
+        authorizedToEditProfile(admin);
         try {
             HardTokenProfileData htp = HardTokenProfileData.findByName(entityManager, name);
             if (htp == null) {
@@ -215,27 +230,28 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             	}
             } else {
             	entityManager.remove(htp);
-                String msg = intres.getLocalizedMessage("hardtoken.removedprofile", name);
+                final String msg = intres.getLocalizedMessage("hardtoken.removedprofile", name);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
             }
         } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("hardtoken.errorremoveprofile", name);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVEPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            final String msg = intres.getLocalizedMessage("hardtoken.errorremoveprofile", name);
+            log.info(msg);
         }
-        log.trace("<removeHardTokenProfile()");
+        if (log.isTraceEnabled()) {
+            log.trace("<removeHardTokenProfile()");
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void renameHardTokenProfile(AuthenticationToken admin, String oldname, String newname) throws HardTokenProfileExistsException {
+    public void renameHardTokenProfile(AuthenticationToken admin, String oldname, String newname) throws HardTokenProfileExistsException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">renameHardTokenProfile(from " + oldname + " to " + newname + ")");
         }
         boolean success = false;
+        authorizedToEditProfile(admin);
         if (HardTokenProfileData.findByName(entityManager, newname) == null) {
             HardTokenProfileData htp = HardTokenProfileData.findByName(entityManager, oldname);
             if (htp != null) {
@@ -244,18 +260,18 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             }
         }
         if (success) {
-            String msg = intres.getLocalizedMessage("hardtoken.renamedprofile", oldname, newname);
+            final String msg = intres.getLocalizedMessage("hardtoken.renamedprofile", oldname, newname);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
         } else {
-            String msg = intres.getLocalizedMessage("hardtoken.errorrenameprofile", oldname, newname);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITPROFILE, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            final String msg = intres.getLocalizedMessage("hardtoken.errorrenameprofile", oldname, newname);
+            log.info(msg);
             throw new HardTokenProfileExistsException();
         }
-        log.trace("<renameHardTokenProfile()");
+        if (log.isTraceEnabled()) {
+            log.trace("<renameHardTokenProfile()");
+        }
     }
 
     @Override
@@ -280,6 +296,14 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             }
         }
         return returnval;
+    }
+
+    private void authorizedToEditProfile(AuthenticationToken admin) throws AuthorizationDeniedException {
+        // We need to check that admin also have rights to edit certificate profiles
+        if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES, null);
+            throw new AuthorizationDeniedException(msg);
+        }
     }
 
     @Override
@@ -350,18 +374,11 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public boolean addHardTokenIssuer(AuthenticationToken admin, String alias, int admingroupid, HardTokenIssuer issuerdata) {
+    public boolean addHardTokenIssuer(AuthenticationToken admin, String alias, int admingroupid, HardTokenIssuer issuerdata) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">addHardTokenIssuer(alias: " + alias + ")");
         }
-        boolean returnval = false;
-        if (org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias) == null) {
-            try {
-                entityManager.persist(new org.ejbca.core.ejb.hardtoken.HardTokenIssuerData(findFreeHardTokenIssuerId(), alias, admingroupid, issuerdata));
-                returnval = true;
-            } catch (Exception e) {
-            }
-        }
+        boolean returnval = addhardTokenIssuerInternal(admin, alias, admingroupid, issuerdata);
         if (returnval) {
             String msg = intres.getLocalizedMessage("hardtoken.addedissuer", alias);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -374,39 +391,57 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDISSUER, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
         }
-        log.trace("<addHardTokenIssuer()");
+        if (log.isTraceEnabled()) {
+            log.trace("<addHardTokenIssuer()");
+        }
+        return returnval;
+    }
+
+    private boolean addhardTokenIssuerInternal(final AuthenticationToken admin, final String alias, final int admingroupid, final HardTokenIssuer issuerdata) throws AuthorizationDeniedException {
+        boolean returnval = false;
+        authorizedToEditIssuer(admin);
+        if (org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias) == null) {
+            entityManager.persist(new org.ejbca.core.ejb.hardtoken.HardTokenIssuerData(findFreeHardTokenIssuerId(), alias, admingroupid, issuerdata));
+            returnval = true;
+        }
         return returnval;
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public boolean changeHardTokenIssuer(AuthenticationToken admin, String alias, HardTokenIssuer issuerdata) {
+    public boolean changeHardTokenIssuer(AuthenticationToken admin, String alias, HardTokenIssuer issuerdata) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">changeHardTokenIssuer(alias: " + alias + ")");
         }
         boolean returnvalue = false;
+        authorizedToEditIssuer(admin);
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
         if (htih != null) {
+            final HardTokenIssuer oldissuer = htih.getHardTokenIssuer();
+            final Map<Object, Object> diff = oldissuer.diff(issuerdata);
             htih.setHardTokenIssuer(issuerdata);
             String msg = intres.getLocalizedMessage("hardtoken.editedissuer", alias);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
+            for (Map.Entry<Object, Object> entry : diff.entrySet()) {
+                details.put(entry.getKey().toString(), entry.getValue().toString());
+            }
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
             returnvalue = true;
         } else {
         	// Does not exist
             String msg = intres.getLocalizedMessage("hardtoken.erroreditissuer", alias);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITISSUER, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            log.info(msg);
         }
-        log.trace("<changeHardTokenIssuer()");
+        if (log.isTraceEnabled()) {
+            log.trace("<changeHardTokenIssuer()");
+        }
         return returnvalue;
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public boolean cloneHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int admingroupid) {
+    public boolean cloneHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int admingroupid) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">cloneHardTokenIssuer(alias: " + oldalias + ")");
         }
@@ -415,7 +450,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (htih != null) {
             try {
             	HardTokenIssuer issuerdata = (HardTokenIssuer) htih.getHardTokenIssuer().clone();
-                returnval = addHardTokenIssuer(admin, newalias, admingroupid, issuerdata);
+                returnval = addhardTokenIssuerInternal(admin, newalias, admingroupid, issuerdata);
             } catch (CloneNotSupportedException e) {
             }
         }
@@ -427,20 +462,21 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         } else {
         	// Does not exist
             String msg = intres.getLocalizedMessage("hardtoken.errorcloneissuer", newalias, oldalias);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.HARDTOKEN_ADDISSUER, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            log.info(msg);
         }
-        log.trace("<cloneHardTokenIssuer()");
+        if (log.isTraceEnabled()) {
+            log.trace("<cloneHardTokenIssuer()");
+        }
         return returnval;
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void removeHardTokenIssuer(AuthenticationToken admin, String alias) {
+    public void removeHardTokenIssuer(AuthenticationToken admin, String alias) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">removeHardTokenIssuer(alias: " + alias + ")");
         }
+        authorizedToEditIssuer(admin);
         try {
             org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
             if (htih == null) {
@@ -456,20 +492,20 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             }
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("hardtoken.errorremoveissuer", alias);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            details.put("error", e.getMessage());
-            auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVEISSUER, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            log.info(msg, e);
         }
-        log.trace("<removeHardTokenIssuer()");
+        if (log.isTraceEnabled()) {
+            log.trace("<removeHardTokenIssuer()");
+        }
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public boolean renameHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int newadmingroupid) {
+    public boolean renameHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int newadmingroupid) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">renameHardTokenIssuer(from " + oldalias + " to " + newalias + ")");
         }
+        authorizedToEditIssuer(admin);
         boolean returnvalue = false;
         if (org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, newalias) == null) {
             org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, oldalias);
@@ -487,11 +523,11 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         } else {
         	// Does not exist
             String msg = intres.getLocalizedMessage("hardtoken.errorrenameissuer", oldalias, newalias);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDITISSUER, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            log.info(msg);
         }
-        log.trace("<renameHardTokenIssuer()");
+        if (log.isTraceEnabled()) {
+            log.trace("<renameHardTokenIssuer()");
+        }
         return returnvalue;
     }
 
@@ -503,7 +539,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         boolean returnval = false;
         org.ejbca.core.ejb.hardtoken.HardTokenIssuerData htih = org.ejbca.core.ejb.hardtoken.HardTokenIssuerData.findByAlias(entityManager, alias);
         if (htih != null) {
-            returnval = authorizationSession.isAuthorizedNoLogging(admin, "/hardtoken_functionality/issue_hardtokens");
+            returnval = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS);
         }
         if (log.isTraceEnabled()) {
         	log.trace("<isAuthorizedToHardTokenIssuer(" + returnval + ")");
@@ -511,6 +547,14 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnval;
     }
     
+    private void authorizedToEditIssuer(AuthenticationToken admin) throws AuthorizationDeniedException {
+        // We need to check that admin also have rights to edit certificate profiles
+        if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS)) {
+            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS, null);
+            throw new AuthorizationDeniedException(msg);
+        }
+    }
+
     @Override
     public Collection<HardTokenIssuerData> getHardTokenIssuerDatas(AuthenticationToken admin) {
         log.trace(">getHardTokenIssuerDatas()");

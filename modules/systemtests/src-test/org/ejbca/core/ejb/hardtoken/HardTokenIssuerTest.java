@@ -16,6 +16,7 @@ package org.ejbca.core.ejb.hardtoken;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,6 +25,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -36,6 +38,7 @@ import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthentication
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 import org.ejbca.util.InterfaceCache;
@@ -155,28 +158,61 @@ public class HardTokenIssuerTest {
         String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
         String rolename = "testGetAuthorizedToHardTokenIssuer";
         RoleData role = roleManagementSession.create(internalAdmin, rolename);
+        final String alias = "spacemonkeys";
         try {
             Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
             subjects.add(new AccessUserAspectData(rolename, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
             role = roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);
             Collection<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-            accessRules.add(new AccessRuleData(rolename, "/hardtoken_functionality/issue_hardtokens", AccessRuleState.RULE_ACCEPT, false));
+            accessRules.add(new AccessRuleData(rolename, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS, AccessRuleState.RULE_ACCEPT, false));
             role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
-            String alias = "spacemonkeys";
             HardTokenIssuer issuer = new HardTokenIssuer();
             issuer.setDescription(alias);
             if (!hardTokenSession.addHardTokenIssuer(internalAdmin, alias, 0, issuer)) {
-                throw new Exception("Could add hard token issuer, test can't continue");
+                fail("Could not add hard token issuer, test can not continue");
             }
+            assertTrue(hardTokenSession.isAuthorizedToHardTokenIssuer(admin, alias));
+            
+            // Test authorization to edit with an unauthorized admin
             try {
-                assertTrue(hardTokenSession.isAuthorizedToHardTokenIssuer(admin, alias));
-            } finally {
-                hardTokenSession.removeHardTokenIssuer(internalAdmin, alias);
+                hardTokenSession.addHardTokenIssuer(admin, alias, 0, issuer);
+                fail("admin should not have been authorized to edit issuer");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Administrator is not authorized to resource /hardtoken_functionality/edit_hardtoken_issuers. Msg: .", e.getMessage());
             }
+            // Test authorization to edit with an unauthorized admin
+            try {
+                hardTokenSession.changeHardTokenIssuer(admin, alias, issuer);
+                fail("admin should not have been authorized to edit issuer");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Administrator is not authorized to resource /hardtoken_functionality/edit_hardtoken_issuers. Msg: .", e.getMessage());
+            }
+            // Test authorization to edit with an unauthorized admin
+            try {
+                hardTokenSession.cloneHardTokenIssuer(admin, alias, "newmonkeys", 1);
+                fail("admin should not have been authorized to edit issuer");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Administrator is not authorized to resource /hardtoken_functionality/edit_hardtoken_issuers. Msg: .", e.getMessage());
+            }
+            // Test authorization to edit with an unauthorized admin
+            try {
+                hardTokenSession.removeHardTokenIssuer(admin, alias);
+                fail("admin should not have been authorized to edit issuer");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Administrator is not authorized to resource /hardtoken_functionality/edit_hardtoken_issuers. Msg: .", e.getMessage());
+            }
+            // Test authorization to edit with an unauthorized admin
+            try {
+                hardTokenSession.renameHardTokenIssuer(admin, alias, "renamedmonkey", 1);
+                fail("admin should not have been authorized to edit issuer");
+            } catch (AuthorizationDeniedException e) {
+                assertEquals("Administrator is not authorized to resource /hardtoken_functionality/edit_hardtoken_issuers. Msg: .", e.getMessage());
+            }
+
         } finally {
+            hardTokenSession.removeHardTokenIssuer(internalAdmin, alias);
             roleManagementSession.remove(internalAdmin, rolename);
         }
     }
-
 
 }

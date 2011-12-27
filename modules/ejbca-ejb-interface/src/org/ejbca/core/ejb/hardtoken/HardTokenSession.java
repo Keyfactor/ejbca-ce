@@ -41,34 +41,40 @@ public interface HardTokenSession {
 	/**
      * Adds a hard token profile to the database.
      * @throws HardTokenProfileExistsException if hard token already exists.
+	 * @throws AuthorizationDeniedException 
      */
-    public void addHardTokenProfile(AuthenticationToken admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException;
+    public void addHardTokenProfile(AuthenticationToken admin, String name, HardTokenProfile profile) throws HardTokenProfileExistsException, AuthorizationDeniedException;
 
     /**
      * Adds a hard token profile to the database. Used for importing and
      * exporting profiles from xml-files.
      * 
      * @throws HardTokenProfileExistsException if hard token already exists.
+     * @throws AuthorizationDeniedException 
      */
-    public void addHardTokenProfile(AuthenticationToken admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException;
+    public void addHardTokenProfile(AuthenticationToken admin, int profileid, String name, HardTokenProfile profile) throws HardTokenProfileExistsException, AuthorizationDeniedException;
 
-    /** Updates hard token profile data. */
-    public void changeHardTokenProfile(AuthenticationToken admin, String name, HardTokenProfile profile);
+    /** Updates hard token profile data. 
+     * @throws AuthorizationDeniedException */
+    public void changeHardTokenProfile(AuthenticationToken admin, String name, HardTokenProfile profile) throws AuthorizationDeniedException;
 
     /**
      * Adds a hard token profile with the same content as the original profile,
      * @throws HardTokenProfileExistsException if hard token already exists.
+     * @throws AuthorizationDeniedException 
      */
-    public void cloneHardTokenProfile(AuthenticationToken admin, String oldname, String newname) throws HardTokenProfileExistsException;
+    public void cloneHardTokenProfile(AuthenticationToken admin, String oldname, String newname) throws HardTokenProfileExistsException, AuthorizationDeniedException;
 
-    /** Removes a hard token profile from the database. */
-    public void removeHardTokenProfile(AuthenticationToken admin, String name);
+    /** Removes a hard token profile from the database. 
+     * @throws AuthorizationDeniedException */
+    public void removeHardTokenProfile(AuthenticationToken admin, String name) throws AuthorizationDeniedException;
 
     /**
      * Renames a hard token profile
      * @throws HardTokenProfileExistsException if hard token already exists.
+     * @throws AuthorizationDeniedException 
      */
-    public void renameHardTokenProfile(AuthenticationToken admin, String oldname, String newname) throws HardTokenProfileExistsException;
+    public void renameHardTokenProfile(AuthenticationToken admin, String oldname, String newname) throws HardTokenProfileExistsException, AuthorizationDeniedException;
 
     /**
      * Retrieves a Collection of id:s (Integer) to authorized profiles.
@@ -106,29 +112,34 @@ public interface HardTokenSession {
     /**
      * Adds a hard token issuer to the database.
      * @return false if hard token issuer already exists.
+     * @throws AuthorizationDeniedException 
      */
-    public boolean addHardTokenIssuer(AuthenticationToken admin, String alias, int admingroupid, HardTokenIssuer issuerdata);
+    public boolean addHardTokenIssuer(AuthenticationToken admin, String alias, int admingroupid, HardTokenIssuer issuerdata) throws AuthorizationDeniedException;
 
     /**
      * Updates hard token issuer data
      * @return false if alias does not exist
+     * @throws AuthorizationDeniedException 
      */
-    public boolean changeHardTokenIssuer(AuthenticationToken admin, String alias, HardTokenIssuer issuerdata);
+    public boolean changeHardTokenIssuer(AuthenticationToken admin, String alias, HardTokenIssuer issuerdata) throws AuthorizationDeniedException;
 
     /**
      * Adds a hard token issuer with the same content as the original issuer,
      * @return false if the new alias or certificatesn already exists (???)
+     * @throws AuthorizationDeniedException 
      */
-    public boolean cloneHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int admingroupid);
+    public boolean cloneHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int admingroupid) throws AuthorizationDeniedException;
 
-    /** Removes a hard token issuer from the database. */
-    public void removeHardTokenIssuer(AuthenticationToken admin, String alias);
+    /** Removes a hard token issuer from the database. 
+     * @throws AuthorizationDeniedException */
+    public void removeHardTokenIssuer(AuthenticationToken admin, String alias) throws AuthorizationDeniedException;
 
     /**
      * Renames a hard token issuer
      * @return false if new alias or certificatesn already exists (???)
+     * @throws AuthorizationDeniedException 
      */
-    public boolean renameHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int newadmingroupid);
+    public boolean renameHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int newadmingroupid) throws AuthorizationDeniedException;
 
     /**
      * Method to check if an administrator is authorized to issue hard tokens

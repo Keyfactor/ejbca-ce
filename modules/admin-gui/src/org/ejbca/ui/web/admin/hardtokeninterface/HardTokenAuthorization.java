@@ -24,6 +24,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
 
 /**
@@ -103,7 +104,7 @@ public class HardTokenAuthorization implements Serializable {
      */
 
     public boolean authorizedToHardTokenIssuer(String alias) {
-        return authorizationsession.isAuthorizedNoLogging(admin, "/hardtoken_functionality/edit_hardtoken_issuers")
+        return authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS)
                 && this.getHardTokenIssuers().keySet().contains(alias);
     }
 
@@ -117,7 +118,7 @@ public class HardTokenAuthorization implements Serializable {
      */
 
     public boolean authorizedToHardTokenProfile(String name) {
-        return authorizationsession.isAuthorizedNoLogging(admin, "/hardtoken_functionality/edit_hardtoken_profiles")
+        return authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES)
                 && this.getHardTokenProfiles().keySet().contains(name);
     }
 
@@ -139,7 +140,7 @@ public class HardTokenAuthorization implements Serializable {
      */
     public Collection<RoleData> getHardTokenIssuingAdminGroups() {
         if (authissueingadmgrps == null) {
-            authissueingadmgrps = roleManagementSession.getAuthorizedRoles(admin, "/hardtoken_functionality/issue_hardtokens");
+            authissueingadmgrps = roleManagementSession.getAuthorizedRoles(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS);
         }
         return authissueingadmgrps;        	
     }
