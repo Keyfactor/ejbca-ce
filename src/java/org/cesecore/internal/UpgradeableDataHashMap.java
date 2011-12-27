@@ -142,7 +142,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
 					if (val == null) {
 						val = ""; 
 					}
-					result.put("changed:"+key, val);
+					result.put("changed:"+key, getVal(val));
 				}
 			} else {
 				// Value removed
@@ -150,7 +150,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
 				if (val == null) {
 					val = ""; 
 				}
-				result.put("removed:"+key, val);
+				result.put("removed:"+key, getVal(val));
 			}
 		}
     	// look for added properties
@@ -160,12 +160,32 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
 				if (val == null) {
 					val = ""; 
 				}
-				result.put("added:"+key, val);    			
+				result.put("added:"+key, getVal(val));    			
     		}
     	}
     	return result;
 	}
     
+	/** helper method to get nice output from types that do 
+	 * not work nicely with Object.toString()
+	 */
+	private static String getVal(Object o) {
+	    StringBuilder b = new StringBuilder();
+	    if (o instanceof String[]) {
+	        b.append('[');
+            String[] arr = (String[]) o;
+            for (String s: arr) {
+                if (b.length() > 1) {
+                    b.append(", ");
+                }
+                b.append(s); 
+            }
+            b.append(']');
+        } else {
+            b.append(o);
+        }
+	    return b.toString();
+	}
     // Use LinkedHashMap because we want to have consistent serializing of the hashmap in order to be able to sign/verify data
     protected LinkedHashMap<Object, Object> data;
     private boolean upgraded = false;
