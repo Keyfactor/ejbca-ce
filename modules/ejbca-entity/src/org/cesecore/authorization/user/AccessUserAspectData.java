@@ -24,6 +24,7 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang.builder.CompareToBuilder;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
+import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
 
@@ -249,6 +250,11 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
         return true;
     }
 
+    @Override
+    public String toString() {
+        return AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, matchWith).name() + " matching '" + matchValue + "' as " + matchType.name();
+    }
+    
 	//
 	// Start Database integrity protection methods
 	//
