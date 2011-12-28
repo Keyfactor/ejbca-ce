@@ -64,6 +64,7 @@ import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.w3._2002._03.xkms_.LocateRequestType;
 import org.w3._2002._03.xkms_.LocateResultType;
+import org.w3._2002._03.xkms_.MessageAbstractType;
 import org.w3._2002._03.xkms_.ObjectFactory;
 import org.w3._2002._03.xkms_.RecoverRequestType;
 import org.w3._2002._03.xkms_.RecoverResultType;
@@ -149,7 +150,8 @@ public class XKMSInvoker {
 	public LocateResultType locate(LocateRequestType locateRequestType, X509Certificate signCert, Key privateKey) throws XKMSResponseSignatureException{
 		JAXBElement<LocateRequestType> locateRequest = xKMSObjectFactory.createLocateRequest(locateRequestType);
 		DOMSource domSource = performSigning(locateRequest, locateRequestType.getId(), signCert, privateKey);
-		JAXBElement<LocateResultType> response = invoke(domSource);
+		@SuppressWarnings("unchecked")
+        JAXBElement<LocateResultType> response = (JAXBElement<LocateResultType>) invoke(domSource);
 				
 		return response.getValue();
 	}
@@ -166,7 +168,8 @@ public class XKMSInvoker {
 	public ValidateResultType validate(ValidateRequestType validateRequestType, X509Certificate signCert, Key privateKey) throws XKMSResponseSignatureException{				
 		JAXBElement<ValidateRequestType> validateRequest = xKMSObjectFactory.createValidateRequest(validateRequestType);
 		DOMSource domSource = performSigning(validateRequest, validateRequestType.getId(), signCert, privateKey);
-		JAXBElement<ValidateResultType> response = invoke(domSource);		
+		@SuppressWarnings("unchecked")
+        JAXBElement<ValidateResultType> response = (JAXBElement<ValidateResultType>) invoke(domSource);		
 		
 		return response.getValue();
 	}
@@ -187,7 +190,8 @@ public class XKMSInvoker {
 	public RegisterResultType register(RegisterRequestType registerRequestType, X509Certificate signCert, Key privateKey, String authenticationPassphrase, PrivateKey pOPPrivateKey, String prototypeKeyBindingId) throws XKMSResponseSignatureException, StringprepException{				
 		JAXBElement<RegisterRequestType> registerRequest = xKMSObjectFactory.createRegisterRequest(registerRequestType);
 		DOMSource domSource = performSigning(registerRequest, registerRequestType.getId(), signCert, privateKey, authenticationPassphrase, pOPPrivateKey, prototypeKeyBindingId);
-		JAXBElement<RegisterResultType> response = invoke(domSource);		
+		@SuppressWarnings("unchecked")
+        JAXBElement<RegisterResultType> response = (JAXBElement<RegisterResultType>) invoke(domSource);		
 		
 		return response.getValue();
 	}
@@ -208,7 +212,8 @@ public class XKMSInvoker {
 	public ReissueResultType reissue(ReissueRequestType reissueRequestType, X509Certificate signCert, Key privateKey, String authenticationPassphrase, PrivateKey pOPPrivateKey, String reissueKeyBindingId) throws XKMSResponseSignatureException, StringprepException{				
 		JAXBElement<ReissueRequestType> reissueRequest = xKMSObjectFactory.createReissueRequest(reissueRequestType);
 		DOMSource domSource = performSigning(reissueRequest, reissueRequestType.getId(), signCert, privateKey, authenticationPassphrase, pOPPrivateKey, reissueKeyBindingId);
-		JAXBElement<ReissueResultType> response = invoke(domSource);		
+		@SuppressWarnings("unchecked")
+        JAXBElement<ReissueResultType> response = (JAXBElement<ReissueResultType>) invoke(domSource);		
 		
 		return response.getValue();
 	}
@@ -228,7 +233,8 @@ public class XKMSInvoker {
 	public RecoverResultType recover(RecoverRequestType recoverRequestType, X509Certificate signCert, Key privateKey, String authenticationPassphrase, String recoverKeyBindingId) throws XKMSResponseSignatureException, StringprepException{				
 		JAXBElement<RecoverRequestType> recoverRequest = xKMSObjectFactory.createRecoverRequest(recoverRequestType);
 		DOMSource domSource = performSigning(recoverRequest, recoverRequestType.getId(), signCert, privateKey, authenticationPassphrase, null, recoverKeyBindingId);
-		JAXBElement<RecoverResultType> response = invoke(domSource);		
+		@SuppressWarnings("unchecked")
+        JAXBElement<RecoverResultType> response = (JAXBElement<RecoverResultType>) invoke(domSource);		
 		
 		return response.getValue();
 	}
@@ -248,7 +254,8 @@ public class XKMSInvoker {
 	public RevokeResultType revoke(RevokeRequestType revokeRequestType, X509Certificate signCert, Key privateKey, String authenticationPassphrase, String revokeKeyBindingId) throws XKMSResponseSignatureException, StringprepException{				
 		JAXBElement<RevokeRequestType> revokeRequest = xKMSObjectFactory.createRevokeRequest(revokeRequestType);
 		DOMSource domSource = performSigning(revokeRequest, revokeRequestType.getId(), signCert, privateKey, authenticationPassphrase, null, revokeKeyBindingId);
-		JAXBElement<RevokeResultType> response = invoke(domSource);		
+		@SuppressWarnings("unchecked")
+        JAXBElement<RevokeResultType> response = (JAXBElement<RevokeResultType>) invoke(domSource);		
 		
 		return response.getValue();
 	}
@@ -260,13 +267,14 @@ public class XKMSInvoker {
 	 * @return
 	 * @throws XKMSResponseSignatureException 
 	 */
-	private JAXBElement invoke(DOMSource domSource) throws XKMSResponseSignatureException{
-		JAXBElement result =null;
+	@SuppressWarnings("unchecked")
+    private JAXBElement<? extends MessageAbstractType> invoke(DOMSource domSource) throws XKMSResponseSignatureException{
+		JAXBElement<? extends MessageAbstractType> result =null;
    
 		try{						
 			Source response = sourceDispatch.invoke(domSource);
 			
-			result = (JAXBElement) unmarshaller.unmarshal(response);
+			result = (JAXBElement<? extends MessageAbstractType>) unmarshaller.unmarshal(response);
 			Document x = dbf.newDocumentBuilder().newDocument();
 			marshaller.marshal(result, x);
 			verifyResponseSignature(x);
@@ -304,7 +312,7 @@ public class XKMSInvoker {
 	 * @param privateKey the key doing the signing, or null of no signing should be performed
 	 * @return a DOMSource or null if request was invalid
 	 */
-	private DOMSource performSigning(JAXBElement messageAbstractType, String messageId, X509Certificate signCert, Key privateKey){
+	private DOMSource performSigning(JAXBElement<? extends MessageAbstractType> messageAbstractType, String messageId, X509Certificate signCert, Key privateKey){
 		DOMSource retval = null;
 		try{
 			retval = performSigning(messageAbstractType, messageId, signCert, privateKey, null, null, null); 
@@ -326,7 +334,7 @@ public class XKMSInvoker {
 	 * @return a DOMSource or null if request was invalid
 	 * @throws StringprepException if the passphrase doesn't fullfull the SASLPrep profile
 	 */
-	private DOMSource performSigning(JAXBElement messageAbstractType, String messageId, X509Certificate signCert, Key privateKey, 
+	private DOMSource performSigning(JAXBElement<? extends MessageAbstractType> messageAbstractType, String messageId, X509Certificate signCert, Key privateKey, 
 			                         String authenticationPassphrase, PrivateKey pOPPrivateKey, String prototypeKeyBindingId) throws StringprepException{
 		    DOMSource retval = null;
 		

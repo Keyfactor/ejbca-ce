@@ -375,7 +375,8 @@ public class X509CATest {
 		Object o = ca.saveData();
 		
 		// Restore CA from data (and other things)
-		X509CA ca1 = new X509CA((HashMap)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date(), new Date());
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+        X509CA ca1 = new X509CA((HashMap)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date(), new Date());
 
 		Certificate usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
 
@@ -438,7 +439,8 @@ public class X509CATest {
 		// Does is store and load ok?
 		Object o = ca.saveData();		
 		// Restore CA from data (and other things)
-		X509CA ca1 = new X509CA((HashMap)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date(), new Date());
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+        X509CA ca1 = new X509CA((HashMap)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date(), new Date());
 		ca1.extendedService(new MyExtendedCAServiceRequest());
 		assertEquals(3, MyExtendedCAService.didrun);
 	}

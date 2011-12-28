@@ -99,7 +99,6 @@ import org.w3._2002._03.xkms_.RegisterResultType;
 import org.w3._2002._03.xkms_.ReissueRequestType;
 import org.w3._2002._03.xkms_.ReissueResultType;
 import org.w3._2002._03.xkms_.RequestAbstractType;
-import org.w3._2002._03.xkms_.ResultType;
 import org.w3._2002._03.xkms_.RevokeRequestType;
 import org.w3._2002._03.xkms_.RevokeResultType;
 import org.w3._2002._03.xkms_.ValidateRequestType;
@@ -206,7 +205,7 @@ public class XKMSProvider implements Provider<Source> {
 		try {
 			//JAXBElement jAXBRequest = (JAXBElement) unmarshaller.unmarshal(request);
 			JAXBElement<RequestAbstractType> jAXBRequest = (JAXBElement<RequestAbstractType>) unmarshaller.unmarshal(requestDoc.cloneNode(true));
-			JAXBElement jAXBResult = null;
+			JAXBElement<? extends MessageAbstractType> jAXBResult = null;
 			if(jAXBRequest.getValue() instanceof RequestAbstractType){
 				respMecSign = ((RequestAbstractType)jAXBRequest.getValue()).getResponseMechanism().contains(XKMSConstants.RESPONSMEC_REQUESTSIGNATUREVALUE);
 			}				
