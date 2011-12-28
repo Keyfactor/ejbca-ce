@@ -61,7 +61,7 @@ public class HardTokenData extends ProtectedData implements Serializable {
 	/**
 	 * Entity holding data of a hard token issuer.
 	 */
-	public HardTokenData(String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, LinkedHashMap data) {
+	public HardTokenData(String tokensn, String username, Date createtime, Date modifytime, int tokentype, String significantissuerdn, LinkedHashMap<?, ?> data) {
 		setTokenSN(tokensn);
 		setUsername(username);
 		setCtime(createtime.getTime());
@@ -114,10 +114,10 @@ public class HardTokenData extends ProtectedData implements Serializable {
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
-	public LinkedHashMap getData() {
+	public LinkedHashMap<?, ?> getData() {
 		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
 	}
-	public void setData(LinkedHashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
+	public void setData(LinkedHashMap<?, ?> data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 
 	@Transient
 	public Date getCreateTime() { return new Date(getCtime()); }
@@ -137,7 +137,7 @@ public class HardTokenData extends ProtectedData implements Serializable {
         final ProtectionStringBuilder build = new ProtectionStringBuilder();
         // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
         build.append(getTokenSN()).append(getUsername()).append(getCtime()).append(getMtime()).append(getTokenType()).append(getSignificantIssuerDN());
-        LinkedHashMap data = getData();
+        LinkedHashMap<?, ?> data = getData();
         // We must have special handling here if the data is encrypted because the byte[] is a binary byte array 
         // in this case, when doing getData().toString in this case a reference to the byte array is printed, and 
         // this is different for every invocation so signature verification fail.
@@ -193,6 +193,7 @@ public class HardTokenData extends ProtectedData implements Serializable {
     }
 
 	/** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<HardTokenData> findByUsername(EntityManager entityManager, String username) {
     	Query query = entityManager.createQuery("SELECT a FROM HardTokenData a WHERE a.username=:username");
     	query.setParameter("username", username);
@@ -200,13 +201,15 @@ public class HardTokenData extends ProtectedData implements Serializable {
     }
 
 	/** @return return a List<String> of all usernames where the searchPattern matches the token serial number. */
-	public static List<String> findUsernamesByHardTokenSerialNumber(EntityManager entityManager, String searchPattern, int maxResults) {
+	@SuppressWarnings("unchecked")
+    public static List<String> findUsernamesByHardTokenSerialNumber(EntityManager entityManager, String searchPattern, int maxResults) {
     	Query query = entityManager.createNativeQuery("SELECT DISTINCT a.username FROM HardTokenData a WHERE tokenSN LIKE '%" + searchPattern + "%'");
     	query.setMaxResults(maxResults);
     	return query.getResultList();
 	}
 
 	/** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<String> findAllTokenSN(EntityManager entityManager) {
     	return entityManager.createQuery("SELECT a.tokenSN FROM HardTokenData a").getResultList();
     }
