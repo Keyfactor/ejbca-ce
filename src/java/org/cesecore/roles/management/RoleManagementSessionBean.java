@@ -341,6 +341,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         }
 
         Map<Integer, AccessUserAspectData> existingUsers = role.getAccessUsers();
+        final StringBuilder subjectStrings = new StringBuilder();
         for (AccessUserAspectData userAspect : users) {
             // if userAspect hasn't been persisted, do so.
             if (accessUserAspectSession.find(userAspect.getPrimaryKey()) == null) {
@@ -349,20 +350,26 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
             if (existingUsers.containsKey(userAspect.getPrimaryKey())) {
                 existingUsers.remove(userAspect.getPrimaryKey());
+                //TODO: Log here that subjects have been modified. Since this use case does not exist in EJBCA,
+                //      it hasn't been implemented.
+            } else {
+                subjectStrings.append("[" + userAspect.toString() + "]");
             }
             existingUsers.put(userAspect.getPrimaryKey(), userAspect);
+            
+            
         }
         role.setAccessUsers(existingUsers);
         RoleData result = entityManager.merge(role);
         accessTreeUpdateSession.signalForAccessTreeUpdate();
-        accessControlSession.forceCacheExpire();
-
-        final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.adminadded", role.getRoleName());
-        Map<String, Object> details = new LinkedHashMap<String, Object>();
-        details.put("msg", msg);
-        securityEventsLogger.log(EventTypes.ROLE_ACCESS_USER_ADDITION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
-                authenticationToken.toString(), null, null, null, details);
-
+        accessControlSession.forceCacheExpire(); 
+        if (subjectStrings.length() > 0) {
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.adminadded", subjectStrings, role.getRoleName());
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            securityEventsLogger.log(EventTypes.ROLE_ACCESS_USER_ADDITION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                    authenticationToken.toString(), null, null, null, details);
+        }
         return result;
     }
 
@@ -377,13 +384,14 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
 
         // Authorized to edit roles?
         authorizedToEditRole(authenticationToken, result.getRoleName());
-
+        StringBuilder subjectStrings = new StringBuilder();
         Map<Integer, AccessUserAspectData> accessUsersFromResult = result.getAccessUsers();
         for (AccessUserAspectData subject : subjects) {
             if (accessUsersFromResult.containsKey(subject.getPrimaryKey())) {
                 subject = accessUserAspectSession.find(subject.getPrimaryKey());
                 accessUsersFromResult.remove(subject.getPrimaryKey());
                 accessUserAspectSession.remove(subject);
+                subjectStrings.append("[" + subject.toString() + "]");
             } else {
                 throw new AccessUserAspectNotFoundException("Access user aspect " + subject + " not found in role " + role);
             }
@@ -392,7 +400,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         accessTreeUpdateSession.signalForAccessTreeUpdate();
         accessControlSession.forceCacheExpire();
 
-        final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.adminremoved", role.getRoleName());
+        final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.adminremoved", subjectStrings, role.getRoleName());
         Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
         securityEventsLogger.log(EventTypes.ROLE_ACCESS_USER_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
