@@ -124,12 +124,12 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                         		throw e;
                         	}
                         }
-                        String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(incert), pdl.getName());
+                        final String msg = intres.getLocalizedMessage("publisher.store", CertTools.getSubjectDN(incert), pdl.getName());
                         final Map<String, Object> details = new LinkedHashMap<String, Object>();
                         details.put("msg", msg);
                         auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, username, certSerno, details);
                     } catch (PublisherException pe) {
-                        String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName(), fingerprint);
+                        final String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName(), fingerprint);
                         final Map<String, Object> details = new LinkedHashMap<String, Object>();
                         details.put("msg", msg);
                         details.put("error", pe.getMessage());
@@ -198,15 +198,24 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                 // If it should be published directly
                 if (!getPublisher(pdl).getOnlyUseQueue()) {
                     try {
-                    	if (publisherQueueSession.storeCRLNonTransactional(getPublisher(pdl), admin, incrl, cafp, number, issuerDn)) {
-                            publishStatus = PublisherConst.STATUS_SUCCESS;
+                        try {
+                            if (publisherQueueSession.storeCRLNonTransactional(getPublisher(pdl), admin, incrl, cafp, number, issuerDn)) {
+                                publishStatus = PublisherConst.STATUS_SUCCESS;
+                            }
+                        } catch (EJBException e) {
+                            final Throwable t = e.getCause();
+                            if (t instanceof PublisherException) {
+                                throw (PublisherException)t;
+                            } else {
+                                throw e;
+                            }
                         }
-                        String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());
+                        final String msg = intres.getLocalizedMessage("publisher.store", "CRL", pdl.getName());
                         final Map<String, Object> details = new LinkedHashMap<String, Object>();
                         details.put("msg", msg);
                         auditSession.log(EjbcaEventTypes.PUBLISHER_STORE_CRL, EventStatus.SUCCESS, EjbcaModuleTypes.PUBLISHER, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
                     } catch (PublisherException pe) {
-                        String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName(), "CRL");
+                        final String msg = intres.getLocalizedMessage("publisher.errorstore", pdl.getName(), "CRL");
                         final Map<String, Object> details = new LinkedHashMap<String, Object>();
                         details.put("msg", msg);
                         details.put("error", pe.getMessage());
