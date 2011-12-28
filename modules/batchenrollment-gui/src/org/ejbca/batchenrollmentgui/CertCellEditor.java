@@ -28,7 +28,6 @@ import javax.swing.JTextField;
 /**
  * Cell editor with text field and button for browsing to a filename to save as.
  *
- * @author markus
  * @version $Id$
  */
 class CertCellEditor extends DefaultCellEditor implements ActionListener {
@@ -47,22 +46,19 @@ class CertCellEditor extends DefaultCellEditor implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         stopCellEditing();
         final Object value = table.getValueAt(row, column);
-        
+
         if (value instanceof List) {
-            final List<X509Certificate> certs = (List) value;
+            @SuppressWarnings("unchecked")
+            final List<X509Certificate> certs = (List<X509Certificate>) value;
             final ViewCertificateFrame frame = new ViewCertificateFrame(certs);
             frame.setVisible(true);
         }
     }
 
     @Override
-    public Component getTableCellEditorComponent(final JTable table,
-            final Object value, final boolean isSelected, final int row,
-            final int column) {
+    public Component getTableCellEditorComponent(final JTable table, final Object value, final boolean isSelected, final int row, final int column) {
         final JPanel panel = new JPanel(new BorderLayout());
-        final Component defaultComponent
-                = super.getTableCellEditorComponent(table, value, isSelected,
-                row, column);
+        final Component defaultComponent = super.getTableCellEditorComponent(table, value, isSelected, row, column);
         panel.add(defaultComponent);
         panel.add(customEditorButton, BorderLayout.EAST);
         this.table = table;
