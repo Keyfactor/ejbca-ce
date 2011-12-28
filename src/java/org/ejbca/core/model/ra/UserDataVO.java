@@ -276,9 +276,11 @@ public class UserDataVO implements Serializable {
         if ( (extendedinfostring != null) && (extendedinfostring.length() > 0) ) {
             try {
             	java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(extendedinfostring.getBytes("UTF8")));            	
-            	HashMap h = (HashMap) decoder.readObject();
+            	@SuppressWarnings("rawtypes")
+                HashMap h = (HashMap) decoder.readObject();
             	decoder.close();
                 // Handle Base64 encoded string values
+                @SuppressWarnings("rawtypes")
                 HashMap data = new Base64GetHashMap(h);
             	int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
             	switch(type){
@@ -294,6 +296,7 @@ public class UserDataVO implements Serializable {
         return returnval;
     }
     
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public static String extendedInformationToStringData(ExtendedInformation extendedinformation) throws UnsupportedEncodingException {
     	String ret = null;
     	if(extendedinformation != null){

@@ -241,10 +241,12 @@ public class XKMSEncTest {
         log.debug("XMLUtils.outputDOM: " + baos.toString());
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
+        @SuppressWarnings("unchecked")
         JAXBElement<RegisterRequestType> registerRequest2 = (JAXBElement<RegisterRequestType>) unmarshaller.unmarshal(bais);
         registerRequestType = registerRequest2.getValue();
         
-        RSAKeyValueType rSAKeyValueType  = (RSAKeyValueType) ((JAXBElement) registerRequestType.getPrototypeKeyBinding().getKeyInfo().getContent().get(0)).getValue();        
+        @SuppressWarnings("unchecked")
+        RSAKeyValueType rSAKeyValueType  = (RSAKeyValueType) ((JAXBElement<RSAKeyValueType>) registerRequestType.getPrototypeKeyBinding().getKeyInfo().getContent().get(0)).getValue();        
         RSAPublicKeySpec rSAPublicKeySpec = new RSAPublicKeySpec(new BigInteger(rSAKeyValueType.getModulus()), new BigInteger(rSAKeyValueType.getExponent()));        
         RSAPublicKey rSAPublicKey = (RSAPublicKey) KeyFactory.getInstance("RSA").generatePublic(rSAPublicKeySpec);
         
