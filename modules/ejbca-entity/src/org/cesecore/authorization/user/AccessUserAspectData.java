@@ -52,31 +52,31 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     private Integer matchWith;
     private AccessMatchType matchType;
     private String matchValue;
-    
+
     public AccessUserAspectData(final String roleName, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
             final String matchValue) {
-        if(roleName == null) {
+        if (roleName == null) {
             throw new InvalidParameterException("Attempted to create an AccessUserAspectData with roleName == null");
-        } else { 
+        } else {
             this.primaryKey = generatePrimaryKey(roleName, caId, matchWith, matchType, matchValue);
         }
-        if(matchWith == null) {
+        if (matchWith == null) {
             throw new InvalidParameterException("Attempted to create an AccessUserAspectData with roleName == null");
         } else {
             this.matchWith = matchWith.getNumericValue();
         }
-        if(matchType == null) {
+        if (matchType == null) {
             throw new InvalidParameterException("Attempted to create an AccessUserAspectData with matchType == null");
         } else {
             this.matchType = matchType;
         }
-        if(matchValue == null) {
+        if (matchValue == null) {
             throw new InvalidParameterException("Attempted to create an AccessUserAspectData with matchValue == null");
         } else {
             this.matchValue = matchValue;
         }
         this.caId = caId;
-        this.tokenType = matchWith.getTokenType();      
+        this.tokenType = matchWith.getTokenType();
     }
 
     /**
@@ -103,36 +103,36 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     public void setMatchWith(Integer matchWith) {
-        if(matchWith == null) {
+        if (matchWith == null) {
             throw new InvalidParameterException("Invalid to set matchWith == null");
         }
         this.matchWith = matchWith;
     }
-   
+
     @Override
     public int getMatchType() {
-    	if (matchType == null) {
-    		return AccessMatchType.TYPE_NONE.getNumericValue();
-    	}
+        if (matchType == null) {
+            return AccessMatchType.TYPE_NONE.getNumericValue();
+        }
         return matchType.getNumericValue();
     }
 
     @Override
     public void setMatchType(Integer matchType) {
-        if(matchType == null) {
+        if (matchType == null) {
             throw new InvalidParameterException("Invalid to set matchType == null");
         }
         this.matchType = AccessMatchType.matchFromDatabase(matchType);
     }
-    
+
     @Override
     public void setMatchTypeAsValue(AccessMatchType matchType) {
-        if(matchType == null) {
+        if (matchType == null) {
             throw new InvalidParameterException("Invalid to set matchType == null");
         }
         this.matchType = matchType;
     }
-    
+
     @Override
     @Transient
     public AccessMatchType getMatchTypeAsType() {
@@ -144,10 +144,9 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
         return matchValue;
     }
 
-
     @Override
     public void setMatchValue(String matchValue) {
-        if(matchValue == null) {
+        if (matchValue == null) {
             throw new InvalidParameterException("Invalid to set matchValue == null");
         }
         this.matchValue = matchValue;
@@ -158,10 +157,9 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
         return caId;
     }
 
-
     @Override
     public void setCaId(Integer caId) {
-        if(caId == null) {
+        if (caId == null) {
             throw new InvalidParameterException("Invalid to set caId == null");
         }
         this.caId = caId;
@@ -182,7 +180,7 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
     public void setRowProtection(final String rowProtection) {
         this.rowProtection = rowProtection;
     }
-    
+
     @Override
     public String getTokenType() {
         return tokenType;
@@ -193,8 +191,8 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
         this.tokenType = tokenType;
     }
 
-    public static int generatePrimaryKey(final String roleName, final int caId, final AccessMatchValue matchWith,
-            final AccessMatchType matchType, final String matchValue) {
+    public static int generatePrimaryKey(final String roleName, final int caId, final AccessMatchValue matchWith, final AccessMatchType matchType,
+            final String matchValue) {
         final int roleNameHash = roleName == null ? 0 : roleName.hashCode();
         final int matchValueHash = matchValue == null ? 0 : matchValue.hashCode();
         return roleNameHash ^ caId ^ matchWith.getNumericValue() ^ matchValueHash ^ matchType.getNumericValue();
@@ -252,52 +250,54 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
 
     @Override
     public String toString() {
-        return AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, matchWith).name() + " matching '" + matchValue + "' as " + matchType.name();
+        return AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, matchWith).name() + " matching '" + matchValue
+                + "' as " + matchType.name();
     }
-    
-	//
-	// Start Database integrity protection methods
-	//
-	
-	@Transient
-	@Override
-	protected String getProtectString(final int version) {
-		final ProtectionStringBuilder build = new ProtectionStringBuilder();
-		// What is important to protect here is the data that we define
-		// rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
-		build.append(getPrimaryKey()).append(getMatchWith()).append(getMatchType()).append(getMatchValue()).append(getCaId());
-		return build.toString();
-	}
 
-	@Transient
-	@Override
-	protected int getProtectVersion() {
-		return 1;
-	}
+    //
+    // Start Database integrity protection methods
+    //
 
-	@PrePersist
-	@PreUpdate
-	@Transient
-	@Override
-	protected void protectData() {
-		super.protectData();
-	}
-	
-	@PostLoad
-	@Transient
-	@Override
-	protected void verifyData() {
-		super.verifyData();
-	}
-
-	@Override 
     @Transient
-	protected String getRowId() {
-		return String.valueOf(getPrimaryKey());		
-	}
-	//
-	// End Database integrity protection methods
-	//
+    @Override
+    protected String getProtectString(final int version) {
+        final ProtectionStringBuilder build = new ProtectionStringBuilder();
+        // What is important to protect here is the data that we define
+        // rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking
+        build.append(getPrimaryKey()).append(getMatchWith()).append(getMatchType()).append(getMatchValue()).append(getCaId());
+        return build.toString();
+    }
+
+    @Transient
+    @Override
+    protected int getProtectVersion() {
+        return 1;
+    }
+
+    @PrePersist
+    @PreUpdate
+    @Transient
+    @Override
+    protected void protectData() {
+        super.protectData();
+    }
+
+    @PostLoad
+    @Transient
+    @Override
+    protected void verifyData() {
+        super.verifyData();
+    }
+
+    @Override
+    @Transient
+    protected String getRowId() {
+        return String.valueOf(getPrimaryKey());
+    }
+
+    //
+    // End Database integrity protection methods
+    //
 
     @Override
     public int compareTo(AccessUserAspectData o) {
