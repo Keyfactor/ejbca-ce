@@ -40,9 +40,9 @@ public class MailSender {
 	private static final Logger log = Logger.getLogger(MailSender.class);
 	
 	// Some constants to make it easier to read the client code
-	public final static List NO_TO = null;	//List<String>
-	public final static List NO_CC = null;	//List<String>
-	public final static List NO_ATTACHMENTS = null;	//List<MailAttachment>
+	public final static List<String> NO_TO = null;	//List<String>
+	public final static List<String> NO_CC = null;	//List<String>
+	public final static List<MailAttachment> NO_ATTACHMENTS = null;	//List<MailAttachment>
 
 	/**
 	 * Helper method for sending mail using the mail service configured in mail.properties.
@@ -55,7 +55,7 @@ public class MailSender {
 	 * @param attachments List<MailAttachment> of files and objects to attach to the email or null to disable multipart messages
 	 * @throws Exception if the message could not be successfully handed over to JavaMail
 	 */
-	public static void sendMailOrThrow(String fromAddress, List toList, List ccList, String subject, String content, List attachments) throws Exception {
+	public static void sendMailOrThrow(String fromAddress, List<String> toList, List<String> ccList, String subject, String content, List<MailAttachment> attachments) throws Exception {
 		if (!sendMail(fromAddress, toList, ccList, subject, content, attachments)) {
 			throw new Exception("Failed to hand over email to JavaMail.");
 		}
@@ -72,7 +72,7 @@ public class MailSender {
 	 * @param attachments List<MailAttachment> of files and objects to attach to the email or null to disable multipart messages
 	 * @return true if the message was successfully handed over to JavaMail
 	 */
-	public static boolean sendMail(String fromAddress, List toList, List ccList, String subject, String content, List attachments) {
+	public static boolean sendMail(String fromAddress, List<String> toList, List<String> ccList, String subject, String content, List<MailAttachment> attachments) {
         Session mailSession = ServiceLocator.getInstance().getMailSession(MailConfiguration.getMailJndiName());
         Message msg = new MimeMessage(mailSession);
         try {
@@ -83,7 +83,7 @@ public class MailSender {
 			boolean atLeastOneRecipient = false;
 			if (toList != null) {
 				for (int i=0; i<toList.size(); i++) {
-					String to = (String) toList.get(i);
+					String to = toList.get(i);
 					msg.addRecipients(javax.mail.Message.RecipientType.TO, InternetAddress.parse(to, false));
 		        	if (log.isDebugEnabled()) {
 		        		log.debug("to: " + to);
@@ -93,7 +93,7 @@ public class MailSender {
 			}
 			if (ccList != null) {
 				for (int i=0; i<ccList.size(); i++) {
-					String cc = (String) ccList.get(i);
+					String cc = ccList.get(i);
 					msg.addRecipients(javax.mail.Message.RecipientType.CC, InternetAddress.parse(cc, false));
 		        	if (log.isDebugEnabled()) {
 		        		log.debug("cc: " + cc);
@@ -121,7 +121,7 @@ public class MailSender {
 		        multipart.addBodyPart(msgBody);
 		        // Attach all the requested files
 				for (int i=0; i<attachments.size(); i++) {
-					MailAttachment mailAttachment = (MailAttachment) attachments.get(i);
+					MailAttachment mailAttachment = attachments.get(i);
 			        MimeBodyPart msgAttachment = new MimeBodyPart();
 			        msgAttachment.setDataHandler(mailAttachment.getDataHandler());
 			        msgAttachment.setFileName(mailAttachment.getName());
