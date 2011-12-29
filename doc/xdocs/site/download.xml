@@ -19,8 +19,6 @@
     href="http://downloads.sourceforge.net/ejbca/cert-cvc-1.2.13.zip">download</a>.
     <br/>
     SHA1 checksum: c2867424341763bbae29c666b95c35bf2f0211c2
-    <br/><br/>
-    External RA API is now a part of the EJBCA bundle. The old separate download bundle is only used with EJBCA 3.9.x and earlier.
     </note>
   </section>
 
