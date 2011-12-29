@@ -66,8 +66,8 @@ import org.junit.Test;
  *
  * @version $Id$
  */
-public class EndEntityProfileTest extends RoleUsingTestCase {
-    private static final Logger log = Logger.getLogger(EndEntityProfileTest.class);
+public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
+    private static final Logger log = Logger.getLogger(EndEntityProfileSessionBeanTest.class);
 
     private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
     private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
