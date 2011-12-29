@@ -55,7 +55,6 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
  * Required flags are stored as 20000+100*parameternumber+parameter, so the first REQUIRED_COMMONNAME value is 20105, the second 20205 etc.
  * Modifyable flags are stored as 30000+100*parameternumber+parameter, so the first MODIFYABLE_COMMONNAME value is 30105, the second 30205 etc.
  *
- * @author  Philip Vendil
  * @version $Id$
  */
 public class EndEntityProfile extends UpgradeableDataHashMap implements Serializable, Cloneable {
@@ -1930,11 +1929,26 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     /**
      * @return true if it should be possible to add extension data in the GUI.
      */
-    public boolean getUseExtensiondata(){
-    	return getValueDefaultFalse(USEEXTENSIONDATA);
-}
+    public boolean getUseExtensiondata() {
+        return getValueDefaultFalse(USEEXTENSIONDATA);
+    }
 
     public void setUseExtensiondata(final boolean use){
     	data.put(USEEXTENSIONDATA, Boolean.valueOf(use));
+    }
+    
+    @Override
+    public String toString() {
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Values={");
+        for(String key : dataConstants.keySet()) {
+            //Output all defined values
+            Object value = data.get(key);
+            if(value != null) {
+                stringBuilder.append("[" + key + "=" + value + "]");
+            }
+        }
+        stringBuilder.append("}");
+        return stringBuilder.toString();
     }
 }

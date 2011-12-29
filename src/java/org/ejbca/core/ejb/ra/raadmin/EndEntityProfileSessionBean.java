@@ -100,7 +100,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             try {
                 entityManager.persist(new EndEntityProfileData(Integer.valueOf(profileid), profilename, profile));
                 flushProfileCache();
-                final String msg = INTRES.getLocalizedMessage("ra.addedprofile", profilename);
+                final String msg = INTRES.getLocalizedMessage("ra.addedprofile", profilename, profile.toString());
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.RA_ADDEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
@@ -375,9 +375,9 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         } else {
             // Check authorization before editing
             authorizedToProfile(admin, profile);
-            pdl.setProfile(profile);
             // Get the diff of what changed
             Map<Object, Object> diff = pdl.getProfile().diff(profile);
+            pdl.setProfile(profile);      
             final String msg = INTRES.getLocalizedMessage("ra.changedprofile", profilename);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
@@ -385,7 +385,8 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
                 details.put(entry.getKey().toString(), entry.getValue().toString());
             }
-            auditSession.log(EjbcaEventTypes.RA_EDITEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            auditSession.log(EjbcaEventTypes.RA_EDITEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(),
+                    null, null, null, details);
         }
     }
 
