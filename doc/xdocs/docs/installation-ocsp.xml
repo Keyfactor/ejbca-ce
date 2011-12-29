@@ -6,7 +6,7 @@
   </properties>
 
 <body>
-  <section name="Installation">
+  <section name="OCSP Installation">
   <note>
   This section contains installation instructions for the external OCSP responder. EJBCA by default have an internal OCSP responder that works
   out of the box on the CA server. See 'OCSP Architecture' to determine if you also need an external OCSP responder.
