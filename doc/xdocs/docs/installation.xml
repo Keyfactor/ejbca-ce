@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <document>
   <properties>
-    <title>Installation</title>
+    <title>EJBCA Installation</title>
   </properties>
 <body>
 
-<section name="About">
+<section name="EJBCA Installation">
 <p>
 EJBCA is a fully functional Certificate Authority built in Java.
 Based on JEE5 technology it constitutes a robust, high
