@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <document>
   <properties>
-    <title>Standalone VA installation</title>
+    <title>Standalone VA Installation</title>
   </properties>
 <body>
-<section name="Standalone VA installation">
+<section name="Standalone VA Installation">
   <subsection name="Building and configuring EJBCA">
   <p>
 EJBCA should be configured as for any other installation but you must also set all preferences
