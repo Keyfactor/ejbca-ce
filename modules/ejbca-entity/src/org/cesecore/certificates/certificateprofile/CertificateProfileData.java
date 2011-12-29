@@ -115,11 +115,11 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     }
 
     @Transient
-    private LinkedHashMap getData() {
+    private LinkedHashMap<?, ?> getData() {
 		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
     }
 
-    private final void setData(final LinkedHashMap data) {
+    private final void setData(final LinkedHashMap<?, ?> data) {
         setDataUnsafe(JBossUnmarshaller.serializeObject(data));
     }
 
@@ -135,7 +135,7 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
      * Method that saves the certificate profile to database.
      */
     public final void setCertificateProfile(final CertificateProfile profile) {
-        setData((LinkedHashMap) profile.saveData());
+        setData((LinkedHashMap<?, ?>) profile.saveData());
     }
 
     /**
@@ -157,7 +157,7 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
     private CertificateProfile readAndUpgradeProfileInternal() {
         CertificateProfile returnval = null;
         returnval = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
-        final LinkedHashMap data = getData();
+        final LinkedHashMap<?, ?> data = getData();
         // If CertificateProfile-data is upgraded we want to save the new data, so we must get the old version before loading the data
         // and perhaps upgrading
         final float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
