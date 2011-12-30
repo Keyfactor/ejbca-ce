@@ -124,7 +124,7 @@ class PrivateKeyContainerKeyStore implements PrivateKeyContainer {
         if ( this.fileName!=null && this.sessionData.mKeyPassword==null ) {
             throw new Exception("Key password must be configured when reloading SW keystore.");
         }
-        set(this.sessionData.mKeyPassword.toCharArray());
+        set( this.fileName!=null ? this.sessionData.mKeyPassword.toCharArray() : null );
     }
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletStandAloneSession.PrivateKeyContainer#clear()
