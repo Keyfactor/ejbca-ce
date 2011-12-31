@@ -79,7 +79,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 
 	protected void usage(String cliUserName, String cliPassword) {
 		getLogger().info("Description: " + getDescription());
-		getLogger().info("Usage: " + getCommand() + " <username> <password> wel<caname> <certificateprofile>");
+		getLogger().info("Usage: " + getCommand() + " <caname> <certificateprofile>");
 		String existingCasInfo = " Existing CAs: ";
 		Collection<Integer> cas = null;
 		try {
