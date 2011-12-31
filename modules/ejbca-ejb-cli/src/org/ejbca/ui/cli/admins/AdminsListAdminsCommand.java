@@ -57,7 +57,7 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
             String roleName = args[1];
             RoleData adminGroup = ejb.getRoleAccessSession().findRole(roleName);
             if (adminGroup == null) {
-                getLogger().error("No such role \"" + roleName + "\" .");
+                getLogger().error("No such role \"" + roleName + "\".");
                 return;
             }
             for (AccessUserAspectData userAspect : adminGroup.getAccessUsers().values()) {

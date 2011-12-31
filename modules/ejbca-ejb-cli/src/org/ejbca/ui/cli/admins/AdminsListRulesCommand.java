@@ -23,7 +23,7 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Lists access rules for a group
+ * Lists access rules for a role
  * 
  * @version $Id$
  */
@@ -38,7 +38,7 @@ public class AdminsListRulesCommand extends BaseAdminsCommand {
     }
 
     public String getDescription() {
-        return "Lists access rules for a group";
+        return "Lists access rules for a role";
     }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
@@ -50,13 +50,13 @@ public class AdminsListRulesCommand extends BaseAdminsCommand {
         try {
             if (args.length < 2) {
                 getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <name of group>");
+                getLogger().info("Usage: " + getCommand() + " <name of role>");
                 return;
             }
             String groupName = args[1];
             RoleData adminGroup = ejb.getRoleAccessSession().findRole(groupName);
             if (adminGroup == null) {
-                getLogger().error("No such group \"" + groupName + "\" .");
+                getLogger().error("No such role \"" + groupName + "\".");
                 return;
             }
             List<AccessRuleData> list = new ArrayList<AccessRuleData>(adminGroup.getAccessRules().values());

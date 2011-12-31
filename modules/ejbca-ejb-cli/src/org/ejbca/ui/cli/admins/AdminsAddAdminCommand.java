@@ -85,24 +85,24 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
             }
             String roleName = args[1];
             if (ejb.getRoleAccessSession().findRole(roleName) == null) {
-                getLogger().error("No such group \"" + roleName + "\" .");
+                getLogger().error("No such group \"" + roleName + "\".");
                 return;
             }
             String caName = args[2];
             CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caName);
             if (caInfo == null) {
-                getLogger().error("No such CA \"" + caName + "\" .");
+                getLogger().error("No such CA \"" + caName + "\".");
                 return;
             }
             int caid = caInfo.getCAId();
             X500PrincipalAccessMatchValue matchWith = X500PrincipalAccessMatchValue.matchFromName(args[3]);
             if (matchWith == null) {
-                getLogger().error("No such thing to match with as \"" + args[3] + "\" .");
+                getLogger().error("No such thing to match with as \"" + args[3] + "\".");
                 return;
             }
             AccessMatchType matchType = AccessMatchType.matchFromName(args[4]);
             if (matchType == null) {
-                getLogger().error("No such type to match with as \"" + args[4] + "\" .");
+                getLogger().error("No such type to match with as \"" + args[4] + "\".");
                 return;
             }
             String matchValue = args[5];

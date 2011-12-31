@@ -53,14 +53,14 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
         try {
             if (args.length < 5) {
                 getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <name of group> <access rule> <rule> <recursive>");
+                getLogger().info("Usage: " + getCommand() + " <name of role> <access rule> <rule> <recursive>");
                 Collection<RoleData> adminGroups = ejb.getRoleManagementSession().getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));
                 Collections.sort((List<RoleData>) adminGroups);
                 String availableGroups = "";
                 for (RoleData adminGroup : adminGroups) {
                     availableGroups += (availableGroups.length() == 0 ? "" : ", ") + "\"" + adminGroup.getRoleName() + "\"";
                 }
-                getLogger().info("Available Admin groups: " + availableGroups);
+                getLogger().info("Available Admin roles: " + availableGroups);
                 getLogger().info("Available access rules:");
                 GlobalConfiguration globalConfiguration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration();
 
@@ -84,7 +84,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
             String groupName = args[1];
             RoleData role = ejb.getRoleAccessSession().findRole(groupName);
             if (role == null) {
-                getLogger().error("No such role \"" + groupName + "\" .");
+                getLogger().error("No such role \"" + groupName + "\".");
                 return;
             }
             String accessRule = getOriginalAccessRule(getAdmin(cliUserName, cliPassword), args[2]);

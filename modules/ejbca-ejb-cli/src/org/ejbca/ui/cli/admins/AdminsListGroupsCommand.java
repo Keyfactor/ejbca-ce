@@ -22,7 +22,7 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Lists admin groups
+ * Lists admin roles
  * @version $Id$
  */
 public class AdminsListGroupsCommand extends BaseAdminsCommand {
