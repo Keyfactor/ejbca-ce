@@ -75,7 +75,7 @@ public class CaChangeCATokenSignAlg extends BaseCaAdminCommand {
     
 	private void usage(String cliUserName, String cliPassword) {
 		getLogger().info("Description: " + getDescription());
-		getLogger().info("Usage: " + getCommand() + "<username> <password> <caname> <signature alg> [<keyspec>]");
+		getLogger().info("Usage: " + getCommand() + " <caname> <signature alg> [<keyspec>]");
 		getLogger().info(" Signature alg is one of SHA1WithRSA, SHA256WithRSA, SHA256WithRSAAndMGF1, SHA224WithECDSA, SHA256WithECDSA, or any other string available in the admin-GUI.");
 		getLogger().info(" Keyspec can be set on CA tokens and is 1024, 2048, 4096, 8192 for RSA and a ECC curve name, i.e. prime192v1, secp256r1 etc from User Guide.");
 		getLogger().info(" Existing CAs: ");
