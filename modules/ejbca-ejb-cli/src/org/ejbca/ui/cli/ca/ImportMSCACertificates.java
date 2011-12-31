@@ -102,7 +102,6 @@ public class ImportMSCACertificates extends CaImportCertCommand {
 						i++;
 					}
 					usedNames.add(username);
-					//  bin/ejbca.sh ca importcert <username> <password> <caname> <status> <certificate file> [<endentityprofile> | <endentityprofile> <certificateprofile>]
 					String[] newArgs = {super.getMainCommand(), super.getSubCommand(), username, "foo123", caname, currentStatus, tempFile.getCanonicalPath(), currentTemplate, currentTemplate}; 
 					super.execute(newArgs);
 					tempFile.delete();
