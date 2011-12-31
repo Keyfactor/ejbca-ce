@@ -42,7 +42,7 @@ public class AdminsRemoveGroupCommand extends BaseAdminsCommand {
             String roleName = args[1];
             RoleData role = ejb.getRoleAccessSession().findRole(roleName);
             if (role == null) {
-            	getLogger().error("No such role \"" + roleName + "\" .");
+            	getLogger().error("No such role \"" + roleName + "\".");
                 return;
             }
             ejb.getRoleManagementSession().remove(getAdmin(cliUserName, cliPassword), role);

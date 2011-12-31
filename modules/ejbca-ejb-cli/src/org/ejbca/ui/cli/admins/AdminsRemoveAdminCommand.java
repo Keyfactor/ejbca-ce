@@ -52,29 +52,29 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
         try {
             if (args.length < 6) {
                 getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
+                getLogger().info("Usage: " + getCommand() + " <name of role> <name of issuing CA> <match with> <match type> <match value>");
                 return;
             }
             String roleName = args[1];     
             RoleData role = ejb.getRoleAccessSession().findRole(roleName);
             if (role == null) {
-                getLogger().error("No such role \"" + roleName + "\" .");
+                getLogger().error("No such role \"" + roleName + "\".");
                 return;
             }
             String caName = args[2];
             CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caName);
             if (caInfo == null) {
-                getLogger().error("No such CA \"" + caName + "\" .");
+                getLogger().error("No such CA \"" + caName + "\".");
                 return;
             }
             X500PrincipalAccessMatchValue matchWith = X500PrincipalAccessMatchValue.matchFromName(args[3]);
             if (matchWith == null) {
-                getLogger().error("No such thing to match with as \"" + args[3] + "\" .");
+                getLogger().error("No such thing to match with as \"" + args[3] + "\".");
                 return;
             }
             AccessMatchType matchType = AccessMatchType.matchFromName(args[4]);  
             if (matchType == null) {
-                getLogger().error("No such type to match with as \"" + args[4] + "\" .");
+                getLogger().error("No such type to match with as \"" + args[4] + "\".");
                 return;
             }
             String matchValue = args[5];
@@ -92,7 +92,7 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                     return;
                 }
             }
-            getLogger().info("Could not find any matching admin in group \"" + roleName + "\" .");
+            getLogger().info("Could not find any matching admin in role \"" + roleName + "\".");
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }
