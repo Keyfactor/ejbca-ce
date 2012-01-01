@@ -35,8 +35,22 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
  * hardtokendata with the tokensn from first column, basicpin from the secondcolumn, 
  * signaturepin from third and finally both puk codes from the forth column.
  * 
- * tokentype : either 'enhancedeid' or 'swedisheid'. And inidcates what type of token that will be created.
+ * tokentype : either 'enhancedeid' or 'swedisheid'. And indicates what type of token that will be created.
  * 
+ * import.properties:
+ * <pre>
+ * importer.classpath=org.ejbca.ui.cli.hardtoken.importer.StandardFileHardTokenImporter
+ * significantissuerdn=CN=LunaCA
+ * file=hardtoken.txt
+ * separator=,
+ * columnorder=tokensn, pin1, pin2, bothpuk
+ * tokentype=swedisheid
+ * </pre>
+ * hardtoken.txt
+ * <pre>
+ * 123456789,1234,5678,123456
+ * 234567890,4321,9876,987654
+ * </pre>
  * 
  * @author Philip Vendil 2007 apr 23
  *
