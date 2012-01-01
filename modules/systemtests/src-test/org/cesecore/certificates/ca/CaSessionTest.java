@@ -155,8 +155,8 @@ public class CaSessionTest extends RoleUsingTestCase {
         // Create catoken
         CryptoToken cryptoToken = createCryptoToken(tokenpin, pkcs11);
         if (genKeys) {
-            cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATESIGNKEYALIAS);
-            cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATEDECKEYALIAS);
+            cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATESIGNKEYALIAS);
+            cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATEDECKEYALIAS);
         }
 
         CAToken catoken = new CAToken(cryptoToken);
@@ -226,7 +226,7 @@ public class CaSessionTest extends RoleUsingTestCase {
         prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
         // Set key generation property, since we have no old keys to generate the same sort
-        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, "512");
+        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, "1024");
         if (tokenpin != null) {
             prop.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
         }
@@ -249,8 +249,8 @@ public class CaSessionTest extends RoleUsingTestCase {
     protected static CVCCA createTestCVCCA(String cadn, String tokenpin, boolean pkcs11) throws Exception {
         // Create catoken
         CryptoToken cryptoToken = createCryptoToken(tokenpin, pkcs11);
-        cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATESIGNKEYALIAS);
-        cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATEDECKEYALIAS);
+        cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATESIGNKEYALIAS);
+        cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATEDECKEYALIAS);
 
         CAToken catoken = new CAToken(cryptoToken);
         // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
