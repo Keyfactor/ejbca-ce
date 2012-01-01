@@ -797,7 +797,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         String msg = intres.getLocalizedMessage("hardtoken.removedtoken", tokensn);
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
-        auditSession.log(EjbcaEventTypes.HARDTOKEN_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), null, htd.getUsername(), details);
+        auditSession.log(EjbcaEventTypes.HARDTOKEN_REMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), null, htd.getUsername(), details);
         log.trace("<removeHardToken()");
     }
 
