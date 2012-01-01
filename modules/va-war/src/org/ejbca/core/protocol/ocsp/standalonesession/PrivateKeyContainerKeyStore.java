@@ -110,7 +110,7 @@ class PrivateKeyContainerKeyStore implements PrivateKeyContainer {
     }
     /**
      * Sets the private key.
-     * @param pw The key password.
+     * @param pw The key password. Only used for soft keystore. Should be null for p11 keystore. All keys in a p11 keystore are protected only by the slot user password.
      * @throws Exception
      */
     private void set(char pw[]) throws Exception {
@@ -124,6 +124,7 @@ class PrivateKeyContainerKeyStore implements PrivateKeyContainer {
         if ( this.fileName!=null && this.sessionData.mKeyPassword==null ) {
             throw new Exception("Key password must be configured when reloading SW keystore.");
         }
+        // if fileName is null it is a p11 keystore which don't have a password for each key.
         set( this.fileName!=null ? this.sessionData.mKeyPassword.toCharArray() : null );
     }
     /* (non-Javadoc)
