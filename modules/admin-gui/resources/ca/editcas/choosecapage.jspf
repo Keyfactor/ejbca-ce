@@ -102,8 +102,8 @@
                  String nameofca = (String) iter.next();
                  CAInfo cainfo = cabean.getCAInfo(((Integer) canames.get(nameofca)).intValue()).getCAInfo();
                  String nameandstatus = nameofca + ", (" +ejbcawebbean.getText(statustexts[cainfo.getStatus()]) + ")"; %>
-            <option value="<%= canames.get(nameofca)%>"> 
-                <%= nameandstatus %>
+            <option value="<c:out value="<%= canames.get(nameofca) %>"/>"> 
+                <c:out value="<%= nameandstatus %>"/>
              </option>
              <%}%>
         </select>
