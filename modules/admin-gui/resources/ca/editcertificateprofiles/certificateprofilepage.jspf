@@ -872,21 +872,23 @@ function checkallfields(){
            <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint())
                       out.write(" disabled "); 
                     else 
-                      if(!certificateprofiledata.getCRLDistributionPointURI().equals(""))
-                       out.write(" value=\"" + certificateprofiledata.getCRLDistributionPointURI().replace("\"", "&#34;") + "\""); 
-                      else
-                       out.write(" value=\"" + globalconfiguration.getStandardCRLDistributionPointURI().replace("\"", "&#34;") + "\"");%>>
+                      if(!certificateprofiledata.getCRLDistributionPointURI().equals("")) {%>
+                       value="<c:out value="<%= certificateprofiledata.getCRLDistributionPointURI() %>"/>"
+                      <%} else {%>
+                       value="<c:out value="<%= globalconfiguration.getStandardCRLDistributionPointURI() %>"/>"
+                      <%}%> >
            <br />
            <input type="text" name="<%=TEXTFIELD_CRLISSUER%>" size="45" maxlength="255" 
            <%       if(!certificateprofiledata.getUseCRLDistributionPoint() || certificateprofiledata.getUseDefaultCRLDistributionPoint()) {
                       out.write(" disabled "); 
                     } else {
-                      if(!certificateprofiledata.getCRLIssuer().equals("")) {
-                       out.write(" value=\"" + certificateprofiledata.getCRLIssuer() + "\"");
-                      } else if(certificateprofiledata.getCRLDistributionPointURI().equals("")) {
+                      if(!certificateprofiledata.getCRLIssuer().equals("")) {%>
+                       value="<c:out value="<%= certificateprofiledata.getCRLIssuer() %>"/>"
+                      <%} else if(certificateprofiledata.getCRLDistributionPointURI().equals("")) {
                     	  // Only add default CRLIssuer if this was the first time we enabled this checkbox, so both fields are empty
-                          out.write(" value=\"" + globalconfiguration.getStandardCRLIssuer() + "\"");
-                      }
+                    	  %>
+                         value="<c:out value="<%= globalconfiguration.getStandardCRLIssuer() %>"/>"
+                      <%}
                     }
             %>>
       </td>
@@ -917,10 +919,11 @@ function checkallfields(){
            <%       if(!certificateprofiledata.getUseFreshestCRL() || certificateprofiledata.getUseCADefinedFreshestCRL())
                       out.write(" disabled "); 
                     else 
-                      if(!certificateprofiledata.getFreshestCRLURI().equals(""))
-                       out.write(" value=\"" + certificateprofiledata.getFreshestCRLURI() + "\""); 
-                      else
-                       out.write(" value=\"" + globalconfiguration.getStandardDeltaCRLDistributionPointURI()+ "\"");%>>
+                      if(!certificateprofiledata.getFreshestCRLURI().equals("")) {%>
+                         value="<c:out value="<%= certificateprofiledata.getFreshestCRLURI() %>"/>"
+                      <%} else {%>
+                         value="<c:out value="<%= globalconfiguration.getStandardDeltaCRLDistributionPointURI() %>"/>"
+                      <%}%> >
       </td>
     </tr>
     
@@ -964,9 +967,9 @@ function checkallfields(){
         </table>
       </td>
       <td width="50%">
-        <input readonly type="text" name="<%= TEXTFIELD_CERTIFICATEPOLICYID + i %>" value="<%= policy.getPolicyID() %>" size="20" maxlength="255"/><br/>
-        <input readonly type="text" name="<%= TEXTAREA_POLICYNOTICE_UNOTICE + i %>" value="<% if((policy.getQualifierId() != null) && (policy.getQualifierId().equals(CertificatePolicy.id_qt_unotice)) && (policy.getQualifier() != null)) { %><%= policy.getQualifier() %><% } %>" size="45" maxlength="255"/><br/>
-        <input readonly type="text" name="<%= TEXTFIELD_POLICYNOTICE_CPSURL + i %>" value="<% if((policy.getQualifierId() != null) && (policy.getQualifierId().equals(CertificatePolicy.id_qt_cps)) && (policy.getQualifier() != null)) { %><%= policy.getQualifier() %><% } %>" size="45" maxlength="255"/>
+        <input readonly type="text" name="<%= TEXTFIELD_CERTIFICATEPOLICYID + i %>" value="<c:out value="<%= policy.getPolicyID() %>"/>" size="20" maxlength="255"/><br/>
+        <input readonly type="text" name="<%= TEXTAREA_POLICYNOTICE_UNOTICE + i %>" value="<% if((policy.getQualifierId() != null) && (policy.getQualifierId().equals(CertificatePolicy.id_qt_unotice)) && (policy.getQualifier() != null)) { %><c:out value="<%= policy.getQualifier() %>"/><% } %>" size="45" maxlength="255"/><br/>
+        <input readonly type="text" name="<%= TEXTFIELD_POLICYNOTICE_CPSURL + i %>" value="<% if((policy.getQualifierId() != null) && (policy.getQualifierId().equals(CertificatePolicy.id_qt_cps)) && (policy.getQualifier() != null)) { %><c:out value="<%= policy.getQualifier() %>"/><% } %>" size="45" maxlength="255"/>
       </td>
     </tr>
         <% }
@@ -1019,8 +1022,9 @@ function checkallfields(){
                       out.write(" disabled "); 
                     else {
                        String ocspuri = certificateprofiledata.getOCSPServiceLocatorURI();
-                       out.write(" value=\"" + (ocspuri == null ? "":ocspuri) + "\"");
-                    } 
+                       if (ocspuri == null) {ocspuri = "";} %>
+                       value="<c:out value="<%= ocspuri %>"/>"
+                    <%}
            %>>
       </td>
     </tr>
@@ -1044,7 +1048,7 @@ function checkallfields(){
         </table>
       </td>
       <td width="50%">
-        <input readonly type="text" name="<%= TEXTFIELD_CAISSUERURI + i %>" value="<%= uri %>" size="45" maxlength="255"/>
+        <input readonly type="text" name="<%= TEXTFIELD_CAISSUERURI + i %>" value="<c:out value="<%= uri %>"/>" size="45" maxlength="255"/>
       </td>
     </tr>
         <% }
@@ -1152,19 +1156,21 @@ function checkallfields(){
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_SEMANTICSID\") %>" /> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSSEMANTICSID %>" size="20" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseQCStatement())
+           <%       if(!certificateprofiledata.getUseQCStatement()) {
                       out.write(" disabled "); 
-                    else 
-                      out.write(" value=\"" + certificateprofiledata.getQCSemanticsId() + "\""); %>>
+                    } else {%> 
+                      value="<c:out value="<%= certificateprofiledata.getQCSemanticsId() %>"/>"
+                    <%}%> >
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_NAMERA\") %>" /> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCSTATEMENTRANAME %>" size="45" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseQCStatement())
+           <%       if(!certificateprofiledata.getUseQCStatement()) {
                       out.write(" disabled "); 
-                    else 
-                      out.write(" value=\"" + certificateprofiledata.getQCStatementRAName() + "\""); %>>
+                    } else { %> 
+                      value="<c:out value="<%= certificateprofiledata.getQCStatementRAName() %>"/>"
+                    <%}%> >
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
@@ -1206,28 +1212,31 @@ function checkallfields(){
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"VALUELIMITCURRENCY\") %>" /> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMITCUR %>" size="5" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit())
+           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit()) {
                       out.write(" disabled "); 
-                    else 
-                      out.write(" value=\"" + certificateprofiledata.getQCEtsiValueLimitCurrency() + "\""); %>>
+                    } else {%> 
+                      value="<c:out value="<%= certificateprofiledata.getQCEtsiValueLimitCurrency() %>"/>"
+                    <%}%> >
       </td>
     </tr>     
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"VALUELIMITAMOUT\") %>" /> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMIT %>" size="5" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit())
+           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit()) {
                       out.write(" disabled "); 
-                    else 
-                      out.write(" value=\"" + certificateprofiledata.getQCEtsiValueLimit() + "\""); %>>
+                    } else {%> 
+                      value="<c:out value="<%= certificateprofiledata.getQCEtsiValueLimit() %>"/>"
+                    <%}%> >
       </td>
     </tr>  
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"VALUELIMITEXPONENT\") %>" /> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIVALUELIMITEXP %>" size="5" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit())
+           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiValueLimit()) {
                       out.write(" disabled "); 
-                    else 
-                      out.write(" value=\"" + certificateprofiledata.getQCEtsiValueLimitExp() + "\""); %>>
+                    } else {%> 
+                      value="<c:out value="<%= certificateprofiledata.getQCEtsiValueLimitExp() %>"/>"
+                    <%}%> >
       </td>
     </tr>                     
     <tr  id="Row<%=row%2%>"> 
@@ -1245,10 +1254,11 @@ function checkallfields(){
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"RETENTIONPERIODYEARS\") %>" /> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCETSIRETENTIONPERIOD %>" size="5" maxlength="255"
-           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiRetentionPeriod())
+           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCEtsiRetentionPeriod()) {
                       out.write(" disabled "); 
-                    else 
-                      out.write(" value=\"" + certificateprofiledata.getQCEtsiRetentionPeriod() + "\""); %>>
+                    } else {%> 
+                      value="<c:out value="<%= certificateprofiledata.getQCEtsiRetentionPeriod() %>"/>"
+                    <%}%> >
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
@@ -1266,19 +1276,21 @@ function checkallfields(){
     <tr  id="Row<%=row%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_CUSTOMSTR_OID\") %>" /> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGOID %>" size="20" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString())
+           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString()) {
                       out.write(" disabled "); 
-                    else 
-                      out.write(" value=\"" + certificateprofiledata.getQCCustomStringOid() + "\""); %>>
+                    } else {%> 
+                      value="<c:out value="<%= certificateprofiledata.getQCCustomStringOid() %>"/>"
+                    <%}%> >
       </td>
     </tr>     
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_QCS_CUSTOMSTR_TEXT\") %>" /> </td>
       <td width="50%" valign="top"><input type="text" name="<%=TEXTFIELD_QCCUSTOMSTRINGTEXT %>" size="45" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString())
+           <%       if(!certificateprofiledata.getUseQCStatement() || !certificateprofiledata.getUseQCCustomString()) {
                       out.write(" disabled "); 
-                    else 
-                      out.write(" value=\"" + certificateprofiledata.getQCCustomStringText() + "\""); %>>
+                    } else {%> 
+                      value="<c:out value="<%= certificateprofiledata.getQCCustomStringText() %>"/>"
+                    <%}%> >
       </td>
     </tr>  
 
@@ -1409,10 +1421,11 @@ function checkallfields(){
       </td>
       <td width="50%"> 
             <input type="text" name="<%=TEXTFIELD_CNPOSTFIX%>" size="45" maxlength="255" 
-           <%       if(!certificateprofiledata.getUseCNPostfix())
+           <%       if(!certificateprofiledata.getUseCNPostfix()) {
                       out.write(" disabled "); 
-                    else                       
-                      out.write(" value=\"" + certificateprofiledata.getCNPostfix() + "\""); %> >
+                    } else {%> 
+                      value="<c:out value="<%= certificateprofiledata.getCNPostfix() %>"/>"
+                    <%}%> >
       </td>
     </tr>
 
@@ -1522,7 +1535,7 @@ function checkallfields(){
               <%    if(usedcas.contains(next))
                       out.write(" selected ");
                   %>>
-              <%= caidtonamemap.get(next) %>         
+              <c:out value="<%= caidtonamemap.get(next) %>"/>
            </option>  
               <% } %>
         </select>
@@ -1544,7 +1557,7 @@ function checkallfields(){
               <%    if(usedpublishers.contains(nextid))
                       out.write(" selected ");
                   %>>
-              <%= next %>         
+              <c:out value="<%= next %>"/>
            </option>  
               <% } %>
         </select>
