@@ -77,7 +77,8 @@ import org.ejbca.util.HTMLTools;
  */
 public class DemoCertReqServlet extends HttpServlet {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = -3011724049895073472L;
+
     private final static Logger log = Logger.getLogger(DemoCertReqServlet.class);
 
     // Edit this constant to the id of your preferable CA used to sign certificate.
@@ -296,7 +297,7 @@ public class DemoCertReqServlet extends HttpServlet {
             log.debug(e);
             debug.print("<h3>parameter name and values: </h3>");
             @SuppressWarnings("unchecked")
-            Enumeration<Object> paramNames = request.getParameterNames();
+            Enumeration<? extends Object> paramNames = request.getParameterNames();
             while (paramNames.hasMoreElements()) {
                 String name = paramNames.nextElement().toString();
                 String parameter = request.getParameter(name);
