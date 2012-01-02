@@ -100,7 +100,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             try {
                 entityManager.persist(new EndEntityProfileData(Integer.valueOf(profileid), profilename, profile));
                 flushProfileCache();
-                final String msg = INTRES.getLocalizedMessage("ra.addedprofile", profilename, profile.toString());
+                final String msg = INTRES.getLocalizedMessage("ra.addedprofile", profilename);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.RA_ADDEEPROFILE, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
