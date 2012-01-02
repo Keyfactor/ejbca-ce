@@ -18,7 +18,12 @@ import static org.junit.Assert.assertNull;
 
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.lang.reflect.Field;
 
+import org.apache.commons.configuration.CompositeConfiguration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -68,14 +73,32 @@ public class ConfigurationHolderTest {
             // Make sure we handle comma in values
             val = ConfigurationHolder.getString("property3");
             assertEquals("EN,DE,FR", val);
-            // Make sure we handle comma in default values
-            val = ConfigurationHolder.getString("intresources.preferredlanguage");
-            assertEquals("EN", val);
+        } finally {
+            f.deleteOnExit();
+        }
+    }
+
+    @Test
+    public void testGetDefaultValuesWithCommas() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, IOException, ConfigurationException {        
+        // Make sure we handle comma in default values
+        String val = ConfigurationHolder.getString("intresources.preferredlanguage");
+        assertEquals("EN", val);
+        // A little reflection magic just to avoid dumping a test value in defaultvalues.properties file.
+        Field field = ConfigurationHolder.class.getDeclaredField("defaultValues");
+        field.setAccessible(true);
+        CompositeConfiguration defaultValues = (CompositeConfiguration) field.get(null);
+        val = ConfigurationHolder.getString("test.comma.in.defaultvalue");
+        assertNull(val);
+        File f = File.createTempFile("cesecore", "test");
+        try {
+            FileWriter fw = new FileWriter(f);
+            fw.write("test.comma.in.defaultvalue=EN,DE,FR\n");
+            fw.close();
+            defaultValues.addConfiguration(new PropertiesConfiguration(f));
             val = ConfigurationHolder.getString("test.comma.in.defaultvalue");
             assertEquals("EN,DE,FR", val);
         } finally {
             f.deleteOnExit();
         }
     }
-
 }
