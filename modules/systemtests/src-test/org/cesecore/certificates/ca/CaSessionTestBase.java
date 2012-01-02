@@ -452,7 +452,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     	Certificate cert = null;
     	try {
             caSession.addCA(roleMgmgToken, ca);
-        	caTokenSession.generateKeyPair(roleMgmgToken, ca.getCAId(), tokenpwd.toCharArray(), "512", "signKeyAlias");
+        	caTokenSession.generateKeyPair(roleMgmgToken, ca.getCAId(), tokenpwd.toCharArray(), "1024", "signKeyAlias");
         	PublicKey pubK = caTokenSession.getPublicKey(roleMgmgToken, ca.getCAId(), tokenpwd.toCharArray(), "signKeyAlias");
         	assertNotNull(pubK);
         	caTokenSession.setTokenProperty(roleMgmgToken, ca.getCAId(), tokenpwd.toCharArray(), CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, "signKeyAlias");
