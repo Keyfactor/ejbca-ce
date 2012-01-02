@@ -26,7 +26,7 @@ function check()
 </script>
 <div align="center">   
    <h2><%= ejbcawebbean.getText(headlines[filemode]) %></h2>
-   <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %></h3>
+   <h3><%= ejbcawebbean.getText("CANAME")+ " : "%><c:out value="<%= caname %>"/></h3>
 </div>
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
@@ -44,9 +44,9 @@ function check()
     </tr>
     <form name="recievefile" action="<%= THIS_FILENAME %>" method="post" enctype='multipart/form-data' >
       <input type="hidden" name='<%= ACTION %>' value='<%=actions[filemode] %>'>
-      <input type="hidden" name='<%= HIDDEN_CAID %>' value='<%= caid %>'>
-      <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%= caname%>'>
-      <input type="hidden" name='<%= HIDDEN_ACTIVATEAUTHCODE %>' value='<%= activateauthenticationcode%>'>
+      <input type="hidden" name='<%= HIDDEN_CAID %>' value='<c:out value="<%= caid %>"/>'>
+      <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'>
+      <input type="hidden" name='<%= HIDDEN_ACTIVATEAUTHCODE %>' value='<c:out value="<%= activateauthenticationcode %>"/>'>
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top" align="right"><%= ejbcawebbean.getText(helptexts[filemode]) %>
       <%= ejbcawebbean.getHelpReference("/userguide.html#Creating%20a%20SubCA%20signed%20by%20an%20external%20CA") %></td>
