@@ -35,6 +35,7 @@ import org.cesecore.mock.authentication.tokens.UsernameBasedAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -54,10 +55,11 @@ import org.junit.Test;
 public class AccessControlSessionBeanTest extends RoleUsingTestCase {
 
     private AccessControlSessionRemote accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
+    private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
 
     @Before
-    public void setUp() throws RoleExistsException, RoleNotFoundException {    	
+    public void setUp() throws Exception {    	
     	// Set up base role that can edit roles
     	setUpAuthTokenAndRole("AccessControlSessionTest");
     }
@@ -144,7 +146,11 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
         final String resourceName = "/Encom"; 
         final String tronDn = "CN=Tron";
         final String flynnDn = "CN=Flynn";
-        RoleData role = roleManagementSession.create(roleMgmgToken, roleName);        
+        RoleData role = roleAccessSession.findRole(roleName);
+        if (role == null) {
+
+            role = roleManagementSession.create(roleMgmgToken, roleName);
+        }
         try {
             //Give the role a ClI-based aspect and an X509-based aspect
             Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
