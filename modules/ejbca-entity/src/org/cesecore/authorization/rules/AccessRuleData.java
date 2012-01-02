@@ -316,7 +316,7 @@ public class AccessRuleData extends ProtectedData implements Serializable, Compa
     @Override
     public String toString() {
     	final StringBuilder buf = new StringBuilder();
-    	buf.append(getPrimaryKey()).append(getAccessRuleName()).append(getInternalState()).append(getRecursiveBool()).append(getRecursiveInt());
+    	buf.append(getPrimaryKey()).append(getAccessRuleName()).append(getInternalState()).append(getRecursive());
     	return buf.toString();
     }
 	//
