@@ -83,7 +83,7 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
             
             for (AccessUserAspectData currentAdminEntity : role.getAccessUsers().values()) {
                 if (currentAdminEntity.getMatchValue().equals(accessUserAspectData.getMatchValue()) && currentAdminEntity.getMatchWith() == accessUserAspectData.getMatchWith()
-                        && currentAdminEntity.getMatchType() == accessUserAspectData.getMatchType() && currentAdminEntity.getCaId() == accessUserAspectData.getCaId()) {
+                        && currentAdminEntity.getMatchType() == accessUserAspectData.getMatchType() && currentAdminEntity.getCaId().equals(accessUserAspectData.getCaId())) {
                     Collection<AccessUserAspectData> adminEntities = new ArrayList<AccessUserAspectData>();
                     adminEntities.add(accessUserAspectData);
                    
