@@ -536,14 +536,13 @@ function checkallfields(){
         <%= ejbcawebbean.getText("DESCRIPTION") %>
       </td>
       <td width="50%"> 
-        <% if(isexternal){
-              out.write(cainfo.getDescription());
-           }else{ %>
-        <textarea name="<%=TEXTFIELD_DESCRIPTION%>" cols="45" rows="4"><% if(editca) out.write(cainfo.getDescription());%></textarea>
+        <% if(isexternal){ %>
+              <c:out value="<%= cainfo.getDescription() %>"/>
+         <% }else{ %>
+        <textarea name="<%=TEXTFIELD_DESCRIPTION%>" cols="45" rows="4"><% if(editca) { %><c:out value="<%= cainfo.getDescription() %>"/><% } %></textarea>
        <% } %>
       </td>
     </tr>
-
 
     <!-- ---------- Directives -------------------- -->
 
@@ -947,12 +946,12 @@ function checkallfields(){
         <br/> <em><%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %></em>
       </td>
       <td width="50%">
-           <% if(isexternal){
-                out.write("" + x509cainfo.getDefaultCRLDistPoint());
-              }else{ %>
+           <% if(isexternal){%>
+                <c:out value="<%= x509cainfo.getDefaultCRLDistPoint() %>"/>
+              <%}else{ %>
          <input type="text" name="<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>" size="45" maxlength="4096"
-            <% if(editca) out.write(" value='" + x509cainfo.getDefaultCRLDistPoint()+ "'");%>>
-           <% } %> 
+         <% if(editca){%>value="<c:out value="<%= x509cainfo.getDefaultCRLDistPoint() %>"/>"<%}%>>
+         <% } %> 
            <input type="button" name="<%=BUTTON_GENDEFAULTCRLDISTPOINT%>" onClick="gendefaultcrldistpoint()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
       </td>
     </tr>
@@ -963,11 +962,11 @@ function checkallfields(){
         <%= ejbcawebbean.getHelpReference("/userguide.html#CRL%20Issuer") %>
       </td>
       <td width="50%">
-           <% if(isexternal){
-                out.write("" + x509cainfo.getDefaultCRLIssuer());
-              }else{ %>
+           <% if(isexternal){%>
+                <c:out value="<%= x509cainfo.getDefaultCRLIssuer() %>"/>
+             <% }else{ %>
          <input type="text" name="<%=TEXTFIELD_DEFAULTCRLISSUER%>" size="45" maxlength="255"
-            <% if(editca) out.write(" value='" + x509cainfo.getDefaultCRLIssuer()+ "'");%>>
+         <% if(editca){%>value="<c:out value="<%= x509cainfo.getDefaultCRLIssuer() %>"/>"<%}%>>
            <% } %> 
            <input type="button" name="<%=BUTTON_GENDEFAULTCRLISSUER%>" onClick="gendefaultcrlissuer()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
       </td>
@@ -980,11 +979,11 @@ function checkallfields(){
         <br/> <em><%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %></em>
       </td>
       <td width="50%">
-           <% if(isexternal){
-                out.write("" + x509cainfo.getCADefinedFreshestCRL());
-              }else{ %>
+           <% if(isexternal){%>
+                <c:out value="<%= x509cainfo.getCADefinedFreshestCRL() %>"/>
+              <%}else{ %>
          <input type="text" name="<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>" size="45" maxlength="255"
-            <% if(editca && (x509cainfo.getCADefinedFreshestCRL() != null)) out.write(" value='" + x509cainfo.getCADefinedFreshestCRL()+ "'");%>>
+         <% if(editca && (x509cainfo.getCADefinedFreshestCRL() != null)){%>value="<c:out value="<%= x509cainfo.getCADefinedFreshestCRL() %>"/>"<%}%>>
            <% } %>
            <input type="button" name="<%=BUTTON_GENCADEFINEDFRESHESTCRL%>" onClick="gencadefinedfresherstcrl()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
       </td>
@@ -1098,7 +1097,7 @@ function checkallfields(){
            }
        }    
        %>
-        <input type="text" name="<%=TEXTFIELD_AUTHORITYINFORMATIONACCESS%>" size="40" maxlength="256" <% out.write(" value='"+authorityInformationAccess+"'"); %> >
+        <input type="text" name="<%=TEXTFIELD_AUTHORITYINFORMATIONACCESS%>" size="40" maxlength="256" value="<c:out value="<%= authorityInformationAccess %>"/>">
         
       </td>
     </tr>
@@ -1121,11 +1120,11 @@ function checkallfields(){
         <br/> <em><%= ejbcawebbean.getText("USEDTOOVERIDECERTPROFILE") %></em>
       </td>
       <td width="50%">
-           <% if(isexternal){
-                out.write("" + x509cainfo.getDefaultOCSPServiceLocator());
-              }else{ %>
+           <% if(isexternal){%>
+                <c:out value="<%= x509cainfo.getDefaultOCSPServiceLocator() %>"/>
+             <% }else{ %>
          <input type="text" name="<%=TEXTFIELD_DEFAULTOCSPLOCATOR%>" size="45" maxlength="255"
-            <% if(editca) out.write(" value='" + x509cainfo.getDefaultOCSPServiceLocator()+ "'");%>>
+         <% if(editca){ %>value="<c:out value="<%= x509cainfo.getDefaultOCSPServiceLocator() %>"/>"<%}%>>
            <% } %> <input type="button" name="<%=BUTTON_GENDEFAULTOCSPLOCATOR%>" onClick="gendefaultocsplocator()" value="<%= ejbcawebbean.getText("GENERATE") %>" >
       </td>
     </tr>
@@ -1264,7 +1263,7 @@ function checkallfields(){
       </td>
       <td width="50%">
         <% String cmpRaAuthSecretValue = (editca?((X509CAInfo)cainfo).getCmpRaAuthSecret():""); %>
-        <input type="password" name="<%=TEXTFIELD_SHAREDCMPRASECRET%>" size="20" maxlength="64" value="<%= cmpRaAuthSecretValue %>">
+        <input type="password" name="<%=TEXTFIELD_SHAREDCMPRASECRET%>" size="20" maxlength="64" value="<c:out value="<%= cmpRaAuthSecretValue %>"/>">
       </td>
     </tr>
     <% } // if (catype == CAInfo.CATYPE_X509) %>
