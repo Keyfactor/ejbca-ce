@@ -41,8 +41,6 @@ import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.util.InterfaceCache;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 /**
