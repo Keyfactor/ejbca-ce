@@ -55,8 +55,8 @@
              while(iter.hasNext()){
                String profilename = (String) iter.next(); %>
                
-            <option value="<%=profilename%>"> 
-                <%= profilename %>
+            <option value="<c:out value="<%= profilename %>"/>"> 
+                <c:out value="<%= profilename %>"/>
              </option>
           <%}%>
         </select>
