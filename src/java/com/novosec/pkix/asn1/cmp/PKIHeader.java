@@ -93,7 +93,8 @@ public class PKIHeader implements DEREncodable
 	
     public PKIHeader( ASN1Sequence seq )
     {
-      Enumeration e = seq.getObjects();
+      @SuppressWarnings("unchecked")
+    Enumeration<Object> e = seq.getObjects();
 
       pvno      = DERInteger.getInstance(e.nextElement());
       sender    = GeneralName.getInstance(e.nextElement());
@@ -233,7 +234,7 @@ public class PKIHeader implements DEREncodable
     public InfoTypeAndValue getGeneralInfo(int nr)
     {
       if (generalInfos.size() > nr) {
-        return (InfoTypeAndValue)generalInfos.elementAt(nr);
+        return generalInfos.elementAt(nr);
       }
 
       return null;
@@ -284,7 +285,7 @@ public class PKIHeader implements DEREncodable
         ASN1EncodableVector giv = new ASN1EncodableVector();
   
         for (int i=0;i<generalInfos.size();i++) {
-          giv.add((InfoTypeAndValue)generalInfos.elementAt(i));
+          giv.add(generalInfos.elementAt(i));
         }
   
         v.add( new DERTaggedObject( true, 8, new DERSequence(giv) ) );

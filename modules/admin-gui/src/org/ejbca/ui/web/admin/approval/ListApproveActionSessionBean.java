@@ -143,7 +143,7 @@ public class ListApproveActionSessionBean extends BaseManagedBean {
 		return "jsfrow1, jsfrow2";
 	}
 
-	public List getListData() {
+	public List<ApprovalDataVOView> getListData() {
 		return listData.getData();
 	}
 

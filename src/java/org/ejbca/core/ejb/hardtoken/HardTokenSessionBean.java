@@ -869,7 +869,6 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         }
         final ArrayList<HardTokenData> returnval = new ArrayList<HardTokenData>();
         final Collection<org.ejbca.core.ejb.hardtoken.HardTokenData> result = org.ejbca.core.ejb.hardtoken.HardTokenData.findByUsername(entityManager, username);
-        final Iterator<org.ejbca.core.ejb.hardtoken.HardTokenData> i = result.iterator();
         for (org.ejbca.core.ejb.hardtoken.HardTokenData htd : result) {
             // Find Copyof
             String copyof = null;
@@ -959,7 +958,6 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             		log.debug("Trying to remove HardTokenCertificateMap that does not exist: "+CertTools.getFingerprintAsString(certificate));                		
             	}
             } else {
-            	final String tokensn = htcm.getTokenSN();
             	entityManager.remove(htcm);
             	final String msg = intres.getLocalizedMessage("hardtoken.removedtokencertmappingcert", certificatesn);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -1128,7 +1126,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     /** Method that returns the hard token data from a hashmap and updates it if necessary. */
-    private HardToken getHardToken(AuthenticationToken admin, int encryptcaid, boolean includePUK, LinkedHashMap data) {
+    private HardToken getHardToken(AuthenticationToken admin, int encryptcaid, boolean includePUK, LinkedHashMap<?, ?> data) {
         HardToken returnval = null;
 
         if (data.get(org.ejbca.core.ejb.hardtoken.HardTokenData.ENCRYPTEDDATA) != null) {
@@ -1139,7 +1137,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             try {
                 HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) caAdminSession.extendedService(admin, encryptcaid, request);
                 ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(response.getData()));
-                data = (LinkedHashMap) ois.readObject();
+                data = (LinkedHashMap<?, ?>) ois.readObject();
             } catch (Exception e) {
                 throw new EJBException(e);
             }
@@ -1173,7 +1171,8 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
      * Method that saves the hard token issuer data to a HashMap that can be
      * saved to database.
      */
-	private LinkedHashMap<String,byte[]> setHardToken(AuthenticationToken admin, int encryptcaid, HardToken tokendata) {
+	@SuppressWarnings("unchecked")
+    private LinkedHashMap<String,byte[]> setHardToken(AuthenticationToken admin, int encryptcaid, HardToken tokendata) {
         LinkedHashMap<String,byte[]> retval = null;
         if (encryptcaid != 0) {
             try {
@@ -1204,10 +1203,10 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-        Map h = (Map) decoder.readObject();
+        Map<?, ?> h = (Map<?, ?>) decoder.readObject();
         decoder.close();
         // Handle Base64 encoded string values
-        LinkedHashMap data = new Base64GetHashMap(h);
+        LinkedHashMap<?, ?> data = new Base64GetHashMap(h);
         switch (((Integer) (data.get(HardTokenProfile.TYPE))).intValue()) {
         case SwedishEIDProfile.TYPE_SWEDISHEID:
             profile = new SwedishEIDProfile();

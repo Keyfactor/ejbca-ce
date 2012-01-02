@@ -151,7 +151,7 @@ public class CombineTime {
 	 * @throws Exception if an parsing error occurs
 	 */
 	private void parse(String time) throws Exception {
-		Map/*String, Long*/ values = unitParser.parse(time);
+		Map<String, Long> values = unitParser.parse(time);
 		years = (Long) values.get(TYPE_YEARS);
 		months = (Long) values.get(TYPE_MONTHS);
 		days = (Long) values.get(TYPE_DAYS);

@@ -99,9 +99,9 @@ public final class JBossUnmarshaller {
      * @return The unmarshalled or original object of type T or null if object is neither type T or jboss marshalled value
      * @throws ClassCastException if the object is JBOSS marshalled, but not of type t
      */
-    @SuppressWarnings("unchecked")
-	public static LinkedHashMap extractLinkedHashMap(final Serializable object) {
-		LinkedHashMap ret = null;
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+	public static LinkedHashMap<?, ?> extractLinkedHashMap(final Serializable object) {
+		LinkedHashMap<?, ?> ret = null;
 		// When the wrong class is given it can either return null, or throw an exception
 		try {
 			ret = JBossUnmarshaller.extractObject(LinkedHashMap.class, object);

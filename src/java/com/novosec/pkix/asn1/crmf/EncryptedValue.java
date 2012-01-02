@@ -77,7 +77,8 @@ public class EncryptedValue implements DEREncodable
 	
     public EncryptedValue( ASN1Sequence seq )
     {
-      Enumeration e = seq.getObjects();
+      @SuppressWarnings("unchecked")
+    Enumeration<Object> e = seq.getObjects();
       while (e.hasMoreElements())
       {
         Object obj = e.nextElement();

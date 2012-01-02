@@ -148,7 +148,6 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
         final String flynnDn = "CN=Flynn";
         RoleData role = roleAccessSession.findRole(roleName);
         if (role == null) {
-
             role = roleManagementSession.create(roleMgmgToken, roleName);
         }
         try {

@@ -61,9 +61,10 @@ public class UserDataTest {
 
     }
 
-	@Test
+	@SuppressWarnings("deprecation")
+    @Test
     public void test02UserDataVOToEndEntityInformation() throws Exception {
-		UserDataVO data = new UserDataVO();
+        UserDataVO data = new UserDataVO();
 		data.setCAId(111);
 		data.setDN("CN=wstest");
 		data.setAdministrator(true);

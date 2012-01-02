@@ -93,10 +93,11 @@ public class CertTemplate implements DEREncodable
 
     public CertTemplate( ASN1Sequence seq )
     {
-      Enumeration e = (seq == null ? null : seq.getObjects());
+      @SuppressWarnings("unchecked")
+    Enumeration<DERTaggedObject> e = (seq == null ? null : seq.getObjects());
       while (e != null && e.hasMoreElements())
       {
-        DERTaggedObject obj = (DERTaggedObject)e.nextElement();
+        DERTaggedObject obj = e.nextElement();
         int tagno = (obj == null ? -1 : obj.getTagNo());
         switch( tagno )
         {

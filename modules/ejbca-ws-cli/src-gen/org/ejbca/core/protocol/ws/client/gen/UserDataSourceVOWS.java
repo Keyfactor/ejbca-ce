@@ -27,7 +27,8 @@ import java.util.Set;
  */
 public class UserDataSourceVOWS implements Serializable{
 
-	private UserDataVOWS userDataVOWS = null;
+	private static final long serialVersionUID = 2633423909688084030L;
+    private UserDataVOWS userDataVOWS = null;
 	private List<Integer> isModifyable = null;
 
 	/**
@@ -35,7 +36,7 @@ public class UserDataSourceVOWS implements Serializable{
 	 */
 	public UserDataSourceVOWS(){}
 
-	public UserDataSourceVOWS(UserDataVOWS userDataVOWS, Set isModifyableSet){
+	public UserDataSourceVOWS(UserDataVOWS userDataVOWS, Set<Integer> isModifyableSet){
 		this.userDataVOWS = userDataVOWS;
 		this.isModifyable = new ArrayList<Integer>();
 		Iterator<Integer> iter = isModifyableSet.iterator();

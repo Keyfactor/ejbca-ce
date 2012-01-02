@@ -35,6 +35,7 @@ import org.ejbca.ui.cli.IAdminCommand;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.X509DataType;
+import org.w3._2002._03.xkms_.KeyBindingAbstractType;
 import org.w3._2002._03.xkms_.KeyBindingType;
 import org.w3._2002._03.xkms_.LocateRequestType;
 import org.w3._2002._03.xkms_.LocateResultType;
@@ -146,7 +147,7 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
             
             String reqId = genId();
             
-            List keyBindings = new ArrayList();
+            List<? extends KeyBindingAbstractType> keyBindings = new ArrayList<KeyBindingAbstractType>();
             if(validate){
             	ValidateRequestType validationRequestType = xKMSObjectFactory.createValidateRequestType();
             	validationRequestType.setId(reqId);
@@ -181,10 +182,9 @@ public class LocateCommand extends XKMSCLIBaseCommand implements IAdminCommand{
 
             if(keyBindings.size() > 0){
             	getPrintStream().println("\n  The query matched " + keyBindings.size() + " certificates :");
-            	@SuppressWarnings("unchecked")
-                Iterator<UnverifiedKeyBindingType> iter = keyBindings.iterator();
+                Iterator<? extends KeyBindingAbstractType> iter = keyBindings.iterator();
             	while(iter.hasNext()){
-            		UnverifiedKeyBindingType next = iter.next();
+            		UnverifiedKeyBindingType next = (UnverifiedKeyBindingType) iter.next();
             		displayAndOutputCert(next, outputPath, pEMEncoding);            		
             		if(next instanceof KeyBindingType){
             			displayStatus((KeyBindingType) next);
