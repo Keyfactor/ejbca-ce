@@ -39,6 +39,7 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.UsernameAccessMatchValue;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 
@@ -58,6 +59,12 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
 
     static {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        try {
+            //Make sure this match value is registered,
+            Class.forName(UsernameAccessMatchValue.class.getName());
+        } catch (ClassNotFoundException e) {
+            //NOPMD
+        }
     }
 
     /**
