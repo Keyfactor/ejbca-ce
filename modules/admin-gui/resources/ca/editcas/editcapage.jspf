@@ -384,15 +384,15 @@ function checkallfields(){
 <div align="center"> 
   <% if(processrequest){ %>
   <h2><%= ejbcawebbean.getText("PROCESSREQUEST") %></h2>
-  <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %><br />
+  <h3><%= ejbcawebbean.getText("CANAME")+ " : "%><c:out value="<%= caname %>"/><br />
       <%= ejbcawebbean.getText("ONLYTHEPUBLICKEY") %></h3>
   <% }else{
        if(editca){ %>
   <h2><%= ejbcawebbean.getText("EDITCA") %></h2>
-  <h3><%= ejbcawebbean.getText("CANAME")+ " : " + cainfo.getName() %></h3>
+  <h3><%= ejbcawebbean.getText("CANAME")+ " : "%><c:out value="<%= cainfo.getName() %>"/></h3>
   <%   }else{ %>
    <h2><%= ejbcawebbean.getText("CREATECA") %></h2>
-   <h3><%= ejbcawebbean.getText("CANAME")+ " : " + caname %></h3>
+   <h3><%= ejbcawebbean.getText("CANAME")+ " : "%><c:out value="<%= caname %>"/></h3>
   <%   }
      }%>
 </div>
@@ -413,9 +413,9 @@ function checkallfields(){
 
     <form name="changecatype" action="<%= THIS_FILENAME %>" method="post">
       <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATYPE %>'>
-      <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
+      <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'>
       <input type="hidden" name='<%= HIDDEN_PROCESSREQUEST %>' value='<%= processrequest%>'>
-      <input type="hidden" name='<%= HIDDEN_PROCESSREQUESTDN %>' value='<%= processedsubjectdn%>'>
+      <input type="hidden" name='<%= HIDDEN_PROCESSREQUESTDN %>' value='<c:out value="<%= processedsubjectdn %>"/>'>
       <input type="hidden" name='<%= HIDDEN_PROCESSSEQUENCE %>' value='<%= processedsequence%>'>
 
       <% if(editca) { %>
@@ -683,11 +683,11 @@ function checkallfields(){
         <strong><%= ejbcawebbean.getText("CERT_SUBJECTDN") %></strong>
       </td>
       <td width="50%"> 
-        <% if(editca){
-              out.write(cainfo.getSubjectDN() + "<br />"); 
-           }else{ %>
+        <% if(editca){%>
+              <c:out value="<%= cainfo.getSubjectDN() %>"/><br />
+          <% }else{ %>
         <% /* Maxlength for the CA subject DN is based on 250 chars MySQL String mapping minus the "CN=xxxxSignerCertificate," string that is added for services. */ %>
-        <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" <% if(processrequest) out.write(" value='" + processedsubjectdn + "'"); %> maxlength="225">
+        <input type="text" name="<%=TEXTFIELD_SUBJECTDN%>" size="45" <% if(processrequest) {%>value='<c:out value="<%= processedsubjectdn %>"/>' <%}%>maxlength="225">
         <% } %>
       </td>
     </tr>
@@ -780,12 +780,13 @@ function checkallfields(){
         <%= ejbcawebbean.getText("EXT_PKIX_SUBJECTALTNAME") %>
       </td>
       <td width="50%">
-         <% if(editca)
-              if(x509cainfo.getSubjectAltName() == null || x509cainfo.getSubjectAltName().trim().equals(""))
+         <% if(editca) {
+              if(x509cainfo.getSubjectAltName() == null || x509cainfo.getSubjectAltName().trim().equals("")) {
                 out.write(ejbcawebbean.getText("NONE")); 
-              else
-                out.write(x509cainfo.getSubjectAltName());                
-            else{  %>  
+              } else { %>
+                <c:out value="<%= x509cainfo.getSubjectAltName() %>"/>
+              <% }
+            } else{  %>  
          <input type="text" name="<%=TEXTFIELD_SUBJECTALTNAME%>" size="45" maxlength="255">
          <% } %>   
       </td>
