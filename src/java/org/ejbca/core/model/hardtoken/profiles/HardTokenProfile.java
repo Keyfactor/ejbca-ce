@@ -120,11 +120,12 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
 	 * @return a pintype with a value of one of the PINTYPE_ constants 
 	 */
 	public int getPINType(int certusage){
-	  return ((Integer) ((List) data.get(PINTYPE)).get(certusage)).intValue();	
+	  return ((Integer) ((List<?>) data.get(PINTYPE)).get(certusage)).intValue();	
 	}
 	
-	public  void setPINType(int certusage, int pintype){
-		((List) data.get(PINTYPE)).set(certusage, Integer.valueOf(pintype));		
+	@SuppressWarnings("unchecked")
+    public  void setPINType(int certusage, int pintype){
+		((List<Integer>) data.get(PINTYPE)).set(certusage, Integer.valueOf(pintype));		
 	}
 	
 	/**
@@ -135,11 +136,12 @@ public abstract class HardTokenProfile extends UpgradeableDataHashMap implements
 	 * @return a length of chars between 0 - 8. 
 	 */
 	public int getMinimumPINLength(int certusage){
-	  return ((Integer) ((List) data.get(MINIMUMPINLENGTH)).get(certusage)).intValue();	
+	  return ((Integer) ((List<?>) data.get(MINIMUMPINLENGTH)).get(certusage)).intValue();	
 	}
 	
-	public  void setMinimumPINLength(int certusage, int length){
-		((List) data.get(MINIMUMPINLENGTH)).set(certusage, Integer.valueOf(length));		
+	@SuppressWarnings("unchecked")
+    public  void setMinimumPINLength(int certusage, int length){
+		((List<Integer>) data.get(MINIMUMPINLENGTH)).set(certusage, Integer.valueOf(length));		
 	}
 
     public abstract Object clone() throws CloneNotSupportedException;

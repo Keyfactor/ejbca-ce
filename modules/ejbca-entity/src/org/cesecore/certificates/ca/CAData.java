@@ -218,10 +218,11 @@ public class CAData extends ProtectedData implements Serializable {
 	private CA readAndUpgradeCAFromDatabase()
 			throws UnsupportedEncodingException, IllegalCryptoTokenException {
 		final java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-    	final Map h = (Map)decoder.readObject();
+    	final Map<?, ?> h = (Map<?, ?>)decoder.readObject();
 		decoder.close();
 		// Handle Base64 encoded string values
-		final LinkedHashMap<Object, Object> data = new Base64GetHashMap(h);
+		@SuppressWarnings("unchecked")
+        final LinkedHashMap<Object, Object> data = new Base64GetHashMap(h);
 		
 		// If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data 
 		// and perhaps upgrading
@@ -250,9 +251,10 @@ public class CAData extends ProtectedData implements Serializable {
 	 * Method that saves the CA to database.
 	 * @ejb.interface-method
 	 */
-	public final void setCA(final CA ca) throws UnsupportedEncodingException {
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+    public final void setCA(final CA ca) throws UnsupportedEncodingException {
         // We must base64 encode string for UTF safety
-		final LinkedHashMap a = new Base64PutHashMap();
+		final LinkedHashMap<?, ?> a = new Base64PutHashMap();
         a.putAll((LinkedHashMap)ca.saveData());
         
         final java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
@@ -330,13 +332,15 @@ public class CAData extends ProtectedData implements Serializable {
 	}
 
 	/** @return return the query results as a List<CAData>. */
-	public static List<CAData> findAll(final EntityManager entityManager) {
+	@SuppressWarnings("unchecked")
+    public static List<CAData> findAll(final EntityManager entityManager) {
 		final Query query = entityManager.createQuery("SELECT a FROM CAData a");
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List<Integer>. */
-	public static List<Integer> findAllCaIds(final EntityManager entityManager) {
+	@SuppressWarnings("unchecked")
+    public static List<Integer> findAllCaIds(final EntityManager entityManager) {
 		final Query query = entityManager.createQuery("SELECT a.caId FROM CAData a");
 		return query.getResultList();
 	}

@@ -129,7 +129,8 @@ public class HardTokenCertificateMap extends ProtectedData implements Serializab
 	}
 
 	/** @return return the query results as a List. */
-	public static List<HardTokenCertificateMap> findByTokenSN(EntityManager entityManager, String tokenSN) {
+	@SuppressWarnings("unchecked")
+    public static List<HardTokenCertificateMap> findByTokenSN(EntityManager entityManager, String tokenSN) {
 		Query query = entityManager.createQuery("SELECT a FROM HardTokenCertificateMap a WHERE a.tokenSN=:tokenSN");
 		query.setParameter("tokenSN", tokenSN);
 		return query.getResultList();

@@ -1,7 +1,5 @@
 package org.ejbca.ui.web.admin.configuration;
 
-import java.util.Map;
-
 import javax.faces.application.Application;
 import javax.faces.context.FacesContext;
 import javax.faces.el.ValueBinding;
@@ -62,13 +60,13 @@ public class EjbcaJSFHelper {
     } 
     
    /** Used for language resources. */
-    public Map getText(){
+    public EjbcaJSFLanguageResource getText(){
     	setEjbcaWebBean(getEjbcaWebBean());
     	return text;
     }
     
     /** Used for image resources. */
-     public Map getImage(){
+     public EjbcaJSFImageResource getImage(){
         setEjbcaWebBean(getEjbcaWebBean());
      	return image;
      }

@@ -67,7 +67,8 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
      * @param certusage should be one of the CERTUSAGE_ constants.
      * @return The certificate profile id that should be used.
      */
-    public int getCertificateProfileId(int certusage){return ((Integer) ((List) data.get(CERTIFICATEPROFILEID)).get(certusage)).intValue();}
+    @SuppressWarnings("unchecked")
+    public int getCertificateProfileId(int certusage){return ((Integer) ((List<Integer>) data.get(CERTIFICATEPROFILEID)).get(certusage)).intValue();}
 
 
     /**
@@ -78,7 +79,8 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
      * @return boolean indicating if the certificate should be rewritabes, if false 
      * the certificate is written as read-only and cannot be renewed.
      */
-    public boolean getCertWritable(int certusage){ return ((Boolean) ((List) data.get(CERTWRITABLE)).get(certusage)).booleanValue();}
+    @SuppressWarnings("unchecked")
+    public boolean getCertWritable(int certusage){ return ((Boolean) ((List<Boolean>) data.get(CERTWRITABLE)).get(certusage)).booleanValue();}
     
 	/**
 	 * Indicates which ca id that should be requested when
@@ -89,7 +91,8 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 * @param certusage should be one of the CERTUSAGE_ constants.
 	 * @return The caid that should be used.
 	 */
-	public int getCAId (int certusage){return ((Integer) ((List) data.get(CAID)).get(certusage)).intValue();}
+	@SuppressWarnings("unchecked")
+    public int getCAId (int certusage){return ((Integer) ((List<Integer>) data.get(CAID)).get(certusage)).intValue();}
 
 
 	/**
@@ -98,7 +101,8 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 * @param certusage should be one of the CERTUSAGE_ constants.
 	 * @return true if the keys used for the certusage should be saved to database.
 	 */
-	public boolean getIsKeyRecoverable (int certusage){return ((Boolean) ((List) data.get(ISKEYRECOVERABLE)).get(certusage)).booleanValue();}
+	@SuppressWarnings("unchecked")
+    public boolean getIsKeyRecoverable (int certusage){return ((Boolean) ((List<Boolean>) data.get(ISKEYRECOVERABLE)).get(certusage)).booleanValue();}
 
 	/**
 	 * Indicates if the certificate should be reused when recovering a token. This
@@ -107,7 +111,8 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 * @param certusage should be one of the CERTUSAGE_ constants.
 	 * @return true if the certificate should bereused
 	 */
-	public boolean getReuseOldCertificate (int certusage){return ((Boolean) ((List) data.get(REUSEOLDCERTIFICATE)).get(certusage)).booleanValue();}
+	@SuppressWarnings("unchecked")
+    public boolean getReuseOldCertificate (int certusage){return ((Boolean) ((List<Boolean>) data.get(REUSEOLDCERTIFICATE)).get(certusage)).booleanValue();}
 	
 	/**
 	 * Gives the minimum key length allowed. 
@@ -116,7 +121,8 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 * @param certusage should be one of the CERTUSAGE_ constants.
 	 * @return The caid that should be used.
 	 */
-	public int getMinimumKeyLength (int certusage){return ((Integer) ((List) data.get(MINIMUMKEYLENGTH)).get(certusage)).intValue(); }
+	@SuppressWarnings("unchecked")
+    public int getMinimumKeyLength (int certusage){return ((Integer) ((List<Integer>) data.get(MINIMUMKEYLENGTH)).get(certusage)).intValue(); }
 
 	/**
 	 * Indicates which type of key that should be generated for the certusage.
@@ -126,7 +132,8 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 * @param certusage should be one of the CERTUSAGE_ constants.
 	 * @return The keytype that should be generated, one of the KEYTYPE_ Constants
 	 */
-	public String getKeyType (int certusage){return ((String) ((List) data.get(KEYTYPES)).get(certusage)); }
+	@SuppressWarnings("unchecked")
+    public String getKeyType (int certusage){return ((String) ((List<String>) data.get(KEYTYPES)).get(certusage)); }
 
 	// Public Methods used By EJBCA
 
@@ -205,7 +212,8 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	 * Returns a collection of all defined certificate profiles.
 	 *
 	 */
-	public Collection<Integer> getAllCertificateProfileIds(){
+	@SuppressWarnings("unchecked")
+    public Collection<Integer> getAllCertificateProfileIds(){
 	  return (Collection<Integer>) data.get(CERTIFICATEPROFILEID);	
 	}
 	

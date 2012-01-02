@@ -20,7 +20,6 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /** Parameters used in UsernameGenerator
  * 
- * @author tomas
  * @version $Id$
  * @see UsernameGenerator
  */
@@ -41,7 +40,7 @@ public class UsernameGeneratorParams {
 	public static final String FIXED = "FIXED";
 	
 	private String[] modes = {"RANDOM", "USERNAME", "DN", "FIXED"};
-	private List modeList = null;
+	private List<String> modeList = null;
 
 	// Generator configuration parameters, with good default values
 	private int mode = MODE_RANDOM;

@@ -287,7 +287,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 			}
 		}
 		if (includeAllCAs) {
-			String caname = (String)EjbcaJSFHelper.getBean().getText().get("ANYCA");
+			String caname = EjbcaJSFHelper.getBean().getText().get("ANYCA");
 			availableCANames.add(new SelectItem(Integer.valueOf(SecConst.ALLCAS).toString(), caname));
 		}
 		return availableCANames;		

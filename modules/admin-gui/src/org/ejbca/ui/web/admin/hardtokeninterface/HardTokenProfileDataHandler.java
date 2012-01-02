@@ -215,6 +215,7 @@ public class HardTokenProfileDataHandler implements Serializable {
      * @param profile 
      * @return false if something went wrong in the encoding process.
      */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private boolean checkXMLEncoding(HardTokenProfile profile) {
         boolean success = false;
         try{
@@ -222,7 +223,7 @@ public class HardTokenProfileDataHandler implements Serializable {
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
             
             // We must base64 encode string for UTF safety
-            HashMap a = new Base64PutHashMap();
+            HashMap<?, ?> a = new Base64PutHashMap();
             a.putAll((HashMap)profile.saveData());
             java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
             encoder.writeObject(a);
