@@ -194,6 +194,7 @@ public class CmpRAUnidTest extends CmpTestCase {
         return this.getClass().getSimpleName(); 
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void checkDN(String sExpected, X509Name actual) {
         final X509Name expected = new X509Name(sExpected);

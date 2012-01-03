@@ -697,6 +697,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<CertificateData> findBySubjectDNAndIssuerDN(EntityManager entityManager, String subjectDN, String issuerDN) {
         final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
         query.setParameter("subjectDN", subjectDN);
@@ -705,6 +706,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a Set. */
+    @SuppressWarnings("unchecked")
     public static Set<String> findUsernamesBySubjectDNAndIssuerDN(EntityManager entityManager, String subjectDN, String issuerDN) {
             final Query query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE a.subjectDN=:subjectDN AND a.issuerDN=:issuerDN");
             query.setParameter("subjectDN", subjectDN);
@@ -713,6 +715,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
     
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<CertificateData> findBySubjectDN(EntityManager entityManager, String subjectDN) {
         final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.subjectDN=:subjectDN");
         query.setParameter("subjectDN", subjectDN);
@@ -720,6 +723,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<CertificateData> findBySerialNumber(EntityManager entityManager, String serialNumber) {
         final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.serialNumber=:serialNumber");
         query.setParameter("serialNumber", serialNumber);
@@ -727,6 +731,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<CertificateData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
         final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
         query.setParameter("issuerDN", issuerDN);
@@ -784,6 +789,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<CertificateData> findByUsernameOrdered(EntityManager entityManager, String username) {
         final Query query = entityManager
                 .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username ORDER BY a.expireDate DESC, a.serialNumber DESC");
@@ -792,6 +798,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<CertificateData> findByUsernameAndStatus(EntityManager entityManager, String username, int status) {
         final Query query = entityManager
                 .createQuery("SELECT a FROM CertificateData a WHERE a.username=:username AND a.status=:status ORDER BY a.expireDate DESC, a.serialNumber DESC");
@@ -802,6 +809,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /** @return return the query results as a List. */
     // TODO: When only JPA is used, check if we can refactor this method to SELECT DISTINCT a.username FROM ...
+    @SuppressWarnings("unchecked")
     public static Set<String> findUsernamesByIssuerDNAndSubjectKeyId(EntityManager entityManager, String issuerDN, String subjectKeyId) {
         final Query query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.subjectKeyId=:subjectKeyId");
         query.setParameter("issuerDN", issuerDN);
@@ -810,6 +818,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a List<String>. */
+    @SuppressWarnings("unchecked")
     public static List<String> findFingerprintsByIssuerDN(EntityManager entityManager, String issuerDN) {
         final Query query = entityManager.createQuery("SELECT a.fingerprint FROM CertificateData a WHERE a.issuerDN=:issuerDN");
         query.setParameter("issuerDN", issuerDN);
@@ -825,6 +834,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param batchSize
      * @return
      */
+    @SuppressWarnings("unchecked")
     public static List<CertificateData> getNextBatch(EntityManager entityManager, int certificateProfileId, String currentFingerprint, int batchSize) {
         final Query query = entityManager
                 .createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint AND a.certificateProfileId=:certificateProfileId ORDER BY a.fingerprint ASC");
@@ -843,6 +853,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param batchSize
      * @return
      */
+    @SuppressWarnings("unchecked")
     public static List<CertificateData> getNextBatch(EntityManager entityManager, String currentFingerprint, int batchSize) {
         final Query query = entityManager
                 .createQuery("SELECT a FROM CertificateData a WHERE a.fingerprint>:currentFingerprint ORDER BY a.fingerprint ASC");
@@ -866,6 +877,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<Integer> getUsedCertificateProfileIds(EntityManager entityManager) {
         final Query query = entityManager.createQuery("SELECT DISTINCT a.certificateProfileId FROM CertificateData a ORDER BY a.certificateProfileId");
         return query.getResultList();
@@ -892,6 +904,7 @@ public class CertificateData extends ProtectedData implements Serializable {
             query.setParameter("issuerDN", issuerDN);
             query.setParameter("status", CertificateConstants.CERT_REVOKED);
         }
+        @SuppressWarnings("unchecked")
         final List<Object[]> incompleteCertificateDatas = query.getResultList();
         final List<RevokedCertInfo> revokedCertInfos = new ArrayList<RevokedCertInfo>();
         for (Object[] current : incompleteCertificateDatas) {
@@ -907,6 +920,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<CertificateData> findByExpireDateWithLimit(EntityManager entityManager, long expireDate) {
         final Query query = entityManager
                 .createQuery("SELECT a FROM CertificateData a WHERE a.expireDate<:expireDate AND (a.status=:status1 OR a.status=:status2)");
@@ -917,6 +931,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         return query.getResultList();
     }
 
+    @SuppressWarnings("unchecked")
     public static List<String> findUsernamesByExpireTimeWithLimit(EntityManager entityManager, long minExpireTime, long maxExpireTime) {
         // TODO: Would it be more effective to drop the NOT NULL of this query and remove it from the result?
         final Query query = entityManager
@@ -947,6 +962,7 @@ public class CertificateData extends ProtectedData implements Serializable {
         final Query query = entityManager.createQuery("SELECT a.base64Cert FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber IN ("
                 + sb.toString() + ")");
         query.setParameter("issuerDN", issuerDN);
+        @SuppressWarnings("unchecked")
         final List<String> base64CertificateList = query.getResultList();
         for (String base64Certificate : base64CertificateList) {
             try {
@@ -967,6 +983,7 @@ public class CertificateData extends ProtectedData implements Serializable {
                         + "a.username, a.tag, a.certificateProfileId, a.updateTime FROM CertificateData a WHERE a.fingerprint=:fingerprint",
                 "CertificateInfoSubset");
         query.setParameter("fingerprint", fingerprint);
+        @SuppressWarnings("unchecked")
         final List<Object[]> resultList = (List<Object[]>) query.getResultList();
         if (!resultList.isEmpty()) {
             Object[] fields = resultList.get(0);
@@ -1001,6 +1018,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param maxRows pagination variable max number of rows that should be returned, used in order to make it somewhat efficient on large data
      *            volumes
      * */
+    @SuppressWarnings("unchecked")
     public static List<CertificateData> findAllOnHold(EntityManager entityManager, String issuerDN, int firstResult, int maxRows) {
         final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.status=:status");
         query.setParameter("issuerDN", issuerDN);
@@ -1016,6 +1034,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param maxRows pagination variable max number of rows that should be returned, used in order to make it somewhat efficient on large data
      *            volumes
      * */
+    @SuppressWarnings("unchecked")
     public static List<CertificateData> findAllNonRevokedCertificates(EntityManager entityManager, String issuerDN, int firstResult, int maxRows) {
         final Query query = entityManager.createQuery("SELECT a FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.status <> :status");
         query.setParameter("issuerDN", issuerDN);
@@ -1027,6 +1046,7 @@ public class CertificateData extends ProtectedData implements Serializable {
 
     /**
      * @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types. */
+    @SuppressWarnings("unchecked")
     public static List<Certificate> findActiveCertificatesByType(EntityManager entityManager, Collection<Integer> certificateTypes) {
         final List<Certificate> certificateList = new ArrayList<Certificate>();
         // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements
@@ -1053,6 +1073,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @return a List<Certificate> of SecConst.CERT_ACTIVE and CERT_NOTIFIEDABOUTEXPIRATION certs that have one of the specified types for the given
      *         issuer.
      */
+    @SuppressWarnings("unchecked")
     public static List<Certificate> findActiveCertificatesByTypeAndIssuer(EntityManager entityManager, final Collection<Integer> certificateTypes, String issuerDN) {
         final List<Certificate> certificateList = new ArrayList<Certificate>();
         // Derby: Columns of type 'LONG VARCHAR' may not be used in CREATE INDEX, ORDER BY, GROUP BY, UNION, INTERSECT, EXCEPT or DISTINCT statements
@@ -1081,6 +1102,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * 
      * @return [0] = (String) fingerprint, [1] = (String) username
      */
+    @SuppressWarnings("unchecked")
     public static List<Object[]> findExpirationInfo(EntityManager entityManager, Collection<String> cas, long activeNotifiedExpireDateMin,
             long activeNotifiedExpireDateMax, long activeExpireDateMin) {
         // We don't select the base64 certificate data here, because it may be a LONG data type which we can't simply select, or we don't want to read all the data.

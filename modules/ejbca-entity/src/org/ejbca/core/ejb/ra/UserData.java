@@ -573,6 +573,7 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<UserData> findBySubjectEmail(EntityManager entityManager, String subjectEmail) {
         final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectEmail=:subjectEmail");
         query.setParameter("subjectEmail", subjectEmail);
@@ -580,6 +581,7 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<UserData> findByStatus(EntityManager entityManager, int status) {
         final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.status=:status");
         query.setParameter("status", status);
@@ -587,12 +589,14 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<UserData> findAll(EntityManager entityManager) {
         final Query query = entityManager.createQuery("SELECT a FROM UserData a");
         return query.getResultList();
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<UserData> findAllBatchUsersByStatus(EntityManager entityManager, int status, int maximumQueryRowcount) {
         final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.status=:status AND (clearPassword IS NOT NULL)");
         query.setParameter("status", status);
@@ -601,6 +605,7 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     /** @return return a List<UserData> with tokenType TOKEN_HARD_DEFAULT and status NEW or KEYRECOVERY. */
+    @SuppressWarnings("unchecked")
     public static List<UserData> findNewOrKeyrecByHardTokenIssuerId(EntityManager entityManager, int hardTokenIssuerId, int maxResults) {
         final Query query = entityManager
                 .createQuery("SELECT a FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
@@ -639,6 +644,7 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     /** @return return a List<UserData> matching the custom query. */
+    @SuppressWarnings("unchecked")
     public static List<UserData> findByCustomQuery(EntityManager entityManager, String customQuery, int maxResults) {
         final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE " + customQuery);
         if (maxResults > 0) {
@@ -676,6 +682,7 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     /** @return a list of subjectDNs that contain SN=serialnumber* for a CA and excludes a username. */
+    @SuppressWarnings("unchecked")
     public static List<String> findSubjectDNsByCaIdAndNotUsername(final EntityManager entityManager, final int caId, final String username,
             final String serialnumber) {
         final Query query = entityManager
