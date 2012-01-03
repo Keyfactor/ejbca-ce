@@ -300,8 +300,8 @@ function checkuseautoenroll(){
         	  while(it.hasNext()) { 
         	  	Object o = it.next();
         	  %>
-              <option value="<%=o%>"> 
-                  <%=o%>
+              <option value="<c:out value="<%= o %>"/>">
+                  <c:out value="<%= o %>"/> 
                </option>
             <% } %>
           </select><br/>
