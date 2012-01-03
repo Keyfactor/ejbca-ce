@@ -99,7 +99,7 @@ public class PluginTool {
 							}
 						}
 						if (checkSuperClasses) {
-							Class superClass = currentClass;
+							Class<?> superClass = currentClass;
 							boolean foundMatch = false;
 							while (!foundMatch && !((superClass = superClass.getSuperclass())==null || superClass.getName().startsWith("java.") || superClass.getName().startsWith("javax."))) {
 								for (Class<?> currentInterfaceClass : superClass.getInterfaces()) {
