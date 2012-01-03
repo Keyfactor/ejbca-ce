@@ -80,7 +80,7 @@
 
       <tr id="Row<%=(viewendentityhelper.row++)%2%>" class="title">
 	<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><strong><%= ejbcawebbean.getText("USERNAME") %></strong></td>
-	<td><strong><% if(viewendentityhelper.userdata.getUsername() != null) out.write(viewendentityhelper.userdata.getUsername()); %>
+	<td><strong><% if(viewendentityhelper.userdata.getUsername() != null) {%> <c:out value="<%= viewendentityhelper.userdata.getUsername() %>"/><%}%>
         </strong></td>
       </tr>
 
@@ -140,9 +140,9 @@
 
       <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("ENDENTITYPROFILE") %></td>
-	<td><% if(viewendentityhelper.userdata.getEndEntityProfileId() != 0)
-                    out.write(rabean.getEndEntityProfileName(viewendentityhelper.userdata.getEndEntityProfileId()));
-                 else out.write(ejbcawebbean.getText("NOENDENTITYPROFILEDEFINED"));%>
+	<td><% if(viewendentityhelper.userdata.getEndEntityProfileId() != 0) {%>
+	                <c:out value="<%= rabean.getEndEntityProfileName(viewendentityhelper.userdata.getEndEntityProfileId()) %>"/>
+                 <%} else out.write(ejbcawebbean.getText("NOENDENTITYPROFILEDEFINED"));%>
         </td>
       </tr>
 
@@ -159,7 +159,7 @@
       <% if(viewendentityhelper.profile.getUse(EndEntityProfile.EMAIL,0)){ %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("EMAIL") %></td>
-	 <td><% if(viewendentityhelper.userdata.getEmail() != null) out.write(viewendentityhelper.userdata.getEmail()); %>
+	 <td><% if(viewendentityhelper.userdata.getEmail() != null) {%><c:out value="<%= viewendentityhelper.userdata.getEmail() %>"/><%}%>
          </td>
        </tr>
        <% } %>
@@ -184,7 +184,7 @@
          %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE])) %></td>
-	 <td><span class="attribute"><% if(viewendentityhelper.fieldvalue != null) out.write(viewendentityhelper.fieldvalue); %></span>
+	 <td><span class="attribute"><% if(viewendentityhelper.fieldvalue != null) {%> <c:out value="<%= viewendentityhelper.fieldvalue %>"/><%}%></span>
          </td>
        </tr>
        <% } %>
@@ -208,7 +208,7 @@
          %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE])) %></td>
-	 <td><% if(viewendentityhelper.fieldvalue != null) out.write(viewendentityhelper.fieldvalue); %> 
+	 <td><% if(viewendentityhelper.fieldvalue != null) {%> <c:out value="<%= viewendentityhelper.fieldvalue %>"/><%}%> 
          </td>
        </tr>
        <%   }
@@ -229,7 +229,7 @@
          %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileId(viewendentityhelper.fielddata[EndEntityProfile.FIELDTYPE])) %></td>
-	 <td><% if(viewendentityhelper.fieldvalue != null) out.write(viewendentityhelper.fieldvalue); %> 
+	 <td><% if(viewendentityhelper.fieldvalue != null) {%> <c:out value="<%= viewendentityhelper.fieldvalue %>"/><%}%> 
          </td>
        </tr>
        <% } %>  
@@ -257,7 +257,7 @@
 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CA") %></td>
-	 <td><%= viewendentityhelper.userdata.getCAName()  %>
+	 <td><c:out value="<%= viewendentityhelper.userdata.getCAName() %>"/>
          </td>
        </tr>
 
@@ -266,9 +266,9 @@
          <td>   
             <% for(int i=0; i < viewendentityhelper.tokentexts.length;i++){
                 if(viewendentityhelper.tokenids[i] == viewendentityhelper.userdata.getTokenType())
-                   if( viewendentityhelper.tokenids[i] > SecConst.TOKEN_SOFT)
-                     out.write(viewendentityhelper.tokentexts[i]);
-                   else
+                   if( viewendentityhelper.tokenids[i] > SecConst.TOKEN_SOFT) {%>
+                     <c:out value="<%= viewendentityhelper.tokentexts[i] %>"/>
+                   <%} else
                      out.write(ejbcawebbean.getText(viewendentityhelper.tokentexts[i]));
               } %>
          </td> 
@@ -280,8 +280,9 @@
          <td>   
             <% if(viewendentityhelper.userdata.getHardTokenIssuerId() == SecConst.NO_HARDTOKENISSUER)
                  out.write(ejbcawebbean.getText("NONE"));
-               else
-                 out.write(tokenbean.getHardTokenIssuerAlias(viewendentityhelper.userdata.getHardTokenIssuerId()));
+               else {%>
+                 <c:out value="<%= tokenbean.getHardTokenIssuerAlias(viewendentityhelper.userdata.getHardTokenIssuerId()) %>"/>
+               <%}
             %>
          </td> 
        </tr>
@@ -309,7 +310,7 @@
 		if ( certSerialNr!=null ) { %>
 			<tr id="Row<%=(viewendentityhelper.row++)%2%>">
 			<td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERT_SERIALNUMBER") %></td>
-			<td><%= certSerialNr %></td>
+			<td><c:out value="<%= certSerialNr %>"/></td>
 			</tr> 
 	<%	}
 	  } %>
@@ -344,7 +345,7 @@
       <% if(viewendentityhelper.profile.getUse(EndEntityProfile.CARDNUMBER,0)){ %>
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CARDNUMBER") %></td>
-	 <td><% if(viewendentityhelper.userdata.getCardNumber() != null) out.write(viewendentityhelper.userdata.getCardNumber()); %>
+	 <td><% if(viewendentityhelper.userdata.getCardNumber() != null) {%><c:out value="<%= viewendentityhelper.userdata.getCardNumber() %>"/><%}%>
          </td>
        </tr>
       <% } %>
