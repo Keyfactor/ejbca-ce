@@ -195,6 +195,7 @@ public class UserDataSourceData extends ProtectedData implements Serializable {
     }
     
 	/** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<UserDataSourceData> findAll(EntityManager entityManager) {
     	final Query query = entityManager.createQuery("SELECT a FROM UserDataSourceData a");
     	return query.getResultList();
