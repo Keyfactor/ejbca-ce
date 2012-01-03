@@ -40,8 +40,8 @@
              while(iter.hasNext()){
                String publishername = (String) iter.next(); %>
                
-            <option value="<%=publishername%>"> 
-                <%= publishername %>
+            <option value="<c:out value="<%= publishername %>"/>">
+                <c:out value="<%= publishername %>"/> 
              </option>
           <%}%>
         </select>
