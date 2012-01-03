@@ -44,9 +44,10 @@ import org.ejbca.core.model.log.Admin;
  * Contains information like: Admin that performs the request Data necessary to display the request to the approver Eventual data necessary to execute
  * the request.
  * 
- * @author Philip Vendil
  * @version $Id$
- */
+ */ 
+// Suppressing deprecation due to backwards compatibility
+@SuppressWarnings("deprecation")
 public abstract class ApprovalRequest implements Externalizable {
 
     private static final long serialVersionUID = -1L;
