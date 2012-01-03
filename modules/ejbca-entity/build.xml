@@ -84,12 +84,6 @@
 	<path id="cli.classpath">
 		<path refid="lib.ldap.classpath"/>
 		<path refid="compile.classpath"/>
-		<path location="${build.dir}"/>
-		<!--
-		<path refid="lib.batik.classpath"/>	<!- - we only need xerces - ->
-		<path refid="jdbc-jars.classpath"/>
-		<path location="${build-cli.dir}"/>
-		-->
 	</path>
 
 	<path id="generate.classpath">
@@ -285,15 +279,6 @@
         <javac destdir="${build-cli.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}" classpathref="compile-cli.classpath">
         	<include name="org/ejbca/database/**/*.java"/>
-        	<include name="org/cesecore/authorization/cache/AccessTreeUpdateData.java"/>
-        	<include name="org/cesecore/authorization/rules/AccessRuleData.java"/>
-        	<include name="org/cesecore/authorization/user/AccessUserAspectData.java"/>
-        	<include name="org/cesecore/certificates/certificate/CertificateData.java"/>
-        	<include name="org/cesecore/certificates/crl/CRLData.java"/>
-        	<include name="org/cesecore/dbprotection/DatabaseProtectionError.java"/>
-        	<include name="org/cesecore/dbprotection/ProtectedData.java"/> 
-        	<include name="org/cesecore/roles/RoleData.java"/> 
-        	<include name="org/ejbca/core/ejb/hardtoken/HardTokenCertificateMap.java"/> 
         	<!-- Include classes that are instantiated through reflection -->
         	<include name="org/cesecore/keys/token/SoftCryptoToken.java"/>
         	<include name="org/cesecore/keys/token/PKCS11CryptoToken.java"/>

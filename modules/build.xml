@@ -89,7 +89,7 @@
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="ejbca-db-cli" description="Build EJBCA JPA database CLI">
+	<target name="ejbca-db-cli" depends="ejbca-util" description="Build EJBCA JPA database CLI">
 		<ant antfile="${mod.ejbca-entity.path}/build.xml" target="build-cli" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
