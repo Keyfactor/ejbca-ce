@@ -255,10 +255,6 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         	try {
                                         		pub = ejb.getPublisherSession().getPublisher(publisher);
                                         	} catch (Exception e) {
-                                        		String msg = e.getMessage();
-                                        		if (e.getCause() != null) {
-                                        			msg += ": "+e.getCause().getMessage();
-                                        		}
                                         		getLogger().warn("Warning: There was an error loading publisher with id " + publisher + ". Use debug logging to see stack trace: "+e.getMessage());
                                         		getLogger().debug("Full stack trace: ", e);
                                         	}

@@ -278,7 +278,7 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
     	// Now we should not be able to verify a new certificate with old CA certificate
     	try {
             try {
-                X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+                certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
                 fail("should not be able to create certificate");
             } catch (CertificateCreateException e) {
                 // NOPMD

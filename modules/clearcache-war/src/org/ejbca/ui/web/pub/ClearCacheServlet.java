@@ -28,9 +28,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
@@ -124,7 +121,6 @@ public class ClearCacheServlet extends HttpServlet {
 			log.trace(">acceptedHost: "+remotehost);
 		}    	
 		boolean ret = false;
-		AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ClearCacheServlet: "+remotehost));
 		GlobalConfiguration gc = globalconfigurationsession.getCachedGlobalConfiguration();
 		Set<String> nodes = gc.getNodesInCluster();
 		Iterator<String> itr = nodes.iterator();
