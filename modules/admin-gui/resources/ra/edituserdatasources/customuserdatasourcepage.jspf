@@ -15,7 +15,7 @@
       </td>
       <td width="60%" valign="top">   
         <input type="text" name="<%=EditUserDataSourceJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>" size="45" maxlength="255" 
-               value='<%= customuserdatasource.getClassPath()%>'>       
+               value='<c:out value="<%= customuserdatasource.getClassPath() %>"/>'>       
       </td>
     </tr>
     <tr id="Row<%=row++%2%>"> 
@@ -23,6 +23,6 @@
          <%= ejbcawebbean.getText("PROPERTIESOFCUSTOM") %>
       </td>
       <td width="60%" valign="top">          
-         <textarea name="<%=EditUserDataSourceJSPHelper.TEXTAREA_CUSTOMPROPERTIES%>" cols="45" rows="8"><% out.write(customuserdatasource.getPropertyData());%></textarea>
+         <textarea name="<%=EditUserDataSourceJSPHelper.TEXTAREA_CUSTOMPROPERTIES%>" cols="45" rows="8"><c:out value="<%= customuserdatasource.getPropertyData() %>"/></textarea>
       </td>
     </tr>

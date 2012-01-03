@@ -32,15 +32,15 @@ function checkallfields(){
 </script>
 <div align="center"> 
   <h2><%= ejbcawebbean.getText("EDITUSERDATASOURCE") %></h2>
-  <h3><%= ejbcawebbean.getText("USERDATASOURCE")+ " : " + userdatasourcehelper.userdatasourcename %></h3>
+  <h3><%= ejbcawebbean.getText("USERDATASOURCE")+ " : "%><c:out value="<%= userdatasourcehelper.userdatasourcename %>"/></h3>
 <% if(userdatasourcehelper.connectionmessage){
      userdatasourcehelper.connectionmessage = false;
      if(userdatasourcehelper.connectionsuccessful){
         userdatasourcehelper.connectionsuccessful = false;
         out.write("<h3>" + ejbcawebbean.getText("CONTESTEDSUCESSFULLY") +"</h3>");
      }else{
-       out.write("<h3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : " + userdatasourcehelper.connectionerrormessage +"</h3>");
-     }
+       out.write("<h3>" + ejbcawebbean.getText("ERRORCONNECTINGTOPUB") + " : ");%> <c:out value="<%= userdatasourcehelper.connectionerrormessage %>"/></h3>
+     <%}
    } %>
 </div>
   <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
@@ -60,12 +60,12 @@ function checkallfields(){
         <%= ejbcawebbean.getText("NAME") %>
       </td>
       <td width="60%"> 
-        <%= userdatasourcehelper.userdatasourcename%>
+        <c:out value="<%= userdatasourcehelper.userdatasourcename %>"/>
       </td>
     </tr>
     <form name="userdatasourcetype" method="post" action="<%=THIS_FILENAME %>">
       <input type="hidden" name='<%= EditUserDataSourceJSPHelper.ACTION %>' value='<%=EditUserDataSourceJSPHelper.ACTION_CHANGE_USERDATASOURCETYPE %>'>
-      <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCENAME %>' value='<%=userdatasourcehelper.userdatasourcename %>'>
+      <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCENAME %>' value='<c:out value="<%= userdatasourcehelper.userdatasourcename %>"/>'>
     <tr  id="Row<%=row%2%>"> 
       <td width="40%"  align="right"> 
         <%= ejbcawebbean.getText("USERDATASOURCETYPE") %>
@@ -87,7 +87,7 @@ function checkallfields(){
    <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
    <form name="edituserdatasource" method="post" action="<%=THIS_FILENAME %>">
     <input type="hidden" name='<%= EditUserDataSourceJSPHelper.ACTION %>' value='<%=EditUserDataSourceJSPHelper.ACTION_EDIT_USERDATASOURCE %>'>
-    <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCENAME %>' value='<%=userdatasourcehelper.userdatasourcename %>'>
+    <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCENAME %>' value='<c:out value="<%= userdatasourcehelper.userdatasourcename %>"/>'>
     <input type="hidden" name='<%= EditUserDataSourceJSPHelper.HIDDEN_USERDATASOURCETYPE %>' value='<%=userdatasourcehelper.getUserDataSourceType() %>'>
     <tr  id="Row<%=row++%2%>"> 
       <td width="40%"  align="right">         
@@ -161,7 +161,7 @@ function checkallfields(){
               <%    if(usedcas.contains(caid))
                       out.write(" selected ");
                   %>>
-              <%= next %>         
+              <c:out value="<%= next %>"/>
            </option>  
               <% } %>
         </select>
@@ -172,7 +172,7 @@ function checkallfields(){
          <%= ejbcawebbean.getText("DESCRIPTION") %> 
       </td>
       <td width="60%">        
-        <textarea name="<%=EditUserDataSourceJSPHelper.TEXTAREA_DESCRIPTION%>" cols="45" rows="4"><% out.write(userdatasourcedata.getDescription());%></textarea>
+        <textarea name="<%=EditUserDataSourceJSPHelper.TEXTAREA_DESCRIPTION%>" cols="45" rows="4"><c:out value="<%= userdatasourcedata.getDescription() %>"/></textarea>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
