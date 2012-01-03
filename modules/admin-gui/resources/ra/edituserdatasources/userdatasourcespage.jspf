@@ -40,8 +40,8 @@
              while(iter.hasNext()){
                String userdatasourcename = (String) iter.next(); %>
                
-            <option value="<%=userdatasourcename%>"> 
-                <%= userdatasourcename %>
+            <option value="<c:out value="<%= userdatasourcename %>"/>"> 
+                <c:out value="<%= userdatasourcename %>"/>
              </option>
           <%}%>
         </select>
