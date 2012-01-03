@@ -34,14 +34,11 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.cesecore.audit.enums.EventType;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
@@ -264,8 +261,8 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                 userDataDN = voldata.getUserDN();
             }
             boolean published = false;
-            EventType auditEventType = EjbcaEventTypes.PUBLISHER_STORE_CERTIFICATE;
-            String certSerialNumber = null;
+      
+     
             try {
                 if (publishType == PublisherConst.PUBLISH_TYPE_CERT) {
                     if (log.isDebugEnabled()) {
@@ -283,7 +280,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                             throw new FinderException();
                         }
                         final Certificate cert = cd.getCertificate();
-                        certSerialNumber = CertTools.getSerialNumberAsString(cert);
+                       
                         try {
                         	published = publisherQueueSession.storeCertificateNonTransactional(publisher, admin, cert, username, password, userDataDN,
                         			cd.getCaFingerprint(), cd.getStatus(), cd.getType(), cd.getRevocationDate(), cd.getRevocationReason(), cd.getTag(), cd
@@ -304,7 +301,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
                     if (log.isDebugEnabled()) {
                         log.debug("Publishing CRL");
                     }
-                    auditEventType = EjbcaEventTypes.PUBLISHER_STORE_CRL;
+            
                     CRLData crlData = CRLData.findByFingerprint(entityManager, fingerprint);
 
                     if (crlData == null) {

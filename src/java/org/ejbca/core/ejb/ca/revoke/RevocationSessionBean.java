@@ -53,7 +53,6 @@ import org.ejbca.core.model.InternalEjbcaResources;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class RevocationSessionBean implements RevocationSessionLocal, RevocationSessionRemote {
 
-    private static final long serialVersionUID = 1L;
     private static final Logger log = Logger.getLogger(RevocationSessionBean.class);
 
     @EJB

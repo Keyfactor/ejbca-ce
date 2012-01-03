@@ -32,8 +32,6 @@ import org.ejbca.config.EjbcaConfiguration;
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class HealthCheckSessionBean implements HealthCheckSessionLocal, HealthCheckSessionRemote {
 
-    private static final long serialVersionUID = 1L;
-
     private final static Logger log = Logger.getLogger(HealthCheckSessionBean.class);
 
     @PersistenceContext(unitName="ejbca")
