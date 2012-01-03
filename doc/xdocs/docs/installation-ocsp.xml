@@ -352,7 +352,7 @@ cp dist/jbosslog4jsafer.jar /home/jboss/jboss-4.2.2.GA/server/default/lib/
 <b>4.</b> Modify your jboss-log4j.xml file to use the SaferDailyRollingFileAppender and ProbeableErrorHandler. For example:
 </p>
 <source>
-	&lt;appender name="OCSPTRANSACTION" class="org.ejbca.appserver.jboss.SaferDailyRollingFileAppender">
+	&lt;appender name="OCSPTRANSACTION" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
 		&lt;errorHandler class="org.ejbca.appserver.jboss.ProbeableErrorHandler" />
 		&lt;param name="File" value="${jboss.server.log.dir}/transactions.log" />
 		&lt;param name="Append" value="true" />
@@ -364,7 +364,7 @@ cp dist/jbosslog4jsafer.jar /home/jboss/jboss-4.2.2.GA/server/default/lib/
 			&lt;param name="ConversionPattern" value="%d %-5p [%c] %m%n" />
 		&lt;/layout>
 	&lt;/appender>
-	&lt;appender name="OCSPAUDIT" class="org.ejbca.appserver.jboss.SaferDailyRollingFileAppender">
+	&lt;appender name="OCSPAUDIT" class="org.cesecore.util.log.SaferDailyRollingFileAppender">
 		&lt;errorHandler class="org.ejbca.appserver.jboss.ProbeableErrorHandler" />
 		&lt;param name="File" value="${jboss.server.log.dir}/audit.log" />
 		&lt;param name="Append" value="true" />

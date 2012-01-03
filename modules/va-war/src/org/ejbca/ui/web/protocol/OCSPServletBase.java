@@ -74,6 +74,9 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.GUIDGenerator;
+import org.cesecore.util.log.ProbableErrorHandler;
+import org.cesecore.util.log.SaferAppenderListener;
+import org.cesecore.util.log.SaferDailyRollingFileAppender;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
@@ -83,7 +86,6 @@ import org.ejbca.core.protocol.ocsp.AuditLogger;
 import org.ejbca.core.protocol.ocsp.IAuditLogger;
 import org.ejbca.core.protocol.ocsp.IOCSPExtension;
 import org.ejbca.core.protocol.ocsp.IOCSPLogger;
-import org.ejbca.core.protocol.ocsp.ISaferAppenderListener;
 import org.ejbca.core.protocol.ocsp.ITransactionLogger;
 import org.ejbca.core.protocol.ocsp.OCSPData;
 import org.ejbca.core.protocol.ocsp.OCSPResponseItem;
@@ -107,7 +109,7 @@ import org.ejbca.util.IPatternLogger;
  * @author Thomas Meckel (Ophios GmbH), Tomas Gustavsson, Lars Silven
  * @version  $Id$
  */
-public abstract class OCSPServletBase extends HttpServlet implements ISaferAppenderListener { 
+public abstract class OCSPServletBase extends HttpServlet implements SaferAppenderListener { 
 
 	private static final long serialVersionUID = -6214465452158073038L;
 
@@ -157,8 +159,8 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 	private Method m_errorHandlerMethod = null;
     private TransactionLogger transactionLogger;
     private AuditLogger auditLogger;
-	private static final String PROBEABLE_ERRORHANDLER_CLASS = "org.ejbca.appserver.jboss.ProbeableErrorHandler";
-	private static final String SAFER_LOG4JAPPENDER_CLASS = "org.ejbca.appserver.jboss.SaferDailyRollingFileAppender";
+	private static final String PROBABLE_ERRORHANDLER_CLASS = ProbableErrorHandler.class.getName();
+	private static final String SAFER_LOG4JAPPENDER_CLASS = SaferDailyRollingFileAppender.class.getName();
 
 	private final AuthenticationToken m_internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("OCSP ServletBase"));
 	
@@ -268,12 +270,14 @@ public abstract class OCSPServletBase extends HttpServlet implements ISaferAppen
 		m_log.debug("Are we doing safer logging?: '" + mDoSaferLogging + "'");
         if (mDoSaferLogging==true) {
             try {
-                final Class implClass = Class.forName(SAFER_LOG4JAPPENDER_CLASS);
-                final Method method = implClass.getMethod("addSubscriber", ISaferAppenderListener.class);
+                @SuppressWarnings("unchecked")
+                final Class<SaferDailyRollingFileAppender> implClass = (Class<SaferDailyRollingFileAppender>) Class.forName(SAFER_LOG4JAPPENDER_CLASS);
+                final Method method = implClass.getMethod("addSubscriber", SaferAppenderListener.class);
                 method.invoke(null, this); // first object parameter can be null because this is a static method
                 m_log.info("added us as subscriber to org.ejbca.appserver.jboss.SaferDailyRollingFileAppender");
                 // create the method object of the static probeable error handler, so we don't have to do this every time we log
-    			final Class errHandlerClass = Class.forName(PROBEABLE_ERRORHANDLER_CLASS);
+    			@SuppressWarnings("unchecked")
+                final Class<ProbableErrorHandler> errHandlerClass = (Class<ProbableErrorHandler>) Class.forName(PROBABLE_ERRORHANDLER_CLASS);
     			m_errorHandlerMethod = errHandlerClass.getMethod("hasFailedSince", Date.class);
             } catch (Exception e) {
                 m_log.error("Was configured to do safer logging but could not instantiate needed classes", e);
