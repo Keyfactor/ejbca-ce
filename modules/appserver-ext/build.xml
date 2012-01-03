@@ -67,9 +67,9 @@
     	<mkdir dir="${build-jbosslog4jsafer.dir}" />
         <javac srcdir="${src.dir}" destdir="${build-jbosslog4jsafer.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}" classpathref="compile-jbosslog4jsafer.classpath">
         	<sourcepath location="${ejbca.home}/src/java"/>
-			<include name="org/ejbca/appserver/jboss/SaferDailyRollingFileAppender.java"/>
-			<include name="org/ejbca/appserver/jboss/ProbeableErrorHandler.java"/>
-        	<include name="org/ejbca/core/protocol/ocsp/ISaferAppenderListener.java"/>
+			<include name="org/cesecore/util/log/SaferDailyRollingFileAppender.java"/>
+			<include name="org/cesecore/util/log/ProbableErrorHandler.java"/>
+        	<include name="org/cesecore/util/log/SaferAppenderListener.java"/>
     	</javac>
     </target>
 
