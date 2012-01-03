@@ -33,7 +33,9 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
  * @version $Id$
  */
 public class CustomPublisherContainer extends BasePublisher{
-	private ICustomPublisher custompublisher = null; 
+	private static final long serialVersionUID = -7060678968358301488L;
+
+    private ICustomPublisher custompublisher = null; 
 	
 	public static final float LATEST_VERSION = 1;
 		
@@ -116,9 +118,9 @@ public class CustomPublisherContainer extends BasePublisher{
 	private ICustomPublisher getCustomPublisher() {
 		if(custompublisher == null){
 			try{
-				Class implClass = Class.forName( getClassPath() );
-				Object obj = implClass.newInstance();
-				this.custompublisher = (ICustomPublisher) obj;
+				@SuppressWarnings("unchecked")
+                Class<? extends ICustomPublisher> implClass = (Class<? extends ICustomPublisher>) Class.forName( getClassPath() );
+				this.custompublisher =  implClass.newInstance();
 				this.custompublisher.init(getProperties());				
 			}catch(ClassNotFoundException e){
 				throw new RuntimeException(e);

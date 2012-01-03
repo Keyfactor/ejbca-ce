@@ -65,7 +65,7 @@ public abstract class BaseManagedBean implements Serializable{
 	 * Return the public constants of classObject as a Map, so they can be referenced from the JSF page.
 	 * (The implementation caches the Map for subsequent calls.)
 	 */
-	protected Map<String, Object> getPublicConstantsAsMap(Class classObject) {
+	protected Map<String, Object> getPublicConstantsAsMap(Class<?> classObject) {
 		Map<String, Object> result = publicConstantCache.get(classObject.getName());
 		if (result != null) {
 			return result;

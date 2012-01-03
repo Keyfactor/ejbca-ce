@@ -98,9 +98,9 @@ public class CustomUserDataSourceContainer extends BaseUserDataSource{
 	private ICustomUserDataSource getCustomUserDataSource() {
 		if(customuserdatasource == null){
 			try{
-				Class implClass = Class.forName( getClassPath() );
-				Object obj = implClass.newInstance();
-				this.customuserdatasource = (ICustomUserDataSource) obj;
+				@SuppressWarnings("unchecked")
+                Class<? extends ICustomUserDataSource> implClass = (Class<? extends ICustomUserDataSource>) Class.forName( getClassPath() );
+				this.customuserdatasource = implClass.newInstance();
 				this.customuserdatasource.init(getProperties());				
 			}catch(ClassNotFoundException e){
 				throw new EJBException(e);

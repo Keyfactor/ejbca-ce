@@ -945,7 +945,7 @@ public final class KeyTools {
      * @throws IOException
      *             if neither the IAIK or the SUN provider can be created
      */
-    @SuppressWarnings("unchecked")
+
     private static Provider getP11Provider(final InputStream is, final Properties prop) throws IOException {
 
         // We will construct the PKCS11 provider (sun.security..., or iaik...) using reflection, because
@@ -958,14 +958,16 @@ public final class KeyTools {
         Provider ret = null;
         if (prop != null) {
             try {
-                final Class implClass = Class.forName(IAIKPKCS11CLASS);
+                @SuppressWarnings("unchecked")
+                final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(IAIKPKCS11CLASS);
                 log.info("Using IAIK PKCS11 provider: " + IAIKPKCS11CLASS);
                 // iaik PKCS11 has Properties as constructor argument
-                ret = (Provider) implClass.getConstructor(Properties.class).newInstance(new Object[] { prop });
+                ret = implClass.getConstructor(Properties.class).newInstance(new Object[] { prop });
                 // It's not enough just to add the p11 provider. Depending on algorithms we may have to install the IAIK JCE provider as well in order
                 // to support algorithm delegation
-                final Class jceImplClass = Class.forName(KeyTools.IAIKJCEPROVIDERCLASS);
-                Provider iaikProvider = (Provider) jceImplClass.getConstructor().newInstance();
+                @SuppressWarnings("unchecked")
+                final Class<? extends Provider> jceImplClass = (Class<? extends Provider>) Class.forName(KeyTools.IAIKJCEPROVIDERCLASS);
+                Provider iaikProvider = jceImplClass.getConstructor().newInstance();
                 if (Security.getProvider(iaikProvider.getName()) == null) {
                     log.info("Adding IAIK JCE provider for Delegation: " + KeyTools.IAIKJCEPROVIDERCLASS);
                     Security.addProvider(iaikProvider);
@@ -977,9 +979,10 @@ public final class KeyTools {
         if (ret == null) {
             try {
                 // Sun PKCS11 has InputStream as constructor argument
-                final Class implClass = Class.forName(SUNPKCS11CLASS);
+                @SuppressWarnings("unchecked")
+                final Class<? extends Provider> implClass = (Class<? extends Provider>) Class.forName(SUNPKCS11CLASS);
                 log.info("Using SUN PKCS11 provider: " + SUNPKCS11CLASS);
-                ret = (Provider) implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
+                ret = implClass.getConstructor(InputStream.class).newInstance(new Object[] { is });
             } catch (Exception e) {
                 log.error("Error constructing pkcs11 provider: " + e.getMessage());
                 final IOException ioe = new IOException("Error constructing pkcs11 provider: " + e.getMessage());
