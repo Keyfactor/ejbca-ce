@@ -86,7 +86,7 @@ public class RequestInstance {
 	
 	/** HttpServletrequest.getParametersMap has changed from Map<String,Object> to Map<String,String[]> so 
 	 * we can not be type safe here */
-	@SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private Map params = null;
 	
 	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAuthenticationSessionLocal authenticationSession, EndEntityAccessSession endEntityAccessSession, CaSessionLocal caSession,
@@ -370,7 +370,8 @@ public class RequestInstance {
 				log.debug(iMsg, e);
 				iMsg = intres.getLocalizedMessage("certreq.parameters", e1.getMessage());
 				debug.print(iMsg + ":\n");
-				Set<String> paramNames = params.keySet();
+				@SuppressWarnings("unchecked")
+                Set<String> paramNames = params.keySet();
 				Iterator<String> iter = paramNames.iterator();
 				while (iter.hasNext()) {
 					String name = iter.next();
