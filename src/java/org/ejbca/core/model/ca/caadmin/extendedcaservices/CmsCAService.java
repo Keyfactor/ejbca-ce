@@ -120,7 +120,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		data.put(VERSION, new Float(LATEST_VERSION));
 	}
 
-	public CmsCAService(final HashMap data) throws IllegalArgumentException {
+	public CmsCAService(final HashMap<Object, Object> data) throws IllegalArgumentException {
 		super(data);
 		CryptoProviderTools.installBCProviderIfNotAvailable();
 		loadData(data);

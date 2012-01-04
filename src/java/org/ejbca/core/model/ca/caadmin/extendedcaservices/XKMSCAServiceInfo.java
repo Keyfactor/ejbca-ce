@@ -26,6 +26,8 @@ import java.util.List;
  */
 public class XKMSCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
               
+    private static final long serialVersionUID = 5924343223496775024L;
+
     /** Used when creating new service. */
     public XKMSCAServiceInfo(int status, String subjectdn, String subjectaltname, String keyspec, String keyalgorithm) {
       super(status, subjectdn, subjectaltname, keyspec, keyalgorithm);                       	

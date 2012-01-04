@@ -64,6 +64,7 @@ import org.w3c.dom.Document;
  */
 public class XKMSCAService extends ExtendedCAService implements Serializable {
 
+    private static final long serialVersionUID = 6337172829214941501L;
     private static Logger m_log = Logger.getLogger(XKMSCAService.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();

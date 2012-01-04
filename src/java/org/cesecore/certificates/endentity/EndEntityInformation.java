@@ -273,10 +273,10 @@ public class EndEntityInformation implements Serializable {
         if ( (extendedinfostring != null) && (extendedinfostring.length() > 0) ) {
             try {
             	java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(extendedinfostring.getBytes("UTF8")));            	
-            	HashMap h = (HashMap) decoder.readObject();
+            	HashMap<?, ?> h = (HashMap<?, ?>) decoder.readObject();
             	decoder.close();
                 // Handle Base64 encoded string values
-                HashMap data = new Base64GetHashMap(h);
+                HashMap<?, ?> data = new Base64GetHashMap(h);
             	int type = ((Integer) data.get(ExtendedInformation.TYPE)).intValue();
             	switch(type){
             	  case ExtendedInformation.TYPE_BASIC :
@@ -295,7 +295,7 @@ public class EndEntityInformation implements Serializable {
     	String ret = null;
     	if(extendedinformation != null){
             // We must base64 encode string for UTF safety
-            HashMap a = new Base64PutHashMap();
+            HashMap<?, ?> a = new Base64PutHashMap();
             a.putAll((HashMap)extendedinformation.saveData());
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
     		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);

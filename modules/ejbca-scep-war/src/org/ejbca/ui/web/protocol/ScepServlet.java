@@ -69,6 +69,7 @@ import org.ejbca.util.HTMLTools;
  * @version $Id$
  */
 public class ScepServlet extends HttpServlet {
+    private static final long serialVersionUID = -6776853218419335240L;
     private static final Logger log = Logger.getLogger(ScepServlet.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();

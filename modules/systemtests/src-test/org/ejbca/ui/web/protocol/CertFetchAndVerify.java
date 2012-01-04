@@ -77,6 +77,8 @@ public class CertFetchAndVerify {
 		 * 
 		 */
 		class NoData extends Exception {
+
+            private static final long serialVersionUID = -2853491917200109295L;
 			// nothing
 		}
 		/* (non-Javadoc)

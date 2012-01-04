@@ -25,6 +25,8 @@ import java.io.Serializable;
  */
 public class OCSPCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
        
+    private static final long serialVersionUID = -5793010051615956298L;
+
     /** Used when creating new service and when returning information from service. */
     public OCSPCAServiceInfo(int status) {
     	super(status, null, null, null, null);                       	

@@ -33,10 +33,11 @@ import org.bouncycastle.util.encoders.Hex;
 /**
  * Frame showing certificate details.
  *
- * @author markus
  * @version $Id$
  */
 public class ViewCertificateFrame extends javax.swing.JFrame {
+
+    private static final long serialVersionUID = 8614952447084589785L;
 
     /** Logger for this class. */
     private static final Logger LOG = 
@@ -54,6 +55,8 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
         initComponents();
         chainList.setModel(new AbstractListModel() {
 
+            private static final long serialVersionUID = 5987143912053355378L;
+
             @Override
             public int getSize() {
                 return certificates.size();
@@ -65,6 +68,8 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
             }
         });
         chainList.setCellRenderer(new DefaultListCellRenderer() {
+
+            private static final long serialVersionUID = 2763486282311920269L;
 
             @Override
             public Component getListCellRendererComponent(final JList list, Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
@@ -88,6 +93,8 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
         });
 
         fieldsList.setCellRenderer(new DefaultListCellRenderer() {
+
+            private static final long serialVersionUID = -4404969676873042380L;
 
             @Override
             public Component getListCellRendererComponent(final JList list, Object value, final int index, final boolean isSelected, final boolean cellHasFocus) {
@@ -173,6 +180,8 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
 
         usagesList.setModel(new AbstractListModel() {
 
+            private static final long serialVersionUID = -2458647139188835032L;
+
             @Override
             public int getSize() {
                 return usages.size();
@@ -246,6 +255,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
         jScrollPane1.setName("jScrollPane1"); // NOI18N
 
         usagesList.setModel(new javax.swing.AbstractListModel() {
+            private static final long serialVersionUID = -961928708294659333L;
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
@@ -400,6 +410,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
         jScrollPane4.setName("jScrollPane4"); // NOI18N
 
         chainList.setModel(new javax.swing.AbstractListModel() {
+            private static final long serialVersionUID = -2244979809502234943L;
             String[] strings = { "Signer Certificate", "CSCA Country" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
@@ -414,6 +425,7 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
         jScrollPane5.setName("jScrollPane5"); // NOI18N
 
         fieldsList.setModel(new javax.swing.AbstractListModel() {
+            private static final long serialVersionUID = 5093669154987973184L;
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
@@ -546,6 +558,8 @@ public class ViewCertificateFrame extends javax.swing.JFrame {
                     new String(Hex.encode(certificate.getSignature()))));
             
             fieldsList.setModel(new AbstractListModel() {
+
+                private static final long serialVersionUID = -2447253762338587451L;
 
                 @Override
                 public int getSize() {

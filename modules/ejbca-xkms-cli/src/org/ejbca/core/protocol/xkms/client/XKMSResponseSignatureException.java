@@ -25,7 +25,9 @@ package org.ejbca.core.protocol.xkms.client;
 
 public class XKMSResponseSignatureException extends Exception {
 
-	public XKMSResponseSignatureException() {
+	private static final long serialVersionUID = -5168081159971575912L;
+
+    public XKMSResponseSignatureException() {
 		super();
 	}
 

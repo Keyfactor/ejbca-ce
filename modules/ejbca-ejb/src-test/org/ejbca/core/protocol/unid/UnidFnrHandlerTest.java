@@ -74,7 +74,8 @@ public class UnidFnrHandlerTest {
 		}
 	}
 	private static class MyIRequestMessage implements ICrmfRequestMessage {
-		final X509Name dn;
+		private static final long serialVersionUID = -2303591921932083436L;
+        final X509Name dn;
 
 		MyIRequestMessage(String serialNumber) {
 			final Vector<DERObjectIdentifier> oids = new Vector<DERObjectIdentifier>();

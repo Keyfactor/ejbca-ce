@@ -26,6 +26,7 @@ package org.ejbca.ui.web.admin.rainterface;
  * @version $Id$
  */
 public class SortBy implements java.io.Serializable {
+    private static final long serialVersionUID = -2924038902779549663L;
     // Public constants
       // Constants used by userdata.
     public static final int USERNAME         = 0;

@@ -25,6 +25,7 @@ import org.w3c.dom.Document;
  */
 public class XKMSCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
                  
+    private static final long serialVersionUID = 5705632999652472860L;
     private Document doc = null;
     
         

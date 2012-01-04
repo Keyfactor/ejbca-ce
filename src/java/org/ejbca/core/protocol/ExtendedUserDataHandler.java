@@ -36,7 +36,9 @@ public interface ExtendedUserDataHandler {
 	 *
 	 */
 	class HandlerException extends Exception {
-		public HandlerException(String message) {
+		private static final long serialVersionUID = 8502876679948912399L;
+
+        public HandlerException(String message) {
 			super(message);
 		}
 	}

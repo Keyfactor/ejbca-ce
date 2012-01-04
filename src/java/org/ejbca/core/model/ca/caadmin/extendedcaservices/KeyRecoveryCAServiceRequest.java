@@ -26,7 +26,8 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
  */
 public class KeyRecoveryCAServiceRequest extends ExtendedCAServiceRequest implements Serializable {    
  
-	public static final int COMMAND_ENCRYPTKEYS = 1;
+	private static final long serialVersionUID = -5686267640542389771L;
+    public static final int COMMAND_ENCRYPTKEYS = 1;
 	public static final int COMMAND_DECRYPTKEYS = 2;
 	
     private int command;

@@ -48,7 +48,8 @@ import org.ejbca.core.model.ra.UserDataConstants;
  */
 public class UserDataVOWS implements Serializable{
 	
-	public static final java.lang.String TOKEN_TYPE_USERGENERATED = "USERGENERATED"; 
+	private static final long serialVersionUID = 7557071186257332026L;
+    public static final java.lang.String TOKEN_TYPE_USERGENERATED = "USERGENERATED"; 
 	public static final java.lang.String TOKEN_TYPE_JKS           = "JKS";
 	public static final java.lang.String TOKEN_TYPE_PEM           = "PEM";
 	public static final java.lang.String TOKEN_TYPE_P12           = "P12";

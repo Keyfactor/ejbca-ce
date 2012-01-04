@@ -19,13 +19,14 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 
 
 /**
- * Class used when delevering hard token encrypt service response from a CA.  
+ * Class used when delivering hard token encrypt service response from a CA.  
  *
  * @version $Id$
  */
 public class HardTokenEncryptCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
              
-	public static final int TYPE_ENCRYPTRESPONSE = 1;
+	private static final long serialVersionUID = -6027721745272019615L;
+    public static final int TYPE_ENCRYPTRESPONSE = 1;
 	public static final int TYPE_DECRYPTRESPONSE = 1;
     
     private int type;

@@ -16,7 +16,7 @@ package org.ejbca.core.model.ra.raadmin;
 import javax.xml.ws.WebFault;
 
 /**
- * An exception thrown when someone tries to add or edit a profile that doesnt match its end entity
+ * An exception thrown when someone tries to add or edit a profile that doesn't match its end entity
  * profile.
  *
  * @author Philip Vendil 2002-04-12
@@ -24,6 +24,8 @@ import javax.xml.ws.WebFault;
  */
 @WebFault
 public class UserDoesntFullfillEndEntityProfile extends java.lang.Exception {
+    private static final long serialVersionUID = 777317800935352658L;
+
     /**
      * Creates a new instance of <code>UserDoesntFullfillProfile</code> without detail message.
      */

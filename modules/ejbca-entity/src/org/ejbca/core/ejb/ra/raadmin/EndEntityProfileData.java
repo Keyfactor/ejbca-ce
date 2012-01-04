@@ -89,10 +89,10 @@ public class EndEntityProfileData extends ProtectedData implements Serializable 
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
-	private LinkedHashMap getData() {
+	private LinkedHashMap<?, ?> getData() {
 		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
 	}
-	private void setData(LinkedHashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
+	private void setData(LinkedHashMap<?, ?> data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 
     /**
      * Method that returns the end entity profile and updates it if necessary.
@@ -106,7 +106,7 @@ public class EndEntityProfileData extends ProtectedData implements Serializable 
      * Method that saves the end entity profile.
      */
     public void setProfile(EndEntityProfile profile) {
-        setData((LinkedHashMap) profile.saveData());
+        setData((LinkedHashMap<?, ?>) profile.saveData());
     }
 
     /** 
@@ -125,7 +125,7 @@ public class EndEntityProfileData extends ProtectedData implements Serializable 
      */
     private EndEntityProfile readAndUpgradeProfileInternal() {
         EndEntityProfile returnval = new EndEntityProfile(0);
-        HashMap data = getData();
+        HashMap<?, ?> data = getData();
         // If EndEntityProfile-data is upgraded we want to save the new data, so we must get the old version before loading the data 
         // and perhaps upgrading
         float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
@@ -205,7 +205,8 @@ public class EndEntityProfileData extends ProtectedData implements Serializable 
 	}
 
 	/** @return return the query results as a List. */
-	public static List<EndEntityProfileData> findAll(EntityManager entityManager) {
+	@SuppressWarnings("unchecked")
+    public static List<EndEntityProfileData> findAll(EntityManager entityManager) {
 		Query query = entityManager.createQuery("SELECT a FROM EndEntityProfileData a");
 		return query.getResultList();
 	}
