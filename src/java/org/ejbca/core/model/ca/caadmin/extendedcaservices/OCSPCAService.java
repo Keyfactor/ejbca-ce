@@ -41,6 +41,7 @@ import org.ejbca.core.protocol.ocsp.OCSPUtil;
  */
 public class OCSPCAService extends ExtendedCAService implements Serializable {
 
+    private static final long serialVersionUID = -2659287664350936898L;
     private static Logger log = Logger.getLogger(OCSPCAService.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();

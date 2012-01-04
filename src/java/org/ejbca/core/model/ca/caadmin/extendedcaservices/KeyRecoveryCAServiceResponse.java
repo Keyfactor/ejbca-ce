@@ -26,7 +26,8 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
  */
 public class KeyRecoveryCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
              
-	public static final int TYPE_ENCRYPTKEYSRESPONSE = 1;
+	private static final long serialVersionUID = -6164842390930090876L;
+    public static final int TYPE_ENCRYPTKEYSRESPONSE = 1;
 	public static final int TYPE_DECRYPTKEYSRESPONSE = 1;
     
     private int type;

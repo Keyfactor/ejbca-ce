@@ -32,6 +32,8 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * @version $Id$
  */
 public class WebLanguages implements java.io.Serializable {
+    private static final long serialVersionUID = -2381623760140383128L;
+
     private static final Logger log = Logger.getLogger(WebLanguages.class);
 
     /** Internal localization of logs and errors */

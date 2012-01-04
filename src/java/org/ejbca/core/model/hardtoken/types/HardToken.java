@@ -28,6 +28,7 @@ import org.ejbca.core.model.hardtoken.HardTokenConstants;
  * @version $Id$
  */
 public abstract class HardToken extends UpgradeableDataHashMap implements Serializable, Cloneable {
+    private static final long serialVersionUID = 3354480892183271060L;
     // Default Values
     public static final float LATEST_VERSION = 0;
     public static final String TOKENTYPE = "TOKENTYPE";

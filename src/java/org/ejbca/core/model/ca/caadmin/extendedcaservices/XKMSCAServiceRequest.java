@@ -27,7 +27,9 @@ import org.w3c.dom.Document;
  */
 public class XKMSCAServiceRequest extends ExtendedCAServiceRequest implements Serializable {    
     
-	public static final Logger m_log = Logger.getLogger(XKMSCAServiceRequest.class);
+	private static final long serialVersionUID = 5598850910793030599L;
+
+    public static final Logger m_log = Logger.getLogger(XKMSCAServiceRequest.class);
 	
     private Document doc = null;
     private String id = null;

@@ -231,7 +231,9 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	/** just used internally in the this class to indicate that the XML can not be fixed.
 	 */
 	private class NotPossibleToFixXML extends Exception {
-		// just used internally in the this class to indicate that the XML can not be fixed.
+		private static final long serialVersionUID = 3690860390706539637L;
+
+        // just used internally in the this class to indicate that the XML can not be fixed.
 		public NotPossibleToFixXML() {
 			// do nothing
 		}

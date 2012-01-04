@@ -73,7 +73,6 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
     /**
      * @see IUpgradeableData#loadData(Object)
      */
-    @SuppressWarnings("unchecked")
     public void loadData(final Object data) {
     	// By creating a new LinkedHashMap (Base64GetHashMap) here we slip through a possible upgrade issue when upgrading
     	// from older implementation that used a plain HashMap instead. 

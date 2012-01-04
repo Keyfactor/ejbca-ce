@@ -34,7 +34,8 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 public abstract class HardTokenProfileWithReceipt extends HardTokenProfileWithVisualLayout implements IReceiptSettings{
 		
 	
-	// Protected Constants
+	private static final long serialVersionUID = 2963055087857426772L;
+    // Protected Constants
 	protected static final String RECEIPTTYPE                = "receipttype";
 	protected static final String RECEIPTFILENAME            = "receiptfilename";
 	protected static final String RECEIPTDATA                = "receiptdata";

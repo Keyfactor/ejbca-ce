@@ -27,7 +27,8 @@ import java.util.Properties;
  */
 public abstract class ServiceType implements Serializable{
 	
-	private String jSFSubViewPage;
+	private static final long serialVersionUID = -1788904631086719809L;
+    private String jSFSubViewPage;
 	private String name;
 	private boolean translatable;
 

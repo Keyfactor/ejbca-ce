@@ -34,6 +34,8 @@ import org.cesecore.internal.UpgradeableDataHashMap;
  */
 public  class HardTokenIssuer extends UpgradeableDataHashMap implements Serializable, Cloneable {
 
+    private static final long serialVersionUID = -1794111124380177196L;
+
     // Default Values
     public static final float LATEST_VERSION = 1;
 
@@ -49,6 +51,7 @@ public  class HardTokenIssuer extends UpgradeableDataHashMap implements Serializ
     // Public Methods
     
     // Availablehardtokens defines which hard tokens the issuer is able to issue. 
+    @SuppressWarnings("unchecked")
     public ArrayList<Integer> getAvailableHardTokenProfiles(){
       return (ArrayList<Integer>) data.get(AVAILABLEHARDTOKENSPROFILES); 
     }

@@ -25,6 +25,8 @@ import java.util.List;
  */
 public class CmsCAServiceInfo extends BaseSigningCAServiceInfo implements Serializable {    
        
+    private static final long serialVersionUID = 7556251008892332034L;
+
     /** Used when creating new service. */
     public CmsCAServiceInfo(int status, String subjectdn, String subjectaltname, String keyspec,  String keyalgorithm) {
         super(status, subjectdn, subjectaltname, keyspec, keyalgorithm);                       	

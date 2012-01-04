@@ -25,7 +25,8 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
  */
 public class HardTokenEncryptCAServiceRequest extends ExtendedCAServiceRequest implements Serializable {    
  
-	public static final int COMMAND_ENCRYPTDATA = 1;
+	private static final long serialVersionUID = 8081402124613587671L;
+    public static final int COMMAND_ENCRYPTDATA = 1;
 	public static final int COMMAND_DECRYPTDATA = 2;
 	
     private int command;
