@@ -33,8 +33,8 @@ import java.util.Map;
 public class XmlSerializer {
 
 	@SuppressWarnings("unchecked")
-    public static Map<String, Object> decode(final String input) {
-		Map<String, Object> ret = null;
+    public static Map<Object, Object> decode(final String input) {
+		Map<Object, Object> ret = null;
 		if (input != null) {
 			try {
 				XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(input.getBytes("UTF8")));
@@ -55,7 +55,7 @@ public class XmlSerializer {
 		if (input != null) {
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			final XMLEncoder encoder = new XMLEncoder(baos);
-			final LinkedHashMap<String,Object> linkedHashMap = new Base64PutHashMap();
+			final LinkedHashMap<Object,Object> linkedHashMap = new Base64PutHashMap();
 			linkedHashMap.putAll(input);
 			encoder.writeObject(linkedHashMap);
 			encoder.close();

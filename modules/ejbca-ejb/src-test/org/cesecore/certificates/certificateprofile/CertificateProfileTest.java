@@ -432,8 +432,10 @@ public class CertificateProfileTest {
     public void test08Clone() throws Exception {
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
         CertificateProfile clone = (CertificateProfile)profile.clone();
-        HashMap profmap = (HashMap)profile.saveData();
-        HashMap clonemap = (HashMap)clone.saveData();
+        @SuppressWarnings("unchecked")
+        HashMap<Object, Object> profmap = (HashMap<Object, Object>)profile.saveData();
+        @SuppressWarnings("unchecked")
+        HashMap<Object, Object> clonemap = (HashMap<Object, Object>)clone.saveData();
         assertEquals(profmap.size(), clonemap.size());
         clonemap.put("FOO", "BAR");
         assertEquals(profmap.size()+1, clonemap.size());
@@ -447,7 +449,8 @@ public class CertificateProfileTest {
         assertEquals("FAR", profstr);
         assertEquals("BAR", clonestr);
         CertificateProfile clone2 = (CertificateProfile)clone.clone();
-        HashMap clonemap2 = (HashMap)clone2.saveData();
+        @SuppressWarnings("unchecked")
+        HashMap<Object, Object> clonemap2 = (HashMap<Object, Object>)clone2.saveData();
         // Added FOO, FAR to profmap and clonemap
         assertEquals(clonemap2.size(), clonemap.size()-1);
         assertEquals(clonemap2.size(), profmap.size()-1);

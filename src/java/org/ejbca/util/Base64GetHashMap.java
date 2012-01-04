@@ -24,13 +24,14 @@ import org.cesecore.util.StringTools;
  * 
  * @version $Id$
  */
-public class Base64GetHashMap extends HashMap {
+public class Base64GetHashMap extends HashMap<Object, Object> {
     private static final long serialVersionUID = -6270344460163780577L;
 
     public Base64GetHashMap() {
         super();
     }
-    public Base64GetHashMap(Map m) {
+
+    public Base64GetHashMap(Map<Object, Object> m) {
         super(m);
     }
     

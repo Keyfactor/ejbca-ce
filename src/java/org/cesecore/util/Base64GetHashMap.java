@@ -24,18 +24,17 @@ import java.util.Map;
  * 
  * Based on Base64GetHashMap.java 317 2011-02-23 16:26:16Z tomas from cesecore
  * 
- * TODO: Reimplement this class with generics.
  *  
  * @version $Id$
  */
-public class Base64GetHashMap extends LinkedHashMap {
+public class Base64GetHashMap extends LinkedHashMap<Object, Object> {
   
     private static final long serialVersionUID = 510436675714264809L;
 
     public Base64GetHashMap() {
         super();
     }
-    public Base64GetHashMap(Map m) {
+    public Base64GetHashMap(Map<?, ?> m) {
         super(m);
     }
     
