@@ -38,6 +38,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -67,9 +68,22 @@ public abstract class BaseCommand implements CliCommandPlugin {
     protected String cliUserName = null;
     protected String cliPassword = null;
 
-    // private static Logger baseLog = Logger.getLogger(BaseCommand.class);
     private static Logger log = null;
 
+    {
+        /*
+         * Because CLI commands run in their own VM, these classes need to be initialized here as well as in
+         * StartServicesServlet. 
+         *  
+         */
+        try {
+            Class.forName(X500PrincipalAccessMatchValue.class.getName());
+            Class.forName(CliUserAccessMatchValue.class.getName());
+        } catch (ClassNotFoundException e) {
+            log.error("Failure during match value initialization", e);
+        }
+    }
+    
     protected Logger getLogger() {
         if (log == null) {
             log = Logger.getLogger(this.getClass());
