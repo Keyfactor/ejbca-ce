@@ -357,7 +357,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 
 <form name="editprofile" method="post" action="<%=THIS_FILENAME %>" >
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_PROFILE %>'>
-  <input type="hidden" name='<%= HIDDEN_PROFILENAME %>' value='<%=profile %>'>
+  <input type="hidden" name='<%= HIDDEN_PROFILENAME %>' value='<c:out value="<%= profile %>"/>'>
   <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
       <td width="10%" valign="top">
@@ -398,7 +398,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="50%" valign="top"> 
         <input type="text" name="<%=TEXTFIELD_USERNAME%>" size="45" maxlength="1024" 
-           value="<%= profiledata.getValue(EndEntityProfile.USERNAME,0)%>">
+           value="<c:out value="<%= profiledata.getValue(EndEntityProfile.USERNAME,0) %>"/>">
       </td>
     </tr>
 
@@ -412,7 +412,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="50%"> 
         <% used = profiledata.getUse(EndEntityProfile.PASSWORD,0);   %>
         <input type="text" name="<%=TEXTFIELD_PASSWORD%>" size="20" maxlength="1024" 
-           value="<%= profiledata.getValue(EndEntityProfile.PASSWORD,0)%>" <% if(!used) out.write(" disabled "); %>><br />
+           value="<c:out value="<%= profiledata.getValue(EndEntityProfile.PASSWORD,0) %>"/>" <% if(!used) out.write(" disabled "); %>><br />
            <c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>" />
            <input type="checkbox" name="<%=CHECKBOX_REQUIRED_PASSWORD %>" value="<%=CHECKBOX_VALUE %>" <% if(!used) out.write(" disabled "); %> 
            <% if(profiledata.isRequired(EndEntityProfile.PASSWORD,0))
@@ -454,7 +454,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 		<%= ejbcawebbean.getHelpReference("/userguide.html#Password%20Fields") %>
       </td>
       <td width="50%"> 
-        <input type="text" name="<%= TEXTFIELD_MINPWDSTRENGTH %>" size="5" maxlength="10" value="<%= profiledata.getMinPwdStrength() %>"/>
+        <input type="text" name="<%= TEXTFIELD_MINPWDSTRENGTH %>" size="5" maxlength="10" value="<c:out value="<%= profiledata.getMinPwdStrength() %>"/>"/>
       </td>
     </tr>
 
@@ -539,7 +539,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            if(profiledata.getUse(EndEntityProfile.EMAIL,0) || emailfieldexists) 
              used=true; %>
         <input type="text" name="<%=TEXTFIELD_EMAIL%>" size="45" maxlength="1024"  <% if(!used) out.write(" disabled "); %>
-           value="<% if(profiledata.getValue(EndEntityProfile.EMAIL,0) != null && used) out.write(profiledata.getValue(EndEntityProfile.EMAIL,0)); %>"><br />
+           value="<% if(profiledata.getValue(EndEntityProfile.EMAIL,0) != null && used);%> <c:out value="<%= profiledata.getValue(EndEntityProfile.EMAIL,0) %>"/>"><br />
         <c:out value="<%= ejbcawebbean.getText(\"USE\") %>" />
         <input type="checkbox" name="<%=CHECKBOX_USE_EMAIL %>" value="<%=CHECKBOX_VALUE %>" onclick="checkusetextfield('<%=CHECKBOX_USE_EMAIL %>', '<%=TEXTFIELD_EMAIL%>', '<%=CHECKBOX_REQUIRED_EMAIL %>', '<%=CHECKBOX_MODIFYABLE_EMAIL %>')"
            <% if(used)
@@ -627,7 +627,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
             <% 
             String[] subjectdnfields = EndEntityProfile.getSubjectDNProfileFields();
                for(int i=0; i < subjectdnfields.length; i++){ %>
-           <option  value='<%= subjectdnfields[i]%>'><c:out value="<%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileName(subjectdnfields[i])) %>" />
+           <option  value='<c:out value="<%= subjectdnfields[i] %>"/>'><c:out value="<%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileName(subjectdnfields[i])) %>" />
            </option>
             <% } %>
         </select>
@@ -649,7 +649,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="50%"> 
         <% if(!EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.DNEMAIL) ){ %>
         <input type="text" name="<%=TEXTFIELD_SUBJECTDN + i%>" size="45" maxlength="1024"
-           value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])); %>"><br /> 
+           value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null)%> <c:out value="<%= profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) %>"/>"><br /> 
         <c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>" />
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTDN + i %>" value="<%=CHECKBOX_VALUE %>"
            <% if(profiledata.isRequired(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]))
@@ -715,7 +715,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
                String[] subjectaltnamefields = EndEntityProfile.getSubjectAltnameProfileFields();
                for(int i=0; i < subjectaltnamefields.length; i++){
                  if (EndEntityProfile.isFieldImplemented(subjectaltnamefields[i])) { %>
-           <option  value='<%= subjectaltnamefields[i]%>'><c:out value="<%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileName(subjectaltnamefields[i])) %>" />
+           <option  value='<c:out value="<%= subjectaltnamefields[i] %>"/>'><c:out value="<%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileName(subjectaltnamefields[i])) %>" />
            </option>
             <%   }
                }%>
@@ -751,9 +751,9 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 		<%	} %>
         <input type="text" name="<%=TEXTFIELD_SUBJECTALTNAME + i%>" size="45" maxlength="1024" 
            value="<%
-				if ( profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null ) {
-					out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]));
-				} %>"
+				if ( profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null ) {%>
+                    <c:out value="<%= profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) %>"/>
+				<%} %>"
            <%	if ( EndEntityProfile.isFieldOfType(fielddata[EndEntityProfile.FIELDTYPE], DnComponents.RFC822NAME) &&
            				profiledata.getUse(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) ) {
            			out.write(" DISABLED ");
@@ -802,7 +802,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
             <% 
                String[] subjectdirattrfields = EndEntityProfile.getSubjectDirAttrProfileFields();
                for(int i=0; i < subjectdirattrfields.length; i++){ %>
-           <option  value='<%= subjectdirattrfields[i]%>'><c:out value="<%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileName(subjectdirattrfields[i])) %>" />
+           <option  value='<c:out value="<%= subjectdirattrfields[i] %>"/>'><c:out value="<%= ejbcawebbean.getText(DnComponents.getLanguageConstantFromProfileName(subjectdirattrfields[i])) %>" />
            </option>
             <% }%>
         </select>
@@ -824,7 +824,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="50%"> 
         <input type="text" name="<%=TEXTFIELD_SUBJECTDIRATTR + i%>" size="45" maxlength="1024" 
-           value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) out.write(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER])); %>"><br />
+           value="<% if(profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) != null) {%> <c:out value="<%= profiledata.getValue(fielddata[EndEntityProfile.FIELDTYPE], fielddata[EndEntityProfile.NUMBER]) %>"/> <%} %>"><br />
 
         <c:out value="<%= ejbcawebbean.getText(\"REQUIRED\") %>" />
         <input type="checkbox" name="<%=CHECKBOX_REQUIRED_SUBJECTDIRATTR + i %>" value="<%=CHECKBOX_VALUE %>"
@@ -886,7 +886,8 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            <option <%  if(profiledata.getValue(EndEntityProfile.DEFAULTCERTPROFILE ,0) != null)
                           if(profiledata.getValue(EndEntityProfile.DEFAULTCERTPROFILE ,0).equals(Integer.toString(certprofid)))
                             out.write(" selected "); %>
-                    value='<%= certprofid %>'><%= nextprofilename %>
+                    value='<c:out value="<%= certprofid %>"/>'>
+                    <c:out value="<%= nextprofilename %>"/>
            </option>
             <% } %>
         </select>
@@ -911,7 +912,8 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
                          if(availablecertprofs[j].equals(Integer.toString(certprofid)))
                             out.write(" selected "); 
                       }%>
-                    value='<%= certprofid%>'><%= nextprofilename %>
+                    value='<c:out value="<%= certprofid %>"/>'>
+                    <c:out value="<%= nextprofilename %>"/>
            </option>
             <% } %>
         </select>
@@ -933,7 +935,8 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            <option <%  if(profiledata.getValue(EndEntityProfile.DEFAULTCA ,0) != null)
                           if(profiledata.getValue(EndEntityProfile.DEFAULTCA ,0).equals(caid.toString()))
                             out.write(" selected "); %>
-                    value='<%= caid.toString() %>'><%= caidtonamemap.get(caid) %>
+                    value='<c:out value="<%= caid.toString() %>"/>'>
+                    <c:out value="<%= caidtonamemap.get(caid) %>"/>
            </option>
             <% } %>
         </select>
@@ -963,7 +966,8 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
                          if(availablecas[j].equals(caid.toString()))
                             out.write(" selected "); 
                       }%>
-                    value='<%= caid.toString()%>'><%= caidtonamemap.get(caid) %>
+                    value='<c:out value="<%= caid.toString() %>"/>'>
+                    <c:out value="<%= caidtonamemap.get(caid) %>"/>
            </option>
             <% } %>
         </select>
@@ -983,10 +987,11 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            <option <%  if(profiledata.getValue(EndEntityProfile.DEFKEYSTORE  ,0) != null)
                           if(profiledata.getValue(EndEntityProfile.DEFKEYSTORE  ,0).equals(Integer.toString(tokenids[i])))
                             out.write(" selected "); %>
-                    value='<%= tokenids[i] %>'><%  if(tokenids[i] <= SecConst.TOKEN_SOFT) 
+                    value='<c:out value="<%= tokenids[i] %>"/>'><%  if(tokenids[i] <= SecConst.TOKEN_SOFT) 
                                                       out.write(ejbcawebbean.getText(tokentexts[i]));
-                                                   else
-                                                      out.write(tokentexts[i]);%>
+                                                   else {%>
+                                                      <c:out value="<%= tokentexts[i] %>"/>
+                                                   <%}%>
            </option>
             <% } %>
         </select>
@@ -1007,10 +1012,11 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
                          if(profileavailabletokens[j].equals(Integer.toString(tokenids[i])))
                             out.write(" selected "); 
                       }%>
-                    value='<%= tokenids[i]%>'><%  if(tokenids[i] <= SecConst.TOKEN_SOFT) 
+                    value='<c:out value="<%= tokenids[i] %>"/>'><%  if(tokenids[i] <= SecConst.TOKEN_SOFT) 
                                                       out.write(ejbcawebbean.getText(tokentexts[i]));
-                                                   else
-                                                      out.write(tokentexts[i]);%>
+                                                   else {%>
+                                                      <c:out value="<%= tokentexts[i] %>"/>
+                                                   <%}%>
            </option>
             <% } %>
         </select>
@@ -1046,7 +1052,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
            <option <%  if(profiledata.getValue(EndEntityProfile.DEFAULTTOKENISSUER ,0) != null)
                           if(profiledata.getValue(EndEntityProfile.DEFAULTTOKENISSUER  ,0).equals(Integer.toString(hardtokenissuerids[i])))
                             out.write(" selected "); %>
-                    value='<%= hardtokenissuerids[i] %>'><%= hardtokenissueraliases[i] %>
+                    value='<c:out value="<%= hardtokenissuerids[i] %>"/>'><c:out value="<%= hardtokenissueraliases[i] %>"/>
            </option>
             <% } %>
         </select>
@@ -1067,7 +1073,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
                          if(availableissuers[j].equals(Integer.toString(hardtokenissuerids[i])))
                             out.write(" selected "); 
                       }%>
-                    value='<%= hardtokenissuerids[i]%>'><%= hardtokenissueraliases[i]%>
+                    value='<c:out value="<%= hardtokenissuerids[i] %>"/>'><c:out value="<%= hardtokenissueraliases[i] %>"/>
            </option>
             <% } %>
         </select>
@@ -1270,7 +1276,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
 	            <%     if(nrofrequests.equals(Integer.toString(j)))
 	                       out.write(" selected "); 
 	            %>
-	            value='<%=j%>'><%=j%></option>
+	            value='<c:out value="<%= j %>"/>'><c:out value="<%= j %>"/></option>
 	            <% }%>
             </select>
       </td>
@@ -1432,7 +1438,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="50%" valign="top"> 
         <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSENDER + j%>" size="45" maxlength="255" 
-           value="<%= not.getNotificationSender() %>" readonly>             
+           value="<c:out value="<%= not.getNotificationSender() %>"/>" readonly>             
       </td>
     </tr>
     <tr  id="Row<%=row%2%>"> 
@@ -1444,7 +1450,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="50%">         
         <input type="text" name="<%=TEXTFIELD_NOTIFICATIONRCPT + j%>" size="45" maxlength="255" 
-           value="<%= not.getNotificationRecipient() %>" readonly>                  
+           value="<c:out value="<%= not.getNotificationRecipient() %>"/>" readonly>                  
       </td>
     </tr>
     
@@ -1468,8 +1474,8 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
                         out.write(" selected "); 
                      }
                %>
-                     value='<%= statuses[ev2]%>'><% out.write(statustexts[ev2]);
-               }%>
+                     value='<c:out value="<%= statuses[ev2] %>"/>'><c:out value="<%= statustexts[ev2] %>"/>
+               <%}%>
            </option>
         </select>
       </td>
@@ -1484,7 +1490,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       </td>
       <td width="50%">         
         <input type="text" name="<%=TEXTFIELD_NOTIFICATIONSUBJECT + j%>" size="45" maxlength="1024" 
-           value="<%= not.getNotificationSubject() %>" readonly>                  
+           value="<c:out value="<%= not.getNotificationSubject() %>"/>" readonly>                  
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -1495,7 +1501,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
         <c:out value="<%= ejbcawebbean.getText(\"NOTIFICATIONMESSAGE\") %>" />
       </td>
       <td width="50%" valign="top">       
-        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE + j%>" cols="45" rows="8" readonly ><%= not.getNotificationMessage() %></textarea>  
+        <textarea name="<%=TEXTAREA_NOTIFICATIONMESSAGE + j%>" cols="45" rows="8" readonly ><c:out value="<%= not.getNotificationMessage() %>"/></textarea>  
       </td>
       
     </tr>
@@ -1543,8 +1549,8 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
                      if ( (statuses[ev1] == UserDataConstants.STATUS_NEW) || (statuses[ev1] == UserDataConstants.STATUS_KEYRECOVERY) || (statuses[ev1] == UserDataConstants.STATUS_INITIALIZED) )
                         out.write(" selected "); 
                 %>
-                   value='<%= statuses[ev1]%>'><% out.write(statustexts[ev1]);
-                 }%>
+                   value='<c:out value="<%= statuses[ev1] %>"/>'><c:out value="<%= statustexts[ev1] %>"/>
+                 <%}%>
            </option>
         </select>
       </td>
@@ -1620,7 +1626,8 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
                             out.write(" selected "); 
                        }
                       %>
-                    value='<%= printerNames[i]%>'><%= printerNames[i]%>
+                    value='<c:out value="<%= printerNames[i] %>"/>'>
+                    <c:out value="<%= printerNames[i] %>"/>
            </option>
             <%   }
                } %>
@@ -1641,7 +1648,8 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
                             out.write(" selected "); 
                        }
                       %>
-                    value='<%= i %>'><%= i %></option>
+                    value='<c:out value="<%= i %>"/>'>
+                    <c:out value="<%= i %>"/></option>
             <%   }%>
         </select>
       </td>
@@ -1656,9 +1664,9 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
       <td width="50%"> 
            <% if(profiledata.getPrinterSVGFileName().equals("")){
               out.write(ejbcawebbean.getText("NOTEMPLATEUPLOADED"));
-            }else{
-              out.write(profiledata.getPrinterSVGFileName());
-            }
+            }else{%>
+              <c:out value="<%= profiledata.getPrinterSVGFileName() %>"/>
+            <%}
          %> 
       </td>
     </tr>  
