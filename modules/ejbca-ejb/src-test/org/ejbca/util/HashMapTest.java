@@ -95,7 +95,7 @@ public class HashMapTest {
         h.put("foo2", Integer.valueOf(2));
         h.put("foo3", Boolean.valueOf(true));
         h.put("foo4", "");
-        HashMap<String, Object> a = new Base64PutHashMap();
+        HashMap<Object, Object> a = new Base64PutHashMap();
         a.putAll(h);
         
         // Write to XML
@@ -110,7 +110,7 @@ public class HashMapTest {
             java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             decoder.close();    
-            HashMap<?, ?> c = new Base64GetHashMap(b);
+            HashMap<Object, Object> c = new Base64GetHashMap(b);
             assertEquals(((Boolean)c.get("foo0")).booleanValue(),false);
             assertEquals(((Boolean)c.get("foo3")).booleanValue(),true);
             assertEquals(((String)c.get("foo1")),"\0001\0002fooString");
@@ -130,7 +130,7 @@ public class HashMapTest {
         h.put("foo2", Integer.valueOf(2));
         h.put("foo3", Boolean.valueOf(true));
         h.put("foo4", "");
-        HashMap<String, Object> a = new Base64PutHashMap();
+        HashMap<Object, Object> a = new Base64PutHashMap();
         a.putAll(h);
         
         // Write to XML
@@ -145,7 +145,7 @@ public class HashMapTest {
             java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(data.getBytes("UTF8")));
             HashMap<?, ?> b = (HashMap<?, ?>) decoder.readObject();
             decoder.close();    
-            HashMap<?, ?> c = new Base64GetHashMap(b);
+            HashMap<Object, Object> c = new Base64GetHashMap(b);
             assertEquals(((Boolean)c.get("foo0")).booleanValue(),false);
             assertEquals(((Boolean)c.get("foo3")).booleanValue(),true);
             assertEquals(((String)c.get("foo4")),"");

@@ -71,7 +71,7 @@ public class CertifiedKeyPair implements DEREncodable
 	
     public CertifiedKeyPair( ASN1Sequence seq )
     {
-      Enumeration e = seq.getObjects();
+      Enumeration<?> e = seq.getObjects();
 
       certOrEncCert = CertOrEncCert.getInstance( (DERObject)e.nextElement() );
       

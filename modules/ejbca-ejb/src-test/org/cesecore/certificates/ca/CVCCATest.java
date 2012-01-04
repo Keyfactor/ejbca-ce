@@ -127,7 +127,8 @@ public class CVCCATest {
 		Object o = ca.saveData();
 		
 		// Restore CA from data (and other things)
-		CVCCA ca1 = new CVCCA((HashMap)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date());
+		@SuppressWarnings("unchecked")
+        CVCCA ca1 = new CVCCA((HashMap<Object, Object>)o, 777, CADN, "test", CAConstants.CA_ACTIVE, new Date());
 
 		Certificate usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
         String keyhash1 = CertTools.getFingerprintAsString(ca1.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN).getEncoded());

@@ -71,7 +71,7 @@ public interface AuditLogEntry {
 	String getSearchDetail2();
 
 	/** @return map of additional (non-searchable) details. */
-	Map<String, Object> getMapAdditionalDetails();
+	Map<Object, Object> getMapAdditionalDetails();
 
 	/** @return log sequence number. */
 	Long getSequenceNumber();

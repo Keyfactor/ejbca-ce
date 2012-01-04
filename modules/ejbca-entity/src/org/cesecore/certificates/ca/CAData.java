@@ -221,7 +221,6 @@ public class CAData extends ProtectedData implements Serializable {
     	final Map<?, ?> h = (Map<?, ?>)decoder.readObject();
 		decoder.close();
 		// Handle Base64 encoded string values
-		@SuppressWarnings("unchecked")
         final LinkedHashMap<Object, Object> data = new Base64GetHashMap(h);
 		
 		// If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data 

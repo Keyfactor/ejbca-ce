@@ -16,18 +16,16 @@ package org.cesecore.util;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-
 /**
  * An implementation of HashMap that base64 encodes all String's that you 'put', it encodes them to form "B64:<base64 encoded string>". It only
  * encodes objects of type String.
  * 
  * Based on Base64PutHashMap.java 317 2011-02-23 16:26:16Z tomas from cesecore
  * 
- * TODO: Look over this object, see if it can be implemented with generics.
  * 
  * @version $Id$
  */
-public class Base64PutHashMap extends LinkedHashMap<String, Object> {
+public class Base64PutHashMap extends LinkedHashMap<Object, Object> {
 
     private static final long serialVersionUID = 785586648964618032L;
 
@@ -35,11 +33,11 @@ public class Base64PutHashMap extends LinkedHashMap<String, Object> {
         super();
     }
 
-    public Base64PutHashMap(Map<String, Object> m) {
+    public Base64PutHashMap(Map<?, ?> m) {
         super(m);
     }
 
-    public Object put(String key, Object value) {
+    public Object put(Object key, Object value) {
         if (value == null) {
             return super.put(key, value);
         }

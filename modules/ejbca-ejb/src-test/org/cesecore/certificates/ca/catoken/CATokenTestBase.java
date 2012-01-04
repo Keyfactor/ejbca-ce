@@ -535,7 +535,7 @@ public abstract class CATokenTestBase {
 			KeyTools.testKey(catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());
 			String keyhash = CertTools.getFingerprintAsString(catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN).getEncoded());
 
-			HashMap data = (HashMap)catoken.saveData();
+			HashMap<?, ?> data = (HashMap<?, ?>)catoken.saveData();
 			String classpath = (String) data.get(CAToken.CLASSPATH);
 			String str = (String)data.get(CAToken.KEYSTORE);
 			byte[] keyStoreData = null;

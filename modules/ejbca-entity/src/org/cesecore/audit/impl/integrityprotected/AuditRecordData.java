@@ -50,8 +50,8 @@ import org.cesecore.util.XmlSerializer;
 @Table(name="AuditRecordData")
 public class AuditRecordData extends ProtectedData implements Serializable, AuditLogEntry {
 
-	private static final long serialVersionUID = 1L;
-    
+    private static final long serialVersionUID = 3998646190932834045L;
+   
     private String pk;
     private String nodeId;
     private Long sequenceNumber;
@@ -269,10 +269,9 @@ public class AuditRecordData extends ProtectedData implements Serializable, Audi
     /** @return additional details. */
     @Transient
 	@Override
-    public Map<String, Object> getMapAdditionalDetails() {
+    public Map<Object, Object> getMapAdditionalDetails() {
     	// TODO: Decide on which implementation to use for serialization of the additional details
         return XmlSerializer.decode(getAdditionalDetails());
-        //return (Map<String, Object>) JsonSerializer.fromJSON(getAdditionalDetails());
     }
 
     /** @param additionalDetails additional details. */
