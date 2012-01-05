@@ -97,11 +97,12 @@ public class HardTokenProfileData extends ProtectedData implements Serializable 
 	/**
 	 * Method that saves the hard token profile data to database.
 	 */
-	@Transient
+	@SuppressWarnings("unchecked")
+    @Transient
 	public void setHardTokenProfile(HardTokenProfile hardtokenprofile) {
 		// We must base64 encode string for UTF safety
-		HashMap a = new Base64PutHashMap();
-		a.putAll((HashMap)hardtokenprofile.saveData());
+		HashMap<Object, Object> a = new Base64PutHashMap();
+		a.putAll((HashMap<Object, Object>)hardtokenprofile.saveData());
 		java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
 		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
 		encoder.writeObject(a);

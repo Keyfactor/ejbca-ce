@@ -73,7 +73,7 @@ public class OCSPCAService extends ExtendedCAService implements Serializable {
     	data.put(VERSION, new Float(LATEST_VERSION));
     }
 
-    public OCSPCAService(final HashMap data) {
+    public OCSPCAService(final HashMap<?, ?> data) {
     	super(data);
     	loadData(data);
     }

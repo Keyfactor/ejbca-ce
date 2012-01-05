@@ -57,7 +57,7 @@ public class HardTokenEncryptCAService extends ExtendedCAService implements Seri
 		setStatus(serviceinfo.getStatus());
 	}
 
-	public HardTokenEncryptCAService(final HashMap data) {
+	public HardTokenEncryptCAService(final HashMap<?, ?> data) {
 		super(data);
 		CryptoProviderTools.installBCProviderIfNotAvailable();
 		loadData(data);

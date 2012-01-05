@@ -105,7 +105,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
 		data.put(VERSION, new Float(LATEST_VERSION));
     }
     
-    public XKMSCAService(final HashMap data) throws IllegalArgumentException {
+    public XKMSCAService(final HashMap<Object, Object> data) throws IllegalArgumentException {
     	super(data);
     	CryptoProviderTools.installBCProviderIfNotAvailable();
     	loadData(data);

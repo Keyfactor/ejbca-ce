@@ -33,7 +33,7 @@ public class TestExtendedCAService extends ExtendedCAService {
 		setStatus(info.getStatus());
 	}
 
-    public TestExtendedCAService(HashMap data) {
+    public TestExtendedCAService(HashMap<?, ?> data) {
     	super(data);
     	loadData(data);
     }
