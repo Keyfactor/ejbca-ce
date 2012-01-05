@@ -86,6 +86,7 @@ public class ServiceDataSessionBean implements ServiceDataSessionLocal, ServiceD
         return (String) QueryResultWrapper.getSingleResult(query);
     }
     
+    @SuppressWarnings("unchecked")
     @Override
     public List<ServiceData> findAll() {
         Query query = entityManager.createQuery("SELECT a FROM ServiceData a");

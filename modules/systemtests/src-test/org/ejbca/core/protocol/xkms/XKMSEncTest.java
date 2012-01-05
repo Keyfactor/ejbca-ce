@@ -124,6 +124,7 @@ public class XKMSEncTest {
         log.debug("XMLUtils.outputDOM: " + baos.toString());
         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
 
+        @SuppressWarnings("unchecked")
         JAXBElement<RegisterResultType> registerResult2 = (JAXBElement<RegisterResultType>) unmarshaller.unmarshal(bais);
         registerResultType = registerResult2.getValue();
         

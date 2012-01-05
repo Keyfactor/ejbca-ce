@@ -35,7 +35,8 @@ public class MapToStringConverter implements Converter {
 			return (String)value;
 		}
 		final StringBuilder sb = new StringBuilder();
-		final Map<Object,Object> map = (Map<Object, Object>) value;
+		@SuppressWarnings("unchecked")
+        final Map<Object,Object> map = (Map<Object, Object>) value;
 		if (map.size() == 1 && map.containsKey("msg")) {
 			return (String) map.get("msg");
 		}

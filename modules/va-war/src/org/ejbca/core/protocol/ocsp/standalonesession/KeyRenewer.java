@@ -285,6 +285,7 @@ class KeyRenewer {
      * @param keyPair from {@link #generateKeyPair()}
      * @return the certificate chain of the stored key
      */
+    @SuppressWarnings("unchecked")
     private X509Certificate[] storeKey(EjbcaWS ejbcaWS, UserDataVOWS userData, KeyPair keyPair) {
         X509Certificate tmpCert = null;
         final Iterator<X509Certificate> i;

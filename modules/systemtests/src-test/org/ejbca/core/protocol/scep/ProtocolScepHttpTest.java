@@ -480,6 +480,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
         CMSSignedData s = new CMSSignedData(retMsg);
         // The signer, i.e. the CA, check it's the right CA
         SignerInformationStore signers = s.getSignerInfos();
+        @SuppressWarnings("unchecked")
         Collection<SignerInformation> col = signers.getSigners();
         assertTrue(col.size() > 0);
         Iterator<SignerInformation> iter = col.iterator();
@@ -552,6 +553,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
             final RecipientInformationStore recipients = ed.getRecipientInfos();
             CertStore certstore;
             {
+                @SuppressWarnings("unchecked")
                 Collection<RecipientInformation> c = recipients.getRecipients();
                 assertEquals(c.size(), 1);
                 Iterator<RecipientInformation> it = c.iterator();
@@ -565,6 +567,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
             }
             if (crlRep) {
                 // We got a reply with a requested CRL
+                @SuppressWarnings("unchecked")
                 final Collection<X509CRL> crls = (Collection<X509CRL>) certstore.getCRLs(null);
                 assertEquals(crls.size(), 1);
                 final Iterator<X509CRL> it = crls.iterator();
@@ -577,6 +580,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
                 retCrl.verify(cacert.getPublicKey());
             } else {
                 // We got a reply with a requested certificate
+                @SuppressWarnings("unchecked")
                 final Collection<X509Certificate> certs = (Collection<X509Certificate>) certstore.getCertificates(null);
                 // EJBCA returns the issued cert and the CA cert (cisco vpn
                 // client requires that the ca cert is included)

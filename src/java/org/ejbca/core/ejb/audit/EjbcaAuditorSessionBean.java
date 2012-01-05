@@ -48,6 +48,7 @@ public class EjbcaAuditorSessionBean implements EjbcaAuditorSessionLocal {
     @EJB
     private AccessControlSessionLocal accessControlSession;
 
+    @SuppressWarnings("unchecked")
     @Override
     public List<? extends AuditLogEntry> selectAuditLog(final AuthenticationToken token, final String device, final int firstResult, final int maxResults,
             final String whereClause, final String orderClause, final List<Object> parameters) throws AuthorizationDeniedException {
@@ -84,7 +85,7 @@ public class EjbcaAuditorSessionBean implements EjbcaAuditorSessionLocal {
                 query.setParameter(i, parameters.get(i));
             }
         }
-        return query.getResultList();
+        return (List<? extends AuditLogEntry>) query.getResultList();
     }
 
     /**

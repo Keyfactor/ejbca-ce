@@ -317,21 +317,24 @@ s	 */
 	}
 	
 	/** @return return the query results as a List. */
-	public static List<ApprovalData> findByApprovalId(final EntityManager entityManager, final int approvalid) {
+	@SuppressWarnings("unchecked")
+    public static List<ApprovalData> findByApprovalId(final EntityManager entityManager, final int approvalid) {
 		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId");
 		query.setParameter("approvalId", approvalid);
 		return query.getResultList();
 	}
 	
 	/** @return return the query results as a List. */
-	public static List<ApprovalData> findByApprovalIdNonExpired(final EntityManager entityManager, final int approvalid) {
+	@SuppressWarnings("unchecked")
+    public static List<ApprovalData> findByApprovalIdNonExpired(final EntityManager entityManager, final int approvalid) {
 		final Query query = entityManager.createQuery("SELECT a FROM ApprovalData a WHERE a.approvalid=:approvalId AND (a.status>"+ApprovalDataVO.STATUS_EXPIRED+")");
 		query.setParameter("approvalId", approvalid);
 		return query.getResultList();
 	}
 
 	/** @return return the query results as a List<Integer>. */
-	public static List<Integer> findByApprovalIdsByStatus(final EntityManager entityManager, final int status) {
+	@SuppressWarnings("unchecked")
+    public static List<Integer> findByApprovalIdsByStatus(final EntityManager entityManager, final int status) {
 		final Query query = entityManager.createQuery("SELECT a.approvalid FROM ApprovalData a WHERE a.status=:status");
 		query.setParameter("status", status);
 		return query.getResultList();
@@ -352,7 +355,8 @@ s	 */
 		final Query query = entityManager.createNativeQuery("SELECT id FROM ApprovalData WHERE " + customQuery);
 		query.setFirstResult(index);
 		query.setMaxResults(numberofrows);
-		final List<Object> ids = query.getResultList();
+		@SuppressWarnings("unchecked")
+        final List<Object> ids = query.getResultList();
 		for (Object object : ids) {
 			final int id = ValueExtractor.extractIntValue(object);
 			ret.add(entityManager.find(ApprovalData.class, id));

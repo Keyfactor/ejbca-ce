@@ -160,7 +160,8 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			final CertificateResponse certificateResponse, final JobData jobData)
 			throws CertificateException {
 		boolean ret = false;
-		final Iterator<X509Certificate> i = (Iterator<X509Certificate>)CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))).iterator();
+		@SuppressWarnings("unchecked")
+        final Iterator<X509Certificate> i = (Iterator<X509Certificate>)CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))).iterator();
         X509Certificate cert = null;
         while ( i.hasNext() ) {
             cert = i.next();
