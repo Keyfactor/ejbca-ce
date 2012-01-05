@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.util.Base64GetHashMap;
@@ -291,12 +292,13 @@ public class EndEntityInformation implements Serializable {
         return returnval;
     }
     
+    @SuppressWarnings("unchecked")
     public static String extendedInformationToStringData(ExtendedInformation extendedinformation) throws UnsupportedEncodingException {
     	String ret = null;
     	if(extendedinformation != null){
             // We must base64 encode string for UTF safety
-            HashMap<?, ?> a = new Base64PutHashMap();
-            a.putAll((HashMap)extendedinformation.saveData());
+            HashMap<Object, Object> a = new Base64PutHashMap();
+            a.putAll((Map<Object, Object>)extendedinformation.saveData());
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
     		java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
     		encoder.writeObject(a);

@@ -32,7 +32,7 @@ public class MyExtendedCAService extends ExtendedCAService {
 		data.put(ExtendedCAServiceInfo.IMPLEMENTATIONCLASS, this.getClass().getName());
 	}
 
-    public MyExtendedCAService(HashMap data) {
+    public MyExtendedCAService(HashMap<?, ?> data) {
     	super(data);
     	loadData(data);
     }

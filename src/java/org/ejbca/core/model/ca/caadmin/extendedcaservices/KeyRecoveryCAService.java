@@ -56,7 +56,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 		setStatus(serviceinfo.getStatus());
 	}
 
-	public KeyRecoveryCAService(final HashMap data) {
+	public KeyRecoveryCAService(final HashMap<?, ?> data) {
 		super(data);
 		CryptoProviderTools.installBCProviderIfNotAvailable();
 		loadData(data);

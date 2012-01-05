@@ -552,10 +552,10 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
             } catch (UnsupportedEncodingException e) {
                 throw new EJBException(e);
             }
-            HashMap h = (HashMap) decoder.readObject();
+            HashMap<?, ?> h = (HashMap<?, ?>) decoder.readObject();
             decoder.close();
             // Handle Base64 encoded string values
-            HashMap data = new Base64GetHashMap(h);
+            HashMap<?, ?> data = new Base64GetHashMap(h);
 
             switch (((Integer) (data.get(BasePublisher.TYPE))).intValue()) {
             case PublisherConst.TYPE_LDAPPUBLISHER:

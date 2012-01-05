@@ -124,10 +124,10 @@ public class ServiceData extends ProtectedData implements Serializable {
     	} catch (UnsupportedEncodingException e) {
     		throw new RuntimeException(e);
     	}
-    	HashMap h = (HashMap) decoder.readObject();
+    	HashMap<?, ?> h = (HashMap<?, ?>) decoder.readObject();
     	decoder.close();
     	// Handle Base64 encoded string values
-    	HashMap data = new Base64GetHashMap(h);
+    	HashMap<?, ?> data = new Base64GetHashMap(h);
     	float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
     	ServiceConfiguration serviceConfiguration = new ServiceConfiguration();
     	serviceConfiguration.loadData(data);
@@ -155,10 +155,11 @@ public class ServiceData extends ProtectedData implements Serializable {
     /**
      * Method that saves the service configuration data to database.
      */
+    @SuppressWarnings("unchecked")
     public void setServiceConfiguration(ServiceConfiguration serviceConfiguration) {
         // We must base64 encode string for UTF safety
-        HashMap a = new Base64PutHashMap();
-        a.putAll((HashMap)serviceConfiguration.saveData());
+        HashMap<Object, Object> a = new Base64PutHashMap();
+        a.putAll((HashMap<Object, Object>)serviceConfiguration.saveData());
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
         encoder.writeObject(a);

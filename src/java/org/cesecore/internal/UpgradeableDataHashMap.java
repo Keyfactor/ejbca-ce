@@ -77,7 +77,7 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
     	// By creating a new LinkedHashMap (Base64GetHashMap) here we slip through a possible upgrade issue when upgrading
     	// from older implementation that used a plain HashMap instead. 
     	// Both newer and older versions can be casted to HashMap. 
-    	this.data = new Base64GetHashMap((HashMap)data);
+    	this.data = new Base64GetHashMap((HashMap<?, ?>)data);
     	if(Float.compare(getLatestVersion(), getVersion()) > 0) {
     		upgrade();     
     		upgraded = true;
@@ -110,7 +110,8 @@ public abstract class UpgradeableDataHashMap implements IUpgradeableData, java.i
      * @return Map object with difference as described above
      */
     public Map<Object, Object> diff(UpgradeableDataHashMap newobj) {
-    	Map<Object, Object> newmap = (Map<Object, Object>)newobj.saveData();
+    	@SuppressWarnings("unchecked")
+        Map<Object, Object> newmap = (Map<Object, Object>)newobj.saveData();
     	return diffMaps(data, newmap);
     }
 

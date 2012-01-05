@@ -111,10 +111,11 @@ public class UserDataSourceData extends ProtectedData implements Serializable {
      * Method that saves the userdatasource data to database.
      * @throws UnsupportedEncodingException 
      */
+    @SuppressWarnings("unchecked")
     public void setUserDataSource(BaseUserDataSource userdatasource) {
         // We must base64 encode string for UTF safety
-        HashMap a = new Base64PutHashMap();
-        a.putAll((HashMap)userdatasource.saveData());
+        HashMap<Object, Object> a = new Base64PutHashMap();
+        a.putAll((HashMap<Object, Object>)userdatasource.saveData());
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
         encoder.writeObject(a);

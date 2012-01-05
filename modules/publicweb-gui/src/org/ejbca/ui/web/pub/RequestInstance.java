@@ -408,7 +408,7 @@ public class RequestInstance {
 	@SuppressWarnings("unchecked")
     private void setParameters(HttpServletRequest request) throws FileUploadException, IOException {
 		if (FileUpload.isMultipartContent(request)) {
-			params = new HashMap();
+			params = new HashMap<String, String>();
 			DiskFileUpload upload = new DiskFileUpload();
 			upload.setSizeMax(10000);
 			upload.setSizeThreshold(9999);

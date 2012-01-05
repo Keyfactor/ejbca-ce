@@ -42,7 +42,7 @@ public abstract class ExtendedCAService extends UpgradeableDataHashMap implement
     }
     
     // Overriding classes needs this constructor
-    public ExtendedCAService(HashMap data) {
+    public ExtendedCAService(HashMap<?, ?> data) {
     }
 
     protected void setStatus(int status) {

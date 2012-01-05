@@ -173,10 +173,10 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
                 byte[] databytes = vd.getBytes("UTF8");
                 java.beans.XMLDecoder decoder;
                 decoder = new java.beans.XMLDecoder(new java.io.ByteArrayInputStream(databytes));
-                HashMap h = (HashMap) decoder.readObject();
+                HashMap<?, ?> h = (HashMap<?, ?>) decoder.readObject();
                 decoder.close();
                 // Handle Base64 encoded string values
-                HashMap data = new Base64GetHashMap(h);
+                HashMap<?, ?> data = new Base64GetHashMap(h);
                 ret = new PublisherQueueVolatileData();
                 ret.loadData(data);
                 if (ret.isUpgraded()) {
@@ -195,11 +195,12 @@ public class PublisherQueueData extends ProtectedData implements Serializable {
      * @param qd
      *            is optional in publisher queue data
      */
+    @SuppressWarnings("unchecked")
     public void setPublisherQueueVolatileData(PublisherQueueVolatileData qd) {
         if (qd != null) {
             // We must base64 encode string for UTF safety
-            HashMap a = new Base64PutHashMap();
-            a.putAll((HashMap) qd.saveData());
+            HashMap<Object, Object> a = new Base64PutHashMap();
+            a.putAll((HashMap<Object, Object>) qd.saveData());
 
             java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
             java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
