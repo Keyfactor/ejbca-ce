@@ -514,7 +514,8 @@ public class EjbcaWSHelper {
 			}
             dataWS.setEndTime(endTime);
     		// Fill custom data in extended information
-    		HashMap<String, ?> data = (HashMap<String,?>)ei.getData();
+    		@SuppressWarnings("unchecked")
+            HashMap<String, ?> data = (HashMap<String,?>)ei.getData();
     		if (data != null) {
     			List<ExtendedInformationWS> extendedInfo = new ArrayList<ExtendedInformationWS> ();
     			Set<String> set = data.keySet();

@@ -67,7 +67,8 @@ public class OcspMonitoringToolTest {
 		Query query = ocspEntityManager.createQuery("select a from CertificateData a WHERE a.certificateProfileId=:certificateProfileId order by a.fingerprint asc");
 		query.setParameter("certificateProfileId", 1);
 		query.setMaxResults(2);
-		List<CertificateData> certificateDataList = query.getResultList();
+		@SuppressWarnings("unchecked")
+        List<CertificateData> certificateDataList = query.getResultList();
 		CertificateData certificateData1 = certificateDataList.get(0);
 		CertificateData certificateData2 = certificateDataList.get(1);
 		query = ocspEntityManager.createQuery("select a from CertificateData a WHERE a.certificateProfileId=:certificateProfileId order by a.fingerprint desc");

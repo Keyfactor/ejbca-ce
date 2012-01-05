@@ -146,12 +146,14 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 CA ca = data.getCA();
                 // Check if we can edit the CA
                 canEditCA(admin, cainfo.getName(), cainfo.getSubjectDN(), ca);
+                @SuppressWarnings("unchecked")
                 Map<Object, Object> orgmap = (Map<Object, Object>)ca.saveData(); 
                 ca.updateCA(cainfo);
                 // Store it
     			data.setCA(ca);
     			
                 // Audit log
+                @SuppressWarnings("unchecked")
                 Map<Object, Object> newmap = (Map<Object, Object>)ca.saveData();             
     			// Get the diff of what changed
     			Map<Object, Object> diff = UpgradeableDataHashMap.diffMaps(orgmap, newmap);

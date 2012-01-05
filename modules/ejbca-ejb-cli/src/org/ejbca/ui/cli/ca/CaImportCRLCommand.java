@@ -103,7 +103,8 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	        int revoked = 0;	// Number of certs activly revoked by this algorithm
 	        int already_revoked = 0;	// Number of certs already revoked in database and ignored in non-strict mode
 	        final String missing_user_name = "*** Missing During CRL Import to: " + caname;
-	        Set<X509CRLEntry> entries = (Set<X509CRLEntry>) x509crl.getRevokedCertificates();
+	        @SuppressWarnings("unchecked")
+            Set<X509CRLEntry> entries = (Set<X509CRLEntry>) x509crl.getRevokedCertificates();
 	        if (entries != null) {
 	            for (final X509CRLEntry entry : entries) {
 	                final BigInteger serialNr = entry.getSerialNumber();

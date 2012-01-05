@@ -198,6 +198,7 @@ public class KeyRecoveryData extends ProtectedData implements Serializable {
     }
 
 	/** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<KeyRecoveryData> findByUsername(EntityManager entityManager, String username) {
     	Query query = entityManager.createQuery("SELECT a FROM KeyRecoveryData a WHERE a.username=:username");
     	query.setParameter("username", username);
@@ -205,6 +206,7 @@ public class KeyRecoveryData extends ProtectedData implements Serializable {
     }    
 	 
 	/** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<KeyRecoveryData> findByUserMark(EntityManager entityManager, String usermark) {
     	List<KeyRecoveryData> ret = null;
     	try {

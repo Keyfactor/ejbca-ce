@@ -53,6 +53,7 @@ import org.ejbca.util.FixEndOfBrokenXML;
  * 
  * @version $Id$
  */ 
+@SuppressWarnings("deprecation")
 @Entity
 @Table(name="CertReqHistoryData")
 public class CertReqHistoryData extends ProtectedData implements Serializable {
@@ -245,7 +246,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	 * internationalized characters. This seemed to truncate the XML somehow, and here we try to handle that
 	 * in a nice way.  
 	 */
-	private EndEntityInformation decodeXML(final String sXML, final boolean lastTry) {
+    private EndEntityInformation decodeXML(final String sXML, final boolean lastTry) {
 		final byte baXML[];
 		try {
 			baXML = sXML.getBytes("UTF-8");
@@ -374,7 +375,8 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	}
 	
 	/** @return return the query results as a List. */
-	public static List<CertReqHistoryData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
+	@SuppressWarnings("unchecked")
+    public static List<CertReqHistoryData> findByIssuerDNSerialNumber(EntityManager entityManager, String issuerDN, String serialNumber) {
 		Query query = entityManager.createQuery("SELECT a FROM CertReqHistoryData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
 		query.setParameter("issuerDN", issuerDN);
 		query.setParameter("serialNumber", serialNumber);
@@ -382,7 +384,8 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	}
 
 	/** @return return the query results as a List. */
-	public static List<CertReqHistoryData> findByUsername(EntityManager entityManager, String username) {
+	@SuppressWarnings("unchecked")
+    public static List<CertReqHistoryData> findByUsername(EntityManager entityManager, String username) {
 		Query query = entityManager.createQuery("SELECT a FROM CertReqHistoryData a WHERE a.username=:username");
 		query.setParameter("username", username);
 		return query.getResultList();

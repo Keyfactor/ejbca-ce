@@ -71,7 +71,8 @@ public final class ExtendedKeyUsageConfiguration {
     /**
      * Fill the map and list with OIDs from the configuration file
      */
-	private static synchronized void fillExtendedKeyUsageOidsAndTexts() {
+	@SuppressWarnings("unchecked")
+    private static synchronized void fillExtendedKeyUsageOidsAndTexts() {
     	final ListOrderedMap map = new ListOrderedMap();
     	final Configuration conf = EjbcaConfigurationHolder.instance();
     	final String ekuname = "extendedkeyusage.name.";

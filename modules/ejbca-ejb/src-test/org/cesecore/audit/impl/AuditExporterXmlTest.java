@@ -53,7 +53,8 @@ public class AuditExporterXmlTest {
 		log.info(result);
 		// Verify that we can parse the "export"
 		XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(result.getBytes("UTF8")));
-		final LinkedHashMap<String,Object> parsed = (LinkedHashMap<String,Object>) decoder.readObject();
+		@SuppressWarnings("unchecked")
+        final LinkedHashMap<String,Object> parsed = (LinkedHashMap<String,Object>) decoder.readObject();
 		decoder.close();
 		log.info(KEY1 + "=" + parsed.get(KEY1));
 		Assert.assertEquals(VALUE1, parsed.get(KEY1));

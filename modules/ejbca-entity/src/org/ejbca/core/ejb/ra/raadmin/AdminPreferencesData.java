@@ -82,10 +82,10 @@ public class AdminPreferencesData extends ProtectedData implements Serializable 
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
-	private LinkedHashMap getData() {
+	private LinkedHashMap<?, ?> getData() {
 		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
 	}
-	private void setData(LinkedHashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
+	private void setData(LinkedHashMap<?, ?> data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 
 	/**
 	 * Method that returns the admin's preferences and updates it if necessary.
@@ -100,7 +100,7 @@ public class AdminPreferencesData extends ProtectedData implements Serializable 
 	 * Method that saves the admin preference to database.
 	 */
 	public void setAdminPreference(AdminPreference adminpreference) {
-		setData((LinkedHashMap) adminpreference.saveData());
+		setData((LinkedHashMap<?, ?>) adminpreference.saveData());
 	}
 
     //
@@ -157,7 +157,8 @@ public class AdminPreferencesData extends ProtectedData implements Serializable 
 	}
 
 	/** @return return the query results as a List. */
-	public static List<AdminPreferencesData> findAll(final EntityManager entityManager) {
-		return entityManager.createQuery("SELECT a FROM AdminPreferencesData a").getResultList();
+	@SuppressWarnings("unchecked")
+    public static List<AdminPreferencesData> findAll(final EntityManager entityManager) {
+		return (List<AdminPreferencesData>) entityManager.createQuery("SELECT a FROM AdminPreferencesData a").getResultList();
 	}
 }

@@ -62,8 +62,10 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		if ( unidPrefix==null ) {
 			return req;
 		}
-		final Vector<String> v = dn.getValues();
-		final Vector<Object> o = dn.getOIDs();
+		@SuppressWarnings("unchecked")
+        final Vector<String> v = dn.getValues();
+		@SuppressWarnings("unchecked")
+        final Vector<Object> o = dn.getOIDs();
 		if( v.size()!=o.size() ) {
 			throw new HandlerException("the BC X509Name object is corrupt.");
 		}

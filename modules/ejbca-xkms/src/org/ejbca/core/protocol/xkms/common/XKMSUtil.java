@@ -254,6 +254,7 @@ public class XKMSUtil {
        
         xmlDecipher.doFinal(privateKeyDoc, encryptedDataElement);
         
+        @SuppressWarnings("unchecked")
         JAXBElement<RSAKeyPairType> rSAKeyPair = (JAXBElement<RSAKeyPairType>) unmarshaller.unmarshal(privateKeyDoc.getDocumentElement().getFirstChild());
         
         RSAKeyPairType rSAKeyPairType = rSAKeyPair.getValue();
