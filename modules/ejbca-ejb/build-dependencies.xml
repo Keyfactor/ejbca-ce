@@ -679,8 +679,6 @@
 					<include name="org/ejbca/core/ejb/ca/auth/EndEntityAuthenticationSession.java"/>
 					<include name="org/ejbca/core/ejb/ra/UserAdminSessionLocal.java"/>
 					<include name="org/ejbca/core/ejb/ra/UserAdminSession.java"/>
-					<include name="org/cesecore/authentication/AuthenticationSessionBean.java"/>
-					<include name="org/cesecore/authentication/AuthenticationSessionBeanLocal.java"/>
 					<include name="org/cesecore/certificates/certificate/CertificateCreateSession*.java"/>
 				</fileset>
 				<fileset dir="${src.dir}">

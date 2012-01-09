@@ -72,7 +72,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     private static final Logger log = Logger.getLogger(CaSessionBean.class);
 
-    /** Internal localization of logs and errors */
+    /* Internal localization of logs and errors */
     private static final InternalResources intres = InternalResources.getInstance();
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)

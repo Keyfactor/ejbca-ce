@@ -26,9 +26,11 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.InternalSecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.cache.AccessTreeCache;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.time.TrustedTime;
@@ -46,6 +48,9 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
 
     private static final Logger log = Logger.getLogger(AccessControlSessionBean.class);
 
+    /* Internal localization of logs and errors */
+    private static final InternalResources intres = InternalResources.getInstance();
+    
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
 
@@ -70,25 +75,38 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
     private static volatile AccessTreeCache accessTreeCache;
 
     private boolean isAuthorized(final AuthenticationToken authenticationToken, final String resource, final boolean doLogging) {
-        if (accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource)) {
-            if(doLogging) {
-				try {
-				    final TrustedTime tt = trustedTimeWatcherSession.getTrustedTime(false);
-		            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-		            details.put("resource", resource);
-	                securityEventsLoggerSession.log(tt, EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL, ServiceTypes.CORE,
-	                        authenticationToken.toString(), null, null, null, details);
-				} catch (TrustedTimeProviderException e) {
-					log.error("Error getting trusted time for audit log: ", e);
-				}
+        try {
+            if (accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource)) {
+                if (doLogging) {
+                    try {
+                        final TrustedTime tt = trustedTimeWatcherSession.getTrustedTime(false);
+                        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+                        details.put("resource", resource);
+                        securityEventsLoggerSession.log(tt, EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL,
+                                ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
+                    } catch (TrustedTimeProviderException e) {
+                        log.error("Error getting trusted time for audit log: ", e);
+                    }
+                }
+                return true;
+            } else {
+                if (log.isDebugEnabled()) {
+                    log.debug("Authorization failed for " + authenticationToken.toString() + " of type "
+                            + authenticationToken.getClass().getSimpleName() + " for resource " + resource);
+                }
             }
-            return true;
-        } else {
-        	if (log.isDebugEnabled()) {
-        		log.debug("Authorization failed for " + authenticationToken.toString() + " of type " + authenticationToken.getClass().getSimpleName() + " for resource " + resource);
-        	}
-            return false;
+        } catch (AuthenticationFailedException e) {
+            final Map<String, Object> details = new LinkedHashMap<String, Object>();
+            String msg = intres.getLocalizedMessage("authentication.failed");
+            details.put("msg", msg);
+            try {
+                securityEventsLoggerSession.log(trustedTimeWatcherSession.getTrustedTime(false), EventTypes.AUTHENTICATION, EventStatus.FAILURE,
+                        ModuleTypes.AUTHENTICATION, ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
+            } catch (TrustedTimeProviderException f) {
+                log.error("Error getting trusted time for audit log: ", e);
+            }
         }
+        return false;
     }
     
     @Override

@@ -16,6 +16,8 @@ import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
 import java.security.SecureRandom;
 import java.util.AbstractMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -25,6 +27,11 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -34,6 +41,7 @@ import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderLocal;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.util.crypto.BCrypt;
@@ -55,13 +63,18 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
 
     private static final Logger log = Logger.getLogger(CliAuthenticationProviderSessionBean.class);
 
+    /** Internal localization of logs and errors */
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    
     private volatile SecureRandom randomGenerator;
 
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
-
+    @EJB
+    private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
+    
     @PostConstruct
     public void initialize() throws RuntimeException {
         try {
@@ -117,6 +130,10 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
                 return result.clone();
             } catch (NotFoundException e) {
                 log.error("User " + usernamePrincipal.getName() + " not found in database", e);
+                String msg = intres.getLocalizedMessage("authentication.failed.cli.usernotfound", usernamePrincipal.getName() );
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE, "", null, null, null, details);
                 return null;
             }
         }

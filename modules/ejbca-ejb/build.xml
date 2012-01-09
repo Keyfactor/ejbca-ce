@@ -257,6 +257,7 @@
 		<include name="org/ejbca/util/PerformanceTest.java"/>
 		<!-- Dependecies from all CLIs -->
 		<include name="org/ejbca/ui/cli/IllegalAdminCommandException.java"/>
+		<include name="org/ejbca/ui/cli/exception/CliAuthenticationFailedException.java"/>
 		<!-- Dependencies from VA WAR and Appserver Extensions -->
 		<include name="org/cesecore/util/log/SaferAppenderListener.java"/>
 		<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*.java"/>

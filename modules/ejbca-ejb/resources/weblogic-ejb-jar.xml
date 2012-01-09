@@ -19,16 +19,6 @@
      stuff around or change names.    
      -->
     <weblogic-enterprise-bean>
-        <ejb-name>AuthenticationSessionBean</ejb-name>
-        <stateless-session-descriptor>
-            <business-interface-jndi-name-map>
-                <business-remote>org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote</business-remote>
-                <jndi-name>ejbca/AuthenticationSessionRemote</jndi-name>
-            </business-interface-jndi-name-map>
-        </stateless-session-descriptor>
-        <enable-call-by-reference>True</enable-call-by-reference>
-    </weblogic-enterprise-bean>
-    <weblogic-enterprise-bean>
         <ejb-name>CrlCreateSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>

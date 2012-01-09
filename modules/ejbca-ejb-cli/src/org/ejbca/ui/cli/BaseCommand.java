@@ -213,8 +213,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
 
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
 
-        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) ejb.getAuthenticationSession().authenticate(subject,
-                ejb.getCliAuthenticationProvider());
+        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) ejb.getCliAuthenticationProvider().authenticate(subject);
         // Set hashed value anew in order to send back
         if (authenticationToken == null) {
             throw new CliAuthenticationFailedException("Authentication failed. Username or password were not correct.");

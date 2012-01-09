@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessUserAspect;
@@ -90,8 +91,9 @@ public class AccessTreeNode {
      * @param resourcePath
      *            Resource to investigate
      * @return True if role is authorized to resource.
+     * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
-    public boolean isAuthorized(AuthenticationToken authenticationToken, String resourcePath) {
+    public boolean isAuthorized(AuthenticationToken authenticationToken, String resourcePath) throws AuthenticationFailedException {
         return isAuthorizedRecursive(authenticationToken, resourcePath, AccessTreeState.STATE_UNKNOWN); 
 
     }
@@ -106,8 +108,9 @@ public class AccessTreeNode {
      * @param legacyState
      *            The best state yet encountered.
      * @return True of role is authorized to resource.
+     * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
-    private boolean isAuthorizedRecursive(AuthenticationToken authenticationToken, String resourcePath, AccessTreeState legacyState) {
+    private boolean isAuthorizedRecursive(AuthenticationToken authenticationToken, String resourcePath, AccessTreeState legacyState) throws AuthenticationFailedException {
     	if (log.isTraceEnabled()) {
     		log.trace(">isAuthorizedRecursive("+authenticationToken.toString()+", "+resourcePath+", "+legacyState+"). Resource="+resource);
     	}
@@ -217,8 +220,9 @@ public class AccessTreeNode {
     /** Finds the user aspect matching with the highest priority for the authentication token
      * and return the AccessTreeState for the rule with the highest priority.
      * Important if the UserAspect matches more than one rule.
+     * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
-    private AccessTreeState findPreferredRule(AuthenticationToken authenticationToken) {
+    private AccessTreeState findPreferredRule(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         AccessTreeState state = AccessTreeState.STATE_UNKNOWN;
         AccessMatchValue statePriority = authenticationToken.getDefaultMatchValue();
         Collection<AccessUserAspectData> accessUsers;
