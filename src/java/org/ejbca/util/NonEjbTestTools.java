@@ -32,6 +32,8 @@ import org.cesecore.util.CertTools;
 
 /**
  * Helpers used by different tests, that does not invoke EJBs.
+ * 
+ * TODO: Move this class to one of the test libs
  *  
  * @version $Id$
  */
