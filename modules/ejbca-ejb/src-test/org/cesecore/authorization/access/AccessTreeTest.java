@@ -18,6 +18,7 @@ import java.util.Collection;
 
 import junit.framework.Assert;
 
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.easymock.EasyMock;
@@ -66,9 +67,10 @@ public class AccessTreeTest {
      * @throws SecurityException 
      * @throws IllegalAccessException 
      * @throws IllegalArgumentException 
+     * @throws AuthenticationFailedException 
      */
     @Test
-    public void testIsAuthorizedHandlesResourcesWithoutSlash() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException {        
+    public void testIsAuthorizedHandlesResourcesWithoutSlash() throws SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException, AuthenticationFailedException {        
         AuthenticationToken authenticationToken = EasyMock.createMock(AuthenticationToken.class);
         AccessTree accessTree = new AccessTree();
         AccessTreeNode rootNode = EasyMock.createMock(AccessTreeNode.class);

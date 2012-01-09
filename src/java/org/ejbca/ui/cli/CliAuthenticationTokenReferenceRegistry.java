@@ -17,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
+import org.cesecore.authentication.AuthenticationFailedException;
 
 /**
  * Due to being sent over remote, this token needs to protect against two threats: replay and interception.
@@ -53,12 +53,13 @@ public enum CliAuthenticationTokenReferenceRegistry {
      * @param referenceNumber a reference number to a registered token.
      * @param sha1Hash the hash to check against.
      * @return true if the hash matches.
+     * @throws AuthenticationFailedException if an attempt is made to verify password on an non-existent or already used token
      */
-    public boolean verifySha1Hash(Long referenceNumber, String sha1Hash) {
+    public boolean verifySha1Hash(Long referenceNumber, String sha1Hash) throws AuthenticationFailedException {
         if (tokenRegistry.containsKey(referenceNumber)) {
             return sha1Hash.equals(tokenRegistry.get(referenceNumber).getSha1Hash());
         } else {
-            throw new CliAuthenticationFailedException("Attempt was made to verify password on an non-existent or already used token.");
+            throw new AuthenticationFailedException("Attempt was made to verify password on an non-existent or already used token.");
         }
     }
 
@@ -67,10 +68,12 @@ public enum CliAuthenticationTokenReferenceRegistry {
      * 
      * @return the reference number to that token.
      */
-    public void registerToken(CliAuthenticationToken token) {
-        tokenRegistry.put(token.getReferenceNumber(), token);
+    public void registerToken(final CliAuthenticationToken token) {
+        CliAuthenticationToken safetyCopy = token.clone();
+        safetyCopy.setSha1Hash(token.getSha1Hash());
+        tokenRegistry.put(token.getReferenceNumber(), safetyCopy);
         if (log.isTraceEnabled()) {
-            log.trace("Registered new CliAuthenticationToken: "+token+", with reference number: "+token.getReferenceNumber());
+            log.trace("Registered new CliAuthenticationToken: "+safetyCopy+", with reference number: "+safetyCopy.getReferenceNumber());
         }
     }
 
@@ -78,6 +81,8 @@ public enum CliAuthenticationTokenReferenceRegistry {
      * Unregisters a token from the registry. Note that this method is safe from querying, since it's only available from inside the same process.
      * 
      * @param referenceNumber a reference number to a CLI authentication token.
+     * 
+     * @return true if token was successfully removed, false otherwise
      */
     public boolean unregisterToken(Long referenceNumber) {
         if (tokenRegistry.containsKey(referenceNumber)) {

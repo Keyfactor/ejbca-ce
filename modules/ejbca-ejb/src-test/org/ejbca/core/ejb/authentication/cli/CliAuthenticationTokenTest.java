@@ -20,13 +20,14 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.Field;
 
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.easymock.EasyMock;
 import org.ejbca.ui.cli.CliAuthenticationToken;
 import org.ejbca.ui.cli.CliAuthenticationTokenReferenceRegistry;
-import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 import org.junit.Test;
 
@@ -42,9 +43,10 @@ public class CliAuthenticationTokenTest {
     
     /**
      * Make sure that each token is single-use only. This test tests both CliAuthenticationToken and the CliAuthenticationTokenRegistry
+     * @throws AuthenticationFailedException 
      */
     @Test
-    public void testUseTokenWorksTwiceInternally() {
+    public void testUseTokenWorksTwiceInternally() throws AuthenticationFailedException {
         final Long referenceNumber = 0L;
         final String passwordHash = "kittens";
         CliAuthenticationToken authenticationToken = new CliAuthenticationToken(new UsernamePrincipal("TEST"), passwordHash, BCRYPT_SALT, referenceNumber,
@@ -60,9 +62,8 @@ public class CliAuthenticationTokenTest {
 
         EasyMock.verify(accessUser);
     }
-
     @Test
-    public void testUseTokenDoesNotWorkAfterSerialization() throws IOException, ClassNotFoundException {
+    public void testUseTokenDoesNotWorkAfterSerialization() throws IOException, ClassNotFoundException, AuthenticationFailedException {
         final Long referenceNumber = 0L;
         final String passwordHash = "kittens";
         CliAuthenticationToken authenticationToken = new CliAuthenticationToken(new UsernamePrincipal("TEST"), passwordHash, BCRYPT_SALT, referenceNumber,
@@ -88,11 +89,61 @@ public class CliAuthenticationTokenTest {
         try {
             deserializedObject.matches(accessUser);
             fail("CliAuthenticationFailedException should have been thrown");
-        } catch (CliAuthenticationFailedException e) {
-
+        } catch (AuthenticationFailedException e) {
+            //NOPMD
         }
 
         EasyMock.verify(accessUser);
     }
 
+    @Test
+    public void testReplayAttack() throws AuthenticationFailedException, SecurityException, NoSuchFieldException, IllegalArgumentException, IllegalAccessException  {
+        final Long referenceNumber = 0L;
+        final String passwordHash = "kittens";
+        CliAuthenticationToken authenticationToken = new CliAuthenticationToken(new UsernamePrincipal("TEST"), passwordHash, BCRYPT_SALT, referenceNumber,
+                SupportedPasswordHashAlgorithm.SHA1_OLD);
+        CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
+        AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
+        EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST").times(2);
+        EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationToken.TOKEN_TYPE).times(2);
+        EasyMock.replay(accessUser);
+        assertTrue(authenticationToken.matches(accessUser));        
+        // Modify the token, so that it becomes "spent"
+        Field f = CliAuthenticationToken.class.getDeclaredField("isVerified");
+        f.setAccessible(true);
+        f.setBoolean(authenticationToken, false);
+        boolean caught = false;
+        try {
+            authenticationToken.matches(accessUser);
+        } catch (AuthenticationFailedException e) {
+            caught = true;
+        }
+        assertTrue("Authentication failure did not occur for replay attack.", caught);
+        EasyMock.verify(accessUser);
+    }
+    
+    @Test 
+    public void testIncorrectPasswordBehaviour() throws Exception {
+        final Long referenceNumber = 0L;
+        final String passwordHash = "kittens";
+        CliAuthenticationToken authenticationToken = new CliAuthenticationToken(new UsernamePrincipal("TEST"), passwordHash, BCRYPT_SALT, referenceNumber,
+                SupportedPasswordHashAlgorithm.SHA1_OLD);
+        CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(authenticationToken);
+        AccessUserAspect accessUser = EasyMock.createMock(AccessUserAspect.class);
+        EasyMock.expect(accessUser.getMatchValue()).andReturn("TEST");
+        EasyMock.expect(accessUser.getTokenType()).andReturn(CliAuthenticationToken.TOKEN_TYPE);
+        EasyMock.replay(accessUser);
+        authenticationToken.setSha1Hash("You're a kitty!");
+        boolean caught = false;
+        try {
+            authenticationToken.matches(accessUser);  
+        } catch(AuthenticationFailedException e) {
+            caught = true;
+        }
+        assertTrue("Authentication failure did not occur for incorrectly set password.", caught);
+        
+        EasyMock.verify(accessUser);
+    }
+    
+    
 }

@@ -15,6 +15,7 @@ package org.ejbca.ui.cli;
 import java.security.Principal;
 import java.util.HashSet;
 
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
@@ -106,7 +107,7 @@ public class CliAuthenticationToken extends AuthenticationToken {
     }
 
     @Override
-    public boolean matches(AccessUserAspect accessUser) {
+    public boolean matches(AccessUserAspect accessUser) throws AuthenticationFailedException {
         /*
          * We just have to verify once, so that the same token can be used sequentially within EJBCA. 
          */
@@ -116,14 +117,17 @@ public class CliAuthenticationToken extends AuthenticationToken {
         if (isVerified) {
             return true;
         } else {
-            if (matchTokenType(accessUser.getTokenType())) {
-                if (userName.equals(accessUser.getMatchValue())
-                        && CliAuthenticationTokenReferenceRegistry.INSTANCE.verifySha1Hash(referenceNumber, sha1Hash)) {
-                    if (CliAuthenticationTokenReferenceRegistry.INSTANCE.unregisterToken(referenceNumber)) {
-                        // The reference to this token hasn't been used.
-                        isVerified = true;
-                        return true;
-                    }
+            if (matchTokenType(accessUser.getTokenType()) && userName.equals(accessUser.getMatchValue())) {
+                if (!CliAuthenticationTokenReferenceRegistry.INSTANCE.verifySha1Hash(referenceNumber, sha1Hash)) {
+                    //This is an authentication error
+                    throw new AuthenticationFailedException("Incorrect one-time hash was passed with CLI token, most likely due to an incorrect password.");
+                } else if (!CliAuthenticationTokenReferenceRegistry.INSTANCE.unregisterToken(referenceNumber)) {
+                    // The reference to this token has been used, another authentication error
+                    throw new AuthenticationFailedException("The same CLI authentication token was apparently used twice. This is either an implementation error or a replay attack.");
+                } else {
+                 // The reference to this token hasn't been used.
+                    isVerified = true;
+                    return true;
                 }
             }
         }

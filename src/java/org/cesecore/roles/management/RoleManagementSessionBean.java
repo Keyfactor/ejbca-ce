@@ -33,6 +33,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -477,8 +478,15 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
             // Create an AlwaysAllowAuthenticationToken just to find out if there is
             // an access rule for the requested resource
             AlwaysAllowLocalAuthenticationToken token = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("isGroupAuthorized"));
-            if (tree.isAuthorized(token, resource)) {
-                authissueingadmgrps.add(role);
+            try {
+                if (tree.isAuthorized(token, resource)) {
+                    authissueingadmgrps.add(role);
+                }
+            } catch (AuthenticationFailedException e) {
+                /*
+                 * Naturally, this can't ever fail. 
+                 */
+                // NOPMD
             }
         }
         return authissueingadmgrps;

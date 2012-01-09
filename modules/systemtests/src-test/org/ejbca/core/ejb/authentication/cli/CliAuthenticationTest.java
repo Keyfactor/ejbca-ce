@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.authentication.cli;
 
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.security.Principal;
@@ -24,7 +25,6 @@ import java.util.Set;
 import javax.ejb.RemoveException;
 import javax.persistence.PersistenceException;
 
-import org.cesecore.authentication.AuthenticationSessionRemote;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -37,12 +37,15 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.RoleNotFoundException;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.CliAuthenticationToken;
 import org.ejbca.ui.cli.CliUserAccessMatchValue;
@@ -64,12 +67,12 @@ public class CliAuthenticationTest {
 
     private static final String CLI_TEST_ROLENAME = "CLI_TEST_ROLENAME";
 
-    private final AuthenticationSessionRemote authenticationSession = JndiHelper.getRemoteSession(AuthenticationSessionRemote.class);
     private final AccessControlSessionRemote accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
     private final CliAuthenticationProviderRemote cliAuthenticationProvider = JndiHelper.getRemoteSession(CliAuthenticationProviderRemote.class);
     private final ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
+    private final RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
-    private final UserAdminSessionRemote userAdminSessionRemote = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);
+    private final UserAdminSessionRemote userAdminSessionRemote = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);    
 
     private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = JndiHelper
             .getRemoteSession(CliAuthenticationTestHelperSessionRemote.class);
@@ -78,8 +81,11 @@ public class CliAuthenticationTest {
             CliAuthenticationProviderRemote.class.getSimpleName()));
 
     @Before
-    public void setUp() throws Exception {
-        RoleData role = roleManagementSession.create(internalToken, CLI_TEST_ROLENAME);
+    public void setUp() throws Exception {        
+        RoleData role = roleAccessSession.findRole(CLI_TEST_ROLENAME);
+        if(role == null) {
+            role = roleManagementSession.create(internalToken, CLI_TEST_ROLENAME);
+        }
         List<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
         AccessUserAspectData defaultCliUserAspect = new AccessUserAspectData(CLI_TEST_ROLENAME, 0, CliUserAccessMatchValue.USERNAME,
                 AccessMatchType.TYPE_EQUALCASE, CliAuthenticationTestHelperSessionRemote.USERNAME);
@@ -89,13 +95,21 @@ public class CliAuthenticationTest {
         AccessRuleData rule = new AccessRuleData(CLI_TEST_ROLENAME, AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true);
         List<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
         newrules.add(rule);
-        roleManagementSession.addAccessRulesToRole(internalToken, role, newrules);
+        roleManagementSession.addAccessRulesToRole(internalToken, role, newrules);       
     }
 
     @After
     public void tearDown() throws Exception {
-        userAdminSessionRemote.deleteUser(internalToken, CliAuthenticationTestHelperSessionRemote.USERNAME);
-        roleManagementSession.remove(internalToken, CLI_TEST_ROLENAME);
+        try {
+            userAdminSessionRemote.deleteUser(internalToken, CliAuthenticationTestHelperSessionRemote.USERNAME);
+        } catch (NotFoundException e) {
+            // NOPMD
+        }
+        try {
+            roleManagementSession.remove(internalToken, CLI_TEST_ROLENAME);
+        } catch(RoleNotFoundException e) {
+         // NOPMD
+        }
         configurationSession.restoreConfiguration();
     }
 
@@ -106,24 +120,45 @@ public class CliAuthenticationTest {
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new UsernamePrincipal(CliAuthenticationTestHelperSessionRemote.USERNAME));
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
-        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) authenticationSession.authenticate(subject, cliAuthenticationProvider);
+        CliAuthenticationToken authenticationToken =  (CliAuthenticationToken) cliAuthenticationProvider.authenticate(subject);
         // Set hashed value anew in order to send back
         authenticationToken.setSha1HashFromCleartextPassword(CliAuthenticationTestHelperSessionRemote.PASSWORD);
         assertTrue(accessControlSession.isAuthorized(authenticationToken, AccessRulesConstants.ROLE_ROOT));
     }
 
     @Test
-    public void testInstallCliAuthenticationWithOldHash() {
+    public void testInstallCliAuthenticationWithOldHash() {        
         configurationSession.updateProperty("ejbca.passwordlogrounds", "0");
         cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME, CliAuthenticationTestHelperSessionRemote.PASSWORD);
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new UsernamePrincipal(CliAuthenticationTestHelperSessionRemote.USERNAME));
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
-        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) authenticationSession.authenticate(subject, cliAuthenticationProvider);
+        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) cliAuthenticationProvider.authenticate(subject);
         // Set hashed value anew in order to send back
         authenticationToken.setSha1HashFromCleartextPassword(CliAuthenticationTestHelperSessionRemote.PASSWORD);
         assertFalse("Old-style hash value was not used (BCrypt prefix detected).", authenticationToken.getSha1Hash().startsWith(CryptoTools.BCRYPT_PREFIX));
         assertTrue(accessControlSession.isAuthorized(authenticationToken, AccessRulesConstants.ROLE_ROOT));
+    }
+    
+    /**
+     * This test tests CLI Authentication failure as per the Common Criteria standard:
+     * 
+     *    FIA_UAU.1 Timing of authentication
+     *    Unsuccessful use of the authentication mechanism
+     *    
+     *    FIA_UID.1 Timing of identification
+     *    Unsuccessful use of the user identification mechanism, including the
+     *    user identity provided 
+     */
+    @Test
+    public void testAuthenticationFailureDueToNonExistingUser() {
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new UsernamePrincipal(CliAuthenticationTestHelperSessionRemote.USERNAME));
+        AuthenticationSubject subject = new AuthenticationSubject(principals, null);
+        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) cliAuthenticationProvider.authenticate(subject);
+        assertNull("Authentication token was returned for nonexisting user", authenticationToken);
+        //TODO: Examine the logs
+     //   securityEventsAuditorSession.selectAuditLogs(internalToken, startIndex, max, criteria, logDeviceId)
     }
 
 }

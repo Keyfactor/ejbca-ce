@@ -16,6 +16,7 @@ import java.io.Serializable;
 import java.security.Principal;
 import java.util.Set;
 
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
@@ -56,8 +57,9 @@ public abstract class AuthenticationToken implements Serializable {
      * 
      * @param accessUser An <code>AccessUserAspectData</code> entity to match.
      * @return <code>true</code> if matching.
+     * @throws AuthenticationFailedException if any authentication errors were encountered during process
      */
-    public abstract boolean matches(AccessUserAspect accessUser);
+    public abstract boolean matches(AccessUserAspect accessUser) throws AuthenticationFailedException;
     
     @Override
     public abstract boolean equals(Object authenticationToken);

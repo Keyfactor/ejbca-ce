@@ -13,7 +13,6 @@
 package org.ejbca.core.model.util;
 
 import org.cesecore.audit.log.SecurityEventsLoggerSessionRemote;
-import org.cesecore.authentication.AuthenticationSessionRemote;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -40,8 +39,8 @@ import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.ejb.services.ServiceDataSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
@@ -57,7 +56,6 @@ public class EjbRemoteHelper {
 
     private ApprovalSessionRemote approvalSession = null;
     private ApprovalExecutionSessionRemote approvalExecutionSession = null;
-    private AuthenticationSessionRemote authenticationSession = null;
     private AccessControlSessionRemote accessControlSession = null;
     private CAAdminSessionRemote caAdminSession = null;
     private CaSessionRemote caSession = null;
@@ -90,13 +88,6 @@ public class EjbRemoteHelper {
     private UserDataSourceSessionRemote userDataSourceSession = null;
    
     private CliAuthenticationProviderRemote cliAuthenticationProvider = null;
-
-    public AuthenticationSessionRemote getAuthenticationSession() {
-        if(authenticationSession == null) {
-            authenticationSession = JndiHelper.getRemoteSession(AuthenticationSessionRemote.class);
-        }
-        return authenticationSession;
-    }
     
     public RoleAccessSessionRemote getRoleAccessSession() {
         if (roleAccessSession == null) {

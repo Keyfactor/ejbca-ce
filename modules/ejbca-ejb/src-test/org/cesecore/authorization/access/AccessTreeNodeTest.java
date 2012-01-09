@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
@@ -122,9 +123,10 @@ public class AccessTreeNodeTest {
 
     /**
      * Vanilla test, access to root.
+     * @throws AuthenticationFailedException 
      */
     @Test
-    public void testIsAuthorizedToRoot() {
+    public void testIsAuthorizedToRoot() throws AuthenticationFailedException {
         AccessRuleData acceptRule = EasyMock.createMock(AccessRuleData.class);
         EasyMock.expect(acceptRule.getAccessRuleName()).andReturn("/").anyTimes();	// Required if we run the test in trace mode
         EasyMock.expect(acceptRule.getTreeState()).andReturn(AccessTreeState.STATE_ACCEPT);
@@ -159,9 +161,10 @@ public class AccessTreeNodeTest {
 
     /**
      * Now, let's add another rule for the same role with higher priority, and...decline <insert evil laugh>.
+     * @throws AuthenticationFailedException 
      */
     @Test
-    public void testIsAuthorizedToRootWithHigherRankingUserDenial() {
+    public void testIsAuthorizedToRootWithHigherRankingUserDenial() throws AuthenticationFailedException {
 
         AccessRuleData acceptRule = EasyMock.createMock(AccessRuleData.class);
         EasyMock.expect(acceptRule.getAccessRuleName()).andReturn("/").anyTimes();	// Required if we run the test in trace mode
@@ -213,9 +216,10 @@ public class AccessTreeNodeTest {
 
     /**
      * Test for nonexistent resource without having encountered a ACCEPT_RECURSIVE.
+     * @throws AuthenticationFailedException 
      */
     @Test
-    public void testIsAuthorizedForNonExistentResourceNotRecursive() {
+    public void testIsAuthorizedForNonExistentResourceNotRecursive() throws AuthenticationFailedException {
         final String resourcePath = "/parent/child";
         AuthenticationToken authenticationToken = EasyMock.createMock(AuthenticationToken.class);
         EasyMock.expect(authenticationToken.getDefaultMatchValue()).andReturn(X500PrincipalAccessMatchValue.NONE);
@@ -226,9 +230,10 @@ public class AccessTreeNodeTest {
 
     /**
      * Now let's do the same with a child, adding ACCEPT_RECURSIVE to the root
+     * @throws AuthenticationFailedException 
      */
     @Test
-    public void testIsAuthorizedForNonExistentResourceRecursive() {
+    public void testIsAuthorizedForNonExistentResourceRecursive() throws AuthenticationFailedException {
         final String resourcePath = "/parent/child";
 
         AccessRuleData accessRule = EasyMock.createMock(AccessRuleData.class);
@@ -266,9 +271,10 @@ public class AccessTreeNodeTest {
 
     /**
      * Basically a vanilla test.
+     * @throws AuthenticationFailedException 
      */
     @Test
-    public void testIsAuthorizedForExistingChild() {
+    public void testIsAuthorizedForExistingChild() throws AuthenticationFailedException {
 
         AccessRuleData acceptRecursive = EasyMock.createMock(AccessRuleData.class);
         EasyMock.expect(acceptRecursive.getAccessRuleName()).andReturn("/").anyTimes();	// Required if we run the test in trace mode

@@ -9,7 +9,6 @@
      (or just ignores it) we need to override this. This isn't really what we hoped for and yes - you have to update
      this file if you move stuff around or change names.    
      -->
-    <session name="AuthenticationSessionBean"><interface class="org.ejbca.core.ejb.ca.auth.AuthenticationSessionRemote" binding-name="ejbca/AuthenticationSessionRemote"/></session>  
     <session name="CrlCreateSessionBean"><interface class="org.cesecore.certificates.crl.CrlCreateSessionRemote" binding-name="ejbca/CrlCreateSessionRemote"/></session>  
     <session name="UserAdminSessionBean"><interface class="org.ejbca.core.ejb.ra.UserAdminSessionRemote" binding-name="ejbca/UserAdminSessionRemote"/></session>  
     <session name="EndEntityProfileSessionBean"><interface class="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote" binding-name="ejbca/EndEntityProfileSessionRemote"/></session>  

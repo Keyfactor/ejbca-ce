@@ -14,6 +14,7 @@ package org.cesecore.authorization.access;
 
 import java.util.Collection;
 
+import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.roles.RoleData;
@@ -61,8 +62,9 @@ public class AccessTree {
      * @param resource
      *            The resource to check authorization for.
      * @return True if authorization is granted.
+     * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
-    public boolean isAuthorized(AuthenticationToken authenticationToken, String resource) {
+    public boolean isAuthorized(AuthenticationToken authenticationToken, String resource) throws AuthenticationFailedException {
         String checkresource = resource;
         // Must begin with '/'.
         if ((checkresource.toCharArray())[0] != '/') {
