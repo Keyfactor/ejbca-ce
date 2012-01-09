@@ -140,6 +140,7 @@
 			<mkdir dir="${build-temp.dir}/admins"/>
 			<copy todir="${src-temp.dir}/admins">
 				<fileset dir="${src.dir}">			
+					<include name="org/cesecore/authentication/AuthenticationFailedException.java"/>
 					<include name="org/cesecore/authentication/tokens/AuthenticationToken.java"/>
 					<include name="org/cesecore/authentication/tokens/AlwaysAllowLocalAuthenticationToken.java"/>
 					<include name="org/cesecore/authentication/tokens/InvalidAuthenticationTokenException.java"/>
