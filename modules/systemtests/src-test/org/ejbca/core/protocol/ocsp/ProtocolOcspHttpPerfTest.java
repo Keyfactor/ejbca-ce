@@ -286,7 +286,6 @@ public class ProtocolOcspHttpPerfTest {
 				long diff = after - before;
 				log.info("Tidsåtgång ("+Thread.currentThread().getName()+"): "+diff);
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}    		
     	}
