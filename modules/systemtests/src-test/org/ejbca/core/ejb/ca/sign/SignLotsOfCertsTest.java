@@ -239,9 +239,6 @@ public class SignLotsOfCertsTest extends CaTestCase {
         BigDecimal d = new BigDecimal(diff).divide(new BigDecimal(1000));
         BigDecimal noCerts = new BigDecimal(noOfGeneratedCerts).divide(d, 2, RoundingMode.UP);
         log.info("Performance is " + noCerts.intValue() + " certs/sec.");
-        // FileOutputStream fos = new FileOutputStream("testcert.crt");
-        // fos.write(cert.getEncoded());
-        // fos.close();
         log.trace("<test03SignLotsOfCerts()");
     }
 
@@ -267,7 +264,6 @@ public class SignLotsOfCertsTest extends CaTestCase {
                 long diff = after - before;
                 log.info("Time used (" + Thread.currentThread().getName() + "): " + diff);
             } catch (Exception e) {
-                // TODO Auto-generated catch block
                 e.printStackTrace();
             }
         }
