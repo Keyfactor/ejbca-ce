@@ -218,6 +218,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         // Determine whether the CA name is set in the 'cmp.authenticationparameters' config value
         boolean isCASet = !(StringUtils.equals("-", this.authenticationParameterCAName) || StringUtils.equalsIgnoreCase("A", this.authenticationParameterCAName));
 
+        // Perform the different checks depending on the configuration and previous authentication
         if(log.isDebugEnabled()) {
             log.debug("CMP is operating in RA mode: " + CmpConfiguration.getRAOperationMode());
             log.debug("Issuer CA is set: " + isCASet);
@@ -237,6 +238,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 return false;
             }
             
+            // Get the CAInfo of the CA that had issued extraCert
             cainfo = getCAInfo(extraCert, isCASet);
             if (cainfo == null) {
                 return false;
@@ -281,8 +283,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             
         } else if(!CmpConfiguration.getRAOperationMode()) { // client mode
             
-            // Check if this certificate belongs to the user, and set the password of the request to this user's password
-            // so it can later be used when issuing the certificate
+            // Check if this certificate belongs to the user
             if (username != null) {
                 if (!StringUtils.equals(username, certinfo.getUsername())) {
                     errorMessage = "The End Entity certificate attached to the PKIMessage in the extraCert field does not belong to user '"+username+"'.";
@@ -294,6 +295,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                     return false;                
                 }
                 
+                //set the password of the request to this user's password so it can later be used when issuing the certificate
                 if (log.isDebugEnabled()) {
                     log.debug("Extracting and setting password for user '"+username+"'.");
                 }
@@ -311,7 +313,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         
         //Begin the signature verification process.
-        //Verify the signature of msg using the public key of the certificate we found in the database
+        //Verify the signature of msg using the public key of extraCert
         try {
             final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
             sig.initVerify(extraCert.getPublicKey());
