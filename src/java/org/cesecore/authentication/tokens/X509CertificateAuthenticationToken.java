@@ -93,8 +93,8 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
      * This implementation presumes that a lone {@link X509Certificate} has been submitted as a credential (which should have been verified by the
      * constructor), and will use that value to match this authentication token to the AccessUserData entity submitted.
      * 
-     * FIXME: This class is a candidate for optimization. FIXME: Attempt to remove as many static calls as
-     * possible.
+     * FIXME: This class is a candidate for optimization. 
+     * FIXME: Attempt to remove as many static calls as possible.
      * 
      */
     @Override

@@ -30,13 +30,13 @@ import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
-import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderLocal;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
@@ -128,12 +128,12 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
                  * hash.
                  */
                 return result.clone();
-            } catch (NotFoundException e) {
-                log.error("User " + usernamePrincipal.getName() + " not found in database", e);
+            } catch (NotFoundException e) {         
                 String msg = intres.getLocalizedMessage("authentication.failed.cli.usernotfound", usernamePrincipal.getName() );
+                log.error(msg, e);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, ModuleTypes.AUTHENTICATION, ServiceTypes.CORE, "", null, null, null, details);
+                securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, ModuleTypes.AUTHENTICATION, EjbcaServiceTypes.EJBCA, "", null, null, null, details);
                 return null;
             }
         }
