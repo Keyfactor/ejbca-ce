@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.cli;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -20,11 +21,15 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.RemoveException;
 import javax.persistence.PersistenceException;
 
+import org.cesecore.audit.AuditLogEntry;
+import org.cesecore.audit.audit.SecurityEventsAuditorSessionRemote;
+import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -40,9 +45,12 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.query.Criteria;
+import org.cesecore.util.query.QueryCriteria;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
@@ -67,11 +75,15 @@ public class CliAuthenticationTest {
 
     private static final String CLI_TEST_ROLENAME = "CLI_TEST_ROLENAME";
 
+    /** Internal localization of logs and errors */
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    
     private final AccessControlSessionRemote accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
     private final CliAuthenticationProviderRemote cliAuthenticationProvider = JndiHelper.getRemoteSession(CliAuthenticationProviderRemote.class);
     private final ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
     private final RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
+    private final SecurityEventsAuditorSessionRemote securityEventsAuditorSession = JndiHelper.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
     private final UserAdminSessionRemote userAdminSessionRemote = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);    
 
     private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = JndiHelper
@@ -79,6 +91,7 @@ public class CliAuthenticationTest {
 
     private final TestAlwaysAllowLocalAuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             CliAuthenticationProviderRemote.class.getSimpleName()));
+  
 
     @Before
     public void setUp() throws Exception {        
@@ -149,16 +162,46 @@ public class CliAuthenticationTest {
      *    FIA_UID.1 Timing of identification
      *    Unsuccessful use of the user identification mechanism, including the
      *    user identity provided 
+     * @throws AuthorizationDeniedException 
      */
     @Test
-    public void testAuthenticationFailureDueToNonExistingUser() {
+    public void testAuthenticationFailureDueToNonExistingUser() throws AuthorizationDeniedException {
+        final String expectedMessage = intres.getLocalizedMessage("authentication.failed.cli.usernotfound", CliAuthenticationTestHelperSessionRemote.USERNAME );
         Set<Principal> principals = new HashSet<Principal>();
         principals.add(new UsernamePrincipal(CliAuthenticationTestHelperSessionRemote.USERNAME));
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
         CliAuthenticationToken authenticationToken = (CliAuthenticationToken) cliAuthenticationProvider.authenticate(subject);
-        assertNull("Authentication token was returned for nonexisting user", authenticationToken);
-        //TODO: Examine the logs
-     //   securityEventsAuditorSession.selectAuditLogs(internalToken, startIndex, max, criteria, logDeviceId)
+        assertNull("Authentication token was returned for nonexistant user", authenticationToken);
+        //Examine the last log entry
+        for (final String logDeviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
+            final List<? extends AuditLogEntry> list = securityEventsAuditorSession.selectAuditLogs(internalToken, 0, 0,
+                    QueryCriteria.create().add(Criteria.eq(AuditLogEntry.FIELD_EVENTTYPE, EventTypes.AUTHENTICATION.toString())), logDeviceId);
+            Map<Object, Object> details = list.get(list.size()-1).getMapAdditionalDetails();
+            String msg = (String) details.get("msg");           
+            assertEquals("Incorrect log message was produced.", expectedMessage, msg);
+        }
+    }
+    
+    @Test 
+    public void testAuthenticationFailureDueToIncorrectPassword() throws AuthorizationDeniedException {
+        final String expectedMessage = intres.getLocalizedMessage("authentication.failed", "" );
+        cliAuthenticationTestHelperSession.createUser(CliAuthenticationTestHelperSessionRemote.USERNAME, CliAuthenticationTestHelperSessionRemote.PASSWORD);
+        Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new UsernamePrincipal(CliAuthenticationTestHelperSessionRemote.USERNAME));
+        AuthenticationSubject subject = new AuthenticationSubject(principals, null);
+        CliAuthenticationToken authenticationToken =  (CliAuthenticationToken) cliAuthenticationProvider.authenticate(subject);
+        // Set hashed value anew in order to send back
+        authenticationToken.setSha1HashFromCleartextPassword("monkeys");
+        assertFalse("Authentication token was returned for incorrect password", accessControlSession.isAuthorized(authenticationToken, AccessRulesConstants.ROLE_ROOT));
+        //Examine the last log entry
+        for (final String logDeviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
+            final List<? extends AuditLogEntry> list = securityEventsAuditorSession.selectAuditLogs(internalToken, 0, 0,
+                    QueryCriteria.create().add(Criteria.eq(AuditLogEntry.FIELD_EVENTTYPE, EventTypes.AUTHENTICATION.toString())), logDeviceId);
+            Map<Object, Object> details = list.get(list.size()-1).getMapAdditionalDetails();
+            String msg = (String) details.get("msg");           
+            final String expectedRegexp = expectedMessage + ".*";
+            assertTrue("Incorrect log message was produced. (Was: <" + msg + ">. Expected to match: <" +  expectedRegexp +">", msg.matches(expectedRegexp));
+        }
     }
 
 }
