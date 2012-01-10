@@ -30,6 +30,7 @@ public class CliCommandHelper {
     
     private static final Logger log = Logger.getLogger(CliCommandHelper.class);
 
+    @SuppressWarnings("unchecked")
     public static void searchAndRun(String[] args, String basePackage) {
         List<CliCommand> commandList = new ArrayList<CliCommand>();
         List<String> mainCommands = new ArrayList<String>();
