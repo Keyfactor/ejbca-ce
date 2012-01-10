@@ -1110,7 +1110,7 @@ public class BatchEnrollmentGUIView extends FrameView {
     }
 
     @Action
-    public Task refreshEndEntities() {
+    public Task<Object, Void> refreshEndEntities() {
         return new RefreshEndEntitiesTask(getApplication());
     }
 
@@ -1199,7 +1199,7 @@ public class BatchEnrollmentGUIView extends FrameView {
     }
 
     @Action
-    public Task enroll() {
+    public Task<Object, Void> enroll() {
         return new EnrollTask(getApplication());
     }
 
