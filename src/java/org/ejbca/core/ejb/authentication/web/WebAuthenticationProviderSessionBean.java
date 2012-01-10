@@ -14,6 +14,8 @@ package org.ejbca.core.ejb.authentication.web;
 
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import javax.ejb.EJB;
@@ -23,6 +25,9 @@ import javax.ejb.TransactionAttributeType;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
@@ -32,6 +37,8 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.WebConfiguration;
+import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
+import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
 
 /**
@@ -51,10 +58,11 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
     @Override
     public AuthenticationToken authenticate(AuthenticationSubject subject) {
-
         X509Certificate[] certificateArray = subject.getCredentials().toArray(new X509Certificate[0]);
         if (certificateArray.length != 1) {
             if (LOG.isDebugEnabled()) {
@@ -67,7 +75,11 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             try {
                 certificate.checkValidity();
             } catch (Exception e) {
-            	LOG.info(intres.getLocalizedMessageCs("authentication.certexpired", CertTools.getSubjectDN(certificate), CertTools.getNotAfter(certificate).toString()));
+                String msg = intres.getLocalizedMessage("authentication.certexpired", CertTools.getSubjectDN(certificate), CertTools.getNotAfter(certificate).toString());
+            	LOG.error(msg);
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, "", null, null, null, details);
             	return null;
             }
             // Find out if this is a certificate present in the local database (even if we don't require a cert to be present there we still want to allow a mix)
@@ -76,13 +88,21 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 // The certificate is present in the database.
                 if (certificateInfo.getStatus() != CertificateConstants.CERT_ACTIVE) {
                     // The certificate is revoked, archived or similar
-                    LOG.info(intres.getLocalizedMessageCs("authentication.revokedormissing", CertTools.getSubjectDN(certificate)));
+                    String msg = intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
+                    LOG.error(msg);
+                    Map<String, Object> details = new LinkedHashMap<String, Object>();
+                    details.put("msg", msg);
+                    securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, "", null, null, null, details);
                     return null;
                 }
             } else {
                 // The certificate is not present in the database.
                 if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
-                    LOG.info(intres.getLocalizedMessageCs("authentication.revokedormissing", CertTools.getSubjectDN(certificate)));
+                    String msg =  intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
+                    LOG.error(msg);
+                    Map<String, Object> details = new LinkedHashMap<String, Object>();
+                    details.put("msg", msg);
+                    securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, "", null, null, null, details);
                     return null;
                 }
                 // TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status

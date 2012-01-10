@@ -1261,6 +1261,8 @@ public class CertTools {
      * @throws IllegalStateException
      * @throws CertificateEncodingException
      * @throws NoSuchProviderException
+     * 
+     * TODO: Fix documentation
      */
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
             boolean isCA) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException,
@@ -1268,6 +1270,7 @@ public class CertTools {
         return genSelfCert(dn, validity, policyId, privKey, pubKey, sigAlg, isCA, "BC");
     }
 
+    // TODO: Fix documentation
     public static X509Certificate genSelfCert(String dn, long validity, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg,
             boolean isCA, String provider) throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException,
             IllegalStateException, NoSuchProviderException {
