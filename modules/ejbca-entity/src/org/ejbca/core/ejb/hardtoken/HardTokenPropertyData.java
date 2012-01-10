@@ -162,6 +162,7 @@ public class HardTokenPropertyData extends ProtectedData implements Serializable
     }
 
     /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<HardTokenPropertyData> findIdsByPropertyAndValue(EntityManager entityManager, String property, String value) {
         Query query = entityManager.createQuery("SELECT a FROM HardTokenPropertyData a WHERE a.hardTokenPropertyDataPK.property=:property AND a.value=:value");
         query.setParameter("property", property);

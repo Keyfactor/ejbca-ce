@@ -59,7 +59,8 @@ public class Log4jDevice implements AuditLogDevice {
 	private final List<Log4jDeviceErrorHandler> errorHandlers = new ArrayList<Log4jDeviceErrorHandler>();
 	
 	public Log4jDevice() {
-		final Enumeration<Appender> enumeration = LOG.getAllAppenders();
+		@SuppressWarnings("unchecked")
+        final Enumeration<Appender> enumeration = LOG.getAllAppenders();
 		while (enumeration.hasMoreElements()) {
 			final Appender appender = enumeration.nextElement();
 			final ErrorHandler errorHandler = appender.getErrorHandler();
