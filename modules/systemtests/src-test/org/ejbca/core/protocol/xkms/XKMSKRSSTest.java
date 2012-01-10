@@ -177,9 +177,7 @@ public class XKMSKRSSTest {
 
             certprofilename1 = "XKMSTESTSIGN" + baseUsername;
             certprofilename2 = "XKMSTESTEXCHANDENC" + baseUsername;
-            endentityprofilename = "XKMSTESTPROFILE" + baseUsername;
-
-            
+            endentityprofilename = "XKMSTESTPROFILE" + baseUsername;     
 
             username1 = baseUsername + '1';
             dn1 = "C=SE, O=AnaTom, CN=" + username1;
@@ -192,11 +190,8 @@ public class XKMSKRSSTest {
             keys3 = genKeys();
             org.apache.xml.security.Init.init();
 
-            // JAXBContext jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");
-            // Marshaller marshaller = XKMSUtil.getNamespacePrefixMappedMarshaller(jAXBContext);
             dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
-            // Unmarshaller unmarshaller = jAXBContext.createUnmarshaller();
 
         } catch (Exception e) {
             log.error("Error initializing RequestAbstractTypeResponseGenerator", e);
@@ -308,7 +303,7 @@ public class XKMSKRSSTest {
     public void test01SimpleRegistration() throws Exception {
         cert1 = simpleRegistration(dn1, false);
     }
-
+	
     private Certificate simpleRegistration(String dn, boolean willFail) throws Exception {
 
         RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
