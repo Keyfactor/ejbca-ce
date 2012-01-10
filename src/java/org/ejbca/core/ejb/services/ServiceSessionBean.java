@@ -672,6 +672,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @Override
     public void load() {
         // Get all services
+        @SuppressWarnings("unchecked")
         Collection<Timer> currentTimers = timerService.getTimers();
         Iterator<Timer> iter = currentTimers.iterator();
         HashSet<Serializable> existingTimers = new HashSet<Serializable>();

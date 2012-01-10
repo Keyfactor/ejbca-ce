@@ -95,10 +95,10 @@ public class HardTokenIssuerData extends ProtectedData implements Serializable {
 	public void setRowProtection(String rowProtection) { this.rowProtection = rowProtection; }
 
 	@Transient
-	private LinkedHashMap getData() {
+	private LinkedHashMap<?, ?> getData() {
 		return JBossUnmarshaller.extractLinkedHashMap(getDataUnsafe());
 	}
-	private void setData(LinkedHashMap data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
+	private void setData(LinkedHashMap<?, ?> data) { setDataUnsafe(JBossUnmarshaller.serializeObject(data)); }
 
 	/**
 	 * Method that returns the hard token issuer data and updates it if nessesary.
@@ -114,7 +114,7 @@ public class HardTokenIssuerData extends ProtectedData implements Serializable {
 	 * Method that saves the hard token issuer data to database.
 	 */
 	public void setHardTokenIssuer(HardTokenIssuer hardtokenissuer){
-		setData((LinkedHashMap) hardtokenissuer.saveData());
+		setData((LinkedHashMap<?, ?>) hardtokenissuer.saveData());
 	}
 
     //
@@ -181,7 +181,8 @@ public class HardTokenIssuerData extends ProtectedData implements Serializable {
 	}
 
 	/** @return return the query results as a List. */
-	public static List<HardTokenIssuerData> findAll(EntityManager entityManager) {
+	@SuppressWarnings("unchecked")
+    public static List<HardTokenIssuerData> findAll(EntityManager entityManager) {
 		final Query query = entityManager.createQuery("SELECT a FROM HardTokenIssuerData a");
 		return query.getResultList();
 	}

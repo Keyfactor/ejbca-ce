@@ -186,6 +186,7 @@ public class HardTokenProfileData extends ProtectedData implements Serializable 
     }
     
 	/** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
     public static List<HardTokenProfileData> findAll(EntityManager entityManager) {
     	final Query query = entityManager.createQuery("SELECT a FROM HardTokenProfileData a");
     	return query.getResultList();

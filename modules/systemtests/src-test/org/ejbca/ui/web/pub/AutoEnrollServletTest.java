@@ -249,7 +249,8 @@ public class AutoEnrollServletTest {
 		CMSSignedData p7b = new CMSSignedData(responseData);
 		CertStore certStore = p7b.getCertificatesAndCRLs("Collection", "BC");
 		SignerInformationStore  signers = p7b.getSignerInfos();
-		Iterator<SignerInformation> iter = signers.getSigners().iterator();
+		@SuppressWarnings("unchecked")
+        Iterator<SignerInformation> iter = signers.getSigners().iterator();
 		while (iter.hasNext())
 		{
 			SignerInformation signer = iter.next();
