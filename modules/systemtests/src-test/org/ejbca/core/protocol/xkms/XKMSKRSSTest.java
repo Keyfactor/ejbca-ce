@@ -40,8 +40,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -84,6 +82,7 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3._2000._09.xmldsig_.KeyInfoType;
 import org.w3._2000._09.xmldsig_.RSAKeyValueType;
@@ -124,36 +123,36 @@ public class XKMSKRSSTest {
     private final static ObjectFactory xKMSObjectFactory = new ObjectFactory();
     private final static org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
 
-    private final static String baseUsername;
+    private static String baseUsername;
 
     private final static AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
 
-    private final static String username1;
-    private final static String username2;
-    private final static String username3;
+    private static String username1;
+    private static String username2;
+    private static String username3;
 
     private final static String issuerdn = "CN=AdminCA1,O=EJBCA Sample,C=SE";
     private final static int caid = issuerdn.hashCode();
 
-    private final static String dn1;
-    private final static String dn2;
-    private final static String dn3;
+    private static String dn1;
+    private static String dn2;
+    private static String dn3;
 
-    private final static KeyPair keys1;
-    private final static KeyPair keys3;
+    private static KeyPair keys1;
+    private static KeyPair keys3;
 
     private static Certificate cert1;
     private static Certificate cert2;
 
-    private final static String certprofilename1;
-    private final static String certprofilename2;
-    private final static String endentityprofilename;
+    private static String certprofilename1;
+    private static String certprofilename2;
+    private static String endentityprofilename;
 
     private GlobalConfiguration orgGlobalConfig;
 	private static CAInfo orgCaInfo;
 
-    private final static DocumentBuilderFactory dbf;
-    private final static Random ran;
+    private static DocumentBuilderFactory dbf;
+    private static Random ran;
 
     private ApprovalExecutionSessionRemote approvalExecutionSession = InterfaceCache.getApprovalExecutionSession();
     private ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
@@ -168,7 +167,8 @@ public class XKMSKRSSTest {
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
-    static {
+    @BeforeClass
+    public static void beforeClass() {
         org.apache.xml.security.Init.init();
         try {
             CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -200,7 +200,7 @@ public class XKMSKRSSTest {
     }
 
     @Before
-    public void setUp() throws CADoesntExistsException, AuthorizationDeniedException {
+    public void setUp() throws Exception {
         orgGlobalConfig = globalConfigurationSession.getCachedGlobalConfiguration();
         orgCaInfo = caSession.getCAInfo(administrator, "AdminCA1");
     }
@@ -1025,9 +1025,6 @@ public class XKMSKRSSTest {
 
         assertTrue(revokeResultType.getKeyBinding().size() == 1);
         keyBindingType = revokeResultType.getKeyBinding().get(0);
-//        for (String s : keyBindingType.getStatus().getValidReason()) {
-//        	log.debug("ValidReason: " + s);
-//        }
         // All Values: http://www.w3.org/2002/03/xkms#IssuerTrust, RevocationStatus, ValidityInterval, Signature
         // Should be: http://www.w3.org/2002/03/xkms#ValidityInterval, IssuerTrust, Signature
         assertEquals("Wrong number of ValidReason in KeyBinding: ", 3, keyBindingType.getStatus().getValidReason().size());	// TODO: Was 3 in EJBCA 3.11?? Why has this changed?
