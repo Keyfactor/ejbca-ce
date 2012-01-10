@@ -120,6 +120,7 @@ public class WebdistHttpTest {
 
     }
 
+    @SuppressWarnings("unchecked")
     @Test
     public void testPublicWebChainDownload() throws Exception {
     	
