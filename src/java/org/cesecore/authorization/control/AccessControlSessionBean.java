@@ -97,7 +97,7 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
             }
         } catch (AuthenticationFailedException e) {
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            String msg = intres.getLocalizedMessage("authentication.failed");
+            String msg = intres.getLocalizedMessage("authentication.failed", e.getMessage());
             details.put("msg", msg);
             try {
                 securityEventsLoggerSession.log(trustedTimeWatcherSession.getTrustedTime(false), EventTypes.AUTHENTICATION, EventStatus.FAILURE,

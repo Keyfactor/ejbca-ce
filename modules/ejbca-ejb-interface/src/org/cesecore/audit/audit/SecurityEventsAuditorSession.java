@@ -42,8 +42,8 @@ public interface SecurityEventsAuditorSession {
      * Select a set of events to be audited.
      * 
      * @param token identifier of the entity performing the task.
-     * @param startIndex Index where select will start.
-     * @param max maximum number of results to be returned.
+     * @param startIndex Index where select will start. Set to 0 to start from the beginning.
+     * @param max maximum number of results to be returned. Set to 0 to use no limit.
      * @param criteria Criteria defining the subset of logs to be selected.
      * @param logDeviceId identifier of the AuditLogDevice
      * 
