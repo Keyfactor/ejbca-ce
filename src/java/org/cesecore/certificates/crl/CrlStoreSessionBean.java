@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.crl;
 
-import java.security.cert.X509CRL;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -112,14 +111,14 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
         int maxnumber = 0;
         try {
             maxnumber = getLastCRLNumber(issuerdn, deltaCRL);
-            X509CRL crl = null;
+            byte[] crlbytes = null;
             final CRLData data = CRLData.findByIssuerDNAndCRLNumber(entityManager, issuerdn, maxnumber);
             if (data != null) {
-                crl = data.getCRL();
-                if (crl != null) {
+                crlbytes = data.getCRLBytes();
+                if (crlbytes != null) {
                     final String msg = intres.getLocalizedMessage("store.getcrl", issuerdn, Integer.valueOf(maxnumber));
                     log.info(msg);
-                    return crl.getEncoded();
+                    return crlbytes;
                 }
             }
         } catch (Exception e) {
