@@ -131,7 +131,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 	public boolean getStoreCRL() {
 		final Object o = this.data.get(STORECRL);
 		if ( o==null ) {
-			return false; // default value is true
+			return false; // default value is false
 		}
 		return ((Boolean)o).booleanValue();
 	}
