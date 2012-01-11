@@ -48,6 +48,8 @@ import org.ejbca.core.model.log.Admin;
  * @version $Id$
  */
 
+//Suppress warnings for deprecation of the Admin object, required for legacy support
+@SuppressWarnings("deprecation") 
 public class Approval implements Comparable<Approval>, Externalizable { 
 	
 	private static final long serialVersionUID = -1L;
