@@ -43,9 +43,9 @@ public abstract class ValueExtractor {
 		try {
 			if (c.isArray()) {
 				final Object[] objects = (Object[]) object;
-				if (LOG.isDebugEnabled()) {
+				if (LOG.isTraceEnabled()) {
 					for (Object o : objects) {
-						LOG.debug(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
+						LOG.trace(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
 					}
 				}
 				if (objects[0].getClass().equals(BigInteger.class)) {
@@ -74,9 +74,9 @@ public abstract class ValueExtractor {
 		try {
 			if (c.isArray()) {
 				final Object[] objects = (Object[]) object;
-				if (LOG.isDebugEnabled()) {
+				if (LOG.isTraceEnabled()) {
 					for (Object o : objects) {
-						LOG.debug(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
+						LOG.trace(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
 					}
 				}
 				if (objects[0].getClass().equals(BigInteger.class)) {
