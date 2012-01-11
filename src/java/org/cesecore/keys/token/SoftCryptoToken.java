@@ -114,6 +114,8 @@ public class SoftCryptoToken extends BaseCryptoToken {
             // Test it first, don't set an incorrect password as autoactivate password
             boolean okPwd = true;
             try {
+                // make sure id is set if we need to log an error
+                super.setId(id);
                 // only verify password
                 checkSoftKeystorePassword(keystorepass.toCharArray());
                 log.debug("Succeded to load keystore with password");

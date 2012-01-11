@@ -206,6 +206,10 @@ public abstract class BaseCryptoToken implements CryptoToken {
         return this.id;
     }
 
+    public void setId(final int id) {
+        this.id = id;
+    }
+
     @Override
     public Properties getProperties() {
         return properties;
