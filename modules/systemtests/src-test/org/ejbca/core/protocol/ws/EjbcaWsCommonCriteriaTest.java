@@ -66,4 +66,15 @@ public class EjbcaWsCommonCriteriaTest {
     public void testKeyRecovery() throws Exception {
         test.test20KeyRecoverNewest();
     }
+    
+    @Test
+    public void testHardTokenOpertations() throws Exception {
+        test.test19RevocationApprovals();
+    }
+    
+    @Test 
+    public void testPublisherOperations() throws Exception {
+        test.test32OperationOnNonexistingCA();
+        test.test33CheckQueueLength();
+    }
 }
