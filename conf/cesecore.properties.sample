@@ -1,5 +1,9 @@
+#
+# I you want to use integrity protection of the audit log (in the IntegrityProtectedDevice) you
+# must also configure integrity protection in conf/databaseprotection.properties
+# 
 # Set to true to allow dynamic re-configuration using properties files in the file 
-# system. Using this you can place a file /etc/cesecore/conf/cache.properties in the file system and
+# system. Using this you can place a file /etc/cesecore/conf/cesecore.properties in the file system and
 # override default values compiled into ejbca.ear.
 #
 # Default: false
