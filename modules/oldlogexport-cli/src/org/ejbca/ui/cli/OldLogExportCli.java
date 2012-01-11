@@ -35,6 +35,8 @@ import org.ejbca.core.model.log.LogEntry;
  *  
  * @version $Id$
  */
+//Suppress warnings for deprecation of the Admin and LogEntryData objects, required for legacy support
+@SuppressWarnings("deprecation")
 public class OldLogExportCli {
 
 	private static final Logger LOG = Logger.getLogger(OldLogExportCli.class);
