@@ -13,8 +13,8 @@
 
 package org.ejbca.ui.web.pub;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -109,7 +109,7 @@ public class HttpMethodsTest {
     /** Perform basic HTTP method tests on the specified resource */
     private void performResourceTest(String resourceName) throws Exception {
         log.info("Started tests of " + resourceName);
-        assertTrue("HTTP GET is not supported. (This test expects " + resourceName + " to exist)", getUrl(httpBaseUrl + resourceName) == 200);
+        assertEquals("HTTP GET is not supported. (This test expects " + httpBaseUrl+resourceName + " to exist)", 200, getUrl(httpBaseUrl + resourceName));
         assertFalse("HTTP DELETE is supported.", allowsDeleteHttpRequest(resourceName, httpPort));
         assertFalse("HTTP PUT is supported.", allowsPutHttpRequest(resourceName + ".2", httpPort));
         assertFalse("HTTP TRACE is supported.", allowsTraceHttpRequest(resourceName, httpPort));
@@ -194,6 +194,7 @@ public class HttpMethodsTest {
         WebRequestSettings settings = new WebRequestSettings(new URL(url));
         settings.setSubmitMethod(SubmitMethod.GET);
         WebResponse resp = con.getResponse(settings);
+        log.debug(resp.getContentAsString());
         return resp.getStatusCode();
     }
 }
