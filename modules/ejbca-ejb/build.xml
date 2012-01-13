@@ -159,7 +159,7 @@
 
 		<!-- From EJBCA entity lib -->
 		<include name="org/cesecore/certificates/ca/internal/CACacheManager.java"/>
-		<include name="cesecore/certificates/ca/CADoesntExistsException.java"/>
+		<include name="org.cesecore/certificates/ca/CADoesntExistsException.java"/>
 		<include name="org/cesecore/certificates/certificateprofiles/CertificateProfile.java"/>
 		<include name="org/cesecore/certificates/certificate/CertificateInfo.java"/>
 		<include name="org/ejbca/config/EjbcaConfiguration.java"/>
