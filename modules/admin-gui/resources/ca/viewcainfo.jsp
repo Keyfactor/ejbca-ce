@@ -67,7 +67,13 @@
 			   if (datatext == null) {
 				   datatext = "";
 			   }
-			%><%=datatext%><% if(i==0||i==1){ %></strong><% } %></td>
+			%>
+			<!-- CAInfoView will escape potentially dangerous fields for us
+				we can't easily use c:out here, since empty fields will contain "&nbsp;"
+				as set by CAInfoView, and I don't want to risk breaking other views by changing that 
+				behavior too much... 
+			-->
+			<%=datatext%><% if(i==0||i==1){ %></strong><% } %></td>
       </tr>    
       <% } %>
 
