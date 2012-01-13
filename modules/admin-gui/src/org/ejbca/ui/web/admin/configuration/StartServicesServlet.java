@@ -18,6 +18,7 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.security.SecureRandom;
 import java.security.Security;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +33,12 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.UserTransaction;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.AuditDevicesConfig;
 import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -40,6 +46,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.dbprotection.ProtectedDataConfiguration;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.GlobalConfiguration;
@@ -181,6 +188,47 @@ public class StartServicesServlet extends HttpServlet {
         Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", iMsg);
         logSession.log(EjbcaEventTypes.EJBCA_STARTING, EventStatus.SUCCESS, EjbcaModuleTypes.SERVICE, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);				
+
+        // Log the type of security audit configuration that we have enabled.
+        log.trace(">init security audit device configuration");
+        // See if we have IntegrityProtectedDevice configured, due to class loading constraints we can not use IntegrityProtectedDevice.class.getSimpleName().
+        // This is admin-gui and does not have access to that class
+        final String integrityProtectedName = "IntegrityProtectedDevice";
+        final String auditTableName = AuditRecordData.class.getSimpleName();
+        final Set<String> loggerIds = AuditDevicesConfig.getAllDeviceIds();
+        if (loggerIds.isEmpty()) {
+            final String msg = intres.getLocalizedMessage("startservices.noauditdevices");
+            log.info(msg);
+        }
+        boolean haveSecurityAudit = false;
+        for (Iterator<String> iterator = loggerIds.iterator(); iterator.hasNext();) {
+            final String id = (String) iterator.next();
+            if (integrityProtectedName.equals(id)) {
+                // Make a log row that integrity protected device is configured
+                final Map<String, Object> logdetails = new LinkedHashMap<String, Object>();
+                final Integer keyid = ProtectedDataConfiguration.instance().getKeyId(auditTableName);
+                if ((keyid != null) && (keyid > 0)) {
+                    if (ProtectedDataConfiguration.useDatabaseIntegrityProtection(auditTableName)) {
+                        logdetails.put("keyid", keyid);
+                        logdetails.put("protectVersion", ProtectedDataConfiguration.instance().getProtectVersion(keyid));
+                        logdetails.put("keyLabel", ProtectedDataConfiguration.instance().getKeyLabel(keyid));
+                        logSession.log(EventTypes.LOG_MANAGEMENT_CHANGE, EventStatus.SUCCESS, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, admin.toString(), null, null, null, logdetails);
+                        haveSecurityAudit = true;                                            
+                    } else {
+                        log.debug("No database integrity protection enabled for AuditRecordData.");
+                    }
+                } else {
+                    log.debug("No keyid configured for AuditRecordData.");
+                }
+            }
+        }
+        if (!haveSecurityAudit) {
+            // Make a log row that no integrity protected device is configured
+            final String msg = intres.getLocalizedMessage("startservices.noprotectedauditdevices");
+            final Map<String, Object> logdetails = new LinkedHashMap<String, Object>();
+            logdetails.put("msg", msg);
+            logSession.log(EventTypes.LOG_MANAGEMENT_CHANGE, EventStatus.VOID, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, admin.toString(), null, null, null, logdetails);                
+        }
 
         // Initialize authorization system, if not done already
         log.trace(">init ComplexAccessControlSession to check for initial root role");
