@@ -31,7 +31,7 @@ import org.cesecore.util.SimpleTime;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
-
+import org.ejbca.util.HTMLTools;
 
 /**
  * A class representing a view of a CA Information view..
@@ -92,7 +92,7 @@ public class CAInfoView implements Serializable, Cloneable {
       if (cainfo instanceof X509CAInfo) {
         setupGeneralInfo(X509CA_CAINFODATATEXTS, cainfo, ejbcawebbean);
 
-        cainfodata[SUBJECTALTNAME] = ((X509CAInfo) cainfo).getSubjectAltName();
+        cainfodata[SUBJECTALTNAME] = HTMLTools.htmlescape(((X509CAInfo) cainfo).getSubjectAltName());
 
 		cainfodata[CRLPUBLISHERS] = "";
         Iterator<Integer> publisherIds = ((X509CAInfo) cainfo).getCRLPublishers().iterator();
@@ -141,8 +141,8 @@ public class CAInfoView implements Serializable, Cloneable {
           }
         }
         
-        cainfodata[SUBJECTDN]  = cainfo.getSubjectDN();
-        cainfodata[NAME]       = cainfo.getName();
+        cainfodata[SUBJECTDN]  = HTMLTools.htmlescape(cainfo.getSubjectDN());
+        cainfodata[NAME]       = HTMLTools.htmlescape(cainfo.getName());
         int catype = cainfo.getCAType();
         if (catype == CAInfo.CATYPE_CVC) {
             cainfodata[CATYPE]     = ejbcawebbean.getText("CVCCA");        	
@@ -197,7 +197,7 @@ public class CAInfoView implements Serializable, Cloneable {
         	break;
         }
         
-        cainfodata[DESCRIPTION] = cainfo.getDescription();
+        cainfodata[DESCRIPTION] = HTMLTools.htmlescape(cainfo.getDescription());
         
 		cainfodata[CRLSPACER]          = "&nbsp;"; // blank line
 
