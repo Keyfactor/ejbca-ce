@@ -135,6 +135,7 @@
 		<include name="org/cesecore/certificates/crl/*.java"/>
 		<include name="org/cesecore/certificates/certificateprofile/*.java"/>
 		<exclude name="org/cesecore/certificates/certificateprofile/*Cache.java"/>
+		<exclude name="org/cesecore/audit/AuditDevicesConfig.java"/>
 		<include name="org/cesecore/audit/audit/*.java"/>
 		<include name="org/cesecore/audit/enums/*.java"/>
 		<include name="org/cesecore/audit/impl/*.java"/>
@@ -153,13 +154,12 @@
 		<include name="org/cesecore/time/providers/*.java"/>
 		<include name="org/cesecore/util/**/*.java"/>
 		<include name="org/cesecore/certificates/util/**/*.java"/>
-		<exclude name="org/cesecore/audit/AuditDevicesConfig.java"/>
 		<exclude name="org/cesecore/**/*SessionBean.java"/>
 		
 
 		<!-- From EJBCA entity lib -->
 		<include name="org/cesecore/certificates/ca/internal/CACacheManager.java"/>
-		<include name="org.cesecore/certificates/ca/CADoesntExistsException.java"/>
+		<include name="org/cesecore/certificates/ca/CADoesntExistsException.java"/>
 		<include name="org/cesecore/certificates/certificateprofiles/CertificateProfile.java"/>
 		<include name="org/cesecore/certificates/certificate/CertificateInfo.java"/>
 		<include name="org/ejbca/config/EjbcaConfiguration.java"/>
