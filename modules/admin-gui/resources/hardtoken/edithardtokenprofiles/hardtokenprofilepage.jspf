@@ -1,3 +1,4 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%               
   HardTokenProfile profiledata = edithardtokenprofile.profiledata;
    
@@ -58,7 +59,7 @@ function checkallfields(){
 </script>
 <div align="center"> 
   <h2><%= ejbcawebbean.getText("EDITHARDTOKENPROF") %></h2>
-  <h3><%= ejbcawebbean.getText("HARDTOKENPROFILE")+ " : " + edithardtokenprofile.profilename %></h3>
+  <h3><c:out value='<%= ejbcawebbean.getText("HARDTOKENPROFILE")+ " : " + edithardtokenprofile.profilename %>'/></h3>
   <% if(edithardtokenprofile.fileuploadsuccess){
      edithardtokenprofile.fileuploadsuccess = false;%>
   <h3><%= ejbcawebbean.getText("TEMPLATEUPLOADSUCCESSFUL")%></h3>
@@ -84,12 +85,12 @@ function checkallfields(){
         <%= ejbcawebbean.getText("NAME") %>
       </td>
       <td width="60%"> 
-        <%= edithardtokenprofile.profilename%>
+        <c:out value="<%= edithardtokenprofile.profilename%>"/>
       </td>
     </tr>
     <form name="profiletype" method="post" action="<%=THIS_FILENAME %>">
       <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.ACTION %>' value='<%=EditHardTokenProfileJSPHelper.ACTION_CHANGE_PROFILETYPE %>'>
-      <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENPROFILENAME %>' value='<%=edithardtokenprofile.profilename %>'>
+      <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENPROFILENAME %>' value="<c:out value='<%= edithardtokenprofile.profilename %>'/>">
     <tr  id="Row<%=row%2%>"> 
       <td width="40%"  align="right"> 
         <%= ejbcawebbean.getText("HARDTOKENTYPE") %>
@@ -111,7 +112,7 @@ function checkallfields(){
    <table class="edit" width="100%" border="0" cellspacing="3" cellpadding="3">
    <form name="editprofile" method="post" action="<%=THIS_FILENAME %>">
     <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.ACTION %>' value='<%=EditHardTokenProfileJSPHelper.ACTION_EDIT_HARDTOKENPROFILE %>'>
-    <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENPROFILENAME %>' value='<%=edithardtokenprofile.profilename %>'>
+    <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENPROFILENAME %>' value='<c:out value="<%= edithardtokenprofile.profilename %>"/>'>
     <input type="hidden" name='<%= EditHardTokenProfileJSPHelper.HIDDEN_HARDTOKENTYPE %>' value='<%=edithardtokenprofile.getProfileType() %>'>
 
     <% if(edithardtokenprofile.profiledata instanceof SwedishEIDProfile){%>
@@ -170,7 +171,7 @@ function checkallfields(){
       </td>
       <td width="60%">
         <input type="text" name="<%=EditHardTokenProfileJSPHelper.TEXTFIELD_SNPREFIX%>" size="6" maxlength="6" 
-               value='<%= edithardtokenprofile.profiledata.getHardTokenSNPrefix()%>'>
+               value='<c:out value="<%= edithardtokenprofile.profiledata.getHardTokenSNPrefix()%>"/>'>
       </td>
     </tr>
     <!--<tr  id="Row<%=row++%2%>"> 
