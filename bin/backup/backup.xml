@@ -1,0 +1,102 @@
+<!-- 
+****************************************************************************************************
+****																							****
+**** 	ANT script for producing backups. This script will backup and sign a zip containing the ****
+**** 	following files and directories:														****
+****	* A dump of the database (supports MySQL and PostgreSQL) 								****
+****	* The conf directory and all subdirectories												****
+****	* The p12 directory																		****
+****																							****	
+****************************************************************************************************
+$Id$
+ -->
+
+<project name="backup" basedir="../.." default="backup">
+
+	<!-- Below javascript extracts a substring -->
+	<scriptdef name="substring" language="javascript">
+		<attribute name="text" />
+		<attribute name="start" />
+		<attribute name="end" />
+		<attribute name="property" />
+     <![CDATA[
+       var text = attributes.get("text");
+       var start = text.indexOf(attributes.get("start")) + attributes.get("start").length();
+       var end = text.indexOf(attributes.get("end"), start) || text.length();      
+       project.setProperty(attributes.get("property"), text.substring(start, end));
+     ]]>
+	</scriptdef>
+	
+	<tstamp>
+		<format property="timestamp" pattern="yyyy-MM-dd-hh.mm" />
+	</tstamp>
+
+	<import file="backupCommons.xml"/>
+
+	<property name="filename.backup" value="backup_${timestamp}.zip" />
+ 	
+
+	<target name="backup" description="Make and encrypt a backup of the system in its current state.">
+		<input message="Please input working directory(e.g /tmp)" addproperty="working.dir"/>
+		<antcall target="databaseDump" />
+		<antcall target="archiveDirectories" />
+		<antcall target="encryptBackup" /> 
+		<antcall target="cleanTemporaryFiles" />
+ 	</target>
+	
+	<target name="databaseDump">
+		<echo>Performing dump of database of type ${database.name}</echo>
+		<input message="Please enter database root username" addproperty="database.root.username"/>
+		<input message="Please enter database root password$" addproperty="database.root.password">
+			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
+		</input>
+		
+		<condition property="database.dump.command" value="${database.home}/bin/mysqldump --add-drop-table -h${database.host} --port=${database.port} -u${database.root.username} -p${database.root.password} ejbca -r"><equals arg1="${database.name}" arg2="mysql"/></condition>
+		<condition property="database.dump.command" value="${database.home}/bin/pg_dump -Fc -w -h${database.host} -U${database.root.username} -b ejbca -f"><equals arg1="${database.name}" arg2="postgres"/></condition>
+		
+		
+		<exec command="${database.dump.command} ${working.dir}/${filename.dumpfile}">
+			<env key="PGPASSWORD" value="${database.root.password}"/>	
+		</exec>
+	</target>
+	
+	<target name="archiveDirectories">
+		<echo>Archiving P12 directory</echo>
+		<zip destfile="${working.dir}/${filename.p12}" basedir="${ejbca.home}/p12" />
+		<echo>Archiving ${ejbca.home}/conf</echo>
+		<zip destfile="${working.dir}/${filename.conf}">
+			<zipfileset dir="${ejbca.home}/conf/">
+				<include name="**/*"/>
+				<exclude name="**/*.sample"/>
+				<exclude name="**/.svn"/>
+				<exclude name="**/.cvsignore"/>
+			</zipfileset>
+		</zip>
+		<zip destfile="${working.dir}/${filename.backup}"> 
+			<zipfileset dir="${working.dir}">
+				<include name="${filename.p12}" />
+				<include name="${filename.conf}" />
+				<include name="${filename.dumpfile}" />
+			</zipfileset>
+		</zip>
+	</target>
+	
+	<target name="cleanTemporaryFiles">
+		<delete file="${working.dir}/${filename.p12}" />
+		<delete file="${working.dir}/${filename.conf}" />
+		<delete file="${working.dir}/${filename.dumpfile}" />
+	   <delete file="${working.dir}/${filename.backup}" /> 
+	</target>
+	
+	<target name="encryptBackup">
+		<echo>Encrypting backup file</echo>
+		<input message="Please enter shared library name" addproperty="shared.library.name"/>
+		<input message="Please enter slot number. Start with 'i' to indicate index in list" addproperty="slot.number"/>
+		<input message="Please enter output file name" addproperty="output.file"/>
+		<input message="Please enter key alias" addproperty="key.alias" />
+		<java jar="dist/clientToolBox/clientToolBox.jar" fork="true">
+			<arg line="PKCS11HSMKeyTool encrypt ${shared.library.name} ${slot.number} ${working.dir}/${filename.backup} ${working.dir}/${output.file} ${key.alias}" />
+		</java>
+	</target>
+
+</project>
