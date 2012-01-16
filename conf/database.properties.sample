@@ -57,6 +57,3 @@
 # Database password.
 # Default: (blank works with hsqldb)
 #database.password=ejbca
-
-# Home directory of the database
-#database.home=
