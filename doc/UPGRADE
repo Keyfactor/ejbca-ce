@@ -40,18 +40,6 @@ EJBCA 5.0 introduces a new access control mechanism that can provide more functi
 Some of the older access rules, such as the super administrator, has changed and needs to be modified in the post-upgrade step.
 It is recommended that you verify that your access roles and rules after an upgrade.
  
-*Notes for on-line upgrades*
-1. If you were running an earlier version of EJBCA on an older JBoss (4.2.3 was recommended for EJBCA 3.x), 
-   *and* you need to do an on-line upgrade (upgrade one cluster node while another is running) you should 
-   first upgrade your cluster to to running on JBoss 5.1.x before upgrading any of the cluster nodes to EJBCA 4. 
-2. If upgrading from EJBCA 3.11 or earlier:
-   Configure "app.version.effective=3.11.x" (in conf/ejbca.properties) and "db.keepjbossserialization=true" (in conf/cesecore.properties) 
-   for all but the last node that you deploy with EJBCA 4.0.x. Comment out the property and redeploy the other nodes again. 
-   This will ensure that the JBoss serialization still works for the deployed EJBCA 3.11.x nodes during the migration.
-3. If you need to downgrade EJBCA to 4.0.x again after a completed 'ant post-upgrade', you must add back the 
-   dropped database column (caId in AdminEntityData, value 0 is fine) in the database.
-   If should be possible to downgrade to 4.0.4 again after an 'ant post-upgrade' in EJBCA 5.0. 
-
 Backup your database first! If the upgrade fails, you can always go back to the earlier version.
 If you are upgrading a cluster, update the software on all the nodes.
 
@@ -88,6 +76,13 @@ Check src/upgrade/400_500 to find the correct sql files(s) for your database.
 A practical note is that when upgrading from EJBCA 4.0 you can not use the CLI in EJBCA 5.0 before you
 have finished migrating all your 4.0 nodes and run post-upgrade.
 
+NOTE:
+If you need to downgrade EJBCA to 4.0.x again after a completed 'ant post-upgrade', you must add back the 
+dropped database column (caId in AdminEntityData, value 0 is fine) in the database.
+If should be possible to downgrade to 4.0.4 again after an 'ant post-upgrade' in EJBCA 5.0. 
+
+You should be able to upgrade from EJBCA 3.11.x directly to 5.0.x, by following the same instructions
+as above (this upgrade is not thoroughly tested though).
 
 From EJBCA 4.0.x to EJBCA 4.0.x
 -------------------------------
