@@ -21,7 +21,7 @@ $Id$
 		<antcall target="decryptBackup" /> 
 		<antcall target="unArchiveBackupFiles" />
 		<antcall target="restoreDatabase" />
-		<antcall target="cleanTemporaryFiles" /<
+		<antcall target="cleanTemporaryFiles" />
 	</target>
 	
 	<target name="decryptBackup">
