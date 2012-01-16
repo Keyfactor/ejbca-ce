@@ -14,9 +14,10 @@ $Id$
 
 	<property name="decrypted.filename" value="decryptedBackup.zip" />
 	
-	<target name="restore">
+	<target name="restore">	
 		<input message="Please enter file to restore from." addproperty="backup.file"/>
-		<input message="Please input working directory(e.g /tmp)" addproperty="working.dir"/>
+		<input message="Please input working directory(e.g. /tmp)" addproperty="working.dir"/>
+		<input message="Please enter the home directory of the database (e.g. /usr/local/mysql)" addproperty="database.home" />
 		<antcall target="decryptBackup" /> 
 		<antcall target="unArchiveBackupFiles" />
 		<antcall target="restoreDatabase" />

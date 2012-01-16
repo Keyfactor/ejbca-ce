@@ -38,6 +38,7 @@ $Id$
 
 	<target name="backup" description="Make and encrypt a backup of the system in its current state.">
 		<input message="Please input working directory(e.g /tmp)" addproperty="working.dir"/>
+		<input message="Please enter the home directory of the database (e.g. /usr/local/mysql)" addproperty="database.home" />
 		<antcall target="databaseDump" />
 		<antcall target="archiveDirectories" />
 		<antcall target="encryptBackup" /> 
