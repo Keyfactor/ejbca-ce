@@ -1,3 +1,4 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%
   TreeMap hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles(); 
   
@@ -47,8 +48,8 @@
              while(iter.hasNext()){
                String profilename = (String) iter.next(); %>
                
-            <option value="<%=profilename%>"> 
-                <%= profilename %>
+            <option value='<c:out value="<%=profilename%>"/>'> 
+                <c:out value="<%= profilename %>"/>
              </option>
           <%}%>
         </select>
