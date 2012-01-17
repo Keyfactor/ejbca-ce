@@ -50,8 +50,8 @@ if [ "$DATABASE_TYPE" = "postgres"  ]; then
 	echo "Please enter location of pg_restore executable (default: /usr/local/pgsql/bin)"
 	read PGSQL_HOME
 	if [ "$PGSQL_HOME" = "" ]; then 
-		#PGSQL_HOME="/usr/local/pgsql/bin"
-		PGSQL_HOME="/Library/PostgreSQL/9.0/bin"
+		PGSQL_HOME="/usr/local/pgsql/bin"
+		#PGSQL_HOME="/Library/PostgreSQL/9.0/bin"
 	fi
 	$PGSQL_HOME/bin/pg_restore -c -w -h$DATABASE_HOST -U$DATABASE_USER -d$ejbca $WORKING_DIRECTORY/dbdump.sql
 else
