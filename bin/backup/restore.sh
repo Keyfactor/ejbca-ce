@@ -25,11 +25,11 @@ echo "Please input slot number. start with 'i' to indicate index in list"
 read SLOT_NUMBER
 echo "Please input key alias"
 read KEY_ALIAS
-#./ejbcaClientToolBox.sh PKCS11HSMKeyTool decrypt $SHARED_LIBRARY_NAME $SLOT_NUMBER BACKUP_FILE $WORKING_DIRECTORY/backup.zip KEY_ALIAS
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool decrypt $SHARED_LIBRARY_NAME $SLOT_NUMBER BACKUP_FILE $WORKING_DIRECTORY/backup.zip KEY_ALIAS
 cd $WORKING_DIRECTORY
 echo "Unzipping $WORKING_DIRECTORY/backup.zip"
 unzip -o $WORKING_DIRECTORY/backup.zip
-#rm -f $WORKING_DIRECTORY/backup.zip
+rm -f $WORKING_DIRECTORY/backup.zip
 echo "Restoring configuration files"
 unzip -o $WORKING_DIRECTORY/conf.zip -d $EJBCA_HOME/conf
 rm -f $WORKING_DIRECTORY/conf.zip
