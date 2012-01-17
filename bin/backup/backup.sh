@@ -44,7 +44,7 @@ else
 	
 	echo "Please enter location of mysqldmp executable (default: /usr/local/mysql/bin)"
 	read MYSQL_HOME
-	if [ "$mysql_home" = "" ]; then 
+	if [ "$MYSQL_HOME" = "" ]; then 
 		MYSQL_HOME="/usr/local/mysql/bin"
 	fi
 	echo "Performing dump of mysql database"
