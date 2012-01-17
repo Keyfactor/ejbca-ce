@@ -77,4 +77,13 @@ public class EjbcaWsCommonCriteriaTest {
         test.test32OperationOnNonexistingCA();
         test.test33CheckQueueLength();
     }
+    
+    @Test
+    public void testIsAuthorized() throws Exception {
+        test.testIsAuthorized(true);
+        // Test non authorized by revoking the certificate
+        test.test99cleanUpAdmins();
+        test.tearDown();
+        test.testIsAuthorized(false);
+    }
 }

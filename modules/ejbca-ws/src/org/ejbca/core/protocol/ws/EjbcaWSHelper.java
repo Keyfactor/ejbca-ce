@@ -181,14 +181,17 @@ public class EjbcaWSHelper {
             admin = authenticationSession.authenticate(subject);
             if ((admin != null) && (!allowNonAdmins)) {
                 if(!userAdminSession.checkIfCertificateBelongToUser(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert))) {
-                    throw new RuntimeException("Certificate with SN " +  CertTools.getSerialNumber(certificates[0]) + " did not belong to user " + CertTools.getIssuerDN(cert));
+                    throw new RuntimeException("Certificate with serialNumber " + CertTools.getSerialNumberAsString(cert) + " and issuerDN '"+CertTools.getIssuerDN(cert)+"' did not belong to any user.");
                 }
 		
 				if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
 		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
 			        throw new AuthorizationDeniedException(msg);
 				}
-            }        	
+            } else if (admin == null) {
+                final String msg = intres.getLocalizedMessage("authentication.failed", "No admin authenticated for certificate with serialNumber " +CertTools.getSerialNumber(cert)+" and issuerDN '"+CertTools.getIssuerDN(cert)+"'.");
+                throw new AuthorizationDeniedException(msg);
+            }
 		} catch (EJBException e) {
 			log.error("EJBCA WebService error: ",e);
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
