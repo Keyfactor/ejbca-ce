@@ -20,8 +20,6 @@
 	<!-- include the standard properties and paths -->
     <import file="propertyDefaults.xml"/>
 
-	<import file="bin/backup/backup.xml"/>
-	<import file="bin/backup/restore.xml"/>
 	<import file="bin/${appserver.type}.xml" optional="true"/><!-- We might just want to build the clientToolBox with an appserver. -->
 	<import file="./test.xmli" />
 	<import file="./docs.xmli" />
