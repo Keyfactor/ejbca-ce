@@ -38,7 +38,7 @@ read DATABASE_TYPE
 echo "Please enter database host address (default: 127.0.0.1):"
 read DATABASE_HOST
 if [ "$DATABASE_HOST" = "" ]; then 
-	DATABASE_HOST="127.0.0.1"
+	DATABASE_HOST="127.0.0.1" 
 fi
 echo "Please enter database root user (default: root)"
 read DATABASE_USER
@@ -69,6 +69,6 @@ else
 	echo "Now restoring MySQL database"
 	$MYSQL_HOME/mysql -h$DATABASE_HOST --port=$DATABASE_PORT -u$DATABASE_USER -p ejbca -e "source $WORKING_DIRECTORY/dbdump.sql"
 fi
-
+echo "Removing temporary file dbdump.sql"
 rm -f $WORKING_DIRECTORY/dbdump.sql
 cd $STARTING_DIRECTORY
