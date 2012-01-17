@@ -1,3 +1,4 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <% 
   TreeMap issuerdatas   = ejbcawebbean.getInformationMemory().getHardTokenIssuers();
 
@@ -62,8 +63,8 @@ function checkselected(){
                String curalias = (String) i.next();
                HardTokenIssuerData data = (HardTokenIssuerData) issuerdatas.get(curalias);
                 %>
-            <option value="<%=curalias%>"> 
-                <%= curalias + ", "+ adminidtonamemap.get(Integer.valueOf(data.getRoleDataId()))%>  
+            <option value='<c:out value="<%=curalias%>"/>'>
+                <% out.write(curalias + ", " + adminidtonamemap.get(Integer.valueOf(data.getRoleDataId()))); %>
              </option>
           <%}%>
         </select>
@@ -117,7 +118,7 @@ function checkselected(){
             while(iter.hasNext()){
               RoleData role = (RoleData) iter.next();%>
             <option value="<%= role.getPrimaryKey()%>">
-               <%= role.getRoleName() %>
+               <c:out value='<%= role.getRoleName() %>'/>
             </option>
           <%}%>
         </select>

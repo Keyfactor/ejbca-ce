@@ -253,12 +253,12 @@ function viewcopies(link){
   <div class="message alert"><%=ejbcawebbean.getText("NOTAUTHORIZEDTOVIEWTOKEN") %></div> 
      <%  }else{%>
     <% if(message != null){ %>
-  <div class="message alert"><%= message%></div>
+  <div class="message alert"><c:out value='<%= message%>'/></div>
   <% } %>
   <form name="viewtoken" action="<%= THIS_FILENAME %>" method="post">
-     <input type="hidden" name='<%= USER_PARAMETER %>' value='<%=username %>'>
+     <input type="hidden" name='<%= USER_PARAMETER %>' value="<c:out value='<%=username %>'/>">
      <% if (tokensn != null){ %>
-     <input type="hidden" name='<%= TOKENSN_PARAMETER %>' value='<%=token.getTokenSN() %>'>
+     <input type="hidden" name='<%= TOKENSN_PARAMETER %>' value="<c:out value='<%=token.getTokenSN() %>'/>">
      <% } %>
      <input type="hidden" name='<%= INDEX_PARAMETER %>' value='<%=index %>'>
 
@@ -296,8 +296,7 @@ function viewcopies(link){
       <% } %>
       <tr id="Row<%=(row++)%2%>">
 	<td align="right" width="<%=columnwidth%>"><%= ejbcawebbean.getText("HARDTOKENSN") %></td>
-	<td><%= token.getTokenSN()%>
-        </td>
+	<td><c:out value='<%= token.getTokenSN()%>'/></td>
       </tr>
        <tr id="Row<%=(row++)%2%>">
 	 <td align="right" width="<%=columnwidth%>">&nbsp;</td>
@@ -339,7 +338,7 @@ function viewcopies(link){
                     String copytokensn = (String) iter.next();%>
                    <br />
                    <A  style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + username%>')">
-                      <u><%= copytokensn %></u> 
+                      <u><c:out value='<%= copytokensn %>'/></u> 
                    </A><%
                  }
               }     
@@ -347,10 +346,10 @@ function viewcopies(link){
               out.write(ejbcawebbean.getText("THISISACOPYOF") + ":<br />");  
               String copyofsn = token.getCopyOf();%>
                  <A style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + username%>')">
-                   <u><%= copyofsn %></u> 
+                   <u><c:out value='<%= copyofsn %>'/></u> 
                  </A><%
             } %>
-      </td>
+      </td> 
        </tr>
        <tr id="Row<%=(row++)%2%>">
 	 <td>&nbsp;</td>
