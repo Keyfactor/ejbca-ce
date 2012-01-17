@@ -72,5 +72,6 @@ read SLOT_NUMBER
 echo "Please input key alias"
 read KEY_ALIAS
 ./ejbcaClientToolBox.sh PKCS11HSMKeyTool encrypt $SHARED_LIBRARY_NAME $SLOT_NUMBER $WORKING_DIRECTORY/backup.zip $WORKING_DIRECTORY/backup-$TIMESTAMP.backup $KEY_ALIAS
+echo "Removing temporary file backup.zip"
 rm -f $WORKING_DIRECTORY/backup.zip
 cd $STARTING_DIRECTORY
