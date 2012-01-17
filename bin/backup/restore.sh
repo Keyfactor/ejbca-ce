@@ -4,11 +4,8 @@
 echo "Performing a restore of EJBCA from previous version"
 STARTING_DIRECTORY=$PWD
 if [ -z "$EJBCA_HOME" ] ; then
-	EJBCA_FILE="$0" 
-	EJBCA_HOME=`echo $(dirname $EJBCA_FILE)`
-	cd $EJBCA_HOME
-	cd ../..
-	EJBCA_HOME=`pwd`
+	echo "Please enter EJBCA home directory"
+	read EJBCA_HOME
 fi
 echo "Please enter a working directory (default is /tmp):"
 read WORKING_DIRECTORY
@@ -44,12 +41,19 @@ if [ "$DATABASE_HOST" = "" ]; then
 	DATABASE_HOST="127.0.0.1"
 fi
 echo "Please enter database root user (default: root)"
-read database_user
-if [ "$database_user" = "" ]; then 
-	database_user="root"
+read DATABASE_USER
+if [ "$DATABASE_USER" = "" ]; then 
+	DATABASE_USER="root"
 fi
 if [ "$DATABASE_TYPE" = "postgres"  ]; then
 	echo "Now restoring Postgres database"
+	echo "Please enter location of pg_restore executable (default: /usr/local/pgsql/bin)"
+	read PGSQL_HOME
+	if [ "$PGSQL_HOME" = "" ]; then 
+		#PGSQL_HOME="/usr/local/pgsql/bin"
+		PGSQL_HOME="/Library/PostgreSQL/9.0/bin"
+	fi
+	$PGSQL_HOME/bin/pg_restore -c -w -h$DATABASE_HOST -U$DATABASE_USER -d$ejbca $WORKING_DIRECTORY/dbdump.sql
 else
 	echo "Please enter database port (default: 3306):"
 	read DATABASE_PORT
@@ -58,12 +62,12 @@ else
 	fi
 	
 	echo "Please enter location of mysql executable (default: /usr/local/mysql/bin)"
-	read mysql_home
+	read MYSQL_HOME
 	if [ "$mysql_home" = "" ]; then 
-		mysql_home="/usr/local/mysql/bin"
+		MYSQL_HOME="/usr/local/mysql/bin"
 	fi
 	echo "Now restoring MySQL database"
-	$mysql_home/mysql -h$DATABASE_HOST --port=$DATABASE_PORT -u$database_user -p ejbca -e "source $WORKING_DIRECTORY/dbdump.sql"
+	$MYSQL_HOME/mysql -h$DATABASE_HOST --port=$DATABASE_PORT -u$DATABASE_USER -p ejbca -e "source $WORKING_DIRECTORY/dbdump.sql"
 fi
 
 rm -f $WORKING_DIRECTORY/dbdump.sql
