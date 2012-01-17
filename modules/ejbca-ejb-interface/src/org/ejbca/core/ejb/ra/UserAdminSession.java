@@ -344,11 +344,12 @@ public interface UserAdminSession {
     		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
-     * Method that checks if user with specified users certificate exists in
-     * database
-     * 
-     * @param subjectdn
-     * @return true if certificate belongs to user
+     * Method that checks if a user with specified users certificate exists in
+     * database. IssuerDN/serialNumber is the unique key for a certificate.
+     *
+     * @param certificatesnr serial number of certificate
+     * @param issuerdn issuerDN of certificate
+     * @return true if certificate belongs to a user, false if no user with specified certificate exists
      */
     boolean checkIfCertificateBelongToUser(BigInteger certificatesnr, String issuerdn);
 
