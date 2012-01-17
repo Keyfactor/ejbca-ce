@@ -117,7 +117,7 @@
 # Default : 28800 (8 Hours)
 #approval.defaultapprovalvalidity=28800
 
-# Setting excluding som classes from approval. When one of the classes in this list calls a method that normally 
+# Setting excluding some classes from approval. When one of the classes in this list calls a method that normally 
 # required approval, the call is immediately allowed, bypassing the approval mechanism. The list is comma separated.
 # Example: org.ejbca.extra.caservice.ExtRACAServiceWorker
 # Default : empty 
