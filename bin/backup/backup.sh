@@ -75,3 +75,4 @@ read KEY_ALIAS
 echo "Removing temporary file backup.zip"
 rm -f $WORKING_DIRECTORY/backup.zip
 cd $STARTING_DIRECTORY
+echo Backup file is now stored as $WORKING_DIRECTORY/backup-$TIMESTAMP.backup
