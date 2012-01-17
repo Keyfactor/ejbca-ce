@@ -34,7 +34,7 @@ if [ "$DATABASE_TYPE" = "postgres"  ]; then
 		PGSQL_HOME="/usr/local/pgsql/bin"
 		#PGSQL_HOME="/Library/PostgreSQL/9.0/bin"
 	fi
-	$PGSQL_HOME/pg_dump -Fc -w -h$DATABASE_HOST -U$DATABASE_USER -b ejbca -f $WORKING_DIRECTORY/dbdump.sql
+	$PGSQL_HOME/pg_dump -Fc -W -h$DATABASE_HOST -U$DATABASE_USER -b ejbca -f $WORKING_DIRECTORY/dbdump.sql
 else
 	echo "Please enter database port (default: 3306):"
 	read DATABASE_PORT
