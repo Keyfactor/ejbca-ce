@@ -1,3 +1,4 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <% HardTokenIssuerData issuerdata = tokenbean.getHardTokenIssuerData(alias);
    
    TreeMap hardtokenprofiles = ejbcawebbean.getInformationMemory().getHardTokenProfiles();
@@ -28,7 +29,7 @@ function checkallfields(){
 </div>
 <form name="editissuer" method="post" action="<%=THIS_FILENAME %>">
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ISSUER %>'>
-  <input type="hidden" name='<%= HIDDEN_ALIAS %>' value='<%=alias %>'>
+  <input type="hidden" name='<%= HIDDEN_ALIAS %>' value="<c:out value='<%=alias %>'/>">
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
     <tr id="Row<%=row++%2%>"> 
       <td width="5%" valign="top">
@@ -52,7 +53,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("ALIAS") %> 
       </td>
       <td width="70%"> 
-         <%=  issuerdata.getAlias() %>
+         <c:out value="<%=  issuerdata.getAlias() %>"/>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -63,7 +64,7 @@ function checkallfields(){
         <%= ejbcawebbean.getText("ADMINGROUP") %> 
       </td>
       <td width="70%"> 
-        <%= adminidtonamemap.get(Integer.valueOf(issuerdata.getRoleDataId())) %> 
+        <c:out value="<%= adminidtonamemap.get(Integer.valueOf(issuerdata.getRoleDataId())) %>"/> 
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
@@ -119,7 +120,7 @@ function checkallfields(){
                 while(iter.hasNext())
                   if(((Integer) iter.next()).equals(profileid))
                     out.write(" selected "); 
-              }%>><%= profilename %>
+              }%>><c:out value="<%= profilename %>"/>
            </option>
             <% } %>
         </select>  
