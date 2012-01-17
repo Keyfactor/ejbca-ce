@@ -47,10 +47,10 @@ if [ "$DATABASE_USER" = "" ]; then
 fi
 if [ "$DATABASE_TYPE" = "postgres"  ]; then
 	echo "Now restoring Postgres database"
-	echo "Please enter location of pg_restore executable (default: /usr/local/postgresql/bin)"
+	echo "Please enter location of pg_restore executable (default: /usr/bin)"
 	read PGSQL_HOME
 	if [ "$PGSQL_HOME" = "" ]; then 
-		PGSQL_HOME="/usr/local/postgresql/bin"
+		PGSQL_HOME="/usr/bin"
 		#PGSQL_HOME="/Library/PostgreSQL/9.0/bin"
 	fi
 	$PGSQL_HOME/pg_restore -c -W -h$DATABASE_HOST -U$DATABASE_USER -d ejbca $WORKING_DIRECTORY/dbdump.sql
@@ -61,10 +61,10 @@ else
 		DATABASE_PORT="3306"
 	fi
 	
-	echo "Please enter location of mysql executable (default: /usr/local/mysql/bin)"
+	echo "Please enter location of mysql executable (default: /usr/bin)"
 	read MYSQL_HOME
 	if [ "$MYSQL_HOME" = "" ]; then 
-		MYSQL_HOME="/usr/local/mysql/bin"
+		MYSQL_HOME="/usr/bin"
 	fi
 	echo "Now restoring MySQL database"
 	$MYSQL_HOME/mysql -h$DATABASE_HOST --port=$DATABASE_PORT -u$DATABASE_USER -p ejbca -e "source $WORKING_DIRECTORY/dbdump.sql"

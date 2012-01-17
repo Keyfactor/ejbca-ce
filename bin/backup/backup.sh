@@ -28,10 +28,10 @@ if [ "$DATABASE_USER" = "" ]; then
 fi
 if [ "$DATABASE_TYPE" = "postgres"  ]; then
 	echo "Performing dump of postgres database"
-	echo "Please enter location of pg_restore executable (default: /usr/local/postgresql/bin)"
+	echo "Please enter location of pg_restore executable (default: /usr/bin)"
 	read PGSQL_HOME
 	if [ "$PGSQL_HOME" = "" ]; then 
-		PGSQL_HOME="/usr/local/postgresql/bin"
+		PGSQL_HOME="/usr/bin"
 		#PGSQL_HOME="/Library/PostgreSQL/9.0/bin"
 	fi
 	$PGSQL_HOME/pg_dump -Fc -W -h$DATABASE_HOST -U$DATABASE_USER -b ejbca -f $WORKING_DIRECTORY/dbdump.sql
@@ -42,10 +42,10 @@ else
 		DATABASE_PORT="3306"
 	fi
 	
-	echo "Please enter location of mysqldmp executable (default: /usr/local/mysql/bin)"
+	echo "Please enter location of mysqldmp executable (default: /usr/bin)"
 	read MYSQL_HOME
 	if [ "$MYSQL_HOME" = "" ]; then 
-		MYSQL_HOME="/usr/local/mysql/bin"
+		MYSQL_HOME="/usr/bin"
 	fi
 	echo "Performing dump of mysql database"
 	$MYSQL_HOME/mysqldump --add-drop-table -h$DATABASE_HOST --port=$DATABASE_PORT -u$DATABASE_USER -p ejbca -r $WORKING_DIRECTORY/dbdump.sql	
