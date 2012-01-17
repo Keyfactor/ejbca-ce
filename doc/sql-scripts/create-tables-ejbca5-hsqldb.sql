@@ -15,6 +15,7 @@ CREATE TABLE AdminEntityData (
     matchType INTEGER NOT NULL,
     matchValue VARCHAR(256),
     matchWith INTEGER NOT NULL,
+    tokenType VARCHAR(256),
     rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
     AdminGroupData_adminEntities INTEGER,
