@@ -23,6 +23,7 @@ import java.security.cert.X509Certificate;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cms.CMSEnvelopedGenerator;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.ejbca.util.CMS;
 import org.ejbca.util.CliTools;
@@ -184,17 +185,29 @@ public class HSMKeyTool extends ClientToolBox {
             return true;
         }
         if ( args[1].toLowerCase().trim().equals(ENCRYPT_SWITCH)) {
+            String symmAlgOid = CMSEnvelopedGenerator.AES128_CBC;
             if ( args.length < 7 ) {
                 System.err.println("There are two ways of doing the encryption:");
-                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias>");
-                System.err.println(commandStringNoSharedLib + "<input file> <output file> <file with certificate with public key to use>");
+                System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <input file> <output file> <key alias> [optional symm algorithm oid]");
+                System.err.println(commandStringNoSharedLib + "<input file> <output file> <file with certificate with public key to use> [optional symm algorithm oid]");
+                System.err.println("Optional symmetric encryption algorithm OID can be for example 2.16.840.1.101.3.4.1.42 (AES256_CBC) or 1.2.392.200011.61.1.1.1.4 (CAMELLIA256_CBC). Default is to use AES256_CBC.");
                 tooFewArguments(args);
             } else if ( args.length < 9 ) {
                 Security.addProvider( new BouncyCastleProvider() );
+                if (args.length > 7) {
+                    // We have a symmAlg as last parameter
+                    symmAlgOid = args[7];
+                }
+                System.err.println("Using symmstric encryption algorithm: "+symmAlgOid);
                 final X509Certificate cert = (X509Certificate)CertificateFactory.getInstance("X.509").generateCertificate(new BufferedInputStream(new FileInputStream(args[6])));
-                CMS.encrypt(new FileInputStream(args[2]), new FileOutputStream(args[5]), cert);
+                CMS.encrypt(new FileInputStream(args[2]), new FileOutputStream(args[5]), cert, symmAlgOid);
             } else {
-                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8]);
+                if (args.length > 9) {
+                    // We have a symmAlg as last parameter
+                    symmAlgOid = args[9];
+                }
+                System.err.println("Using symmstric encryption algorithm: "+symmAlgOid);
+                KeyStoreContainerFactory.getInstance(args[4], args[2], args[3], args[5], null, null).encrypt(new FileInputStream(args[6]), new FileOutputStream(args[7]), args[8], symmAlgOid);
             }
             return true;
         }
