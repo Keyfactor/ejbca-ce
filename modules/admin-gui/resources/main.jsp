@@ -1,3 +1,4 @@
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="errorpage.jsp" import="org.ejbca.config.GlobalConfiguration,org.ejbca.ui.web.RequestHelper,java.net.InetAddress,java.net.UnknownHostException" %>
@@ -27,11 +28,11 @@
 	</noscript>
 </div> 
 
-<h3 id="welcome"><%= ejbcawebbean.getText("WELCOME") + " " + ejbcawebbean.getUsersCommonName() + " " + ejbcawebbean.getText("TOEJBCA")%></h3> 
+<h3 id="welcome"><%= ejbcawebbean.getText("WELCOME") + " "%> <c:out value="<%= ejbcawebbean.getUsersCommonName() %>"/> <%= " " + ejbcawebbean.getText("TOEJBCA")%></h3> 
 
 <div id="information">
-	<div><%= ejbcawebbean.getText("NODEHOSTNAME") + " : "%><code><%= ejbcawebbean.getHostName()%></code></div> 
-	<div><%= ejbcawebbean.getText("SERVERTIME") + " : "%><code><%= ejbcawebbean.getServerTime()%></code></div>
+	<div><%= ejbcawebbean.getText("NODEHOSTNAME") + " : "%><code><c:out value="<%= ejbcawebbean.getHostName()%>"/></code></div> 
+	<div><%= ejbcawebbean.getText("SERVERTIME") + " : "%><code><c:out value="<%= ejbcawebbean.getServerTime()%>"/></code></div>
 </div>
 
 <div id="home" class="app">
