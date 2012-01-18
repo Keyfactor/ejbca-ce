@@ -63,14 +63,15 @@ public class CMS {
      * @param is data to be encrypted
      * @param os encrypted data
      * @param cert certificate with the public key to be used for the encryption
+     * @param symmAlgOid the symmetric encryption algorithm to use, for example CMSEnvelopedGenerator.AES128_CBC
      * @throws Exception
      */
-    public static void encrypt(final InputStream is, OutputStream os, X509Certificate cert) throws Exception {
+    public static void encrypt(final InputStream is, final OutputStream os, final X509Certificate cert, final String symmAlgOid) throws Exception {
         final InputStream bis = new BufferedInputStream(is, bufferSize);
         final OutputStream bos = new BufferedOutputStream(os, bufferSize);
         final CMSEnvelopedDataStreamGenerator edGen = new CMSEnvelopedDataStreamGenerator();
         edGen.addKeyTransRecipient(cert.getPublicKey(), "hej".getBytes() );
-        final OutputStream out = edGen.open(bos, CMSEnvelopedGenerator.AES128_CBC, "BC");
+        final OutputStream out = edGen.open(bos, symmAlgOid, "BC");
         fromInToOut(bis, out);
         bos.close();
         os.close();

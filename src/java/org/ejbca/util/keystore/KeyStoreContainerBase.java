@@ -72,22 +72,16 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         this.providerName = _providerName;
         this.ecryptProviderName = _ecryptProviderName;
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#getProviderName()
-     */
+    @Override
     public String getProviderName() {
         return this.providerName;
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#getKeyStore()
-     */
+    @Override
     public KeyStore getKeyStore() {
         return this.keyStore;
     }
     abstract void setKeyEntry(String alias, Key key, Certificate chain[]) throws Exception;
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#setPassPhraseLoadSave(char[])
-     */
+    @Override
     public void setPassPhraseLoadSave(char[] passPhrase) {
         this.passPhraseLoadSave = passPhrase;
     }
@@ -99,9 +93,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         String msg = intres.getLocalizedMessage("catoken.deletecert", alias);
         log.info(msg);
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#delete(java.lang.String)
-     */
+    @Override
     public byte[] delete(final String alias) throws Exception {
         if ( alias!=null ) {
             deleteAlias(alias);
@@ -113,9 +105,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         }
         return storeKeyStore();
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#renameAlias(java.lang.String, java.lang.String)
-     */
+    @Override
     public byte[] renameAlias( String oldAlias, String newAlias ) throws Exception {
         this.keyStore.setEntry(newAlias, this.keyStore.getEntry(oldAlias, null), null);
         return storeKeyStore();
@@ -143,8 +133,8 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         cg.setIssuerDN(new X500Principal(myname));
         return cg.generate(keyPair.getPrivate(), this.providerName);
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#generateEC(java.lang.String, java.lang.String)
+    /** 
+     * @see org.ejbca.util.keystore.KeyStoreContainer#generate(java.lang.String, java.lang.String)
      */
     private byte[] generateEC( final String name,
                               final String keyEntryName) throws Exception {
@@ -188,7 +178,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         }
         return result;
     }
-    /* (non-Javadoc)
+    /** 
      * @see org.ejbca.util.keystore.KeyStoreContainer#generate(int, java.lang.String)
      */
     private byte[] generateRSA(final int keySize,
@@ -205,7 +195,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         }
         return result;
     }
-    /* (non-Javadoc)
+    /** 
      * @see org.ejbca.util.keystore.KeyStoreContainer#generate(int, java.lang.String)
      */
     private byte[] generateDSA( final int keySize,
@@ -222,9 +212,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         }
         return result;
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#generate(java.lang.String, java.lang.String)
-     */
+    @Override
     public byte[] generate( final String keySpec,
                             final String keyEntryName) throws Exception {
     	if (keySpec.toUpperCase ().startsWith ("DSA")) {
@@ -236,9 +224,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
             return generateEC(keySpec, keyEntryName);
         }
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#generate(java.lang.String, java.lang.String)
-     */
+    @Override
     public byte[] generate( final AlgorithmParameterSpec spec,
     		                final String keyEntryName) throws Exception {
         if (log.isTraceEnabled()) {
@@ -319,33 +305,23 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         fromKS.storeKeyStore();
         toKS.storeKeyStore();
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#decrypt(java.io.InputStream, java.io.OutputStream, java.lang.String)
-     */
+    @Override
     public void decrypt(InputStream is, OutputStream os, String alias) throws Exception {
         CMS.decrypt(is, os, getPrivateKey(alias), KeyStoreContainerBase.this.ecryptProviderName);
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#encrypt(java.io.InputStream, java.io.OutputStream, java.lang.String)
-     */
-    public void encrypt(InputStream is, OutputStream os, String alias) throws Exception {
-        CMS.encrypt(is, os, getCertificate(alias));
+    @Override
+    public void encrypt(final InputStream is, final OutputStream os, final String alias, final String symmAlgOid) throws Exception {
+        CMS.encrypt(is, os, getCertificate(alias), symmAlgOid);
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#sign(java.io.InputStream, java.io.OutputStream, java.lang.String)
-     */
+    @Override
     public void sign(InputStream in, OutputStream out, String alias) throws Exception {
         CMS.sign(in, out, getPrivateKey(alias), KeyStoreContainerBase.this.providerName, getCertificate(alias));
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#verify(java.io.InputStream, java.io.OutputStream, java.lang.String)
-     */
+    @Override
     public CMS.VerifyResult verify(InputStream in, OutputStream out, String alias) throws Exception {
         return CMS.verify(in, out, getCertificate(alias));
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#generateCertReq(java.lang.String, java.lang.String, boolean)
-     */
+    @Override
     public void generateCertReq(String alias, String sDN, boolean explicitEccParameters) throws Exception {
         PublicKey publicKey = getCertificate(alias).getPublicKey();
         final PrivateKey privateKey = getPrivateKey(alias);
@@ -380,9 +356,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
         writer.close();
         log.info("Wrote csr to file: "+filename);
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#installCertificate(java.lang.String)
-     */
+    @Override
     public void installCertificate(final String fileName) throws Exception {
         final X509Certificate chain[] = ((Collection<?>)CertTools.getCertsFromPEM(new FileInputStream(fileName))).toArray(new X509Certificate[0]);
         final Enumeration<String> eAlias = this.keyStore.aliases();
@@ -407,9 +381,7 @@ public abstract class KeyStoreContainerBase implements KeyStoreContainer {
             throw new Exception(msg);
         }
     }
-    /* (non-Javadoc)
-     * @see org.ejbca.util.keystore.KeyStoreContainer#installTrustedRoot(java.lang.String)
-     */
+    @Override
     public void installTrustedRoot(String fileName) throws Exception {
         final X509Certificate chain[] = ((Collection<?>)CertTools.getCertsFromPEM(new FileInputStream(fileName))).toArray(new X509Certificate[0]);
         if ( chain.length<1 ) {

@@ -87,9 +87,10 @@ public interface KeyStoreContainer {
      * @param in
      * @param out
      * @param alias
+     * @param symmAlgOid the symmetric encryption algorithm to use, for example CMSEnvelopedGenerator.AES128_CBC
      * @throws Exception
      */
-    void encrypt(InputStream in, OutputStream out, String alias) throws Exception;
+    void encrypt(InputStream in, OutputStream out, String alias, String symmAlgOid) throws Exception;
 
     /**
      * @param in
