@@ -71,7 +71,8 @@ echo "Please input slot number. start with 'i' to indicate index in list"
 read SLOT_NUMBER
 echo "Please input key alias"
 read KEY_ALIAS
-./ejbcaClientToolBox.sh PKCS11HSMKeyTool encrypt $SHARED_LIBRARY_NAME $SLOT_NUMBER $WORKING_DIRECTORY/backup.zip $WORKING_DIRECTORY/backup-$TIMESTAMP.backup $KEY_ALIAS
+# We have to use symmetric encryption algorithm CAMELLIA256_CBC in order for things to work on a Luna SA in FIPS mode (something we are sure the Luna provides does not support) 
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool encrypt $SHARED_LIBRARY_NAME $SLOT_NUMBER $WORKING_DIRECTORY/backup.zip $WORKING_DIRECTORY/backup-$TIMESTAMP.backup $KEY_ALIAS 1.2.392.200011.61.1.1.1.4
 echo "Removing temporary file backup.zip"
 rm -f $WORKING_DIRECTORY/backup.zip
 cd $STARTING_DIRECTORY
