@@ -119,7 +119,12 @@
 
 # Setting excluding some classes from approval. When one of the classes in this list calls a method that normally 
 # required approval, the call is immediately allowed, bypassing the approval mechanism. The list is comma separated.
-# Example: org.ejbca.extra.caservice.ExtRACAServiceWorker
+# Uncomment the line below to exclude extra from approvals.
+#approval.excludedClasses=org.ejbca.extra.caservice.ExtRACAServiceWorker
+# Uncomment the line below to exclude CMP from approval.
+#approval.excludedClasses=org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionBean
+# Uncomment the line below to exclude revocation by CMP from approval.
+#approval.excludedClasses=org.ejbca.core.protocol.cmp.RevocationMessageHandler
 # Default : empty 
 #approval.excludedClasses=
 
