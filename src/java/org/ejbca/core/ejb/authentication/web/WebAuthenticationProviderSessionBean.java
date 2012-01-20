@@ -76,7 +76,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 certificate.checkValidity();
             } catch (Exception e) {
                 String msg = intres.getLocalizedMessage("authentication.certexpired", CertTools.getSubjectDN(certificate), CertTools.getNotAfter(certificate).toString());
-            	LOG.error(msg);
+            	LOG.info(msg);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, "", null, null, null, details);
@@ -89,7 +89,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 if (certificateInfo.getStatus() != CertificateConstants.CERT_ACTIVE) {
                     // The certificate is revoked, archived or similar
                     String msg = intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
-                    LOG.error(msg);
+                    LOG.info(msg);
                     Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
                     securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, "", null, null, null, details);
@@ -99,7 +99,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 // The certificate is not present in the database.
                 if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
                     String msg =  intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
-                    LOG.error(msg);
+                    LOG.info(msg);
                     Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
                     securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, "", null, null, null, details);
