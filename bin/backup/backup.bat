@@ -40,7 +40,7 @@ SET SLOT_NUMBER=
 SET /P SLOT_NUMBER="Please input slot number. start with 'i' to indicate index in list:" %=%
 SET KEY_ALIAS=
 SET /P KEY_ALIAS="Please input key alias:" %=%
-%EJBCA_HOME%\dist\clientToolBox\ejbcaClientToolBox.bat PKCS11HSMKeyTool encrypt %SHARED_LIBRARY_NAME% %SLOT_NUMBER% %WORKING_DIRECTORY%\backup.jar %WORKING_DIRECTORY%\backup-%TIMESTAMP%.backup %KEY_ALIAS%
+%EJBCA_HOME%\dist\clientToolBox\ejbcaClientToolBox.bat PKCS11HSMKeyTool encrypt "%SHARED_LIBRARY_NAME%" %SLOT_NUMBER% "%WORKING_DIRECTORY%\backup.jar" "%WORKING_DIRECTORY%\backup-%TIMESTAMP%.backup" %KEY_ALIAS%
 DEL %WORKING_DIRECTORY%\backup.jar
 GOTO END
 :DEFINE_EJBCA_HOME
@@ -52,11 +52,11 @@ SET DATABASE_PORT=
 SET /P DATABASE_PORT="Please enter database port (default: 3306):" %=%
 IF "%DATABASE_PORT%"=="" SET DATABASE_PORT=3306
 SET MYSQL_HOME=
-SET /P MYSQL_HOME="Please enter location of mysqldmp executable (default: C:\Program Files (x86)\MySQL\MySQL Server 5.1\bin)
-IF "%MYSQL_HOME%"=="" SET MYSQL_HOME="C:\Program Files (x86)\MySQL\MySQL Server 5.1\bin"
+SET /P MYSQL_HOME="Please enter location of mysqldmp executable (default: C:\Program Files\MySQL\MySQL Server 5.1\bin)
+IF "%MYSQL_HOME%"=="" SET MYSQL_HOME=C:\Program Files\MySQL\MySQL Server 5.1\bin
 ECHO Using %MYSQL_HOME%
 ECHO Performing dump of MYSQL database
-%MYSQL_HOME%\mysqldump --add-drop-table -h%DATABASE_HOST% --port=%DATABASE_PORT% -u%DATABASE_USER% -p ejbca -r %WORKING_DIRECTORY%/dbdump.sql
+"%MYSQL_HOME%\mysqldump" --add-drop-table -h%DATABASE_HOST% --port=%DATABASE_PORT% -u%DATABASE_USER% -p ejbca -r "%WORKING_DIRECTORY%\dbdump.sql"
 GOTO POSTDATABASEDUMP
 :DUMPDATABASE_POSTGRES
 SET PGSQL_HOME=
@@ -64,7 +64,7 @@ SET /P PGSQL_HOME="Please enter location of pg_dump executable (default: C:\Prog
 IF "%PGSQL_HOME%"=="" SET PGSQL_HOME=C:\Program Files\PostgreSQL\9.0\bin
 ECHO Using %PGSQL_HOME%
 ECHO Performing dump of Postgres database
-%PGSQL_HOME%\pg_dump -Fc -W -h%DATABASE_HOST% -U%DATABASE_USER% -b ejbca -f %WORKING_DIRECTORY%/dbdump.sql
+"%PGSQL_HOME%\pg_dump" -Fc -W -h%DATABASE_HOST% -U%DATABASE_USER% -b ejbca -f "%WORKING_DIRECTORY%/dbdump.sql"
 GOTO POSTDATABASEDUMP
 :END
 cd %STARTING_DIRECTORY%
