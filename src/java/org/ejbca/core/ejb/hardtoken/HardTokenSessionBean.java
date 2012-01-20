@@ -1126,7 +1126,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     /** Method that returns the hard token data from a hashmap and updates it if necessary. */
-    private HardToken getHardToken(AuthenticationToken admin, int encryptcaid, boolean includePUK, LinkedHashMap<?, ?> data) {
+    private HardToken getHardToken(AuthenticationToken admin, int encryptcaid, boolean includePUK, Map<?, ?> data) {
         HardToken returnval = null;
 
         if (data.get(org.ejbca.core.ejb.hardtoken.HardTokenData.ENCRYPTEDDATA) != null) {
@@ -1137,7 +1137,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
             try {
                 HardTokenEncryptCAServiceResponse response = (HardTokenEncryptCAServiceResponse) caAdminSession.extendedService(admin, encryptcaid, request);
                 ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(response.getData()));
-                data = (LinkedHashMap<?, ?>) ois.readObject();
+                data = (Map<?, ?>) ois.readObject();
             } catch (Exception e) {
                 throw new EJBException(e);
             }
@@ -1203,10 +1203,10 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         }
-        Map<?, ?> h = (Map<?, ?>) decoder.readObject();
+        final Map<?, ?> h = (Map<?, ?>) decoder.readObject();
         decoder.close();
         // Handle Base64 encoded string values
-        LinkedHashMap<?, ?> data = new Base64GetHashMap(h);
+        final Map<?, ?> data = new Base64GetHashMap(h);
         switch (((Integer) (data.get(HardTokenProfile.TYPE))).intValue()) {
         case SwedishEIDProfile.TYPE_SWEDISHEID:
             profile = new SwedishEIDProfile();
