@@ -15,7 +15,7 @@
   <body>
     <div id="header">
 		<div id="banner">
-			<a href="../index.jsp"><img src="../images/logotype.png" alt="EJBCA" /></a>
+			<a href="../index.jsp"><img src="../images/ejbca_pki_by_primekey_logo.png" alt="EJBCA" /></a>
 		</div>
     </div>
     <div class="menucontainer">
