@@ -1,7 +1,7 @@
-REM $Id$
-
 @echo off 
+REM $Id$
 :BEGIN
+SET STARTING_DIRECTORY=%cd%
 IF NOT DEFINED EJBCA_HOME (GOTO DEFINE_EJBCA_HOME)
 SET WORKING_DIRECTORY=
 SET /P WORKING_DIRECTORY=Please enter a working directory (default is C:\tmp): %=%
@@ -21,11 +21,14 @@ IF "%DATABASE_TYPE%"=="mysql" GOTO DUMPDATABASE_MYSQL
 IF "%DATABASE_TYPE%"=="postgres" GOTO DUMPDATABASE_POSTGRES
 :POSTDATABASEDUMP
 ECHO Archiving conf directory (using JAR)
-jar cfM %WORKING_DIRECTORY%\conf.jar %EJBCA_HOME%\conf
+cd %EJBCA_HOME%\conf
+jar cfM %WORKING_DIRECTORY%\conf.jar *
 ECHO Archiving p12 directory (using JAR)
-jar cfM %WORKING_DIRECTORY%\p12.jar %EJBCA_HOME%\p12
+cd %EJBCA_HOME%\p12
+jar cfM %WORKING_DIRECTORY%\p12.jar *
 ECHO Archiving backup file (using JAR)
-jar cfM %WORKING_DIRECTORY%\backup.jar %WORKING_DIRECTORY%\p12.jar %WORKING_DIRECTORY%\conf.jar %WORKING_DIRECTORY%\dbdump.sql
+cd %WORKING_DIRECTORY%
+jar cfM %WORKING_DIRECTORY%\backup.jar p12.jar conf.jar dbdump.sql
 DEL %WORKING_DIRECTORY%\p12.jar
 DEL %WORKING_DIRECTORY%\conf.jar
 DEL %WORKING_DIRECTORY%\dbdump.sql
@@ -57,10 +60,11 @@ ECHO Performing dump of MYSQL database
 GOTO POSTDATABASEDUMP
 :DUMPDATABASE_POSTGRES
 SET PGSQL_HOME=
-SET /P PGSQL_HOME="Please enter location of pg_restore executable (default: C:\Program Files\PostgreSQL\9.0\bin):" %=%
+SET /P PGSQL_HOME="Please enter location of pg_dump executable (default: C:\Program Files\PostgreSQL\9.0\bin):" %=%
 IF "%PGSQL_HOME%"=="" SET PGSQL_HOME=C:\Program Files\PostgreSQL\9.0\bin
 ECHO Using %PGSQL_HOME%
 ECHO Performing dump of Postgres database
-%PGSQL_HOME%/pg_dump -Fc -W -h%DATABASE_HOST% -U%DATABASE_USER% -b ejbca -f %WORKING_DIRECTORY%/dbdump.sql
+%PGSQL_HOME%\pg_dump -Fc -W -h%DATABASE_HOST% -U%DATABASE_USER% -b ejbca -f %WORKING_DIRECTORY%/dbdump.sql
 GOTO POSTDATABASEDUMP
 :END
+cd %STARTING_DIRECTORY%
