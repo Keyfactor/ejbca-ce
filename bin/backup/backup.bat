@@ -67,4 +67,5 @@ ECHO Performing dump of Postgres database
 "%PGSQL_HOME%\pg_dump" -Fc -W -h%DATABASE_HOST% -U%DATABASE_USER% -b ejbca -f "%WORKING_DIRECTORY%/dbdump.sql"
 GOTO POSTDATABASEDUMP
 :END
+ECHO Backup operation now complete to file "%WORKING_DIRECTORY%\backup-%TIMESTAMP%.backup" 
 cd %STARTING_DIRECTORY%
