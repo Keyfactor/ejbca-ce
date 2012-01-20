@@ -16,7 +16,7 @@ SET SLOT_NUMBER=
 SET /P SLOT_NUMBER="Please input slot number. start with 'i' to indicate index in list:" %=%
 SET KEY_ALIAS=
 SET /P KEY_ALIAS="Please input key alias:" %=%
-%EJBCA_HOME%\dist\clientToolBox\ejbcaClientToolBox.bat PKCS11HSMKeyTool decrypt %SHARED_LIBRARY_NAME% %SLOT_NUMBER% %BACKUP_FILE% %WORKING_DIRECTORY%\backup.jar %KEY_ALIAS%
+%EJBCA_HOME%\dist\clientToolBox\ejbcaClientToolBox.bat PKCS11HSMKeyTool decrypt "%SHARED_LIBRARY_NAME%" %SLOT_NUMBER% "%BACKUP_FILE%" "%WORKING_DIRECTORY%\backup.jar" %KEY_ALIAS%
 ECHO "Unzipping %WORKING_DIRECTORY%\backup.jar"
 cd %WORKING_DIRECTORY%
 jar xf %WORKING_DIRECTORY%\backup.jar
@@ -53,11 +53,11 @@ SET DATABASE_PORT=
 SET /P DATABASE_PORT="Please enter database port (default: 3306):" %=%
 IF "%DATABASE_PORT%"=="" SET DATABASE_PORT=3306
 SET MYSQL_HOME=
-SET /P MYSQL_HOME="Please enter location of mysql executable (default: C:\Program Files (x86)\MySQL\MySQL Server 5.1\bin)
-IF "%MYSQL_HOME%"=="" SET MYSQL_HOME="C:\Program Files (x86)\MySQL\MySQL Server 5.1\bin"
+SET /P MYSQL_HOME="Please enter location of mysql executable (default: C:\Program Files\MySQL\MySQL Server 5.1\bin)
+IF "%MYSQL_HOME%"=="" SET MYSQL_HOME=C:\Program Files\MySQL\MySQL Server 5.1\bin
 ECHO Using %MYSQL_HOME%
 ECHO Performing restoration of MYSQL database
-%MYSQL_HOME%\mysql -h%DATABASE_HOST% --port=%DATABASE_PORT% -u%DATABASE_USER% -p ejbca -e "source %WORKING_DIRECTORY%\dbdump.sql"
+"%MYSQL_HOME%\mysql" -h%DATABASE_HOST% --port=%DATABASE_PORT% -u%DATABASE_USER% -p ejbca -e "source "%WORKING_DIRECTORY%\dbdump.sql"
 GOTO POSTDATABASERESTORE
 :RESTOREDATABASE_POSTGRES
 SET PGSQL_HOME=
@@ -65,7 +65,7 @@ SET /P PGSQL_HOME="Please enter location of pg_restore executable (default: C:\P
 IF "%PGSQL_HOME%"=="" SET PGSQL_HOME=C:\Program Files\PostgreSQL\9.0\bin
 ECHO Using %PGSQL_HOME%
 ECHO Performing restoration of Postgres database
-%PGSQL_HOME%\pg_restore -c -W -h%DATABASE_HOST% -U%DATABASE_USER% -d ejbca %WORKING_DIRECTORY%\dbdump.sql
+"%PGSQL_HOME%\pg_restore" -c -W -h%DATABASE_HOST% -U%DATABASE_USER% -d ejbca "%WORKING_DIRECTORY%\dbdump.sql"
 GOTO POSTDATABASERESTORE
 :END
 ECHO Restore operation now complete
