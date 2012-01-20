@@ -2,7 +2,7 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/functions" prefix="fn" %>
 <%@ include file="header.jsp" %>
 
-	<h1 class="title">Fetch CA & OCSP certificates</h1>
+	<h1 class="title">Fetch CA certificates</h1>
 
 	<jsp:useBean id="finder" class="org.ejbca.ui.web.pub.retrieve.CertificateFinderBean" scope="page" />
 	<% finder.initialize(request.getRemoteAddr()); %>
