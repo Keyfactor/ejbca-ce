@@ -40,9 +40,9 @@ import org.cesecore.util.CertTools;
  */
 public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticationToken {
 
-    private static final Logger log = Logger.getLogger(X509CertificateAuthenticationToken.class);
-
     public static final String TOKEN_TYPE = "CertificateAuthenticationToken";
+    
+    private static final Logger log = Logger.getLogger(X509CertificateAuthenticationToken.class);
     
     private static final long serialVersionUID = 1097165653913865515L;
 
