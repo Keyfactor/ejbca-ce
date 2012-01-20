@@ -49,7 +49,7 @@
           <li><div class="menuheader">Retrieve</div>
             <ul>
               <li>
-                <a href="ca_certs.jsp">Fetch CA &amp; OCSP Certificates</a>
+                <a href="ca_certs.jsp">Fetch CA Certificates</a>
               </li>
               <li>
                 <a href="ca_crls.jsp">Fetch CA CRLs</a>
