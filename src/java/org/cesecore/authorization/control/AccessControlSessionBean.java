@@ -37,7 +37,6 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.time.TrustedTime;
 import org.cesecore.time.TrustedTimeWatcherSessionLocal;
 import org.cesecore.time.providers.TrustedTimeProviderException;
-import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 
 /**
  * 
@@ -103,7 +102,7 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
             details.put("msg", msg);
             try {
                 securityEventsLoggerSession.log(trustedTimeWatcherSession.getTrustedTime(false), EventTypes.AUTHENTICATION, EventStatus.FAILURE,
-                        ModuleTypes.AUTHENTICATION, EjbcaServiceTypes.EJBCA, authenticationToken.toString(), null, null, null, details);
+                        ModuleTypes.AUTHENTICATION, ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
             } catch (TrustedTimeProviderException f) {
                 log.error("Error getting trusted time for audit log: ", e);
             }
