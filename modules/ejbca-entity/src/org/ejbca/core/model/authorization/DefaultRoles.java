@@ -30,7 +30,7 @@ import org.cesecore.authorization.rules.AccessRuleState;
 public enum DefaultRoles {
     CUSTOM("CUSTOM"), 
     SUPERADMINISTRATOR("SUPERADMINISTRATOR", 
-            new AccessRuleTemplate(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false)), 
+            new AccessRuleTemplate(AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true)), 
     CAADMINISTRATOR("CAADMINISTRATOR", 
             new AccessRuleTemplate(AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRuleState.RULE_ACCEPT, false), 
             new AccessRuleTemplate(AccessRulesConstants.REGULAR_CAFUNCTIONALTY, AccessRuleState.RULE_ACCEPT, true), 
