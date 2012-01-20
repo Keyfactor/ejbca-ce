@@ -1071,7 +1071,7 @@ function checkallfields(){
              <%    if(editca && usedpublishers.contains(next))
                      out.write(" selected ");
                  %>>
-             <%= publisheridtonamemap.get(next) %>         
+             <c:out value="<%= publisheridtonamemap.get(next) %>"/>                 
           </option>  
              <% } %>
        </select>
