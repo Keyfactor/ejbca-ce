@@ -15,7 +15,7 @@
 
   <body>
     <div class="logobar">
-      <a href="index.jsp"><img src="images/logotype.png" alt="EJBCA" border="0"/></a>
+      <a href="index.jsp"><img src="images/ejbca_pki_by_primekey_logo.png" alt="EJBCA" border="0"/></a>
     </div>
     <div class="menucontainer">
       <div class="menu">
