@@ -175,7 +175,7 @@ public class CliAuthenticationTest {
         //Examine the last log entry
         for (final String logDeviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
             final List<? extends AuditLogEntry> list = securityEventsAuditorSession.selectAuditLogs(internalToken, 0, 0,
-                    QueryCriteria.create().add(Criteria.eq(AuditLogEntry.FIELD_EVENTTYPE, EventTypes.AUTHENTICATION.toString())), logDeviceId);
+                    QueryCriteria.create().add(Criteria.eq(AuditLogEntry.FIELD_EVENTTYPE, EventTypes.AUTHENTICATION.toString())).add(Criteria.orderAsc("sequenceNumber")), logDeviceId);
             Map<Object, Object> details = list.get(list.size()-1).getMapAdditionalDetails();
             String msg = (String) details.get("msg");           
             assertEquals("Incorrect log message was produced.", expectedMessage, msg);
@@ -196,7 +196,7 @@ public class CliAuthenticationTest {
         //Examine the last log entry
         for (final String logDeviceId : securityEventsAuditorSession.getQuerySupportingLogDevices()) {
             final List<? extends AuditLogEntry> list = securityEventsAuditorSession.selectAuditLogs(internalToken, 0, 0,
-                    QueryCriteria.create().add(Criteria.eq(AuditLogEntry.FIELD_EVENTTYPE, EventTypes.AUTHENTICATION.toString())), logDeviceId);
+                    QueryCriteria.create().add(Criteria.eq(AuditLogEntry.FIELD_EVENTTYPE, EventTypes.AUTHENTICATION.toString())).add(Criteria.orderAsc("sequenceNumber")), logDeviceId);
             Map<Object, Object> details = list.get(list.size()-1).getMapAdditionalDetails();
             String msg = (String) details.get("msg");           
             final String expectedRegexp = expectedMessage + ".*";
