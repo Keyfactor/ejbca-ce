@@ -22,7 +22,7 @@ IF "%DATABASE_TYPE%"=="postgres" GOTO DUMPDATABASE_POSTGRES
 :POSTDATABASEDUMP
 ECHO Archiving conf directory (using JAR)
 cd %EJBCA_HOME%\conf
-jar cfM %WORKING_DIRECTORY%\conf.jar *
+jar cfM %WORKING_DIRECTORY%\conf.jar *.properties plugins\*.properties logdevices\*.properties
 ECHO Archiving p12 directory (using JAR)
 cd %EJBCA_HOME%\p12
 jar cfM %WORKING_DIRECTORY%\p12.jar *
@@ -32,7 +32,7 @@ jar cfM %WORKING_DIRECTORY%\backup.jar p12.jar conf.jar dbdump.sql
 DEL %WORKING_DIRECTORY%\p12.jar
 DEL %WORKING_DIRECTORY%\conf.jar
 DEL %WORKING_DIRECTORY%\dbdump.sql
-SET TIMESTAMP=%date%_%time%
+SET TIMESTAMP=%date%
 ECHO Now encrypting backup.jar into backup-%TIMESTAMP%.backup
 SET SHARED_LIBRARY_NAME=
 SET /P SHARED_LIBRARY_NAME="Please input shared library name:" %=%
@@ -40,7 +40,7 @@ SET SLOT_NUMBER=
 SET /P SLOT_NUMBER="Please input slot number. start with 'i' to indicate index in list:" %=%
 SET KEY_ALIAS=
 SET /P KEY_ALIAS="Please input key alias:" %=%
-%EJBCA_HOME%\dist\clientToolBox\ejbcaClientToolBox.bat PKCS11HSMKeyTool encrypt "%SHARED_LIBRARY_NAME%" %SLOT_NUMBER% "%WORKING_DIRECTORY%\backup.jar" "%WORKING_DIRECTORY%\backup-%TIMESTAMP%.backup" %KEY_ALIAS%
+call %EJBCA_HOME%\dist\clientToolBox\ejbcaClientToolBox.bat PKCS11HSMKeyTool encrypt "%SHARED_LIBRARY_NAME%" %SLOT_NUMBER% "%WORKING_DIRECTORY%\backup.jar" "%WORKING_DIRECTORY%\backup-%TIMESTAMP%.backup" %KEY_ALIAS%
 DEL %WORKING_DIRECTORY%\backup.jar
 GOTO END
 :DEFINE_EJBCA_HOME

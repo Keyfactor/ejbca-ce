@@ -16,7 +16,7 @@ SET SLOT_NUMBER=
 SET /P SLOT_NUMBER="Please input slot number. start with 'i' to indicate index in list:" %=%
 SET KEY_ALIAS=
 SET /P KEY_ALIAS="Please input key alias:" %=%
-%EJBCA_HOME%\dist\clientToolBox\ejbcaClientToolBox.bat PKCS11HSMKeyTool decrypt "%SHARED_LIBRARY_NAME%" %SLOT_NUMBER% "%BACKUP_FILE%" "%WORKING_DIRECTORY%\backup.jar" %KEY_ALIAS%
+call %EJBCA_HOME%\dist\clientToolBox\ejbcaClientToolBox.bat PKCS11HSMKeyTool decrypt "%SHARED_LIBRARY_NAME%" %SLOT_NUMBER% "%BACKUP_FILE%" "%WORKING_DIRECTORY%\backup.jar" %KEY_ALIAS%
 ECHO "Unzipping %WORKING_DIRECTORY%\backup.jar"
 cd %WORKING_DIRECTORY%
 jar xf %WORKING_DIRECTORY%\backup.jar
