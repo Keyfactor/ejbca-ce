@@ -5,7 +5,7 @@ certification. Quite some effort was also put into stabilizing the 5.0.x release
 
 * Noteworthy changes:
 - Support has been added for incorporating external plugins in the EJBCA EAR file at build time. 
-- A ton of XSS issues have been corrected. 
+- Some XSS issues have been corrected. 
 - Authorization checks have tightened up in accordance to Common Criteria demands. 
 - Access rules for logging have finally been reconciled between CESeCore and EJBCA. The implication of this is
 that the old EJBCA rules have been converted to the newer CESeCore rules, while those rules lacking application
