@@ -1,3 +1,77 @@
+EJBCA 5.0.2, 2012-01-23
+---
+Bug
+    [ECA-2118] - Regression: Bug in adding new End-Entity with fixed RFC822Name in profile
+    [ECA-2197] - VA build fails sometimes
+    [ECA-2206] - GlobalConfiguration needs to check authorization differently
+    [ECA-2373] - Unsafe parsing of externalra-caservice.signature.required
+    [ECA-2403] - Custom roles do not seem to work from Basic Mode
+    [ECA-2413] - Deleted End Entities still show up on the list of "Previously Added End Entities" in the "Add End Entities" screen
+    [ECA-2422] - Regression: Import of profiles fails as CA IDs are different
+    [ECA-2423] - Use selected as template changes CAs to "any CA" for certificate profiles
+    [ECA-2424] - Default value for cmp.tcp.logdir is /log and not ./log causing Exception at startup
+    [ECA-2425] - Can not use CLI to create admin roles
+    [ECA-2426] - Supervisor role does not work as expected
+    [ECA-2427] - CLI can't set role rules for rules from CESeCore
+    [ECA-2428] - Persistent NFE after setting admin rule with certSerialNumber=qwerty_1
+    [ECA-2429] - Inconsistency in VA health-check properties comment and used URL
+    [ECA-2432] - Regression: tests fail on glassfish v2
+    [ECA-2433] - Regression: Healthcheck does not give any output if not ALLOK
+    [ECA-2435] - Chinese characters doesn't work in "Edit End Entity Profles" for DN attributes
+    [ECA-2436] - Reading OCSP messages over http1.1 with chunked encoding can fail
+    [ECA-2438] - Check where  CAAdminSession.getCAInfo is expected to return null, but it throws
+    [ECA-2440] - DB2 database schema test fails on CRLData
+    [ECA-2444] - CMP Revoke Response Message is unprotected sometimes
+    [ECA-2448] - Regression: Available languages only contains EN by default
+    [ECA-2455] - Erroneous log output when renaming a role 
+    [ECA-2457] - Editing Access Rules doesn't log correctly
+    [ECA-2458] - Audit logging for End Entity Profiles needs to be more detailed
+    [ECA-2459] - Audit logging for Role Access Users needs to be more detailed
+    [ECA-2460] - Audit logging for Role Access Rules needs to be more detailed
+    [ECA-2472] - Failure to publish CRL do not audit log CRL_PUBLISH failure
+    [ECA-2476] - null pointer when trying to recover lost HSM in external OCSP
+    [ECA-2479] - Regression: admins addadmin/removeadmin command malfunctions with match_type
+    [ECA-2480] - Regression: HARDTOKEN_REMOVE is audit logged as HARDTOKEN_ADD
+    [ECA-2482] - Minor XSS issues
+    [ECA-2484] - Regression: NoClassDefFound trying to run ejbca-db-cli
+    [ECA-2502] - Token id not logged correctly when password testing fails for soft tokens
+    [ECA-2506] - Audit log verification prints lots of errors after 1 row failed
+    [ECA-2511] - Missing column in SQL table create scripts
+    [ECA-2512] - NPE in WS if admin cert revoked
+    [ECA-2516] - Not possible to view hard token in admin GUI.
+    [ECA-2519] - SuperAdmin default role created with incorrect rule
+
+Improvement
+    [ECA-2384] - Move EndEntityProfile authorization from gui code to session bean
+    [ECA-2420] - Document database and security audit integrity protection
+    [ECA-2437] - Improve the CMP KeyUpdate stress test in ClientToolBox
+    [ECA-2441] - Update to new EJBCA logo in public and admin webs
+    [ECA-2446] - Log details what changed when editing services
+    [ECA-2461] - User data source API improvements
+    [ECA-2465] - Hard token API improvements
+    [ECA-2469] - Audit logging for Admin Preferences needs to be more detailed
+    [ECA-2470] - UpgradeableDataHashMap.diff does not handle String arrays
+    [ECA-2471] - Audit log details of publisher change and don't audit log failures
+    [ECA-2497] - Unreadable code in VerifyPKIMessage
+    [ECA-2501] - More efficient CRL download
+    [ECA-2508] - Audit log the security audit protection during startup
+    [ECA-2515] - Possibility to define which symmetric encryption algorithm to use for clientToolBox HSM encrypt/decrypt
+
+New Feature
+    [ECA-2430] - Plugin build system
+    [ECA-2434] - Add CMP KeyUpdate stress test in clientToolBox
+    [ECA-2505] - Scripts for backup and restore
+
+Task
+    [ECA-2348] - Replace org.cesecore.util.Tuplet with AbstractMap.SimpleEntry
+    [ECA-2352] - Move methods from ComplexAccessControlSessionBean and ComplexRoleManagementSessionBean which would rather be in CESeCore
+    [ECA-2408] - CESeCore and EJBCA have overlapping and redundant rules for viewing logs
+    [ECA-2415] - Move the method saveGlobalConfigurationRemote out of GlobalConfigurationSessionBean and into a test proxy
+    [ECA-2439] - Remove unused AuthenticationToken from EndEntityProfileSession.getEndEntityProfile
+    [ECA-2485] - ISaferAppenderListener, SaferDailyRollingFileAppender are duplicates
+    [ECA-2490] - Authentication Logging does not conform to CC demands
+    [ECA-2496] - Remove AuthenticationSessionBean 
+
 EJBCA 5.0.1, 2011-12-02
 ---
 Bug
