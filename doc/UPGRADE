@@ -23,8 +23,24 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
-From EJBCA 5.0.x to EJBCA 5.0.2
---------------------------------
+From EJBCA 5.0.x to EJBCA 5.0.x
+-------------------------------
+See release notes for details between certain versions. 
+Normally upgrades within a major release are plug-in upgrades.
+
+Simply copy conf/*.properties from the earlier installation (if not using ejbca-custom).
+Merge changes (if there are any) from *.properties.sample into your *.properties.
+Copy the directory 'p12' from the earlier installation and do 'ant deploy' with the new version.
+
+Note the possibility to use 'ejbca-custom' directory since EJBCA 3.5.x, this can simplify upgrades. 
+See Admin Guide
+
+Read RELEASE_NOTES carefully in order to see if any particular changes might effect your upgrade particularly.
+
+If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
+Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
+
+Note for upgrades from EJBCA 5.0.0 or 5.0.1:
 Due to a bug found in EJBCA's logging rules (ECA-2408), rules in new installations made for versions 5.0.0
 and 5.0.1 need to be manually upgraded with an SQL script. This script can be found attached top the issue
 at https://jira.primekey.se/browse/ECA-2408
