@@ -1,7 +1,12 @@
 EJBCA 5.0.2
 -----------
+This minor release primarily addressed issues that cropped up during manual testing for Common Criteria
+certification. Quite some effort was also put into stabilizing the 5.0.x release.
 
 * Noteworthy changes:
+- Support has been added for incorporating external plugins in the EJBCA EAR file at build time. 
+- A ton of XSS issues have been corrected. 
+- Authorization checks have tightened up in accordance to Common Criteria demands. 
 - Access rules for logging have finally been reconciled between CESeCore and EJBCA. The implication of this is
 that the old EJBCA rules have been converted to the newer CESeCore rules, while those rules lacking application
 in the new Secure Audit logging have been removed (all old rules matching /log_functionality/view_log/*_entries). 
@@ -10,6 +15,12 @@ certain type of log event depending on what entry that event was registered as. 
 <ant post-upgrade>, which means that Supervisor roles won't work until this step is performed. Installations made in
 5.0.0 or 5.0.1 need to be upgraded manually (see UPGRADE document), while installations upgraded from 4.0.x will have
 their rules upgraded as part of the standard upgrade procedure. 
+- Chinese characters are now supported in DN attributes for End Entity Profiles. 
+
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 
 EJBCA 5.0.1
 -----------
