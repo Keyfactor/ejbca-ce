@@ -181,5 +181,5 @@ public interface LogConstants {
 
     public static final String[] MODULETEXTS = {"CA", "RA", "LOG", "PUBLICWEB", "ADMINWEB", "HARDTOKEN", "KEYRECOVERY", "AUTHORIZATION","APPROVAL","SERVICE","CUSTOM"};
 
-    
+    public static final String NO_AUTHENTICATION_TOKEN = "none";
 }

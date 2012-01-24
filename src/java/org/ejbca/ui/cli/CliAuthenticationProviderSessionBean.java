@@ -42,6 +42,7 @@ import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.util.crypto.BCrypt;
@@ -133,7 +134,7 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
                 log.error(msg, e);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, ModuleTypes.AUTHENTICATION, EjbcaServiceTypes.EJBCA, "", null, null, null, details);
+                securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, ModuleTypes.AUTHENTICATION, EjbcaServiceTypes.EJBCA, "", LogConstants.NO_AUTHENTICATION_TOKEN, null, null, details);
                 return null;
             }
         }
