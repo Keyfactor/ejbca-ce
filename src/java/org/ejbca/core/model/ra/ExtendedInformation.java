@@ -36,9 +36,8 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * NOTE! This class is not to be extended anymore. It is kept for backwards serialization compatibility only.
  * use class org.cesecore.certificates.endentity.ExtendedInformation instead.
  * 
- * @author  Philip Vendil
  * @version $Id$
- * @deprecated Use org.cesecore.certificates.endentity.ExtendedInformation instead.
+ * @deprecated Use org.cesecore.certificates.endentity.ExtendedInformation instead. Deprecated since EJBCA 5.0.0
  */
 public class ExtendedInformation extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
     private static final Logger log = Logger.getLogger(ExtendedInformation.class);
