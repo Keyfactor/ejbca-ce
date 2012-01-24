@@ -134,7 +134,7 @@ public class CliAuthenticationProviderSessionBean implements CliAuthenticationPr
                 log.error(msg, e);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, ModuleTypes.AUTHENTICATION, EjbcaServiceTypes.EJBCA, "", LogConstants.NO_AUTHENTICATION_TOKEN, null, null, details);
+                securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, ModuleTypes.AUTHENTICATION, EjbcaServiceTypes.EJBCA, LogConstants.NO_AUTHENTICATION_TOKEN, null, null, null, details);
                 return null;
             }
         }
