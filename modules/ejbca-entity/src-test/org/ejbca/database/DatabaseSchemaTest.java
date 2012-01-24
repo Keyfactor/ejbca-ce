@@ -172,14 +172,14 @@ public class DatabaseSchemaTest {
 	}
 
     @Test
-	public void testAdminGroupData() {
-		LOG.trace(">testAdminGroupData");
+	public void testRoleData() {
+		LOG.trace(">testRoleData");
 		logMemStats();
 		RoleData entity = new RoleData(BOGUS_INTEGER, VARCHAR_250B);
 		entity.setRowProtection(CLOB_10KiB);
 		entity.setRowVersion(0);
 		storeAndRemoveEntity(entity);
-		LOG.trace("<testAdminGroupData");
+		LOG.trace("<testRoleData");
 	}
 
     @Test

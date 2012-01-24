@@ -10,21 +10,34 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.ui.cli.admins;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Remove admin role
+ * Lists admin roles
+ * @version $Id$
  */
-public class AdminsRemoveGroupCommand extends BaseAdminsCommand {
+public class AdminsListRolesCommand extends BaseAdminsCommand {
 
-	public String getMainCommand() { return MAINCOMMAND; }
-	public String getSubCommand() { return "removerole"; }
-	public String getDescription() { return "Remove admin role"; }
+    public String getMainCommand() {
+        return MAINCOMMAND;
+    }
+
+    public String getSubCommand() {
+        return "listroles";
+    }
+
+    public String getDescription() {
+        return "Lists admin roles";
+    }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
@@ -34,20 +47,15 @@ public class AdminsRemoveGroupCommand extends BaseAdminsCommand {
         }
         
         try {
-            if (args.length < 2) {
-    			getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <name of role>");
-                return;
+            Collection<RoleData> roles = ejb.getRoleManagementSession().getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));            
+            Collections.sort((List<RoleData>) roles);
+            for (RoleData role : roles) {                
+                int numberOfAdmins = role.getAccessUsers().size();
+                getLogger().info(role.getRoleName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
             }
-            String roleName = args[1];
-            RoleData role = ejb.getRoleAccessSession().findRole(roleName);
-            if (role == null) {
-            	getLogger().error("No such role \"" + roleName + "\".");
-                return;
-            }
-            ejb.getRoleManagementSession().remove(getAdmin(cliUserName, cliPassword), role);
         } catch (Exception e) {
+            getLogger().error("", e);
             throw new ErrorAdminCommandException(e);
-		}
+        }
     }
 }

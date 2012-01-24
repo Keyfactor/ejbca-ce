@@ -60,12 +60,11 @@ import org.ejbca.ui.web.admin.rainterface.EndEntityProfileNameProxy;
  * A class used to improve performance by proxying authorization information about the administrator. It should be used in all jsp interface bean
  * classes.
  * 
- * @author TomSelleck
  * @version $Id$
  */
 public class InformationMemory implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
     // Private fields
     private AuthenticationToken administrator;
     // Session Bean interfaces (was *Local originally)
@@ -87,9 +86,9 @@ public class InformationMemory implements Serializable {
     Map<Integer, HashMap<Integer, List<Integer>>> endentityavailablecas = null;
     Map<Integer, String> publisheridtonamemap = null;
 
-    TreeMap<String, Integer> authgroups = null;
+    TreeMap<String, Integer> authRoles = null;
     TreeMap<String, Integer> publishernames = null;
-    Map<Integer, String> admingrpidmap = null;
+    Map<Integer, String> roldIdMap = null;
 
     HashSet<String> authorizedaccessrules = null;
 
@@ -396,50 +395,50 @@ public class InformationMemory implements Serializable {
     /**
      * @see org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization.java
      */
-    public Collection<RoleData> getHardTokenIssuingAdminGroups() {
-        return hardtokenauthorization.getHardTokenIssuingAdminGroups();
+    public Collection<RoleData> getHardTokenIssuingRoles() {
+        return hardtokenauthorization.getHardTokenIssuingRoles();
     }
 
     /**
-     * Returns a sorted map with authorized admingroupname -> admingroupid
+     * Returns a sorted map with authorized rolename -> roleid
      */
 
-    public TreeMap<String, Integer> getAuthorizedAdminGroups() {
-        if (authgroups == null) {
-            authgroups = new TreeMap<String, Integer>();
+    public TreeMap<String, Integer> getAuthorizedRoles() {
+        if (authRoles == null) {
+            authRoles = new TreeMap<String, Integer>();
 
             for (RoleData role : roleManagementSession.getAllRolesAuthorizedToEdit(administrator)) {
-                authgroups.put(role.getRoleName(), Integer.valueOf(role.getPrimaryKey()));
+                authRoles.put(role.getRoleName(), Integer.valueOf(role.getPrimaryKey()));
             }
         }
-        return authgroups;
+        return authRoles;
     }
 
     /**
-     * Returns a map with authorized admingroupid -> admingroupname
+     * Returns a map with authorized roleId -> roleName
      */
 
-    public Map<Integer, String> getAdminGroupIdToNameMap() {
-        if (admingrpidmap == null) {
-            TreeMap<String, Integer> admingrpnames = getAuthorizedAdminGroups();
-            admingrpidmap = new HashMap<Integer, String>();
-            Iterator<String> iter = admingrpnames.keySet().iterator();
+    public Map<Integer, String> getRoleIdToNameMap() {
+        if (roldIdMap == null) {
+            TreeMap<String, Integer> roleNames = getAuthorizedRoles();
+            roldIdMap = new HashMap<Integer, String>();
+            Iterator<String> iter = roleNames.keySet().iterator();
             while (iter.hasNext()) {
                 String next = iter.next();
-                admingrpidmap.put(admingrpnames.get(next), next);
+                roldIdMap.put(roleNames.get(next), next);
             }
 
         }
 
-        return admingrpidmap;
+        return roldIdMap;
     }
 
     /**
      * Method that should be called every time CA configuration is edited.
      */
     public void cAsEdited() {
-        authgroups = null;
-        admingrpidmap = null;
+        authRoles = null;
+        roldIdMap = null;
         caidtonamemap = null;
         endentityavailablecas = null;
         authorizedaccessrules = null;
@@ -482,8 +481,8 @@ public class InformationMemory implements Serializable {
      */
     public void administrativePriviledgesEdited() {
         endentityavailablecas = null;
-        authgroups = null;
-        admingrpidmap = null;
+        authRoles = null;
+        roldIdMap = null;
         raauthorization.clear();
         caauthorization.clear();
         hardtokenauthorization.clear();

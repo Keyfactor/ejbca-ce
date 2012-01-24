@@ -1014,8 +1014,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         boolean ret = false;
         X509Certificate cacert = null;
         try {
-            //adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
-
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -1117,8 +1115,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         boolean ret = false;
         X509Certificate cacert = null;
         try {
-            //adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
-
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
             catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);

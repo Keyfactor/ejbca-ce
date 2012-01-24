@@ -40,24 +40,24 @@
 
 <div align="center">
 
-	<h2><h:outputText value="#{web.text.ADMINSINGROUP} #{adminGroupsManagedBean.currentAdminGroup}"
-  			rendered="#{not empty adminGroupsManagedBean.currentAdminGroup}"/></h2>
+	<h2><h:outputText value="#{web.text.ADMINSINROLE} #{rolesManagedBean.currentRole}"
+  			rendered="#{not empty rolesManagedBean.currentRole}"/></h2>
 
-	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{empty adminGroupsManagedBean.currentAdminGroup && !adminGroupsManagedBean.authorizedToGroup}"/>
-	<h:panelGroup rendered="#{not empty adminGroupsManagedBean.currentAdminGroup && adminGroupsManagedBean.authorizedToGroup}">
+	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{empty rolesManagedBean.currentRole && !rolesManagedBean.authorizedToRole}"/>
+	<h:panelGroup rendered="#{not empty rolesManagedBean.currentRole && rolesManagedBean.authorizedToRole}">
  
 	<div align="right">
 	<h:panelGrid columns="1" style="text-align: right;">
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/administratorprivileges.jsf"
-			title="#{web.text.BACKTOADMINGROUPS}">
-			<h:outputText value="#{web.text.BACKTOADMINGROUPS}"/>
+			title="#{web.text.BACKTOROLES}">
+			<h:outputText value="#{web.text.BACKTOROLES}"/>
 		</h:outputLink>
-		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editbasicaccessrules.jsf?currentAdminGroup=#{adminGroupsManagedBean.currentAdminGroup}"
-			title="#{web.text.EDITACCESSRULES}" rendered="#{not empty adminGroupsManagedBean.currentAdminGroup && not adminGroupsManagedBean.basicRuleSet.forceAdvanced}">
+		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editbasicaccessrules.jsf?currentRole=#{rolesManagedBean.currentRole}"
+			title="#{web.text.EDITACCESSRULES}" rendered="#{not empty rolesManagedBean.currentRole && not rolesManagedBean.basicRuleSet.forceAdvanced}">
 			<h:outputText value="#{web.text.EDITACCESSRULES}"/>
 		</h:outputLink>
-		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadvancedaccessrules.jsf?currentAdminGroup=#{adminGroupsManagedBean.currentAdminGroup}"
-			title="#{web.text.EDITACCESSRULES}" rendered="#{not empty adminGroupsManagedBean.currentAdminGroup && adminGroupsManagedBean.basicRuleSet.forceAdvanced}">
+		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadvancedaccessrules.jsf?currentRole=#{rolesManagedBean.currentRole}"
+			title="#{web.text.EDITACCESSRULES}" rendered="#{not empty rolesManagedBean.currentRole && rolesManagedBean.basicRuleSet.forceAdvanced}">
 			<h:outputText value="#{web.text.EDITACCESSRULES}"/>
 		</h:outputLink>
 	</h:panelGrid>
@@ -66,61 +66,61 @@
 	<div align="center">
 	<h:messages layout="table" errorClass="alert"/>
 
-	<h:form id="adminListForm" rendered="#{not empty adminGroupsManagedBean.currentAdminGroup}">
-	<h:inputHidden id="currentAdminGroup" value="#{adminGroupsManagedBean.currentAdminGroup}" />
-	<h:dataTable value="#{adminGroupsManagedBean.admins}" var="admin" style="width: 100%;"
+	<h:form id="adminListForm" rendered="#{not empty rolesManagedBean.currentRole}">
+	<h:inputHidden id="currentRole" value="#{rolesManagedBean.currentRole}" />
+	<h:dataTable value="#{rolesManagedBean.admins}" var="admin" style="width: 100%;"
 		headerClass="listHeader" rowClasses="listRow1,listRow2" columnClasses="caColumn,withColumn,typeColumn,valueColumn,commandColumn">
 		<h:column>
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{web.text.CA}" /><br />
-					<h:selectOneMenu id="caId" value="#{adminGroupsManagedBean.matchCaId}">
-						<f:selectItems value="#{adminGroupsManagedBean.availableCaIds}" />
+					<h:selectOneMenu id="caId" value="#{rolesManagedBean.matchCaId}">
+						<f:selectItems value="#{rolesManagedBean.availableCaIds}" />
 					</h:selectOneMenu>
 					<br /><h:outputText value="&nbsp;" escape="false"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText value="#{adminGroupsManagedBean.issuingCA}"/>
+			<h:outputText value="#{rolesManagedBean.issuingCA}"/>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{web.text.MATCHWITH}" /><br />
-					<h:selectOneMenu id="matchWith" value="#{adminGroupsManagedBean.matchWith}">
-						<f:selectItems value="#{adminGroupsManagedBean.matchWithTexts}" />
+					<h:selectOneMenu id="matchWith" value="#{rolesManagedBean.matchWith}">
+						<f:selectItems value="#{rolesManagedBean.matchWithTexts}" />
 					</h:selectOneMenu> 
 					<br /><h:outputText value="&nbsp;" escape="false"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText value="#{adminGroupsManagedBean.adminsMatchWith}"/>
+			<h:outputText value="#{rolesManagedBean.adminsMatchWith}"/>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{web.text.MATCHTYPE}" /><br />
-					<h:selectOneMenu id="matchType" value="#{adminGroupsManagedBean.matchType}">
-						<f:selectItems value="#{adminGroupsManagedBean.matchTypeTexts}" />
+					<h:selectOneMenu id="matchType" value="#{rolesManagedBean.matchType}">
+						<f:selectItems value="#{rolesManagedBean.matchTypeTexts}" />
 					</h:selectOneMenu> 
 					<br /><h:outputText value="&nbsp;" escape="false"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText value="#{adminGroupsManagedBean.adminsMatchType}"/>
+			<h:outputText value="#{rolesManagedBean.adminsMatchType}"/>
 		</h:column>
 		<h:column>
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{web.text.MATCHVALUE}" /><br />
-					<h:inputText id="matchValue" value="#{adminGroupsManagedBean.matchValue}">
+					<h:inputText id="matchValue" value="#{rolesManagedBean.matchValue}">
 						<f:validator validatorId="legalCharsValidator" />
 						<f:validator validatorId="hexSerialNumberValidator" />
 					</h:inputText>
 					<br /><h:outputText value="&nbsp;" escape="false"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText value="#{admin.matchValue}" rendered="#{adminGroupsManagedBean.accessMatchValuesAsMap.WITH_SERIALNUMBER ne admin.matchWith}"/>
+			<h:outputText value="#{admin.matchValue}" rendered="#{rolesManagedBean.accessMatchValuesAsMap.WITH_SERIALNUMBER ne admin.matchWith}"/>
 			<h:outputLink
 				value="#{web.ejbcaWebBean.baseUrl}#{web.ejbcaWebBean.globalConfiguration.raPath}/listendentities.jsp?action=listusers&buttonisrevoked=value&textfieldserialnumber=#{admin.matchValue}"
-				rendered="#{adminGroupsManagedBean.accessMatchValuesAsMap.WITH_SERIALNUMBER eq admin.matchWith}">
+				rendered="#{rolesManagedBean.accessMatchValuesAsMap.WITH_SERIALNUMBER eq admin.matchWith}">
 				<h:outputText value="#{admin.matchValue}"/>
 			</h:outputLink>
 		</h:column>
@@ -128,19 +128,19 @@
 			<f:facet name="header">
 				<h:panelGroup>
 					<br />
-					<h:commandButton action="#{adminGroupsManagedBean.addAdmin}" value="#{web.text.ADD}"
+					<h:commandButton action="#{rolesManagedBean.addAdmin}" value="#{web.text.ADD}"
 						styleClass="commandButton"/>
 					<br /><h:outputText value="&nbsp;" escape="false"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:commandLink action="#{adminGroupsManagedBean.deleteAdmin}" title="#{web.text.DELETE}"
+			<h:commandLink action="#{rolesManagedBean.deleteAdmin}" title="#{web.text.DELETE}"
 				styleClass="commandLink" onclick="return confirm('#{web.text.AREYOUSURE}');" >
 				<h:outputText value="#{web.text.DELETE}"/>
 			</h:commandLink>
 		</h:column>
 	</h:dataTable>
 	</h:form >
-	<h:outputText value="#{web.text.NOADMINSDEFINED}" rendered="#{empty adminGroupsManagedBean.admins}"/>
+	<h:outputText value="#{web.text.NOADMINSDEFINED}" rendered="#{empty rolesManagedBean.admins}"/>
 	</div>
 	</h:panelGroup>
 </div>

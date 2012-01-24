@@ -19,6 +19,7 @@
 
 package org.ejbca.core.model.authorization;
 
+import java.io.Serializable;
 import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.util.Random;
@@ -29,9 +30,9 @@ import java.util.Random;
  *
  * @version $Id$
  */
-public class AdminInformation implements java.io.Serializable {
+public class AdminInformation implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	// Special in JVM random token to authenticate specialuser. 
 	// The token will work _if_ we are running within the same jvm as the service we call (i.e. EJBCA/JBoss server)
@@ -55,9 +56,9 @@ public class AdminInformation implements java.io.Serializable {
   	  this.localAuthToken = authToken;
   	}
 
-    public static AdminInformation getAdminInformationByGroupId(int adminGroupId) {
+    public static AdminInformation getAdminInformationByRoleId(int roleId) {
     	AdminInformation adminInformation = new AdminInformation(getRandomToken()); 
-    	adminInformation.adminGroupId = adminGroupId;
+    	adminInformation.adminGroupId = roleId;
     	return adminInformation;
     }
     

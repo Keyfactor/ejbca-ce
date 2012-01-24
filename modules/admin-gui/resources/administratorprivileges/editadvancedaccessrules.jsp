@@ -40,34 +40,34 @@
  
  <div align="center">
 
-	<h2><h:outputText value="#{web.text.ACCESSRULESFORGROUP} #{adminGroupsManagedBean.currentAdminGroup}" /></h2>
+	<h2><h:outputText value="#{web.text.ACCESSRULESFORROLE} #{rolesManagedBean.currentRole}" /></h2>
 
-	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!adminGroupsManagedBean.authorizedToGroup}"/>
-	<h:panelGroup rendered="#{adminGroupsManagedBean.authorizedToGroup}">
+	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!rolesManagedBean.authorizedToRole}"/>
+	<h:panelGroup rendered="#{rolesManagedBean.authorizedToRole}">
  
 	<p><h:messages layout="table" errorClass="alert"/></p>
  
 	<div align="right">
 	<h:panelGrid columns="1" style="text-align: right;">
 		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/administratorprivileges.jsf"
-			title="#{web.text.BACKTOADMINGROUPS}">
-			<h:outputText value="#{web.text.BACKTOADMINGROUPS}"/>
+			title="#{web.text.BACKTOROLES}">
+			<h:outputText value="#{web.text.BACKTOROLES}"/>
 		</h:outputLink>
-		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadminentities.jsf?currentAdminGroup=#{adminGroupsManagedBean.currentAdminGroup}"
-			title="#{web.text.EDITADMINS}" rendered="#{not empty adminGroupsManagedBean.currentAdminGroup}">
+		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadminentities.jsf?currentRole=#{rolesManagedBean.currentRole}"
+			title="#{web.text.EDITADMINS}" rendered="#{not empty rolesManagedBean.currentRole}">
 			<h:outputText value="#{web.text.EDITADMINS}"/>
 		</h:outputLink>
-		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editbasicaccessrules.jsf?currentAdminGroup=#{adminGroupsManagedBean.currentAdminGroup}"
-			rendered="#{not empty adminGroupsManagedBean.currentAdminGroup && !adminGroupsManagedBean.basicRuleSet.forceAdvanced}"
+		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editbasicaccessrules.jsf?currentRole=#{rolesManagedBean.currentRole}"
+			rendered="#{not empty rolesManagedBean.currentRole && !rolesManagedBean.basicRuleSet.forceAdvanced}"
 			title="#{web.text.BASICMODE}">
 			<h:outputText value="#{web.text.BASICMODE}"/>
 		</h:outputLink>
 	</h:panelGrid>
 	</div>
 	
-	<h:form id="accessRulesForm" rendered="#{not empty adminGroupsManagedBean.currentAdminGroup}">
-	<h:inputHidden id="currentAdminGroup" value="#{adminGroupsManagedBean.currentAdminGroup}" />
-	<h:dataTable value="#{adminGroupsManagedBean.accessRulesCollections}" var="accessRuleCollection"
+	<h:form id="accessRulesForm" rendered="#{not empty rolesManagedBean.currentRole}">
+	<h:inputHidden id="currentRole" value="#{rolesManagedBean.currentRole}" />
+	<h:dataTable value="#{rolesManagedBean.accessRulesCollections}" var="accessRuleCollection"
 		headerClass="listHeader" style="width: 100%;">
 		<h:column>
 		<h:dataTable value="#{accessRuleCollection.collection}" var="accessRule" rendered="#{not empty accessRuleCollection.collection}"
@@ -79,14 +79,14 @@
 				<f:facet name="header">
 					<h:outputText value="#{web.text.RESOURCE}" />
 				</f:facet>
-				<h:outputText value="#{adminGroupsManagedBean.parsedAccessRule}"/>
+				<h:outputText value="#{rolesManagedBean.parsedAccessRule}"/>
 			</h:column>
 			<h:column>
 				<f:facet name="header">
 					<h:outputText value="#{web.text.RULE}" />
 				</f:facet>
 				<h:selectOneMenu id="selectrole" value="#{accessRule.state}">
-					<f:selectItems value="#{adminGroupsManagedBean.accessRuleStates}" />
+					<f:selectItems value="#{rolesManagedBean.accessRuleStates}" />
 				</h:selectOneMenu> 
 			</h:column>
 			<h:column>
@@ -98,8 +98,8 @@
 		</h:dataTable>
 		</h:column>
 	</h:dataTable>
-	<h:commandButton action="#{adminGroupsManagedBean.saveAdvancedAccessRules}" value="#{web.text.SAVE}"/>
-	<h:commandButton action="#{adminGroupsManagedBean.restoreAdvancedAccessRules}" value="#{web.text.RESTORE}"/>
+	<h:commandButton action="#{rolesManagedBean.saveAdvancedAccessRules}" value="#{web.text.SAVE}"/>
+	<h:commandButton action="#{rolesManagedBean.restoreAdvancedAccessRules}" value="#{web.text.RESTORE}"/>
 	</h:form>
 	</h:panelGroup>
 </div>

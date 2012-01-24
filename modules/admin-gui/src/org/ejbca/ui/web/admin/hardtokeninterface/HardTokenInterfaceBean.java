@@ -150,11 +150,11 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         return hardtokensession.getHardTokenIssuerData(admin, id);
     }
     
-    public void addHardTokenIssuer(String alias, int admingroupid) throws HardTokenIssuerExistsException, AuthorizationDeniedException {
-        Iterator<RoleData> iter = this.informationmemory.getHardTokenIssuingAdminGroups().iterator();
+    public void addHardTokenIssuer(String alias, int roleId) throws HardTokenIssuerExistsException, AuthorizationDeniedException {
+        Iterator<RoleData> iter = this.informationmemory.getHardTokenIssuingRoles().iterator();
         while (iter.hasNext()) {
-            if (iter.next().getPrimaryKey() == admingroupid) {
-                if (!hardtokensession.addHardTokenIssuer(admin, alias, admingroupid, new HardTokenIssuer())) {
+            if (iter.next().getPrimaryKey() == roleId) {
+                if (!hardtokensession.addHardTokenIssuer(admin, alias, roleId, new HardTokenIssuer())) {
                     throw new HardTokenIssuerExistsException();
                 }
                 informationmemory.hardTokenDataEdited();      		
@@ -187,18 +187,18 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
         return !issuerused;	
     }
     
-    public void renameHardTokenIssuer(String oldalias, String newalias, int newadmingroupid) throws HardTokenIssuerExistsException, AuthorizationDeniedException {
+    public void renameHardTokenIssuer(String oldalias, String newalias, int newRoleId) throws HardTokenIssuerExistsException, AuthorizationDeniedException {
         if(informationmemory.authorizedToHardTokenIssuer(oldalias)){	        
-            if(!hardtokensession.renameHardTokenIssuer(admin, oldalias, newalias, newadmingroupid)) {
+            if(!hardtokensession.renameHardTokenIssuer(admin, oldalias, newalias, newRoleId)) {
                 throw new HardTokenIssuerExistsException();
             }
             informationmemory.hardTokenDataEdited();
         }   
     }
     
-    public void cloneHardTokenIssuer(String oldalias, String newalias, int newadmingroupid) throws HardTokenIssuerExistsException, AuthorizationDeniedException {
+    public void cloneHardTokenIssuer(String oldalias, String newalias, int newRoleId) throws HardTokenIssuerExistsException, AuthorizationDeniedException {
         if(informationmemory.authorizedToHardTokenIssuer(oldalias)){    	        
-            if(!hardtokensession.cloneHardTokenIssuer(admin, oldalias, newalias, newadmingroupid)) {
+            if(!hardtokensession.cloneHardTokenIssuer(admin, oldalias, newalias, newRoleId)) {
                 throw new HardTokenIssuerExistsException();
             }
             informationmemory.hardTokenDataEdited();

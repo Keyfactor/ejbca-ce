@@ -56,15 +56,15 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
         try {
             if (args.length < 6) {         
                 getLogger().info("Description: " + getDescription());
-                getLogger().info("Usage: " + getCommand() + " <name of group> <name of issuing CA> <match with> <match type> <match value>");
-                Collection<RoleData> adminGroups = ejb.getRoleManagementSession().getAllRolesAuthorizedToEdit(
+                getLogger().info("Usage: " + getCommand() + " <name of role> <name of issuing CA> <match with> <match type> <match value>");
+                Collection<RoleData> roles = ejb.getRoleManagementSession().getAllRolesAuthorizedToEdit(
                         getAdmin(cliUserName, cliPassword));
-                Collections.sort((List<RoleData>) adminGroups);
-                String availableGroups = "";
-                for (RoleData adminGroup : adminGroups) {
-                    availableGroups += (availableGroups.length() == 0 ? "" : ", ") + "\"" + adminGroup.getRoleName() + "\"";
+                Collections.sort((List<RoleData>) roles);
+                String availableRoles = "";
+                for (RoleData role : roles) {
+                    availableRoles += (availableRoles.length() == 0 ? "" : ", ") + "\"" + role.getRoleName() + "\"";
                 }
-                getLogger().info("Available Admin groups: " + availableGroups);
+                getLogger().info("Available Roles: " + availableRoles);
                 Collection<String> canames = ejb.getCaSession().getAvailableCANames(getAdmin(cliUserName, cliPassword));
                 String availableCas = "";
                 for (String caname : canames) {

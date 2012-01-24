@@ -41,8 +41,8 @@ public interface RoleManagementSessionLocal extends RoleManagementSession {
     void initializeAccessWithCert(AuthenticationToken authenticationToken, String roleName, Certificate certificate) throws RoleExistsException, RoleNotFoundException;
     
     /**
-     * Returns a Collection of role names authorized to the resource,
-     * it also only returns only the admin groups the administrator is authorized to edit.
+     * @return a Collection of role names authorized to the resource,
+     * it also only returns only the roles the administrator is authorized to edit.
      */
     Collection<RoleData> getAuthorizedRoles(AuthenticationToken admin, String resource);
 

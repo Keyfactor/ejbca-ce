@@ -44,48 +44,48 @@
 	<p><h:messages layout="table" errorClass="alert"/></p>
 
 	<h:form id="groupList">
-	<h:inputHidden id="newGroupName" value="#{adminGroupsManagedBean.newRoleName}">
+	<h:inputHidden id="newGroupName" value="#{rolesManagedBean.newRoleName}">
 		 <f:validator validatorId="legalCharsValidator" />
 	</h:inputHidden>
-	<h:inputHidden id="currentAdminGroup" value="#{adminGroupsManagedBean.currentAdminGroup}">
+	<h:inputHidden id="currentRole" value="#{rolesManagedBean.currentRole}">
 		 <f:validator validatorId="legalCharsValidator" />
 	</h:inputHidden>
-	<h:dataTable value="#{adminGroupsManagedBean.adminGroups}" var="adminGroup"
+	<h:dataTable value="#{rolesManagedBean.roles}" var="role"
 		headerClass="listHeader" rowClasses="listRow1,listRow2">
 		<f:facet name="header">
-			<h:outputText value="#{web.text.CURRENTADMINGROUPS}" />
+			<h:outputText value="#{web.text.CURRENTROLES}" />
 		</f:facet>
 		<h:column>
-			<h:outputText value="#{adminGroup.roleName}"/>
+			<h:outputText value="#{role.roleName}"/>
 		</h:column>
 		<h:column>
-			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadminentities.jsf?currentAdminGroup=#{adminGroup.roleName}"
+			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadminentities.jsf?currentRole=#{role.roleName}"
 				styleClass="commandLink" title="#{web.text.EDITADMINS}">
 				<h:outputText value="#{web.text.ADMINS}"/>
 			</h:outputLink>
-			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editbasicaccessrules.jsf?currentAdminGroup=#{adminGroup.roleName}"
-				styleClass="commandLink" title="#{web.text.EDITACCESSRULES}" rendered="#{!adminGroupsManagedBean.basicRuleSetForEach.forceAdvanced}">
+			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editbasicaccessrules.jsf?currentRole=#{role.roleName}"
+				styleClass="commandLink" title="#{web.text.EDITACCESSRULES}" rendered="#{!rolesManagedBean.basicRuleSetForEach.forceAdvanced}">
 				<h:outputText value="#{web.text.ACCESSRULES}"/>
 			</h:outputLink>
-			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadvancedaccessrules.jsf?currentAdminGroup=#{adminGroup.roleName}"
-				styleClass="commandLink" title="#{web.text.EDITACCESSRULES}" rendered="#{adminGroupsManagedBean.basicRuleSetForEach.forceAdvanced}">
+			<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadvancedaccessrules.jsf?currentRole=#{role.roleName}"
+				styleClass="commandLink" title="#{web.text.EDITACCESSRULES}" rendered="#{rolesManagedBean.basicRuleSetForEach.forceAdvanced}">
 				<h:outputText value="#{web.text.ACCESSRULES}"/>
 			</h:outputLink>
 		</h:column>
 		<h:column>
-			<h:commandLink action="#{adminGroupsManagedBean.renameRole}"
-				onclick="return getInputToField('groupList:newGroupName','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}') && getInsertIntoField('groupList:currentAdminGroup','#{adminGroup.roleName}', '#{web.text.ONLYCHARACTERS}');"
-				styleClass="commandLink" title="#{web.text.RENAMEADMINGROUP}">
+			<h:commandLink action="#{rolesManagedBean.renameRole}"
+				onclick="return getInputToField('groupList:newGroupName','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}') && getInsertIntoField('groupList:currentRole','#{role.roleName}', '#{web.text.ONLYCHARACTERS}');"
+				styleClass="commandLink" title="#{web.text.RENAMEROLE}">
 				<h:outputText value="#{web.text.RENAME}"/>
 			</h:commandLink>
-			<h:commandLink action="#{adminGroupsManagedBean.deleteGroup}" onclick="return confirm('#{web.text.AREYOUSURE}') && getInsertIntoField('groupList:currentAdminGroup','#{adminGroup.roleName}', '#{web.text.ONLYCHARACTERS}');"
-				styleClass="commandLink" title="#{web.text.DELETEGROUP}">
+			<h:commandLink action="#{rolesManagedBean.deleteRole}" onclick="return confirm('#{web.text.AREYOUSURE}') && getInsertIntoField('groupList:currentRole','#{role.roleName}', '#{web.text.ONLYCHARACTERS}');"
+				styleClass="commandLink" title="#{web.text.DELETEROLE}">
 				<h:outputText value="#{web.text.DELETE}"/>
 			</h:commandLink>
 		</h:column>
 	</h:dataTable>
 	<p>
-	<h:commandLink action="#{adminGroupsManagedBean.addGroup}" styleClass="commandLink" title="#{web.text.ADDADMINGROUP}"
+	<h:commandLink action="#{rolesManagedBean.addRole}" styleClass="commandLink" title="#{web.text.ADDROLE}"
 		onclick="return getInputToField('groupList:newGroupName','#{web.text.ENTERNEWNAME}', '#{web.text.ONLYCHARACTERS}');" >
 		<h:outputText value="#{web.text.ADD}"/>
 	</h:commandLink>

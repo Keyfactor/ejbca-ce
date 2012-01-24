@@ -138,7 +138,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         if (roleAccessSession.findRole(roleName) == null) {
             RoleData role = new RoleData(findFreeRoleId(), roleName);
             entityManager.persist(role);
-            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.admingroupadded", roleName);
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.roleadded", roleName);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             securityEventsLogger.log(EventTypes.ROLE_CREATION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
@@ -185,7 +185,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
                 accessTreeUpdateSession.signalForAccessTreeUpdate();
                 accessControlSession.forceCacheExpire();
 
-                final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.admingroupremoved", roleName);
+                final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.roleremoved", roleName);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 securityEventsLogger.log(EventTypes.ROLE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
@@ -224,7 +224,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
             accessTreeUpdateSession.signalForAccessTreeUpdate();
             accessControlSession.forceCacheExpire();
 
-            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.admingrouprenamed", oldName, result.getRoleName());
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.rolerenamed", oldName, result.getRoleName());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             securityEventsLogger.log(EventTypes.ROLE_RENAMING, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,

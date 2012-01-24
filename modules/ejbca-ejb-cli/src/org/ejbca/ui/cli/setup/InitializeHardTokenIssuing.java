@@ -38,11 +38,12 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * 
  * This isn't used as a command line but used from within, it's run by the command "setup initializehardtokenissuing"
  * 
- * It's main method run sets up: 1. Sets the global setting use hard token functionality to true. 2. A default 'Administrator Token' Hard Profile
- * Token 3. A default 'Local' Hard Token Issuer with the 'Temporary Super Admin Group' as admin group. 4. Adds a 'Administrator Token End Entity
- * Profile' End Entity Profile with the following fields: * CN, required * 'Administrator Token' as default and available tokens * 'local' as default
- * and available issuers * default available CA is taken from parameter to run method
- * 
+ * It's main method run sets up: 
+ * 1. Sets the global setting use hard token functionality to true. 
+ * 2. A default 'Administrator Token' Hard Profile Token 
+ * 3. A default 'Local' Hard Token Issuer with the 'Temporary Super Admin Group' as role. 
+ * 4. Adds a 'Administrator Token End Entity Profile' End Entity Profile with the following fields: CN, required 'Administrator Token' as default 
+ * and available tokens 'local' as default and available issuers default available CA is taken from parameter to run method
  * 5. Adds a user SuperAdminToken with CN=SuperAdminToken with issuer local 6. Adds SuperAdminToken to Temporary Super Admin Group
  * 
  * After run have been executed should it be easy to run primecard locally to just issue the first card.
@@ -98,11 +99,11 @@ public class InitializeHardTokenIssuing extends BaseCommand {
     private void runSetup(String cliUserName, String cliPassword, String caname) throws Exception {
         getLogger().info("Adding Hard Token Super Administrator .....\n\n");
         int caid = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname).getCAId();
-        int admingroupid = ejb.getRoleAccessSession().findRole(DefaultRoles.SUPERADMINISTRATOR.getName()).getPrimaryKey();
+        int roleId = ejb.getRoleAccessSession().findRole(DefaultRoles.SUPERADMINISTRATOR.getName()).getPrimaryKey();
 
         configureGlobalConfiguration(getAdmin(cliUserName, cliPassword));
         createAdministratorTokenProfile(getAdmin(cliUserName, cliPassword));
-        createLocalHardTokenIssuer(cliUserName, cliPassword, admingroupid);
+        createLocalHardTokenIssuer(cliUserName, cliPassword, roleId);
         createAdminTokenEndEntityProfile(cliUserName, cliPassword, caid);
         createSuperAdminTokenUser(cliUserName, cliPassword, caid);
         addSuperAdminTokenUserToTemporarySuperAdminGroup(cliUserName, cliPassword, caid);
@@ -152,7 +153,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * 
      * @throws Exception
      */
-    private void createLocalHardTokenIssuer(String cliUserName, String cliPassword, int admingroupid) throws Exception {
+    private void createLocalHardTokenIssuer(String cliUserName, String cliPassword, int roleId) throws Exception {
         HardTokenIssuer localissuer = new HardTokenIssuer();
 
         localissuer.setDescription("Issuer created by installation script, used to create the first administration token");
@@ -161,7 +162,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         availableprofiles.add(Integer.valueOf(ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(cliUserName, cliPassword), ADMINTOKENPROFILENAME)));
         localissuer.setAvailableHardTokenProfiles(availableprofiles);
 
-        this.ejb.getHardTokenSession().addHardTokenIssuer(getAdmin(cliUserName, cliPassword), ISSUERALIAS, admingroupid, localissuer);
+        this.ejb.getHardTokenSession().addHardTokenIssuer(getAdmin(cliUserName, cliPassword), ISSUERALIAS, roleId, localissuer);
 
     }
 

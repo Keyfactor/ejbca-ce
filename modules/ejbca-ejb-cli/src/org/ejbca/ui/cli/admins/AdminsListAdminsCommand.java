@@ -55,12 +55,12 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
                 return;
             }
             String roleName = args[1];
-            RoleData adminGroup = ejb.getRoleAccessSession().findRole(roleName);
-            if (adminGroup == null) {
+            RoleData role = ejb.getRoleAccessSession().findRole(roleName);
+            if (role == null) {
                 getLogger().error("No such role \"" + roleName + "\".");
                 return;
             }
-            for (AccessUserAspectData userAspect : adminGroup.getAccessUsers().values()) {
+            for (AccessUserAspectData userAspect : role.getAccessUsers().values()) {
                 String caName;
                 try {  
                     CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), userAspect.getCaId());

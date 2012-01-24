@@ -109,12 +109,12 @@ function checkselected(){
     </tr> 
     <tr>
       <td width="150px" align="right" style="white-space: nowrap;">
-        <%= ejbcawebbean.getText("ADMINGROUP") %>
+        <%= ejbcawebbean.getText("ROLE") %>
         &nbsp;
       </td>
       <td width="*"> 
-        <select name="<%=SELECT_ADMINGROUP%>" >
-          <%Iterator iter = authgroups.iterator();
+        <select name="<%=SELECT_ROLE%>" >
+          <%Iterator iter = authroles.iterator();
             while(iter.hasNext()){
               RoleData role = (RoleData) iter.next();%>
             <option value="<%= role.getPrimaryKey()%>">

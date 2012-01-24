@@ -35,7 +35,7 @@
   </p>
   <ul>
   <li>Create a P12 keystore for administrator.</li>
-  <li>Add the administrator certificate to an administrator group in EJBCA with RA provileges, i.e. privileges to add/edit end entities.</li>
+  <li>Add the administrator certificate to an role in EJBCA with RA provileges, i.e. privileges to add/edit end entities.</li>
   </ul>
   </subsection>
   <subsection name="Configure Djigzo">
