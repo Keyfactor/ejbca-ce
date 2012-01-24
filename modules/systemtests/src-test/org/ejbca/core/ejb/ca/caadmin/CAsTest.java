@@ -161,9 +161,6 @@ public class CAsTest extends CaTestCase {
         } catch (CADoesntExistsException e) {
             // All is well, do go on.
         }
-
-        // TODO: do we need init here? We should run the system tests on a "base installed" system
-        // adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
         CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
@@ -313,9 +310,6 @@ public class CAsTest extends CaTestCase {
 
         boolean ret = false;
         try {
-            // TODO: is init needed? We should run the system tests on a base installed system
-            // adminGroupSession.init(admin, "CN=TESTECDSA".hashCode(), DEFAULT_SUPERADMIN_CN);
-
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
             catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
@@ -428,9 +422,6 @@ public class CAsTest extends CaTestCase {
         removeOldCa("TESTECDSAImplicitlyCA");
 
         try {
-            // TODO: do we need init here? we should run the system tests on a base installed system
-            // adminGroupSession.init(admin, "CN=TESTECDSAImplicitlyCA".hashCode(), DEFAULT_SUPERADMIN_CN);
-
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
             catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
@@ -545,8 +536,6 @@ public class CAsTest extends CaTestCase {
         boolean ret = false;
         try {
             String cadn = "CN=TESTSha256WithMGF1";
-            // adminGroupSession.init(admin, cadn.hashCode(), DEFAULT_SUPERADMIN_CN);
-
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
             catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
@@ -644,8 +633,6 @@ public class CAsTest extends CaTestCase {
         try {
             String dn = CertTools
                     .stringToBCDNString("CN=TESTRSA4096,OU=FooBaaaaaar veeeeeeeery long ou,OU=Another very long very very long ou,O=FoorBar Very looong O,L=Lets ad a loooooooooooooooooong Locality as well,C=SE");
-            // adminGroupSession.init(admin, dn.hashCode(), DEFAULT_SUPERADMIN_CN);
-
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
             catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
@@ -831,7 +818,6 @@ public class CAsTest extends CaTestCase {
 
         // Create a root CVCA
         try {
-            // adminGroupSession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -890,7 +876,6 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV domestic
         ret = false;
         try {
-            // adminGroupSession.init(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
             // Create a Certificate profile
             CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA);
             certificateProfileSession.addCertificateProfile(admin, "TESTCVCDV", profile);
@@ -954,8 +939,6 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV foreign
         ret = false;
         try {
-            // adminGroupSession.init(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
-
             CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
@@ -1155,7 +1138,6 @@ public class CAsTest extends CaTestCase {
 
         // Create a root CVCA
         try {
-            // adminGroupSession.init(admin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -1213,7 +1195,6 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV domestic
         ret = false;
         try {
-            // adminGroupSession.init(admin, dvddn.hashCode(), DEFAULT_SUPERADMIN_CN);
             CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
@@ -1272,7 +1253,6 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV foreign
         ret = false;
         try {
-            // adminGroupSession.init(admin, dvfdn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
@@ -1459,8 +1439,6 @@ public class CAsTest extends CaTestCase {
         boolean ret = false;
         CAInfo info = null;
         try {
-            // adminGroupSession.init(admin, "CN=TESTSIGNEDBYEXTERNAL".hashCode(), DEFAULT_SUPERADMIN_CN);
-
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
             catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
@@ -1605,7 +1583,6 @@ public class CAsTest extends CaTestCase {
         try {
             removeTestCA("TESTDSA"); // We cant be sure this CA was not left
             // over from some other failed test
-            // adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
             CATokenInfo catokeninfo = new CATokenInfo();
             catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
             catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
@@ -1839,7 +1816,6 @@ public class CAsTest extends CaTestCase {
         log.trace(">test16InvalidCreateCaActions()");
         removeTestCA("TESTFAIL"); // We cant be sure this CA was not left over from
         // some other failed test
-        // adminGroupSession.init(admin, getTestCAId(), DEFAULT_SUPERADMIN_CN);
         CATokenInfo catokeninfo = new CATokenInfo();
         catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);

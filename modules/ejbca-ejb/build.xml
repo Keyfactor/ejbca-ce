@@ -169,7 +169,6 @@
 		<include name="org/ejbca/core/model/approval/Approval.java"/>
 		<include name="org/ejbca/core/model/approval/ApprovalDataVO.java"/>
 		<include name="org/ejbca/core/model/authorization/AccessRule.java"/>
-		<include name="org/ejbca/core/model/authorization/AdminGroup.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/BasePublisher.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/PublisherQueueVolatileData.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/PublisherConst.java"/>
@@ -189,7 +188,6 @@
 		<include name="org/cesecore/certificates/crl/CRLInfo.java"/>
 		<include name="org/cesecore/certificates/ca/CAExistsException.java"/>
 		<include name="org/cesecore/certificates/certificate/CertificateStatus.java"/>
-		<include name="org/ejbca/core/model/authorization/AdminGroupExistsException.java"/>
        	<include name="org/ejbca/util/cert/OID.java"/>
 		<include name="org/ejbca/core/model/ca/store/CRLInfo.java"/>
 		<include name="org/ejbca/core/model/ca/certificateprofiles/CertificateProfileExistsException.java"/>

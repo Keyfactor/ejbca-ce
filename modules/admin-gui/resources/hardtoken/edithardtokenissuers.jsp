@@ -25,7 +25,7 @@
   static final String BUTTON_CLONE_ISSUER      = "buttoncloneissuer";
 
   static final String SELECT_ISSUER            = "selectissuer";
-  static final String SELECT_ADMINGROUP        = "selectadmingroup";
+  static final String SELECT_ROLE      		   = "selectrole";
   static final String TEXTFIELD_ALIAS          = "textfieldalias";
   static final String HIDDEN_ALIAS             = "hiddenalias";  
   
@@ -107,12 +107,12 @@
          // Rename selected profile and display profilespage.
        String newalias  = request.getParameter(TEXTFIELD_ALIAS);       
        String oldalias = request.getParameter(SELECT_ISSUER);
-       int admingroupid = Integer.parseInt(request.getParameter(SELECT_ADMINGROUP));
+       int roleId = Integer.parseInt(request.getParameter(SELECT_ROLE));
        
        if(oldalias != null && newalias != null){
          if(!newalias.trim().equals("") && !oldalias.trim().equals("")){
            try{
-             tokenbean.renameHardTokenIssuer(oldalias,newalias.trim(), admingroupid);
+             tokenbean.renameHardTokenIssuer(oldalias,newalias.trim(), roleId);
            }catch( HardTokenIssuerExistsException e){
              issuerexists=true;
            }        
@@ -123,11 +123,11 @@
       if( request.getParameter(BUTTON_ADD_ISSUER) != null){
          // Add profile and display profilespage.         
          alias = request.getParameter(TEXTFIELD_ALIAS);        
-         int admingroupid = Integer.parseInt(request.getParameter(SELECT_ADMINGROUP));
+         int roleId = Integer.parseInt(request.getParameter(SELECT_ROLE));
          if(alias != null){
            if(!alias.trim().equals("")){
              try{              
-               tokenbean.addHardTokenIssuer(alias.trim(), admingroupid);
+               tokenbean.addHardTokenIssuer(alias.trim(), roleId);
              }catch( HardTokenIssuerExistsException e){
                issuerexists=true;
              }
@@ -139,11 +139,11 @@
          // clone profile and display profilespage.
        String newalias  = request.getParameter(TEXTFIELD_ALIAS);       
        String oldalias = request.getParameter(SELECT_ISSUER);
-       int admingroupid = Integer.parseInt(request.getParameter(SELECT_ADMINGROUP));
+       int roleId = Integer.parseInt(request.getParameter(SELECT_ROLE));
        if(oldalias != null && newalias != null){
          if(!oldalias.trim().equals("") && !newalias.trim().equals("")){
              try{ 
-               tokenbean.cloneHardTokenIssuer(oldalias.trim(),newalias.trim(), admingroupid);
+               tokenbean.cloneHardTokenIssuer(oldalias.trim(),newalias.trim(), roleId);
              }catch( HardTokenIssuerExistsException e){
                issuerexists=true;
              }
@@ -189,8 +189,8 @@
     }
   }
 
-  Collection authgroups = ejbcawebbean.getInformationMemory().getHardTokenIssuingAdminGroups();
-  Map adminidtonamemap = ejbcawebbean.getInformationMemory().getAdminGroupIdToNameMap();
+  Collection authroles = ejbcawebbean.getInformationMemory().getHardTokenIssuingRoles();
+  Map adminidtonamemap = ejbcawebbean.getInformationMemory().getRoleIdToNameMap();
 
  // Include page
   if( includefile.equals("hardtokenissuerspage.jspf")){ %>

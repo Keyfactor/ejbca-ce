@@ -29,11 +29,11 @@ Can bind publisher defined before to a CA as a CRL publisher
 Note: There's predefined CA & SUBCA certificate profiles for creating the CA's cert.
 EJBCA use cert profile to create a cert.
 
-4.create CA administrator's group
-system functions->edit administrator privileges->add administrator group
-A CA administrator group will bind to a CA created before, which will issue their certs.
+4.create CA role
+system functions->edit administrator privileges->add role
+A CA role will bind to a CA created before, which will issue their certs.
 
-5.Add CA administrators to the group
+5.Add CA administrators to the role
 system functions->edit administrator privileges->edit administrators
 All users in EJBCA is distinguished by it's cert, pick up a field and it's value to identify a particular user, the cert of this user will be issued later.
 It's important to import the CA's cert into JRE's trusted cert store for the cert of the CA administrator to be accepted.
@@ -97,9 +97,9 @@ Go to the public web and click <Certificate Enrollment>-><for your browser>, inp
 3)Create RA administrator end entity profile for RA as described in step 8. Remember to CHECK the profile's "Administrator flag", select the default CA,default cert profile, and token type it binds to.
 4)Create end entity profile for end entity users of this CA. Remember to UNCHECK the profile's "Administrator flag", select the default CA,default cert profile, and token type it binds to.
 
-13.Create administration group for RA, add in RA administrator as described in step 4 and 5. Edit it's access rules as described in step 6. The role is "RA Administrators", select it's authorized CAs and End Entity Profiles.
+13.Create role for RA, add in RA administrator as described in step 4 and 5. Edit it's access rules as described in step 6. The role is "RA Administrators", select it's authorized CAs and End Entity Profiles.
 
-14.Create administration group for supervisors, add in supervisor as described in step 4 and 5, Edit it's access rules as described in step 6. The role is "Supervisors", select it's authorized CAs and End Entity Profiles.
+14.Create role for supervisors, add in supervisor as described in step 4 and 5, Edit it's access rules as described in step 6. The role is "Supervisors", select it's authorized CAs and End Entity Profiles.
 
 15. Add in RA administrator and supervisor end entities as described in step 9. Supervisors use the RA administrator's profile, as it's a type of administrator.
 

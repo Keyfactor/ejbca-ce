@@ -49,7 +49,7 @@ public class HardTokenIssuerData extends ProtectedData implements Serializable {
 
 	private int id;
 	private String alias;
-	private int adminGroupId;
+	private int roleId;
 	private Serializable data;
 	private int rowVersion = 0;
 	private String rowProtection;
@@ -57,10 +57,10 @@ public class HardTokenIssuerData extends ProtectedData implements Serializable {
 	/**
 	 * Entity holding data of a hard token issuer.
 	 */
-	public HardTokenIssuerData(int id, String alias, int admingroupid,  HardTokenIssuer issuerdata) {
+	public HardTokenIssuerData(int id, String alias, int roleId,  HardTokenIssuer issuerdata) {
 		setId(id);
 		setAlias(alias);
-		setAdminGroupId(admingroupid);
+		setAdminGroupId(roleId);
 		setHardTokenIssuer(issuerdata);
 		log.debug("Created Hard Token Issuer "+ alias );
 	}
@@ -76,8 +76,8 @@ public class HardTokenIssuerData extends ProtectedData implements Serializable {
 	public void setAlias(String alias) { this.alias = alias; }
 
 	//@Column
-	public int getAdminGroupId() { return adminGroupId; } 
-	public void setAdminGroupId(int adminGroupId) { this.adminGroupId = adminGroupId; }
+	public int getAdminGroupId() { return roleId; } 
+	public void setAdminGroupId(int adminGroupId) { this.roleId = adminGroupId; }
 
 	//@Column @Lob
 	public Serializable getDataUnsafe() { return data; }

@@ -54,12 +54,12 @@ public class AdminsListRulesCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            RoleData adminGroup = ejb.getRoleAccessSession().findRole(groupName);
-            if (adminGroup == null) {
+            RoleData role = ejb.getRoleAccessSession().findRole(groupName);
+            if (role == null) {
                 getLogger().error("No such role \"" + groupName + "\".");
                 return;
             }
-            List<AccessRuleData> list = new ArrayList<AccessRuleData>(adminGroup.getAccessRules().values());
+            List<AccessRuleData> list = new ArrayList<AccessRuleData>(role.getAccessRules().values());
             Collections.sort(list);
             for (AccessRuleData accessRule : list) {
                 getLogger().info(

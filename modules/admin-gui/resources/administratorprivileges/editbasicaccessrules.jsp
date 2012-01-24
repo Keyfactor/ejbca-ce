@@ -202,60 +202,60 @@ function checkallfields(){
 <body onload='roleupdated()'>
 
 <div align="center">
-	<p><H2><h:outputText value="#{web.text.ACCESSRULESFORGROUP} #{adminGroupsManagedBean.currentAdminGroup}" /></H2></p>
-	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!adminGroupsManagedBean.authorizedToGroup}"/>
-	<h:panelGroup rendered="#{adminGroupsManagedBean.authorizedToGroup}">
-	<p><h:outputText styleClass="alert" value="#{web.text.ADVANCEDMODEREQUIRED}" rendered="#{adminGroupsManagedBean.basicRuleSet.forceAdvanced}" /></p>
+	<p><H2><h:outputText value="#{web.text.ACCESSRULESFORROLE} #{rolesManagedBean.currentRole}" /></H2></p>
+	<h:outputText value="#{web.text.AUTHORIZATIONDENIED}" rendered="#{!rolesManagedBean.authorizedToRole}"/>
+	<h:panelGroup rendered="#{rolesManagedBean.authorizedToRole}">
+	<p><h:outputText styleClass="alert" value="#{web.text.ADVANCEDMODEREQUIRED}" rendered="#{rolesManagedBean.basicRuleSet.forceAdvanced}" /></p>
 	<p><h:messages layout="table" errorClass="alert"/></p>
   
   	<div align="right">
 	<h:panelGrid columns="1" style="text-align: right;">
-		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/administratorprivileges.jsf" title="#{web.text.BACKTOADMINGROUPS}">
-			<h:outputText value="#{web.text.BACKTOADMINGROUPS}"/>
+		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/administratorprivileges.jsf" title="#{web.text.BACKTOROLES}">
+			<h:outputText value="#{web.text.BACKTOROLES}"/>
 		</h:outputLink>
-		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadminentities.jsf?currentAdminGroup=#{adminGroupsManagedBean.currentAdminGroup}"
-			title="#{web.text.EDITADMINS}" rendered="#{not empty adminGroupsManagedBean.currentAdminGroup}">
+		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadminentities.jsf?currentRole=#{rolesManagedBean.currentRole}"
+			title="#{web.text.EDITADMINS}" rendered="#{not empty rolesManagedBean.currentRole}">
 			<h:outputText value="#{web.text.EDITADMINS}"/>
 		</h:outputLink>
-		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadvancedaccessrules.jsf?currentAdminGroup=#{adminGroupsManagedBean.currentAdminGroup}"
-			title="#{web.text.ADVANCEDMODE}" rendered="#{not empty adminGroupsManagedBean.currentAdminGroup}">
+		<h:outputLink value="#{web.ejbcaWebBean.globalConfiguration.authorizationPath}/editadvancedaccessrules.jsf?currentRole=#{rolesManagedBean.currentRole}"
+			title="#{web.text.ADVANCEDMODE}" rendered="#{not empty rolesManagedBean.currentRole}">
 			<h:outputText value="#{web.text.ADVANCEDMODE}"/>
 		</h:outputLink>
 	</h:panelGrid>
 	</div>
-	<h:panelGroup rendered="#{!adminGroupsManagedBean.basicRuleSet.forceAdvanced}">
+	<h:panelGroup rendered="#{!rolesManagedBean.basicRuleSet.forceAdvanced}">
  
  	<h:form id="basicRules">
-	<h:inputHidden id="currentAdminGroup" value="#{adminGroupsManagedBean.currentAdminGroup}" />
+	<h:inputHidden id="currentRole" value="#{rolesManagedBean.currentRole}" />
 	<h:panelGrid columns="2" rowClasses="listRow1,listRow2" columnClasses="leftColumn,rightColumn" width="100%">
 		<h:outputText value="#{web.text.ROLETEMPLATE}"/>
-		<h:selectOneMenu id="selectrole" value="#{adminGroupsManagedBean.currentRoleTemplate}" onchange='roleupdated()'>
-			<f:selectItems value="#{adminGroupsManagedBean.availableRoles}" />
+		<h:selectOneMenu id="selectrole" value="#{rolesManagedBean.currentRoleTemplate}" onchange='roleupdated()'>
+			<f:selectItems value="#{rolesManagedBean.availableRoles}" />
 		</h:selectOneMenu> 
 		
 		<h:outputText value="#{web.text.AUTHORIZEDCAS}"/>
-		<h:selectManyListbox id="selectcas" value="#{adminGroupsManagedBean.currentCAs}" size="8">
-			<f:selectItems value="#{adminGroupsManagedBean.availableCasAndAll}" />
+		<h:selectManyListbox id="selectcas" value="#{rolesManagedBean.currentCAs}" size="8">
+			<f:selectItems value="#{rolesManagedBean.availableCasAndAll}" />
 		</h:selectManyListbox> 
 
 		<h:outputText value="#{web.text.ENDENTITYRULES}"/>
-		<h:selectManyListbox id="selectendentityrules" value="#{adminGroupsManagedBean.currentEndEntityRules}" size="10">
-			<f:selectItems value="#{adminGroupsManagedBean.availableEndEntityRules}" />
+		<h:selectManyListbox id="selectendentityrules" value="#{rolesManagedBean.currentEndEntityRules}" size="10">
+			<f:selectItems value="#{rolesManagedBean.availableEndEntityRules}" />
 		</h:selectManyListbox> 
  
 		<h:outputText value="#{web.text.ENDENTITYPROFILES}"/>
-		<h:selectManyListbox id="selectendentityprofiles" value="#{adminGroupsManagedBean.currentEndEntityProfiles}" size="8">
-			<f:selectItems value="#{adminGroupsManagedBean.availableEndEntityProfiles}" />
+		<h:selectManyListbox id="selectendentityprofiles" value="#{rolesManagedBean.currentEndEntityProfiles}" size="8">
+			<f:selectItems value="#{rolesManagedBean.availableEndEntityProfiles}" />
 		</h:selectManyListbox> 
 
 		<h:outputText value="#{web.text.OTHERRULES}"/>
-		<h:selectManyListbox id="selectother" value="#{adminGroupsManagedBean.currentOtherRules}" size="3">
-			<f:selectItems value="#{adminGroupsManagedBean.availableOtherRules}" />
+		<h:selectManyListbox id="selectother" value="#{rolesManagedBean.currentOtherRules}" size="3">
+			<f:selectItems value="#{rolesManagedBean.availableOtherRules}" />
 		</h:selectManyListbox> 
 
 		<h:outputText value=""/>
 		<h:panelGroup>
-			<h:commandButton action="#{adminGroupsManagedBean.saveAccessRules}" onclick="return checkallfields();" value="#{web.text.SAVE}"/>
+			<h:commandButton action="#{rolesManagedBean.saveAccessRules}" onclick="return checkallfields();" value="#{web.text.SAVE}"/>
 			<h:commandButton action="cancel" value="#{web.text.RESTORE}"/>
 		</h:panelGroup>
 	</h:panelGrid>

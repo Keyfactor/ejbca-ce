@@ -152,18 +152,13 @@ public class NestedMessageContentTest extends CmpTestCase {
     
     final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("NestedMessageContentTest"));
 
-    //private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
     private CaSessionRemote caSession = InterfaceCache.getCaSession();
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
     private SignSessionRemote signSession = InterfaceCache.getSignSession();
     private CertificateProfileSession certProfileSession = InterfaceCache.getCertificateProfileSession();
     private EndEntityProfileSession eeProfileSession = InterfaceCache.getEndEntityProfileSession();
     private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
-    //private AccessControlSession authorizationSession = InterfaceCache.getAccessControlSession();
-    //private AdminGroupSessionRemote adminGroupSession = InterfaceCache.getAdminGroupSession();
-    //private AdminEntitySessionRemote adminEntitySession = InterfaceCache.getAdminEntitySession();
     private CertificateStoreSession certSession = InterfaceCache.getCertificateStoreSession();
-    //private RoleInitializationSessionRemote roleInitSession = JndiHelper.getRemoteSession(RoleInitializationSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSessionRemote = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
     

@@ -54,13 +54,13 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
             if (args.length < 5) {
                 getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of role> <access rule> <rule> <recursive>");
-                Collection<RoleData> adminGroups = ejb.getRoleManagementSession().getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));
-                Collections.sort((List<RoleData>) adminGroups);
-                String availableGroups = "";
-                for (RoleData adminGroup : adminGroups) {
-                    availableGroups += (availableGroups.length() == 0 ? "" : ", ") + "\"" + adminGroup.getRoleName() + "\"";
+                Collection<RoleData> roles = ejb.getRoleManagementSession().getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));
+                Collections.sort((List<RoleData>) roles);
+                String availableRoles = "";
+                for (RoleData role : roles) {
+                    availableRoles += (availableRoles.length() == 0 ? "" : ", ") + "\"" + role.getRoleName() + "\"";
                 }
-                getLogger().info("Available Admin roles: " + availableGroups);
+                getLogger().info("Available roles: " + availableRoles);
                 getLogger().info("Available access rules:");
                 GlobalConfiguration globalConfiguration = ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration();
 

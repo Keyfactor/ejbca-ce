@@ -36,10 +36,10 @@ profiles and end entity profiles for use by ProdCA.
 Add a new end entity with the administrators DN etc. CA should be ProdCA and don't forget to check the 
 'Administrator' checkbox.
 Issue the certificate for the administrator.
-Create a new administrator group for the CA and edit access rules to what you like, for example 'CA Administrators'.
-Add the new administrator the the admin group by selecting for example 'CN' in the drop down list and 
+Create a new role for the CA and edit access rules to what you like, for example 'CA Administrators'.
+Add the new administrator the the role by selecting for example 'CN' in the drop down list and 
 giving the administrators CN. You can also use other attributes such as the certificate serial number etc.
-When you create the administrator group, do not forget to select ProdCA from the drop-down.
+When you create the role, do not forget to select ProdCA from the drop-down.
 
 In order for JBoss to accept certificate issued by ProdCA for SSL connections, you must add the ProdCA certificate
 to the SSL truststore. This can be done by a utility command in EJBCA: 

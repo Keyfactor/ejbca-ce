@@ -10,35 +10,31 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
+ 
 package org.ejbca.ui.cli.admins;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-
-import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Lists admin roles
+ * Adds a new admin role
  * @version $Id$
  */
-public class AdminsListGroupsCommand extends BaseAdminsCommand {
+public class AdminsAddRoleCommand extends BaseAdminsCommand {
 
     public String getMainCommand() {
         return MAINCOMMAND;
     }
 
     public String getSubCommand() {
-        return "listroles";
+        return "addrole";
     }
 
     public String getDescription() {
-        return "Lists admin roles";
+        return "Adds an administrative role.";
     }
 
+    /** @see org.ejbca.ui.cli.CliCommandPlugin */
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
@@ -47,14 +43,14 @@ public class AdminsListGroupsCommand extends BaseAdminsCommand {
         }
         
         try {
-            Collection<RoleData> adminGroups = ejb.getRoleManagementSession().getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));            
-            Collections.sort((List<RoleData>) adminGroups);
-            for (RoleData adminGroup : adminGroups) {                
-                int numberOfAdmins = adminGroup.getAccessUsers().size();
-                getLogger().info(adminGroup.getRoleName() + " (" + numberOfAdmins + " admin" + (numberOfAdmins == 1 ? "" : "s") + ")");
+            if (args.length < 2) {
+                getLogger().info("Description: " + getDescription());
+                getLogger().info("Usage: " + getCommand() + " <name of role>");
+                return;
             }
+            String roleName = args[1];
+            ejb.getRoleManagementSession().create(getAdmin(cliUserName, cliPassword), roleName);
         } catch (Exception e) {
-            getLogger().error("", e);
             throw new ErrorAdminCommandException(e);
         }
     }

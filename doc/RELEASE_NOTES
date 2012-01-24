@@ -1,3 +1,8 @@
+EJBCA 5.1.0
+-----------
+
+- The term 'Admin Group' has been mostly purged and replaced with 'Role'.
+
 EJBCA 5.0.2
 -----------
 This minor release primarily addressed issues that cropped up during manual testing for Common Criteria

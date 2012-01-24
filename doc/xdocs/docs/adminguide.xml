@@ -1147,7 +1147,7 @@ separate location if you intend to rebuild or redeploy EJBCA and keep the config
 </p><p>
 Configuration for the Web Services CLI requires a P12 or JKS keystore. You can easily try the WS CLI using the
 superadmin.p12 keystore generated during the installation or generate a new JKS using the Admin GUI.
-Below is a short description how to create a JKS for a user on the command line, and adding the new user to the superadministrator admin group.
+Below is a short description how to create a JKS for a user on the command line, and adding the new user to the superadministrator role.
 </p>
 <source>
 bin/ejbca.sh ra adduser &lt;1> &lt;2> "C=..,O=..,CN=&lt;1>" null AdminCA null 1 JKS
@@ -1940,7 +1940,7 @@ In order to authorize an administrator to review approval requests do one of the
 </p><p>
 Using Basic Rule Sets:
 </p><p>
-Give an admin group the role of SuperAdmin, CAAdmin or RAAdmin with Approve End Entities selected.
+Give an role the role of SuperAdmin, CAAdmin or RAAdmin with Approve End Entities selected.
 </p><p>
 The SuperAdmin and CAAdmin gives access to approve rules not associated with any end entity profile 
 (I.e dual authenticated CA configuration (Not implemented yet)) while the RAAdmin only can approve actions 

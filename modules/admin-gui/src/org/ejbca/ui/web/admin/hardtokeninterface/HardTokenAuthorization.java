@@ -63,13 +63,13 @@ public class HardTokenAuthorization implements Serializable {
     public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers() {
         if (hardtokenissuers == null) {
             hardtokenissuers = new TreeMap<String, HardTokenIssuerData>();
-            HashSet<Integer> authadmingroupids = new HashSet<Integer>();
+            HashSet<Integer> authRoleIds = new HashSet<Integer>();
             for (RoleData next : roleManagementSession.getAllRolesAuthorizedToEdit(admin)) {
-                authadmingroupids.add(Integer.valueOf(next.getPrimaryKey()));
+                authRoleIds.add(Integer.valueOf(next.getPrimaryKey()));
             }
             TreeMap<String, HardTokenIssuerData> allhardtokenissuers = this.hardtokensession.getHardTokenIssuers(admin);
             for (String alias : allhardtokenissuers.keySet()) {
-                if (authadmingroupids.contains(Integer.valueOf(((HardTokenIssuerData) allhardtokenissuers.get(alias)).getRoleDataId()))) {
+                if (authRoleIds.contains(Integer.valueOf(((HardTokenIssuerData) allhardtokenissuers.get(alias)).getRoleDataId()))) {
                     hardtokenissuers.put(alias, allhardtokenissuers.get(alias));
                 }
             }
@@ -136,9 +136,9 @@ public class HardTokenAuthorization implements Serializable {
 
     /**
      * Returns a Collection of role names authorized to issue hard tokens,
-     * it also only returns the admin groups the administrator is authorized to edit.
+     * it also only returns the roles the administrator is authorized to edit.
      */
-    public Collection<RoleData> getHardTokenIssuingAdminGroups() {
+    public Collection<RoleData> getHardTokenIssuingRoles() {
         if (authissueingadmgrps == null) {
             authissueingadmgrps = roleManagementSession.getAuthorizedRoles(admin, AccessRulesConstants.HARDTOKEN_ISSUEHARDTOKENS);
         }

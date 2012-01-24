@@ -54,11 +54,11 @@ import org.ejbca.ui.web.admin.configuration.AuthorizationDataHandler;
  * 
  * @version $Id$
  */
-public class AdminGroupsManagedBean extends BaseManagedBean {
+public class RolesManagedBean extends BaseManagedBean {
 
     private static final long serialVersionUID = 1227489070299372101L;
 
-    private static final Logger log = Logger.getLogger(AdminGroupsManagedBean.class);
+    private static final Logger log = Logger.getLogger(RolesManagedBean.class);
 
     private final EjbLocalHelper ejb = new EjbLocalHelper();
     private BasicAccessRuleSetEncoder basicAccessRuleSetEncoderCache = null;
@@ -69,7 +69,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     private List<Integer> currentOtherRules = null;
     private List<Integer> currentEndEntityRules = null;
     
-    private String currentAdminGroupName = null;
+    private String currentRoleName = null;
     private String matchCaId = null;
     private X500PrincipalAccessMatchValue matchWith = X500PrincipalAccessMatchValue.WITH_SERIALNUMBER;
     private AccessMatchType matchType = null;
@@ -86,22 +86,22 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
         this.newRoleName = newRoleName;
     }
 
-    /** @return a List of authorized AdminGroups */
-    public List<RoleData> getAdminGroups() {
-        List<RoleData> adminGroups = new ArrayList<RoleData>();
-        adminGroups.addAll(getAuthorizationDataHandler().getRoles());
-        Collections.sort(adminGroups);
-        return adminGroups;
+    /** @return a List of authorized roles */
+    public List<RoleData> getRoles() {
+        List<RoleData> roles = new ArrayList<RoleData>();
+        roles.addAll(getAuthorizationDataHandler().getRoles());
+        Collections.sort(roles);
+        return roles;
     }
 
     /** Renames a role */
     public void renameRole() {
         String newRoleName = getNewRoleName();
         try {
-            getAuthorizationDataHandler().renameRole(getCurrentAdminGroup(), newRoleName);
-            setCurrentAdminGroup(newRoleName);
+            getAuthorizationDataHandler().renameRole(getCurrentRole(), newRoleName);
+            setCurrentRole(newRoleName);
         } catch (RoleExistsException e) {
-            addErrorMessage("ADMINGROUPEXISTS");
+            addErrorMessage("ROLEEXISTS");
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
@@ -113,28 +113,28 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
      * @throws RoleNotFoundException
      * 
      */
-    public void deleteGroup() throws RoleNotFoundException {
+    public void deleteRole() throws RoleNotFoundException {
         try {
-            getAuthorizationDataHandler().removeRole(getCurrentAdminGroup());
+            getAuthorizationDataHandler().removeRole(getCurrentRole());
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
     }
 
-    /** Adds a new admin group */
-    public void addGroup() {
+    /** Adds a new role */
+    public void addRole() {
         try {
             getAuthorizationDataHandler().addRole(getNewRoleName());
         } catch (RoleExistsException e) {
-            addErrorMessage("ADMINGROUPEXISTS");
+            addErrorMessage("ROLEEXISTS");
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
     }
 
-    /** @return the BasicAccessRuleSetEncoder for the current admin group in a list */
+    /** @return the BasicAccessRuleSetEncoder for the current role in a list */
     public BasicAccessRuleSetEncoder getBasicRuleSetForEach() {
-        return getBasicRuleSetInternal(getCurrentAdminGroupObjectForEach());
+        return getBasicRuleSetInternal(getCurrentRoleObjectForEach());
     }
 
     /** @return a List of (SelectItem<String, String>) authorized CA */
@@ -211,7 +211,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     }
 
     /**
-     * Adds an admin to the current group.
+     * Adds an admin to the current role.
      * 
      * @throws RoleNotFoundException
      */
@@ -224,20 +224,20 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
             return;
         }
         int caid = Integer.parseInt(getMatchCaId());
-        AccessUserAspectData adminEntity = new AccessUserAspectData(getCurrentAdminGroupObject().getRoleName(), caid, matchWith, matchType,
+        AccessUserAspectData adminEntity = new AccessUserAspectData(getCurrentRoleObject().getRoleName(), caid, matchWith, matchType,
                 matchValue);
         // TODO: Check if adminentity exist and add a nice errormessage instead of being silent
         Collection<AccessUserAspectData> adminEntities = new ArrayList<AccessUserAspectData>();
         adminEntities.add(adminEntity);
         try {
-            getAuthorizationDataHandler().addAdminEntities(getCurrentAdminGroupObject(), adminEntities);
+            getAuthorizationDataHandler().addAdminEntities(getCurrentRoleObject(), adminEntities);
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
     }
 
     /**
-     * Removes an admin from the current group.
+     * Removes an admin from the current role.
      * 
      * @throws RoleNotFoundException
      */
@@ -246,29 +246,29 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
         Collection<AccessUserAspectData> adminEntities = new ArrayList<AccessUserAspectData>();
         adminEntities.add(adminEntity);
         try {
-            getAuthorizationDataHandler().removeAdminEntities(getCurrentAdminGroupObject(), adminEntities);
+            getAuthorizationDataHandler().removeAdminEntities(getCurrentRoleObject(), adminEntities);
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
     }
 
-    /** @return the current admin group for the current row in the datatable */
-    private RoleData getCurrentAdminGroupObjectForEach() {
-        String adminGroupName = ((RoleData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("adminGroup")).getRoleName();
-        RoleData adminGroup = null;
+    /** @return the current role for the current row in the datatable */
+    private RoleData getCurrentRoleObjectForEach() {
+        String roleName = ((RoleData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("role")).getRoleName();
+        RoleData role = null;
         try {
-            adminGroup = getAuthorizationDataHandler().getRole(adminGroupName);
+            role = getAuthorizationDataHandler().getRole(roleName);
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
-        return adminGroup;
+        return role;
     }
 
-    /** @return the administrators for the current admin group */
+    /** @return the administrators for the current role */
     public Collection<AccessUserAspectData> getAdmins() {
         List<AccessUserAspectData> list = new ArrayList<AccessUserAspectData>();
         try {
-            list.addAll(getAuthorizationDataHandler().getRole((getCurrentAdminGroup())).getAccessUsers().values());
+            list.addAll(getAuthorizationDataHandler().getRole((getCurrentRole())).getAccessUsers().values());
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
@@ -313,7 +313,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
 
     // Stores the value from request, but always reads the value directly from the saved data
     public String getCurrentRoleTemplate() {      
-        final RoleData currentRole = getCurrentAdminGroupObject();
+        final RoleData currentRole = getCurrentRoleObject();
         final String roleName = currentRole.getRoleName();
         //Strip out all external rules until only the template remains.
         Collection<AccessRuleTemplate> externalRules = new ArrayList<AccessRuleTemplate>();
@@ -363,7 +363,7 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     /** @return a cached BasicAccessRuleSet */
     public BasicAccessRuleSetEncoder getBasicRuleSet() {
         if (basicAccessRuleSetEncoderCache == null) {
-            basicAccessRuleSetEncoderCache = getBasicRuleSetInternal(getCurrentAdminGroupObject());
+            basicAccessRuleSetEncoderCache = getBasicRuleSetInternal(getCurrentRoleObject());
         }
         return basicAccessRuleSetEncoderCache;
     }
@@ -442,18 +442,18 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
             //Using a map in order to weed out duplicates. 
             Map<Integer, AccessRuleData> rulesToReplaceWith = new HashMap<Integer, AccessRuleData>();
             for (AccessRuleTemplate template : barsd.getCurrentAdvancedRuleSet()) {
-                AccessRuleData rule = template.createAccessRuleData(currentAdminGroupName);
+                AccessRuleData rule = template.createAccessRuleData(currentRoleName);
                 if (!rulesToReplaceWith.containsKey(rule.getPrimaryKey())) {
                     rulesToReplaceWith.put(rule.getPrimaryKey(), rule);
                 } else {
                     //Examine if we're trying to submit two rules which aren't the exact same.
                     if (!rule.equals(rulesToReplaceWith.get(rule.getPrimaryKey()))) {
-                        throw new Error("AdminGroupsManagedBean tried to save two overlapping rules (" + rule.getAccessRuleName()
+                        throw new Error("RolesManagedBean tried to save two overlapping rules (" + rule.getAccessRuleName()
                                 + ") with different values.");
                     }
                 }
             }
-            getAuthorizationDataHandler().replaceAccessRules(getCurrentAdminGroup(), rulesToReplaceWith.values());
+            getAuthorizationDataHandler().replaceAccessRules(getCurrentRole(), rulesToReplaceWith.values());
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
@@ -479,13 +479,13 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     		log.trace(">getAccessRules");
     	}
         if (accessRulesViewCache == null) {
-            RoleData adminGroup = getCurrentAdminGroupObject();
-            Collection<AccessRuleData> usedAccessRulesCollection = adminGroup.getAccessRules().values();
-            // We need to create a new arraylist here, because the collection returned by adminGroup.getAccessRules().values() does not support addAll
+            RoleData role = getCurrentRoleObject();
+            Collection<AccessRuleData> usedAccessRulesCollection = role.getAccessRules().values();
+            // We need to create a new arraylist here, because the collection returned by role.getAccessRules().values() does not support addAll
             ArrayList<AccessRuleData> usedAccessRules = new ArrayList<AccessRuleData>();
             usedAccessRules.addAll(usedAccessRulesCollection);
             Collection<String> rules = getAuthorizationDataHandler().getAvailableAccessRules();
-            Collection<AccessRuleData> unusedAccessRules = adminGroup.getDisjunctSetOfRules(rules);
+            Collection<AccessRuleData> unusedAccessRules = role.getDisjunctSetOfRules(rules);
             if (!unusedAccessRules.isEmpty()) {
                 usedAccessRules.addAll(unusedAccessRules);
             }
@@ -588,8 +588,8 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
             }
         }
         try {
-            getAuthorizationDataHandler().removeAccessRules(currentAdminGroupName, toRemove);
-            getAuthorizationDataHandler().replaceAccessRules(currentAdminGroupName, toReplace);
+            getAuthorizationDataHandler().removeAccessRules(currentRoleName, toRemove);
+            getAuthorizationDataHandler().replaceAccessRules(currentRoleName, toReplace);
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
@@ -607,12 +607,12 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
     // Methods used by several pages
     //
 
-    /** @return the name of current admin group sent with POST, GET or injected through the backing value */
-    public String getCurrentAdminGroup() {
-        // Did we get the AdminGroup passed as f:param to this page or as a GET parameter?
-        String current = currentAdminGroupName;
+    /** @return the name of current role sent with POST, GET or injected through the backing value */
+    public String getCurrentRole() {
+        // Did we get the Role passed as f:param to this page or as a GET parameter?
+        String current = currentRoleName;
         // Try reading it from the form POST
-        final String FIELDNAME = "currentAdminGroup";
+        final String FIELDNAME = "currentRole";
         final String[] FORMNAMES = { "currentGroupList", "adminListForm", "basicRules", "accessRulesForm" };
         for (String key : FORMNAMES) {
             if (current != null) {
@@ -623,26 +623,26 @@ public class AdminGroupsManagedBean extends BaseManagedBean {
         return current;
     }
 
-    /** @return the current admin group sent with POST, GET or injected through the backing value */
-    public RoleData getCurrentAdminGroupObject() {
-        RoleData adminGroup = null;
+    /** @return the current role sent with POST, GET or injected through the backing value */
+    public RoleData getCurrentRoleObject() {
+        RoleData role = null;
         try {
-            adminGroup = getAuthorizationDataHandler().getRole(getCurrentAdminGroup());
+            role = getAuthorizationDataHandler().getRole(getCurrentRole());
         } catch (AuthorizationDeniedException e) {
             addErrorMessage("AUTHORIZATIONDENIED");
         }
-        return adminGroup;
+        return role;
     }
 
-    /** Setter for current admin group used were applicable. */
-    public void setCurrentAdminGroup(String currentAdminGroupName) {
-        this.currentAdminGroupName = currentAdminGroupName;
+    /** Setter for current role used were applicable. */
+    public void setCurrentRole(String currentRoleName) {
+        this.currentRoleName = currentRoleName;
     }
 
-    /** @return true if logged on administrator is allowed to edit current group */
-    public boolean isAuthorizedToGroup() {
-        for (RoleData adminGroup : getAuthorizationDataHandler().getRoles()) {
-            if (adminGroup.getRoleName().equals(getCurrentAdminGroup())) {
+    /** @return true if logged on administrator is allowed to edit current role */
+    public boolean isAuthorizedToRole() {
+        for (RoleData role : getAuthorizationDataHandler().getRoles()) {
+            if (role.getRoleName().equals(getCurrentRole())) {
                 return true;
             }
         }

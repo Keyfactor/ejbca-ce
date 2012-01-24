@@ -239,11 +239,11 @@ public class AuthorizationDataHandler implements Serializable {
                     AccessRulesConstants.REGULAR_EDITADMINISTRATORPRIVILEDGES, null);
             throw new AuthorizationDeniedException(msg);
         }
-        // Authorized to group
+        // Authorized to role
         if (!roleManagementSession.isAuthorizedToEditRole(administrator, role)) {
-            throw new AuthorizationDeniedException("Admin " + administrator + " not authorized to group " + role);
+            throw new AuthorizationDeniedException("Admin " + administrator + " not authorized to role " + role);
         }
-        // Check if admin group is among available admin groups
+        // Check if role is among available roles
         boolean exists = false;
         for (RoleData next : roleManagementSession.getAllRolesAuthorizedToEdit(administrator)) {
             if (next.equals(role)) {

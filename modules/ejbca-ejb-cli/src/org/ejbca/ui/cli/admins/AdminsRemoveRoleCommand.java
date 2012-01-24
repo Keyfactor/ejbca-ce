@@ -13,28 +13,19 @@
  
 package org.ejbca.ui.cli.admins;
 
+import org.cesecore.roles.RoleData;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Adds a new admin role
- * @version $Id$
+ * Remove admin role
  */
-public class AdminsAddGroupCommand extends BaseAdminsCommand {
+public class AdminsRemoveRoleCommand extends BaseAdminsCommand {
 
-    public String getMainCommand() {
-        return MAINCOMMAND;
-    }
+	public String getMainCommand() { return MAINCOMMAND; }
+	public String getSubCommand() { return "removerole"; }
+	public String getDescription() { return "Remove admin role"; }
 
-    public String getSubCommand() {
-        return "addrole";
-    }
-
-    public String getDescription() {
-        return "Adds an administrative role.";
-    }
-
-    /** @see org.ejbca.ui.cli.CliCommandPlugin */
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
             args = parseUsernameAndPasswordFromArgs(args);
@@ -44,14 +35,19 @@ public class AdminsAddGroupCommand extends BaseAdminsCommand {
         
         try {
             if (args.length < 2) {
-                getLogger().info("Description: " + getDescription());
+    			getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <name of role>");
                 return;
             }
             String roleName = args[1];
-            ejb.getRoleManagementSession().create(getAdmin(cliUserName, cliPassword), roleName);
+            RoleData role = ejb.getRoleAccessSession().findRole(roleName);
+            if (role == null) {
+            	getLogger().error("No such role \"" + roleName + "\".");
+                return;
+            }
+            ejb.getRoleManagementSession().remove(getAdmin(cliUserName, cliPassword), role);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
-        }
+		}
     }
 }

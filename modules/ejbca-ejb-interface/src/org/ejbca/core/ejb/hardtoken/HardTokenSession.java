@@ -114,7 +114,7 @@ public interface HardTokenSession {
      * @return false if hard token issuer already exists.
      * @throws AuthorizationDeniedException 
      */
-    public boolean addHardTokenIssuer(AuthenticationToken admin, String alias, int admingroupid, HardTokenIssuer issuerdata) throws AuthorizationDeniedException;
+    public boolean addHardTokenIssuer(AuthenticationToken admin, String alias, int roleId, HardTokenIssuer issuerdata) throws AuthorizationDeniedException;
 
     /**
      * Updates hard token issuer data
@@ -128,7 +128,7 @@ public interface HardTokenSession {
      * @return false if the new alias or certificatesn already exists (???)
      * @throws AuthorizationDeniedException 
      */
-    public boolean cloneHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int admingroupid) throws AuthorizationDeniedException;
+    public boolean cloneHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int roleId) throws AuthorizationDeniedException;
 
     /** Removes a hard token issuer from the database. 
      * @throws AuthorizationDeniedException */
@@ -139,7 +139,7 @@ public interface HardTokenSession {
      * @return false if new alias or certificatesn already exists (???)
      * @throws AuthorizationDeniedException 
      */
-    public boolean renameHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int newadmingroupid) throws AuthorizationDeniedException;
+    public boolean renameHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int roleId) throws AuthorizationDeniedException;
 
     /**
      * Method to check if an administrator is authorized to issue hard tokens

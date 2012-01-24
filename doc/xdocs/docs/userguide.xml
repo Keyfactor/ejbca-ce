@@ -1140,7 +1140,7 @@ the 'truststore'.</li>
 <li>EJBCA verfies that the client certificate exists in the database and that
 it's not revoked. (Configurable in web.properties.)</li>
 <li>EJBCA tries to match the information in the certificate with any of the
-matching criterias found in the different administrator groups. Matching rules
+matching criterias found in the different roles. Matching rules
 are evaluated separately so matching with both CN and OU would match all CN
 matched certificates and also all OU matched certificates.</li>
 <li>If a match is found, the access rules for this group is given to the
@@ -1166,7 +1166,7 @@ To use a certificate issued by an external CA as Administrator:
 truststore is in use</li>
 <li>Import the CA-certificate under "Admin GUI - Edit Certificate Authorities
  - Import CA Certificate.." or use the CLI</li>
-<li>Add the Administrator to the desired Administrator group under "Admin GUI
+<li>Add the Administrator to the desired role under "Admin GUI
  - Edit Administrator Privileges"</li>
 <li>To allow administrators to log in when their certificates are not present in the EJBCA database you have to set 
 web.reqcertindb=false in conf/web.properties.</li>
@@ -1237,7 +1237,7 @@ bin/ejbca.sh batch
 </section>
 
 <section name="Administrator roles">
-<p>This section is a tutorial that will guide you through creating a new administrative user and new administrative group with limited privileges.</p>
+<p>This section is a tutorial that will guide you through creating a new administrative user and new role with limited privileges.</p>
 
 <subsection name="Pre-defined roles">
 <p>
@@ -1319,27 +1319,27 @@ Issue the following new end entity based on the new end entity profile.
 <br/>CN: SoftCard RA Admin1
 </p>
 </subsection>
-<subsection name="Creating a new RA Administrator group">
+<subsection name="Creating a new RA Role">
 <p>
-The RAadmin shall have access to add/list/edit end entites. To create a new administrator group: 
+The RAadmin shall have access to add/list/edit end entites. To create a new role: 
 <ul>
 <li>Choose "Edit Administrator Privileges" in the left frame.</li>
 <li>Press "Add".</li>
-<li>Choose a name for your new administrator group, "RAAdministratorGroup".</li>
+<li>Choose a name for your new administrator group, "RAAdministratorRole".</li>
 <li>When the group is created, press "Access Rules".</li>
-<li>Choose the administrator groups role, "RA Administrator".</li>
-<li>Under "Authorized CAs", choose which CAs the administrator group should have access to. Choose "AdminCA1".</li>
+<li>Choose the "RA Administrator" role template.</li>
+<li>Under "Authorized CAs", choose which CAs the role should have access to. Choose "AdminCA1".</li>
 <li>Under "Edit End Entity Profiles" Select "AdministratorEndEntityProfile".</li>
 <li>Press "Save".</li>
 </ul> 
 </p>
 </subsection>
-<subsection name="Adding new Administrators to the RA Administrator group">
+<subsection name="Adding new Administrators to the RA Role">
 <p>
 <ul>
 <li>Choose "Search/Edit End Entities" and select your newly created end entity, choose "View Certificates".</li>
 <li>Copy the value of "Certificate Serial Number", e.g. "5F003A0113F507F9".</li>
-<li>Go to "Edit Administrator Privileges", press "Administrators" under "RAAdministratorGroup".</li>
+<li>Go to "Edit Administrator Privileges", press "Administrators" under "RAAdministratorRole".</li>
 <li>Choose the CA that the administrator belongs to, "AdminCA1".</li>
 <li>Paste the text from "Certificate Serial Number" in the "Match value".</li>
 <li>Press "Add"</li> 

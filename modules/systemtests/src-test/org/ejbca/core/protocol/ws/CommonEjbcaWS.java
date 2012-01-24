@@ -2627,7 +2627,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     protected void cleanUpAdmins(final String wsadminRoleName) throws Exception {
-            // Remove from admin group
+            // Remove from role
     	RoleData role = roleAccessSession.findRole(wsadminRoleName);
     	if (role != null) {
     		roleManagementSession.remove(intAdmin, role);
@@ -2741,7 +2741,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         java.security.cert.Certificate cvcacert = null;
         int cvcaid = rootcadn.hashCode();
         try {
-            // adminGroupSession.init(intAdmin, rootcadn.hashCode(), DEFAULT_SUPERADMIN_CN);
 
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit WS CVC CA", -1, null, 24, // CRLPeriod

@@ -81,7 +81,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
     }
 
     /**
-     * @return a Collection of CAids the administratorgroup is authorized to or BasicAccessRuleSet.CA_ALL for all cas.
+     * @return a Collection of CAids the role is authorized to or BasicAccessRuleSet.CA_ALL for all cas.
      */
     public HashSet<Integer> getCurrentCAs() {
         return currentcas;
@@ -95,7 +95,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
     }
 
     /**
-     * @return a Collection of EndEntityRules the administratorgroup is authorized to, BasicAccessRuleSet.ENDENTITY_ constants (Integer).
+     * @return a Collection of EndEntityRules the role is authorized to, BasicAccessRuleSet.ENDENTITY_ constants (Integer).
      */
     public HashSet<Integer> getCurrentEndEntityRules() {
         return currentendentityrules;
