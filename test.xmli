@@ -83,19 +83,19 @@
     	<ant antfile="build.xml" dir="modules/systemtests" target="runocsp.setuptest" />
     </target>
 
-    <target name="test:logstress" description="run JUnit log stress test">
+    <target name="test:logstress" description="Run log stress tests.">
     	<ant antfile="build.xml" dir="modules/systemtests" target="runlogstress" />
     </target>
 
-    <target name="test:runws" description="run JUnit log stress test">
+    <target name="test:runws" description="Run web service tests.">
     	<ant antfile="build.xml" dir="modules/systemtests" target="runws" />
     </target>
 
-    <target name="test:xkms" description="run JUnit log stress test">
+    <target name="test:xkms" description="Run XKMS tests.">
     	<ant antfile="build.xml" dir="modules/systemtests" target="runxkms" />
     </target>
 
-    <target name="test:externalra" description="run JUnit External RA test">
+    <target name="test:externalra" description="run JUnit External RA test.">
     	<ant antfile="build.xml" dir="modules/externalra" target="test" />
     </target>
 
