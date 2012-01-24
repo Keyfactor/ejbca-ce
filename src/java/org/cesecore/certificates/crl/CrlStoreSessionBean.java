@@ -41,7 +41,7 @@ import org.cesecore.util.CertTools;
 
 /**
  * The name is kept for historic reasons. This Session Bean is used for creating and retrieving CRLs and information about CRLs. CRLs are signed using
- * RSASignSessionBean.
+ * SignSessionBean.
  * 
  * Based on EJBCA version: CrlSessionBean.java 11143 2011-01-11 15:32:31Z jeklund
  * 

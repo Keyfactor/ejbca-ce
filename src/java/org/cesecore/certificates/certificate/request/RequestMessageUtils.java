@@ -293,7 +293,7 @@ public class RequestMessageUtils {
             CVCRequestMessage reqmsg = new CVCRequestMessage(cvccert.getDEREncoded());
             reqmsg.setUsername(username);
             reqmsg.setPassword(password);
-            // Popo is really actually verified by the CA (in RSASignSessionBean) as well
+            // Popo is really actually verified by the CA (in SignSessionBean) as well
             if (reqmsg.verify() == false) {
                 if (log.isDebugEnabled()) {
                     log.debug("CVC POPO verification Failed");

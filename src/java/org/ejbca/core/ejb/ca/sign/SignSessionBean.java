@@ -86,9 +86,9 @@ import org.ejbca.core.model.ca.AuthStatusException;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SignSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class RSASignSessionBean implements SignSessionLocal, SignSessionRemote {
+public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
-    private static final Logger log = Logger.getLogger(RSASignSessionBean.class);
+    private static final Logger log = Logger.getLogger(SignSessionBean.class);
 
     @EJB
     private CaSessionLocal caSession;

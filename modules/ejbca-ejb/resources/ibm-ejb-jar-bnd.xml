@@ -26,7 +26,7 @@
     <session name="CmpMessageDispatcherSessionBean"><interface class="org.ejbca.core.protocol.cmp.CmpMessageDispatcherSessionRemote" binding-name="ejbca/CmpMessageDispatcherSessionRemote"/></session>  
     <session name="RaAdminSessionBean"><interface class="org.ejbca.core.ejb.ra.raadmin.RaAdminSessionRemote" binding-name="ejbca/RaAdminSessionRemote"/></session>  
     <session name="KeyRecoverySessionBean"><interface class="org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote" binding-name="ejbca/KeyRecoverySessionRemote"/></session>  
-    <session name="RSASignSessionBean"><interface class="org.ejbca.core.ejb.ca.sign.SignSessionRemote" binding-name="ejbca/SignSessionRemote"/></session>  
+    <session name="SignSessionBean"><interface class="org.ejbca.core.ejb.ca.sign.SignSessionRemote" binding-name="ejbca/SignSessionRemote"/></session>  
     <session name="ServiceSessionBean"><interface class="org.ejbca.core.ejb.services.ServiceSessionRemote" binding-name="ejbca/ServiceSessionRemote"/></session>  
     <session name="CertificateRequestSessionBean"><interface class="org.ejbca.core.ejb.ra.CertificateRequestSessionRemote" binding-name="ejbca/CertificateRequestSessionRemote"/></session>  
     <session name="CaSessionBean"><interface class="org.cesecore.certificates.ca.CaSessionRemote" binding-name="ejbca/CaSessionRemote"/></session>  

@@ -189,7 +189,7 @@
         <enable-call-by-reference>True</enable-call-by-reference>
     </weblogic-enterprise-bean>
     <weblogic-enterprise-bean>
-        <ejb-name>RSASignSessionBean</ejb-name>
+        <ejb-name>SignSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
                 <business-remote>org.ejbca.core.ejb.ca.sign.SignSessionRemote</business-remote>
