@@ -117,7 +117,7 @@ public final class SecConst {
 
     
     /**
-     * Constants used in the RSASignSessionBean indicating the userdata defined CA should be used.
+     * Constants used in the SignSessionBean indicating the userdata defined CA should be used.
      */
     public static final int CAID_USEUSERDEFINED = 0;
 

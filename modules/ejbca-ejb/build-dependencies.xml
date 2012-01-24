@@ -658,7 +658,7 @@
 					<include name="org/cesecore/certificates/certificate/CustomCertSerialNumberException.java"/>
 					<include name="org/ejbca/core/ejb/ca/sign/*SessionBean.java"/>
 					<include name="org/ejbca/core/ejb/ca/sign/*Helper.java"/>
-					<include name="org/ejbca/core/model/ca/sign/RSASignSessionBean.java"/>				
+					<include name="org/ejbca/core/model/ca/sign/SignSessionBean.java"/>				
 					<!-- Authentication dependency (unwanted.. depends on RA..) -->
 					<include name="org/cesecore/certificates/certificate/CertificateCreateException.java"/>
 					<include name="org/cesecore/certificates/certificate/CertificateCreateSessionBean.java"/>
