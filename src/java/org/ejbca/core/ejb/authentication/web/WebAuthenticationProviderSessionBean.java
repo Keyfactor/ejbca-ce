@@ -80,7 +80,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             	LOG.info(msg);
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, "", LogConstants.NO_AUTHENTICATION_TOKEN, null, null, details);
+                securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, LogConstants.NO_AUTHENTICATION_TOKEN, null, null, null, details);
             	return null;
             }
             // Find out if this is a certificate present in the local database (even if we don't require a cert to be present there we still want to allow a mix)
@@ -93,7 +93,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     LOG.info(msg);
                     Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
-                    securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, "", LogConstants.NO_AUTHENTICATION_TOKEN, null, null, details);
+                    securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, LogConstants.NO_AUTHENTICATION_TOKEN, null, null, null, details);
                     return null;
                 }
             } else {
@@ -103,7 +103,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                     LOG.info(msg);
                     Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
-                    securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, "", LogConstants.NO_AUTHENTICATION_TOKEN, null, null, details);
+                    securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, LogConstants.NO_AUTHENTICATION_TOKEN, null, null, null, details);
                     return null;
                 }
                 // TODO: We should check the certificate for CRL or OCSP tags and verify the certificate status
