@@ -41,6 +41,7 @@ import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
 import org.ejbca.util.InterfaceCache;
+import org.junit.AfterClass;
 import org.junit.Test;
 
 /**
@@ -64,8 +65,6 @@ public class PublisherQueueProcessTest {
     private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
     private PublisherProxySessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
     private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
-    private InternalCertificateStoreSessionRemote internalCertStoreSession = JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
-
 
     /**
      * Add a new entry to the publisher queue and let the process service run,
@@ -190,8 +189,13 @@ public class PublisherQueueProcessTest {
      * Remove all data stored by JUnit tests
      * 
      */
-    @Test
-    public void test99CleanUp() throws Exception {
+    @AfterClass
+    public static void cleanUp() throws Exception {
+        PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
+        InternalCertificateStoreSessionRemote internalCertStoreSession =JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
+        ServiceSessionRemote serviceSession = JndiHelper.getRemoteSession(ServiceSessionRemote.class);
+        PublisherProxySessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
+        
         Collection<PublisherQueueData> c = publisherQueueSession.getEntriesByFingerprint("TestPublishQueueProcessService12345");
         Iterator<PublisherQueueData> i = c.iterator();
         while (i.hasNext()) {
