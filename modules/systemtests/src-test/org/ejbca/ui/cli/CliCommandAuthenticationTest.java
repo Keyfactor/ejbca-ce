@@ -171,8 +171,8 @@ public class CliCommandAuthenticationTest {
         } catch (CliAuthenticationFailedException e) {
             //NOPMD
         } catch (EJBException e) {
-            //Glassfish wraps Exceptions  a EJBException wrapping a java.rmi.ServerException 
-            if ((e.getCause().getCause() instanceof CliAuthenticationFailedException)) {
+            //Glassfish wraps Exceptions in a EJBException wrapping a java.rmi.ServerException wrapping a java.rmi.RemoteException
+            if ((e.getCausedByException().getCause().getCause() instanceof CliAuthenticationFailedException)) {
                 //NOPMD
             } else {
                 throw e;
@@ -197,8 +197,8 @@ public class CliCommandAuthenticationTest {
         } catch (CliAuthenticationFailedException e) {
             //NOPMD
         } catch (EJBException e) {
-            //Glassfish wraps Exceptions  a EJBException wrapping a java.rmi.ServerException 
-            if ((e.getCause().getCause() instanceof CliAuthenticationFailedException)) {
+            //Glassfish wraps Exceptions in a EJBException wrapping a java.rmi.ServerException wrapping a java.rmi.RemoteException
+            if ((e.getCausedByException().getCause().getCause() instanceof CliAuthenticationFailedException)) {
                 //NOPMD
             } else {
                 throw e;
