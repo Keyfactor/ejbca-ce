@@ -12,6 +12,58 @@ administrator, who can be found on the sourceforge project page.
 </p>
     </section>
 
+<section name="Getting started with EJBCA development">
+<subsection name="Development tools">
+<ul>
+<li>An operating system that can run Java (Linux, OSX, Windows..). Most developers use Ubuntu/Debian.</li>
+<li>Eclipse JEE edition with an additional Subversion (SVN) plugin installed.</li>
+<li>OpenJDK 6, or OracleJDK 6 (for the EJBCA 4.x-branch only supports JDK 6)</li>
+<li>Apache Ant 1.7.x (with all the extras that comes with the zip from apache.org or 'ant-optional' Ubuntu package)</li>
+<li>A supported application server (JBoss AS 5.1.0.GA, 6.0.0 etc)</li>
+<li>A favourite database supported by EJBCA that is easy to work with (Hypersonic, MySQL, PostgreSQL.).</li>
+<li>A virtualization solution for testing additional combinations of application servers and databases and external OCSP responders etc.</li>
+</ul>
+<p>
+Changes that affect the database requires more databases to test with, changes that affect the EJBs or setup requires additional application servers etc..
+What you need to know to develop EJBCA
+</p>
+<ul>
+<li>The tools described in the previous section</li>
+<li>Public Key Infrastructure and related technologies</li>
+<ul>
+    <li>J2EE and JEE5</li>
+    <ul>
+        <li>Enterprise JavaBeans (excluding message passing)</li>
+        <li>Java Persistence API</li>
+        <li>Java ServerPages and Java ServerFaces</li>
+        <li>Web Services</li>
+     </ul>
+    <li>Databases</li>
+</ul>
+</ul>
+</subsection>
+<subsection name="Sending patches">
+<p>
+If you are not a comitter in SVN we are glad to accept patches. You can send us patches either
+in diff format (svn diff) or created with Eclipse.
+You can also send us you complete files that you changed, we can see the diffs in Eclipse.
+</p>
+<p>
+Please follow these simple guidelines when submitting patches:
+</p>
+<p>
+    Keep the patch limited, only change the parts related to your patch.
+    Do not change other lines, such as whitespace, adding line breaks to java doc etc. It will make it very very hard for us to review the patch.
+</p>
+</subsection>
+<subsection name="Using SVN">
+<p>
+How to connect to the EJBCA svn repository is explained over at <a href="http://ejbca.org/repository.html">repository</a>.
+If you are using Eclipse we recommend the Subversive plug-in, now part of eclipse plug-in repositories.
+</p>
+</subsection>
+</section>
+
 <section name="Contributors">
 <p>
  We encourage and appreciate all contributions.
@@ -54,7 +106,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Marco Ferrante, <!-- marco@csita.unige.it -->Italian translation, openssl migration howto, importcert cli function.</li>
 <li>Alejandro Falcone, <!-- afalcone@speedy.com.ar -->Spanish translation.</li>
 <li>Bruno Bonfils, <!-- asyd@asyd.net -->added X-ORIGIN to device schema for latest Sun Directory Server. Tested Cisco IOS and made the IOS Howto. OpenSSH and X509 authentication. Hudson.</li>
-<li>Resurrección Mazo González, <!-- rmazgon@canarias.org -->LdapSearchPublisher.</li>
+<li>Resurreccion Mazo Gonzalez, <!-- rmazgon@canarias.org -->LdapSearchPublisher.</li>
 <li>Ronan le Meillat, <!-- ronan.le_meillat@lesmuids.com -->Htmlized french translation.</li>
 <li>Zhengrong (Jerry) Liu, <!-- zjl6@users.sourceforge.net -->Limit length of primary key columns when using UTF-8 encoding in MySQL, fix for static fields in server.xml.</li>
 <li>Gabriel Belingueres, <!-- belingueres@yahoo.com.ar -->Support for Informix 9.2.</li>
@@ -73,7 +125,7 @@ administrator, who can be found on the sourceforge project page.
 <li>Yuji, <!-- yistoneriver@users.sourceforge.net -->patch for deadlock problem.</li>
 <li>Nuno Ponte, <!-- nuno.ponte@multicert.com -->portuguese translation, delta CRL, noOcspCheck extension, freshestCRL, intermediade nodes in LDAP, caIssuers AIA extension, Pseudonym DN component, and much more.</li>
 <li>Nicolas Coudene, <!-- nicolas.coudene@linagora.com -->completing the DB2 support, updates to french translation.</li>
-<li>Sébastien Levesque, <!-- slevesque@linagora.com -->WS-API calls for listing CAs and profiles.</li>
+<li>Sebastien Levesque, <!-- slevesque@linagora.com -->WS-API calls for listing CAs and profiles.</li>
 <li>Abbas Razam, <!-- abbasrazam@yahoo.com -->fixes to ms-sql upgrade scripts 31_32 and 33_34.</li>
 <li>Darren Johnson, <!-- darren.johnson@safenet-inc.com -->split CAToken to be able to use separate JCE/JCA providers, makes SCEP work on Luna HSM with java provider.</li>
 <li>Matt Stevenson, <!-- mavricknzwork@yahoo.com -->code for adding CRMF and SPKAC requests in WS-API, Sybase and case-sensitive columns, MS document signing extended key usage, Intel AMT extended key usage.</li>
@@ -89,7 +141,7 @@ administrator, who can be found on the sourceforge project page.
 <li>David Galichet, <!-- david.galichet@linagora.com -->add error code on web services. WS user creation uses profile informations</li>
 <li>Vincent Kan, <!-- vkan@linagora.com -->WS user creation uses profile informations</li>
 <li>Thomas Noel, <!-- thomas.noel+ejbca@auf.org -->Retrieve Delta CRL in CertDistServlet.</li>
-<li>Christian Kleinewächter, <!-- christian.kleinewaechter@infinity-3.de -->Support PostgreSQL in Glassfish</li> 
+<li>Christian KleinewÃ¤chter, <!-- christian.kleinewaechter@infinity-3.de -->Support PostgreSQL in Glassfish</li> 
 <li>Dirk-Willem van Gulik, <!-- dirk-willem.van.gulik@bbc.co.uk -->Substitutions in sender and rcpt in email notificaitons.</li> 
 <li>Dai Tokunaga, <!-- eternalvirtue@gmail.com -->XKMS working on Java 6 and Glassfish.</li> 
 <li>Martin Simka, <!-- m.simka@pwpw.pl -->cvcwscli.cmd.</li> 
@@ -97,9 +149,11 @@ administrator, who can be found on the sourceforge project page.
 <li>Kevin Dean, <!-- kevin.dean@datadevelopment.com -->sql script for MS-SQL on Glassfish, help with issue mixing EJBs and SQL.</li>
 <li>Rafal Parzych, <!-- r.parzych@pwpw.pl -->fix IAIK provider usage with multiple CAs.</li>
 <li>Thijs van Dalen, <!-- Dalen@collis.nl -->KeyStrings fixes for HSM key generation, proper key sequence incrementation, and other CVC fixes.</li>
-<li>Samuel Lidén Borell, <!-- samuel@primekey.se -->Brainpool ECC and other HSM pathes for Java. Misc fixes for EJBCA.</li>
+<li>Samuel Liden Borell, <!-- samuel@primekey.se -->Brainpool ECC and other HSM pathes for Java. Misc fixes for EJBCA.</li>
 <li>Aveen Ismail, <!-- aveen@primekey.se  -->Core developer.</li>
 <li>Mike Kushner, <!-- mike.kushner@primekey.se -->Core developer.</li>
+<li>Anders Rundgren, <!-- anders@primekey.se -->Core developer.</li>
+<li>Marcus Lundblad, <!-- marcus@primekey.se -->Core developer.</li>
 </ul>
     </section>
   </body>
