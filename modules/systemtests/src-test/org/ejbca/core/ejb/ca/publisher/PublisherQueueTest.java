@@ -49,6 +49,7 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -74,7 +75,6 @@ public class PublisherQueueTest {
     private PublisherSessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherSessionRemote.class);
     private PublisherProxySessionRemote publisherProxySession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
     private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
-    private InternalCertificateStoreSessionRemote internalCertStoreSession = JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
@@ -355,8 +355,11 @@ public class PublisherQueueTest {
         assertEquals(2, actual[3]); // (0, ~) s = 2
     }
 
-    @Test
-    public void test99CleanUp() throws Exception {
+    @AfterClass
+    public static void cleanUp() throws Exception {
+        PublisherQueueSessionRemote publisherQueueSession = JndiHelper.getRemoteSession(PublisherQueueSessionRemote.class);
+        PublisherProxySessionRemote publisherProxySession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
+        InternalCertificateStoreSessionRemote internalCertificateStoreSession = JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
         Collection<PublisherQueueData> c = publisherQueueSession.getEntriesByFingerprint("XX");
         Iterator<PublisherQueueData> i = c.iterator();
         while (i.hasNext()) {
@@ -383,7 +386,7 @@ public class PublisherQueueTest {
         
         // If the dummy cert was put in the database, remove it
         Certificate cert = CertTools.getCertfromByteArray(testcert);
-        internalCertStoreSession.removeCertificate(cert);
+        internalCertificateStoreSession.removeCertificate(cert);
 
     }
 }
