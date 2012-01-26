@@ -18,6 +18,8 @@ import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.ejb.EJBException;
+
 import junit.framework.Assert;
 
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -167,7 +169,14 @@ public class CliCommandAuthenticationTest {
             cliAuthenticationProvider.authenticate(null);
             fail("Cli should not have been able to authenticate.");
         } catch (CliAuthenticationFailedException e) {
-            //Awsum
+            //NOPMD
+        } catch (EJBException e) {
+            //Glassfish wraps Exceptions  a EJBException wrapping a java.rmi.ServerException 
+            if ((e.getCause().getCause() instanceof CliAuthenticationFailedException)) {
+                //NOPMD
+            } else {
+                throw e;
+            }
         } finally {
             setCliEnabled(oldValue);
         }
@@ -186,7 +195,14 @@ public class CliCommandAuthenticationTest {
             cliAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
             fail("Cli should not have been able to authenticate using default cli user.");
         } catch (CliAuthenticationFailedException e) {
-            //Awsum
+            //NOPMD
+        } catch (EJBException e) {
+            //Glassfish wraps Exceptions  a EJBException wrapping a java.rmi.ServerException 
+            if ((e.getCause().getCause() instanceof CliAuthenticationFailedException)) {
+                //NOPMD
+            } else {
+                throw e;
+            }
         } finally {
             setCliUserEnabled(oldValue);
         }
