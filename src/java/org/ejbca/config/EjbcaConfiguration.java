@@ -240,4 +240,8 @@ public final class EjbcaConfiguration {
         return EjbcaConfigurationHolder.getString("ejbca.cli.defaultpassword");
     }
 
+    public static String getScepDefaultCA() {
+        return EjbcaConfigurationHolder.getString("scep.defaultca");
+    }
+
 }

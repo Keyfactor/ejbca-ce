@@ -1,5 +1,5 @@
 #####
-# Configuration file for default values for the stand-alone SCEP RA Server
+# Configuration file for default values for the built in and the stand-alone SCEP RA Server
 # Configure as you please, but all values must be set to something.
 #
 # Default values (that you enter here) is built into the application and deployed
@@ -25,6 +25,21 @@
 # Finally you can override anything by setting system properties for your appserver, for example:
 # java -Dscep.ra.authpwd=mysecret
 allow.external-dynamic.configuration=false
+
+#
+# Settings for the Internal SCEP Server in EJBCA.
+# The internal SCEP server is a part of the CA and runs as part of the CA server
+#
+# The default CA to use to send CA cert responses if the client does not pass a CA name in the GetCACert request
+# Default: AdminCA1
+#scep.defaultca=AdminCA1
+
+
+#
+# Settings for the Stand-alone SCEP RA Server.
+# The stand-alone SCEP RA sevrer is deployed as an using External RA. 
+# See admin guide for more information about the External RA.  
+#
 
 # Path to RA keystore. Should be a full pathname.
 scep.ra.keyStorePath.1=/opt/jboss-4.2.2.GA/bin/conf/keystore/sceprakeystore.p12

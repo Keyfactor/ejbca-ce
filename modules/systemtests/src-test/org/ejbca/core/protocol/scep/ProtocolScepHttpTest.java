@@ -305,32 +305,74 @@ public class ProtocolScepHttpTest extends CaTestCase {
     @Test
     public void test07ScepGetCACert() throws Exception {
         log.debug(">test07ScepGetCACert()");
-        String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACert&message=" + URLEncoder.encode(caname, "UTF-8");
-        URL url = new URL(reqUrl);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setRequestMethod("GET");
-        con.getDoOutput();
-        con.connect();
-        assertEquals("Response code", 200, con.getResponseCode());
-        // Some appserver (Weblogic) responds with
-        // "application/x-x509-ca-cert; charset=UTF-8"
-        assertTrue(con.getContentType().startsWith("application/x-x509-ca-cert"));
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        // This works for small requests, and SCEP requests are small enough
-        InputStream in = con.getInputStream();
-        int b = in.read();
-        while (b != -1) {
-            baos.write(b);
-            b = in.read();
+        {
+            String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACert&message=" + URLEncoder.encode(caname, "UTF-8");
+            URL url = new URL(reqUrl);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.getDoOutput();
+            con.connect();
+            assertEquals("Response code is not 200 (OK)", 200, con.getResponseCode());
+            // Some appserver (Weblogic) responds with
+            // "application/x-x509-ca-cert; charset=UTF-8"
+            assertTrue(con.getContentType().startsWith("application/x-x509-ca-cert"));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // This works for small requests, and SCEP requests are small enough
+            InputStream in = con.getInputStream();
+            int b = in.read();
+            while (b != -1) {
+                baos.write(b);
+                b = in.read();
+            }
+            baos.flush();
+            in.close();
+            byte[] respBytes = baos.toByteArray();
+            assertNotNull("Response can not be null.", respBytes);
+            assertTrue(respBytes.length > 0);
+            X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(respBytes);
+            // Check that we got the right cert back
+            assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
         }
-        baos.flush();
-        in.close();
-        byte[] respBytes = baos.toByteArray();
-        assertNotNull("Response can not be null.", respBytes);
-        assertTrue(respBytes.length > 0);
-        X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(respBytes);
-        // Check that we got the right cert back
-        assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
+        
+        // 
+        // Test the same message but without message component, it should use a default CA
+        {
+            // Try with a non extisting CA first, should respond with a 404
+            updatePropertyOnServer("scep.defaultca", "NonExistingCAForSCEPTest");
+            String reqUrl = httpReqPath + '/' + resourceScep + "?operation=GetCACert";
+            URL url = new URL(reqUrl);
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.getDoOutput();
+            con.connect();
+            assertEquals("Response code is not 404 (not found)", 404, con.getResponseCode());
+            // Try with the good CA            
+            updatePropertyOnServer("scep.defaultca", caname);
+            con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
+            con.getDoOutput();
+            con.connect();
+            assertEquals("Response code is not 200 (OK)", 200, con.getResponseCode());
+            // Some appserver (Weblogic) responds with
+            // "application/x-x509-ca-cert; charset=UTF-8"
+            assertTrue(con.getContentType().startsWith("application/x-x509-ca-cert"));
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            // This works for small requests, and SCEP requests are small enough
+            InputStream in = con.getInputStream();
+            int b = in.read();
+            while (b != -1) {
+                baos.write(b);
+                b = in.read();
+            }
+            baos.flush();
+            in.close();
+            byte[] respBytes = baos.toByteArray();
+            assertNotNull("Response can not be null.", respBytes);
+            assertTrue(respBytes.length > 0);
+            X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(respBytes);
+            // Check that we got the right cert back
+            assertEquals(cacert.getSubjectDN().getName(), cert.getSubjectDN().getName());
+        }
         log.debug(">test07ScepGetCACert()");
     }
 
@@ -698,6 +740,12 @@ public class ProtocolScepHttpTest extends CaTestCase {
         assertNotNull("Response can not be null.", respBytes);
         assertTrue(respBytes.length > 0);
         return respBytes;
+    }
+
+    private void updatePropertyOnServer(String property, String value) {
+        log.debug("Setting property on server: " + property + "=" + value);
+        assertTrue("Failed to set property \"" + property + "\" to \"" + value + "\"",
+                JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).updateProperty(property, value));
     }
 
     static class InternalResourcesStub extends InternalEjbcaResources {
