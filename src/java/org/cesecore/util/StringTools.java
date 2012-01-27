@@ -257,7 +257,7 @@ public final class StringTools {
     public static byte[] ipStringToOctets(final String str) {
         byte[] ret = null;
         try {
-            InetAddress adr = InetAddress.getByName(str);
+            final InetAddress adr = InetAddress.getByName(str);
             ret = adr.getAddress();
         } catch (UnknownHostException e) {
             log.info("Error parsing ip address (ipv4 or ipv6): ", e);
