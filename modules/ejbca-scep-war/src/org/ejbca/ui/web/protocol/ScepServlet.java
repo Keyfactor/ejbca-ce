@@ -40,6 +40,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -166,7 +167,7 @@ public class ScepServlet extends HttpServlet {
 
     private void service(String operation, String message, String remoteAddr, HttpServletResponse response) throws IOException {
         try {
-            if ((operation == null) || (message == null)) {
+            if (operation == null) {
         		String errMsg = intres.getLocalizedMessage("scep.errormissingparam", remoteAddr);
                 log.error(errMsg);
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST,errMsg);
@@ -180,6 +181,12 @@ public class ScepServlet extends HttpServlet {
     		String iMsg = intres.getLocalizedMessage("scep.receivedmsg", remoteAddr);
 			log.info(iMsg);
             if (operation.equals("PKIOperation")) {
+                if (message == null) {
+                    String errMsg = intres.getLocalizedMessage("scep.errormissingparam", remoteAddr);
+                    log.error(errMsg);
+                    response.sendError(HttpServletResponse.SC_BAD_REQUEST,errMsg);
+                    return;
+                }
                 byte[] scepmsg = Base64.decode(message.getBytes());
                 ScepPkiOpHelper helper = new ScepPkiOpHelper(administrator, signsession);
                 
@@ -204,9 +211,10 @@ public class ScepServlet extends HttpServlet {
                 // For example: "Content-Type:application/x-x509-ca-cert\n\n"<BER-encoded X509>
                 
                 // CA_IDENT is the message for this request to indicate which CA we are talking about
-                log.debug("Got SCEP cert request for CA '" + message + "'");
+                final String caname = getCAName(message);
+                log.debug("Got SCEP cert request for CA '" + caname + "'");
                 Collection<Certificate> certs = null;
-                CAInfo cainfo = casession.getCAInfo(administrator, message);
+                CAInfo cainfo = casession.getCAInfo(administrator, caname);
                 if (cainfo != null) {
                     certs = cainfo.getCertificateChain();
                 }
@@ -214,7 +222,7 @@ public class ScepServlet extends HttpServlet {
                     // CAs certificate is in the first position in the Collection
                     Iterator<Certificate> iter = certs.iterator();
                     X509Certificate cert = (X509Certificate) iter.next();
-                    log.debug("Sent certificate for CA '" + message + "' to SCEP client.");
+                    log.debug("Sent certificate for CA '" + caname + "' to SCEP client.");
                     RequestHelper.sendNewX509CaCert(cert.getEncoded(), response);
             		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACert", remoteAddr);
         			log.info(iMsg);
@@ -229,12 +237,13 @@ public class ScepServlet extends HttpServlet {
                 // Content-Type of application/x-x509-ca-ra-cert-chain.
                 
                 // CA_IDENT is the message for this request to indicate which CA we are talking about
-                log.debug("Got SCEP pkcs7 request for CA '" + message + "'");
+                final String caname = getCAName(message);
+                log.debug("Got SCEP pkcs7 request for CA '" + caname + "'");
   
-                CAInfo cainfo = casession.getCAInfo(administrator, message);
+                CAInfo cainfo = casession.getCAInfo(administrator, caname);
                 byte[] pkcs7 = signsession.createPKCS7(administrator, cainfo.getCAId(), true);
                 if ((pkcs7 != null) && (pkcs7.length > 0)) {
-                    log.debug("Sent PKCS7 for CA '" + message + "' to SCEP client.");
+                    log.debug("Sent PKCS7 for CA '" + caname + "' to SCEP client.");
                     RequestHelper.sendBinaryBytes(pkcs7, response, "application/x-x509-ca-ra-cert-chain", null);
             		iMsg = intres.getLocalizedMessage("scep.sentresponsemsg", "GetCACertChain", remoteAddr);
         			log.info(iMsg);
@@ -303,4 +312,16 @@ public class ScepServlet extends HttpServlet {
         }
     }
     
+    /** Later SCEP draft say that for GetCACert message is optional. If message is there, it is the CA name
+     * but if message is not provided by the client, some default CA should be used.
+     * @param message the message part for the SCEP get request, can be null or empty string
+     * @return the message parameter or the default CA from EJBCA scep.properties is message is null or mepty.
+     */
+    private String getCAName(final String message) {
+        // If message is a string, return it, but if message is empty return default CA
+        if (StringUtils.isEmpty(message)) {
+            return EjbcaConfiguration.getScepDefaultCA();
+        }
+        return message;
+    }
 } // ScepServlet
