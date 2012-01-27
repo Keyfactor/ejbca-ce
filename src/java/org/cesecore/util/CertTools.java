@@ -1998,13 +1998,18 @@ public class CertTools {
             }
         }
 
-        ArrayList<String> ipstr = CertTools.getPartsFromDN(altName, CertTools.IPADDR);
+        final ArrayList<String> ipstr = CertTools.getPartsFromDN(altName, CertTools.IPADDR);
         if (!ipstr.isEmpty()) {
-            Iterator<String> iter = ipstr.iterator();
+            final Iterator<String> iter = ipstr.iterator();
             while (iter.hasNext()) {
-                byte[] ipoctets = StringTools.ipStringToOctets((String) iter.next());
-                GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
-                vec.add(gn);
+                final String addr = (String) iter.next();
+                byte[] ipoctets = StringTools.ipStringToOctets(addr);
+                if (ipoctets.length > 0) {
+                    final GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
+                    vec.add(gn);
+                } else {
+                    log.error("Cannot parse/encode ip address, ignoring: " + addr);
+                }
             }
         }
 
@@ -2060,7 +2065,7 @@ public class CertTools {
                     DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
                     vec.add(gn);
                 } else {
-                    log.error("Cannot decode hexadecimal guid: " + guid);
+                    log.error("Cannot decode hexadecimal guid, ignoring: " + guid);
                 }
             }
         }
