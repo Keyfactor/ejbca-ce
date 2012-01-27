@@ -13,6 +13,8 @@
 package org.cesecore.util;
 
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -254,39 +256,12 @@ public final class StringTools {
      */
     public static byte[] ipStringToOctets(final String str) {
         byte[] ret = null;
-        final String[] toks = str.split("[.:]");
-        if (toks.length == 4) {
-            // IPv4 address such as 192.168.5.45
-            ret = new byte[4];
-            for (int i = 0; i < toks.length; i++) {
-                final int t = Integer.parseInt(toks[i]);
-                if (t > 255) {
-                    log.info("IPv4 address '" + str + "' contains octet > 255, returning empty array.");
-                    ret = new byte[0];
-                    break;
-                }
-                ret[i] = (byte) t;
-            }
-        } else if (toks.length == 8) {
-            // IPv6 address such as 2001:0db8:85a3:0000:0000:8a2e:0370:7334
-            ret = new byte[16];
-            int ind = 0;
-            for (int i = 0; i < toks.length; i++) {
-                final int t = Integer.parseInt(toks[i], 16);
-                if (t > 0xFFFF) {
-                    log.info("IPv6 address '" + str + "' contains part > 0xFFFF, returning empty array.");
-                    ret = new byte[0];
-                    break;
-                }
-                final int t1 = t >> 8;
-                final int b1 = t1 & 0x00FF;
-                // int b1 = t & 0x00FF;
-                ret[ind++] = (byte) b1;
-                // int b2 = t & 0xFF00;
-                final int b2 = t & 0x00FF;
-                ret[ind++] = (byte) b2;
-            }
-        }
+        try {
+            InetAddress adr = InetAddress.getByName(str);
+            ret = adr.getAddress();
+        } catch (UnknownHostException e) {
+            log.info("Error parsing ip address (ipv4 or ipv6): ", e);
+        } 
         if (ret == null) {
             log.info("Not a IPv4 or IPv6 address, returning empty array.");
             ret = new byte[0];

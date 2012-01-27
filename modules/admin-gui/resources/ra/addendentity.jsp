@@ -953,7 +953,10 @@ function checkallfields(){
           }
          }
          else{ %>
-    document.adduser.<%= CHECKBOX_SUBJECTDN+i %>.disabled = false;          
+             if(document.adduser.<%= CHECKBOX_SUBJECTDN+i %>)
+             {
+                 document.adduser.<%= CHECKBOX_SUBJECTDN+i %>.disabled = false;          
+             }
      <%  }
        }
        for(int i=0; i < profile.getSubjectAltNameFieldOrderLength(); i++){
@@ -989,7 +992,10 @@ function checkallfields(){
           }
          }
          else{ %>
-      document.adduser.<%= CHECKBOX_SUBJECTALTNAME+i %>.disabled = false;          
+             if(document.adduser.<%= CHECKBOX_SUBJECTALTNAME+i %>)
+             {
+                 document.adduser.<%= CHECKBOX_SUBJECTALTNAME+i %>.disabled = false;          
+             }
      <%    }
          } 
        }
