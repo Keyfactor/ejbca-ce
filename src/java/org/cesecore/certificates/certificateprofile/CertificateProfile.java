@@ -1763,7 +1763,8 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if (data.get(USEDPUBLISHERS) == null) {
                 data.put(USEDPUBLISHERS, new ArrayList<Integer>());
             }
-            if (data.get(USEOCSPSERVICELOCATOR) == null) {
+            if ( (data.get(USEOCSPSERVICELOCATOR) == null) && (data.get(USEAUTHORITYINFORMATIONACCESS) == null) ) {
+                // Only set this flag if we have not already set the new flag USEAUTHORITYINFORMATIONACCESS
                 // setUseOCSPServiceLocator(false);
                 data.put(USEOCSPSERVICELOCATOR, Boolean.valueOf(false));
                 setOCSPServiceLocatorURI("");
@@ -1878,12 +1879,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if (data.get(USECRLDISTRIBUTIONPOINTONCRL) == null) {
                 setUseCRLDistributionPointOnCRL(false); // v24
             }
-            if (data.get(USECAISSUERS) == null) {
+            if ( (data.get(USECAISSUERS) == null) && (data.get(USEAUTHORITYINFORMATIONACCESS) == null) ) {
+                // Only set this flag if we have not already set the new flag USEAUTHORITYINFORMATIONACCESS
                 // setUseCaIssuers(false); // v24
                 data.put(USECAISSUERS, Boolean.valueOf(false)); // v24
                 setCaIssuers(new ArrayList<String>());
             }
-            if ((data.get(USEOCSPSERVICELOCATOR) != null) || (data.get(USECAISSUERS) != null)) {
+            if ( ((data.get(USEOCSPSERVICELOCATOR) != null) || (data.get(USECAISSUERS) != null)) && (data.get(USEAUTHORITYINFORMATIONACCESS) == null) ) {
+                // Only do this if we have not already set the new flag USEAUTHORITYINFORMATIONACCESS
                 boolean ocsp = false;
                 if ((data.get(USEOCSPSERVICELOCATOR) != null)) {
                     ocsp = ((Boolean) data.get(USEOCSPSERVICELOCATOR)).booleanValue();
