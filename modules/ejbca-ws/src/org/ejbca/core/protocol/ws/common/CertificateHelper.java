@@ -14,9 +14,9 @@ package org.ejbca.core.protocol.ws.common;
 
 import java.security.cert.CertificateException;
 
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.model.SecConst;
 
 /**
  * Class used to generate a java.security.Certificate from a 
@@ -44,10 +44,10 @@ public class CertificateHelper {
 	/**
 	 * Request data types for WS
 	 */
-    public static final int CERT_REQ_TYPE_PKCS10	= SecConst.CERT_REQ_TYPE_PKCS10;
-    public static final int CERT_REQ_TYPE_CRMF		= SecConst.CERT_REQ_TYPE_CRMF;
-    public static final int CERT_REQ_TYPE_SPKAC     = SecConst.CERT_REQ_TYPE_SPKAC;
-    public static final int CERT_REQ_TYPE_PUBLICKEY = SecConst.CERT_REQ_TYPE_PUBLICKEY;
+    public static final int CERT_REQ_TYPE_PKCS10	= CertificateConstants.CERT_REQ_TYPE_PKCS10;
+    public static final int CERT_REQ_TYPE_CRMF		= CertificateConstants.CERT_REQ_TYPE_CRMF;
+    public static final int CERT_REQ_TYPE_SPKAC     = CertificateConstants.CERT_REQ_TYPE_SPKAC;
+    public static final int CERT_REQ_TYPE_PUBLICKEY = CertificateConstants.CERT_REQ_TYPE_PUBLICKEY;
 
 	
 	/**

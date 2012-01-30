@@ -458,7 +458,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
 	        return new CertificateResponse(responseType, processCertReq(username, password,
-	                                                                    crmf, SecConst.CERT_REQ_TYPE_CRMF, hardTokenSN, responseType, logger));
+	                                                                    crmf, CertificateConstants.CERT_REQ_TYPE_CRMF, hardTokenSN, responseType, logger));
         } catch( AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -483,7 +483,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
 	        return new CertificateResponse(responseType, processCertReq(username, password,
-	                                                                    spkac, SecConst.CERT_REQ_TYPE_SPKAC, hardTokenSN, responseType, logger));
+	                                                                    spkac, CertificateConstants.CERT_REQ_TYPE_SPKAC, hardTokenSN, responseType, logger));
         } catch( AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -771,7 +771,7 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 			
 			// Finally generate the certificate (assuming status is NEW and password is correct
-			byte[] response = processCertReq(username, password, cvcreq, SecConst.CERT_REQ_TYPE_CVC, null, CertificateHelper.RESPONSETYPE_CERTIFICATE, logger);
+			byte[] response = processCertReq(username, password, cvcreq, CertificateConstants.CERT_REQ_TYPE_CVC, null, CertificateHelper.RESPONSETYPE_CERTIFICATE, logger);
 			CertificateResponse ret = new CertificateResponse(CertificateHelper.RESPONSETYPE_CERTIFICATE, response);
 			byte[] b64cert = ret.getData();
 			CVCertificate certObject = CertificateParser.parseCertificate(Base64.decode(b64cert));
@@ -884,7 +884,7 @@ public class EjbcaWS implements IEjbcaWS {
 	    		log.debug("PKCS10 from user '"+username+"'.");
 	    	}
 	        return new CertificateResponse(responseType, processCertReq(username, password,
-	                                                                    pkcs10, SecConst.CERT_REQ_TYPE_PKCS10, hardTokenSN, responseType, logger));
+	                                                                    pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, hardTokenSN, responseType, logger));
         } catch( AuthorizationDeniedException t ) {
             logger.paramPut(TransactionTags.ERROR_MESSAGE.toString(), t.toString());
             throw t;
@@ -2398,13 +2398,13 @@ public class EjbcaWS implements IEjbcaWS {
 	    	final AuthenticationToken admin = ejbcawshelper.getAdmin(false);
 	    	logAdminName(admin,logger);
 	        final EndEntityInformation userdatavo = ejbcawshelper.convertUserDataVOWS(admin, userdata);
-	        int responseTypeInt = SecConst.CERT_RES_TYPE_CERTIFICATE;
+	        int responseTypeInt = CertificateConstants.CERT_RES_TYPE_CERTIFICATE;
 	        if (!responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_CERTIFICATE)) {
 		        if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7)) {
-		        	responseTypeInt = SecConst.CERT_RES_TYPE_PKCS7;
+		        	responseTypeInt = CertificateConstants.CERT_RES_TYPE_PKCS7;
 		        }
 		        else if (responseType.equalsIgnoreCase(CertificateHelper.RESPONSETYPE_PKCS7WITHCHAIN)) {
-		        	responseTypeInt = SecConst.CERT_RES_TYPE_PKCS7WITHCHAIN;
+		        	responseTypeInt = CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN;
 		        }
 		        else{
 		        	throw new NoSuchAlgorithmException ("Bad responseType:" + responseType);
