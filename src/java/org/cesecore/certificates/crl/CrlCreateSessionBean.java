@@ -52,6 +52,7 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -115,234 +116,261 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
 	    return createDeltaCRLs(admin, null, 0);
 	}
 
+    
+    
 	@Override
-    public int createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime) throws AuthorizationDeniedException {
-		int createdcrls = 0;
-		Iterator<Integer> iter = null;
-		if (caids != null) {
-			iter = caids.iterator();
-		}
-		if ((iter == null) || (caids.contains(Integer.valueOf(CAConstants.ALLCAS)))) {
-			iter = caSession.getAvailableCAs().iterator();
-		}
-		while (iter.hasNext()) {
-			int caid = ((Integer) iter.next()).intValue();
-			log.debug("createCRLs for caid: " + caid);
-			try {
-				if (crlCreateSession.createCRLNewTransactionConditioned(admin, caid, addtocrloverlaptime)) {
-					createdcrls++;
-				}                	
-			} catch (CesecoreException e) {
-            	// Don't fail all generation just because one of the CAs had token offline or similar. 
-            	// Continue working with the others, but log an error message in system logs, use error logging 
-				// since it might be something that should call for attention of the operators, CRL generation is important.
-				String msg = intres.getLocalizedMessage("createcrl.errorcreate", caid, e.getMessage());
-				log.error(msg, e); 
-			}
-		}
-		return createdcrls;
+    public int createCRLs(CaSessionLocal caSession, AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime)
+            throws AuthorizationDeniedException {
+	    int createdcrls = 0;
+        Iterator<Integer> iter = null;
+        if (caids != null) {
+            iter = caids.iterator();
+        }
+        if ((iter == null) || (caids.contains(Integer.valueOf(CAConstants.ALLCAS)))) {
+            iter = caSession.getAvailableCAs().iterator();
+        }
+        while (iter.hasNext()) {
+            int caid = ((Integer) iter.next()).intValue();
+            log.debug("createCRLs for caid: " + caid);
+            try {
+                if (crlCreateSession.createCRLNewTransactionConditioned(caSession, admin, caid, addtocrloverlaptime)) {
+                    createdcrls++;
+                }                   
+            } catch (CesecoreException e) {
+                // Don't fail all generation just because one of the CAs had token offline or similar. 
+                // Continue working with the others, but log an error message in system logs, use error logging 
+                // since it might be something that should call for attention of the operators, CRL generation is important.
+                String msg = intres.getLocalizedMessage("createcrl.errorcreate", caid, e.getMessage());
+                log.error(msg, e); 
+            }
+        }
+        return createdcrls;
     }
 
     @Override
-    public int createDeltaCRLs(AuthenticationToken admin, Collection<Integer> caids, long crloverlaptime) throws AuthorizationDeniedException {
+    public int createCRLs(AuthenticationToken admin, Collection<Integer> caids, long addtocrloverlaptime) throws AuthorizationDeniedException {
+		return createCRLs(this.caSession, admin, caids, addtocrloverlaptime);
+    }
+    
+    
+
+    @Override
+    public int createDeltaCRLs(AuthenticationToken admin, Collection<Integer> caids, long crloverlaptime)
+            throws AuthorizationDeniedException {
         int createddeltacrls = 0;
-            Iterator<Integer> iter = null;
-            if (caids != null) {
-                iter = caids.iterator();
-            }
-            if ((iter == null) || (caids.contains(Integer.valueOf(CAConstants.ALLCAS)))) {
-                iter = caSession.getAvailableCAs().iterator();
-            }
-            while (iter.hasNext()) {
-                int caid = iter.next().intValue();
-                log.debug("createDeltaCRLs for caid: " + caid);
-                try {
-                	if (crlCreateSession.createDeltaCRLnewTransactionConditioned(admin, caid, crloverlaptime)) {
-                		createddeltacrls++;
-                	}
-                } catch (CesecoreException e) {
-                	// Don't fail all generation just because one of the CAs had token offline or similar. 
-                	// Continue working with the others, but log a warning message in system logs.
-                	String msg = intres.getLocalizedMessage("createcrl.errorcreate", caid, e.getMessage());
-                	log.error(msg, e);                	
-    				Map<String, Object> details = new LinkedHashMap<String, Object>();
-    				details.put("msg", msg);
-    				logSession.log(EventTypes.CRL_CREATION, EventStatus.FAILURE, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);				
-    			}                
-            }
+        Iterator<Integer> iter = null;
+        if (caids != null) {
+            iter = caids.iterator();
+        }
+        if ((iter == null) || (caids.contains(Integer.valueOf(CAConstants.ALLCAS)))) {
+            iter = caSession.getAvailableCAs().iterator();
+        }
+        while (iter.hasNext()) {
+            int caid = iter.next().intValue();
+            log.debug("createDeltaCRLs for caid: " + caid);
+            try {
+                if (crlCreateSession.createDeltaCRLnewTransactionConditioned(caSession, admin, caid, crloverlaptime)) {
+                    createddeltacrls++;
+                }
+            } catch (CesecoreException e) {
+                // Don't fail all generation just because one of the CAs had token offline or similar. 
+                // Continue working with the others, but log a warning message in system logs.
+                String msg = intres.getLocalizedMessage("createcrl.errorcreate", caid, e.getMessage());
+                log.error(msg, e);                  
+                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                details.put("msg", msg);
+                logSession.log(EventTypes.CRL_CREATION, EventStatus.FAILURE, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);              
+            }                
+        }
         return createddeltacrls;
     }
 
+    @Override
+    public int createDeltaCRLs(CaSessionLocal caSession, AuthenticationToken admin, Collection<Integer> caids, long crloverlaptime) throws AuthorizationDeniedException {
+        return createDeltaCRLs(admin, caids, crloverlaptime);
+    }
+
+    @Override
+    public boolean createCRLNewTransactionConditioned(CaSessionLocal caSession, AuthenticationToken admin, int caid, long addtocrloverlaptime) throws CryptoTokenOfflineException, CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
+        boolean ret = false;
+        Date currenttime = new Date();
+        // Get CA checks authorization to the CA
+        CA ca = caSession.getCA(admin, caid);
+        CAInfo cainfo = ca.getCAInfo();
+        try {
+            if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Not trying to generate CRL for external CA "+cainfo.getName());
+                }
+            } else if (cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Not trying to generate CRL for CA "+cainfo.getName() +" awaiting certificate response.");
+                }
+            } else {
+                if (cainfo instanceof X509CAInfo) {
+                    Collection<Certificate> certs = cainfo.getCertificateChain();
+                    final Certificate cacert;
+                    if (!certs.isEmpty()) {
+                        cacert = certs.iterator().next();   
+                    } else {
+                        cacert = null;
+                    }
+                    // Don't create CRLs if the CA has expired
+                    if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
+                        if (cainfo.getStatus() == CAConstants.CA_OFFLINE )  {
+                            // Normal event to not create CRLs for CAs that are deliberately set off line
+                            String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(cainfo.getCAId()));                                                   
+                            log.info(msg);
+                        } else {
+                            if (log.isDebugEnabled()) {
+                                log.debug("Checking to see if CA '"+cainfo.getName()+"' ("+cainfo.getCAId()+") needs CRL generation.");
+                            }
+                            final String certSubjectDN = CertTools.getSubjectDN(cacert);
+                            CRLInfo crlinfo = crlSession.getLastCRLInfo(certSubjectDN,false);
+                            if (log.isDebugEnabled()) {
+                                if (crlinfo == null) {
+                                    log.debug("Crlinfo was null");
+                                } else {
+                                    log.debug("Read crlinfo for CA: "+cainfo.getName()+", lastNumber="+crlinfo.getLastCRLNumber()+", expireDate="+crlinfo.getExpireDate());
+                                }                                          
+                            }
+                            long crlissueinterval = cainfo.getCRLIssueInterval();
+                            if (log.isDebugEnabled()) {
+                                log.debug("crlissueinterval="+crlissueinterval);
+                                log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());                                   
+                            }
+                            long overlap = cainfo.getCRLOverlapTime() + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
+                            long nextUpdate = 0; // if crlinfo == 0, we will issue a crl now
+                            if (crlinfo != null) {
+                                // CRL issueinterval in hours. If this is 0, we should only issue a CRL when
+                                // the old one is about to expire, i.e. when currenttime + overlaptime > expiredate
+                                // if isseuinterval is > 0 we will issue a new CRL when currenttime > createtime + issueinterval
+                                nextUpdate = crlinfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
+                                if (crlissueinterval > 0) {
+                                    long u = crlinfo.getCreateDate().getTime() + crlissueinterval;
+                                    // If this period for some reason (we missed to issue some?) is larger than when the CRL expires,
+                                    // we need to issue one when the CRL expires
+                                    if ((u + overlap) < nextUpdate) {
+                                        nextUpdate = u;
+                                        // When we issue CRLs before the real expiration date we don't use overlap
+                                        overlap = 0;
+                                    }
+                                }                                   
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Calculated nextUpdate to "+nextUpdate);
+                                }
+                            } else {
+                                // If crlinfo is null (no crl issued yet) nextUpdate will be 0 and a new CRL should be generated
+                                String msg = intres.getLocalizedMessage("createcrl.crlinfonull", cainfo.getName());                                                
+                                log.info(msg);
+                            }
+                            if ((currenttime.getTime() + overlap) >= nextUpdate) {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Creating CRL for CA, because:"+currenttime.getTime()+overlap+" >= "+nextUpdate);                                                
+                                }
+                                if (internalCreateCRL(admin, ca) != null) {
+                                    ret = true;                                 
+                                }
+                            }
+                        }
+                    } else if (cacert != null) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
+                        }
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Not creating CRL for CA without CA certificate: "+cainfo.getName());
+                        }
+                    }
+                }                                                          
+            }
+        } catch (CryptoTokenOfflineException e) {
+            log.warn("Crypto token is offline for CA "+caid+" generating CRL.");
+            throw e;            
+        }
+        return ret;
+    }
+    
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public boolean createCRLNewTransactionConditioned(AuthenticationToken admin, int caid, long addtocrloverlaptime) throws CryptoTokenOfflineException, CADoesntExistsException, AuthorizationDeniedException, CAOfflineException {
-    	boolean ret = false;
-    	Date currenttime = new Date();
-    	// Get CA checks authorization to the CA
-    	CA ca = caSession.getCA(admin, caid);
-    	CAInfo cainfo = ca.getCAInfo();
-    	try {
-    		if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
-    			if (log.isDebugEnabled()) {
-    				log.debug("Not trying to generate CRL for external CA "+cainfo.getName());
-    			}
-    		} else if (cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
-    			if (log.isDebugEnabled()) {
-    				log.debug("Not trying to generate CRL for CA "+cainfo.getName() +" awaiting certificate response.");
-    			}
-    		} else {
-    			if (cainfo instanceof X509CAInfo) {
-    				Collection<Certificate> certs = cainfo.getCertificateChain();
-    				final Certificate cacert;
-    				if (!certs.isEmpty()) {
-    					cacert = certs.iterator().next();   
-    				} else {
-    					cacert = null;
-    				}
-    				// Don't create CRLs if the CA has expired
-    				if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
-    					if (cainfo.getStatus() == CAConstants.CA_OFFLINE )  {
-    						// Normal event to not create CRLs for CAs that are deliberately set off line
-    						String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(cainfo.getCAId()));                                                   
-    						log.info(msg);
-    					} else {
-    						if (log.isDebugEnabled()) {
-    							log.debug("Checking to see if CA '"+cainfo.getName()+"' ("+cainfo.getCAId()+") needs CRL generation.");
-    						}
-    						final String certSubjectDN = CertTools.getSubjectDN(cacert);
-    						CRLInfo crlinfo = crlSession.getLastCRLInfo(certSubjectDN,false);
-    						if (log.isDebugEnabled()) {
-    							if (crlinfo == null) {
-    								log.debug("Crlinfo was null");
-    							} else {
-    								log.debug("Read crlinfo for CA: "+cainfo.getName()+", lastNumber="+crlinfo.getLastCRLNumber()+", expireDate="+crlinfo.getExpireDate());
-    							}                                          
-    						}
-    						long crlissueinterval = cainfo.getCRLIssueInterval();
-    						if (log.isDebugEnabled()) {
-    							log.debug("crlissueinterval="+crlissueinterval);
-    							log.debug("crloverlaptime="+cainfo.getCRLOverlapTime());                                   
-    						}
-    						long overlap = cainfo.getCRLOverlapTime() + addtocrloverlaptime; // Overlaptime is in minutes, default if crlissueinterval == 0
-    						long nextUpdate = 0; // if crlinfo == 0, we will issue a crl now
-    						if (crlinfo != null) {
-    							// CRL issueinterval in hours. If this is 0, we should only issue a CRL when
-    							// the old one is about to expire, i.e. when currenttime + overlaptime > expiredate
-    							// if isseuinterval is > 0 we will issue a new CRL when currenttime > createtime + issueinterval
-    							nextUpdate = crlinfo.getExpireDate().getTime(); // Default if crlissueinterval == 0
-    							if (crlissueinterval > 0) {
-    								long u = crlinfo.getCreateDate().getTime() + crlissueinterval;
-    								// If this period for some reason (we missed to issue some?) is larger than when the CRL expires,
-    								// we need to issue one when the CRL expires
-    								if ((u + overlap) < nextUpdate) {
-    									nextUpdate = u;
-    									// When we issue CRLs before the real expiration date we don't use overlap
-    									overlap = 0;
-    								}
-    							}                                   
-    							if (log.isDebugEnabled()) {
-    								log.debug("Calculated nextUpdate to "+nextUpdate);
-    							}
-    						} else {
-    							// If crlinfo is null (no crl issued yet) nextUpdate will be 0 and a new CRL should be generated
-    							String msg = intres.getLocalizedMessage("createcrl.crlinfonull", cainfo.getName());                                                
-    							log.info(msg);
-    						}
-    						if ((currenttime.getTime() + overlap) >= nextUpdate) {
-    							if (log.isDebugEnabled()) {
-    								log.debug("Creating CRL for CA, because:"+currenttime.getTime()+overlap+" >= "+nextUpdate);                                                
-    							}
-    							if (internalCreateCRL(admin, ca) != null) {
-        							ret = true;    								
-    							}
-    						}
-    					}
-    				} else if (cacert != null) {
-    					if (log.isDebugEnabled()) {
-    						log.debug("Not creating CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
-    					}
-    				} else {
-    					if (log.isDebugEnabled()) {
-    						log.debug("Not creating CRL for CA without CA certificate: "+cainfo.getName());
-    					}
-    				}
-    			}                                                          
-    		}
-    	} catch (CryptoTokenOfflineException e) {
-    		log.warn("Crypto token is offline for CA "+caid+" generating CRL.");
-    		throw e;            
-    	}
-    	return ret;
+        return createCRLNewTransactionConditioned(this.caSession, admin, caid, addtocrloverlaptime);
     }
-
+    
+    
+    @Override
+    public boolean createDeltaCRLnewTransactionConditioned(CaSessionLocal caSession, AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
+        boolean ret = false;
+        Date currenttime = new Date();
+        CA ca = caSession.getCA(admin, caid);
+        CAInfo cainfo = ca.getCAInfo();
+        try{
+            if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Not trying to generate delta CRL for external CA "+cainfo.getName());
+                }
+            } else if (cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+                if (log.isDebugEnabled()) {
+                    log.debug("Not trying to generate delta CRL for CA "+cainfo.getName() +" awaiting certificate response.");
+                }
+            } else {
+                if (cainfo instanceof X509CAInfo) {
+                    Collection<Certificate> certs = cainfo.getCertificateChain();
+                    final Certificate cacert;
+                    if (!certs.isEmpty()) {
+                        cacert = certs.iterator().next();   
+                    } else {
+                        cacert = null;
+                    }
+                    // Don't create CRLs if the CA has expired
+                    if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
+                        if(cainfo.getDeltaCRLPeriod() > 0) {
+                            if (cainfo.getStatus() == CAConstants.CA_OFFLINE) {
+                                // Normal event to not create CRLs for CAs that are deliberately set off line
+                                String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(cainfo.getCAId()));                                                   
+                                log.info(msg);
+                            } else {
+                                if (log.isDebugEnabled()) {
+                                    log.debug("Checking to see if CA '"+cainfo.getName()+"' needs Delta CRL generation.");
+                                }
+                                final String certSubjectDN = CertTools.getSubjectDN(cacert);
+                                CRLInfo deltacrlinfo = crlSession.getLastCRLInfo(certSubjectDN, true);
+                                if (log.isDebugEnabled()) {
+                                    if (deltacrlinfo == null) {
+                                        log.debug("DeltaCrlinfo was null");
+                                    } else {
+                                        log.debug("Read deltacrlinfo for CA: "+cainfo.getName()+", lastNumber="+deltacrlinfo.getLastCRLNumber()+", expireDate="+deltacrlinfo.getExpireDate());
+                                    }                                          
+                                }
+                                if((deltacrlinfo == null) || ((currenttime.getTime() + crloverlaptime) >= deltacrlinfo.getExpireDate().getTime())){
+                                    if (internalCreateDeltaCRL(admin, ca, -1, -1) != null) {
+                                        ret = true;
+                                    }
+                                }
+                            }
+                        }
+                    } else if (cacert != null) {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Not creating delta CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
+                        }
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.debug("Not creating delta CRL for CA without CA certificate: "+cainfo.getName());
+                        }
+                    }
+                }                                       
+            }
+        } catch (CryptoTokenOfflineException e) {
+            log.warn("Crypto token is offline for CA "+caid+" generating CRL.");
+            throw e;            
+        }
+        return ret;
+    }
+        
     @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     @Override
     public boolean createDeltaCRLnewTransactionConditioned(AuthenticationToken admin, int caid, long crloverlaptime) throws CryptoTokenOfflineException, CAOfflineException, CADoesntExistsException, AuthorizationDeniedException {
-    	boolean ret = false;
-    	Date currenttime = new Date();
-    	CA ca = caSession.getCA(admin, caid);
-    	CAInfo cainfo = ca.getCAInfo();
-    	try{
-    		if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
-    			if (log.isDebugEnabled()) {
-    				log.debug("Not trying to generate delta CRL for external CA "+cainfo.getName());
-    			}
-    		} else if (cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
-    			if (log.isDebugEnabled()) {
-    				log.debug("Not trying to generate delta CRL for CA "+cainfo.getName() +" awaiting certificate response.");
-    			}
-    		} else {
-    			if (cainfo instanceof X509CAInfo) {
-    				Collection<Certificate> certs = cainfo.getCertificateChain();
-    				final Certificate cacert;
-    				if (!certs.isEmpty()) {
-    					cacert = certs.iterator().next();   
-    				} else {
-    					cacert = null;
-    				}
-    				// Don't create CRLs if the CA has expired
-    				if ( (cacert != null) && (CertTools.getNotAfter(cacert).after(new Date())) ) {
-    					if(cainfo.getDeltaCRLPeriod() > 0) {
-    						if (cainfo.getStatus() == CAConstants.CA_OFFLINE) {
-        						// Normal event to not create CRLs for CAs that are deliberately set off line
-    							String msg = intres.getLocalizedMessage("createcrl.caoffline", cainfo.getName(), Integer.valueOf(cainfo.getCAId()));                                                   
-    							log.info(msg);
-    						} else {
-    							if (log.isDebugEnabled()) {
-    								log.debug("Checking to see if CA '"+cainfo.getName()+"' needs Delta CRL generation.");
-    							}
-    							final String certSubjectDN = CertTools.getSubjectDN(cacert);
-    							CRLInfo deltacrlinfo = crlSession.getLastCRLInfo(certSubjectDN, true);
-    							if (log.isDebugEnabled()) {
-    								if (deltacrlinfo == null) {
-    									log.debug("DeltaCrlinfo was null");
-    								} else {
-    									log.debug("Read deltacrlinfo for CA: "+cainfo.getName()+", lastNumber="+deltacrlinfo.getLastCRLNumber()+", expireDate="+deltacrlinfo.getExpireDate());
-    								}                                          
-    							}
-    							if((deltacrlinfo == null) || ((currenttime.getTime() + crloverlaptime) >= deltacrlinfo.getExpireDate().getTime())){
-    								if (internalCreateDeltaCRL(admin, ca, -1, -1) != null) {
-    									ret = true;
-    								}
-    							}
-    						}
-    					}
-    				} else if (cacert != null) {
-    					if (log.isDebugEnabled()) {
-    						log.debug("Not creating delta CRL for expired CA "+cainfo.getName()+". CA subjectDN='"+CertTools.getSubjectDN(cacert)+"', expired: "+CertTools.getNotAfter(cacert));
-    					}
-    				} else {
-    					if (log.isDebugEnabled()) {
-    						log.debug("Not creating delta CRL for CA without CA certificate: "+cainfo.getName());
-    					}
-    				}
-    			}                                       
-    		}
-    	} catch (CryptoTokenOfflineException e) {
-    		log.warn("Crypto token is offline for CA "+caid+" generating CRL.");
-    		throw e;            
-    	}
-    	return ret;
+        return createDeltaCRLnewTransactionConditioned(caSession, admin, caid, crloverlaptime);
     }
 
     @Override
