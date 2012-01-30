@@ -36,10 +36,10 @@ import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
@@ -204,14 +204,14 @@ public class RequestMessageUtils {
 
 	public static RequestMessage getSimpleRequestMessageFromType(final String username, final String password, final String req, final int reqType) throws SignRequestSignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, IOException, SignatureException, InvalidKeySpecException, ParseException, ConstructionException, NoSuchFieldException {
 	    RequestMessage ret = null;
-        if (reqType == SecConst.CERT_REQ_TYPE_PKCS10) {
+        if (reqType == CertificateConstants.CERT_REQ_TYPE_PKCS10) {
             final RequestMessage pkcs10req = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());
             final PublicKey pubKey = pkcs10req.getRequestPublicKey();
             SimpleRequestMessage simplereq = new SimpleRequestMessage(pubKey, username, password);
             final X509Extensions ext = pkcs10req.getRequestExtensions();
             simplereq.setRequestExtensions(ext);
             ret = simplereq;
-        } else if (reqType == SecConst.CERT_REQ_TYPE_SPKAC) {
+        } else if (reqType == CertificateConstants.CERT_REQ_TYPE_SPKAC) {
             byte[] reqBytes = req.getBytes();
             if (reqBytes != null) {
                 if (log.isDebugEnabled()) {
@@ -239,7 +239,7 @@ public class RequestMessageUtils {
                 PublicKey pubKey = nscr.getPublicKey();
                 ret = new SimpleRequestMessage(pubKey, username, password);
             }       
-        } else if (reqType == SecConst.CERT_REQ_TYPE_CRMF) {
+        } else if (reqType == CertificateConstants.CERT_REQ_TYPE_CRMF) {
             byte[] request = Base64.decode(req.getBytes());
             ASN1InputStream in = new ASN1InputStream(request);
             ASN1Sequence    crmfSeq = (ASN1Sequence) in.readObject();
@@ -257,7 +257,7 @@ public class RequestMessageUtils {
             //PKIMessage msg = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(request)).readObject());
             //CrmfRequestMessage reqmsg = new CrmfRequestMessage(msg, null, true, null);
             //imsg = reqmsg;
-        } else if (reqType == SecConst.CERT_REQ_TYPE_PUBLICKEY) {
+        } else if (reqType == CertificateConstants.CERT_REQ_TYPE_PUBLICKEY) {
             byte[] request;
             // Request can be Base64 encoded or in PEM format
             try {
@@ -279,7 +279,7 @@ public class RequestMessageUtils {
             final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getObjectId().getId(), "BC");
             final PublicKey pubKey = keyFact.generatePublic(xKeySpec);
             ret = new SimpleRequestMessage(pubKey, username, password);
-        } else if (reqType == SecConst.CERT_REQ_TYPE_CVC) {
+        } else if (reqType == CertificateConstants.CERT_REQ_TYPE_CVC) {
             CVCObject parsedObject = CertificateParser.parseCVCObject(Base64.decode(req.getBytes()));
             // We will handle both the case if the request is an authenticated request, i.e. with an outer signature
             // and when the request is missing the (optional) outer signature.

@@ -45,6 +45,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -257,13 +258,13 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         Class<X509ResponseMessage> respClass = X509ResponseMessage.class;
         ResponseMessage resp = signSession.createCertificate(admin, msg, respClass, userData);
         java.security.cert.Certificate cert = CertTools.getCertfromByteArray(resp.getResponseMessage());
-        if (responseType == SecConst.CERT_RES_TYPE_CERTIFICATE) {
+        if (responseType == CertificateConstants.CERT_RES_TYPE_CERTIFICATE) {
             retval = cert.getEncoded();
         }
-        if (responseType == SecConst.CERT_RES_TYPE_PKCS7) {
+        if (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7) {
             retval = signSession.createPKCS7(admin, cert, false);
         }
-        if (responseType == SecConst.CERT_RES_TYPE_PKCS7WITHCHAIN) {
+        if (responseType == CertificateConstants.CERT_RES_TYPE_PKCS7WITHCHAIN) {
             retval = signSession.createPKCS7(admin, cert, true);
         }
 

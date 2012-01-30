@@ -32,7 +32,7 @@ package org.cesecore.certificates.certificate;
 public final class CertificateConstants {
     
     /** Constant used to determine the size of the result from SQL select queries */
-    public static final int MAXIMUM_QUERY_ROWCOUNT = 500; 
+    public static final int MAXIMUM_QUERY_ROWCOUNT = 500;
 
     /**
      * Prevents creation of new class
@@ -78,6 +78,18 @@ public final class CertificateConstants {
     public static final int CERT_TYPE_SIGNATURE = 0x2;
     /** Certificate used for both encryption and signatures. */
     public static final int CERT_TYPE_ENCSIGN = 0x3;
+    
+    // Certificate request types
+    public static final int CERT_REQ_TYPE_PKCS10    = 0;
+    public static final int CERT_REQ_TYPE_CRMF      = 1;
+    public static final int CERT_REQ_TYPE_SPKAC     = 2;
+    public static final int CERT_REQ_TYPE_PUBLICKEY = 3;
+    public static final int CERT_REQ_TYPE_CVC       = 4;
+    
+    // Certificate response types
+    public static final int CERT_RES_TYPE_CERTIFICATE    = 0;
+    public static final int CERT_RES_TYPE_PKCS7          = 1;
+    public static final int CERT_RES_TYPE_PKCS7WITHCHAIN = 2; 
 
 	/** KeyUsage constants */
 	public static final int DIGITALSIGNATURE = 0;

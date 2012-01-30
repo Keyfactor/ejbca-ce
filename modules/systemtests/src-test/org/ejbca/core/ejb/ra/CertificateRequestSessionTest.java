@@ -26,6 +26,7 @@ import java.util.Random;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -125,8 +126,8 @@ public class CertificateRequestSessionTest extends CaTestCase {
                 SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         userdata.setPassword(password);
         String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
-        byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, SecConst.CERT_REQ_TYPE_PKCS10, null,
-                SecConst.CERT_RES_TYPE_CERTIFICATE);
+        byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, null,
+                CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
         try {
             Certificate cert = CertTools.getCertfromByteArray(encodedCertificate);
             assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " userdata.getDN:" + userdata.getDN(),
@@ -140,8 +141,8 @@ public class CertificateRequestSessionTest extends CaTestCase {
             userdata.setUsername(username2); // Still the same Subject DN
             userdata.setPassword(password);
             try {
-                certificateRequestSession.processCertReq(admin, userdata, pkcs10, SecConst.CERT_REQ_TYPE_PKCS10, null,
-                        SecConst.CERT_RES_TYPE_CERTIFICATE);
+                certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, null,
+                        CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
                 fail("Certificate creation did not fail as expected.");
             } catch (Exception e) {
                 log.debug("Got an exception as expected: " + e.getMessage());
@@ -171,8 +172,8 @@ public class CertificateRequestSessionTest extends CaTestCase {
                 SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         userdata.setPassword(password);
         String pkcs10 = new String(Base64.encode(NonEjbTestTools.generatePKCS10Req("CN=Ignored", password)));
-        byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, SecConst.CERT_REQ_TYPE_PKCS10, null,
-                SecConst.CERT_RES_TYPE_CERTIFICATE);
+        byte[] encodedCertificate = certificateRequestSession.processCertReq(admin, userdata, pkcs10, CertificateConstants.CERT_REQ_TYPE_PKCS10, null,
+                CertificateConstants.CERT_RES_TYPE_CERTIFICATE);
         try {
             Certificate cert = CertTools.getCertfromByteArray(encodedCertificate);
             assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " expectedDn: " + expectedDn, expectedDn,
