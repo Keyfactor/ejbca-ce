@@ -8,7 +8,7 @@
     <tr id="Row<%=row++%2%>"> 
       <td width="50%" valign="top" align="right"> 
          <strong><%= ejbcawebbean.getText("VASETTINGS") %> :</strong>
-         <%= ejbcawebbean.getHelpReference("/installation-ocsp.html#Installation") %>
+         <%= ejbcawebbean.getHelpReference("/installation-va.html#Standalone%20VA%20installation") %>
       </td>
       <td width="50%" valign="top"> 
          &nbsp;
