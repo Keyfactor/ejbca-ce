@@ -81,7 +81,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 
 	public String editService(){
 		String retval = "editservice";
-		if(selectedServiceName != null){			
+		if (StringUtils.isNotEmpty(selectedServiceName)){			
 			try {
 				getEditServiceBean().setServiceName(selectedServiceName);
 				ServiceConfiguration serviceConf = ejb.getServiceSession().getService(getAdmin(), selectedServiceName);
@@ -98,7 +98,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	}
 	
 	public String deleteService(){
-		if(selectedServiceName != null){
+        if (StringUtils.isNotEmpty(selectedServiceName)) {
 			ejb.getServiceSession().removeService(getAdmin(), selectedServiceName);
 		}else{
 			addErrorMessage("YOUHAVETOSELECTASERVICE");
@@ -108,13 +108,13 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	}
 	
 	public String renameService(){
-		if(selectedServiceName == null){
+        if (StringUtils.isEmpty(selectedServiceName)) {
 			addErrorMessage("YOUHAVETOSELECTASERVICE");
-		}else if (newServiceName.trim().equals("")) {
+        } else if (StringUtils.isEmpty(StringUtils.trim(newServiceName))) {
 			addErrorMessage("YOUHAVETOENTERASERVICE");
-		}else if (errorInServiceName(newServiceName)) {
+		} else if (errorInServiceName(newServiceName)) {
 			addErrorMessage("THECHARACTERSARENTALLOWED");
-		}else{			
+		} else {			
 			try {
 				ejb.getServiceSession().renameService(getAdmin(), selectedServiceName, newServiceName);
 			} catch (ServiceExistsException e) {
@@ -126,11 +126,11 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	}
 
 	public String addService(){
-		if (newServiceName.trim().equals("")) {
+		if (StringUtils.isEmpty(StringUtils.trim(newServiceName))) {
 			addErrorMessage("YOUHAVETOENTERASERVICE");
-		}else if (errorInServiceName(newServiceName)) {
+		} else if (errorInServiceName(newServiceName)) {
 			addErrorMessage("THECHARACTERSARENTALLOWED");
-		}else{			
+		} else {			
 			try {
 				ServiceConfiguration serviceConfig = new ServiceConfiguration();			
 				ejb.getServiceSession().addService(getAdmin(), newServiceName, serviceConfig);
@@ -147,13 +147,13 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	}
 	
 	public String cloneService(){
-		if(selectedServiceName == null){
+		if (StringUtils.isEmpty(selectedServiceName)) {
 			addErrorMessage("YOUHAVETOSELECTASERVICE");
-		}else if (newServiceName.trim().equals("")) {
+        } else if (StringUtils.isEmpty(StringUtils.trim(newServiceName))) {
 			addErrorMessage("YOUHAVETOENTERASERVICE");
-		}else if (errorInServiceName(newServiceName)) {
+		} else if (errorInServiceName(newServiceName)) {
 			addErrorMessage("THECHARACTERSARENTALLOWED");
-		}else{			
+		} else {			
 			try {
 				ejb.getServiceSession().cloneService(getAdmin(), selectedServiceName, newServiceName);
 			} catch (ServiceExistsException e) {
