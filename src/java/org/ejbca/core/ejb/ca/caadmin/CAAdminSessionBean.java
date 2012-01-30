@@ -2110,11 +2110,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         activateAndPublishExternalCAServices(admin, cainfo.getExtendedCAServiceInfos(), ca);
         // Store CA in database.
         caSession.addCA(admin, ca);
+
         // Create initial CRLs
         Collection<Integer> caids = new ArrayList<Integer>();
         caids.add(ca.getCAId());
-        crlCreateSession.createCRLs(admin, caids, 0);
-        crlCreateSession.createDeltaCRLs(admin, caids, 0);
+        crlCreateSession.createCRLs(caSession, admin, caids, 0);
+        crlCreateSession.createDeltaCRLs(caSession, admin, caids, 0);
         return ca;
     }
 

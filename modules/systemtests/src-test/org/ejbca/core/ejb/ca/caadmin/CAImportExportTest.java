@@ -55,6 +55,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
@@ -204,6 +205,34 @@ public class CAImportExportTest  {
 	    log.trace("<test06ImportExport()");
 	} // test02ImportExport
 
+    
+    @Test
+    public void test07ImportWithNewSession() throws Exception {
+        log.trace("<test07Import...()");
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_RSA, "1024", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        byte[] keystorebytes = null;
+        String caname = "DummyTestCA";
+        String capassword = "foo123";
+        cainfo = getNewCAInfo(caname, catokeninfo);
+        EjbRemoteHelper ejbRemoteHelper = new EjbRemoteHelper();
+        CAAdminSessionRemote caAdminSessionNew = ejbRemoteHelper.getCAAdminSession();
+        boolean defaultRetValue = true;
+        
+        // create CA in a new transaction, export the keystore from there
+        caAdminSessionNew.createCA(internalAdmin, cainfo);
+        keystorebytes = caAdminSessionNew.exportCAKeyStore(internalAdmin, caname, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+    
+        boolean ret = false;
+        try {
+            caSession.removeCA(internalAdmin, cainfo.getCAId());
+            caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
+            ret = true;
+        } catch (Exception e) { 
+            log.info("Error: ", e);
+        }
+        assertEquals("Could not import CA.", ret, defaultRetValue);
+    }
+    
     /**
      * Creates a CAinfo for testing.
      *  
