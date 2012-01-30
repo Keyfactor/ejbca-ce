@@ -19,9 +19,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -101,8 +101,8 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		getLogger().info(existingCasInfo);
 		try {
 			// Print available Root CA and Sub CA profiles
-			Collection<Integer> cpssub = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_SUBCA, cas);
-			Collection<Integer> cpsroot = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ROOTCA, cas);
+			Collection<Integer> cpssub = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_SUBCA, cas);
+			Collection<Integer> cpsroot = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ROOTCA, cas);
 			HashMap<String,Collection<Integer>> cps = new HashMap<String,Collection<Integer>>();
 			cps.put("Root CA profiles: ", cpsroot);
 			cps.put("Sub CA profiles: ", cpssub);

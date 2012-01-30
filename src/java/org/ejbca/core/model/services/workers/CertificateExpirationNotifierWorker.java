@@ -25,11 +25,11 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
@@ -175,7 +175,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                         if (!isSendToEndUsers() && !isSendToAdmins()) {
                             // a little bit of a kludge to make JUnit testing feasible...
                             log.debug("nobody to notify for cert with fp:" + fingerprint);
-                            updateStatus(fingerprint, SecConst.CERT_NOTIFIEDABOUTEXPIRATION);
+                            updateStatus(fingerprint, CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
                         }
                     }
                     if (count == 0) {

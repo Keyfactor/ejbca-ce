@@ -32,11 +32,11 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.ui.cli.BaseCommand;
 
 /**
@@ -206,7 +206,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword)))) {
+			for (final Integer nextId : ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword)))) {
 				final String caName = ejb.getCertificateProfileSession().getCertificateProfileName(nextId.intValue());
 				if (existingCas.length()>0) {
 					existingCas.append(", ");

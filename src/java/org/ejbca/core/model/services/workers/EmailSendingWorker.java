@@ -18,7 +18,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.SecConst;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
@@ -72,7 +72,7 @@ public abstract class EmailSendingWorker extends BaseWorker {
 			try{
 				EmailCertData next = iter.next();								
 				getAction().performAction(next.getActionInfo(), ejbs);
-				updateStatus(next.getFingerPrint(), SecConst.CERT_NOTIFIEDABOUTEXPIRATION );
+				updateStatus(next.getFingerPrint(), CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION);
 			} catch (Exception fe) {
 				log.error("Error sending emails: ", fe);
 				throw new ServiceExecutionFailedException(fe);

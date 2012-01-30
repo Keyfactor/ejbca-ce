@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.jndi.JndiHelper;
@@ -137,8 +138,8 @@ public class PublisherQueueProcessTest {
         // publisherId before
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         try {
-            certificateStoreSession.storeCertificate(admin, cert, "TestPublishQueueProcessService", null, SecConst.CERT_ACTIVE,
-                    SecConst.CERTTYPE_ENDENTITY, 12345, "tag", new Date().getTime());
+            certificateStoreSession.storeCertificate(admin, cert, "TestPublishQueueProcessService", null, CertificateConstants.CERT_ACTIVE,
+                    CertificateConstants.CERTTYPE_ENDENTITY, 12345, "tag", new Date().getTime());
         } catch (Exception e) {
             // Perhaps the cert already exists
         }

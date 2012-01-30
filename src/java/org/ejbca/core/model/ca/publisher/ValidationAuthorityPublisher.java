@@ -26,6 +26,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -223,7 +224,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 		}
 		final StoreCertPreparer prep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type, tag, certificateProfileId, lastUpdate);
 		try {
-			if (status == SecConst.CERT_REVOKED) {
+			if (status == CertificateConstants.CERT_REVOKED) {
 				// If this is a revocation we assume that the certificate already exists in the database. In that case we will try an update first and if that fails an insert.
 				if (JDBCUtil.execute(updateCertificateSQL, prep, getDataSource()) == 1) {
 					fail = false;	// We updated exactly one row, which is what we expect

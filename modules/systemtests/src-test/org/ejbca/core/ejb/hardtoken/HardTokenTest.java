@@ -24,6 +24,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -143,8 +144,10 @@ public class HardTokenTest extends CaTestCase {
         Certificate cert = CertTools.getCertfromByteArray(testcert);
         // Store the dummy cert for test.
         if (certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) == null) {
-            certificateStoreSession.storeCertificate(internalAdmin, cert, "DUMMYUSER", CertTools.getFingerprintAsString(cert), SecConst.CERT_ACTIVE,
-                    SecConst.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
+            certificateStoreSession.storeCertificate(internalAdmin, cert, "DUMMYUSER",
+                    CertTools.getFingerprintAsString(cert), CertificateConstants.CERT_ACTIVE,
+                    CertificateConstants.CERTTYPE_ENDENTITY, SecConst.CERTPROFILE_FIXED_ENDUSER,
+                    null, new Date().getTime());
         }
         String tokensn = hardTokenSessionRemote.findHardTokenByCertificateSNIssuerDN(internalAdmin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
 

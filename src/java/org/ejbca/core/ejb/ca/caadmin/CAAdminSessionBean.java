@@ -94,6 +94,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
@@ -2424,13 +2425,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 String cafp = fingerprint;
                 // Calculate the certificate type
                 boolean isSelfSigned = CertTools.isSelfSigned(cert);
-                int type = SecConst.CERTTYPE_ENDENTITY;
+                int type = CertificateConstants.CERTTYPE_ENDENTITY;
                 if (CertTools.isCA(cert)) {
                     // this is a CA
                     if (isSelfSigned) {
-                        type = SecConst.CERTTYPE_ROOTCA;
+                        type = CertificateConstants.CERTTYPE_ROOTCA;
                     } else {
-                        type = SecConst.CERTTYPE_SUBCA;
+                        type = CertificateConstants.CERTTYPE_SUBCA;
                         // If not a root CA, the next certificate in the chain
                         // should be the CA of this CA
                         if ((i + 1) < certs.length) {
@@ -2441,7 +2442,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 } else if (isSelfSigned) {
                     // If we don't have basic constraints, but is self signed,
                     // we are still a CA, just a stupid CA
-                    type = SecConst.CERTTYPE_ROOTCA;
+                    type = CertificateConstants.CERTTYPE_ROOTCA;
                 } else {
                     // If and end entity, the next certificate in the chain
                     // should be the CA of this end entity
@@ -2452,7 +2453,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 }
 
                 String name = "SYSTEMCERT";
-                if (type != SecConst.CERTTYPE_ENDENTITY) {
+                if (type != CertificateConstants.CERTTYPE_ENDENTITY) {
                     name = "SYSTEMCA";
                 }
                 // Store CA certificate in the database if it does not exist
@@ -2463,14 +2464,16 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 if (ci == null) {
                     // If we don't have it in the database, store it setting
                     // certificateProfileId = 0 and tag = null
-                    certificateStoreSession.storeCertificate(admin, cert, name, cafp, SecConst.CERT_ACTIVE, type, profileId, tag, updateTime);
+                    certificateStoreSession.storeCertificate(admin, cert, name, cafp,
+                            CertificateConstants.CERT_ACTIVE, type, profileId, tag, updateTime);
                 } else {
                     updateTime = ci.getUpdateTime().getTime();
                     profileId = ci.getCertificateProfileId();
                     tag = ci.getTag();
                 }
                 if (usedpublishers != null) {
-                    publisherSession.storeCertificate(admin, usedpublishers, cert, cafp, null, caDataDN, fingerprint, SecConst.CERT_ACTIVE, type, -1,
+                    publisherSession.storeCertificate(admin, usedpublishers, cert, cafp, null, caDataDN, fingerprint,
+                            CertificateConstants.CERT_ACTIVE, type, -1,
                             RevokedCertInfo.NOT_REVOKED, tag, profileId, updateTime, null);
                 }
             }

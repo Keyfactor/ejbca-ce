@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
@@ -88,7 +89,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 getLogger().info("Description: " + getDescription());
                 Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword));
                 Collection<String> canames = ejb.getCaSession().getAvailableCANames(getAdmin(cliUserName, cliPassword));
-                Collection<Integer> certprofileids = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, caids);
+                Collection<Integer> certprofileids = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, caids);
                 Map<Integer, String> certificateprofileidtonamemap = ejb.getCertificateProfileSession().getCertificateProfileIdToNameMap();
 
                 Collection<Integer> endentityprofileids = ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword));

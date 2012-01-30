@@ -28,7 +28,6 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
-import org.ejbca.core.model.SecConst;
 
 /**
  * A class that looks up the which CA:s and certificate profiles the administrator is authorized to view.
@@ -79,9 +78,9 @@ public class CAAuthorization implements Serializable {
         profilenamesendentity = new TreeMap<String, Integer>();  
         Iterator<Integer> iter = null;
         if(usehardtokenprofiles) {         
-          iter = certificateProfileSession.getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_HARDTOKEN, getAuthorizedCAIds()).iterator();
-        } else {         
-		  iter = certificateProfileSession.getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, getAuthorizedCAIds()).iterator();
+          iter = certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_HARDTOKEN, getAuthorizedCAIds()).iterator();
+        } else {
+		  iter = certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, getAuthorizedCAIds()).iterator();
         }
         Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         while(iter.hasNext()){
@@ -95,7 +94,7 @@ public class CAAuthorization implements Serializable {
     public TreeMap<String, Integer> getAuthorizedSubCACertificateProfileNames(){
       if(profilenamessubca==null){
         profilenamessubca = new TreeMap<String, Integer>();  
-        Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_SUBCA, getAuthorizedCAIds()).iterator();      
+        Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_SUBCA, getAuthorizedCAIds()).iterator();      
         Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
@@ -109,7 +108,7 @@ public class CAAuthorization implements Serializable {
     public TreeMap<String, Integer> getAuthorizedRootCACertificateProfileNames(){
       if(profilenamesrootca==null){
         profilenamesrootca = new TreeMap<String, Integer>();  
-        Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ROOTCA, getAuthorizedCAIds()).iterator();      
+        Iterator<Integer> iter = certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ROOTCA, getAuthorizedCAIds()).iterator();      
         Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();
         while(iter.hasNext()){
           Integer id = (Integer) iter.next();
@@ -132,9 +131,9 @@ public class CAAuthorization implements Serializable {
           iter = certificateProfileSession.getAuthorizedCertificateProfileIds(0, getAuthorizedCAIds()).iterator();
         }else{
           ArrayList<Integer> certprofiles = new ArrayList<Integer>();
-		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, getAuthorizedCAIds()));
-		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ROOTCA, getAuthorizedCAIds()));
-		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_SUBCA, getAuthorizedCAIds()));
+		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, getAuthorizedCAIds()));
+		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ROOTCA, getAuthorizedCAIds()));
+		  certprofiles.addAll(certificateProfileSession.getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_SUBCA, getAuthorizedCAIds()));
 		  iter = certprofiles.iterator();
         }
         Map<Integer, String> idtonamemap = certificateProfileSession.getCertificateProfileIdToNameMap();

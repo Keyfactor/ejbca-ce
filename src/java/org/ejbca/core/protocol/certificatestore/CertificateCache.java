@@ -34,11 +34,11 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.model.SecConst;
 
 
 /**
@@ -230,7 +230,9 @@ class CertificateCache implements ICertificateCache {
 				// The other HashMaps are always created as well, if this one is created
 				return;
 			}
-			final Collection<Certificate> certs = findCertificatesByType(SecConst.CERTTYPE_SUBCA + SecConst.CERTTYPE_ROOTCA, null);
+			final Collection<Certificate> certs =
+			        findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA +
+			                               CertificateConstants.CERTTYPE_ROOTCA, null);
 			if (log.isDebugEnabled()) {
 				log.debug("Loaded "+(certs == null ? "0":Integer.toString(certs.size()))+" ca certificates");
 			}

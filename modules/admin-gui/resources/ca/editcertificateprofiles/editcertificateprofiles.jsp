@@ -5,7 +5,8 @@
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.cesecore.certificates.certificateprofile.CertificateProfile, org.ejbca.ui.web.admin.cainterface.CertificateProfileDataHandler, 
                org.cesecore.certificates.certificateprofile.CertificateProfileExistsException, org.cesecore.certificates.certificateprofile.CertificateProfileConstants, org.ejbca.ui.web.CertificateView, org.cesecore.certificates.util.DNFieldExtractor, org.cesecore.certificates.util.DnComponents, 
                org.cesecore.certificates.certificate.certextensions.CertificateExtensionFactory, org.cesecore.certificates.certificate.certextensions.AvailableCertificateExtension, org.cesecore.certificates.certificateprofile.CertificatePolicy,
-               org.cesecore.certificates.ca.CAInfo, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.cesecore.certificates.util.AlgorithmConstants"%>
+               org.cesecore.certificates.ca.CAInfo, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.cesecore.certificates.util.AlgorithmConstants,
+               org.cesecore.certificates.certificate.CertificateConstants"%>
 <%@page import="org.cesecore.util.YearMonthDayTime"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />

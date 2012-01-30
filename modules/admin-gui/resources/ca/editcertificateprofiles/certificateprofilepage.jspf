@@ -9,11 +9,13 @@
   CertificateExtensionFactory certExtFact = CertificateExtensionFactory.getInstance();
  
   String[] SUPERADMIN_TYPE_NAMES = {"ENDENTITY", "SUBCA", "ROOTCA"};
-  int[] SUPERADMIN_TYPE_IDS = {SecConst.CERTTYPE_ENDENTITY,SecConst.CERTTYPE_SUBCA , SecConst.CERTTYPE_ROOTCA};
+  int[] SUPERADMIN_TYPE_IDS = {CertificateConstants.CERTTYPE_ENDENTITY,
+		  					   CertificateConstants.CERTTYPE_SUBCA,
+		  					   CertificateConstants.CERTTYPE_ROOTCA};
    
   String[] TYPE_NAMES = {"ENDENTITY"};
-  int[] TYPE_IDS = {SecConst.CERTTYPE_ENDENTITY};
-  if(issuperadministrator){
+  int[] TYPE_IDS = {CertificateConstants.CERTTYPE_ENDENTITY};
+  if (issuperadministrator) {
     TYPE_NAMES = SUPERADMIN_TYPE_NAMES;
     TYPE_IDS = SUPERADMIN_TYPE_IDS;
   }
@@ -267,21 +269,18 @@ function typechanged(){
   var seltype = document.editcertificateprofile.<%=SELECT_TYPE %>.options.selectedIndex;
   var type = document.editcertificateprofile.<%=SELECT_TYPE %>.options[seltype].value; 
 
-  if(type == <%= SecConst.CERTTYPE_ENDENTITY %>){
+  if (type == <%= CertificateConstants.CERTTYPE_ENDENTITY %>) {
     document.editcertificateprofile.<%=SELECT_AVAILABLEPUBLISHERS %>.disabled=false;
     document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.disabled=true;
     document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.checked=false;
     document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT %>.disabled=true;
     document.editcertificateprofile.<%=TEXTFIELD_PATHLENGTHCONSTRAINT %>.value="";
-  }else{
+  } else {
     document.editcertificateprofile.<%=SELECT_AVAILABLEPUBLISHERS %>.disabled=true;
     if(document.editcertificateprofile.<%=CHECKBOX_BASICCONSTRAINTS %>.checked){    
       document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.disabled=false;
-    }  
-  } 
-  
-  
-  
+    }
+  }
 }
 
 function checkusebasicconstraintfield(){
@@ -290,7 +289,8 @@ function checkusebasicconstraintfield(){
     
     var seltype = document.editcertificateprofile.<%=SELECT_TYPE %>.options.selectedIndex;
     var type = document.editcertificateprofile.<%=SELECT_TYPE %>.options[seltype].value; 
-    if(type == <%= SecConst.CERTTYPE_SUBCA %> || type == <%= SecConst.CERTTYPE_ROOTCA %>){
+    if (type == <%= CertificateConstants.CERTTYPE_SUBCA %> ||
+    	type == <%= CertificateConstants.CERTTYPE_ROOTCA %>) {
       document.editcertificateprofile.<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>.disabled=false;
     }          
   }
@@ -652,7 +652,10 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"PATHLENGTHCONSTRAINT\") %>" />
       </td>
       <td width="50%">
-           <% boolean enablepathlenconstraint = certificateprofiledata.getUseBasicConstraints() && (certificateprofiledata.getType() == SecConst.CERTTYPE_SUBCA ||certificateprofiledata.getType() == SecConst.CERTTYPE_ROOTCA); %>
+           <% boolean enablepathlenconstraint =
+           			certificateprofiledata.getUseBasicConstraints() &&
+           			(certificateprofiledata.getType() == CertificateConstants.CERTTYPE_SUBCA ||
+           			 certificateprofiledata.getType() == CertificateConstants.CERTTYPE_ROOTCA); %>
            <input type="checkbox" name="<%=CHECKBOX_USEPATHLENGTHCONSTRAINT %>"   onClick="checkusepathlengtconstraintfield()" value="<%=CHECKBOX_VALUE %>" <% if(!enablepathlenconstraint) out.write(" disabled "); %>
            <% if(certificateprofiledata.getUsePathLengthConstraint() && enablepathlenconstraint) 
                  out.write(" CHECKED ");
@@ -1547,7 +1550,9 @@ function checkallfields(){
         <c:out value="<%= ejbcawebbean.getText(\"PUBLISHERS\") %>" />
       </td>
       <td width="50%"> 
-        <select name="<%=SELECT_AVAILABLEPUBLISHERS%>" size="5" multiple  <% if(certificateprofiledata.getType() != SecConst.CERTTYPE_ENDENTITY) out.write(" disabled "); %>>
+        <select name="<%=SELECT_AVAILABLEPUBLISHERS%>" size="5"
+        	multiple  <% if(certificateprofiledata.getType() != CertificateConstants.CERTTYPE_ENDENTITY)
+        					out.write(" disabled "); %>>
            <%   Collection usedpublishers = certificateprofiledata.getPublisherList(); 
                 iter = authorizedpublishers.keySet().iterator(); 
                 while(iter.hasNext()){

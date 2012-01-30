@@ -38,6 +38,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64GetHashMap;
@@ -175,7 +176,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     public void revokeCertificate(AuthenticationToken admin, Collection<Integer> publisherids, Certificate cert, String username, String userDN, String cafp, int type, int reason,
             long revocationDate, String tag, int certificateProfileId, long lastUpdate) throws AuthorizationDeniedException  {
         storeCertificate(admin, publisherids, cert, username, null, userDN, cafp,
-                SecConst.CERT_REVOKED, type, revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
+                CertificateConstants.CERT_REVOKED, type, revocationDate, reason, tag, certificateProfileId, lastUpdate, null);
     }
 
     @Override

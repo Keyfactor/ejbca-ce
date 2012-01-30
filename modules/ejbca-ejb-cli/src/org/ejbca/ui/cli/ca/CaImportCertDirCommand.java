@@ -22,6 +22,7 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -76,9 +77,9 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			final String certificateProfile = args[6];				
 			final int status;
 			if ("ACTIVE".equalsIgnoreCase(active)) {
-				status = SecConst.CERT_ACTIVE;
+				status = CertificateConstants.CERT_ACTIVE;
 			} else if ("REVOKED".equalsIgnoreCase(active)) {
-				status = SecConst.CERT_REVOKED;
+				status = CertificateConstants.CERT_REVOKED;
 			} else {
 				throw new Exception("Invalid certificate status.");
 			}
@@ -166,7 +167,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 		final Date now = new Date();
 		// Certificate has expired, but we are obviously keeping it for archival purposes
 		if (CertTools.getNotAfter(certificate).compareTo(now) < 0) {
-			status = SecConst.CERT_ARCHIVED;
+			status = CertificateConstants.CERT_ARCHIVED;
 		}
 		if (!cacert.getSubjectX500Principal().getName().equals(certificate.getIssuerX500Principal().getName())){
 			getLogger().info("REJECTED, CA issuer mismatch, file: " + filename);
@@ -198,8 +199,12 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 		ejb.getUserAdminSession().changeUser(getAdmin(cliUserName, cliPassword), userdata, false);
 		getLogger().info("User '" + username + "' has been updated.");
 		// Finally import the certificate and revoke it if necessary
-		ejb.getCertStoreSession().storeCertificate(getAdmin(cliUserName, cliPassword), certificate, username, fingerprint, SecConst.CERT_ACTIVE, SecConst.USER_ENDUSER, certificateProfileId, null, now.getTime());
-		if (status == SecConst.CERT_REVOKED) {
+		ejb.getCertStoreSession().storeCertificate(getAdmin(cliUserName, cliPassword),
+		                                           certificate, username, fingerprint,
+		                                           CertificateConstants.CERT_ACTIVE,
+		                                           SecConst.USER_ENDUSER, 
+		                                           certificateProfileId, null, now.getTime());
+		if (status == CertificateConstants.CERT_REVOKED) {
 			ejb.getUserAdminSession().revokeCert(getAdmin(cliUserName, cliPassword), certificate.getSerialNumber(), issuer, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 		}
 		getLogger().info("Certificate '" + CertTools.getSerialNumberAsString(certificate) + "' has been added.");

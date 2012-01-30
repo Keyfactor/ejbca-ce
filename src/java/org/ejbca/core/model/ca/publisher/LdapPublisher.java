@@ -31,12 +31,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.util.TCPTool;
 
 import com.novell.ldap.LDAPAttribute;
@@ -175,10 +175,11 @@ public class LdapPublisher extends BasePublisher {
 			log.trace(">storeCertificate(username="+username+")");
 		}
 
-		if ( (status == SecConst.CERT_REVOKED) || (status == SecConst.CERT_TEMP_REVOKED) ) {
+		if ((status == CertificateConstants.CERT_REVOKED) ||
+		    (status == CertificateConstants.CERT_TEMP_REVOKED)) {
         	// Call separate script for revocation
         	revokeCertificate(admin, incert, username, revocationReason, userDN);
-        } else if (status == SecConst.CERT_ACTIVE) {
+        } else if (status == CertificateConstants.CERT_ACTIVE) {
             // Don't publish non-active certificates
     		int ldapVersion = LDAPConnection.LDAP_V3;
     		LDAPConnection lc = createLdapConnection();
@@ -217,7 +218,7 @@ public class LdapPublisher extends BasePublisher {
     		String attribute = null;
     		String objectclass = null;
 
-    		if (type == SecConst.CERTTYPE_ENDENTITY) {
+    		if (type == CertificateConstants.CERTTYPE_ENDENTITY) {
     			if (log.isDebugEnabled()) {
     				log.debug("Publishing end user certificate to first available server of " + getHostnames());
     			}
@@ -255,7 +256,8 @@ public class LdapPublisher extends BasePublisher {
     				log.error(msg, e);
     				throw new PublisherException(msg);                
     			}
-    		} else if ((type == SecConst.CERTTYPE_SUBCA) || (type == SecConst.CERTTYPE_ROOTCA)) {
+    		} else if (type == CertificateConstants.CERTTYPE_SUBCA ||
+    		           type == CertificateConstants.CERTTYPE_ROOTCA) {
     			if (log.isDebugEnabled()) {
     				log.debug("Publishing CA certificate to first available server of " + getHostnames());
     			}
