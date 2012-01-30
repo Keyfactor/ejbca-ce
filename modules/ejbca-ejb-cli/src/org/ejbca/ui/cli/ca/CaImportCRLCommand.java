@@ -33,6 +33,7 @@ import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -148,7 +149,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                        getLogger().info("User '" + missing_user_name + "' has been updated.");
 	                    }
 	                    ejb.getCertStoreSession().storeCertificate(getAdmin(cliUserName, cliPassword), certificate, missing_user_name, fingerprint,
-	                            SecConst.CERT_ACTIVE, SecConst.USER_ENDUSER, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
+	                            CertificateConstants.CERT_ACTIVE, SecConst.USER_ENDUSER, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
 	                    getLogger().info("Dummy certificate  '" + serialHex + "' has been stored.");
 	                }
 	                // This check will not catch a certificate with status SecConst.CERT_ARCHIVED

@@ -36,6 +36,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.util.CertTools;
@@ -516,7 +517,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
 
     private boolean isCertActive(final CertificateInfo certinfo) {
         // Check that the certificate is not revoked
-        if (certinfo.getStatus() != SecConst.CERT_ACTIVE) {
+        if (certinfo.getStatus() != CertificateConstants.CERT_ACTIVE) {
             errorMessage = "The certificate attached to the PKIMessage in the extraCert field is revoked.";
             if(log.isDebugEnabled()) {
                 log.debug(errorMessage+" Username="+certinfo.getUsername());

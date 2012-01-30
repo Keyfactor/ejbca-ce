@@ -30,10 +30,10 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 
 /**
  * This class is used for publishing to user defined script or command.
@@ -120,10 +120,11 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
             log.trace(">storeCertificate, Storing Certificate for user: " + username);
         }
 
-        if ((status == SecConst.CERT_REVOKED) || (status == SecConst.CERT_TEMP_REVOKED)) {
+        if ((status == CertificateConstants.CERT_REVOKED) ||
+            (status == CertificateConstants.CERT_TEMP_REVOKED)) {
             // Call separate script for revocation
             revokeCertificate(admin, incert, revocationReason);
-        } else if (status == SecConst.CERT_ACTIVE) {
+        } else if (status == CertificateConstants.CERT_ACTIVE) {
             // Don't publish non-active certificates
             // Make sure that an external command was specified
             if (certExternalCommandFileName == null) {

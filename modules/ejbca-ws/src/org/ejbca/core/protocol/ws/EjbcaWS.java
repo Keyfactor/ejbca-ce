@@ -82,6 +82,7 @@ import org.cesecore.certificates.ca.CAOfflineException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -353,7 +354,7 @@ public class EjbcaWS implements IEjbcaWS {
 			if (endEntityAccessSession.findUser(admin,username) != null) {  // checks authorization on CA and profiles and view_end_entity
 				Collection<java.security.cert.Certificate> certs;
 				if (onlyValid) {
-					certs = certificateStoreSession.findCertificatesByUsernameAndStatus(username, SecConst.CERT_ACTIVE);
+					certs = certificateStoreSession.findCertificatesByUsernameAndStatus(username, CertificateConstants.CERT_ACTIVE);
 				} else {
 					certs = certificateStoreSession.findCertificatesByUsername(username);
 				}

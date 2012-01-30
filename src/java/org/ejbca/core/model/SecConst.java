@@ -190,43 +190,6 @@ public final class SecConst {
     			profileId == SecConst.CERTPROFILE_FIXED_OCSPSIGNER ||
     			profileId == SecConst.CERTPROFILE_FIXED_SERVER );
     }
-    
-    // Certificate status representations
-    /** Certificate doesn't belong to anyone */
-    public static final int CERT_UNASSIGNED = 0;
-    /** Assigned, but not yet active */
-    public static final int CERT_INACTIVE = 10;
-    /** Certificate is active and assigned */
-    public static final int CERT_ACTIVE = 20;
-    /** Certificate is still active and the user is notified that it 
-     * will soon expire. */
-    public static final int CERT_NOTIFIEDABOUTEXPIRATION = 21;
-    /** Certificate is temporarily blocked (reversible) */
-    public static final int CERT_TEMP_REVOKED = 30;
-    /** Certificate is permanently blocked (terminated) */
-    public static final int CERT_REVOKED = 40;
-    // there was previously a status 50, EXPIRED here as well, but it was not used so
-    // it was removed to avoid misunderstandings.
-    /** Certificate is expired and kept for archive purpose */
-    public static final int CERT_ARCHIVED = 60;
-
-    // Constants used in certificate generation and publication.
-    /** Certificate belongs to an end entity. */
-    public static final int CERTTYPE_ENDENTITY  =     0x1;    
-    /** Certificate belongs to a sub ca. */
-    public static final int CERTTYPE_SUBCA      =     0x2;
-    /** Certificate belongs to a root ca. */
-    public static final int CERTTYPE_ROOTCA     =     0x8;        
-    /** Certificate belongs on a hard token. */
-    public static final int CERTTYPE_HARDTOKEN  =     0x16;
-
-    // Certificate types used to create certificates
-    /** Certificate used for encryption. */
-    public static final int CERT_TYPE_ENCRYPTION = 0x1;
-    /** Certificate used for digital signatures. */
-    public static final int CERT_TYPE_SIGNATURE = 0x2;
-    /** Certificate used for both encryption and signatures. */
-    public static final int CERT_TYPE_ENCSIGN = 0x3;
 
 	// Revocation reasons identifiers
     public static final String[] reasontexts = {

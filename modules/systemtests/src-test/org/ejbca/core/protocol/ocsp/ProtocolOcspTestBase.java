@@ -43,14 +43,13 @@ import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.model.SecConst;
-
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;
@@ -428,7 +427,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
     }
 
     protected X509Certificate getCaCert(X509Certificate cert) throws Exception {
-        Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByType(SecConst.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));
+        Collection<Certificate> certs = certificateStoreOnlyDataSession.findCertificatesByType(CertificateConstants.CERTTYPE_ROOTCA, CertTools.getIssuerDN(cert));
         assertTrue("Could not determine or find the CA cert.", certs != null && !certs.isEmpty());
         return (X509Certificate) certs.iterator().next();
     }

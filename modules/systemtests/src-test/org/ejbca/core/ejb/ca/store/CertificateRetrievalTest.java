@@ -28,6 +28,7 @@ import java.util.Vector;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -127,8 +128,11 @@ public class CertificateRetrievalTest {
         rootCaFp = CertTools.getFingerprintAsString(cert);
         try {
             if (certificateStoreSession.findCertificateByFingerprint(rootCaFp) == null) {
-                certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", rootCaFp, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ROOTCA,
-                        SecConst.CERTPROFILE_FIXED_ROOTCA, null, new Date().getTime());
+                certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", rootCaFp,
+                                                         CertificateConstants.CERT_ACTIVE,
+                                                         CertificateConstants.CERTTYPE_ROOTCA,
+                                                         SecConst.CERTPROFILE_FIXED_ROOTCA,
+                                                         null, new Date().getTime());
             }
             cert = CertTools.getCertfromByteArray(testcacert);
             m_certs.add(cert);
@@ -136,7 +140,9 @@ public class CertificateRetrievalTest {
             // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
             subCaFp = CertTools.getFingerprintAsString(cert);
             if (certificateStoreSession.findCertificateByFingerprint(subCaFp) == null) {
-                certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", subCaFp, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_SUBCA,
+                certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", subCaFp,
+                                                         CertificateConstants.CERT_ACTIVE,
+                                                         CertificateConstants.CERTTYPE_SUBCA,
                         SecConst.CERTPROFILE_FIXED_SUBCA, null, new Date().getTime());
             }
             cert = CertTools.getCertfromByteArray(testcert);
@@ -145,8 +151,11 @@ public class CertificateRetrievalTest {
             // log.debug(cert.getIssuerDN().getName()+";"+cert.getSerialNumber().toString(16)+";"+CertTools.getFingerprintAsString(cert));
             endEntityFp = CertTools.getFingerprintAsString(cert);
             if (certificateStoreSession.findCertificateByFingerprint(endEntityFp) == null) {
-                certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", endEntityFp, SecConst.CERT_ACTIVE, SecConst.CERTTYPE_ENDENTITY,
-                        SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
+                certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", endEntityFp,
+                                                         CertificateConstants.CERT_ACTIVE,
+                                                         CertificateConstants.CERTTYPE_ENDENTITY,
+                                                         SecConst.CERTPROFILE_FIXED_ENDUSER,
+                                                         null, new Date().getTime());
             }
         } catch (Exception e) {
             log.error("Error: ", e);
@@ -164,7 +173,9 @@ public class CertificateRetrievalTest {
     public void test02FindCACertificates() throws Exception {
         log.trace(">test02FindCACertificates()");
         // List all certificates to see
-        Collection<Certificate> certfps = certificateStoreSession.findCertificatesByType(SecConst.CERTTYPE_SUBCA, null);
+        Collection<Certificate> certfps =
+                certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA,
+                                                               null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -193,7 +204,8 @@ public class CertificateRetrievalTest {
         // List all certificates to see, but only from our test certificates
         // issuer, or we might get OutOfMemmory if there are plenty of certs
         Collection<Certificate> certfps = certificateStoreSession
-                .findCertificatesByType(SecConst.CERTTYPE_ENDENTITY, "CN=Subordinate CA,O=Anatom,ST=Some-State,C=SE");
+                .findCertificatesByType(CertificateConstants.CERTTYPE_ENDENTITY,
+                                        "CN=Subordinate CA,O=Anatom,ST=Some-State,C=SE");
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -221,7 +233,9 @@ public class CertificateRetrievalTest {
         log.trace(">test04FindRootCertificates()");
 
         // List all certificates to see
-        Collection<Certificate> certfps = certificateStoreSession.findCertificatesByType(SecConst.CERTTYPE_ROOTCA, null);
+        Collection<Certificate> certfps =
+                certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_ROOTCA,
+                                                               null);
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() != 0);
 
@@ -306,7 +320,9 @@ public class CertificateRetrievalTest {
         Certificate rootcacert = CertTools.getCertfromByteArray(testrootcert);
 
         // List all certificates to see
-        Collection<Certificate> certfps = certificateStoreSession.findCertificatesByType(SecConst.CERTTYPE_SUBCA, CertTools.getSubjectDN(rootcacert));
+        Collection<Certificate> certfps =
+                certificateStoreSession.findCertificatesByType(CertificateConstants.CERTTYPE_SUBCA,
+                                                               CertTools.getSubjectDN(rootcacert));
         assertNotNull("failed to list certs", certfps);
         assertTrue("failed to list certs", certfps.size() >= 1);
         Iterator<Certificate> iter = certfps.iterator();

@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -144,7 +145,7 @@ public class CertificateExpireTest extends CaTestCase {
         assertEquals("issuerdn does not match.", CertTools.getIssuerDN(cert), info.getIssuerDN());
         assertEquals("subjectdn does not match.", CertTools.getSubjectDN(cert), info.getSubjectDN());
         // The cert was just stored above with status INACTIVE
-        assertEquals("status does not match.", SecConst.CERT_ACTIVE, info.getStatus());
+        assertEquals("status does not match.", CertificateConstants.CERT_ACTIVE, info.getStatus());
         long seconds = (cert.getNotAfter().getTime() - new Date().getTime()) / 1000l;
         log.debug("ceritificate OK in store, expires in " + seconds + " seconds");
 
@@ -178,19 +179,19 @@ public class CertificateExpireTest extends CaTestCase {
         // The service will run... the cert should still be active after 5 seconds..
         Thread.sleep(5000);
         info = certificateStoreSession.getCertificateInfo(fp);
-        assertEquals("status dotes not match.", SecConst.CERT_ACTIVE, info.getStatus());
+        assertEquals("status dotes not match.", CertificateConstants.CERT_ACTIVE, info.getStatus());
   
         // The service will run...We need some tolerance since timers cannot
         // be guaranteed to executed at the exact interval. 
         Thread.sleep(4000);
         int tries = 0;
-        while (info.getStatus() != SecConst.CERT_NOTIFIEDABOUTEXPIRATION && tries<5) {
+        while (info.getStatus() != CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION && tries<5) {
         	Thread.sleep(1000);
         	info = certificateStoreSession.getCertificateInfo(fp);
         	tries++;
         }
         info = certificateStoreSession.getCertificateInfo(fp);
-        assertEquals("Status does not match.", SecConst.CERT_NOTIFIEDABOUTEXPIRATION, info.getStatus());
+        assertEquals("Status does not match.", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION, info.getStatus());
     	log.debug("It took >" + (9+tries) + " seconds before the certificate was expired!");
 
     }

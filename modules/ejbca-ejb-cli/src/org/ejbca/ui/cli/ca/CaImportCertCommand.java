@@ -20,6 +20,7 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
@@ -74,10 +75,10 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			int type = SecConst.USER_ENDUSER;
 			int status;
 			if ("ACTIVE".equalsIgnoreCase(active)) {
-				status = SecConst.CERT_ACTIVE;
+				status = CertificateConstants.CERT_ACTIVE;
 			}
 			else if ("REVOKED".equalsIgnoreCase(active)) {
-				status = SecConst.CERT_REVOKED;
+				status = CertificateConstants.CERT_REVOKED;
 			}
 			else {
 				throw new Exception("Invalid certificate status.");
@@ -90,7 +91,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			}
 			// Certificate has expired, but we are obviously keeping it for archival purposes
 			if (CertTools.getNotAfter(certificate).compareTo(new java.util.Date()) < 0) {
-				status = SecConst.CERT_ARCHIVED;
+				status = CertificateConstants.CERT_ARCHIVED;
 			}
 			
 			// Check if username already exists.
@@ -159,7 +160,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 						SecConst.TOKEN_SOFT_BROWSERGEN,
 						SecConst.NO_HARDTOKENISSUER,
 						cainfo.getCAId());
-				if (status == SecConst.CERT_ACTIVE) {
+				if (status == CertificateConstants.CERT_ACTIVE) {
 					ejb.getUserAdminSession().setUserStatus(getAdmin(cliUserName, cliPassword), username, UserDataConstants.STATUS_GENERATED);
 				}
 				else {
@@ -178,7 +179,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 						type,
 						SecConst.TOKEN_SOFT_BROWSERGEN,
 						SecConst.NO_HARDTOKENISSUER,
-						(status == SecConst.CERT_ACTIVE ?
+						(status == CertificateConstants.CERT_ACTIVE ?
 								UserDataConstants.STATUS_GENERATED :
 									UserDataConstants.STATUS_REVOKED),
 									cainfo.getCAId());
@@ -235,7 +236,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		getLogger().info(" End entity profiles: " + endEntityProfiles);
 		String certificateProfiles = "";
 		try {
-			Collection<Integer> cps = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(SecConst.CERTTYPE_ENDENTITY, cas);
+			Collection<Integer> cps = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, cas);
 			boolean first = true;
 			Iterator<Integer> iter = cps.iterator();
 			while (iter.hasNext()) {
