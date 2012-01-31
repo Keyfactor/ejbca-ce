@@ -45,6 +45,7 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -122,11 +123,11 @@ public class RevocationApprovalTest extends CaTestCase {
         	adminUsername = genRandomUserName("revocationTestAdmin");
         	requestingAdminUsername = genRandomUserName("revocationTestRequestingAdmin");
         	EndEntityInformation userdata = new EndEntityInformation(adminUsername, "CN=" + adminUsername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
-        			SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+        			CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         	userdata.setPassword("foo123");
         	userAdminSession.addUser(internalAdmin, userdata, true);
         	EndEntityInformation userdata2 = new EndEntityInformation(requestingAdminUsername, "CN=" + requestingAdminUsername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
-        			SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+        			CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         	userdata2.setPassword("foo123");
         	userAdminSession.addUser(internalAdmin, userdata2, true);
         	BatchMakeP12 makep12 = new BatchMakeP12();
@@ -194,7 +195,7 @@ public class RevocationApprovalTest extends CaTestCase {
 
     private void createUser(AuthenticationToken admin, String username, int caID) throws Exception {
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
         userAdminSession.addUser(admin, userdata, true);
         BatchMakeP12 makep12 = new BatchMakeP12();
@@ -225,7 +226,7 @@ public class RevocationApprovalTest extends CaTestCase {
         catokeninfo.setProperties(prop);
         ArrayList<Integer> approvalSettings = new ArrayList<Integer>();
         approvalSettings.add(approvalRequirementType);
-        X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", SecConst.CERTPROFILE_FIXED_ROOTCA, 365, new Date(
+        X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, new Date(
                 System.currentTimeMillis() + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catokeninfo, "Used for testing approvals",
                 -1, null, null, 24, 0, 10, 0, new ArrayList<Integer>(), true, false, true, false, "", "", "", null, "", true, new ArrayList<ExtendedCAServiceInfo>(), false, approvalSettings, 1,
                 false, true, false, false, true, true, true, false, true, true, true, null);

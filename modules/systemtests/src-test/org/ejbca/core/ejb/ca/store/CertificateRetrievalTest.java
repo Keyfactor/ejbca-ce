@@ -31,6 +31,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -131,7 +132,7 @@ public class CertificateRetrievalTest {
                 certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", rootCaFp,
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_ROOTCA,
-                                                         SecConst.CERTPROFILE_FIXED_ROOTCA,
+                                                         CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                                                          null, new Date().getTime());
             }
             cert = CertTools.getCertfromByteArray(testcacert);
@@ -143,7 +144,7 @@ public class CertificateRetrievalTest {
                 certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", subCaFp,
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_SUBCA,
-                        SecConst.CERTPROFILE_FIXED_SUBCA, null, new Date().getTime());
+                        CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, null, new Date().getTime());
             }
             cert = CertTools.getCertfromByteArray(testcert);
             m_certs.add(cert);
@@ -154,7 +155,7 @@ public class CertificateRetrievalTest {
                 certificateStoreSession.storeCertificate(adm, cert, "o=AnaTom,c=SE", endEntityFp,
                                                          CertificateConstants.CERT_ACTIVE,
                                                          CertificateConstants.CERTTYPE_ENDENTITY,
-                                                         SecConst.CERTPROFILE_FIXED_ENDUSER,
+                                                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                                                          null, new Date().getTime());
             }
         } catch (Exception e) {

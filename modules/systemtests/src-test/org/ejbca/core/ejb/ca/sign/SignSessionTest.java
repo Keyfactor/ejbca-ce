@@ -398,18 +398,18 @@ public class SignSessionTest extends CaTestCase {
 
     	if (!userAdminSession.existsUser("foorev")) {
     		userAdminSession.addUser(internalAdmin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-    				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsareversecaid);
+    				CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsareversecaid);
     		log.debug("created user: foorev, foo123, C=SE, O=AnaTom, CN=foorev");
     	} else {
     		log.info("User foorev already exists, resetting status.");
     		userAdminSession.changeUser(internalAdmin, "foorev", "foo123", "C=SE,O=AnaTom,CN=foorev", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-    				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsareversecaid);
+    				CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsareversecaid);
     		log.debug("Reset status to NEW");
     	}
 
     	if (!userAdminSession.existsUser("fooecdsa")) {
     		userAdminSession.addUser(internalAdmin, "fooecdsa", "foo123", "C=SE,O=AnaTom,CN=fooecdsa", null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-    				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ecdsacaid);
+    				CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ecdsacaid);
     		log.debug("created user: fooecdsa, foo123, C=SE, O=AnaTom, CN=fooecdsa");
     	} else {
     		log.info("User fooecdsa already exists, resetting status.");
@@ -419,7 +419,7 @@ public class SignSessionTest extends CaTestCase {
 
     	if (!userAdminSession.existsUser("fooecdsaimpca")) {
     		userAdminSession.addUser(internalAdmin, "fooecdsaimpca", "foo123", "C=SE,O=AnaTom,CN=fooecdsaimpca", null, "foo@anatom.se", false,
-    				SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
+    				SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
     				ecdsaimplicitlycacaid);
     		log.debug("created user: fooecdsaimpca, foo123, C=SE, O=AnaTom, CN=fooecdsaimpca");
     	} else {
@@ -430,7 +430,7 @@ public class SignSessionTest extends CaTestCase {
 
     	if (!userAdminSession.existsUser("foorsamgf1ca")) {
     		userAdminSession.addUser(internalAdmin, "foorsamgf1ca", "foo123", "C=SE,O=AnaTom,CN=foorsamgf1ca", null, "foo@anatom.se", false,
-    				SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsamgf1cacaid);
+    				SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsamgf1cacaid);
     		log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
     	} else {
     		log.info("User foorsamgf1ca already exists, resetting status.");
@@ -440,7 +440,7 @@ public class SignSessionTest extends CaTestCase {
 
     	if (!userAdminSession.existsUser("foodsa")) {
     		userAdminSession.addUser(internalAdmin, "foodsa", "foo123", "C=SE,O=AnaTom,CN=foodsa", null, "foodsa@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-    				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, dsacaid);
+    				CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, dsacaid);
     		log.debug("created user: foodsa, foo123, C=SE, O=AnaTom, CN=foodsa");
     	} else {
     		log.info("User foodsa already exists, resetting status.");
@@ -450,7 +450,7 @@ public class SignSessionTest extends CaTestCase {
 
     	if (!userAdminSession.existsUser(USER_PRIVKEYUSAGEPERIOD)) {
     		userAdminSession.addUser(internalAdmin, USER_PRIVKEYUSAGEPERIOD, "foo123", DN_PRIVKEYUSAGEPERIOD, null, "fooprivkeyusage@example.com", false, SecConst.EMPTY_ENDENTITYPROFILE,
-    				SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+    				CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
     		log.debug("created user: " + USER_PRIVKEYUSAGEPERIOD + ", foo123, " + DN_PRIVKEYUSAGEPERIOD);
     	} else {
     		log.info("User " + USER_PRIVKEYUSAGEPERIOD + " already exists, resetting status.");
@@ -693,7 +693,7 @@ public class SignSessionTest extends CaTestCase {
         if (!userAdminSession.existsUser("swede")) {
             // We use unicode encoding for the three swedish character åäö
             userAdminSession.addUser(internalAdmin, "swede", "foo123", "C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6", null, "swede@anatom.se", false,
-                    SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
             log.debug("created user: swede, foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
         } else {
             log.debug("user swede already exists: swede, foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
@@ -747,7 +747,7 @@ public class SignSessionTest extends CaTestCase {
         // Change a user that we know...
         userAdminSession.changeUser(internalAdmin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
                 "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1",
-                "foo@anatom.se", false, eeprofile, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
+                "foo@anatom.se", false, eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
                 UserDataConstants.STATUS_NEW, rsacaid);
         log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
 
@@ -774,7 +774,7 @@ public class SignSessionTest extends CaTestCase {
         // Change a user that we know...
         userAdminSession.changeUser(internalAdmin, "foo", "foo123", "C=SE,O=AnaTom,CN=foo",
                 "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1", "foo@anatom.se",
-                false, eeprofile, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
+                false, eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
         log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
 
         cert = (X509Certificate) signSession.createCertificate(internalAdmin, "foo", "foo123", rsakeys.getPublic());
@@ -1429,7 +1429,7 @@ public class SignSessionTest extends CaTestCase {
         pid = endEntityProfileSession.getEndEntityProfileId("TESTREQUESTCOUNTER");
 
         // Change already existing user
-        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, SecConst.CERTPROFILE_FIXED_ENDUSER,
+        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         userAdminSession.changeUser(internalAdmin, user, false);
         userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
@@ -1506,7 +1506,7 @@ public class SignSessionTest extends CaTestCase {
         createUsers();
 
         EndEntityInformation user = new EndEntityInformation("cvc", "C=SE,CN=TESTCVC", cvccaid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("cvc");
         userAdminSession.addUser(internalAdmin, user, false);
         userAdminSession.setUserStatus(internalAdmin, "cvc", UserDataConstants.STATUS_NEW);
@@ -1546,7 +1546,7 @@ public class SignSessionTest extends CaTestCase {
         // 
         // Same thing but with ECC keys
         EndEntityInformation userec = new EndEntityInformation("cvcec", "C=SE,CN=TCVCEC", cvccaecid, null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         userec.setPassword("cvc");
         userAdminSession.addUser(internalAdmin, userec, false);
         userAdminSession.setUserStatus(internalAdmin, "cvcec", UserDataConstants.STATUS_NEW);
@@ -2091,7 +2091,7 @@ public class SignSessionTest extends CaTestCase {
         // New random username and create cert
         String username = genRandomUserName();
         userAdminSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
 
@@ -2107,7 +2107,7 @@ public class SignSessionTest extends CaTestCase {
         // New random username and create cert
         username = genRandomUserName();
         userAdminSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
         cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
 

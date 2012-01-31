@@ -289,7 +289,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setStatus(UserDataVOWS.STATUS_NEW);
         user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
         user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-        user1.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
+        user1.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         user1.setType(65);
 
         if (!userAdminSession.existsUser(TEST_ADMIN_USERNAME)) {
@@ -334,7 +334,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user2.setStatus(UserDataVOWS.STATUS_NEW);
         user2.setTokenType(SecConst.TOKEN_SOFT_JKS);
         user2.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
-        user2.setCertificateProfileId(SecConst.CERTPROFILE_FIXED_ENDUSER);
+        user2.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         user2.setType(1);
 
         if (!userAdminSession.existsUser(TEST_NONADMIN_USERNAME)) {
@@ -2742,7 +2742,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         int cvcaid = rootcadn.hashCode();
         try {
 
-            CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
+            CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit WS CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -2775,7 +2775,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         try {
 
-            CVCCAInfo cvcdvinfo = new CVCCAInfo(subcadn, subcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
+            CVCCAInfo cvcdvinfo = new CVCCAInfo(subcadn, subcaname, SecConst.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, cvcaid, null, catokeninfo, "JUnit WS CVC DV CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -2831,7 +2831,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         try {
             String dvcadn = "CN=" + dvcaMnemonic + ",C=SE";
 
-            CVCCAInfo cvcdvinfo = new CVCCAInfo(dvcadn, dvcaname, SecConst.CA_ACTIVE, new Date(), SecConst.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
+            CVCCAInfo cvcdvinfo = new CVCCAInfo(dvcadn, dvcaname, SecConst.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SIGNEDBYEXTERNALCA, null, catokeninfo, "JUnit WS CVC DV signed by external", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime

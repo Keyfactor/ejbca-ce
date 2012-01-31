@@ -32,6 +32,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateUtils;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -218,13 +219,19 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     private static final String USEEXTENSIONDATA       = "USEEXTENSIONDATA";
 
     // String constants that never change, so we can do the String concat/conversion once
-    private static final String CONST_DEFAULTCERTPROFILE = Integer.toString(SecConst.CERTPROFILE_FIXED_ENDUSER);
-    private static final String CONST_AVAILCERTPROFILES1 = SecConst.CERTPROFILE_FIXED_ENDUSER + ";" + SecConst.CERTPROFILE_FIXED_OCSPSIGNER + ";" + SecConst.CERTPROFILE_FIXED_SERVER;
+    private static final String CONST_DEFAULTCERTPROFILE = Integer.toString(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+    private static final String CONST_AVAILCERTPROFILES1 =
+            CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER + ";" + 
+            CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER + ";" +
+            CertificateProfileConstants.CERTPROFILE_FIXED_SERVER;
     private static final String CONST_DEFKEYSTORE = Integer.toString(SecConst.TOKEN_SOFT_BROWSERGEN);
     private static final String CONST_AVAILKEYSTORE = SecConst.TOKEN_SOFT_BROWSERGEN + ";" + SecConst.TOKEN_SOFT_P12 +  ";" + SecConst.TOKEN_SOFT_JKS + ";" + SecConst.TOKEN_SOFT_PEM;
     private static final String CONST_AVAILCAS = Integer.toString(SecConst.ALLCAS);
     private static final String CONST_ISSUANCEREVOCATIONREASON = Integer.toString(RevokedCertInfo.NOT_REVOKED);
-    private static final String CONST_AVAILCERTPROFILES2 = SecConst.CERTPROFILE_FIXED_ENDUSER + ";" + SecConst.CERTPROFILE_FIXED_SUBCA + ";" + SecConst.CERTPROFILE_FIXED_ROOTCA;
+    private static final String CONST_AVAILCERTPROFILES2 =
+            CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER + ";" +
+            CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA + ";" +
+            CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA;
     
     /** Creates a new instance of EndEntity Profile with the default fields set. */
     public EndEntityProfile() {

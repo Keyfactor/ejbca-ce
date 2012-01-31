@@ -64,7 +64,7 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
             	int profileid = iter.next().intValue();
                 if (profileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) { // Certificate profile not found i database.
                 	getLogger().error("Couldn't find certificate profile '"+profileid+"' in database.");
-                } else if (SecConst.isFixedCertificateProfile(profileid)) {
+                } else if (CertificateProfileConstants.isFixedCertificateProfile(profileid)) {
                     //getLogger().debug("Skipping export fixed certificate profile with id '"+profileid+"'.");
                 } else {
 					String profilename = ejb.getCertificateProfileSession().getCertificateProfileName(profileid);									

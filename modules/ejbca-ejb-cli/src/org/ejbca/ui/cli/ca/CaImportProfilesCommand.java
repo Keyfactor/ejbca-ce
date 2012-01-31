@@ -101,8 +101,9 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                         //getLogger().debug("Id:"+infiles[i].getName().substring(index2+1,index3));
                         int profileid = Integer.parseInt(infiles[i].getName().substring(index2+1,index3));
                         // We don't add the fixed profiles, EJBCA handles those automagically
-                        if ( !entityprofile && SecConst.isFixedCertificateProfile(profileid) ) { 
-                        	getLogger().error("Not adding fixed certificate profile '"+profilename+"'.");
+                        if (!entityprofile && 
+                            CertificateProfileConstants.isFixedCertificateProfile(profileid)) { 
+                        	getLogger().error("Not adding fixed certificate profile '" + profilename + "'.");
                         } else {
                             if (entityprofile && profileid == SecConst.EMPTY_ENDENTITYPROFILE) {
                             	getLogger().error("Not adding fixed entity profile '"+profilename+"'.");
@@ -157,7 +158,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         		}
                                         	} else {
                                         		if (ejb.getCertificateProfileSession().getCertificateProfile(currentCertProfileId) != null ||
-                                        				SecConst.isFixedCertificateProfile(currentCertProfileId)) {
+                                        		    CertificateProfileConstants.isFixedCertificateProfile(currentCertProfileId)) {
                                             		availableCertProfiles += (availableCertProfiles.equals("") ? "" : ";" ) + currentCertProfile;
                                        			} else {
                                        				getLogger().warn("End Entity Profile '"+profilename+"' references certificate profile " + currentCertProfile + " that does not exist.");

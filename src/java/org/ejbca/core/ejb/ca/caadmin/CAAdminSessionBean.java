@@ -104,6 +104,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
@@ -1256,7 +1257,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         long crlIssueInterval = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
         long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_HOUR;
         long deltacrlperiod = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
-        int certprofileid = CertTools.isSelfSigned(caCertificate) ? SecConst.CERTPROFILE_FIXED_ROOTCA : SecConst.CERTPROFILE_FIXED_SUBCA;
+        int certprofileid = CertTools.isSelfSigned(caCertificate) ?
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA :
+                CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA;
         String subjectdn = CertTools.getSubjectDN(caCertificate);
         int validity = 0;
         int signedby = CertTools.isSelfSigned(caCertificate) ? CAInfo.SELFSIGNED : CAInfo.SIGNEDBYEXTERNALCA;
@@ -1978,7 +1981,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             IllegalCryptoTokenException, AuthorizationDeniedException, CADoesntExistsException, CAExistsException {
         // Create a new CA
         int signedby = CAInfo.SIGNEDBYEXTERNALCA;
-        int certprof = SecConst.CERTPROFILE_FIXED_SUBCA;
+        int certprof = CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA;
         String description = "Imported external signed CA";
         Certificate caSignatureCertificate = signatureCertChain[0];
         ArrayList<Certificate> certificatechain = new ArrayList<Certificate>();
@@ -1988,7 +1991,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (signatureCertChain.length == 1) {
             if (verifyIssuer(caSignatureCertificate, caSignatureCertificate)) {
                 signedby = CAInfo.SELFSIGNED;
-                certprof = SecConst.CERTPROFILE_FIXED_ROOTCA;
+                certprof = CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA;
                 description = "Imported root CA";
             } else {
                 // A less strict strategy can be to assume certificate signed

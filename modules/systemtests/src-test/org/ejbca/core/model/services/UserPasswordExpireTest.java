@@ -21,6 +21,7 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -85,7 +86,7 @@ public class UserPasswordExpireTest extends CaTestCase {
 
         // Create a new user
         userAdminSession.addUser(admin, USERNAME, PWD, "C=SE,O=AnaTom,CN=" + USERNAME, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
         log.debug("created user: " + USERNAME);
 
         // Create a new UserPasswordExpireService

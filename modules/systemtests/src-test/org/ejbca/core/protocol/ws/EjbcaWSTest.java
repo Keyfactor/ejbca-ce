@@ -810,7 +810,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
      */
     private X509Certificate createUserAndCert(String username, int caID) throws Exception {
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
-                SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword(PASSWORD);
         userAdminSession.addUser(intAdmin, userdata, true);
         BatchMakeP12 makep12 = new BatchMakeP12();

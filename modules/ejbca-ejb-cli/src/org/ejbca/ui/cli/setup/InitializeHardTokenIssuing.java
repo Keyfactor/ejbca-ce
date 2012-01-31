@@ -22,8 +22,8 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.roles.RoleData;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.DefaultRoles;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.profiles.IPINEnvelopeSettings;
@@ -188,10 +188,14 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         profile.setValue(EndEntityProfile.DEFAULTCA, 0, "" + caid);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, "" + caid);
 
-        profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER);
-        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER + ";"
-                + SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH + ";" + SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC + ";"
-                + SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN + ";" + SecConst.CERTPROFILE_FIXED_HARDTOKENENC);
+        profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "" +
+                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" +
+                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER + ";" + 
+                         CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH + ";" +
+                         CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTHENC + ";" +
+                         CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN + ";" + 
+                         CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC);
 
         // Set Default Token Type
         profile.setValue(EndEntityProfile.DEFKEYSTORE, 0, "" + tokenid);
@@ -214,7 +218,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      */
     private void createSuperAdminTokenUser(String cliUserName, String cliPassword, int caid) throws Exception {
         int endentityprofileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(ADMINTOKENENDENTITYPROFILE);
-        int certificateprofileid = SecConst.CERTPROFILE_FIXED_ENDUSER;
+        int certificateprofileid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
         int tokenid = ejb.getHardTokenSession().getHardTokenProfileId(getAdmin(cliUserName, cliPassword), ADMINTOKENPROFILENAME);
         int hardtokenissuerid = ejb.getHardTokenSession().getHardTokenIssuerId(getAdmin(cliUserName, cliPassword), ISSUERALIAS);
 

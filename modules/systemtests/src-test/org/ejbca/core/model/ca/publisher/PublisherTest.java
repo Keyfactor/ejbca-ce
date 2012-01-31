@@ -40,6 +40,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
@@ -310,7 +311,7 @@ public class PublisherTest {
                                                         CertificateConstants.CERT_ACTIVE,
                                                         CertificateConstants.CERTTYPE_ENDENTITY,
                                                         -1, RevokedCertInfo.NOT_REVOKED, "foo",
-                                                        SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
+                                                        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
         assertTrue("Storing certificate to dummy publisher failed", ret);
         log.trace("<test07StoreCertToDummyr()");
     }
@@ -363,13 +364,13 @@ public class PublisherTest {
                                                     CertificateConstants.CERT_ACTIVE,
                                                     CertificateConstants.CERTTYPE_ENDENTITY, 
                                                     -1, RevokedCertInfo.NOT_REVOKED, "foo",
-                                                    SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
+                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date().getTime(), null);
             assertTrue("Error storing certificate to external ocsp publisher", ret);
 
             publisherProxySession.revokeCertificate(internalAdmin, publishers, cert, "test05", null, null,
                                                     CertificateConstants.CERTTYPE_ENDENTITY, 
                                                     RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE,
-                                                    new Date().getTime(), "foo", SecConst.CERTPROFILE_FIXED_ENDUSER, new Date().getTime());
+                                                    new Date().getTime(), "foo", CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date().getTime());
         } finally {
             internalCertStoreSession.removeCertificate(cert);
         }
@@ -407,11 +408,11 @@ public class PublisherTest {
                                                     CertificateConstants.CERT_ACTIVE,
                                                     CertificateConstants.CERTTYPE_ENDENTITY,
                                                     -1, RevokedCertInfo.NOT_REVOKED, "foo",
-                                                    SecConst.CERTPROFILE_FIXED_ENDUSER, date, null);
+                                                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, date, null);
             assertTrue("Error storing certificate to external ocsp publisher", ret);
 
             CertificateInfo info = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
-            assertEquals(SecConst.CERTPROFILE_FIXED_ENDUSER, info.getCertificateProfileId());
+            assertEquals(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, info.getCertificateProfileId());
             assertEquals("foo", info.getTag());
             assertEquals(date, info.getUpdateTime().getTime());
 

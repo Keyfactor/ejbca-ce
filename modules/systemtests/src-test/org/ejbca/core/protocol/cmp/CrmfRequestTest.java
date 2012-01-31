@@ -42,6 +42,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
@@ -376,7 +377,7 @@ public class CrmfRequestTest extends CmpTestCase {
         boolean userExists = false;
         userDN = "C=SE,O=PrimeKey,CN=cmptest";
         EndEntityInformation user = new EndEntityInformation("cmptest", userDN, caid, null, "cmptest@primekey.se", SecConst.USER_ENDUSER,
-                SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         try {
             userAdminSession.addUser(admin, user, false); 
