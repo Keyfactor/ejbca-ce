@@ -45,6 +45,7 @@ import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -144,11 +145,12 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
         // Create admin end entity
         adminUsername = genRandomUserName("approvalEnforcedTestAdmin");
-        createUser(admin1, adminUsername, caid, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER);
+        createUser(admin1, adminUsername, caid, SecConst.EMPTY_ENDENTITYPROFILE,
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
 
         // Create new CA
         approvalCAID = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_ApprovalCA", new Integer[] {},
-                caAdminSession, caSession, SecConst.CERTPROFILE_FIXED_ROOTCA);
+                caAdminSession, caSession, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
 
         // Create certificate profiles
         certProfileIdNoApprovals = createCertificateProfile(admin1, CERTPROFILE1, new Integer[] {}, CertificateConstants.CERTTYPE_ENDENTITY);
@@ -163,7 +165,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
                 CertificateConstants.CERTTYPE_ENDENTITY);
         // Other CAs
         anotherCAID1 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA1", new Integer[] {},
-                caAdminSession, caSession, SecConst.CERTPROFILE_FIXED_ROOTCA);
+                caAdminSession, caSession, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
         anotherCAID2 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA2", new Integer[] {},
                 caAdminSession, caSession, certProfileIdActivateCATokensApprovals);
 

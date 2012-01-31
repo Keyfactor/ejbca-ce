@@ -88,22 +88,7 @@ public final class SecConst {
     /**Constant indicating a enhanced eid hard token.  */
     public static final int TOKEN_TURKISHEID = 105;
     
-    // Certificate profiles.
-
     public static final int NO_HARDTOKENISSUER            = 0;
-
-    /** Used when no certificate profile id value is available */
-    // TODO: remove all these CERTPROFILE_ because they are in CertificateProfileConstants in CESeCore
-    public static final int CERTPROFILE_NO_PROFILE            = 0; 
-    public static final int CERTPROFILE_FIXED_ENDUSER         = 1;
-    public static final int CERTPROFILE_FIXED_SUBCA           = 2;
-    public static final int CERTPROFILE_FIXED_ROOTCA          = 3;
-	public static final int CERTPROFILE_FIXED_OCSPSIGNER      = 4;
-	public static final int CERTPROFILE_FIXED_HARDTOKENAUTH   = 5;
-	public static final int CERTPROFILE_FIXED_HARDTOKENAUTHENC= 6;
-	public static final int CERTPROFILE_FIXED_HARDTOKENENC    = 7;
-	public static final int CERTPROFILE_FIXED_HARDTOKENSIGN   = 8;
-    public static final int CERTPROFILE_FIXED_SERVER          = 9;
 
     public static final int EMPTY_ENDENTITYPROFILE = 1;
 
@@ -159,23 +144,6 @@ public final class SecConst {
      * Prevents creation of new SecConst
      */
     private SecConst() {
-    }
-    
-    /**
-     * @return true is certificate profile identified by profileId is fixed
-     */
-    // TODO: remove this method because it is in CertificateProfileConstants in CESeCore
-    public static boolean isFixedCertificateProfile(final int profileId) {
-    	return (
-    			profileId == SecConst.CERTPROFILE_FIXED_ENDUSER ||
-    			profileId == SecConst.CERTPROFILE_FIXED_SUBCA ||
-    			profileId == SecConst.CERTPROFILE_FIXED_ROOTCA ||
-    			profileId == SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH ||
-    			profileId == SecConst.CERTPROFILE_FIXED_HARDTOKENAUTHENC ||
-    			profileId == SecConst.CERTPROFILE_FIXED_HARDTOKENENC ||
-    			profileId == SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN ||
-    			profileId == SecConst.CERTPROFILE_FIXED_OCSPSIGNER ||
-    			profileId == SecConst.CERTPROFILE_FIXED_SERVER );
     }
 
 	// Revocation reasons identifiers

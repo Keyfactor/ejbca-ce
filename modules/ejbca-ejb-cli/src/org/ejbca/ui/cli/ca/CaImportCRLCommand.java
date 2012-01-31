@@ -34,6 +34,7 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -141,7 +142,8 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                        getLogger().debug("Loading/updating user " + missing_user_name);
 	                        final EndEntityInformation userdataNew = new EndEntityInformation(missing_user_name, CertTools.getSubjectDN(certificate), cainfo.getCAId(), null, null,
 	                                UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
-	                                SecConst.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
+	                                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null,
+	                                SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 	                        userdataNew.setPassword("foo123");
 	                        ejb.getUserAdminSession().addUser(getAdmin(cliUserName, cliPassword), userdataNew, false);
 	                        getLogger().info("User '" + missing_user_name + "' has been added.");
@@ -149,10 +151,11 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                        getLogger().info("User '" + missing_user_name + "' has been updated.");
 	                    }
 	                    ejb.getCertStoreSession().storeCertificate(getAdmin(cliUserName, cliPassword), certificate, missing_user_name, fingerprint,
-	                            CertificateConstants.CERT_ACTIVE, SecConst.USER_ENDUSER, SecConst.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
+	                            CertificateConstants.CERT_ACTIVE, SecConst.USER_ENDUSER, 
+	                            CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
 	                    getLogger().info("Dummy certificate  '" + serialHex + "' has been stored.");
 	                }
-	                // This check will not catch a certificate with status SecConst.CERT_ARCHIVED
+	                // This check will not catch a certificate with status CertificateConstants.CERT_ARCHIVED
 	                if (!strict && ejb.getCertStoreSession().isRevoked(issuer, serialNr)) {
 	                    getLogger().info("Certificate '" + serialHex +"' is already revoked");
 	                    already_revoked++;

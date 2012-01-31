@@ -3,7 +3,8 @@
 <%@page errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.cesecore.authorization.AuthorizationDeniedException,
                org.ejbca.core.model.authorization.AccessRulesConstants,
                org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.profiles.*, org.ejbca.ui.web.admin.hardtokeninterface.EditHardTokenProfileJSPHelper, 
-               org.ejbca.core.model.hardtoken.HardTokenProfileExistsException"%>
+               org.ejbca.core.model.hardtoken.HardTokenProfileExistsException,
+               org.cesecore.certificates.certificateprofile.CertificateProfileConstants"%>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />

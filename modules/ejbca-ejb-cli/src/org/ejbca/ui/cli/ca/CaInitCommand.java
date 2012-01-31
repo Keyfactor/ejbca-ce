@@ -31,6 +31,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
@@ -159,13 +160,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
             	signedByCAId = Integer.valueOf(caid);
             }
             // Get the profile ID from the name if we specified a certain profile name
-            int profileId = SecConst.CERTPROFILE_FIXED_ROOTCA;
+            int profileId = CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA;
             if (profileName == null) {
             	if (signedByCAId == CAInfo.SELFSIGNED) {
             		profileName = "ROOTCA";
             	} else {
             		profileName = "SUBCA";
-                    profileId = SecConst.CERTPROFILE_FIXED_SUBCA;
+                    profileId = CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA;
             	}
             } else {                
                 profileId = ejb.getCertificateProfileSession().getCertificateProfileId(profileName);

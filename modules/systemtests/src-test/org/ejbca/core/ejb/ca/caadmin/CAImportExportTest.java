@@ -45,6 +45,7 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
@@ -243,7 +244,7 @@ public class CAImportExportTest  {
 	private X509CAInfo getNewCAInfo(String caname, CATokenInfo catokeninfo) {
         cainfo = new X509CAInfo("CN="+caname,
         		caname, SecConst.CA_ACTIVE, new Date(), 
-                "", SecConst.CERTPROFILE_FIXED_ROOTCA,
+                "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                 365,
                 new Date(System.currentTimeMillis()+364*24*3600*1000), // Expiretime
                 CAInfo.CATYPE_X509,

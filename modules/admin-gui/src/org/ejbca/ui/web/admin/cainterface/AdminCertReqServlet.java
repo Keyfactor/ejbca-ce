@@ -39,6 +39,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -242,7 +243,7 @@ public class AdminCertReqServlet extends HttpServlet {
         }
         newuser.setEndEntityProfileId(eProfileId);
         
-        int cProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
+        int cProfileId = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
         if ((tmp = request.getParameter("certificateprofile")) != null) {
             CAInterfaceBean cabean = getCaBean(request);
             int reqId = cabean.getCertificateProfileId(tmp);

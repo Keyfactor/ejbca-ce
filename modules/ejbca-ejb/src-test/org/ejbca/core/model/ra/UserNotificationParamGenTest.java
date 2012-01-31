@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 
 import java.util.Date;
 
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.SecConst;
 import org.junit.Test;
@@ -21,9 +22,24 @@ public class UserNotificationParamGenTest {
 		Date now = new Date();
 		int caid = 123;
 		String approvalAdminDN = "CN=approvaluser,O=Org,C=SE";
-		EndEntityInformation userdata = new EndEntityInformation("foo", "CN=foo,O=Org,C=SE", caid, "rfc822Name=fooalt@foo.se", "fooee@foo.se", UserDataConstants.STATUS_GENERATED, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, now, null, SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
+		EndEntityInformation userdata =
+		        new EndEntityInformation("foo", "CN=foo,O=Org,C=SE", caid, 
+		                                 "rfc822Name=fooalt@foo.se", "fooee@foo.se", 
+		                                 UserDataConstants.STATUS_GENERATED, 
+		                                 SecConst.USER_ENDUSER, 
+		                                 SecConst.EMPTY_ENDENTITYPROFILE, 
+		                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
+		                                 now, null, SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
 		userdata.setPassword("foo123");
-		EndEntityInformation admindata = new EndEntityInformation("admin", "CN=Test Admin,C=NO", caid, "rfc822Name=adminalt@foo.se", "adminee@foo.se", UserDataConstants.STATUS_GENERATED, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, now, null, SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
+		EndEntityInformation admindata =
+		        new EndEntityInformation("admin", "CN=Test Admin,C=NO", caid, 
+		                                 "rfc822Name=adminalt@foo.se", "adminee@foo.se",
+		                                 UserDataConstants.STATUS_GENERATED, 
+		                                 SecConst.USER_ENDUSER, 
+		                                 SecConst.EMPTY_ENDENTITYPROFILE, 
+		                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
+		                                 now, null, SecConst.TOKEN_SOFT_P12, 
+		                                 SecConst.NO_HARDTOKENISSUER, null);
         UserNotificationParamGen paramGen = new UserNotificationParamGen(userdata, approvalAdminDN, admindata);
         assertNotNull("paramGen is null", paramGen);
         

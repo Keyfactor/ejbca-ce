@@ -16,7 +16,7 @@ package org.ejbca.core.model.hardtoken.profiles;
 
 import java.util.ArrayList;
 
-import org.ejbca.core.model.SecConst;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
 
 
@@ -65,9 +65,9 @@ public class EnhancedEIDProfile extends EIDProfile {
 	  data.put(TYPE, Integer.valueOf(TYPE_ENHANCEDEID));
       
       ArrayList<Integer> certprofileids = new ArrayList<Integer>(NUMBEROFCERTIFICATES);
-	  certprofileids.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENSIGN)); 
-	  certprofileids.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENAUTH)); 
-	  certprofileids.add(Integer.valueOf(SecConst.CERTPROFILE_FIXED_HARDTOKENENC)); 
+	  certprofileids.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENSIGN)); 
+	  certprofileids.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENAUTH)); 
+	  certprofileids.add(Integer.valueOf(CertificateProfileConstants.CERTPROFILE_FIXED_HARDTOKENENC)); 
 	  data.put(CERTIFICATEPROFILEID, certprofileids);
 	  
 	  ArrayList<Boolean> certWritable = new ArrayList<Boolean>(NUMBEROFCERTIFICATES);

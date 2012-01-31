@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -205,7 +206,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
         String username = "throwAwayTest-" + random.nextInt();
         String password = "foo123";
         EndEntityInformation userData = new EndEntityInformation(username, "CN=" + username, super.getTestCAId(TESTCA_NAME), null, null,
-                UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, SecConst.CERTPROFILE_FIXED_ENDUSER, null, null,
+                UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null,
                 SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         userData.setPassword(password);
         return userData;

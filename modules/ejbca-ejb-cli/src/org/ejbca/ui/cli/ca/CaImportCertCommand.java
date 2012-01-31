@@ -119,7 +119,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				}
 			}
 			
-			int certificateprofileid = SecConst.CERTPROFILE_FIXED_ENDUSER;
+			int certificateprofileid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
 			if (certificateprofile != null) {
 				getLogger().debug("Searching for Certificate Profile " + certificateprofile);
 				certificateprofileid = ejb.getCertificateProfileSession().getCertificateProfileId(certificateprofile);

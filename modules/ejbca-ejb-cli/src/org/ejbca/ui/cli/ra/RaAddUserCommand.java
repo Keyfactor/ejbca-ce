@@ -171,7 +171,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             }
             String tokenname = args[8];
             int profileid = SecConst.EMPTY_ENDENTITYPROFILE;
-            int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
+            int certificatetypeid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
             int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
             boolean error = false;
             boolean usehardtokenissuer = false;

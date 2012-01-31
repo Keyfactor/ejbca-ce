@@ -68,14 +68,15 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
     private int userNo = 0;
     private KeyPair keys;
 
-    private static final AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AddLotsofCertsPerUserTest"));
+    private static final AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
+            "AddLotsofCertsPerUserTest"));
 
     /**
      * Creates a new TestAddLotsofUsers object.
      */
     @BeforeClass
     public static void beforeClass() {
-        CryptoProviderTools.installBCProviderIfNotAvailable();       
+        CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
     @Before
@@ -93,9 +94,9 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
     }
 
     public String getRoleName() {
-        return "AddLotsofCertsPerUserTest"; 
+        return "AddLotsofCertsPerUserTest";
     }
-    
+
     private String genUserName(String baseUsername) {
         userNo++;
         return baseUsername + userNo;
@@ -129,13 +130,13 @@ public class AddLotsofCertsPerUserTest extends CaTestCase {
             int type = SecConst.USER_ENDUSER;
             int token = SecConst.TOKEN_SOFT_P12;
             int profileid = SecConst.EMPTY_ENDENTITYPROFILE;
-            int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
+            int certificatetypeid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
             int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
             String dn = "C=SE, O=AnaTom, CN=" + username;
             String subjectaltname = "rfc822Name=" + username + "@foo.se";
             String email = username + "@foo.se";
-            EndEntityInformation userdata = new EndEntityInformation(username, CertTools.stringToBCDNString(dn), getTestCAId(), subjectaltname, email,
-                    UserDataConstants.STATUS_NEW, type, profileid, certificatetypeid, null, null, token, hardtokenissuerid, null);
+            EndEntityInformation userdata = new EndEntityInformation(username, CertTools.stringToBCDNString(dn), getTestCAId(), subjectaltname,
+                    email, UserDataConstants.STATUS_NEW, type, profileid, certificatetypeid, null, null, token, hardtokenissuerid, null);
             userdata.setPassword(password);
             if (endEntityAccessSession.findUser(administrator, username) != null) {
                 log.warn("User already exists in the database.");

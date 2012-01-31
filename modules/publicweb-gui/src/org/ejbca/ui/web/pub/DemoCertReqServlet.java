@@ -31,6 +31,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
@@ -214,7 +215,7 @@ public class DemoCertReqServlet extends HttpServlet {
         }
         newuser.setEndEntityProfileId(eProfileId);
 
-        int cProfileId = SecConst.CERTPROFILE_FIXED_ENDUSER;
+        int cProfileId = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
         if ((tmp = request.getParameter("certificateprofile")) != null) {
             cProfileId = certificateProfileSession.getCertificateProfileId(request.getParameter("certificateprofile"));
             if (cProfileId == 0) {
