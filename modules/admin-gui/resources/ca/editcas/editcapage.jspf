@@ -42,7 +42,7 @@
     cainfo = cabean.getCAInfo(caid).getCAInfo();
     catokeninfo = cainfo.getCATokenInfo();
     signbyexternal = cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA;
-    isexternal = cainfo.getStatus() == SecConst.CA_EXTERNAL;
+    isexternal = cainfo.getStatus() == CAConstants.CA_EXTERNAL;
 
     if(catokeninfo.getClassPath().equals(SoftCryptoToken.class.getName())){
        catokentype = CAInterfaceBean.CATOKENTYPE_P12;
@@ -65,9 +65,9 @@
       }      
 
     
-    revokable = cainfo.getStatus() != SecConst.CA_REVOKED  && cainfo.getStatus() != SecConst.CA_WAITING_CERTIFICATE_RESPONSE && !cadatahandler.isCARevoked(cainfo);
+    revokable = cainfo.getStatus() != CAConstants.CA_REVOKED  && cainfo.getStatus() != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE && !cadatahandler.isCARevoked(cainfo);
 
-    waitingresponse = cainfo.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE;
+    waitingresponse = cainfo.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE;
 
   }
 

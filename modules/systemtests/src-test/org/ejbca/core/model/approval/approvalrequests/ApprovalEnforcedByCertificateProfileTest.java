@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -253,10 +254,10 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         try {
             caAdminSession.deactivateCAToken(admin1, anotherCAID1);
             CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, anotherCAID1);
-            assertEquals("CA should be offline", SecConst.CA_OFFLINE, cainfo.getStatus());
+            assertEquals("CA should be offline", CAConstants.CA_OFFLINE, cainfo.getStatus());
             caAdminSession.activateCAToken(admin1, anotherCAID1, "foo123", globalConfigurationSession.getCachedGlobalConfiguration());
             cainfo = caSession.getCAInfo(roleMgmgToken, anotherCAID1);
-            assertEquals("CA should be online", SecConst.CA_ACTIVE, cainfo.getStatus());
+            assertEquals("CA should be online", CAConstants.CA_ACTIVE, cainfo.getStatus());
         } catch (WaitingForApprovalException ex) {
             fail("This profile should not require approvals");
         }
@@ -264,7 +265,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         try {
             caAdminSession.deactivateCAToken(admin1, anotherCAID2);
             CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, anotherCAID2);
-            assertEquals("CA should be offline", SecConst.CA_OFFLINE, cainfo.getStatus());
+            assertEquals("CA should be offline", CAConstants.CA_OFFLINE, cainfo.getStatus());
             caAdminSession.activateCAToken(admin1, anotherCAID2, "foo123", globalConfigurationSession.getCachedGlobalConfiguration());
             fail("This should have caused an approval request");
         } catch (WaitingForApprovalException ex) {
@@ -447,7 +448,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, SecConst.CA_ACTIVE, new Date(), "", certProfileId, 365, new Date(
+        X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE, new Date(), "", certProfileId, 365, new Date(
                 System.currentTimeMillis() + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catokeninfo,
                 "Used for testing approvals", -1, null, null, 24, 0, 10, 0, new ArrayList<Integer>(), true, false, true, false, "", "", "", null, "", true,
                 extendedcaservices, false, approvalSettings, 1, false, true, false, false, true, true, true, false, true, true,

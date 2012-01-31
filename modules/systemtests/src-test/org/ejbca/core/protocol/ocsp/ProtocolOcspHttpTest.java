@@ -66,6 +66,7 @@ import org.bouncycastle.ocsp.SingleResp;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -1036,7 +1037,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
-            X509CAInfo cainfo = new X509CAInfo(dn, dn, SecConst.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
+            X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit ECDSA CA", -1, null, policies, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval
@@ -1137,7 +1138,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
             ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
-            X509CAInfo cainfo = new X509CAInfo(dn, dn, SecConst.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
+            X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit DSA CA", -1, null, policies, // PolicyId
                     24, // CRLPeriod
                     0, // CRLIssueInterval

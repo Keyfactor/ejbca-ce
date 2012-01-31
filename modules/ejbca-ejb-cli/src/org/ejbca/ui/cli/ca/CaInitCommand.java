@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -41,7 +42,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
@@ -278,7 +278,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
               
             
             X509CAInfo cainfo = new X509CAInfo(dn, 
-                                             caname, SecConst.CA_ACTIVE, new Date(),
+                                             caname, CAConstants.CA_ACTIVE, new Date(),
                                              "", profileId,
                                              validity, 
                                              null, // Expiretime                                             

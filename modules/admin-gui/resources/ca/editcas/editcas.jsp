@@ -1,8 +1,8 @@
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, java.security.cert.Certificate, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.core.model.SecConst, org.cesecore.util.FileTools, org.cesecore.util.CertTools, org.cesecore.CesecoreException, org.cesecore.authorization.AuthorizationDeniedException,
-    org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.ca.X509CAInfo, org.cesecore.certificates.ca.CVCCAInfo, org.cesecore.certificates.ca.catoken.CATokenInfo, org.cesecore.certificates.ca.catoken.CATokenConstants, org.cesecore.certificates.ca.catoken.CAToken, org.ejbca.ui.web.admin.cainterface.CADataHandler,
+<%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, java.security.cert.Certificate, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.cesecore.util.FileTools, org.cesecore.util.CertTools, org.cesecore.CesecoreException, org.cesecore.authorization.AuthorizationDeniedException,
+    org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.ca.X509CAInfo, org.cesecore.certificates.ca.CVCCAInfo, org.cesecore.certificates.ca.catoken.CATokenInfo, org.cesecore.certificates.ca.CAConstants, org.ejbca.core.model.SecConst, org.cesecore.certificates.ca.catoken.CATokenConstants, org.cesecore.certificates.ca.catoken.CAToken, org.ejbca.ui.web.admin.cainterface.CADataHandler,
                org.ejbca.ui.web.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
                org.cesecore.certificates.certificate.request.PKCS10RequestMessage, org.cesecore.certificates.certificate.request.RequestMessage, org.cesecore.certificates.certificate.request.RequestMessageUtils, org.cesecore.certificates.certificate.request.CVCRequestMessage, org.cesecore.certificates.ca.CAExistsException, org.cesecore.certificates.ca.CADoesntExistsException, org.cesecore.keys.token.CryptoTokenOfflineException, org.cesecore.keys.token.CryptoTokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo, org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo, org.cesecore.certificates.ca.internal.CATokenCacheManager, org.cesecore.keys.token.AvailableCryptoToken, org.cesecore.certificates.ca.catoken.CATokenConstants,
@@ -692,7 +692,7 @@
 							  keyAlg));
                 extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
                 extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, SecConst.CA_ACTIVE, new Date(), subjectaltname,
+                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, catoken, description, -1, null,
@@ -774,7 +774,7 @@
 				     		          "",
 							  keySpec,
 							  keyAlg));
-                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, SecConst.CA_ACTIVE, new Date(), subjectaltname,
+                 X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
                                                         certprofileid, validity,
                                                         null, catype, CAInfo.SIGNEDBYEXTERNALCA,
                                                         null, catoken, description, -1, null, 
@@ -829,7 +829,7 @@
                  }
                  
                  // Create the CAInfo to be used for either generating the whole CA or making a request
-                 CVCCAInfo cvccainfo = new CVCCAInfo(subjectdn, caname, SecConst.CA_ACTIVE, new Date(),
+                 CVCCAInfo cvccainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_ACTIVE, new Date(),
                          certprofileid, validity, 
                          null, catype, signedby,
                          null, catoken, description, -1, null,
@@ -1490,7 +1490,7 @@
                             
              if(!illegaldnoraltname){
                if(request.getParameter(BUTTON_PROCESSREQUEST) != null){
-                 cainfo = new X509CAInfo(subjectdn, caname, SecConst.CA_ACTIVE, new Date(), subjectaltname,
+                 cainfo = new X509CAInfo(subjectdn, caname, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
                                                         certprofileid, validity, 
                                                         null, catype, signedby,
                                                         null, null, description, -1, null,
@@ -1535,7 +1535,7 @@
                  // Create the CAInfo to be used for either generating the whole CA or making a request
                  if(!illegaldnoraltname){
                    if(request.getParameter(BUTTON_PROCESSREQUEST) != null){
-                     cainfo = new CVCCAInfo(subjectdn, caname, SecConst.CA_ACTIVE, new Date(),
+                     cainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_ACTIVE, new Date(),
                        certprofileid, validity, 
                        null, catype, signedby,
                        null, null, description, -1, null,

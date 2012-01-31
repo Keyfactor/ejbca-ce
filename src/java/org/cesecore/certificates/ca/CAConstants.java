@@ -21,6 +21,15 @@ package org.cesecore.certificates.ca;
  */
 public final class CAConstants {
     
+    /** Constants used to indicate status of a CA. */
+    public static final int CA_ACTIVE = 1;
+    public static final int CA_WAITING_CERTIFICATE_RESPONSE = 2;
+    public static final int CA_EXPIRED = 3;
+    public static final int CA_REVOKED = 4;
+    public static final int CA_OFFLINE = 5;
+    public static final int CA_EXTERNAL = 6;
+
+
     /**
      * Prevents creation of new CAConstants
      */
@@ -32,13 +41,7 @@ public final class CAConstants {
      */
     public static final int CAID_USEUSERDEFINED = 0;
     
-    /** Constants used to indicate status of a CA. */
-    public static final int CA_ACTIVE = 1;
-    public static final int CA_WAITING_CERTIFICATE_RESPONSE = 2;
-    public static final int CA_EXPIRED = 3;
-    public static final int CA_REVOKED = 4;
-    public static final int CA_OFFLINE = 5;
-    public static final int CA_EXTERNAL = 6;    
+   
 
     /** Used in profiles and service workers to make the catch all every CA instead of listing individual CAs when operating on them */
     public static final int ALLCAS = 1;

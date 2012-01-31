@@ -110,14 +110,6 @@ public final class SecConst {
     public static final int MAXIMUM_QUERY_ROWCOUNT = 500; 
     
     
-    /** Constants used to indicate status of a CA. */
-    public static final int CA_ACTIVE = 1;
-    public static final int CA_WAITING_CERTIFICATE_RESPONSE = 2;
-    public static final int CA_EXPIRED = 3;
-    public static final int CA_REVOKED = 4;
-    public static final int CA_OFFLINE = 5;
-    public static final int CA_EXTERNAL = 6;
-    
     /** signs certificates issued by the CA */
     public static final int CAKEYPURPOSE_CERTSIGN            = 1;
     /** igns CRLs issues by the CA */

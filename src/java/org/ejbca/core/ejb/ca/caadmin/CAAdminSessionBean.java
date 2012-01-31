@@ -73,6 +73,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
@@ -257,7 +258,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (log.isTraceEnabled()) {
             log.trace(">createCA: " + cainfo.getName());
         }
-        int castatus = SecConst.CA_OFFLINE;
+        int castatus = CAConstants.CA_OFFLINE;
         final int caid = cainfo.getCAId();
         // Check that administrator has superadminstrator rights.
         if (!accessSession.isAuthorizedNoLogging(admin, "/super_administrator")) {
@@ -380,7 +381,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 certificatechain = new ArrayList<Certificate>();
                 certificatechain.add(cacertificate);
                 // set status to active
-                castatus = SecConst.CA_ACTIVE;
+                castatus = CAConstants.CA_ACTIVE;
             } catch (CryptoTokenOfflineException e) {
                 String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -402,7 +403,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (cainfo.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA) {
             certificatechain = new ArrayList<Certificate>();
             // set status to waiting certificate response.
-            castatus = SecConst.CA_WAITING_CERTIFICATE_RESPONSE;
+            castatus = CAConstants.CA_WAITING_CERTIFICATE_RESPONSE;
         }
 
         if (cainfo.getSignedBy() > CAInfo.SPECIALCAIDBORDER || cainfo.getSignedBy() < 0) {
@@ -427,7 +428,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 certificatechain.add(cacertificate);
                 certificatechain.addAll(rootcachain);
                 // set status to active
-                castatus = SecConst.CA_ACTIVE;
+                castatus = CAConstants.CA_ACTIVE;
             } catch (CryptoTokenOfflineException e) {
                 String msg = intres.getLocalizedMessage("error.catokenoffline", cainfo.getName());
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -475,7 +476,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Publish CA certificates.
         publishCACertificate(admin, ca.getCertificateChain(), ca.getCRLPublishers(), ca.getSubjectDN());
 
-        if (castatus == SecConst.CA_ACTIVE) {
+        if (castatus == CAConstants.CA_ACTIVE) {
             // activate External CA Services
             activateAndPublishExternalCAServices(admin, cainfo.getExtendedCAServiceInfos(), ca);
             try {
@@ -668,7 +669,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // i.e. if we don't pass a CA certificate as parameter we try to find a suitable CA certificate in the database, among existing CAs
             // (can be a simple imported CA-certificate of external CA)
             if (chain.isEmpty() && ca.getCAType() == CAInfo.CATYPE_CVC && ca.getSignedBy() == CAInfo.SIGNEDBYEXTERNALCA
-                    && ca.getStatus() == SecConst.CA_ACTIVE) {
+                    && ca.getStatus() == CAConstants.CA_ACTIVE) {
                 CardVerifiableCertificate dvcert = (CardVerifiableCertificate) ca.getCACertificate();
                 String ca_ref = dvcert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated();
                 log.debug("DV renewal missing CVCA cert, try finding CA for:" + ca_ref);
@@ -755,7 +756,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
             // Set statuses if it should be set.
             if ((regenerateKeys || usenextkey) && activatekey) {
-                ca.setStatus(SecConst.CA_WAITING_CERTIFICATE_RESPONSE);
+                ca.setStatus(CAConstants.CA_WAITING_CERTIFICATE_RESPONSE);
             }
 
             caSession.editCA(admin, ca, true);
@@ -948,7 +949,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 ca.setCertificateChain(chain);
 
                 // Set status to active, so we can sign certificates for the external services below.
-                ca.setStatus(SecConst.CA_ACTIVE);
+                ca.setStatus(CAConstants.CA_ACTIVE);
 
                 // activate External CA Services
                 Iterator<Integer> iter = ca.getExternalCAServiceTypes().iterator();
@@ -1093,8 +1094,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 log.debug("Old castatus=" + oldcadata.getStatus() + ", oldcaid=" + oldcadata.getCaId().intValue() + ", caid=" + cainfo.getCAId()
                         + ", oldcaname=" + oldcadata.getName() + ", name=" + cainfo.getName());
             }
-            if (((oldcadata.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE) || (oldcadata.getStatus() == SecConst.CA_ACTIVE) || (oldcadata
-                    .getStatus() == SecConst.CA_EXTERNAL))
+            if (((oldcadata.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) || (oldcadata.getStatus() == CAConstants.CA_ACTIVE) || (oldcadata
+                    .getStatus() == CAConstants.CA_EXTERNAL))
                     && (oldcadata.getCaId().intValue() == cainfo.getCAId())
                     && (oldcadata.getName().equals(cainfo.getName()))) {
                 // Yes, we have all the same DN, CAName and the old CA is either
@@ -1103,7 +1104,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // or it is an external CA that we want to issue a new
                 // certificate to
                 processinternalca = true;
-                if (oldcadata.getStatus() == SecConst.CA_EXTERNAL) {
+                if (oldcadata.getStatus() == CAConstants.CA_EXTERNAL) {
                     log.debug("Renewing an external CA.");
                 } else {
                     log.debug("Processing an internal CA, as an external.");
@@ -1181,10 +1182,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         ca.setCAToken(token);
 
                         // set status to active
-                        entityManager.persist(new CAData(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca));
+                        entityManager.persist(new CAData(cainfo.getSubjectDN(), cainfo.getName(), CAConstants.CA_EXTERNAL, ca));
                         // cadatahome.create(cainfo.getSubjectDN(), cainfo.getName(), SecConst.CA_EXTERNAL, ca);
                     } else {
-                        if (oldcadata.getStatus() == SecConst.CA_EXTERNAL) {
+                        if (oldcadata.getStatus() == CAConstants.CA_EXTERNAL) {
                             // If it is an external CA we will not import the
                             // certificate later on here, so we want to
                             // update the CA in this instance with the new
@@ -1289,7 +1290,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             boolean usecrldistpointoncrl = false;
             boolean crldistpointoncrlcritical = false;
 
-            cainfo = new X509CAInfo(subjectdn, caname, SecConst.CA_EXTERNAL, new Date(), subjectaltname, certprofileid, validity,
+            cainfo = new X509CAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, new Date(), subjectaltname, certprofileid, validity,
                     CertTools.getNotAfter(x509CaCertificate), CAInfo.CATYPE_X509, signedby, null, null, description, -1, null, policies, crlperiod,
                     crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, useauthoritykeyidentifier, authoritykeyidentifiercritical,
                     usecrlnumber, crlnumbercritical, "", "", "", null, "", finishuser, extendedcaserviceinfos, useutf8policytext, approvalsettings,
@@ -1302,7 +1303,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     null // cmpRaAuthSecret
             );
         } else if (StringUtils.equals(caCertificate.getType(), "CVC")) {
-            cainfo = new CVCCAInfo(subjectdn, caname, SecConst.CA_EXTERNAL, new Date(), certprofileid, validity, null, CAInfo.CATYPE_CVC, signedby,
+            cainfo = new CVCCAInfo(subjectdn, caname, CAConstants.CA_EXTERNAL, new Date(), certprofileid, validity, null, CAInfo.CATYPE_CVC, signedby,
                     null, null, description, -1, null, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, finishuser,
                     extendedcaserviceinfos, approvalsettings, numofreqapprovals, false, true, // isDoEnforceUniquePublicKeys
                     true, // isDoEnforceUniqueDistinguishedName
@@ -1349,7 +1350,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         // Get CA info.
         CA ca = caSession.getCAForEdit(admin, caid);
-        if (ca.getStatus() == SecConst.CA_OFFLINE) {
+        if (ca.getStatus() == CAConstants.CA_OFFLINE) {
             String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getName());
             throw new CAOfflineException(msg);
         }
@@ -1382,7 +1383,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         try {
             CA ca = caSession.getCAForEdit(admin, caid);
 
-            if (ca.getStatus() == SecConst.CA_OFFLINE) {
+            if (ca.getStatus() == CAConstants.CA_OFFLINE) {
                 String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getName());
                 throw new CryptoTokenOfflineException(msg);
             }
@@ -1452,7 +1453,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             // Set statuses and expire time
             ca.setExpireTime(CertTools.getNotAfter(cacertificate));
-            ca.setStatus(SecConst.CA_ACTIVE);
+            ca.setStatus(CAConstants.CA_ACTIVE);
             // Set the new certificate chain that we have created above
             ca.setCertificateChain(cachain);
             // We need to save all this, audit logging that the CA is changed
@@ -1528,7 +1529,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Revoke CA certificate
             revocationSession.revokeCertificate(admin, ca.getCACertificate(), ca.getCRLPublishers(), reason, ca.getSubjectDN());
             // Revoke all certificates generated by CA
-            if (ca.getStatus() != SecConst.CA_EXTERNAL) {
+            if (ca.getStatus() != CAConstants.CA_EXTERNAL) {
                 certificateStoreSession.revokeAllCertByCA(admin, ca.getSubjectDN(), RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
                 Collection<Integer> caids = new ArrayList<Integer>();
                 caids.add(Integer.valueOf(ca.getCAId()));
@@ -1536,8 +1537,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             ca.setRevocationReason(reason);
             ca.setRevocationDate(new Date());
-            if (ca.getStatus() != SecConst.CA_EXTERNAL) {
-                ca.setStatus(SecConst.CA_REVOKED);
+            if (ca.getStatus() != CAConstants.CA_EXTERNAL) {
+                ca.setStatus(CAConstants.CA_REVOKED);
             }
             // Store new status, audit logging
             caSession.editCA(admin, ca, true);
@@ -2041,7 +2042,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, "
                     + CertTools.getSubjectDN(caSignatureCertificate), "", keySpecification, keyAlgorithm));
 
-            cainfo = new X509CAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, SecConst.CA_ACTIVE, new Date(), "", certprof, validity,
+            cainfo = new X509CAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, CAConstants.CA_ACTIVE, new Date(), "", certprof, validity,
                     CertTools.getNotAfter(caSignatureCertificate), // Expiretime
                     CAInfo.CATYPE_X509, signedby, certificatechain, catoken.getTokenInfo(), description, -1, // revocationReason
                     null, // revocationDate
@@ -2082,7 +2083,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // Create a CVC CA
             // Create the CAInfo to be used for either generating the whole CA
             // or making a request
-            cainfo = new CVCCAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, SecConst.CA_ACTIVE, new Date(), certprof, validity,
+            cainfo = new CVCCAInfo(CertTools.getSubjectDN(caSignatureCertificate), caname, CAConstants.CA_ACTIVE, new Date(), certprof, validity,
                     CertTools.getNotAfter(caSignatureCertificate), CAInfo.CATYPE_CVC, signedby, certificatechain, catoken.getTokenInfo(),
                     description, -1, (Date) null, 24, 0, 10, 0, // CRL periods
                     crlpublishers, // CRL publishers
@@ -2259,7 +2260,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
         // Get CA also check authorization for this specific CA
         CAInfo cainfo = caSession.getCAInfo(admin, caid);
-        if (cainfo.getStatus() == SecConst.CA_EXTERNAL) {
+        if (cainfo.getStatus() == CAConstants.CA_EXTERNAL) {
             String msg = intres.getLocalizedMessage("caadmin.catokenexternal", Integer.valueOf(caid));
             log.info(msg);
             return;
@@ -2282,7 +2283,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if ((cainfo.getCATokenInfo()).getTokenStatus() == CryptoToken.STATUS_OFFLINE) {
         	cATokenDisconnected = true;
         }
-        if (cainfo.getStatus() == SecConst.CA_OFFLINE || cATokenDisconnected) {
+        if (cainfo.getStatus() == CAConstants.CA_OFFLINE || cATokenDisconnected) {
             try {
                 // CA Token session also handles audit
                 caTokenSession.activateCAToken(admin, caid, authorizationcode.toCharArray());
@@ -2290,9 +2291,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 // only the token was disconnected we only connect the token
                 // If CA is waiting for certificate response, expired or revoked we can not
                 // change this status just by activating the token.
-                if ((cainfo.getStatus() == SecConst.CA_OFFLINE)) {
+                if ((cainfo.getStatus() == CAConstants.CA_OFFLINE)) {
                 	CA ca = caSession.getCAForEdit(admin, caid);
-                    ca.setStatus(SecConst.CA_ACTIVE);
+                    ca.setStatus(CAConstants.CA_ACTIVE);
                     caSession.editCA(admin, ca, false);
                 }
             } catch (CryptoTokenAuthenticationFailedException e) {
@@ -2331,7 +2332,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         caTokenSession.deactivateCAToken(admin, caid);
         // Setting CA token to offline, makes the CA offline
 		CA ca = caSession.getCAForEdit(admin, caid);
-		ca.setStatus(SecConst.CA_OFFLINE);
+		ca.setStatus(CAConstants.CA_OFFLINE);
 		caSession.editCA(admin, ca, false);
     }
 
@@ -2549,7 +2550,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             int caid = iter.next().intValue();
             try {
                 CAInfo cainfo = caSession.getCAInfo(admin, caid, caTokenSignTest);
-                if ((cainfo.getStatus() == SecConst.CA_ACTIVE) && cainfo.getIncludeInHealthCheck()) {
+                if ((cainfo.getStatus() == CAConstants.CA_ACTIVE) && cainfo.getIncludeInHealthCheck()) {
                     int tokenstatus = cainfo.getCATokenInfo().getTokenStatus();
                     if (tokenstatus == CryptoToken.STATUS_OFFLINE) {
                         returnval += "\nCA: Error CA Token is disconnected, CA Name : " + cainfo.getName();
@@ -2628,7 +2629,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             CertTools.checkValidity(signcert, new Date());
         } catch (CertificateExpiredException ce) {
             // Signers Certificate has expired.
-            signcadata.setStatus(SecConst.CA_EXPIRED);
+            signcadata.setStatus(CAConstants.CA_EXPIRED);
             String msg = intres.getLocalizedMessage("signsession.caexpired", signcadata.getSubjectDN());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);

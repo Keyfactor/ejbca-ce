@@ -20,6 +20,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -29,7 +30,6 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.BaseWorker;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 
@@ -85,7 +85,7 @@ public class RenewCAWorker extends BaseWorker {
 						// There should be other monitoring available to check if CAs that should not be off-line are off-line (HealthCheck)
 						CATokenInfo tokeninfo = info.getCATokenInfo();
 						log.debug("CA status is "+info.getStatus()+", CA token status is "+tokeninfo.getTokenStatus());
-						if ( (info.getStatus() == SecConst.CA_ACTIVE) && (tokeninfo.getTokenStatus() == CryptoToken.STATUS_ACTIVE) ) {
+						if ( (info.getStatus() == CAConstants.CA_ACTIVE) && (tokeninfo.getTokenStatus() == CryptoToken.STATUS_ACTIVE) ) {
 							caAdminSession.renewCA(getAdmin(), info.getCAId(), null, isRenewKeys(), null);					
 						} else {
 							log.debug("Not trying to renew CA because CA and token status are not on-line.");

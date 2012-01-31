@@ -48,6 +48,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -85,7 +86,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
@@ -192,7 +192,7 @@ public class CAsTest extends CaTestCase {
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
-        X509CAInfo cainfo = new X509CAInfo("CN=TEST", caName, SecConst.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
+        X509CAInfo cainfo = new X509CAInfo("CN=TEST", caName, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
                 24, // CRLPeriod
                 0, // CRLIssueInterval
@@ -343,7 +343,7 @@ public class CAsTest extends CaTestCase {
             }
             catokeninfo.setProperties(prop);
 
-            X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSA", "TESTECDSA", SecConst.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSA", "TESTECDSA", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                     365, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit ECDSA CA", -1, null, policies, // PolicyId
                     24, // CRLPeriod
@@ -457,7 +457,7 @@ public class CAsTest extends CaTestCase {
             ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
             policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
-            X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSAImplicitlyCA", "TESTECDSAImplicitlyCA", SecConst.CA_ACTIVE, new Date(), "",
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTECDSAImplicitlyCA", "TESTECDSAImplicitlyCA", CAConstants.CA_ACTIVE, new Date(), "",
                     CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365,
                     null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit ECDSA ImplicitlyCA CA", -1, null,
@@ -564,7 +564,7 @@ public class CAsTest extends CaTestCase {
             }
             catokeninfo.setProperties(prop);
 
-            X509CAInfo cainfo = new X509CAInfo(cadn, "TESTSha256WithMGF1", SecConst.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
+            X509CAInfo cainfo = new X509CAInfo(cadn, "TESTSha256WithMGF1", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                     365, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
                     24, // CRLPeriod
@@ -664,7 +664,7 @@ public class CAsTest extends CaTestCase {
             X509CAInfo cainfo = new X509CAInfo(
                     dn,
                     "TESTRSA4096",
-                    SecConst.CA_ACTIVE,
+                    CAConstants.CA_ACTIVE,
                     new Date(),
                     "",
                     CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
@@ -819,7 +819,7 @@ public class CAsTest extends CaTestCase {
         // Create a root CVCA
         try {
 
-            CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
+            CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -881,7 +881,7 @@ public class CAsTest extends CaTestCase {
             certificateProfileSession.addCertificateProfile(admin, "TESTCVCDV", profile);
             int profileid = certificateProfileSession.getCertificateProfileId("TESTCVCDV");
 
-            CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, SecConst.CA_ACTIVE, new Date(), profileid, 3650, null, // Expiretime
+            CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, CAConstants.CA_ACTIVE, new Date(), profileid, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -939,7 +939,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV foreign
         ret = false;
         try {
-            CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
+            CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -1139,7 +1139,7 @@ public class CAsTest extends CaTestCase {
         // Create a root CVCA
         try {
 
-            CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
+            CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -1195,7 +1195,7 @@ public class CAsTest extends CaTestCase {
         // Create a Sub DV domestic
         ret = false;
         try {
-            CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, SecConst.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
+            CVCCAInfo cvccainfo = new CVCCAInfo(dvddn, dvdcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -1254,7 +1254,7 @@ public class CAsTest extends CaTestCase {
         ret = false;
         try {
 
-            CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, SecConst.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
+            CVCCAInfo cvccainfo = new CVCCAInfo(dvfdn, dvfcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, rootcadn.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -1469,7 +1469,7 @@ public class CAsTest extends CaTestCase {
             extendedcaservices.add(new CmsCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=CMSCertificate, " + "CN=TESTSIGNEDBYEXTERNAL", "",
                     "1024", AlgorithmConstants.KEYALGORITHM_RSA));
 
-            X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", SecConst.CA_ACTIVE, new Date(), "",
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTSIGNEDBYEXTERNAL", "TESTSIGNEDBYEXTERNAL", CAConstants.CA_ACTIVE, new Date(), "",
                     CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 1000, null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SIGNEDBYEXTERNALCA, // Signed by the first TEST CA we created
                     (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA Signed by external", -1, null, null, // PolicyId
@@ -1512,14 +1512,14 @@ public class CAsTest extends CaTestCase {
             caAdminSession.createCA(admin, cainfo);
 
             info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
-            assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
+            assertEquals(CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
 
             // Generate a certificate request from the CA and send to the TEST CA
             CAInfo rootinfo = caSession.getCAInfo(caAdmin, getTestCAName());
             Collection<Certificate> rootcacertchain = rootinfo.getCertificateChain();
             byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), rootcacertchain, false, false, false, null);
             info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
-            assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
+            assertEquals(CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
             PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
             assertEquals("CN=TESTSIGNEDBYEXTERNAL", msg.getRequestDN());
 
@@ -1532,7 +1532,7 @@ public class CAsTest extends CaTestCase {
 
             // Check that the CA has the correct certificate chain now
             info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
-            assertEquals(SecConst.CA_ACTIVE, info.getStatus());
+            assertEquals(CAConstants.CA_ACTIVE, info.getStatus());
             Iterator<Certificate> iter = info.getCertificateChain().iterator();
             Certificate cert = iter.next();
             String sigAlg = AlgorithmTools.getSignatureAlgorithm(cert);
@@ -1561,7 +1561,7 @@ public class CAsTest extends CaTestCase {
         Collection<Certificate> cachain = info.getCertificateChain();
         byte[] request = caAdminSession.makeRequest(admin, info.getCAId(), cachain, false, false, false, null);
         info = caSession.getCAInfo(admin, "TESTSIGNEDBYEXTERNAL");
-        assertEquals(SecConst.CA_ACTIVE, info.getStatus()); // No new keys
+        assertEquals(CAConstants.CA_ACTIVE, info.getStatus()); // No new keys
         // generated, still
         // active
         PKCS10RequestMessage msg = new PKCS10RequestMessage(request);
@@ -1612,7 +1612,7 @@ public class CAsTest extends CaTestCase {
             extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TESTDSA", "", "1024",
                     AlgorithmConstants.KEYALGORITHM_DSA));
 
-            X509CAInfo cainfo = new X509CAInfo("CN=TESTDSA", "TESTDSA", SecConst.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650,
+            X509CAInfo cainfo = new X509CAInfo("CN=TESTDSA", "TESTDSA", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650,
                     null, // Expiretime
                     CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit DSA CA", -1, null, null, // PolicyId
                     24, // CRLPeriod
@@ -1748,11 +1748,11 @@ public class CAsTest extends CaTestCase {
         // After this (new keys activated but no cert response received) status
         // should be waiting...
         info = caSession.getCAInfo(admin, getTestCAId());
-        assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
+        assertEquals(CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, info.getStatus());
 
         // To clean up after us so the active key is not out of sync with the
         // active certificate, we should simply renew the CA
-        info.setStatus(SecConst.CA_ACTIVE);
+        info.setStatus(CAConstants.CA_ACTIVE);
         caAdminSession.editCA(admin, info); // need active status in order
         // to do renew
         caAdminSession.renewCA(admin, getTestCAId(), "foo123", false, null);
@@ -1765,14 +1765,14 @@ public class CAsTest extends CaTestCase {
         createTestCA(caname);
         try {
             CAInfo info = caSession.getCAInfo(admin, caname);
-            assertEquals(SecConst.CA_ACTIVE, info.getStatus());
+            assertEquals(CAConstants.CA_ACTIVE, info.getStatus());
             assertEquals(RevokedCertInfo.NOT_REVOKED, info.getRevocationReason());
             assertNull(info.getRevocationDate());
 
             // Revoke the CA
             caAdminSession.revokeCA(admin, info.getCAId(), RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
             info = caSession.getCAInfo(admin, caname);
-            assertEquals(SecConst.CA_REVOKED, info.getStatus());
+            assertEquals(CAConstants.CA_REVOKED, info.getStatus());
             assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, info.getRevocationReason());
             assertTrue(info.getRevocationDate().getTime() > 0);
         } finally {
@@ -1804,7 +1804,7 @@ public class CAsTest extends CaTestCase {
             caAdminSession.importCACertificate(admin, caname, certs);
             CAInfo info = caSession.getCAInfo(admin, caname);
             // The CA must not get stats SecConst.CA_EXPIRED when it is an external CA
-            assertEquals(SecConst.CA_EXTERNAL, info.getStatus());
+            assertEquals(CAConstants.CA_EXTERNAL, info.getStatus());
         } finally {
             removeOldCa(caname); // for the test
         }
@@ -1845,7 +1845,7 @@ public class CAsTest extends CaTestCase {
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TEST", "", "1024",
                 AlgorithmConstants.KEYALGORITHM_RSA));
 
-        X509CAInfo cainfo = new X509CAInfo("CN=TESTFAIL", "TESTFAIL", SecConst.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650,
+        X509CAInfo cainfo = new X509CAInfo("CN=TESTFAIL", "TESTFAIL", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650,
                 null, // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
                 24, // CRLPeriod

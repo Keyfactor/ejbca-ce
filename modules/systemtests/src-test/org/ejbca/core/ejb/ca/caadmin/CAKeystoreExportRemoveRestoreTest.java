@@ -22,6 +22,7 @@ import java.util.Date;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -36,7 +37,6 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
@@ -475,7 +475,7 @@ public class CAKeystoreExportRemoveRestoreTest {
      * @return The new X509CAInfo for testing.
      */
     private X509CAInfo getNewCAInfo(String caname, CATokenInfo catokeninfo) {
-        X509CAInfo cainfo = new X509CAInfo("CN=" + caname, caname, SecConst.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, new Date(System
+        X509CAInfo cainfo = new X509CAInfo("CN=" + caname, caname, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, new Date(System
                 .currentTimeMillis()
                 + 364 * 24 * 3600 * 1000), // Expiretime
                 CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, // certificatechain

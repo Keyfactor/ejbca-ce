@@ -16,10 +16,10 @@ package org.ejbca.ui.web.admin.cainterface;
 import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -125,7 +125,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	             	    
     	    if(request.getParameter(BUTTON_ACTIVATE) != null || request.getParameter(BUTTON_MAKEOFFLINE) != null){
     	      // Get currentstate
-    	      status = SecConst.CA_OFFLINE;
+    	      status = CAConstants.CA_OFFLINE;
     	      try{
     	      	cainfo = cabean.getCAInfo(caid);
     	      	status = cainfo.getCAInfo().getStatus();
@@ -139,8 +139,8 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      // If Activate button is pressed, the admin is authorized and the current status is offline then activate.
     	      if(request.getParameter(BUTTON_ACTIVATE) != null &&
     	      	 can_activate &&
-				 ( (status == SecConst.CA_OFFLINE) ||
-				   ((status == SecConst.CA_ACTIVE || status == SecConst.CA_WAITING_CERTIFICATE_RESPONSE || status == SecConst.CA_EXPIRED) && (cainfo.getCAInfo().getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_OFFLINE)) )) {
+				 ( (status == CAConstants.CA_OFFLINE) ||
+				   ((status == CAConstants.CA_ACTIVE || status == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE || status == CAConstants.CA_EXPIRED) && (cainfo.getCAInfo().getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_OFFLINE)) )) {
     	         
     	         String authorizationcode = request.getParameter(PASSWORD_AUTHENTICATIONCODE);
     	         try {
@@ -170,7 +170,7 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
     	      // If Make off-line button is pressed, the admin is authorized and the current status is active then de-activate.
     	      if(request.getParameter(BUTTON_MAKEOFFLINE) != null &&
     	      	 can_activate &&
-				 status == SecConst.CA_ACTIVE){
+				 status == CAConstants.CA_ACTIVE){
     	         
     	      	 try{
     	      	   cabean.getCADataHandler().deactivateCAToken(caid);

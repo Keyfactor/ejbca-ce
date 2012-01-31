@@ -76,6 +76,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
@@ -2546,7 +2547,7 @@ public class EjbcaWS implements IEjbcaWS {
         logAdminName(admin,logger);
 		try {
 			CAInfo info = caSession.getCAInfo(admin, caname);
-			if (info.getStatus() == SecConst.CA_WAITING_CERTIFICATE_RESPONSE){
+			if (info.getStatus() == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE){
 				return retval;
 			}
      		Collection<java.security.cert.Certificate> certs = info.getCertificateChain();
