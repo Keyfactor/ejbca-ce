@@ -29,11 +29,11 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.SoftCryptoToken;
-import org.ejbca.core.model.SecConst;
 
 /**
  * Some test methods that are used from system tests
@@ -57,9 +57,9 @@ public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
     	if (!(thisCAToken.getCryptoToken() instanceof SoftCryptoToken)) {
     		throw new IllegalCryptoTokenException("Cannot extract fingerprint from a non-soft token (" + thisCa.getCAType() + ").");
     	}
-    	PrivateKey p12PrivateEncryptionKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
-    	PrivateKey p12PrivateCertSignKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
-    	PrivateKey p12PrivateCRLSignKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN);
+    	PrivateKey p12PrivateEncryptionKey = thisCAToken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+    	PrivateKey p12PrivateCertSignKey = thisCAToken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+    	PrivateKey p12PrivateCRLSignKey = thisCAToken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
     	MessageDigest md = MessageDigest.getInstance("SHA1");
     	md.update(p12PrivateEncryptionKey.getEncoded());
     	md.update(p12PrivateCertSignKey.getEncoded());

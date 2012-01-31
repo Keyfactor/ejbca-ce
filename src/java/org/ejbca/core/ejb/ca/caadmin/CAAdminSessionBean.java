@@ -141,7 +141,6 @@ import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalExecutorUtil;
@@ -374,7 +373,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
                 EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName,
                         null, 0, 0, 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
-                cacertificate = ca.generateCertificate(cadata, catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1, null, cainfo.getValidity(),
+                cacertificate = ca.generateCertificate(cadata, catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), -1, null, cainfo.getValidity(),
                         certprofile, sequence);
                 log.debug("CAAdminSessionBean : " + CertTools.getSubjectDN(cacertificate));
                 // Build Certificate Chain
@@ -419,7 +418,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName,
                         null, 0, 0, 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
 
-                cacertificate = signca.generateCertificate(cadata, catoken.getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1, null, cainfo.getValidity(),
+                cacertificate = signca.generateCertificate(cadata, catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), -1, null, cainfo.getValidity(),
                         certprofile, sequence);
 
                 // Build Certificate Chain
@@ -716,12 +715,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
             // If we don't set status to waiting we want to use the next
             // signature key pair
-            int keyPurpose = SecConst.CAKEYPURPOSE_CERTSIGN;
+            int keyPurpose = CATokenConstants.CAKEYPURPOSE_CERTSIGN;
             boolean usepreviouskey = true; // for creating an authenticated
             // request we sign it with the
             // previous key
             if (usenextkey || (regenerateKeys && !activatekey)) {
-                keyPurpose = SecConst.CAKEYPURPOSE_CERTSIGN_NEXT;
+                keyPurpose = CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT;
                 usepreviouskey = false; // for creating an authenticated request
                 // we sign it with the current key,
                 // which will be the previous once we
@@ -919,7 +918,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     log.debug("Cert is not CVC, no need to enrich with EC parameters.");
                 }
                 try {
-                    KeyTools.testKey(catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), pk, catoken.getCryptoToken().getSignProviderName());
+                    KeyTools.testKey(catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), pk, catoken.getCryptoToken().getSignProviderName());
                 } catch (Exception e1) {
                     log.debug("The received certificate response does not match the CAs private signing key for purpose CAKEYPURPOSE_CERTSIGN, trying CAKEYPURPOSE_CERTSIGN_NEXT...");
                     if (e1 instanceof InvalidKeyException) {
@@ -929,7 +928,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         log.debug("Error: ", e1);
                     }
                     try {
-                        KeyTools.testKey(catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN_NEXT), pk, catoken.getCryptoToken()
+                        KeyTools.testKey(catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT), pk, catoken.getCryptoToken()
                                 .getSignProviderName());
                         // This was OK, so we must also activate the next signing key when importing this certificate
                         // this makes sure the ca token is active
@@ -1412,7 +1411,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
                     // get from CAtoken to make sure it is fresh
                     String sequence = caToken.getTokenInfo().getKeySequence();
-                    cacertificate = ca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1,
+                    cacertificate = ca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), -1,
                             customNotBefore, ca.getValidity(), certprofile, sequence);
                     // Build Certificate Chain
                     cachain = new ArrayList<Certificate>();
@@ -1437,7 +1436,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
                         CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
                         String sequence = caToken.getTokenInfo().getKeySequence(); // get from CAtoken to make sure it is fresh
-                        cacertificate = signca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(SecConst.CAKEYPURPOSE_CERTSIGN), -1,
+                        cacertificate = signca.generateCertificate(cainfodata, ca.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), -1,
                                 customNotBefore, ca.getValidity(), certprofile, sequence);
                         // Build Certificate Chain
                         Collection<Certificate> rootcachain = signca.getCertificateChain();
@@ -2150,10 +2149,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             // will get an exception and the export will not proceed
             thisCAToken.getCryptoToken().activate(keystorepass.toCharArray());
 
-            PrivateKey p12PrivateEncryptionKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
-            PublicKey p12PublicEncryptionKey = thisCAToken.getPublicKey(SecConst.CAKEYPURPOSE_KEYENCRYPT);
-            PrivateKey p12PrivateCertSignKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN);
-            PrivateKey p12PrivateCRLSignKey = thisCAToken.getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN);
+            PrivateKey p12PrivateEncryptionKey = thisCAToken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+            PublicKey p12PublicEncryptionKey = thisCAToken.getPublicKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+            PrivateKey p12PrivateCertSignKey = thisCAToken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+            PrivateKey p12PrivateCRLSignKey = thisCAToken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
             if (!p12PrivateCertSignKey.equals(p12PrivateCRLSignKey)) {
                 throw new Exception("Assertion of equal signature keys failed.");
             }
@@ -2359,13 +2358,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public byte[] encryptWithCA(int caid, byte[] data) throws Exception {
         CAData caData = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-        return caData.getCA().encryptData(data, SecConst.CAKEYPURPOSE_KEYENCRYPT);
+        return caData.getCA().encryptData(data, CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
     }
 
     @Override
     public byte[] decryptWithCA(int caid, byte[] data) throws Exception {
         CAData caData = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-        return caData.getCA().decryptData(data, SecConst.CAKEYPURPOSE_KEYENCRYPT);
+        return caData.getCA().decryptData(data, CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
     }
 
     @Override

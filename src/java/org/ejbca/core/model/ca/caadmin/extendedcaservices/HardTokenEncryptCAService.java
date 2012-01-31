@@ -20,6 +20,7 @@ import java.util.LinkedHashMap;
 import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSException;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
@@ -29,7 +30,6 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 
 /** Handles and maintains the CA-part of the Hard token encrypt functionality
  * 
@@ -95,7 +95,7 @@ public class HardTokenEncryptCAService extends ExtendedCAService implements Seri
     	if(serviceReq.getCommand() == HardTokenEncryptCAServiceRequest.COMMAND_ENCRYPTDATA){
     		try{	
     			returnval = new HardTokenEncryptCAServiceResponse(HardTokenEncryptCAServiceResponse.TYPE_ENCRYPTRESPONSE, 
-    					getCa().encryptData(serviceReq.getData(), SecConst.CAKEYPURPOSE_HARDTOKENENCRYPT));	
+    					getCa().encryptData(serviceReq.getData(), CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT));	
     		}catch(CMSException e){
     			log.error("encrypt:", e.getUnderlyingException());
     			throw new IllegalExtendedCAServiceRequestException(e);
@@ -106,7 +106,7 @@ public class HardTokenEncryptCAService extends ExtendedCAService implements Seri
     		if(serviceReq.getCommand() == HardTokenEncryptCAServiceRequest.COMMAND_DECRYPTDATA){
             try{
             	returnval = new HardTokenEncryptCAServiceResponse(HardTokenEncryptCAServiceResponse.TYPE_DECRYPTRESPONSE, 
-            			getCa().decryptData(serviceReq.getData(), SecConst.CAKEYPURPOSE_HARDTOKENENCRYPT));
+            			getCa().decryptData(serviceReq.getData(), CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT));
     		  }catch(CMSException e){
     			 log.error("decrypt:", e.getUnderlyingException());
   		  	 throw new IllegalExtendedCAServiceRequestException(e);
