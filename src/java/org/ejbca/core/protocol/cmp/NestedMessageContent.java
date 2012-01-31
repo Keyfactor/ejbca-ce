@@ -71,7 +71,6 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     public NestedMessageContent(final PKIMessage pkiMsg) {
         this.raSignedMessage = pkiMsg;
         setPKIMessageBytes(pkiMsg);
-        //this.originalMessage = pkiMsg.getBody().getNested();
         init();
     }
     
