@@ -15,11 +15,11 @@ package org.ejbca.ui.cli.ca;
 
 import javax.security.auth.login.FailedLoginException;
 
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -75,7 +75,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
                 return;
             }
             // Check that CA has correct status.
-            if ((cainfo.getStatus() == SecConst.CA_OFFLINE) || (cainfo.getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_OFFLINE)) {
+            if ((cainfo.getStatus() == CAConstants.CA_OFFLINE) || (cainfo.getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_OFFLINE)) {
                 try {
                     ejb.getCAAdminSession().activateCAToken(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), authorizationcode, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration());
                     getLogger().info("CA token activated.");

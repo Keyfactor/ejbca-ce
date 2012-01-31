@@ -13,9 +13,9 @@
  
 package org.ejbca.ui.cli.ca;
 
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -51,7 +51,7 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
             	getLogger().error("CA " + caname + " cannot be found");	
             	return;            	
             }
-            if(cainfo.getStatus() == SecConst.CA_ACTIVE){
+            if(cainfo.getStatus() == CAConstants.CA_ACTIVE){
               ejb.getCAAdminSession().deactivateCAToken(getAdmin(cliUserName, cliPassword), cainfo.getCAId());                        
               getLogger().info("CA token deactivated.");
             }else{

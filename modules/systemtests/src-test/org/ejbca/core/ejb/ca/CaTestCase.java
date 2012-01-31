@@ -42,6 +42,7 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -286,7 +287,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 AlgorithmConstants.KEYALGORITHM_RSA));
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-        X509CAInfo cainfo = new X509CAInfo(dn, caName, SecConst.CA_ACTIVE, new Date(), "",
+        X509CAInfo cainfo = new X509CAInfo(dn, caName, CAConstants.CA_ACTIVE, new Date(), "",
                 signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                 CAInfo.CATYPE_X509, signedBy, certificateChain, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
                 24, // CRLPeriod
@@ -524,7 +525,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         X509CAInfo cainfo = new X509CAInfo(
                 dn,
                 name,
-                SecConst.CA_ACTIVE,
+                CAConstants.CA_ACTIVE,
                 new Date(),
                 "",
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,

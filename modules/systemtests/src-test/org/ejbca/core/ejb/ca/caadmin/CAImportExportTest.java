@@ -37,6 +37,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -55,7 +56,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.util.EjbRemoteHelper;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
@@ -243,7 +243,7 @@ public class CAImportExportTest  {
      */
 	private X509CAInfo getNewCAInfo(String caname, CATokenInfo catokeninfo) {
         cainfo = new X509CAInfo("CN="+caname,
-        		caname, SecConst.CA_ACTIVE, new Date(), 
+        		caname, CAConstants.CA_ACTIVE, new Date(), 
                 "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                 365,
                 new Date(System.currentTimeMillis()+364*24*3600*1000), // Expiretime

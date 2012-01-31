@@ -40,6 +40,7 @@ import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
@@ -334,7 +335,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         // Get CA object and make sure it's active
         CA ca = caSession.getCA(admin, data.getCAId());
-        if (ca.getStatus() != SecConst.CA_ACTIVE) {
+        if (ca.getStatus() != CAConstants.CA_ACTIVE) {
             String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
             throw new EJBException(msg);
         }
@@ -463,7 +464,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         CA ca = getCAFromRequest(admin, req);
         try {
             CAToken catoken = ca.getCAToken();
-            if (ca.getStatus() != SecConst.CA_ACTIVE) {
+            if (ca.getStatus() != CAConstants.CA_ACTIVE) {
                 String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
                 throw new EJBException(msg);
             }
@@ -554,7 +555,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                     intres.getLocalizedMessage("createcert.canotfoundissuerusername", req.getIssuerDN(), req.getUsername()));
         }
 
-        if (ca.getStatus() != SecConst.CA_ACTIVE) {
+        if (ca.getStatus() != CAConstants.CA_ACTIVE) {
             String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
             throw new EJBException(msg);
         }

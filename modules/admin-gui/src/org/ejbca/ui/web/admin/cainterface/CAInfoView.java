@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
@@ -157,26 +158,26 @@ public class CAInfoView implements Serializable, Cloneable {
         }
         
         switch(cainfo.getStatus()){
-            case SecConst.CA_ACTIVE :
+            case CAConstants.CA_ACTIVE :
               cainfodata[STATUS]     = ejbcawebbean.getText("ACTIVE");     
               break;
-            case SecConst.CA_EXPIRED :
+            case CAConstants.CA_EXPIRED :
               cainfodata[STATUS]     = ejbcawebbean.getText("EXPIRED");
               break;
-            case SecConst.CA_OFFLINE :
+            case CAConstants.CA_OFFLINE :
               cainfodata[STATUS]     = ejbcawebbean.getText("OFFLINE");
               break;
-            case SecConst.CA_REVOKED :
+            case CAConstants.CA_REVOKED :
               cainfodata[STATUS]     = ejbcawebbean.getText("CAREVOKED") + "<br>&nbsp;&nbsp;" + 
                                                     ejbcawebbean.getText("REASON") + " : <br>&nbsp;&nbsp;&nbsp;&nbsp;" + 
                                                     ejbcawebbean.getText(SecConst.reasontexts[cainfo.getRevocationReason()]) + "<br>&nbsp;&nbsp;" +
 			                                        ejbcawebbean.getText("CRL_ENTRY_REVOCATIONDATE") + "<br>&nbsp;&nbsp;&nbsp;&nbsp;" + 
 			                                        ejbcawebbean.formatAsISO8601(cainfo.getRevocationDate());
               break;
-            case SecConst.CA_WAITING_CERTIFICATE_RESPONSE :
+            case CAConstants.CA_WAITING_CERTIFICATE_RESPONSE :
               cainfodata[STATUS]     = ejbcawebbean.getText("WAITINGFORCERTRESPONSE");
               break;              
-            case SecConst.CA_EXTERNAL :
+            case CAConstants.CA_EXTERNAL :
                 cainfodata[STATUS]     = ejbcawebbean.getText("EXTERNALCA");
                 break;              
         } 

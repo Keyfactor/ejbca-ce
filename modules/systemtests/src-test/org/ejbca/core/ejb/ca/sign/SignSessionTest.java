@@ -61,6 +61,7 @@ import org.bouncycastle.x509.extension.X509ExtensionUtil;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -2001,7 +2002,7 @@ public class SignSessionTest extends CaTestCase {
         assertNotNull("Failed to create certificate", cert);
         // Set CA to offline
         CAInfo inforsa = caSession.getCAInfo(internalAdmin, rsacaid);
-        inforsa.setStatus(SecConst.CA_OFFLINE);
+        inforsa.setStatus(CAConstants.CA_OFFLINE);
         caAdminSession.editCA(internalAdmin, inforsa);
 
         userAdminSession.setUserStatus(internalAdmin, "foo", UserDataConstants.STATUS_NEW);
@@ -2013,7 +2014,7 @@ public class SignSessionTest extends CaTestCase {
         }
         assertTrue(thrown);
 
-        inforsa.setStatus(SecConst.CA_ACTIVE);
+        inforsa.setStatus(CAConstants.CA_ACTIVE);
         caAdminSession.editCA(internalAdmin, inforsa);
     }
 

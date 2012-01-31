@@ -1,7 +1,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, 
-                 org.ejbca.ui.web.admin.cainterface.CAInfoView, org.cesecore.util.CertTools, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.ejbca.core.model.SecConst,
+                 org.ejbca.ui.web.admin.cainterface.CAInfoView, org.cesecore.util.CertTools, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.cesecore.certificates.ca.CAConstants,
                  org.cesecore.authorization.AuthorizationDeniedException,
                  java.security.cert.X509Certificate" %>
 
@@ -92,7 +92,7 @@
         </td>
       </tr> 
 
-     <% if(viewcainfohelper.can_activate && (viewcainfohelper.status == SecConst.CA_OFFLINE || viewcainfohelper.tokenoffline)){ %> 
+     <% if(viewcainfohelper.can_activate && (viewcainfohelper.status == CAConstants.CA_OFFLINE || viewcainfohelper.tokenoffline)){ %> 
      <tr id="Row<%=(row++)%2%>">
   	    <td width="<%=columnwidth%>"></td>
 	    <td>
@@ -104,7 +104,7 @@
       </tr> 
      <% } %>
 
-     <% if(viewcainfohelper.can_activate && viewcainfohelper.status == SecConst.CA_ACTIVE){ %>     
+     <% if(viewcainfohelper.can_activate && viewcainfohelper.status == CAConstants.CA_ACTIVE){ %>     
      <tr id="Row<%=(row++)%2%>">
 	 <td width="<%=columnwidth%>"></td>
 	 <td>

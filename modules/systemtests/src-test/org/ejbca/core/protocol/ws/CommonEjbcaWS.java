@@ -71,6 +71,7 @@ import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
@@ -2347,7 +2348,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // Now test our WS API to generate a request, setting status to
         // "WAITING_FOR_CERTIFICATE_RESPONSE"
         CAInfo dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, dvinfo.getStatus());
+        assertEquals(CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, dvinfo.getStatus());
         cachain.add(cvcacert.getEncoded());
         // Create the request with WS API
         request = ejbcaraws.caRenewCertRequest(caname, cachain, false, false, false, pwd);
@@ -2369,7 +2370,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         ejbcaraws.caCertResponse(caname, dvretcert.getDEREncoded(), cachain, pwd);
         // Check that the cert was received and the CA activated
         dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(SecConst.CA_ACTIVE, dvinfo.getStatus());
+        assertEquals(CAConstants.CA_ACTIVE, dvinfo.getStatus());
         Collection<java.security.cert.Certificate> dvcerts = dvinfo.getCertificateChain();
         assertEquals(2, dvcerts.size());
         CardVerifiableCertificate dvcertactive = (CardVerifiableCertificate) dvcerts.iterator().next();
@@ -2413,7 +2414,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                 .getAuthorityReference().getConcatenated());
         // Now test our WS API that it has set status to "WAITING_FOR_CERTIFICATE_RESPONSE"
         dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(SecConst.CA_WAITING_CERTIFICATE_RESPONSE, dvinfo.getStatus());
+        assertEquals(CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, dvinfo.getStatus());
         assertEquals("DV should not be available", ejbcaraws.getLastCAChain(caname).size(), 0);
         // Check to see that is really is a new keypair
         pubk1 = new String(Base64.encode(dvcertactive.getPublicKey().getEncoded(), false));
@@ -2427,7 +2428,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         ejbcaraws.caCertResponse(caname, dvretcert.getDEREncoded(), cachain, pwd);
         // Check that the cert was received and the CA activated
         dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(SecConst.CA_ACTIVE, dvinfo.getStatus());
+        assertEquals(CAConstants.CA_ACTIVE, dvinfo.getStatus());
         dvcerts = dvinfo.getCertificateChain();
         assertEquals(2, dvcerts.size());
         dvcertactive = (CardVerifiableCertificate) dvcerts.iterator().next();
@@ -2470,7 +2471,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // be old certificate sequence + 1
         // status should not be "WAITING_FOR_CERTIFICATE_RESPONSE"
         dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(SecConst.CA_ACTIVE, dvinfo.getStatus());
+        assertEquals(CAConstants.CA_ACTIVE, dvinfo.getStatus());
         // Check to see that is really is a new keypair
         dvcerts = dvinfo.getCertificateChain();
         assertEquals(2, dvcerts.size());
@@ -2533,7 +2534,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         ejbcaraws.caCertResponse(caname, dvretcert.getDEREncoded(), cachain, pwd);
         // Check that the cert was received and the CA activated
         dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(SecConst.CA_ACTIVE, dvinfo.getStatus());
+        assertEquals(CAConstants.CA_ACTIVE, dvinfo.getStatus());
         dvcerts = dvinfo.getCertificateChain();
         assertEquals(2, dvcerts.size());
         dvcertactive = (CardVerifiableCertificate) dvcerts.iterator().next();
@@ -2742,7 +2743,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         int cvcaid = rootcadn.hashCode();
         try {
 
-            CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, SecConst.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
+            CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit WS CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -2775,7 +2776,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         try {
 
-            CVCCAInfo cvcdvinfo = new CVCCAInfo(subcadn, subcaname, SecConst.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
+            CVCCAInfo cvcdvinfo = new CVCCAInfo(subcadn, subcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, cvcaid, null, catokeninfo, "JUnit WS CVC DV CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
@@ -2831,7 +2832,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         try {
             String dvcadn = "CN=" + dvcaMnemonic + ",C=SE";
 
-            CVCCAInfo cvcdvinfo = new CVCCAInfo(dvcadn, dvcaname, SecConst.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
+            CVCCAInfo cvcdvinfo = new CVCCAInfo(dvcadn, dvcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                     CAInfo.CATYPE_CVC, CAInfo.SIGNEDBYEXTERNALCA, null, catokeninfo, "JUnit WS CVC DV signed by external", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
