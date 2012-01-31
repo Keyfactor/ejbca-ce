@@ -57,6 +57,12 @@
             <context-root>/ejbca/adminweb</context-root>
         </web>
     </module>
+    <module>
+        <web>
+            <web-uri>PrimeCardWS.war</web-uri>
+            <context-root>/primecard</context-root>
+        </web>
+    </module> 
        <!--@ejbca-systemtest-ejb.jar@-->
        <!--@ejbca-ws-ejb.jar@-->
        <!--@ejbca-xkms-ejb.jar@-->

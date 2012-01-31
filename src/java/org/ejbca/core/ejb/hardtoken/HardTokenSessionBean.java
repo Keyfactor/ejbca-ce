@@ -34,7 +34,6 @@ import java.util.TreeMap;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -704,36 +703,28 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (log.isTraceEnabled()) {
             log.trace(">addHardToken(tokensn : " + tokensn + ")");
         }
-        String bcdn = CertTools.stringToBCDNString(significantissuerdn);
-        org.ejbca.core.ejb.hardtoken.HardTokenData data = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
-        if (data == null) {
-            try {
-                entityManager.persist(new org.ejbca.core.ejb.hardtoken.HardTokenData(tokensn, username, new java.util.Date(), new java.util.Date(),
-                        tokentype, bcdn, setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(),
-                                hardtokendata)));
-                if (certificates != null) {
-                    Iterator<Certificate> i = certificates.iterator();
-                    while (i.hasNext()) {
-                        addHardTokenCertificateMapping(admin, tokensn, (X509Certificate)i.next());
-                    }
-                }
-                if (copyof != null) {
-                    entityManager.persist(new HardTokenPropertyData(tokensn, HardTokenPropertyData.PROPERTY_COPYOF, copyof));
-                }
-                String msg = intres.getLocalizedMessage("hardtoken.addedtoken", tokensn);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
-                auditSession.log(EjbcaEventTypes.HARDTOKEN_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, username, details);
-            } catch (Exception e) {
-                String msg = intres.getLocalizedMessage("hardtoken.tokenexists", tokensn);
-                log.info(msg);
-                throw new HardTokenExistsException("Tokensn : " + tokensn);
-            }
-        } else {
+        final String bcdn = CertTools.stringToBCDNString(significantissuerdn);
+        final org.ejbca.core.ejb.hardtoken.HardTokenData data = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
+        if ( data!=null ) {
             String msg = intres.getLocalizedMessage("hardtoken.tokenexists", tokensn);
             log.info(msg);
-            throw new HardTokenExistsException("Tokensn : " + tokensn);
+            throw new HardTokenExistsException("Hard token with serial number '" + tokensn+ "' does exist.");
         }
+        entityManager.persist(new org.ejbca.core.ejb.hardtoken.HardTokenData(tokensn, username, new java.util.Date(), new java.util.Date(),
+                tokentype, bcdn, setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(),
+                        hardtokendata)));
+        if (certificates != null) {
+            for ( Certificate cert : certificates ) {
+                addHardTokenCertificateMapping(admin, tokensn, (X509Certificate)cert);
+            }
+        }
+        if (copyof != null) {
+            entityManager.persist(new HardTokenPropertyData(tokensn, HardTokenPropertyData.PROPERTY_COPYOF, copyof));
+        }
+        String msg = intres.getLocalizedMessage("hardtoken.addedtoken", tokensn);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", msg);
+        auditSession.log(EjbcaEventTypes.HARDTOKEN_ADD, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, username, details);
         log.trace("<addHardToken()");
     }
 
@@ -743,27 +734,24 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (log.isTraceEnabled()) {
             log.trace(">changeHardToken(tokensn : " + tokensn + ")");
         }
-        try {
-            org.ejbca.core.ejb.hardtoken.HardTokenData htd = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
-            if (htd == null) {
-                throw new FinderException();
-            }
-            htd.setTokenType(tokentype);
-            htd.setData(setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(), hardtokendata));
-            htd.setModifyTime(new java.util.Date());
-            int caid = htd.getSignificantIssuerDN().hashCode();
-            String msg = intres.getLocalizedMessage("hardtoken.changedtoken", tokensn);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
-            auditSession.log(EjbcaEventTypes.HARDTOKEN_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), null, htd.getUsername(), details);
-        } catch (Exception e) {
+        final org.ejbca.core.ejb.hardtoken.HardTokenData htd = org.ejbca.core.ejb.hardtoken.HardTokenData.findByTokenSN(entityManager, tokensn);
+        if ( htd==null ) {
             String msg = intres.getLocalizedMessage("hardtoken.errorchangetoken", tokensn);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            details.put("error", e.getMessage());
+            final String errorMessage = "Hard token with serial number '" + tokensn+ "' does not exist.";
+            details.put("error", errorMessage);
             auditSession.log(EjbcaEventTypes.HARDTOKEN_EDIT, EventStatus.FAILURE, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
-            throw new HardTokenDoesntExistsException("Tokensn : " + tokensn);
+            throw new HardTokenDoesntExistsException(errorMessage);
         }
+        htd.setTokenType(tokentype);
+        htd.setData(setHardToken(admin, globalConfigurationSession.getCachedGlobalConfiguration().getHardTokenEncryptCA(), hardtokendata));
+        htd.setModifyTime(new java.util.Date());
+        int caid = htd.getSignificantIssuerDN().hashCode();
+        String msg = intres.getLocalizedMessage("hardtoken.changedtoken", tokensn);
+        final Map<String, Object> details = new LinkedHashMap<String, Object>();
+        details.put("msg", msg);
+        auditSession.log(EjbcaEventTypes.HARDTOKEN_EDIT, EventStatus.SUCCESS, EjbcaModuleTypes.HARDTOKEN, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), null, htd.getUsername(), details);
         log.trace("<changeHardToken()");
     }
 
