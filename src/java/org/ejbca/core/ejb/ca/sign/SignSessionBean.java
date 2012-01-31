@@ -46,6 +46,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionBean;
@@ -368,7 +369,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CAToken catoken = ca.getCAToken();
             decryptAndVerify(req, ca);
             //Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken
+            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken
                     .getCryptoToken().getSignProviderName());
             ret.setStatus(ResponseStatus.FAILURE);
             ret.setFailInfo(failInfo);
@@ -442,7 +443,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         CAToken catoken = ca.getCAToken();
         if (req.requireKeyInfo()) {
             // You go figure...scep encrypts message with the public CA-cert
-            req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken()
+            req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken()
                     .getSignProviderName());
         }
         // Verify the request
@@ -471,11 +472,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken()
+                req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken()
                         .getSignProviderName());
             }
             //Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken
+            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken
                     .getCryptoToken().getSignProviderName());
 
             // Get the Full CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already

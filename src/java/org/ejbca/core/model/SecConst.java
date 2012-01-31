@@ -110,21 +110,6 @@ public final class SecConst {
     public static final int MAXIMUM_QUERY_ROWCOUNT = 500; 
     
     
-    /** signs certificates issued by the CA */
-    public static final int CAKEYPURPOSE_CERTSIGN            = 1;
-    /** igns CRLs issues by the CA */
-    public static final int CAKEYPURPOSE_CRLSIGN             = 2;
-    /** encrypts entity keys stored in the database for key recovery */
-    public static final int CAKEYPURPOSE_KEYENCRYPT          = 3;
-    /** used for testing if the CA token is functioning and on-line */
-    public static final int CAKEYPURPOSE_KEYTEST             = 4;
-    /** encrypts hard token PIN/PUK codes etc */
-    public static final int CAKEYPURPOSE_HARDTOKENENCRYPT    = 5;
-    /** The CAs previous signing key, if any exists */
-    public static final int CAKEYPURPOSE_CERTSIGN_PREVIOUS   = 6;
-    /** The CAs next signing key, if any exists */
-    public static final int CAKEYPURPOSE_CERTSIGN_NEXT       = 7;
-
     /**
      * Default key lengths. Users are allowed to choose from these key lengths when
      * lookup of available bit lengths fails. 

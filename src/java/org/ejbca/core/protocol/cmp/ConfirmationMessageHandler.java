@@ -31,6 +31,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
@@ -45,7 +46,6 @@ import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLoc
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
@@ -190,7 +190,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 					}
 					if (ca != null) {
 						CAToken catoken = ca.getCAToken();
-						cresp.setSignKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(SecConst.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());						
+						cresp.setSignKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());						
 					} else {
 						if (LOG.isDebugEnabled()) {
 							LOG.info("Could not find CA to sign Certificate Confirm, either from recipient ("+cadn+") or default ("+CmpConfiguration.getDefaultCA()+"). Not signing Certificate Confirm.");
