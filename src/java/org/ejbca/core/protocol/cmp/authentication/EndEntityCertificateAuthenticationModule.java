@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509CertificateStructure;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -393,7 +394,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             return false;
         }
         
-        final int eeprofid = getUsedEndEntityProfileId(msg.getHeader().getSenderKID().toString());
+        final int eeprofid = getUsedEndEntityProfileId(msg.getHeader().getSenderKID());
         final int tagnr = msg.getBody().getTagNo();
         if((tagnr == CmpPKIBodyConstants.CERTIFICATAIONREQUEST) || (tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST)) {
         
@@ -482,14 +483,14 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * @return the ID of EndEntityProfile used for CMP purposes. 0 if no such EndEntityProfile exists. 
      * @throws NotFoundException
      */
-    private int getUsedEndEntityProfileId(final String keyId) throws NotFoundException {
+    private int getUsedEndEntityProfileId(final DEROctetString keyId) throws NotFoundException {
         int ret = 0;
         String endEntityProfile = CmpConfiguration.getRAEndEntityProfile();
-        if (StringUtils.equals(endEntityProfile, "KeyId")) {
+        if (StringUtils.equals(endEntityProfile, "KeyId") && (keyId != null)) {
             if (log.isDebugEnabled()) {
                 log.debug("Using End Entity Profile with same name as KeyId in request: "+keyId);
             }
-            endEntityProfile = keyId;
+            endEntityProfile = keyId.toString();
         } 
         ret = eeProfileSession.getEndEntityProfileId(endEntityProfile);
         if (ret == 0) {
@@ -504,6 +505,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         X509Certificate cert = (X509Certificate) certSession.findCertificateByFingerprint(fp);
         try {
             cert.checkValidity();
+            if(log.isDebugEnabled()) {
+                log.debug("The certificate in extraCert is valid");
+            }
         } catch(Exception e) {
             errorMessage = "The certificate attached to the PKIMessage in the extraCert field in not valid";
             if(log.isDebugEnabled()) {
@@ -524,6 +528,10 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             }
 
             return false;
+        } else {
+            if(log.isDebugEnabled()) {
+                log.debug("The certificate in extraCert is active");
+            }
         }
         
         return true;
@@ -535,6 +543,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         Certificate cacert = cainfo.getCertificateChain().iterator().next();
         try {
             extraCert.verify(cacert.getPublicKey(), "BC");
+            if(log.isDebugEnabled()) {
+                log.debug("The certificate in extraCert is issued by the right CA");
+            }
         } catch (Exception e) {
             errorMessage = "The End Entity certificate attached to the PKIMessage is not issued by the CA '" + cainfo.getName() + "'";
             if(log.isDebugEnabled()) {

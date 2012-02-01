@@ -112,51 +112,46 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			int iterationCount = 1024;
 			String cmpRaAuthSecret = null;	
 			String keyId = getSenderKeyId(msg.getHeader());
-			if (keyId != null) {
 
-				CAInfo caInfo;
-				try {
-					int eeProfileId = getUsedEndEntityProfileId(keyId);
-					int caId = getUsedCaId(keyId, eeProfileId);
-					caInfo = caSession.getCAInfo(admin, caId);
-				} catch (NotFoundException e) {
-					LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
-					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-				} catch (EJBException e) {
-					final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORADDUSER);
-					LOG.error(errMsg, e);			
-					return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-				} catch (CADoesntExistsException e) {
-                    LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-                } catch (AuthorizationDeniedException e) {
-                    LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
+			CAInfo caInfo;
+			try {
+			    int eeProfileId = getUsedEndEntityProfileId(keyId);
+			    int caId = getUsedCaId(keyId, eeProfileId);
+			    caInfo = caSession.getCAInfo(admin, caId);
+			} catch (NotFoundException e) {
+			    LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
+			    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
+			} catch (EJBException e) {
+			    final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORADDUSER);
+			    LOG.error(errMsg, e);			
+			    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
+			} catch (CADoesntExistsException e) {
+			    LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
+			    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
+            } catch (AuthorizationDeniedException e) {
+                LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
+                return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
+            }
+
+            //Verify the authenticity of the message
+            VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, admin, caSession, endEntityAccessSession, certificateStoreSession, authorizationSession, endEntityProfileSession, authenticationProviderSession);
+            ICMPAuthenticationModule authenticationModule = null;
+            if(messageVerifyer.verify(msg.getMessage(), null, authenticated)) {
+                authenticationModule = messageVerifyer.getUsedAuthenticationModule();
+            }
+            if(authenticationModule == null) {
+                String errMsg = messageVerifyer.getErrorMessage();
+                LOG.error(errMsg);
+                return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
+            } else {
+                if(authenticationModule instanceof HMACAuthenticationModule) {
+                    HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
+                    owfAlg = hmacmodule.getCmpPbeVerifyer().getOwfOid();
+                    macAlg = hmacmodule.getCmpPbeVerifyer().getMacOid();
                 }
+            }
+            cmpRaAuthSecret = authenticationModule.getAuthenticationString();
 
-                //Verify the authenticity of the message
-                VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, admin, caSession, endEntityAccessSession, certificateStoreSession, authorizationSession, endEntityProfileSession, authenticationProviderSession);
-                ICMPAuthenticationModule authenticationModule = null;
-                if(messageVerifyer.verify(msg.getMessage(), null, authenticated)) {
-                    authenticationModule = messageVerifyer.getUsedAuthenticationModule();
-                }
-                if(authenticationModule == null) {
-                    String errMsg = "";
-
-                    errMsg = messageVerifyer.getErrorMessage();
-                    
-                    LOG.error(errMsg);
-                    return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
-                } else {
-                    if(authenticationModule instanceof HMACAuthenticationModule) {
-                        HMACAuthenticationModule hmacmodule = (HMACAuthenticationModule) authenticationModule;
-                        owfAlg = hmacmodule.getCmpPbeVerifyer().getOwfOid();
-                        macAlg = hmacmodule.getCmpPbeVerifyer().getMacOid();
-					}
-				}
-                cmpRaAuthSecret = authenticationModule.getAuthenticationString();
-
-			}
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Creating a PKI confirm message response");
 			}
