@@ -1942,58 +1942,58 @@ public class CertTools {
      * @return ASN.1 GeneralNames
      * @see #getSubjectAlternativeName
      */
-    public static GeneralNames getGeneralNamesFromAltName(String altName) {
+    public static GeneralNames getGeneralNamesFromAltName(final String altName) {
         if (log.isTraceEnabled()) {
             log.trace(">getGeneralNamesFromAltName: " + altName);
         }
-        ASN1EncodableVector vec = new ASN1EncodableVector();
+        final ASN1EncodableVector vec = new ASN1EncodableVector();
 
-        ArrayList<String> emails = CertTools.getEmailFromDN(altName);
+        final ArrayList<String> emails = CertTools.getEmailFromDN(altName);
         if (!emails.isEmpty()) {
-            Iterator<String> iter = emails.iterator();
+            final Iterator<String> iter = emails.iterator();
             while (iter.hasNext()) {
-                GeneralName gn = new GeneralName(1, new DERIA5String((String) iter.next()));
+                final GeneralName gn = new GeneralName(1, new DERIA5String(iter.next()));
                 vec.add(gn);
             }
         }
 
-        ArrayList<String> dns = CertTools.getPartsFromDN(altName, CertTools.DNS);
+        final ArrayList<String> dns = CertTools.getPartsFromDN(altName, CertTools.DNS);
         if (!dns.isEmpty()) {
-            Iterator<String> iter = dns.iterator();
+            final Iterator<String> iter = dns.iterator();
             while (iter.hasNext()) {
-                GeneralName gn = new GeneralName(2, new DERIA5String((String) iter.next()));
+                final GeneralName gn = new GeneralName(2, new DERIA5String(iter.next()));
                 vec.add(gn);
             }
         }
 
-        String directoryName = getDirectoryStringFromAltName(altName);
+        final String directoryName = getDirectoryStringFromAltName(altName);
         if (directoryName != null) {
-            X509Name x509DirectoryName = new X509Name(directoryName);
-            GeneralName gn = new GeneralName(4, x509DirectoryName);
+            final X509Name x509DirectoryName = new X509Name(directoryName);
+            final GeneralName gn = new GeneralName(4, x509DirectoryName);
             vec.add(gn);
         }
 
         ArrayList<String> uri = CertTools.getPartsFromDN(altName, CertTools.URI);
         if (!uri.isEmpty()) {
-            Iterator<String> iter = uri.iterator();
+            final Iterator<String> iter = uri.iterator();
             while (iter.hasNext()) {
-                GeneralName gn = new GeneralName(6, new DERIA5String((String) iter.next()));
+                final GeneralName gn = new GeneralName(6, new DERIA5String(iter.next()));
                 vec.add(gn);
             }
         }
         uri = CertTools.getPartsFromDN(altName, CertTools.URI1);
         if (!uri.isEmpty()) {
-            Iterator<String> iter = uri.iterator();
+            final Iterator<String> iter = uri.iterator();
             while (iter.hasNext()) {
-                GeneralName gn = new GeneralName(6, new DERIA5String((String) iter.next()));
+                final GeneralName gn = new GeneralName(6, new DERIA5String(iter.next()));
                 vec.add(gn);
             }
         }
         uri = CertTools.getPartsFromDN(altName, CertTools.URI2);
         if (!uri.isEmpty()) {
-            Iterator<String> iter = uri.iterator();
+            final Iterator<String> iter = uri.iterator();
             while (iter.hasNext()) {
-                GeneralName gn = new GeneralName(6, new DERIA5String((String) iter.next()));
+                final GeneralName gn = new GeneralName(6, new DERIA5String(iter.next()));
                 vec.add(gn);
             }
         }
@@ -2002,8 +2002,8 @@ public class CertTools {
         if (!ipstr.isEmpty()) {
             final Iterator<String> iter = ipstr.iterator();
             while (iter.hasNext()) {
-                final String addr = (String) iter.next();
-                byte[] ipoctets = StringTools.ipStringToOctets(addr);
+                final String addr = iter.next();
+                final byte[] ipoctets = StringTools.ipStringToOctets(addr);
                 if (ipoctets.length > 0) {
                     final GeneralName gn = new GeneralName(7, new DEROctetString(ipoctets));
                     vec.add(gn);
@@ -2014,31 +2014,31 @@ public class CertTools {
         }
 
         // UPN is an OtherName see method getUpn... for asn.1 definition
-        ArrayList<String> upn = CertTools.getPartsFromDN(altName, CertTools.UPN);
+        final ArrayList<String> upn = CertTools.getPartsFromDN(altName, CertTools.UPN);
         if (!upn.isEmpty()) {
-            Iterator<String> iter = upn.iterator();
+            final Iterator<String> iter = upn.iterator();
             while (iter.hasNext()) {
-                ASN1EncodableVector v = new ASN1EncodableVector();
+                final ASN1EncodableVector v = new ASN1EncodableVector();
                 v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
-                v.add(new DERTaggedObject(true, 0, new DERUTF8String((String) iter.next())));
+                v.add(new DERTaggedObject(true, 0, new DERUTF8String(iter.next())));
                 // GeneralName gn = new GeneralName(new DERSequence(v), 0);
-                DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                final DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
                 vec.add(gn);
             }
         }
         
         // PermanentIdentifier is an OtherName see method getPermananentIdentifier... for asn.1 definition
-        ArrayList<String> permanentIdentifier = CertTools.getPartsFromDN(altName, CertTools.PERMANENTIDENTIFIER);
+        final ArrayList<String> permanentIdentifier = CertTools.getPartsFromDN(altName, CertTools.PERMANENTIDENTIFIER);
         if (!permanentIdentifier.isEmpty()) {
-            Iterator<String> iter = permanentIdentifier.iterator();
+            final Iterator<String> iter = permanentIdentifier.iterator();
             while (iter.hasNext()) {
-                String[] values = getPermanentIdentifierValues(iter.next());
+                final String[] values = getPermanentIdentifierValues(iter.next());
                 
-                ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
+                final ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
                 v.add(new DERObjectIdentifier(CertTools.PERMANENTIDENTIFIER_OBJECTID));
 
                 // First the PermanentIdentifier sequence
-                ASN1EncodableVector piSeq = new ASN1EncodableVector();
+                final ASN1EncodableVector piSeq = new ASN1EncodableVector();
                 if (values[0] != null) {
                     piSeq.add(new DERUTF8String(values[0]));
                 }
@@ -2048,21 +2048,21 @@ public class CertTools {
                 v.add(new DERTaggedObject(true, 0, new DERSequence(piSeq)));
                 
                 // GeneralName gn = new GeneralName(new DERSequence(v), 0);
-                DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                final DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
                 vec.add(gn);
             }
         }
 
-        ArrayList<String> guid = CertTools.getPartsFromDN(altName, CertTools.GUID);
+        final ArrayList<String> guid = CertTools.getPartsFromDN(altName, CertTools.GUID);
         if (!guid.isEmpty()) {
-            Iterator<String> iter = guid.iterator();
+            final Iterator<String> iter = guid.iterator();
             while (iter.hasNext()) {
-                ASN1EncodableVector v = new ASN1EncodableVector();
-                byte[] guidbytes = Hex.decode((String) iter.next());
+                final ASN1EncodableVector v = new ASN1EncodableVector();
+                byte[] guidbytes = Hex.decode(iter.next());
                 if (guidbytes != null) {
                     v.add(new DERObjectIdentifier(CertTools.GUID_OBJECTID));
                     v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
-                    DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                    final DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
                     vec.add(gn);
                 } else {
                     log.error("Cannot decode hexadecimal guid, ignoring: " + guid);
@@ -2071,17 +2071,17 @@ public class CertTools {
         }
 
         // Krb5PrincipalName is an OtherName, see method getKrb5Principal...for ASN.1 definition
-        ArrayList<String> krb5principalname = CertTools.getPartsFromDN(altName, CertTools.KRB5PRINCIPAL);
+        final ArrayList<String> krb5principalname = CertTools.getPartsFromDN(altName, CertTools.KRB5PRINCIPAL);
         if (!krb5principalname.isEmpty()) {
-            Iterator<String> iter = krb5principalname.iterator();
+            final Iterator<String> iter = krb5principalname.iterator();
             while (iter.hasNext()) {
                 // Start by parsing the input string to separate it in different parts
-                String principalString = (String) iter.next();
+                final String principalString = iter.next();
                 if (log.isDebugEnabled()) {
                     log.debug("principalString: " + principalString);
                 }
                 // The realm is the last part moving back until an @
-                int index = principalString.lastIndexOf('@');
+                final int index = principalString.lastIndexOf('@');
                 String realm = "";
                 if (index > 0) {
                     realm = principalString.substring(index + 1);
@@ -2090,7 +2090,7 @@ public class CertTools {
                     log.debug("realm: " + realm);
                 }
                 // Now we can have several principals separated by /
-                ArrayList<String> principalarr = new ArrayList<String>();
+                final ArrayList<String> principalarr = new ArrayList<String>();
                 int jndex = 0;
                 int bindex = 0;
                 while (jndex < index) {
@@ -2108,20 +2108,20 @@ public class CertTools {
                 }
 
                 // Now we must construct the rather complex asn.1...
-                ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
+                final ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
                 v.add(new DERObjectIdentifier(CertTools.KRB5PRINCIPAL_OBJECTID));
 
                 // First the Krb5PrincipalName sequence
-                ASN1EncodableVector krb5p = new ASN1EncodableVector();
+                final ASN1EncodableVector krb5p = new ASN1EncodableVector();
                 // The realm is the first tagged GeneralString
                 krb5p.add(new DERTaggedObject(true, 0, new DERGeneralString(realm)));
                 // Second is the sequence of principal names, which is at tagged position 1 in the krb5p
-                ASN1EncodableVector principals = new ASN1EncodableVector();
+                final ASN1EncodableVector principals = new ASN1EncodableVector();
                 // According to rfc4210 the type NT-UNKNOWN is 0, and according to some other rfc this type should be used...
                 principals.add(new DERTaggedObject(true, 0, new DERInteger(0)));
                 // The names themselves are yet another sequence
-                Iterator<String> i = principalarr.iterator();
-                ASN1EncodableVector names = new ASN1EncodableVector();
+                final Iterator<String> i = principalarr.iterator();
+                final ASN1EncodableVector names = new ASN1EncodableVector();
                 while (i.hasNext()) {
                     String principalName = (String) i.next();
                     names.add(new DERGeneralString(principalName));
@@ -2130,36 +2130,35 @@ public class CertTools {
                 krb5p.add(new DERTaggedObject(true, 1, new DERSequence(principals)));
 
                 v.add(new DERTaggedObject(true, 0, new DERSequence(krb5p)));
-                DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                final DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
                 vec.add(gn);
             }
         }
 
         // To support custom OIDs in altNames, they must be added as an OtherName of plain type UTF8String
-        ArrayList<String> customoids = CertTools.getCustomOids(altName);
+        final ArrayList<String> customoids = CertTools.getCustomOids(altName);
         if (!customoids.isEmpty()) {
-            Iterator<String> iter = customoids.iterator();
+            final Iterator<String> iter = customoids.iterator();
             while (iter.hasNext()) {
-                String oid = (String) iter.next();
-                ArrayList<String> oidval = CertTools.getPartsFromDN(altName, oid);
+                final String oid = iter.next();
+                final ArrayList<String> oidval = CertTools.getPartsFromDN(altName, oid);
                 if (!oidval.isEmpty()) {
-                    Iterator<String> valiter = oidval.iterator();
+                    final Iterator<String> valiter = oidval.iterator();
                     while (valiter.hasNext()) {
-                        ASN1EncodableVector v = new ASN1EncodableVector();
+                        final ASN1EncodableVector v = new ASN1EncodableVector();
                         v.add(new DERObjectIdentifier(oid));
                         v.add(new DERTaggedObject(true, 0, new DERUTF8String((String) valiter.next())));
-                        DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                        final DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
                         vec.add(gn);
                     }
                 }
             }
         }
 
-        GeneralNames ret = null;
         if (vec.size() > 0) {
-            ret = new GeneralNames(new DERSequence(vec));
+            return new GeneralNames(new DERSequence(vec));
         }
-        return ret;
+        return null;
     }
 
     /**
