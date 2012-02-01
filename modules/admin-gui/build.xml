@@ -31,6 +31,7 @@
         <path refid="lib.jasper.classpath"/>
         <path refid="lib.commons-logging.classpath"/>
         <path refid="lib.commons-el.classpath"/>
+    	<path refid="lib.commons-httpclient.classpath"/>
         <path refid="lib.jsp.classpath"/>
         <path refid="lib.ldap.classpath"/>
         <path refid="compile.classpath"/>
@@ -47,6 +48,7 @@
     <target name="build" description="Build this module" depends="validate">
         <war destfile="${mod.admin-gui.war}" webxml="${resources.dir}/WEB-INF/web.xml" basedir="${build.dir}" excludes="WEB-INF/web.xml">
         	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/myfaces" includes="tomahawk-1.1.6.jar"/>
+        	<zipfileset prefix="WEB-INF/lib" dir="${ejbca.home}/lib/ext" includes="commons-httpclient-3.1.jar"/>
         	<fileset dir="${resources.dir}" excludes="languages/*"/>
         </war>
     </target>
