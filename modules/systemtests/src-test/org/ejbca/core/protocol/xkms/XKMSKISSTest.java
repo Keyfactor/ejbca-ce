@@ -172,7 +172,7 @@ public class XKMSKISSTest {
 
         EndEntityProfile endentityprofile = new EndEntityProfile(true);
         endentityprofile.setValue(EndEntityProfile.AVAILCAS, 0, "" + caid);
-        endentityprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER + ";" + profile1Id + ";" + profile2Id);
+        endentityprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER + ";" + profile1Id + ";" + profile2Id);
 
         try {
             endEntityProfileSession.addEndEntityProfile(administrator, "XKMSTESTPROFILE", endentityprofile);
@@ -185,7 +185,7 @@ public class XKMSKISSTest {
         String pwd = "foo123";
         int type = SecConst.USER_ENDUSER;
         int token = SecConst.TOKEN_SOFT_P12;
-        int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
+        int certificatetypeid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
         int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
         dn1 = "C=SE, O=AnaTom, CN=" + username1;
         String subjectaltname1 = "RFC822NAME=" + username1 + "@foo.se";

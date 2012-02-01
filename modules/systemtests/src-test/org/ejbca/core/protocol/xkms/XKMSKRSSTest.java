@@ -237,8 +237,7 @@ public class XKMSKRSSTest {
         final EndEntityProfile endentityprofile = new EndEntityProfile(true);
 
         endentityprofile.setValue(EndEntityProfile.AVAILCAS, 0, "" + caid);
-        endentityprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + SecConst.CERTPROFILE_FIXED_ENDUSER + ";" + profile1Id + ";" + profile2Id);
-
+        endentityprofile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER + ";" + profile1Id + ";" + profile2Id);
         endentityprofile.setUse(EndEntityProfile.KEYRECOVERABLE, 0, true);
 
         endEntityProfileSession.addEndEntityProfile(administrator, endentityprofilename, endentityprofile);
@@ -284,7 +283,7 @@ public class XKMSKRSSTest {
         {
             final int type = SecConst.USER_ENDUSER;
             final int token = SecConst.TOKEN_SOFT_BROWSERGEN;
-            final int certificatetypeid = SecConst.CERTPROFILE_FIXED_ENDUSER;
+            final int certificatetypeid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
             final String subjectaltname1 = "RFC822NAME=" + userName + "@foo.se";
             final String email1 = userName + "@foo.se";
             if (endEntityAccessSession.findUser(administrator, userName) != null) {
@@ -1094,7 +1093,7 @@ public class XKMSKRSSTest {
             try {
                 // Create new user
                 EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
-                        SecConst.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+                        CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
                 userdata.setPassword("foo123");
                 userAdminSession.addUser(administrator, userdata, true);
                 // Register user
