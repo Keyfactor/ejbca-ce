@@ -221,7 +221,7 @@ function gendefaultcrldistpoint(){
  <% if(!editca){ %>
     document.ca.<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>.value = "<%=globalconfiguration.getStandardCRLDistributionPointURINoDN() %>" + document.ca.<%=TEXTFIELD_SUBJECTDN%>.value;
  <% }else{ %>
-    document.ca.<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>.value = "<%=globalconfiguration.getStandardCRLDistributionPointURINoDN() + cainfo.getSubjectDN()%>";
+    document.ca.<%=TEXTFIELD_DEFAULTCRLDISTPOINT%>.value = "<%=globalconfiguration.getStandardCRLDistributionPointURINoDN() + URIUtil.encodePath(cainfo.getSubjectDN())%>";
  <% } %>
 }
 
@@ -237,7 +237,7 @@ function gencadefinedfresherstcrl() {
  <% if(!editca){ %>
     document.ca.<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>.value = "<%=globalconfiguration.getStandardDeltaCRLDistributionPointURINoDN() %>" + document.ca.<%=TEXTFIELD_SUBJECTDN%>.value;
  <% }else{ %>
-    document.ca.<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>.value = "<%=globalconfiguration.getStandardDeltaCRLDistributionPointURINoDN() + cainfo.getSubjectDN()%>";
+    document.ca.<%=TEXTFIELD_CADEFINEDFRESHESTCRL%>.value = "<%=globalconfiguration.getStandardDeltaCRLDistributionPointURINoDN() + URIUtil.encodePath(cainfo.getSubjectDN())%>";
  <% } %>
 }
 
