@@ -101,10 +101,14 @@ public class BaseCmpMessageHandler {
 		int ret = 0;
 		String endEntityProfile = CmpConfiguration.getRAEndEntityProfile();
 		if (StringUtils.equals(endEntityProfile, "KeyId")) {
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Using End Entity Profile with same name as KeyId in request: "+keyId);
-			}
-			endEntityProfile = keyId;
+		    if(keyId != null) {
+		        if (LOG.isDebugEnabled()) {
+		            LOG.debug("Using End Entity Profile with same name as KeyId in request: "+keyId);
+		        }
+		        endEntityProfile = keyId;
+		    } else {
+	              LOG.error("Expecting the End Entity Profile ID to be specified in the KeyID parameter, but the KeyID parameter is 'null'");
+		    }
 		} 
 		ret = endEntityProfileSession.getEndEntityProfileId(endEntityProfile);
 		if (ret == 0) {
@@ -139,12 +143,16 @@ public class BaseCmpMessageHandler {
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using keyId as CA name when adding users in RA mode: "+keyId);
 			}
-			// Use keyId as CA name
-			final CAInfo info = caSession.getCAInfo(admin, keyId);
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Using CA: "+info.getName());
+			if(keyId != null) {
+			    // Use keyId as CA name
+			    final CAInfo info = caSession.getCAInfo(admin, keyId);
+			    if (LOG.isDebugEnabled()) {
+			        LOG.debug("Using CA: "+info.getName());
+			    }
+			    ret = info.getCAId();
+			} else {
+			    LOG.error("Expecting the CA name to be specified in the KeyID parameter, but the KeyID parameter is 'null'");
 			}
-			ret = info.getCAId();																	
 		} else {
 			final CAInfo info = caSession.getCAInfo(admin, caName);
 			ret = info.getCAId();					
@@ -174,10 +182,14 @@ public class BaseCmpMessageHandler {
                 LOG.debug("Using default certificate profile from End Entity Profile: " + certificateProfile);
             }
 		} else if (StringUtils.equals(certificateProfile, "KeyId")) {
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Using Certificate Profile with same name as KeyId in request: " + keyId);
-			}
-			certificateProfile = keyId;
+		    if(keyId != null) {
+		        if (LOG.isDebugEnabled()) {
+		            LOG.debug("Using Certificate Profile with same name as KeyId in request: " + keyId);
+		        }
+		        certificateProfile = keyId;
+		    } else {
+                LOG.error("Expecting the Certificate Profile name to be specified in the KeyID parameter, but the KeyID parameter is 'null'");
+		    }
 		}
 		return certificateProfile;
 	}

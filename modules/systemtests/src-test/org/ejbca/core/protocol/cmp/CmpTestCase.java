@@ -337,14 +337,16 @@ public abstract class CmpTestCase extends CaTestCase {
 
     protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, int iterations) throws NoSuchAlgorithmException,
             NoSuchProviderException, InvalidKeyException {
-        return protectPKIMessage(msg, badObjectId, password, "primekey", iterations);
+        return protectPKIMessage(msg, badObjectId, password, null, iterations);
     }
 
     protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId, int iterations)
             throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException {
         // Create the PasswordBased protection of the message
         PKIHeader head = msg.getHeader();
-        head.setSenderKID(new DEROctetString(keyId.getBytes()));
+        if(keyId != null) {
+            head.setSenderKID(new DEROctetString(keyId.getBytes()));
+        }
         // SHA1
         AlgorithmIdentifier owfAlg = new AlgorithmIdentifier("1.3.14.3.2.26");
         // 567 iterations
@@ -704,7 +706,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
         PKIBody body = respObject.getBody();
         int tag = body.getTagNo();
-        assertEquals(tag, 19);
+        assertEquals(19, tag);
         DERNull n = body.getConf();
         assertNotNull(n);
     }

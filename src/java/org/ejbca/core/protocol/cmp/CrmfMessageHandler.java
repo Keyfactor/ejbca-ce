@@ -308,12 +308,6 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         final int requestType = crmfreq.getRequestType();
         // Try to find a HMAC/SHA1 protection key
         final String keyId = getSenderKeyId(crmfreq.getHeader());
-        if (keyId == null) {            // No keyId found in message so we can not authenticate it.
-            final String errMsg = INTRES.getLocalizedMessage("cmp.errorunauthmessagera");
-            LOG.info(errMsg); // info because this is something we should expect and we handle it
-            return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
-        }
-
         int caId = 0; // The CA to user when adding users in RA mode
         try {
             eeProfileId = getUsedEndEntityProfileId(keyId);
@@ -322,9 +316,6 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
             certProfileId = getUsedCertProfileId(certProfileName);
         } catch (CADoesntExistsException e) {
             LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
-            //if (this.raAuthSecret == null) {
-            //  return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e.getMessage());
-            //}
             return CmpMessageHelper.createErrorMessage(msg, FailInfo.INCORRECT_DATA, e.getMessage(), requestId, requestType, null, keyId, this.responseProt);
         }
 
@@ -415,6 +406,8 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			    if (LOG.isDebugEnabled()) {
 				    LOG.debug("responseProt="+this.responseProt+", pbeDigestAlg="+pbeDigestAlg+", pbeMacAlg="+pbeMacAlg+", keyId="+keyId+", raSecret="+(raSecret == null ? "null":"not null"));
 			    }
+			    
+			    //TODO check whether this code (crmfreq.setPbeParameters()) does anything useful
 			    if (StringUtils.equals(this.responseProt, "pbe")) {
 				    crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
                 }
