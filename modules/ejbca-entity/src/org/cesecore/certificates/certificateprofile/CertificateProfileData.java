@@ -225,14 +225,12 @@ public class CertificateProfileData extends ProtectedData implements Serializabl
 
     @PrePersist
     @PreUpdate
-    @Transient
     @Override
     protected void protectData() {
         super.protectData();
     }
 
     @PostLoad
-    @Transient
     @Override
     protected void verifyData() {
         super.verifyData();
