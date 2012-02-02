@@ -473,7 +473,9 @@ public class CrmfRARequestTest extends CmpTestCase {
         Assert.assertTrue("Unable to restore server configuration.", configurationSession.restoreConfiguration());
         // Remove test profiles
         certProfileSession.removeCertificateProfile(admin, "CMPTESTPROFILE");
+        certProfileSession.removeCertificateProfile(admin, "CMPKEYIDTESTPROFILE");
         eeProfileSession.removeEndEntityProfile(admin, "CMPTESTPROFILE");
+        eeProfileSession.removeEndEntityProfile(admin, "CMPKEYIDTESTPROFILE");
     }
     
     public String getRoleName() {
