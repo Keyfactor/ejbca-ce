@@ -40,7 +40,6 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.profiles.EnhancedEIDProfile;

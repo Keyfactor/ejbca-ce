@@ -55,7 +55,6 @@ import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;

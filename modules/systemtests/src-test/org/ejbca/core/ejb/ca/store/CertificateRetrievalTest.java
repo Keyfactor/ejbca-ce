@@ -36,7 +36,6 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;

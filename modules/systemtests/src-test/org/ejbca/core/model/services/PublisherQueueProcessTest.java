@@ -33,7 +33,6 @@ import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.publisher.CustomPublisherContainer;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherExistsException;
