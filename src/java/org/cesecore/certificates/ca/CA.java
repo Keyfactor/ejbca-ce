@@ -125,7 +125,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
         this.cainfo = cainfo;
 
-        data.put(VALIDITY, new Long(cainfo.getValidity()));
+        data.put(VALIDITY, Long.valueOf(cainfo.getValidity()));
         data.put(SIGNEDBY, Integer.valueOf(cainfo.getSignedBy()));
         data.put(DESCRIPTION, cainfo.getDescription());
         data.put(REVOCATIONREASON, Integer.valueOf(-1));
@@ -238,7 +238,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     public void setValidity(long validity) {
-        data.put(VALIDITY, new Long(validity));
+        data.put(VALIDITY, Long.valueOf(validity));
     }
 
     public Date getExpireTime() {
@@ -282,7 +282,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     public void setCRLPeriod(long crlperiod) {
-        data.put(CRLPERIOD, new Long(crlperiod));
+        data.put(CRLPERIOD, Long.valueOf(crlperiod));
     }
 
     public long getDeltaCRLPeriod() {
@@ -294,7 +294,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     public void setDeltaCRLPeriod(long deltacrlperiod) {
-        data.put(DELTACRLPERIOD, new Long(deltacrlperiod));
+        data.put(DELTACRLPERIOD, Long.valueOf(deltacrlperiod));
     }
 
     public long getCRLIssueInterval() {
@@ -302,7 +302,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     public void setCRLIssueInterval(long crlIssueInterval) {
-        data.put(CRLISSUEINTERVAL, new Long(crlIssueInterval));
+        data.put(CRLISSUEINTERVAL, Long.valueOf(crlIssueInterval));
     }
 
     public long getCRLOverlapTime() {
@@ -310,7 +310,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     public void setCRLOverlapTime(long crlOverlapTime) {
-        data.put(CRLOVERLAPTIME, new Long(crlOverlapTime));
+        data.put(CRLOVERLAPTIME, Long.valueOf(crlOverlapTime));
     }
 
     @SuppressWarnings("unchecked")
@@ -534,7 +534,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     private void setFinishUser(boolean finishuser) {
-        data.put(FINISHUSER, new Boolean(finishuser));
+        data.put(FINISHUSER, Boolean.valueOf(finishuser));
     }
 
     protected boolean getIncludeInHealthCheck() {
@@ -542,7 +542,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     protected void setIncludeInHealthCheck(boolean includeInHealthCheck) {
-        data.put(INCLUDEINHEALTHCHECK, new Boolean(includeInHealthCheck));
+        data.put(INCLUDEINHEALTHCHECK, Boolean.valueOf(includeInHealthCheck));
     }
 
     public boolean isDoEnforceUniquePublicKeys() {
@@ -550,7 +550,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     private void setDoEnforceUniquePublicKeys(boolean doEnforceUniquePublicKeys) {
-        data.put(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, new Boolean(doEnforceUniquePublicKeys));
+        data.put(DO_ENFORCE_UNIQUE_PUBLIC_KEYS, Boolean.valueOf(doEnforceUniquePublicKeys));
     }
 
     public boolean isDoEnforceUniqueDistinguishedName() {
@@ -558,7 +558,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     private void setDoEnforceUniqueDistinguishedName(boolean doEnforceUniqueDistinguishedName) {
-        data.put(DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME, new Boolean(doEnforceUniqueDistinguishedName));
+        data.put(DO_ENFORCE_UNIQUE_DISTINGUISHED_NAME, Boolean.valueOf(doEnforceUniqueDistinguishedName));
     }
 
     public boolean isDoEnforceUniqueSubjectDNSerialnumber() {
@@ -566,7 +566,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     private void setDoEnforceUniqueSubjectDNSerialnumber(boolean doEnforceUniqueSubjectDNSerialnumber) {
-        data.put(DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER, new Boolean(doEnforceUniqueSubjectDNSerialnumber));
+        data.put(DO_ENFORCE_UNIQUE_SUBJECTDN_SERIALNUMBER, Boolean.valueOf(doEnforceUniqueSubjectDNSerialnumber));
     }
 
     /** whether certificate request history should be used or not, default true as was the case before 3.10.4 */
@@ -635,12 +635,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     public void updateCA(CAInfo cainfo) throws IllegalCryptoTokenException {
-        data.put(VALIDITY, new Long(cainfo.getValidity()));
+        data.put(VALIDITY, Long.valueOf(cainfo.getValidity()));
         data.put(DESCRIPTION, cainfo.getDescription());
-        data.put(CRLPERIOD, new Long(cainfo.getCRLPeriod()));
-        data.put(DELTACRLPERIOD, new Long(cainfo.getDeltaCRLPeriod()));
-        data.put(CRLISSUEINTERVAL, new Long(cainfo.getCRLIssueInterval()));
-        data.put(CRLOVERLAPTIME, new Long(cainfo.getCRLOverlapTime()));
+        data.put(CRLPERIOD, Long.valueOf(cainfo.getCRLPeriod()));
+        data.put(DELTACRLPERIOD, Long.valueOf(cainfo.getDeltaCRLPeriod()));
+        data.put(CRLISSUEINTERVAL, Long.valueOf(cainfo.getCRLIssueInterval()));
+        data.put(CRLOVERLAPTIME, Long.valueOf(cainfo.getCRLOverlapTime()));
         data.put(CRLPUBLISHERS, cainfo.getCRLPublishers());
         data.put(APPROVALSETTINGS, cainfo.getApprovalSettings());
         data.put(NUMBEROFREQAPPROVALS, Integer.valueOf(cainfo.getNumOfReqApprovals()));
