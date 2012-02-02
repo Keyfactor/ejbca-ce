@@ -102,7 +102,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     public void addCA(final AuthenticationToken admin, final CA ca) throws CAExistsException, AuthorizationDeniedException, IllegalCryptoTokenException {
         if (ca != null) {
             if (!accessSession.isAuthorized(admin, StandardRules.CAADD.resource())) {
-                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoaddca", admin.toString(), new Integer(ca.getCAId()));
+                String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoaddca", admin.toString(), Integer.valueOf(ca.getCAId()));
                 throw new AuthorizationDeniedException(msg);
             }
             CAInfo cainfo = ca.getCAInfo();
@@ -128,7 +128,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     		String sequence = info.getKeySequence();
             details.put("tokenproperties", prop);
             details.put("tokensequence", sequence);
-            logSession.log(EventTypes.CA_CREATION, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(ca.getCAId()).toString(), null, null, details);
+            logSession.log(EventTypes.CA_CREATION, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(ca.getCAId()), null, null, details);
         } else {
             log.debug("Trying to add null CA, nothing done.");
         }
@@ -169,7 +169,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         		String sequence = info.getKeySequence();
                 details.put("tokenproperties", prop);
                 details.put("tokensequence", sequence);
-                logSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), Integer.valueOf(ca.getCAId()).toString(), null, null, details);    			
+                logSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), String.valueOf(ca.getCAId()), null, null, details);    			
     		} catch (UnsupportedEncodingException e) {
     			throw new CADoesntExistsException(e);
     		} catch (IllegalCryptoTokenException e) {
@@ -213,7 +213,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     	    		String sequence = info.getKeySequence();
     	            details.put("tokenproperties", prop);
     	            details.put("tokensequence", sequence);
-    	            logSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), Integer.valueOf(ca.getCAId()).toString(), null, null, details);				
+    	            logSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), String.valueOf(ca.getCAId()), null, null, details);				
     			}
     		} catch (UnsupportedEncodingException e) {
     			throw new CADoesntExistsException(e);
@@ -238,12 +238,12 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 			throws CADoesntExistsException, AuthorizationDeniedException {
 		// First check if we are authorized to edit CA
         if (!accessSession.isAuthorized(admin, StandardRules.CAEDIT.resource())) {
-            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), new Integer(orgca.getCAId()));
+            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), Integer.valueOf(orgca.getCAId()));
             throw new AuthorizationDeniedException(msg);
         }
     	// Check authorization to specific CA
         if (!authorizedToCA(admin, orgca.getCAId())) {
-            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), new Integer(orgca.getCAId()));
+            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), Integer.valueOf(orgca.getCAId()));
             throw new AuthorizationDeniedException(msg);
         }
 		// The CA needs the same name and subject DN in order to store it
@@ -329,7 +329,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     public void removeCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         // check authorization
         if (!accessSession.isAuthorized(admin, StandardRules.CAREMOVE.resource())) {
-            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoremoveca", admin.toString(), new Integer(caid));
+            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoremoveca", admin.toString(), Integer.valueOf(caid));
             throw new AuthorizationDeniedException(msg);
         }
         // Get CA from database if it does not exist, ignore
@@ -341,10 +341,10 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             CACacheManager.instance().removeCA(caid);
             // Remove an eventual CA token from the token registry
             CATokenCacheManager.instance().removeCAToken(caid);
-            String msg = intres.getLocalizedMessage("caadmin.removedca", new Integer(caid), cadata.getName());
+            String msg = intres.getLocalizedMessage("caadmin.removedca", Integer.valueOf(caid), cadata.getName());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            logSession.log(EventTypes.CA_DELETION, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+            logSession.log(EventTypes.CA_DELETION, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), String.valueOf(caid), null, null, details);
         }
     }
 
@@ -368,7 +368,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             String msg = intres.getLocalizedMessage("caadmin.renamedca", oldname, cadata.getCaId(), newname);
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            logSession.log(EventTypes.CA_RENAMING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+            logSession.log(EventTypes.CA_RENAMING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE,admin.toString(), String.valueOf(caid), null, null, details);
         } else {
             throw new CAExistsException("CA " + newname + " already exists.");
         }
@@ -650,7 +650,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             if (cadata == null) {
                 String msg;
                 if (caid != -1) {
-                    msg = intres.getLocalizedMessage("caadmin.canotexistsid", new Integer(caid));
+                    msg = intres.getLocalizedMessage("caadmin.canotexistsid", Integer.valueOf(caid));
                 } else {
                     msg = intres.getLocalizedMessage("caadmin.canotexistsname", name);
                 }
