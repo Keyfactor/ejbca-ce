@@ -13,8 +13,6 @@
  
 package org.cesecore.certificates.certificateprofile;
 
-import org.ejbca.core.model.SecConst;
-
 /**
  * Constants for users and certificates. Constants for Type of user: Type is constructed as a mask
  * since one user can be of several types. To test a user type:
