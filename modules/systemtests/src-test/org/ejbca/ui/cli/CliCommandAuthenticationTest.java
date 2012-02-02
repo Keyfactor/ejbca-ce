@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.ui.cli;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.security.Principal;
 import java.util.HashSet;
@@ -22,6 +22,7 @@ import javax.ejb.EJBException;
 
 import junit.framework.Assert;
 
+import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -47,6 +48,8 @@ import org.junit.Test;
  * 
  */
 public class CliCommandAuthenticationTest {
+
+    private static final Logger log = Logger.getLogger(CliCommandAuthenticationTest.class);
 
     private MockCliCommand mockCliCommand;
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
@@ -75,6 +78,7 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testWithoutSuppliedDefaultUser() throws ErrorAdminCommandException, AuthorizationDeniedException {
         boolean oldValue = setCliUserEnabled(true);
+        log.debug("oldValue (user): "+oldValue);
         try {
             mockCliCommand.execute(new String[] { "foo", "bar" });
         } catch (CliTestRuntimeException e) {
@@ -87,6 +91,7 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testWithSuppliedDefaultUser() throws Exception {
         boolean oldValue = setCliUserEnabled(true);
+        log.debug("oldValue (user): "+oldValue);
         try {
             mockCliCommand.execute(new String[] { "foo", "-u", EjbcaConfiguration.getCliDefaultUser() });
         } catch (CliTestRuntimeException e) {
@@ -122,6 +127,7 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testWithoutSuppliedDefaultUserAndForbidden() throws Exception {
         boolean oldValue = setCliUserEnabled(false);
+        log.debug("oldValue (user): "+oldValue);
         try {
             mockCliCommand.execute(new String[] { "foo", "bar" });
             fail("Use of default user should not have been allowed");
@@ -135,6 +141,7 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testDefaultUserWhenForbidden() throws Exception {
         boolean oldValue = setCliUserEnabled(false);
+        log.debug("oldValue (user): "+oldValue);
         try {
             mockCliCommand.execute(new String[] { "foo", "-u", EjbcaConfiguration.getCliDefaultUser() });
             fail("Use of default user should not have been allowed");
@@ -148,6 +155,7 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testDisableCli() throws Exception {
         boolean oldValue = setCliEnabled(false);
+        log.debug("oldValue (cli): "+oldValue);
         try {
             mockCliCommand.execute(new String[] { "foo", "-u", EjbcaConfiguration.getCliDefaultUser() });
             fail("CLI should not have been able to have been run when disabled.");
@@ -165,6 +173,7 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testCliDisabledServerSide() throws AuthorizationDeniedException {
         boolean oldValue = setCliEnabled(false);
+        log.debug("oldValue (cli): "+oldValue);
         try {
             cliAuthenticationProvider.authenticate(null);
             fail("Cli should not have been able to authenticate.");
@@ -189,6 +198,7 @@ public class CliCommandAuthenticationTest {
     @Test
     public void testDefaultCliUserDisabled() throws AuthorizationDeniedException {
         boolean oldValue = setCliUserEnabled(false);
+        log.debug("oldValue (user): "+oldValue);
         try {
             Set<Principal> principals = new HashSet<Principal>();
             principals.add(new UsernamePrincipal(EjbcaConfiguration.getCliDefaultUser()));
@@ -213,6 +223,7 @@ public class CliCommandAuthenticationTest {
         boolean oldValue = config.getEnableCommandLineInterface();
         config.setEnableCommandLineInterface(enabled);
         globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, config);
+        log.debug("Updated globalconfiguration with clienabled: "+config.getEnableCommandLineInterface());
         return oldValue;
     }
 
@@ -221,6 +232,7 @@ public class CliCommandAuthenticationTest {
         boolean oldValue = config.getEnableCommandLineInterfaceDefaultUser();
         config.setEnableCommandLineInterfaceDefaultUser(enabled);
         globalConfigurationProxySession.saveGlobalConfigurationRemote(internalAdmin, config);
+        log.debug("Updated globalconfiguration with cliuserenabled: "+config.getEnableCommandLineInterfaceDefaultUser());
         return oldValue;
     }
 }
