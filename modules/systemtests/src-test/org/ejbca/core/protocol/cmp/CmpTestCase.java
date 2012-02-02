@@ -337,7 +337,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
     protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, int iterations) throws NoSuchAlgorithmException,
             NoSuchProviderException, InvalidKeyException {
-        return protectPKIMessage(msg, badObjectId, password, null, iterations);
+        return protectPKIMessage(msg, badObjectId, password, "primekey", iterations);
     }
 
     protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId, int iterations)
