@@ -27,7 +27,7 @@
     <target name="test:runone" description="run a single JUnit-test specified -Dtest.runone=classname">
     	<fail message="'test.runone' not set. Example -Dtest.runone=TestDnComponents " unless="test.runone" />
     	<!-- Locate the right module where the test resides.. -->
-        <pathconvert property="test-fullname" pathsep=" " setonempty="false">
+        <pathconvert property="test-fullname" dirsep="/" pathsep=" " setonempty="false">
     	    <path>
 				<fileset dir="${ejbca.home}" id="test.runone.fileset">
 					<include name="modules/ejbca-ejb/src-test/**/${test.runone}.java" />
@@ -38,6 +38,7 @@
     	    </path>
     		<map from="${ejbca.home}/" to=""/>
     	</pathconvert>
+    	<echo message="${test-fullname}"/>
     	<condition property="module" value="modules/ejbca-ejb">
     		<matches string="${test-fullname}" pattern="^modules/ejbca-ejb/.*$"/>
     	</condition>
