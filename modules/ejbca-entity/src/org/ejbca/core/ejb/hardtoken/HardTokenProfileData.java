@@ -143,14 +143,12 @@ public class HardTokenProfileData extends ProtectedData implements Serializable 
 
     @PrePersist
     @PreUpdate
-    @Transient
     @Override
     protected void protectData() {
         super.protectData();
     }
 
     @PostLoad
-    @Transient
     @Override
     protected void verifyData() {
         super.verifyData();
