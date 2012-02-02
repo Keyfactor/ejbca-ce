@@ -58,7 +58,7 @@ public class CliCommandAuthenticationTest {
     private CliAuthenticationProviderRemote cliAuthenticationProvider = JndiHelper.getRemoteSession(CliAuthenticationProviderRemote.class);
 
     private final TestAlwaysAllowLocalAuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
-            "CliAuthenticationTest"));
+            "CliCommandAuthenticationTest"));
 
     @Before
     public void setUp() throws Exception {
