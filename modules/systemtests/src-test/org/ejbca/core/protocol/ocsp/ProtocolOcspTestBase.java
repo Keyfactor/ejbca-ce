@@ -60,7 +60,6 @@ import com.gargoylesoftware.htmlunit.WebResponse;
  * @version $Id$
  *
  */
-
 public abstract class ProtocolOcspTestBase extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(ProtocolOcspTestBase.class);
@@ -90,7 +89,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreOnlyDataSession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class); // Stand alone OCSP version..
 
     
-    public void test01Access() throws Exception {
+    public void test01Access() throws Exception { // NOPMD, this is not a test class itself
         // Hit with GET does work since EJBCA 3.8.2
         final WebClient webClient = new WebClient();
         WebConnection con = webClient.getWebConnection();
@@ -108,7 +107,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      * @throws Exception
      *             error
      */
-    protected void test04OcspUnknown() throws Exception {
+    protected void test04OcspUnknown() throws Exception { // NOPMD, this is not a test class itself
         log.trace(">test04OcspUnknown()");
         loadUserCert(caid);
         // An OCSP request for an unknown certificate (not exist in db)
@@ -135,7 +134,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      * @throws Exception
      *             error
      */
-    protected void test05OcspUnknownCA() throws Exception {
+    protected void test05OcspUnknownCA() throws Exception { // NOPMD, this is not a test class itself
         log.trace(">test05OcspUnknownCA()");
         loadUserCert(caid);
         // An OCSP request for a certificate from an unknwon CA
@@ -156,7 +155,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
         log.trace("<test05OcspUnknownCA()");
     }
 
-    protected void test06OcspSendWrongContentType() throws Exception {
+    protected void test06OcspSendWrongContentType() throws Exception { // NOPMD, this is not a test class itself
         loadUserCert(caid);
         // An OCSP request for a certificate from an unknwon CA
         OCSPReqGenerator gen = new OCSPReqGenerator();
@@ -176,7 +175,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
     
     }
 
-    protected void test10MultipleRequests() throws Exception {
+    protected void test10MultipleRequests() throws Exception { // NOPMD, this is not a test class itself
         // Tests that we handle multiple requests in one OCSP request message
     
         loadUserCert(caid);
@@ -220,7 +219,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      * OCSPResponse ::= SEQUENCE { responseStatus OCSPResponseStatus,
      * responseBytes [0] EXPLICIT ResponseBytes OPTIONAL }
      */
-    protected void test11MalformedRequest() throws Exception {
+    protected void test11MalformedRequest() throws Exception { // NOPMD, this is not a test class itself
         loadUserCert(caid);
         OCSPReqGenerator gen = new OCSPReqGenerator();
         // Add 101 OCSP requests.. the Servlet will consider a request with more
@@ -242,7 +241,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
         assertNull("No SingleResps should be returned.", singleResps);
     }
 
-    protected void test12CorruptRequests() throws Exception {
+    protected void test12CorruptRequests() throws Exception { // NOPMD, this is not a test class itself
         log.trace(">test12CorruptRequests()");
         loadUserCert(caid);
         // An OCSP request, ocspTestCert is already created in earlier tests
@@ -314,7 +313,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
     /**
      * Just verify that a simple GET works.
      */
-    protected void test13GetRequests() throws Exception {
+    protected void test13GetRequests() throws Exception { // NOPMD, this is not a test class itself
         loadUserCert(caid);
         // See if the OCSP Servlet can read non-encoded requests
         final String plainReq = httpReqPath
@@ -359,7 +358,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
     /**
      * Send a bunch of faulty requests
      */
-    protected void test14CorruptGetRequests() throws Exception {
+    protected void test14CorruptGetRequests() throws Exception { // NOPMD, this is not a test class itself
         // An array of zeros cannot be right..
         // A GET request larger than 2048 works on JBoss but not on Glassfish, 
         // GF only gives "unexpected end of file", i.e. it closes the connection
@@ -387,7 +386,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
      * clients from this, but the server should be RFC 2560 compatible and
      * support this as long as the total request URL is smaller than 256 bytes.
      */
-    protected void test15MultipleGetRequests() throws Exception {
+    protected void test15MultipleGetRequests() throws Exception { // NOPMD, this is not a test class itself
         loadUserCert(caid);
         // An OCSP request, ocspTestCert is already created in earlier tests
         OCSPReqGenerator gen = new OCSPReqGenerator();

@@ -595,7 +595,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         int dsacaid = "CN=OCSPDSATEST".hashCode();
         X509Certificate ecdsacacert = addDSACA("CN=OCSPDSATEST", "1024");
         helper.reloadKeys();
-        try {
+
         // Make user and ocspTestCert that we know...
         createUserCert(dsacaid);
 
@@ -617,9 +617,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
         Object status = singleResp.getCertStatus();
         assertEquals("Status is not null (good)", status, null);
-        } finally {
-            
-        }
     } // test16OcspDsaGood
 
     /**
