@@ -22,10 +22,10 @@ public class HashMapTest {
     @Test
 	public void testHashMapNormal() throws Exception {
         HashMap<String, Comparable> a = new HashMap<String, Comparable>();
-        a.put("foo0", Boolean.valueOf(false));
+        a.put("foo0", Boolean.FALSE);
         a.put("foo1", "fooString");
         a.put("foo2", Integer.valueOf(2));
-        a.put("foo3", Boolean.valueOf(true));
+        a.put("foo3", Boolean.TRUE);
         
         // Write to XML
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -49,10 +49,10 @@ public class HashMapTest {
     @Test
     public void testHashMapStrangeChars() throws Exception {
         HashMap<String, Comparable> a = new HashMap<String, Comparable>();
-        a.put("foo0", Boolean.valueOf(false));
+        a.put("foo0", Boolean.FALSE);
         a.put("foo1", "\0001\0002fooString");
         a.put("foo2", Integer.valueOf(2));
-        a.put("foo3", Boolean.valueOf(true));
+        a.put("foo3", Boolean.TRUE);
         
         // Write to XML
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -90,10 +90,10 @@ public class HashMapTest {
     @Test
     public void testHashMapStrangeCharsSafe() throws Exception {
         HashMap<String, Comparable> h = new HashMap<String, Comparable>();
-        h.put("foo0", Boolean.valueOf(false));
+        h.put("foo0", Boolean.FALSE);
         h.put("foo1", "\0001\0002fooString");
         h.put("foo2", Integer.valueOf(2));
-        h.put("foo3", Boolean.valueOf(true));
+        h.put("foo3", Boolean.TRUE);
         h.put("foo4", "");
         HashMap<Object, Object> a = new Base64PutHashMap();
         a.putAll(h);
@@ -125,10 +125,10 @@ public class HashMapTest {
     @Test
     public void testHashMapNormalCharsSafe() throws Exception {
         HashMap<String, Comparable> h = new HashMap<String, Comparable>();
-        h.put("foo0", Boolean.valueOf(false));
+        h.put("foo0", Boolean.FALSE);
         h.put("foo1", "fooString");
         h.put("foo2", Integer.valueOf(2));
-        h.put("foo3", Boolean.valueOf(true));
+        h.put("foo3", Boolean.TRUE);
         h.put("foo4", "");
         HashMap<Object, Object> a = new Base64PutHashMap();
         a.putAll(h);

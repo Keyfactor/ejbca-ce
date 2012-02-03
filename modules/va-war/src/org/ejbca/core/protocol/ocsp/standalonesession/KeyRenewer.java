@@ -103,7 +103,7 @@ class KeyRenewer {
                 }
                 try {
                     updateKey();
-                } catch( Throwable t ) {
+                } catch( Throwable t ) { // NOPMD, we really need to catch all, never crash
                     m_log.error("Unknown problem when rekeying. Trying again.", t);
                 }
             }
@@ -192,10 +192,10 @@ class KeyRenewer {
             }
             while( i.hasNext() ) {
                 final NameAndId nameAndId = i.next();
-                mCA.put(new Integer(nameAndId.getId()), nameAndId.getName());
+                mCA.put(Integer.valueOf(nameAndId.getId()), nameAndId.getName());
                 m_log.debug("CA. id: "+nameAndId.getId()+" name: "+nameAndId.getName());
             }
-            return mCA.get(new Integer(this.caid));
+            return mCA.get(Integer.valueOf(this.caid));
     }
     /**
      * Get user data for the EJBCA user that will be used when creating the cert for the new key.
@@ -255,7 +255,7 @@ class KeyRenewer {
             kpg = KeyPairGenerator.getInstance("RSA", this.privateKeyContainerKeyStore.providerName);
             kpg.initialize(oldPublicKey.getModulus().bitLength());
             return kpg.generateKeyPair();
-        } catch (Throwable e) {
+        } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
             m_log.error("Key generation problem.", e);
             return null;
         }
@@ -327,7 +327,7 @@ class KeyRenewer {
             this.privateKeyContainerKeyStore.keyStore.setKeyEntry(this.privateKeyContainerKeyStore.alias, keyPair.getPrivate(),
                                                                   this.privateKeyContainerKeyStore.sessionData.mKeyPassword!=null ? this.privateKeyContainerKeyStore.sessionData.mKeyPassword.toCharArray() : null,
                                                                   certChain);
-        } catch (Throwable e) {
+        } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
             m_log.error("Problem to store new key in HSM.", e);
             return null;
         }
@@ -335,7 +335,7 @@ class KeyRenewer {
             try {
                 this.privateKeyContainerKeyStore.keyStore.store(new FileOutputStream(this.privateKeyContainerKeyStore.fileName),
                                                                 this.privateKeyContainerKeyStore.sessionData.mStorePassword.toCharArray());
-            } catch (Throwable e) {
+            } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
                 m_log.error("Not possible to store keystore on file.",e);
             }
         }

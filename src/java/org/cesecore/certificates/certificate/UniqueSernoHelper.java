@@ -62,7 +62,7 @@ public final class UniqueSernoHelper {
 	 * Sets variables (but only once) that can be checked with isUniqueCertificateSerialNumberIndex().
 	 * This method must be called first (at least once).
 	 */
-	private static final void testUniqueCertificateSerialNumberIndex(final CertificateStoreSession certificateStoreSession) {
+	private static final void testUniqueCertificateSerialNumberIndex(final CertificateStoreSession certificateStoreSession) { // NOPMD, this is not a JUnit test
 		if (isUniqueCertificateSerialNumberIndex == null) {
 			final String userName = "checkUniqueIndexTestUserNotToBeUsed_fjasdfjsdjfsad"; // This name should only be used for this test. Made complex so that no one else will use the same.
 			// Loading two dummy certificates. These certificates has same serial number and issuer.
@@ -111,40 +111,38 @@ public final class UniqueSernoHelper {
 					throw new RuntimeException( "Not possible to generate predefined dummy certificate. Should never happen", e );
 				}
 			}
-			try {
-				final Certificate c1 = certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert1));
-				final Certificate c2 = certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert2));
-				if ( (c1 != null) && (c2 != null) ) {
-					// already proved that not checking index for serial number.
-					isUniqueCertificateSerialNumberIndex = Boolean.valueOf(false);
-				}
-				final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal database constraint test"));
-				if (c1 == null) {// storing initial certificate if no test certificate created.
-					try {
-					    certificateStoreSession.storeCertificate(admin, cert1, userName, "abcdef0123456789", CertificateConstants.CERT_INACTIVE, 0, 0, "", new Date().getTime());
-					} catch (Throwable e) {
-						throw new RuntimeException("It should always be possible to store initial dummy certificate.", e);
-					}
-				}
-				isUniqueCertificateSerialNumberIndex = Boolean.valueOf(false);			
-				if (c2 == null) { // storing a second certificate with same issuer 
-					try { 
-						certificateStoreSession.storeCertificate(admin, cert2, userName, "fedcba9876543210", CertificateConstants.CERT_INACTIVE, 0, 0, "", new Date().getTime());
-					} catch (Throwable e) {
-						log.info("Unique index in CertificateData table for certificate serial number");
-						// Exception is thrown when unique index is working and a certificate with same serial number is in the database.
-						isUniqueCertificateSerialNumberIndex = Boolean.valueOf(true);
-					}
-				}
-				if (!isUniqueCertificateSerialNumberIndex.booleanValue()) {
-					// It was possible to store a second certificate with same serial number. Unique number not working.
-					log.info( intres.getLocalizedMessage("createcert.not_unique_certserialnumberindex") );
-				}
-			} finally {
-				// Remove potentially stored certificates so anyone can create the unique index if wanted
-				// TODO: need access to EntityManager directly to do this
-				// In EJBCA this is solved by removing the two dummy certificates in the beginning of the create index sql script..
+			
+			final Certificate c1 = certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert1));
+			final Certificate c2 = certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert2));
+			if ( (c1 != null) && (c2 != null) ) {
+			    // already proved that not checking index for serial number.
+			    isUniqueCertificateSerialNumberIndex = Boolean.FALSE;
 			}
+			final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal database constraint test"));
+			if (c1 == null) {// storing initial certificate if no test certificate created.
+			    try {
+			        certificateStoreSession.storeCertificate(admin, cert1, userName, "abcdef0123456789", CertificateConstants.CERT_INACTIVE, 0, 0, "", new Date().getTime());
+			    } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
+			        throw new RuntimeException("It should always be possible to store initial dummy certificate.", e);
+			    }
+			}
+			isUniqueCertificateSerialNumberIndex = Boolean.FALSE;			
+			if (c2 == null) { // storing a second certificate with same issuer 
+			    try { 
+			        certificateStoreSession.storeCertificate(admin, cert2, userName, "fedcba9876543210", CertificateConstants.CERT_INACTIVE, 0, 0, "", new Date().getTime());
+			    } catch (Throwable e) { // NOPMD, we really need to catch all, never crash
+			        log.info("Unique index in CertificateData table for certificate serial number");
+			        // Exception is thrown when unique index is working and a certificate with same serial number is in the database.
+			        isUniqueCertificateSerialNumberIndex = Boolean.TRUE;
+			    }
+			}
+			if (!isUniqueCertificateSerialNumberIndex.booleanValue()) {
+			    // It was possible to store a second certificate with same serial number. Unique number not working.
+			    log.info( intres.getLocalizedMessage("createcert.not_unique_certserialnumberindex") );
+			}
+			// Remove potentially stored certificates so anyone can create the unique index if wanted
+			// TODO: need access to EntityManager directly to do this
+			// In EJBCA this is solved by removing the two dummy certificates in the beginning of the create index sql script..
 		}
 	}
 }
