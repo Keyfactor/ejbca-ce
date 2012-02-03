@@ -932,8 +932,6 @@ public class EjbcaWS implements IEjbcaWS {
 			if (imsg != null) {
 				retval = getCertResponseFromPublicKey(admin, imsg, hardTokenSN, responseType);
 			}
-		} catch (AuthorizationDeniedException ade) {
-			throw ade;
 		} catch (InvalidKeyException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.INVALID_KEY, Level.ERROR);
 		} catch (IllegalKeyException e) {
@@ -1052,16 +1050,12 @@ public class EjbcaWS implements IEjbcaWS {
                   }
                   return retval;
               } catch (AuthLoginException e) {
-                  throw e;
+                  throw e; // NOPMD, since we catch wide below
               } catch (AuthStatusException e) {
-                  throw e;
+                  throw e; // NOPMD, since we catch wide below
               } catch (Exception e) {
                   throw EjbcaWSHelper.getInternalException(e, logger);
-			  }
-			  
-			  
-			}catch(AuthorizationDeniedException ade){
-				throw ade;
+			  } 
 			} catch (ClassCastException e) {
                 throw EjbcaWSHelper.getInternalException(e, logger);
 			} catch (EJBException e) {
@@ -1098,8 +1092,6 @@ public class EjbcaWS implements IEjbcaWS {
 			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
 			// that was permanently revoked
 			userAdminSession.revokeCert(admin, serno, issuerDN, reason);
-		} catch (AuthorizationDeniedException e) {
-			throw e;
 		} catch (FinderException e) {
 			throw new NotFoundException(e.getMessage());
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
@@ -1140,8 +1132,6 @@ public class EjbcaWS implements IEjbcaWS {
 			} else {
 				userAdminSession.revokeUser(admin,username,reason);
 			}
-		}catch(AuthorizationDeniedException e){
-			throw e;
 		}  catch (FinderException e) {
 			throw new NotFoundException(e.getMessage());
 		} catch (RemoveException e) {
@@ -1271,8 +1261,6 @@ public class EjbcaWS implements IEjbcaWS {
 			if (!success && lastAlreadyRevokedException != null) {
 				throw lastAlreadyRevokedException;
 			}
-		}catch(AuthorizationDeniedException e){
-			throw e;
 		} catch (AlreadyRevokedException e) {
             throw EjbcaWSHelper.getEjbcaException(e.getMessage(), logger, ErrorCode.CERT_WRONG_STATUS, null);
 		} catch (FinderException e) {
@@ -1307,8 +1295,6 @@ public class EjbcaWS implements IEjbcaWS {
 		    return new RevokeStatus(certinfo, issuerDN, certificateSN);
 		  }
 		  return null;
-		}catch(AuthorizationDeniedException ade){
-			throw ade;
         } catch (DatatypeConfigurationException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
@@ -1777,8 +1763,6 @@ public class EjbcaWS implements IEjbcaWS {
 			if(ar!= null){
 				approvalSession.markAsStepDone(admin, ar.generateApprovalId(), GenerateTokenApprovalRequest.STEP_1_GENERATETOKEN);
 			}
-        } catch( EjbcaException e) {
-            throw e;
         } catch (FinderException e) {
             throw EjbcaWSHelper.getInternalException(e, logger);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...

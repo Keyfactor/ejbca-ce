@@ -17,8 +17,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.Vector;
+import java.util.List;
 
 /**
  * JAX-WS Support.
@@ -63,9 +64,9 @@ public class JAXWSDocAndConvTools {
 		String java_doc;
 		String method_name;
 		String return_type;
-		Vector<String> declarators = new Vector<String> ();
-		Vector<String> argument_names = new Vector<String> ();
-		Vector<String> exceptions = new Vector<String> ();
+		List<String> declarators = new ArrayList<String> ();
+		List<String> argument_names = new ArrayList<String> ();
+		List<String> exceptions = new ArrayList<String> ();
 		String signature (){
 			final StringBuilder sig = new StringBuilder();
 			sig.append(method_name).append(':').append(return_type);
@@ -80,7 +81,7 @@ public class JAXWSDocAndConvTools {
 		String package_name;
 		String class_name;
 		String class_java_doc;
-		Vector<String> imports = new Vector<String> ();
+		List<String> imports = new ArrayList<String> ();
 		LinkedHashMap<String,String> exceptions = new LinkedHashMap<String,String> ();
 		LinkedHashMap<String,Method> methods = new LinkedHashMap<String,Method> ();
 		
@@ -117,7 +118,7 @@ public class JAXWSDocAndConvTools {
         		Token nxt = scan ();
         		if (nxt.getType () == Types.LEFTPAR){
         			while (scan ().getType () != Types.RIGHTPAR){
-        				
+        				// NOPMD, just loop through
         			}
             		continue;
         		}
@@ -138,7 +139,7 @@ public class JAXWSDocAndConvTools {
         		if (lines.charAt(c_index) == '/'){
         			c_index++;
         			while (lines.charAt(c_index++) != '\n'){
-        				
+        			    // NOPMD, just loop through
         			}
         			continue;
         		}
@@ -321,7 +322,9 @@ public class JAXWSDocAndConvTools {
     		if (ws_gen && !byte_array) {
     			bad ("did not expect [] in WS-gen");
     		}
-    		while ((nxt = scan()).getType() != Types.RIGHTARRAY){}
+    		while ((nxt = scan()).getType() != Types.RIGHTARRAY){
+                // NOPMD, just loop through
+    		}
     		if (byte_array) {
     			type_decl.append("[]");
     		} else{
@@ -567,14 +570,14 @@ public class JAXWSDocAndConvTools {
 			out.write("\n" + jdoc + "\n");
 			out.write(" public " + client_method.return_type + " " + client_method.method_name + "(");
 			boolean comma = false;
-			Vector<String> arg_names = server.methods.get(s).argument_names;
+			List<String> arg_names = server.methods.get(s).argument_names;
 			int q = 0;
 			for (String arg : client_method.declarators){
 				if (comma){
 					out.write(", ");
 				}
 				comma = true;
-				out.write(arg + " " + arg_names.elementAt(q++));
+				out.write(arg + " " + arg_names.get(q++));
 			}
 			out.write(")");
 			if (!client_method.exceptions.isEmpty()){
