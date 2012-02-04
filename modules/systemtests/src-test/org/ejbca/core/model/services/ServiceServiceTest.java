@@ -44,7 +44,9 @@ import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -74,12 +76,16 @@ public class ServiceServiceTest extends CaTestCase {
     private ServiceSession serviceSession = InterfaceCache.getServiceSession();
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     
-    @Before
-    public void setUp() throws Exception {
-        super.setUp();
+    @BeforeClass
+    public static void beforeClass() throws Exception {
         createTestCA(TESTCA1);
         createTestCA(TESTCA2);
         createTestCA(TESTCA3);
+    }
+    
+    @Before
+    public void setUp() throws Exception {
+        super.setUp();    
     }
 
     /**
@@ -167,24 +173,29 @@ public class ServiceServiceTest extends CaTestCase {
         log.trace("<test03NotPinnedService()");
     }
 
+    @After
+    public void tearDown() throws Exception{
+        super.tearDown();
+    }
+    
     /**
      * Remove all data stored by JUnit tests.
      * 
      * @throws Exception In case of error.
      */
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-        log.trace(">test99CleanUp()");
+    @AfterClass
+    public static void afterClass() throws Exception {       
+        ServiceSession serviceSession = InterfaceCache.getServiceSession();
+        UserAdminSession userAdminSession = InterfaceCache.getUserAdminSession();
         for (String username : usernames) {
-            if(getUserAdminSession().existsUser(username)) {
-                getUserAdminSession().deleteUser(admin, username);            
+            if(userAdminSession.existsUser(username)) {
+                userAdminSession.deleteUser(admin, username);            
                 log.debug("Removed user: " + username);
             }
         }
         for (String service : services) {
-            if(getServiceSession().getService(admin, service) != null) {
-                getServiceSession().removeService(admin, service);
+            if(serviceSession.getService(admin, service) != null) {
+                serviceSession.removeService(admin, service);
                 log.debug("Removed service: " + service);
             }           
         }
@@ -192,7 +203,6 @@ public class ServiceServiceTest extends CaTestCase {
             removeTestCA(caName);
             log.debug("Removed test CA: " + caName);
         }
-        log.trace("<test99CleanUp()");
     }
 
     public String getRoleName() {

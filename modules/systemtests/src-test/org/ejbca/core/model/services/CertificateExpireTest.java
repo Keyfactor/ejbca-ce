@@ -50,6 +50,7 @@ import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -81,10 +82,22 @@ public class CertificateExpireTest extends CaTestCase {
  
     private List<Certificate> certificatesToRemove;
     
+    @BeforeClass
+    public static void beforeClass() throws Exception {
+        CryptoProviderTools.installBCProvider();
+        createTestCA(CA_NAME);
+    }
+   
+    
+    @AfterClass
+    public static void afterClass() throws Exception {
+        removeTestCA(CA_NAME);
+        log.debug("Removed test CA");
+    }
+    
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        createTestCA(CA_NAME);
         certificatesToRemove = new ArrayList<Certificate>();
     }
 
@@ -104,15 +117,7 @@ public class CertificateExpireTest extends CaTestCase {
         serviceSession.removeService(admin, CERTIFICATE_EXPIRATION_SERVICE);
         log.debug("Removed service:" + CERTIFICATE_EXPIRATION_SERVICE);
         assertNull("ServiceData object with id 4711 was not removed properly.", serviceDataSession.findById(4711));
-        removeTestCA(CA_NAME);
-        log.debug("Removed test CA");
 
-    }
-
-    @BeforeClass
-    public static void  beforeClass() {
-        CryptoProviderTools.installBCProvider();
-        
     }
     
     /**

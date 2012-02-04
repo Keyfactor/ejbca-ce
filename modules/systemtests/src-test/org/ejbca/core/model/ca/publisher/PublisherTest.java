@@ -57,6 +57,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -442,9 +443,9 @@ public class PublisherTest {
      *
      * @throws Exception error
      */
-    @Test
-    public void test99removePublishers() throws Exception {
-        log.trace(">test99removePublishers()");
+    @AfterClass
+    public static void removePublishers() throws Exception {
+        PublisherProxySessionRemote publisherProxySession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
         boolean ret = true;
         try {
         	publisherProxySession.removePublisher(internalAdmin, "TESTLDAP");            
@@ -465,8 +466,6 @@ public class PublisherTest {
         	publisherProxySession.removePublisher(internalAdmin, "TESTEXTOCSP2");            
         } catch (Exception pee) {ret = false;}
         assertTrue("Removing Publisher failed", ret);
-        
-        log.trace("<test99removePublishers()");
     }
 
 } // TestPublisher

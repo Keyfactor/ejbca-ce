@@ -107,8 +107,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     private AccessControlSessionRemote accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
     private CAAdminSessionRemote caAdminSession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = JndiHelper.getRemoteSession(CaSessionRemote.class);
-    private CaTestSessionRemote caTestSession = JndiHelper.getRemoteSession(CaTestSessionRemote.class);
-    private CertificateStoreSessionRemote certificateStoreSession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = JndiHelper.getRemoteSession(GlobalConfigurationSessionRemote.class);  
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
@@ -116,7 +114,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     private String roleName;
 
-    private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
     protected TestX509CertificateAuthenticationToken caAdmin;
 
     public abstract String getRoleName();
@@ -201,7 +198,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws CryptoTokenOfflineException
      * @throws CAExistsException
      */
-    public boolean createTestCA(String caName) throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
+    public static boolean createTestCA(String caName) throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         return createTestCA(caName, 1024);
     }
@@ -217,7 +214,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws CryptoTokenOfflineException
      * @throws CAExistsException
      */
-    public boolean createTestCA(String caName, int keyStrength) throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
+    public static boolean createTestCA(String caName, int keyStrength) throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
             CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         return createTestCA(caName, keyStrength, "CN=" + caName, CAInfo.SELFSIGNED, null);
     }
@@ -240,14 +237,20 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws CryptoTokenOfflineException
      * @throws CAExistsException
      */
-    public boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain)
+    public static boolean createTestCA(String caName, int keyStrength, String dn, int signedBy, Collection<Certificate> certificateChain)
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         log.trace(">createTestCA");
 
+        AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
+        
+        CAAdminSessionRemote caAdminSession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
+        CaSessionRemote caSession = JndiHelper.getRemoteSession(CaSessionRemote.class);
+        CertificateStoreSessionRemote certificateStoreSession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);
+        
         // Search for requested CA
         try {
-            this.caSession.getCAInfo(internalAdmin, caName);
+            caSession.getCAInfo(internalAdmin, caName);
             return true;
         } catch (CADoesntExistsException e) {
             // Ignore this state, continue instead. This is due to a lack of an exists-method in CaSession
@@ -320,9 +323,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 null // cmpRaAuthSecret
         );
 
-        this.caAdminSession.createCA(internalAdmin, cainfo);
+        caAdminSession.createCA(internalAdmin, cainfo);
 
-        final CAInfo info = this.caSession.getCAInfo(internalAdmin, caName);
+        final CAInfo info = caSession.getCAInfo(internalAdmin, caName);
         final String normalizedDN = CertTools.stringToBCDNString(dn);
         final X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
         final String normalizedCertDN = CertTools.stringToBCDNString(cert.getSubjectDN().toString());
@@ -334,7 +337,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             log.error("Creating CA failed!");
             return false;
         }
-        if (this.certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) == null) {
+        if (certificateStoreSession.findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) == null) {
             log.error("CA certificate not available in database!!");
             return false;
         }
@@ -410,9 +413,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException
      */
-    public void removeTestCA(String caName) throws AuthorizationDeniedException {
+    public static void removeTestCA(String caName) throws AuthorizationDeniedException {
         // Search for requested CA
-
+        CaSessionRemote caSession = JndiHelper.getRemoteSession(CaSessionRemote.class);
+        CaTestSessionRemote caTestSession = JndiHelper.getRemoteSession(CaTestSessionRemote.class);        
+        AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         try {
             CA ca = caTestSession.getCA(internalAdmin, caName);
             caSession.removeCA(internalAdmin, ca.getCAId());
