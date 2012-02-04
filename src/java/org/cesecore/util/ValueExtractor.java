@@ -41,22 +41,7 @@ public abstract class ValueExtractor {
 	public static int extractIntValue(Object object) {
 		Class<?> c = object.getClass();
 		try {
-			if (c.isArray()) {
-				final Object[] objects = (Object[]) object;
-				if (LOG.isTraceEnabled()) {
-					for (Object o : objects) {
-						LOG.trace(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
-					}
-				}
-				if (objects[0].getClass().equals(BigInteger.class)) {
-					object = objects[objects.length-1];
-				} else if (objects[objects.length-1].getClass().equals(BigDecimal.class)) {
-					object = objects[0];
-				} else {
-					throw new RuntimeException("Unsupported object type to cenvert to int.");
-				}
-				c = object.getClass();
-			}
+            c = getClass(object, Integer.class);
 			return ((Integer) c.getMethod("intValue").invoke(object)).intValue();
 		} catch (Exception e) {
 			LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
@@ -70,28 +55,40 @@ public abstract class ValueExtractor {
 	 * Long, BigInteger or BigDecimal (Oracle) this is convenient.
 	 */
 	public static long extractLongValue(Object object) {
-		Class<?> c = object.getClass();
+        Class<?> c = object.getClass();
 		try {
-			if (c.isArray()) {
-				final Object[] objects = (Object[]) object;
-				if (LOG.isTraceEnabled()) {
-					for (Object o : objects) {
-						LOG.trace(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
-					}
-				}
-				if (objects[0].getClass().equals(BigInteger.class)) {
-					object = objects[objects.length-1];
-				} else if (objects[objects.length-1].getClass().equals(BigDecimal.class)) {
-					object = objects[0];
-				} else {
-					throw new RuntimeException("Unsupported object type to cenvert to long.");
-				}
-				c = object.getClass();
-			}
+		    c = getClass(object, Long.class);
 			return ((Long) c.getMethod("longValue").invoke(object)).longValue();
 		} catch (Exception e) {
 			LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
 			throw new RuntimeException(e);
 		}
+	}
+	
+	/** 
+	 * 
+	 * @param object will be changed if it is an array type object
+	 * @param clazz only used for logging
+	 * @return Class of the object to get value from
+	 */
+	private static Class<?> getClass(Object object, final Class<?> clazz) {
+        Class<?> c = object.getClass();
+        if (c.isArray()) {
+            final Object[] objects = (Object[]) object;
+            if (LOG.isTraceEnabled()) {
+                for (Object o : objects) {
+                    LOG.trace(o.getClass().getName() + " isPrimitive=" + o.getClass().isPrimitive() + " toString=" + o.toString());
+                }
+            }
+            if (objects[0].getClass().equals(BigInteger.class)) {
+                object = objects[objects.length-1];
+            } else if (objects[objects.length-1].getClass().equals(BigDecimal.class)) {
+                object = objects[0];
+            } else {
+                throw new RuntimeException("Unsupported object type to cenvert to "+clazz.getSimpleName());
+            }
+            c = object.getClass();
+        }
+        return c;
 	}
 }

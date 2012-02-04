@@ -520,20 +520,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             CertificateProfile profile = certProfileSession.getCertificateProfile(id);
             final List<CertificatePolicy> policies = profile.getCertificatePolicies();
             if ((policies != null) && (!policies.isEmpty())) {
-                final List<CertificatePolicy> newpolicies = new ArrayList<CertificatePolicy>();
-                for(final Iterator<?> it = policies.iterator(); it.hasNext(); ) {
-                    Object o = it.next();
-                    try {
-                        final CertificatePolicy policy = (CertificatePolicy)o;
-                        // This was a new policy (org.cesecore), just add it
-                        newpolicies.add(policy);
-                    } catch (ClassCastException e) {
-                        // Here we stumbled upon an old certificate policy
-                        final org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy policy = (org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy)o;
-                        CertificatePolicy newpolicy = new CertificatePolicy(policy.getPolicyID(), policy.getQualifierId(), policy.getQualifier());
-                        newpolicies.add(newpolicy);                    
-                    }
-                }
+                List<CertificatePolicy> newpolicies = getNewPolicies(policies);
                 // Set the updated policies, replacing the old
                 profile.setCertificatePolicies(newpolicies);
                 try {
@@ -557,20 +544,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
                         X509CA x509ca = (X509CA)ca;
                         final List<CertificatePolicy> policies = x509ca.getPolicies();
                         if ((policies != null) && (!policies.isEmpty())) {
-                            final List<CertificatePolicy> newpolicies = new ArrayList<CertificatePolicy>();
-                            for(final Iterator<?> it = policies.iterator(); it.hasNext(); ) {
-                                Object o = it.next();
-                                try {
-                                    final CertificatePolicy policy = (CertificatePolicy)o;
-                                    // This was a new policy (org.cesecore), just add it
-                                    newpolicies.add(policy);
-                                } catch (ClassCastException e) {
-                                    // Here we stumbled upon an old certificate policy
-                                    final org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy policy = (org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy)o;
-                                    CertificatePolicy newpolicy = new CertificatePolicy(policy.getPolicyID(), policy.getQualifierId(), policy.getQualifier());
-                                    newpolicies.add(newpolicy);                    
-                                }
-                            }
+                            List<CertificatePolicy> newpolicies = getNewPolicies(policies);
                             // Set the updated policies, replacing the old
                             x509ca.setPolicies(newpolicies);
                             // Finally store the upgraded CA
@@ -603,6 +577,24 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     	
     	log.error("(this is not an error) Finished post upgrade from ejbca 4.0.x to ejbca 5.0.x with result: "+ret);
         return ret;
+    }
+
+    private List<CertificatePolicy> getNewPolicies(final List<CertificatePolicy> policies) {
+        final List<CertificatePolicy> newpolicies = new ArrayList<CertificatePolicy>();
+        for(final Iterator<?> it = policies.iterator(); it.hasNext(); ) {
+            Object o = it.next();
+            try {
+                final CertificatePolicy policy = (CertificatePolicy)o;
+                // This was a new policy (org.cesecore), just add it
+                newpolicies.add(policy);
+            } catch (ClassCastException e) {
+                // Here we stumbled upon an old certificate policy
+                final org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy policy = (org.ejbca.core.model.ca.certificateprofiles.CertificatePolicy)o;
+                CertificatePolicy newpolicy = new CertificatePolicy(policy.getPolicyID(), policy.getQualifierId(), policy.getQualifier());
+                newpolicies.add(newpolicy);                    
+            }
+        }
+        return newpolicies;
     }
 
     /** 
