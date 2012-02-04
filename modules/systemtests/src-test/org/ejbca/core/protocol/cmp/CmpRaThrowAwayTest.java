@@ -66,8 +66,9 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
     private static X509Certificate caCertificate;
 
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        createTestCA(TESTCA_NAME); // Create test CA
     }
 
     /** Create CA and change configuration for the following tests. */
@@ -75,7 +76,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
     public void setUp() throws Exception {
         super.setUp();
         LOG.trace(">test000Setup");
-        createTestCA(TESTCA_NAME); // Create test CA
+       
         caCertificate = (X509Certificate) InterfaceCache.getCaSession().getCAInfo(ADMIN, getTestCAId(TESTCA_NAME)).getCertificateChain().iterator()
                 .next();
         assertCAConfig(true, true, true);

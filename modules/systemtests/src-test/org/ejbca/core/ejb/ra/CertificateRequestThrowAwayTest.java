@@ -65,6 +65,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.InterfaceCache;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -101,14 +102,19 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
     private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
 
     @BeforeClass
-    public static void setupBeforeClass() throws CADoesntExistsException, AuthorizationDeniedException {
+    public static void setupBeforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        createTestCA(TESTCA_NAME); // Create test CA
+    }
+    
+    @AfterClass
+    public static void afterClass() throws Exception {
+        removeTestCA(TESTCA_NAME);
     }
     
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        super.createTestCA(TESTCA_NAME); // Create test CA
         assertCAConfig(true, true, true);
     }
 
@@ -135,8 +141,6 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        super.removeTestCA(TESTCA_NAME);
-
     }
 
     /**

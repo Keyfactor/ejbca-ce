@@ -169,7 +169,7 @@ class CAInHierarchy {
             throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         Assert.assertTrue("Failed to created certificate.",
-                this.testCase.createTestCA(this.name, 1024, "CN=" + this.name + ",O=EJBCA junit,OU=CertStoreServletTest", signedBy, certificateChain));
+                CaTestCase.createTestCA(this.name, 1024, "CN=" + this.name + ",O=EJBCA junit,OU=CertStoreServletTest", signedBy, certificateChain));
         final CAInfo info = getCAInfo();
         final Collection<Certificate> newCertificateChain = info.getCertificateChain();
         final X509Certificate caCert = (X509Certificate) newCertificateChain.iterator().next();
@@ -187,7 +187,7 @@ class CAInHierarchy {
         while (i.hasNext()) {
             i.next().deleteCA();
         }
-        this.testCase.removeTestCA(this.name);
+        CaTestCase.removeTestCA(this.name);
     }
 
     private CAInfo getCAInfo() throws CADoesntExistsException, AuthorizationDeniedException {
