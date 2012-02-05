@@ -16,6 +16,8 @@ package org.ejbca.ui.cli.ra;
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -73,9 +75,9 @@ public class RaSetSubjectDNCommand extends BaseRaAdminCommand {
             }
             getLogger().info("Setting subjectDN '" + subjectDN + "' for user " + username);
             try {
-            	EndEntityInformation uservo = ejb.getEndEntityAccessSession().findUser(getAdmin(cliUserName, cliPassword), username);
+            	EndEntityInformation uservo = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
             	uservo.setDN(subjectDN);
-            	ejb.getUserAdminSession().changeUser(getAdmin(cliUserName, cliPassword), uservo, false);
+            	ejb.getRemoteSession(UserAdminSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword), uservo, false);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");
             } catch (UserDoesntFullfillEndEntityProfile e) {

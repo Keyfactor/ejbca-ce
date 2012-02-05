@@ -15,6 +15,12 @@ package org.ejbca.ui.cli;
 
 import java.util.List;
 
+import org.cesecore.authorization.control.AccessControlSessionRemote;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.util.CliTools;
 
 
@@ -52,27 +58,27 @@ public class ClearCacheCommand extends BaseCommand {
 			if (globalconf) {
 				getLogger().info("Flushing global configuration cache.");
 				// Flush GlobalConfiguration
-				ejb.getGlobalConfigurationSession().flushGlobalConfigurationCache();    			
+				ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).flushGlobalConfigurationCache();    			
 			}
 			if (eeprofile) {
 				getLogger().info("Flushing end entity profile cache.");
 				// Flush End Entity profiles
-				ejb.getEndEntityProfileSession().flushProfileCache();
+				ejb.getRemoteSession(EndEntityProfileSessionRemote.class).flushProfileCache();
 			}
 			if (certprofile) {
 				getLogger().info("Flushing certificate profile cache.");
 				// Flush Certificate profiles
-				ejb.getCertificateProfileSession().flushProfileCache();
+				ejb.getRemoteSession(CertificateProfileSessionRemote.class).flushProfileCache();
 			}
 			if (authorization) {
 				getLogger().info("Flushing authorization cache.");
 				// Flush access control
-				ejb.getAccessControlSession().forceCacheExpire();
+				ejb.getRemoteSession(AccessControlSessionRemote.class).forceCacheExpire();
 			}
 			if (cacache) {
 				getLogger().info("Flushing CA cache.");
 				// Flush CAs
-				ejb.getCaSession();
+				EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 			}
 		} catch (Exception e) {
 			throw new ErrorAdminCommandException(e);

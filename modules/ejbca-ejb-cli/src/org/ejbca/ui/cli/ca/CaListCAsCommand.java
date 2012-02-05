@@ -18,8 +18,10 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -43,11 +45,11 @@ public class CaListCAsCommand extends BaseCaAdminCommand {
         
         try {
         	CryptoProviderTools.installBCProvider();
-            Collection<Integer> caids = ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword));
+            Collection<Integer> caids = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin(cliUserName, cliPassword));
             Iterator<Integer> iter = caids.iterator();
             while (iter.hasNext()) {
                 int caid = ((Integer)iter.next()).intValue();
-                CAInfo ca = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caid);
+                CAInfo ca = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caid);
                 Collection<Certificate> certs = ca.getCertificateChain();
                 Iterator<Certificate> ci = certs.iterator();
                 Certificate cacert = null;

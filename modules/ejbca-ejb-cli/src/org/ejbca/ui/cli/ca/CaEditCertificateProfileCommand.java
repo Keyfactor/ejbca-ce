@@ -19,6 +19,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -66,7 +67,7 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
 
             final String name = args[1];
             final String fieldEdit = args[2];
-            final CertificateProfile profile = ejb.getCertificateProfileSession().getCertificateProfile(name);
+            final CertificateProfile profile = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfile(name);
             if (profile == null) {
                 getLogger().info("Certificate profile '"+name+"' does not exist.");
             } else {
@@ -108,10 +109,10 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
                 getLogger().info("Invoking method '"+setmethodName+"' vith parameter value '"+fieldValue+"'.");
                 method.invoke(profile, value);
                 getLogger().info("Storing modified publisher '"+name+"'...");
-                ejb.getCertificateProfileSession().changeCertificateProfile(getAdmin(cliUserName, cliPassword), name, profile);
+                ejb.getRemoteSession(CertificateProfileSessionRemote.class).changeCertificateProfile(getAdmin(cliUserName, cliPassword), name, profile);
                 // Verify our new value
                 getLogger().info("Reading modified value for verification...");
-                final CertificateProfile modprof = ejb.getCertificateProfileSession().getCertificateProfile(name);
+                final CertificateProfile modprof = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfile(name);
                 Object modo = modMethod.invoke(modprof);
                 getLogger().info(getMethodName+" returned new value '"+modo+"'.");
                 if (!modo.equals(value)) {

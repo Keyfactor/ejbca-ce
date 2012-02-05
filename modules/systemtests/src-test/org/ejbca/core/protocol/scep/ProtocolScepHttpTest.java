@@ -85,6 +85,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -95,7 +96,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -154,7 +154,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
     private String httpReqPath;
 
     private ConfigurationSessionRemote configurationSessionRemote = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {

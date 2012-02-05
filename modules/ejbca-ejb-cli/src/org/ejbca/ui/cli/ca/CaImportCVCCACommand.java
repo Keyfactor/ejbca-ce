@@ -31,6 +31,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.cvc.AccessRightEnum;
 import org.ejbca.cvc.AuthorizationRoleEnum;
 import org.ejbca.cvc.CAReferenceField;
@@ -132,7 +133,7 @@ public class CaImportCVCCACommand extends BaseCaAdminCommand {
 
 	        Certificate[] chain = new Certificate[1];
 	        chain[0] = cacert;
-        	ejb.getCAAdminSession().importCAFromKeys(getAdmin(cliUserName, cliPassword), caName, "foo123", chain, pubKey, privKey, null, null);        	
+        	ejb.getRemoteSession(CAAdminSessionRemote.class).importCAFromKeys(getAdmin(cliUserName, cliPassword), caName, "foo123", chain, pubKey, privKey, null, null);        	
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

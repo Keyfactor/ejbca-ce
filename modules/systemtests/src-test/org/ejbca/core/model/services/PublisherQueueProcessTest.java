@@ -30,6 +30,7 @@ import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
@@ -40,7 +41,6 @@ import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.PublishQueueProcessWorker;
-import org.ejbca.util.InterfaceCache;
 import org.junit.AfterClass;
 import org.junit.Test;
 
@@ -61,10 +61,10 @@ public class PublisherQueueProcessTest {
             + "GwYDVR0RBBQwEoEQMjUxMzQ3QGFuYXRvbS5zZTANBgkqhkiG9w0BAQUFAAOBgQAS" + "5wSOJhoVJSaEGHMPw6t3e+CbnEL9Yh5GlgxVAJCmIqhoScTMiov3QpDRHOZlZ15c"
             + "UlqugRBtORuA9xnLkrdxYNCHmX6aJTfjdIW61+o/ovP0yz6ulBkqcKzopAZLirX+" + "XSWf2uI9miNtxYMVnbQ1KPdEAt7Za3OQR6zcS0lGKg==").getBytes());
 
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-    private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private PublisherQueueSessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueSessionRemote.class);
     private PublisherProxySessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
-    private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
+    private ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
 
     /**
      * Add a new entry to the publisher queue and let the process service run,
@@ -191,7 +191,7 @@ public class PublisherQueueProcessTest {
      */
     @AfterClass
     public static void cleanUp() throws Exception {
-        PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
+        PublisherQueueSessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueSessionRemote.class);
         InternalCertificateStoreSessionRemote internalCertStoreSession =JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
         ServiceSessionRemote serviceSession = JndiHelper.getRemoteSession(ServiceSessionRemote.class);
         PublisherProxySessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);

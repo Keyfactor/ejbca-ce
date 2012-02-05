@@ -21,9 +21,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,7 +42,7 @@ public class AdminPreferenceTest extends CaTestCase {
 
     AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AdminPreferenceTest"));
     
-    private AdminPreferenceSessionRemote raAdminSession = InterfaceCache.getRAAdminSession();
+    private AdminPreferenceSessionRemote raAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AdminPreferenceSessionRemote.class);
     
     private static final String user = genRandomUserName();
 

@@ -36,7 +36,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.util.InterfaceCache;
+import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -94,7 +94,7 @@ public class CertificateRetrievalTest {
     private String subCaFp = null;
     private String endEntityFp = null;
 
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
 
     private static void dumpCertificates(Collection<Certificate> certs) {
         log.trace(">dumpCertificates()");

@@ -32,11 +32,18 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.crl.CrlCreateSessionRemote;
+import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.ui.cli.BaseCommand;
 
 /**
@@ -64,7 +71,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         getLogger().trace(">getCertChain()");
         Collection<Certificate> returnval = new ArrayList<Certificate>();
         try {
-            CAInfo cainfo = ejb.getCaSession().getCAInfo(authenticationToken, caname);
+            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, caname);
             if (cainfo != null) {
                 returnval = cainfo.getCertificateChain();
             }
@@ -117,20 +124,20 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
         getLogger().trace(">createCRL()");
         try {
             if (issuerdn != null) {
-                CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), issuerdn.hashCode());
+                CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), issuerdn.hashCode());
                 if (!deltaCRL) {
-                    ejb.getCrlCreateSession().forceCRL(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
-                    int number = ejb.getCrlStoreSession().getLastCRLNumber(issuerdn, false);
+                    ejb.getRemoteSession(CrlCreateSessionRemote.class).forceCRL(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
+                    int number = ejb.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuerdn, false);
                     getLogger().info("CRL with number " + number + " generated.");
                 } else {
-                    ejb.getCrlCreateSession().forceDeltaCRL(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
-                    int number = ejb.getCrlStoreSession().getLastCRLNumber(issuerdn, true);
+                    ejb.getRemoteSession(CrlCreateSessionRemote.class).forceDeltaCRL(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
+                    int number = ejb.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLNumber(issuerdn, true);
                     getLogger().info("Delta CRL with number " + number + " generated.");
                 }
             } else {
-                int createdcrls = ejb.getCrlCreateSession().createCRLs(getAdmin(cliUserName, cliPassword));
+                int createdcrls = ejb.getRemoteSession(CrlCreateSessionRemote.class).createCRLs(getAdmin(cliUserName, cliPassword));
                 getLogger().info("  " + createdcrls + " CRLs have been created.");
-                int createddeltacrls = ejb.getCrlCreateSession().createDeltaCRLs(getAdmin(cliUserName, cliPassword));
+                int createddeltacrls = ejb.getRemoteSession(CrlCreateSessionRemote.class).createDeltaCRLs(getAdmin(cliUserName, cliPassword));
                 getLogger().info("  " + createddeltacrls + " delta CRLs have been created.");
             }
         } catch (Exception e) {
@@ -140,14 +147,14 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     }
 
     protected String getIssuerDN(AuthenticationToken authenticationToken, String caname) throws Exception {
-        CAInfo cainfo = ejb.getCaSession().getCAInfo(authenticationToken, caname);
+        CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, caname);
         return cainfo != null ? cainfo.getSubjectDN() : null;
     }
 
     protected CAInfo getCAInfo(AuthenticationToken authenticationToken, String caname) throws Exception {
         CAInfo result;
         try {
-            result = ejb.getCaSession().getCAInfo(authenticationToken, caname);
+            result = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, caname);
         } catch (Exception e) {
             getLogger().debug("Error retriving CA " + caname + " info.", e);
             throw new Exception("Error retriving CA " + caname + " info.");
@@ -165,15 +172,15 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     	} else {
     		getLogger().info("Initalizing authorization module with caid="+caid+" and superadmin CN '"+superAdminCN+"'.");
     	}
-        ejb.getComplexAccessControlSession().initializeAuthorizationModule(authenticationToken, caid, superAdminCN);
+    	ejb.getRemoteSession(ComplexAccessControlSessionRemote.class).initializeAuthorizationModule(authenticationToken, caid, superAdminCN);
     } // initAuthorizationModule
     
     protected String getAvailableCasString(String cliUserName, String cliPassword) {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword))) {
-				final String caName = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), nextId.intValue()).getName();
+			for (final Integer nextId : EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin(cliUserName, cliPassword))) {
+				final String caName = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), nextId.intValue()).getName();
 				if (existingCas.length()>0) {
 					existingCas.append(", ");
 				}
@@ -189,8 +196,8 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword))) {
-				final String caName = ejb.getEndEntityProfileSession().getEndEntityProfileName(nextId.intValue());
+			for (final Integer nextId : ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword))) {
+				final String caName = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(nextId.intValue());
 				if (existingCas.length()>0) {
 					existingCas.append(", ");
 				}
@@ -206,8 +213,8 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
 		// List available CAs by name
 		final StringBuilder existingCas = new StringBuilder();
 		try {
-			for (final Integer nextId : ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword)))) {
-				final String caName = ejb.getCertificateProfileSession().getCertificateProfileName(nextId.intValue());
+			for (final Integer nextId : ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin(cliUserName, cliPassword)))) {
+				final String caName = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(nextId.intValue());
 				if (existingCas.length()>0) {
 					existingCas.append(", ");
 				}

@@ -38,6 +38,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -48,7 +49,6 @@ import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -73,11 +73,11 @@ public class CertificateExpireTest extends CaTestCase {
     private static final String CERTIFICATE_EXPIRATION_SERVICE = "CertificateExpirationService";
 
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-    private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
-    private SignSessionRemote signSession = InterfaceCache.getSignSession();
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private ServiceDataSessionRemote serviceDataSession = InterfaceCache.getServiceDataSessionRemote();
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private ServiceDataSessionRemote serviceDataSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceDataSessionRemote.class);
 
  
     private List<Certificate> certificatesToRemove;

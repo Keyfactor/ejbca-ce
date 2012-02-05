@@ -55,9 +55,8 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.model.util.EjbRemoteHelper;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -72,9 +71,9 @@ public class CAImportExportTest  {
     private static Logger log = Logger.getLogger(CAImportExportTest.class);
     private static X509CAInfo cainfo = null;
     
-    private CAAdminSessionRemote caadminsession = InterfaceCache.getCAAdminSession();
+    private CAAdminSessionRemote caadminsession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CAAdminTestSessionRemote catestsession = JndiHelper.getRemoteSession(CAAdminTestSessionRemote.class);
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     private static AuthenticationToken adminTokenNoAuth;
     private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CAImportExportTest"));
@@ -215,8 +214,7 @@ public class CAImportExportTest  {
         String caname = "DummyTestCA";
         String capassword = "foo123";
         cainfo = getNewCAInfo(caname, catokeninfo);
-        EjbRemoteHelper ejbRemoteHelper = new EjbRemoteHelper();
-        CAAdminSessionRemote caAdminSessionNew = ejbRemoteHelper.getCAAdminSession();
+        CAAdminSessionRemote caAdminSessionNew = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         boolean defaultRetValue = true;
         
         // create CA in a new transaction, export the keystore from there

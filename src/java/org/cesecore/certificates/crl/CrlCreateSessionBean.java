@@ -52,7 +52,6 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
-import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;

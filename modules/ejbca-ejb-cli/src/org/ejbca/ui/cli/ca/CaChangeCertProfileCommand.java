@@ -19,9 +19,13 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -54,21 +58,21 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		try {
 		    final String caName = args[1];
 		    {
-		        final CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caName);
+		        final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName);
 		        final String certProfileName = args[2];
 		        getLogger().debug("Searching for Certificate Profile " + certProfileName);
-		        final int certificateprofileid = ejb.getCertificateProfileSession().getCertificateProfileId(certProfileName);
+		        final int certificateprofileid = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(certProfileName);
 		        if (certificateprofileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
 		        	getLogger().error("Certificate Profile " + certProfileName + " does not exist.");
 		            throw new Exception("Certificate Profile '" + certProfileName + "' does not exist.");
 		        }
                 cainfo.setCertificateProfileId(certificateprofileid);
-                ejb.getCAAdminSession().editCA(getAdmin(cliUserName, cliPassword), cainfo);
+                ejb.getRemoteSession(CAAdminSessionRemote.class).editCA(getAdmin(cliUserName, cliPassword), cainfo);
 		    }{
-                final CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caName);
+                final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName);
                 getLogger().info("Certificate profile for CA changed:");
                 getLogger().info("CA Name: " + caName);
-                getLogger().info("Certificate Profile: " + ejb.getCertificateProfileSession().getCertificateProfileName(cainfo.getCertificateProfileId()));
+                getLogger().info("Certificate Profile: " + ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(cainfo.getCertificateProfileId()));
 		    }
 		} catch (Exception e) {
 			getLogger().error(e.getMessage());
@@ -84,7 +88,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		Collection<Integer> cas = null;
 		try {
 			// Print available CAs
-			cas = ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword));
+			cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin(cliUserName, cliPassword));
 			boolean first = true;
 			for (Integer caid : cas) {
 				if (first) {
@@ -92,7 +96,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 				} else {
 					existingCasInfo += ", ";
 				}
-				CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caid);
+				CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caid);
 				existingCasInfo += info.getName();				
 			}
 		} catch (Exception e) {
@@ -101,8 +105,8 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 		getLogger().info(existingCasInfo);
 		try {
 			// Print available Root CA and Sub CA profiles
-			Collection<Integer> cpssub = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_SUBCA, cas);
-			Collection<Integer> cpsroot = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ROOTCA, cas);
+			Collection<Integer> cpssub = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_SUBCA, cas);
+			Collection<Integer> cpsroot = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ROOTCA, cas);
 			HashMap<String,Collection<Integer>> cps = new HashMap<String,Collection<Integer>>();
 			cps.put("Root CA profiles: ", cpsroot);
 			cps.put("Sub CA profiles: ", cpssub);
@@ -119,7 +123,7 @@ public class CaChangeCertProfileCommand extends BaseCaAdminCommand {
 					} else {
 						profileInfo += ", ";
 					}
-					profileInfo += ejb.getCertificateProfileSession().getCertificateProfileName(profid);					
+					profileInfo += ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(profid);					
 				}
 				getLogger().info(profileInfo);
 			}

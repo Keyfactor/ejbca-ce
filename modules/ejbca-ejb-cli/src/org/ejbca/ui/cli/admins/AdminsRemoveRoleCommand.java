@@ -14,6 +14,8 @@
 package org.ejbca.ui.cli.admins;
 
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.access.RoleAccessSession;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -40,12 +42,12 @@ public class AdminsRemoveRoleCommand extends BaseAdminsCommand {
                 return;
             }
             String roleName = args[1];
-            RoleData role = ejb.getRoleAccessSession().findRole(roleName);
+            RoleData role = ejb.getRemoteSession(RoleAccessSession.class).findRole(roleName);
             if (role == null) {
             	getLogger().error("No such role \"" + roleName + "\".");
                 return;
             }
-            ejb.getRoleManagementSession().remove(getAdmin(cliUserName, cliPassword), role);
+            ejb.getRemoteSession(RoleManagementSessionRemote.class).remove(getAdmin(cliUserName, cliPassword), role);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
 		}

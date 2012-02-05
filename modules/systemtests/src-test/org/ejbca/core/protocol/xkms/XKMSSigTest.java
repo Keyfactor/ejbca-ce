@@ -47,6 +47,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -54,7 +55,6 @@ import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -105,7 +105,7 @@ public class XKMSSigTest {
 
     private static int caid;
 
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
 	private AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("XKMSSigTest"));
 

@@ -22,6 +22,7 @@ import java.util.Enumeration;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -97,7 +98,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
                     } 
                     // else alias already contains the only alias, so we can use that
                 }
-                ejb.getCAAdminSession().importCAFromKeyStore(getAdmin(cliUserName, cliPassword), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);        		
+                ejb.getRemoteSession(CAAdminSessionRemote.class).importCAFromKeyStore(getAdmin(cliUserName, cliPassword), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);        		
         	} else {
         		// Import HSM keystore
                 // "Usage2: CA importca <CA name> <catokenclasspath> <catokenpassword> <catokenproperties> <ca-certificate-file>\n" +
@@ -106,7 +107,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
         		String catokenproperties = new String(FileTools.readFiletoBuffer(args[4]));
         		Collection<Certificate> cacerts = CertTools.getCertsFromPEM(args[5]);
         		Certificate[] cacertarray = cacerts.toArray(new Certificate[0]);
-        		ejb.getCAAdminSession().importCAFromHSM(getAdmin(cliUserName, cliPassword), caName, cacertarray, tokenpwd, tokenclasspath, catokenproperties);
+        		ejb.getRemoteSession(CAAdminSessionRemote.class).importCAFromHSM(getAdmin(cliUserName, cliPassword), caName, cacertarray, tokenpwd, tokenclasspath, catokenproperties);
         	}
         } catch (ErrorAdminCommandException e) {
         	throw e;

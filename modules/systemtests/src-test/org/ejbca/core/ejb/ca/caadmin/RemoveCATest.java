@@ -22,8 +22,8 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,8 +37,8 @@ public class RemoveCATest extends CaTestCase {
     private static final Logger log = Logger.getLogger(CAsTest.class);
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RemoveCATest"));
 
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {

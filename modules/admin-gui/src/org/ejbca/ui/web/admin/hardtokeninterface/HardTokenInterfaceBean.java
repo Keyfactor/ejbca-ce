@@ -23,8 +23,10 @@ import javax.servlet.http.HttpServletRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.roles.RoleData;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
@@ -68,16 +70,16 @@ public class HardTokenInterfaceBean implements java.io.Serializable {
     public void initialize(HttpServletRequest request, EjbcaWebBean ejbcawebbean) throws  Exception{
     	if(!initialized){
     		admin = ejbcawebbean.getAdminObject();
-    		EjbLocalHelper ejb = new EjbLocalHelper();    
-    		hardtokensession = ejb.getHardTokenSession();
-    		hardtokenbatchsession = ejb.getHardTokenBatchJobSession();
-    		AccessControlSessionLocal authorizationsession = ejb.getAccessControlSession();
-    		UserAdminSessionLocal useradminsession = ejb.getUserAdminSession();
-    		CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
-    		keyrecoverysession = ejb.getKeyRecoverySession();
+    		EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();    
+    		hardtokensession = ejbLocalHelper.getHardTokenSession();
+    		hardtokenbatchsession = ejbLocalHelper.getHardTokenBatchJobSession();
+    		AccessControlSessionLocal authorizationsession = ejbLocalHelper.getAccessControlSession();
+    		UserAdminSessionLocal useradminsession = ejbLocalHelper.getUserAdminSession();
+    		CertificateProfileSession certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
+    		keyrecoverysession = ejbLocalHelper.getKeyRecoverySession();
     		initialized=true;
     		this.informationmemory = ejbcawebbean.getInformationMemory();
-    		this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificateProfileSession, authorizationsession , useradminsession, ejb.getCaSession(), informationmemory);
+    		this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificateProfileSession, authorizationsession , useradminsession, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class), informationmemory);
     	}
     }
     

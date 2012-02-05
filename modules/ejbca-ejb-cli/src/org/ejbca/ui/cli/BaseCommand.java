@@ -43,10 +43,12 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
-import org.ejbca.core.model.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 
 /**
@@ -63,7 +65,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
     private static final String PASSWORD_MAN_TEXT = "Use the syntax -u <username> -password=<password> to specify password explicitly or -u <username> -p to prompt";
 
     /** This helper will cache interfaces. Don't use static instantiation. */
-    protected EjbRemoteHelper ejb = new EjbRemoteHelper();
+    protected EjbRemoteHelper ejb = EjbRemoteHelper.INSTANCE;
 
     protected String cliUserName = null;
     protected String cliPassword = null;
@@ -109,7 +111,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
     protected String[] parseUsernameAndPasswordFromArgs(String[] args) throws CliUsernameException, ErrorAdminCommandException {
         List<String> argsList = new ArrayList<String>(Arrays.asList(args));
 
-        GlobalConfigurationSessionRemote gcsession = ejb.getGlobalConfigurationSession();
+        GlobalConfigurationSessionRemote gcsession = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class);
         if (gcsession == null) {
             throw new ErrorAdminCommandException("Can not get configuration from server. Is server started and communication working?");
         }
@@ -176,7 +178,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
             throw new CliUsernameException();
         }
 
-        if (!ejb.getUserAdminSession().existsUser(cliUserName)) {
+        if (!ejb.getRemoteSession(UserAdminSessionRemote.class).existsUser(cliUserName)) {
             //We only check for username here, but it's needless to give too much info. 
             getLogger().info("CLI authentication failed. The user '" + cliUserName +"' with the given password does not exist.");
             throw new CliUsernameException("Authentication failed. User " + cliUserName + " not exist.");
@@ -213,7 +215,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
 
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
 
-        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) ejb.getCliAuthenticationProvider().authenticate(subject);
+        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) ejb.getRemoteSession(CliAuthenticationProviderRemote.class).authenticate(subject);
         // Set hashed value anew in order to send back
         if (authenticationToken == null) {
             throw new CliAuthenticationFailedException("Authentication failed. Username or password were not correct.");

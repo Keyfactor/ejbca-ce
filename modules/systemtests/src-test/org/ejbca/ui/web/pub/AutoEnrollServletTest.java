@@ -40,9 +40,9 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,9 +54,9 @@ public class AutoEnrollServletTest {
 
 	private static Logger log = Logger.getLogger(AutoEnrollServletTest.class);
 
-	private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();    
-	private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-	private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
+	private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);    
+	private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+	private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
 
 	private static final String CERTREQ_MACHINE_TEMPLATE =
 		"-----BEGIN NEW CERTIFICATE REQUEST-----" +

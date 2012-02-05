@@ -14,6 +14,7 @@ import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.util.CliTools;
@@ -69,7 +70,7 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
 				Integer caid = Integer.valueOf(subjectdn.hashCode());
 				initAuthorizationModule(getAdmin(cliUserName, cliPassword), caid.intValue(), superAdminCN);
 			}
-			ejb.getCAAdminSession().importCACertificate(getAdmin(cliUserName, cliPassword), caName, certs);
+			ejb.getRemoteSession(CAAdminSessionRemote.class).importCACertificate(getAdmin(cliUserName, cliPassword), caName, certs);
 			getLogger().info("Imported CA "+caName);			
 		} catch (CertificateException e) {
 			getLogger().error(e.getMessage());

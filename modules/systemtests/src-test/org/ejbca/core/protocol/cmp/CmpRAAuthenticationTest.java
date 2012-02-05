@@ -26,7 +26,9 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -36,12 +38,14 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -100,10 +104,10 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     private X509Certificate setupCA(String caName, String pbeSecret) throws Exception {
         LOG.trace(">setupCA");
         assertTrue("Failed to create " + caName, createTestCA(caName, 512));
-        X509CAInfo x509CaInfo = (X509CAInfo) InterfaceCache.getCaSession().getCAInfo(ADMIN, getTestCAId(caName));
+        X509CAInfo x509CaInfo = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, getTestCAId(caName));
         x509CaInfo.setCmpRaAuthSecret(pbeSecret);
         x509CaInfo.setUseCertReqHistory(false); // Disable storage of certificate history, to save some clean up
-        InterfaceCache.getCAAdminSession().editCA(ADMIN, x509CaInfo);
+        EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).editCA(ADMIN, x509CaInfo);
         X509Certificate ret = (X509Certificate) x509CaInfo.getCertificateChain().iterator().next();
         assertNotNull("CA certificate was null.", ret);
         LOG.trace("<setupCA");
@@ -143,7 +147,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "ProfileDefault");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEP_1);
         // Create EEP
-        if (InterfaceCache.getEndEntityProfileSession().getEndEntityProfile(EEP_1) == null) {
+        if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(EEP_1) == null) {
             // Configure an EndEntity profile that allows CN, O, C in DN and rfc822Name, MS UPN in altNames.
             EndEntityProfile eep = new EndEntityProfile(true);
             eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "" + CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -153,7 +157,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             eep.setModifyable(DnComponents.RFC822NAME, 0, true);
             eep.setUse(DnComponents.RFC822NAME, 0, false); // Don't use field from "email" data
             try {
-                InterfaceCache.getEndEntityProfileSession().addEndEntityProfile(ADMIN, EEP_1, eep);
+                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).addEndEntityProfile(ADMIN, EEP_1, eep);
             } catch (EndEntityProfileExistsException e) {
                 LOG.error("Could not create end entity profile " + EEP_1, e);
             }
@@ -210,7 +214,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             resp = sendCmpHttp(ba, 200);
             checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
             checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
-            int reason = InterfaceCache.getCertificateStoreSession().getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
+            int reason = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
             assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
             LOG.trace("<testIssueConfirmRevoke");
         } finally {
@@ -225,7 +229,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         removeTestCA(CA_NAME_1);
         removeTestCA(CA_NAME_2);
         JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).restoreConfiguration();
-        InterfaceCache.getEndEntityProfileSession().removeEndEntityProfile(ADMIN, EEP_1);
+        EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).removeEndEntityProfile(ADMIN, EEP_1);
     }
     
     public String getRoleName() {

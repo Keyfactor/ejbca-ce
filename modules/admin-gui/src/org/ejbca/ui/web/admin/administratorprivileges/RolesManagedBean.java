@@ -60,7 +60,7 @@ public class RolesManagedBean extends BaseManagedBean {
 
     private static final Logger log = Logger.getLogger(RolesManagedBean.class);
 
-    private final EjbLocalHelper ejb = new EjbLocalHelper();
+    private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private BasicAccessRuleSetEncoder basicAccessRuleSetEncoderCache = null;
 
     private DefaultRoles currentRoleTemplate = null;
@@ -276,10 +276,10 @@ public class RolesManagedBean extends BaseManagedBean {
         return list;
     }
 
-    /** @return the name of the CA that has issed the certificate for the admin in the current row of the datatable */
+    /** @return the name of the CA that has issued the certificate for the admin in the current row of the datatable */
     public String getIssuingCA() {
         AccessUserAspectData adminEntity = getAdminForEach();
-        String caName = (String) ejb.getCaSession().getCAIdToNameMap().get(adminEntity.getCaId());
+        String caName = (String) ejbLocalHelper.getCaSession().getCAIdToNameMap().get(adminEntity.getCaId());
         if (caName == null) {
             caName = "Unknown CA with hash " + adminEntity.getCaId();
         }
@@ -409,7 +409,7 @@ public class RolesManagedBean extends BaseManagedBean {
             if (currentProfile == BasicAccessRuleSet.ENDENTITYPROFILE_ALL) {
                 list.add(new SelectItem(currentProfile, getEjbcaWebBean().getText("ALL")));
             } else {
-                list.add(new SelectItem(currentProfile, ejb.getEndEntityProfileSession().getEndEntityProfileName(currentProfile)));
+                list.add(new SelectItem(currentProfile, ejbLocalHelper.getEndEntityProfileSession().getEndEntityProfileName(currentProfile)));
             }
         }
         return list;
@@ -525,7 +525,7 @@ public class RolesManagedBean extends BaseManagedBean {
         AccessRuleData accessRule = (AccessRuleData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("accessRule");
         String resource = accessRule.getAccessRuleName();
         // Check if it is a profile rule, then replace profile id with profile name.
-        Map<Integer, String> profileMap = ejb.getEndEntityProfileSession().getEndEntityProfileIdToNameMap();
+        Map<Integer, String> profileMap = ejbLocalHelper.getEndEntityProfileSession().getEndEntityProfileIdToNameMap();
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX 
@@ -539,7 +539,7 @@ public class RolesManagedBean extends BaseManagedBean {
         }
         // Check if it is a CA rule, then replace CA id with CA name.
         if (resource.startsWith(StandardRules.CAACCESS.resource())) {
-            Map<Integer, String> caIdToNameMap = ejb.getCaSession().getCAIdToNameMap();
+            Map<Integer, String> caIdToNameMap = ejbLocalHelper.getCaSession().getCAIdToNameMap();
             if (resource.lastIndexOf('/') < StandardRules.CAACCESS.resource().length()) {
                 return StandardRules.CAACCESS.resource() + caIdToNameMap.get(Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length())));
             } else {
@@ -552,11 +552,11 @@ public class RolesManagedBean extends BaseManagedBean {
         if (resource.startsWith(AccessRulesConstants.USERDATASOURCEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.USERDATASOURCEPREFIX.length()) {
                 return AccessRulesConstants.USERDATASOURCEPREFIX
-                        + ejb.getUserDataSourceSession().getUserDataSourceName(getAdmin(),
+                        + ejbLocalHelper.getUserDataSourceSession().getUserDataSourceName(getAdmin(),
                                 Integer.parseInt(resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length())));
             } else {
                 return AccessRulesConstants.USERDATASOURCEPREFIX
-                        + ejb.getUserDataSourceSession().getUserDataSourceName(getAdmin(),
+                        + ejbLocalHelper.getUserDataSourceSession().getUserDataSourceName(getAdmin(),
                                 Integer.parseInt(resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length(), resource.lastIndexOf('/'))))
                         + resource.substring(resource.lastIndexOf('/'));
             }

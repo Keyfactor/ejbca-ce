@@ -13,6 +13,7 @@
  
 package org.ejbca.ui.cli.admins;
 
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -49,7 +50,7 @@ public class AdminsAddRoleCommand extends BaseAdminsCommand {
                 return;
             }
             String roleName = args[1];
-            ejb.getRoleManagementSession().create(getAdmin(cliUserName, cliPassword), roleName);
+            ejb.getRemoteSession(RoleManagementSessionRemote.class).create(getAdmin(cliUserName, cliPassword), roleName);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
         }

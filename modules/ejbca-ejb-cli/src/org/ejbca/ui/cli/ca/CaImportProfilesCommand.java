@@ -24,11 +24,16 @@ import java.util.List;
 
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -62,7 +67,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
             String inpath = args[1];
             Integer caid = null;
             if (args.length > 2) {
-            	CAInfo ca = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), args[2]);
+            	CAInfo ca = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), args[2]);
             	if (ca != null) {
             		caid = ca.getCAId();
             	} else {
@@ -114,19 +119,19 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                 // can insert a mapping in certificateProfileIdMapping when we have created a new id
                                 int oldprofileid = -1; 
                                 if (entityprofile) {
-                                    if (ejb.getEndEntityProfileSession().getEndEntityProfileId(profilename) != SecConst.PROFILE_NO_PROFILE) {
+                                    if (ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(profilename) != SecConst.PROFILE_NO_PROFILE) {
                                     	getLogger().error("Entity profile '"+profilename+"' already exist in database.");
                                         error = true;
-                                    } else if (ejb.getEndEntityProfileSession().getEndEntityProfile(profileid) != null) {
-                                        int newprofileid = ejb.getEndEntityProfileSession().findFreeEndEntityProfileId();
+                                    } else if (ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(profileid) != null) {
+                                        int newprofileid = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).findFreeEndEntityProfileId();
                                         getLogger().warn("Entity profileid '"+profileid+"' already exist in database. Using " + newprofileid + " instead.");
                                         profileid = newprofileid;
                                     }
                                 } else {
-                                    if (ejb.getCertificateProfileSession().getCertificateProfileId(profilename) != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
+                                    if (ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(profilename) != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
                                     	getLogger().error("Error: Certificate profile '"+profilename+"' already exist in database.");
                                         error = true;
-                                    } else if (ejb.getCertificateProfileSession().getCertificateProfile(profileid) != null) {
+                                    } else if (ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfile(profileid) != null) {
                                     	getLogger().warn("Certificate profile id '"+profileid+"' already exist in database. Adding with a new profile id instead.");
                                     	oldprofileid = profileid;
                                     	profileid = -1; // means we should create a new id when adding the cert profile
@@ -157,7 +162,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         			defaultCertProfile = ""+replacementCertProfileId;
                                         		}
                                         	} else {
-                                        		if (ejb.getCertificateProfileSession().getCertificateProfile(currentCertProfileId) != null ||
+                                        		if (ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfile(currentCertProfileId) != null ||
                                         		    CertificateProfileConstants.isFixedCertificateProfile(currentCertProfileId)) {
                                             		availableCertProfiles += (availableCertProfiles.equals("") ? "" : ";" ) + currentCertProfile;
                                        			} else {
@@ -186,7 +191,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         for ( String currentCA : cas ) {
                                         	Integer currentCAInt = Integer.parseInt(currentCA);
                                         	// The constant ALLCAS will not be searched for among available CAs
-                                        	if ( (currentCAInt.intValue() != SecConst.ALLCAS) && (ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), currentCAInt) == null) ) {
+                                        	if ( (currentCAInt.intValue() != SecConst.ALLCAS) && (EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), currentCAInt) == null) ) {
                                         		getLogger().warn("CA with id " + currentCA + " was not found and will not be used in end entity profile '" + profilename + "'.");
                                                 if (defaultCA.equals(currentCA)) {
                                                 	defaultCA = "";
@@ -212,7 +217,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         eprofile.setValue(EndEntityProfile.AVAILCAS, 0, availableCAs);
                                         eprofile.setValue(EndEntityProfile.DEFAULTCA, 0, defaultCA);
                                         try{                                        
-                                            ejb.getEndEntityProfileSession().addEndEntityProfile(getAdmin(cliUserName, cliPassword),profileid,profilename,eprofile);
+                                            ejb.getRemoteSession(EndEntityProfileSessionRemote.class).addEndEntityProfile(getAdmin(cliUserName, cliPassword),profileid,profilename,eprofile);
                                             getLogger().info("Added entity profile '"+profilename+"' to database.");
                                         }catch(EndEntityProfileExistsException eepee){  
                                         	getLogger().error("Error adding entity profile '"+profilename+"' to database.");
@@ -228,7 +233,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                             // If the CA is not ANYCA and the CA does not exist, remove it from the profile before import
                                         	if (currentCA != CertificateProfile.ANYCA)  {
                                         	    try {
-                                        	        ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), currentCA);
+                                        	        EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), currentCA);
                                         	    } catch (CADoesntExistsException e) {
                                                     casToRemove.add(currentCA);
                                         	    }
@@ -254,7 +259,7 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         for (Integer publisher : publishers) {
                                         	BasePublisher pub = null;
                                         	try {
-                                        		pub = ejb.getPublisherSession().getPublisher(publisher);
+                                        		pub = ejb.getRemoteSession(PublisherSessionRemote.class).getPublisher(publisher);
                                         	} catch (Exception e) {
                                         		getLogger().warn("Warning: There was an error loading publisher with id " + publisher + ". Use debug logging to see stack trace: "+e.getMessage());
                                         		getLogger().debug("Full stack trace: ", e);
@@ -272,14 +277,14 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         try{
                                         	if (profileid == -1) {
                                         		// id already existed, we need to create a new one
-                                        		profileid = ejb.getCertificateProfileSession().addCertificateProfile(getAdmin(cliUserName, cliPassword),profilename,cprofile);
+                                        		profileid = ejb.getRemoteSession(CertificateProfileSessionRemote.class).addCertificateProfile(getAdmin(cliUserName, cliPassword),profilename,cprofile);
                                         		// make a mapping from the old id (that was already in use) to the new one so we can change end entity profiles
                                                 certificateProfileIdMapping.put(oldprofileid, profileid);
                                         	} else {
-                                        		ejb.getCertificateProfileSession().addCertificateProfile(getAdmin(cliUserName, cliPassword),profileid,profilename,cprofile);
+                                        		ejb.getRemoteSession(CertificateProfileSessionRemote.class).addCertificateProfile(getAdmin(cliUserName, cliPassword),profileid,profilename,cprofile);
                                         	}
                                         	// Make a mapping from the new to the new id, so we have a mapping if the profile id did not change at all
-                                            certificateProfileIdMapping.put(profileid, ejb.getCertificateProfileSession().getCertificateProfileId(profilename));
+                                            certificateProfileIdMapping.put(profileid, ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(profilename));
                                             getLogger().info("Added certificate profile '"+profilename+"', '"+profileid+"' to database.");
                                         }catch(CertificateProfileExistsException cpee){
                                         	getLogger().error("Error adding certificate profile '"+profilename+"', '"+profileid+"' to database.");

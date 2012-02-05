@@ -36,8 +36,8 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -57,7 +57,7 @@ public class CertReqHistorySessionTest {
     private static String username = "";
     private static KeyPair keyPair;
 
-    private CertReqHistorySessionRemote certReqHistorySession = InterfaceCache.getCertReqHistorySession();
+    private CertReqHistorySessionRemote certReqHistorySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistorySessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {

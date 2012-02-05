@@ -27,6 +27,8 @@ import javax.faces.model.SelectItem;
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.services.ServiceConfiguration;
 import org.ejbca.core.model.services.workers.CRLUpdateWorker;
@@ -274,12 +276,12 @@ public class EditServiceManagedBean extends BaseManagedBean {
 	 */
 	private List<SelectItem> getAvailableCAs(boolean includeAllCAs) {
 		List<SelectItem> availableCANames = new ArrayList<SelectItem>();
-		Collection<Integer> cAIds = ejb.getCaSession().getAvailableCAs(getAdmin());
+		Collection<Integer> cAIds = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin());
 		Iterator<Integer> iter = cAIds.iterator();
 		while(iter.hasNext()){
 			int next = iter.next().intValue();
 			try {
-				availableCANames.add(new SelectItem(Integer.valueOf(next).toString(), ejb.getCaSession().getCAInfo(getAdmin(), next).getName()));
+				availableCANames.add(new SelectItem(Integer.valueOf(next).toString(), EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(), next).getName()));
 			} catch (CADoesntExistsException e) {
 				log.debug("CA does not exist: "+next);
 			} catch (AuthorizationDeniedException e) {

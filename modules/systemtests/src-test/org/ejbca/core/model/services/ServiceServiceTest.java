@@ -32,17 +32,19 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSession;
+import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -72,8 +74,8 @@ public class ServiceServiceTest extends CaTestCase {
     private static Collection<String> services = Arrays.asList(TEST01_SERVICE, TEST02_SERVICE, TEST03_SERVICE);
     private static Collection<String> cas = Arrays.asList(TESTCA1, TESTCA2, TESTCA3);
 
-    private UserAdminSession userAdminSession = InterfaceCache.getUserAdminSession();
-    private ServiceSession serviceSession = InterfaceCache.getServiceSession();
+    private UserAdminSession userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private ServiceSession serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
     
     @BeforeClass
@@ -185,8 +187,8 @@ public class ServiceServiceTest extends CaTestCase {
      */
     @AfterClass
     public static void afterClass() throws Exception {       
-        ServiceSession serviceSession = InterfaceCache.getServiceSession();
-        UserAdminSession userAdminSession = InterfaceCache.getUserAdminSession();
+        ServiceSession serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
+        UserAdminSession userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
         for (String username : usernames) {
             if(userAdminSession.existsUser(username)) {
                 userAdminSession.deleteUser(admin, username);            

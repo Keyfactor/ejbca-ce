@@ -17,6 +17,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
+import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.cli.BaseCommand;
 
@@ -33,12 +37,12 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileName(Integer.parseInt(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX
+                        + ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(Integer.parseInt(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX
                                 .length())));
             } else {
                 String tmpString = resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileName(Integer.parseInt(tmpString.substring(0, tmpString.indexOf('/'))))
+                        + ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(Integer.parseInt(tmpString.substring(0, tmpString.indexOf('/'))))
                         + tmpString.substring(tmpString.indexOf('/'));
             }
         }
@@ -46,11 +50,11 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(StandardRules.CAACCESS.resource())) {
             if (resource.lastIndexOf('/') < StandardRules.CAACCESS.resource().length()) {
                 final int caid = Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length()));
-                final String caname = ejb.getCaSession().getCAInfo(authenticationToken, caid).getName();
+                final String caname = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, caid).getName();
                 return StandardRules.CAACCESS.resource() + caname;
             } else {
                 final int caid = Integer.valueOf(resource.substring(StandardRules.CAACCESS.resource().length(), resource.lastIndexOf('/')));
-                final String caname = ejb.getCaSession().getCAInfo(authenticationToken, caid).getName();
+                final String caname = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, caid).getName();
                 return StandardRules.CAACCESS.resource()
                         + caname
                         + resource.substring(resource.lastIndexOf('/'));
@@ -61,11 +65,11 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(AccessRulesConstants.USERDATASOURCEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.USERDATASOURCEPREFIX.length()) {
                 return AccessRulesConstants.USERDATASOURCEPREFIX
-                        + ejb.getUserDataSourceSession().getUserDataSourceName(authenticationToken,
+                        + ejb.getRemoteSession(UserDataSourceSessionRemote.class).getUserDataSourceName(authenticationToken,
                                 Integer.parseInt(resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length())));
             } else {
                 return AccessRulesConstants.USERDATASOURCEPREFIX
-                        + ejb.getUserDataSourceSession().getUserDataSourceName(authenticationToken,
+                        + ejb.getRemoteSession(UserDataSourceSessionRemote.class).getUserDataSourceName(authenticationToken,
                                 Integer.parseInt(resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length(), resource.lastIndexOf('/'))))
                         + resource.substring(resource.lastIndexOf('/'));
             }
@@ -79,11 +83,11 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileId(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()));
+                        + ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()));
             } else {
                 String tmpString = resource.substring(AccessRulesConstants.ENDENTITYPROFILEPREFIX.length());
                 return AccessRulesConstants.ENDENTITYPROFILEPREFIX
-                        + ejb.getEndEntityProfileSession().getEndEntityProfileId(tmpString.substring(0, tmpString.indexOf('/')))
+                        + ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(tmpString.substring(0, tmpString.indexOf('/')))
                         + tmpString.substring(tmpString.indexOf('/'));
             }
         }
@@ -91,10 +95,10 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(StandardRules.CAACCESS.resource())) {
             if (resource.lastIndexOf('/') < StandardRules.CAACCESS.resource().length()) {
                 return StandardRules.CAACCESS.resource()
-                        + ejb.getCaSession().getCAInfo(authenticationToken, resource.substring(StandardRules.CAACCESS.resource().length())).getCAId();
+                        + EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, resource.substring(StandardRules.CAACCESS.resource().length())).getCAId();
             } else {
                 return StandardRules.CAACCESS.resource()
-                        + ejb.getCaSession().getCAInfo(authenticationToken, resource.substring(StandardRules.CAACCESS.resource().length(), resource.lastIndexOf('/'))).getCAId()
+                        + EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, resource.substring(StandardRules.CAACCESS.resource().length(), resource.lastIndexOf('/'))).getCAId()
                         + resource.substring(resource.lastIndexOf('/'));
             }
         }
@@ -103,10 +107,10 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         if (resource.startsWith(AccessRulesConstants.USERDATASOURCEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.USERDATASOURCEPREFIX.length()) {
                 return AccessRulesConstants.USERDATASOURCEPREFIX
-                        + ejb.getUserDataSourceSession().getUserDataSourceId(authenticationToken, resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length()));
+                        + ejb.getRemoteSession(UserDataSourceSessionRemote.class).getUserDataSourceId(authenticationToken, resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length()));
             } else {
                 return AccessRulesConstants.USERDATASOURCEPREFIX
-                        + ejb.getUserDataSourceSession().getUserDataSourceId(authenticationToken,
+                        + ejb.getRemoteSession(UserDataSourceSessionRemote.class).getUserDataSourceId(authenticationToken,
                                 resource.substring(AccessRulesConstants.USERDATASOURCEPREFIX.length(), resource.lastIndexOf('/')))
                         + resource.substring(resource.lastIndexOf('/'));
             }

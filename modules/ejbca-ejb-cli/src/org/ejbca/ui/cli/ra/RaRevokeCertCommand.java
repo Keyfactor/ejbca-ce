@@ -16,7 +16,9 @@ package org.ejbca.ui.cli.ra;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.util.CertTools;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -61,7 +63,7 @@ public class RaRevokeCertCommand extends BaseRaAdminCommand {
             if ((reason == 7) || (reason < 0) || (reason > 10)) {
             	getLogger().error("Reason must be an integer between 0 and 10 except 7.");
             } else {
-                Certificate cert = ejb.getCertStoreSession().findCertificateByIssuerAndSerno(issuerDN, serno);
+                Certificate cert = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findCertificateByIssuerAndSerno(issuerDN, serno);
                 if (cert != null) {
                     getLogger().info("Found certificate:");
                     getLogger().info("Subject DN=" + CertTools.getSubjectDN(cert));
@@ -69,7 +71,7 @@ public class RaRevokeCertCommand extends BaseRaAdminCommand {
         			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
         			// that was permanently revoked
         			try {
-            			ejb.getUserAdminSession().revokeCert(getAdmin(cliUserName, cliPassword), serno, issuerDN, reason);
+            			ejb.getRemoteSession(UserAdminSessionRemote.class).revokeCert(getAdmin(cliUserName, cliPassword), serno, issuerDN, reason);
                         getLogger().info( (reason == 8 ? "Unrevoked":"Revoked") + " certificate with issuerDN '"+issuerDN+"' and serialNumber "+certserno+". Revocation reason="+reason);        				
                     } catch (AlreadyRevokedException e) {
                     	if (reason == 8) {

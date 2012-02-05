@@ -57,6 +57,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -88,7 +89,6 @@ import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -106,14 +106,14 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
     private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
-    private final ApprovalExecutionSessionRemote approvalExecutionSession = InterfaceCache.getApprovalExecutionSession();
-    private final ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
-    private final CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
-    private final CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private final CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private final ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
+    private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
+    private final CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private final EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private final HardTokenSessionRemote hardTokenSessionRemote = InterfaceCache.getHardTokenSession();
-    private final GlobalConfigurationSessionRemote raAdminSession = InterfaceCache.getGlobalConfigurationSession();
+    private final HardTokenSessionRemote hardTokenSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class);
+    private final GlobalConfigurationSessionRemote raAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     
     private final SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);

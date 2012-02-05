@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -73,7 +74,7 @@ public class CaListExpiredCommand extends BaseCaAdminCommand {
     private Collection<Certificate> getExpiredCerts(Date findDate) {
         try {
         	getLogger().debug("Looking for cert with expireDate=" + findDate);
-            Collection<Certificate> certs = ejb.getCertStoreSession().findCertificatesByExpireTimeWithLimit(findDate);
+            Collection<Certificate> certs = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findCertificatesByExpireTimeWithLimit(findDate);
             getLogger().debug("Found " + certs.size() + " certs.");
             return certs;
         } catch (Exception e) {

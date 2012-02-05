@@ -50,6 +50,7 @@ import org.cesecore.jndi.JndiHelper;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.CaTestCase;
+
 import com.gargoylesoftware.htmlunit.WebClient;
 import com.gargoylesoftware.htmlunit.WebConnection;
 import com.gargoylesoftware.htmlunit.WebRequestSettings;

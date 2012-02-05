@@ -26,10 +26,10 @@ import org.cesecore.audit.log.SecurityEventsLoggerSessionRemote;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -74,7 +74,7 @@ public class LoggingStressTest {
     	private long startTime = 0;
     	private int threadId = 0;
     	
-    	private SecurityEventsLoggerSessionRemote securityEventsLoggerSession = InterfaceCache.getSecurityEventsLoggerSession();
+    	private SecurityEventsLoggerSessionRemote securityEventsLoggerSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SecurityEventsLoggerSessionRemote.class);
 
     	LogTester(int threadId, long runTime) {
     		this.threadId = threadId;

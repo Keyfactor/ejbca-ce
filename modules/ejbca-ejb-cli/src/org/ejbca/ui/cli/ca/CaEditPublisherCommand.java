@@ -17,6 +17,7 @@ import java.lang.reflect.Method;
 
 import org.apache.commons.lang.StringUtils;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.model.ca.publisher.BasePublisher;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -51,7 +52,7 @@ public class CaEditPublisherCommand extends BaseCaAdminCommand {
             CryptoProviderTools.installBCProvider();
             final String name = args[1];
             final String fieldEdit = args[2];
-            final BasePublisher pub = ejb.getPublisherSession().getPublisher(name);
+            final BasePublisher pub = ejb.getRemoteSession(PublisherSessionRemote.class).getPublisher(name);
             if (pub == null) {
                 getLogger().info("Publisher '"+name+"' does not exist.");
             } else {                
@@ -86,10 +87,10 @@ public class CaEditPublisherCommand extends BaseCaAdminCommand {
                 getLogger().info("Invoking method '"+setmethodName+"' vith parameter value '"+fieldValue+"'.");
                 method.invoke(pub, fieldValue);
                 getLogger().info("Storing modified publisher '"+name+"'...");
-                ejb.getPublisherSession().changePublisher(getAdmin(cliUserName, cliPassword), name, pub);
+                ejb.getRemoteSession(PublisherSessionRemote.class).changePublisher(getAdmin(cliUserName, cliPassword), name, pub);
                 // Verify our new value
                 getLogger().info("Reading modified value for verification...");
-                final BasePublisher modpub = ejb.getPublisherSession().getPublisher(name);
+                final BasePublisher modpub = ejb.getRemoteSession(PublisherSessionRemote.class).getPublisher(name);
                 Object modo = modMethod.invoke(modpub);
                 getLogger().info(getMethodName+" returned new value '"+modo+"'.");
                 if (!modo.equals(fieldValue)) {

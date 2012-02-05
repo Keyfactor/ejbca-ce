@@ -53,8 +53,8 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -117,8 +117,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
     private static Certificate cacert1 = null;
     private static Certificate cacert2 = null;
     
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {

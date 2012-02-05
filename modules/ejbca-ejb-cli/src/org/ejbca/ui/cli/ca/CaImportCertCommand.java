@@ -20,12 +20,19 @@ import java.util.Date;
 import java.util.Iterator;
 
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -86,7 +93,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			
 			Certificate certificate = loadcert(certfile);
 			String fingerprint = CertTools.getFingerprintAsString(certificate);
-			if (ejb.getCertStoreSession().findCertificateByFingerprint(fingerprint) != null) {
+			if (ejb.getRemoteSession(CertificateStoreSessionRemote.class).findCertificateByFingerprint(fingerprint) != null) {
 				throw new Exception("Certificate number '" + CertTools.getSerialNumberAsString(certificate) + "' is already present.");
 			}
 			// Certificate has expired, but we are obviously keeping it for archival purposes
@@ -95,7 +102,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			}
 			
 			// Check if username already exists.
-			EndEntityInformation userdata = ejb.getEndEntityAccessSession().findUser(getAdmin(cliUserName, cliPassword), username);
+			EndEntityInformation userdata = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
 			if (userdata != null) {
 				if (userdata.getStatus() != UserDataConstants.STATUS_REVOKED) {
 					throw new Exception("User " + username +
@@ -112,7 +119,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			int endentityprofileid = SecConst.EMPTY_ENDENTITYPROFILE;
 			if (eeprofile != null) {
 				getLogger().debug("Searching for End Entity Profile " + eeprofile);
-				endentityprofileid = ejb.getEndEntityProfileSession().getEndEntityProfileId(eeprofile);
+				endentityprofileid = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(eeprofile);
 				if (endentityprofileid == 0) {
 					getLogger().error("End Entity Profile " + eeprofile + " does not exist.");
 					throw new Exception("End Entity Profile '" + eeprofile + "' does not exist.");
@@ -122,7 +129,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			int certificateprofileid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
 			if (certificateprofile != null) {
 				getLogger().debug("Searching for Certificate Profile " + certificateprofile);
-				certificateprofileid = ejb.getCertificateProfileSession().getCertificateProfileId(certificateprofile);
+				certificateprofileid = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(certificateprofile);
 				if (certificateprofileid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
 					getLogger().error("Certificate Profile " + certificateprofile + " does not exist.");
 					throw new Exception("Certificate Profile '" + certificateprofile + "' does not exist.");
@@ -137,9 +144,9 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			getLogger().info("Email: " + email);
 			getLogger().info("DN: " + CertTools.getSubjectDN(certificate));
 			getLogger().info("CA Name: " + caname);
-			getLogger().info("Certificate Profile: " + ejb.getCertificateProfileSession().getCertificateProfileName(certificateprofileid));
+			getLogger().info("Certificate Profile: " + ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(certificateprofileid));
 			getLogger().info("End Entity Profile: " +
-			        ejb.getEndEntityProfileSession().getEndEntityProfileName(endentityprofileid));
+			        ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(endentityprofileid));
 			
 			String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
 			if (subjectAltName != null) {
@@ -149,7 +156,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			
 			getLogger().debug("Loading/updating user " + username);
 			if (userdata == null) {
-				ejb.getUserAdminSession().addUser(getAdmin(cliUserName, cliPassword),
+				ejb.getRemoteSession(UserAdminSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword),
 						username, password,
 						CertTools.getSubjectDN(certificate),
 						subjectAltName, email,
@@ -161,15 +168,15 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 						SecConst.NO_HARDTOKENISSUER,
 						cainfo.getCAId());
 				if (status == CertificateConstants.CERT_ACTIVE) {
-					ejb.getUserAdminSession().setUserStatus(getAdmin(cliUserName, cliPassword), username, UserDataConstants.STATUS_GENERATED);
+					ejb.getRemoteSession(UserAdminSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), username, UserDataConstants.STATUS_GENERATED);
 				}
 				else {
-					ejb.getUserAdminSession().setUserStatus(getAdmin(cliUserName, cliPassword), username, UserDataConstants.STATUS_REVOKED);
+					ejb.getRemoteSession(UserAdminSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), username, UserDataConstants.STATUS_REVOKED);
 				}
 				getLogger().info("User '" + username + "' has been added.");
 			}
 			else {
-				ejb.getUserAdminSession().changeUser(getAdmin(cliUserName, cliPassword),
+				ejb.getRemoteSession(UserAdminSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword),
 						username, password,
 						CertTools.getSubjectDN(certificate),
 						subjectAltName, email,
@@ -186,7 +193,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				getLogger().info("User '" + username + "' has been updated.");
 			}
 			
-			ejb.getCertStoreSession().storeCertificate(getAdmin(cliUserName, cliPassword),
+			ejb.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAdmin(cliUserName, cliPassword),
 					certificate, username,
 					fingerprint,
 					status, type, certificateprofileid, null, new Date().getTime());
@@ -208,11 +215,11 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		String existingCas = "";
 		Collection<Integer> cas = null;
 		try {
-			cas = ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword));
+			cas = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin(cliUserName, cliPassword));
 			Iterator<Integer> iter = cas.iterator();
 			while (iter.hasNext()) {
 				int caid = ((Integer)iter.next()).intValue();
-				CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caid);
+				CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caid);
 				existingCas += (existingCas.length()==0?"":", ") + "\"" + info.getName() + "\"";
 			}
 		} catch (Exception e) {
@@ -223,11 +230,11 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		getLogger().info(" Certificate: must be PEM encoded");
 		String endEntityProfiles = "";
 		try {
-			Collection<Integer> eps = ejb.getEndEntityProfileSession().getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword));
+			Collection<Integer> eps = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getAuthorizedEndEntityProfileIds(getAdmin(cliUserName, cliPassword));
 			Iterator<Integer> iter = eps.iterator();
 			while (iter.hasNext()) {
 				int epid = ((Integer)iter.next()).intValue();
-				endEntityProfiles += (endEntityProfiles.length()==0?"":", ") + "\"" + ejb.getEndEntityProfileSession().getEndEntityProfileName(epid) + "\"";
+				endEntityProfiles += (endEntityProfiles.length()==0?"":", ") + "\"" + ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileName(epid) + "\"";
 			}
 		}
 		catch (Exception e) {
@@ -236,7 +243,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 		getLogger().info(" End entity profiles: " + endEntityProfiles);
 		String certificateProfiles = "";
 		try {
-			Collection<Integer> cps = ejb.getCertificateProfileSession().getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, cas);
+			Collection<Integer> cps = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getAuthorizedCertificateProfileIds(CertificateConstants.CERTTYPE_ENDENTITY, cas);
 			boolean first = true;
 			Iterator<Integer> iter = cps.iterator();
 			while (iter.hasNext()) {
@@ -246,7 +253,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				} else {
 					certificateProfiles += ", ";
 				}
-				certificateProfiles += (certificateProfiles.length()==0?"":", ") + "\"" + ejb.getCertificateProfileSession().getCertificateProfileName(cpid) + "\"";
+				certificateProfiles += (certificateProfiles.length()==0?"":", ") + "\"" + ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileName(cpid) + "\"";
 			}
 		} catch (Exception e) {
 			certificateProfiles += "<unable to fetch available certificate profile>";

@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -47,7 +48,7 @@ public class AdminsListRolesCommand extends BaseAdminsCommand {
         }
         
         try {
-            Collection<RoleData> roles = ejb.getRoleManagementSession().getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));            
+            Collection<RoleData> roles = ejb.getRemoteSession(RoleManagementSessionRemote.class).getAllRolesAuthorizedToEdit(getAdmin(cliUserName, cliPassword));            
             Collections.sort((List<RoleData>) roles);
             for (RoleData role : roles) {                
                 int numberOfAdmins = role.getAccessUsers().size();

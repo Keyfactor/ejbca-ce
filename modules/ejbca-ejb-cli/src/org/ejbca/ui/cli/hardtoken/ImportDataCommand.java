@@ -18,6 +18,9 @@ import java.util.List;
 import java.util.Properties;
 
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.ui.cli.BaseCommand;
@@ -74,7 +77,7 @@ public class ImportDataCommand extends BaseCommand {
         	String significantIssuerDN = props.getProperty("significantissuerdn");
         	int cAId = significantIssuerDN.hashCode();
         	try {
-        	    ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), cAId);
+        	    EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), cAId);
         	}catch (CADoesntExistsException e) {
         		throw new IllegalAdminCommandException("Error, the property significantissuerdn '" + significantIssuerDN +  "' does not exist as CA in the system.");
         	}
@@ -88,12 +91,12 @@ public class ImportDataCommand extends BaseCommand {
         	try{
         	  while((htd = importer.readHardTokenData()) != null){
         		  try{
-        	         ejb.getHardTokenSession().addHardToken(getAdmin(cliUserName, cliPassword), htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null, htd.getCopyOf());
+        	         ejb.getRemoteSession(HardTokenSessionRemote.class).addHardToken(getAdmin(cliUserName, cliPassword), htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null, htd.getCopyOf());
         	         getLogger().info("Token with SN " + htd.getTokenSN() + " were added to the database.");
         		  }catch(HardTokenExistsException e){
         			  if(force){
-        				  ejb.getHardTokenSession().removeHardToken(getAdmin(cliUserName, cliPassword), htd.getTokenSN());
-        				  ejb.getHardTokenSession().addHardToken(getAdmin(cliUserName, cliPassword), htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null, htd.getCopyOf());
+        			      ejb.getRemoteSession(HardTokenSessionRemote.class).removeHardToken(getAdmin(cliUserName, cliPassword), htd.getTokenSN());
+        			      ejb.getRemoteSession(HardTokenSessionRemote.class).addHardToken(getAdmin(cliUserName, cliPassword), htd.getTokenSN(), htd.getUsername(), significantIssuerDN, htd.getTokenType(), htd.getHardToken(), null, htd.getCopyOf());
         				  getLogger().info("Token with SN " + htd.getTokenSN() + " already existed in the database but was OVERWRITTEN.");        				  
         			  }else{
         				  getLogger().error("Token with SN " + htd.getTokenSN() + " already exists in the database and is NOT imported.");

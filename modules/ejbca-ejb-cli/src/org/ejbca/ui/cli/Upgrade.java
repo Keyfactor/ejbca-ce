@@ -13,6 +13,8 @@
 
 package org.ejbca.ui.cli;
 
+import org.ejbca.core.ejb.upgrade.UpgradeSessionRemote;
+
 
 
 /**
@@ -51,7 +53,7 @@ public class Upgrade extends BaseCommand {
         }*/
         // Upgrade the database
 
-        final boolean ret = ejb.getUpgradeSession().upgrade(database, upgradeFromVersion, isPost);
+        final boolean ret = ejb.getRemoteSession(UpgradeSessionRemote.class).upgrade(database, upgradeFromVersion, isPost);
         if (ret) {
             getLogger().info("Upgrade completed.");
         } else {

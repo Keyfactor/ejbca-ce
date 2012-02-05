@@ -103,6 +103,7 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
@@ -160,7 +161,6 @@ import org.ejbca.cvc.CertificateGenerator;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
-import org.ejbca.util.InterfaceCache;
 
 import com.novosec.pkix.asn1.crmf.CertReqMessages;
 import com.novosec.pkix.asn1.crmf.CertReqMsg;
@@ -225,19 +225,19 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     private static final String WSTESTPROFILE = "WSTESTPROFILE";
 
-	private final AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
-    private final CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private final CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+	private final AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
+    private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private final CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final ConfigurationSessionRemote configurationSessionRemote = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
-    protected final CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
-    protected final EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
-    private final GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
+    protected final CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    protected final EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
+    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     private final PublisherProxySessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
-    private final PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
-    private final RoleAccessSessionRemote roleAccessSession = InterfaceCache.getRoleAccessSession();
-    private final RoleManagementSessionRemote roleManagementSession = InterfaceCache.getRoleManagementSession();
-    protected final UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private final PublisherQueueSessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueSessionRemote.class);
+    private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+    private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    protected final UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
     
     public CommonEjbcaWS() {

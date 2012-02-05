@@ -30,10 +30,12 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
@@ -53,8 +55,8 @@ public class CertificateFinderBean {
 
 	private EjbLocalHelper ejb = new EjbLocalHelper();
 	private SignSession mSignSession = ejb.getSignSession();
-	private CaSession mCaSession = ejb.getCaSession();
-	private CaSession caSession = ejb.getCaSession();
+	private CaSession mCaSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+	private CaSession caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 	private CertificateStoreSession mStoreSession = ejb.getCertificateStoreSession();
 
 	private boolean mInitialized = false;

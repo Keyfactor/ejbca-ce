@@ -48,7 +48,7 @@ public class ApplyBean implements java.io.Serializable {
 	 */
 	private static final Logger log = Logger.getLogger(ApplyBean.class);
 	
-	private EjbLocalHelper ejb;
+	private EjbLocalHelper ejbLocalHelper;
 	
 	/**
      * Creates a new instance of CaInterfaceBean
@@ -61,7 +61,7 @@ public class ApplyBean implements java.io.Serializable {
         throws Exception {
         if (!initialized) {
         	administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Public Web: "+request.getRemoteAddr()));
-        	ejb = new EjbLocalHelper();
+        	ejbLocalHelper = new EjbLocalHelper();
             initialized = true;
         }
     }
@@ -80,7 +80,7 @@ public class ApplyBean implements java.io.Serializable {
         int returnval = 0;
 
 		if(!username.equals(this.username) || this.useradmindata == null){        
-			this.useradmindata = ejb.getEndEntityAccessSession().findUser(administrator, username);
+			this.useradmindata = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, username);
 		}
 		
         if (useradmindata != null) {
@@ -107,7 +107,7 @@ public class ApplyBean implements java.io.Serializable {
 		int returnval = 0;		
 
 		if(!username.equals(this.username) || this.useradmindata == null){        
-			this.useradmindata = ejb.getEndEntityAccessSession().findUser(administrator, username);
+			this.useradmindata = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, username);
 		}
 		
 		if (useradmindata != null) {
@@ -133,14 +133,14 @@ public class ApplyBean implements java.io.Serializable {
         int[] returnval = null;        
 
         if(!username.equals(this.username) || this.useradmindata == null){        
-        	this.useradmindata = ejb.getEndEntityAccessSession().findUser(administrator, username);
+        	this.useradmindata = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, username);
         }  
 
         if (useradmindata != null) {
             int certprofile = useradmindata.getCertificateProfileId();
 
             if (certprofile != CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
-                CertificateProfile p = ejb.getCertificateProfileSession().getCertificateProfile(certprofile);
+                CertificateProfile p = ejbLocalHelper.getCertificateProfileSession().getCertificateProfile(certprofile);
                 returnval = p.getAvailableBitLengths();
             }
         }
@@ -175,17 +175,17 @@ public class ApplyBean implements java.io.Serializable {
         String[] returnval = null;        
 
         if(!username.equals(this.username) || this.useradmindata == null){        
-        	this.useradmindata = ejb.getEndEntityAccessSession().findUser(administrator, username);
+        	this.useradmindata = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, username);
         }  
 
         if (useradmindata != null) {
-            EndEntityProfile eprof = ejb.getEndEntityProfileSession().getEndEntityProfile(useradmindata.getEndEntityProfileId());
+            EndEntityProfile eprof = ejbLocalHelper.getEndEntityProfileSession().getEndEntityProfile(useradmindata.getEndEntityProfileId());
             Collection<String> c = eprof.getAvailableCertificateProfileIds();
             if (!c.isEmpty()) {
             	ArrayList<String> names = new ArrayList<String>();
                 for (Iterator<String> i = c.iterator(); i.hasNext(); ) {
                 	int id = Integer.valueOf(i.next());
-                    String name = ejb.getCertificateProfileSession().getCertificateProfileName(id);
+                    String name = ejbLocalHelper.getCertificateProfileSession().getCertificateProfileName(id);
                 	names.add(name);
                 }
                 returnval = (String[])names.toArray(new String[0]);            	
@@ -222,11 +222,11 @@ public class ApplyBean implements java.io.Serializable {
         String returnval = null;        
 
         if(!username.equals(this.username) || this.useradmindata == null){        
-        	this.useradmindata = ejb.getEndEntityAccessSession().findUser(administrator, username);
+        	this.useradmindata = ejbLocalHelper.getEndEntityAccessSession().findUser(administrator, username);
         }  
 
         if (useradmindata != null) {
-            returnval = ejb.getCertificateProfileSession().getCertificateProfileName(useradmindata.getCertificateProfileId());
+            returnval = ejbLocalHelper.getCertificateProfileSession().getCertificateProfileName(useradmindata.getCertificateProfileId());
         }
         this.username = username;
 

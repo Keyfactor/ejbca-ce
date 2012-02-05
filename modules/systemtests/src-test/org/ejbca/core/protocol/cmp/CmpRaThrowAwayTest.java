@@ -31,6 +31,8 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.jndi.JndiHelper;
@@ -38,9 +40,12 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertReqHistorySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.util.InterfaceCache;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -77,7 +82,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         super.setUp();
         LOG.trace(">test000Setup");
        
-        caCertificate = (X509Certificate) InterfaceCache.getCaSession().getCAInfo(ADMIN, getTestCAId(TESTCA_NAME)).getCertificateChain().iterator()
+        caCertificate = (X509Certificate) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, getTestCAId(TESTCA_NAME)).getCertificateChain().iterator()
                 .next();
         assertCAConfig(true, true, true);
         // Configure CMP for this test. RA mode with individual shared PBE secrets for each CA.
@@ -149,10 +154,10 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(bao.toByteArray(), 200);
         checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, PBE_SECRET);
         X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
-        assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, InterfaceCache.getCertReqHistorySession()
+        assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistorySessionRemote.class)
                 .retrieveCertReqHistory(ADMIN, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null);
-        assertEquals("User data was or wasn't stored: ", useUserStorage, InterfaceCache.getUserAdminSession().existsUser(username));
-        assertEquals("Certificate data was or wasn't stored: ", useCertificateStorage, InterfaceCache.getCertificateStoreSession()
+        assertEquals("User data was or wasn't stored: ", useUserStorage, EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class).existsUser(username));
+        assertEquals("Certificate data was or wasn't stored: ", useCertificateStorage, EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
                 .findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) != null);
 
         // Send a confirm message to the CA
@@ -178,15 +183,15 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
             resp = sendCmpHttp(bao.toByteArray(), 200);
             checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, PBE_SECRET);
             checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
-            int reason = InterfaceCache.getCertificateStoreSession().getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
+            int reason = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
             assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
         }
         // Clean up what we can
         if (useUserStorage) {
-            InterfaceCache.getUserAdminSession().deleteUser(ADMIN, username);
+            EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class).deleteUser(ADMIN, username);
         }
         if (useCertReqHistory) {
-            InterfaceCache.getCertReqHistorySession().removeCertReqHistoryData(ADMIN, CertTools.getFingerprintAsString(cert));
+            EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistorySessionRemote.class).removeCertReqHistoryData(ADMIN, CertTools.getFingerprintAsString(cert));
         }
         LOG.trace("<testIssueConfirmRevoke");
     }
@@ -195,7 +200,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
      * @throws AuthorizationDeniedException 
      * @throws CADoesntExistsException */
     private void assertCAConfig(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws CADoesntExistsException, AuthorizationDeniedException {
-        CAInfo caInfo = InterfaceCache.getCaSession().getCAInfo(ADMIN, TESTCA_NAME);
+        CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, TESTCA_NAME);
         assertEquals("CA has wrong useCertReqHistory setting: ", useCertReqHistory, caInfo.isUseCertReqHistory());
         assertEquals("CA has wrong useUserStorage setting: ", useUserStorage, caInfo.isUseUserStorage());
         assertEquals("CA has wrong useCertificateStorage setting: ", useCertificateStorage, caInfo.isUseCertificateStorage());
@@ -204,14 +209,14 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
     /** Change CA configuration for what to store and assert that the changes were made. 
      * @throws CADoesntExistsException */
     private void reconfigureCA(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage) throws AuthorizationDeniedException, CADoesntExistsException {
-        CAInfo caInfo = InterfaceCache.getCaSession().getCAInfo(ADMIN, TESTCA_NAME);
+        CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, TESTCA_NAME);
         caInfo.setUseCertReqHistory(useCertReqHistory);
         caInfo.setUseUserStorage(useUserStorage);
         caInfo.setUseCertificateStorage(useCertificateStorage);
         assertEquals("CAInfo did not store useCertReqHistory setting correctly: ", useCertReqHistory, caInfo.isUseCertReqHistory());
         assertEquals("CAInfo did not store useUserStorage setting correctly: ", useUserStorage, caInfo.isUseUserStorage());
         assertEquals("CAInfo did not store useCertificateStorage setting correctly: ", useCertificateStorage, caInfo.isUseCertificateStorage());
-        InterfaceCache.getCAAdminSession().editCA(ADMIN, caInfo);
+        EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).editCA(ADMIN, caInfo);
         assertCAConfig(useCertReqHistory, useUserStorage, useCertificateStorage);
     }
 }

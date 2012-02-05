@@ -14,12 +14,15 @@
 package org.ejbca.ui.cli.admins;
 
 import org.cesecore.authorization.user.AccessMatchType;
-import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
+import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.access.RoleAccessSession;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -55,7 +58,7 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
                 return;
             }
             String roleName = args[1];
-            RoleData role = ejb.getRoleAccessSession().findRole(roleName);
+            RoleData role = ejb.getRemoteSession(RoleAccessSession.class).findRole(roleName);
             if (role == null) {
                 getLogger().error("No such role \"" + roleName + "\".");
                 return;
@@ -63,7 +66,7 @@ public class AdminsListAdminsCommand extends BaseAdminsCommand {
             for (AccessUserAspectData userAspect : role.getAccessUsers().values()) {
                 String caName;
                 try {  
-                    CAInfo info = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), userAspect.getCaId());
+                    CAInfo info = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), userAspect.getCaId());
                     caName = info.getName();
                 } catch(CADoesntExistsException e) {
                     caName = "Unknown CA with id " + userAspect.getCaId();
