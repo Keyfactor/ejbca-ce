@@ -20,54 +20,52 @@ import org.apache.log4j.Logger;
 /**
  * Helper object to convert from JDBC driver specific objects to a unified form. 
  *
- * Based on ValueExtractor.java 207 2011-01-31 13:36:36Z tomas from cesecore
- * 
  * @version $Id$
  */
 public abstract class ValueExtractor {
-	
-	private static final Logger LOG = Logger.getLogger(ValueExtractor.class);
+    
+    private static final Logger LOG = Logger.getLogger(ValueExtractor.class);
 
-	/**
-	 * Return the intValue if the supplied object has a "intValue" method.
-	 * Since different JDBC driver will return different types of objects like
-	 * Integer, BigInteger or BigDecimal (Oracle) this is convenient.
-	 * 
-	 * As a sad little bonus, DB2 native queries returns a pair of {BigInteger, Integer}
-	 * where the first value is row and the second is the value.
-	 * As another sad little bonus, Oracle native queries returns a pair of {BigDecimal, BigDecimal}
-	 * where the first value is the value and the second is the row.
-	 */
-	public static int extractIntValue(Object object) {
-		try {
-		    final Object o = getObject(object, Integer.class);
+    /**
+     * Return the intValue if the supplied object has a "intValue" method.
+     * Since different JDBC driver will return different types of objects like
+     * Integer, BigInteger or BigDecimal (Oracle) this is convenient.
+     * 
+     * As a sad little bonus, DB2 native queries returns a pair of {BigInteger, Integer}
+     * where the first value is row and the second is the value.
+     * As another sad little bonus, Oracle native queries returns a pair of {BigDecimal, BigDecimal}
+     * where the first value is the value and the second is the row.
+     */
+    public static int extractIntValue(Object object) {
+        try {
+            final Object o = getObject(object, Integer.class);
             final Class<?> c = o.getClass();
-			return ((Integer) c.getMethod("intValue").invoke(object)).intValue();
-		} catch (Exception e) {
-	        final Class<?> c = object.getClass();
-			LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
-			throw new RuntimeException(e);
-		}
-	}
+            return ((Integer) c.getMethod("intValue").invoke(o)).intValue();
+        } catch (Exception e) {
+            final Class<?> c = object.getClass();
+            LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
+            throw new RuntimeException(e);
+        }
+    }
 
-	/**
-	 * Return the longValue if the supplied object has a "longValue" method.
-	 * Since different JDBC driver will return different types of objects like
-	 * Long, BigInteger or BigDecimal (Oracle) this is convenient.
-	 */
-	public static long extractLongValue(Object object) {
-		try {
+    /**
+     * Return the longValue if the supplied object has a "longValue" method.
+     * Since different JDBC driver will return different types of objects like
+     * Long, BigInteger or BigDecimal (Oracle) this is convenient.
+     */
+    public static long extractLongValue(Object object) {
+        try {
             final Object o = getObject(object, Long.class);
             final Class<?> c = o.getClass();
-			return ((Long) c.getMethod("longValue").invoke(object)).longValue();
-		} catch (Exception e) {
-	        final Class<?> c = object.getClass();
-			LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
-			throw new RuntimeException(e);
-		}
-	}
-	
-	   /** 
+            return ((Long) c.getMethod("longValue").invoke(o)).longValue();
+        } catch (Exception e) {
+            final Class<?> c = object.getClass();
+            LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
+            throw new RuntimeException(e);
+        }
+    }
+    
+       /** 
      * 
      * @param object to check if it is an array type and in that case extract the BigInteger or BigDecimal object
      * @param clazz only used for logging
