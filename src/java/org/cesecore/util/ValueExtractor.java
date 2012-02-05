@@ -39,11 +39,12 @@ public abstract class ValueExtractor {
 	 * where the first value is the value and the second is the row.
 	 */
 	public static int extractIntValue(Object object) {
-		Class<?> c = object.getClass();
 		try {
-            c = getClass(object, Integer.class);
+		    final Object o = getObject(object, Integer.class);
+            final Class<?> c = o.getClass();
 			return ((Integer) c.getMethod("intValue").invoke(object)).intValue();
 		} catch (Exception e) {
+	        final Class<?> c = object.getClass();
 			LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
 			throw new RuntimeException(e);
 		}
@@ -55,24 +56,26 @@ public abstract class ValueExtractor {
 	 * Long, BigInteger or BigDecimal (Oracle) this is convenient.
 	 */
 	public static long extractLongValue(Object object) {
-        Class<?> c = object.getClass();
 		try {
-		    c = getClass(object, Long.class);
+            final Object o = getObject(object, Long.class);
+            final Class<?> c = o.getClass();
 			return ((Long) c.getMethod("longValue").invoke(object)).longValue();
 		} catch (Exception e) {
+	        final Class<?> c = object.getClass();
 			LOG.error(c.getName() + ", isPrimitive=" + c.isPrimitive(), e);
 			throw new RuntimeException(e);
 		}
 	}
 	
-	/** 
-	 * 
-	 * @param object will be changed if it is an array type object
-	 * @param clazz only used for logging
-	 * @return Class of the object to get value from
-	 */
-	private static Class<?> getClass(Object object, final Class<?> clazz) {
-        Class<?> c = object.getClass();
+	   /** 
+     * 
+     * @param object to check if it is an array type and in that case extract the BigInteger or BigDecimal object
+     * @param clazz only used for logging
+     * @return the object to get value from
+     */
+    private static Object getObject(final Object object, final Class<?> clazz) {
+        Object ret = object;
+        final Class<?> c = object.getClass();
         if (c.isArray()) {
             final Object[] objects = (Object[]) object;
             if (LOG.isTraceEnabled()) {
@@ -81,14 +84,14 @@ public abstract class ValueExtractor {
                 }
             }
             if (objects[0].getClass().equals(BigInteger.class)) {
-                object = objects[objects.length-1];
+                ret = objects[objects.length-1];
             } else if (objects[objects.length-1].getClass().equals(BigDecimal.class)) {
-                object = objects[0];
+                ret = objects[0];
             } else {
-                throw new RuntimeException("Unsupported object type to cenvert to "+clazz.getSimpleName());
+                throw new RuntimeException("Unsupported object type to convert to "+clazz.getSimpleName());
             }
-            c = object.getClass();
         }
-        return c;
-	}
+        return ret;
+    }
+
 }
