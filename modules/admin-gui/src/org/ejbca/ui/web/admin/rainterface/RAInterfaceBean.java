@@ -93,7 +93,7 @@ public class RAInterfaceBean implements Serializable {
     public static final String[] tokentexts = SecConst.TOKENTEXTS;
     public static final int[]    tokenids   = SecConst.TOKENIDS;
     
-    private EjbLocalHelper ejb = new EjbLocalHelper();
+    private EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     
     private EndEntityProfileDataHandler    profiles;
 
@@ -133,21 +133,20 @@ public class RAInterfaceBean implements Serializable {
     			administrator = ejbcawebbean.getAdminObject();
     		} else {
     			administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RAInterface: "+request.getRemoteAddr()));
-    			//administrator = new Admin(Admin.TYPE_PUBLIC_WEB_USER, request.getRemoteAddr());
     		}
     		this.informationmemory = ejbcawebbean.getInformationMemory();
-    		userAdminSession = ejb.getUserAdminSession();
-    		certificatesession = ejb.getCertificateStoreSession();
-    		caSession = ejb.getCaSession();
-    		authorizationsession = ejb.getAccessControlSession();
-    		endEntityProfileSession = ejb.getEndEntityProfileSession();
+    		userAdminSession = ejbLocalHelper.getUserAdminSession();
+    		certificatesession = ejbLocalHelper.getCertificateStoreSession();
+    		caSession = ejbLocalHelper.getCaSession();
+    		authorizationsession = ejbLocalHelper.getAccessControlSession();
+    		endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
     		this.profiles = new EndEntityProfileDataHandler(administrator, endEntityProfileSession, informationmemory);
-    		hardtokensession = ejb.getHardTokenSession();
-    		keyrecoverysession = ejb.getKeyRecoverySession();
-    		userdatasourcesession = ejb.getUserDataSourceSession();
-    		certificateProfileSession = ejb.getCertificateProfileSession();
-    		this.endEntityAccessSession = ejb.getEndEntityAccessSession();
-    		complexAccessControlSession = ejb.getComplexAccessControlSession();
+    		hardtokensession = ejbLocalHelper.getHardTokenSession();
+    		keyrecoverysession = ejbLocalHelper.getKeyRecoverySession();
+    		userdatasourcesession = ejbLocalHelper.getUserDataSourceSession();
+    		certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
+    		this.endEntityAccessSession = ejbLocalHelper.getEndEntityAccessSession();
+    		complexAccessControlSession = ejbLocalHelper.getComplexAccessControlSession();
 
     		initialized =true;
     	} else {

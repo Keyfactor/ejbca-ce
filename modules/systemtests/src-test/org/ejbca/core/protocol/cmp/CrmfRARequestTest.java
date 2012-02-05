@@ -33,6 +33,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -42,17 +43,19 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -76,13 +79,13 @@ public class CrmfRARequestTest extends CmpTestCase {
     final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrmfRARequestTest"));
     private X509Certificate cacert;
 
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private CAAdminSessionRemote caAdminSessionRemote = InterfaceCache.getCAAdminSession();
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private EndEntityProfileSession eeProfileSession = InterfaceCache.getEndEntityProfileSession();
-    private CertificateProfileSession certProfileSession = InterfaceCache.getCertificateProfileSession();
-    private EndEntityAccessSession eeAccessSession = InterfaceCache.getEndEntityAccessSession();
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
+    private CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    private EndEntityAccessSession eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {

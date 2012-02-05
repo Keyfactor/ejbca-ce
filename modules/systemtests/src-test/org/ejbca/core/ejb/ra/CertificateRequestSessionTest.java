@@ -33,9 +33,9 @@ import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.NonEjbTestTools;
 import org.junit.After;
 import org.junit.Before;
@@ -56,8 +56,8 @@ public class CertificateRequestSessionTest extends CaTestCase {
     private final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertificateRequestSessionTest"));
     private final Random random = new Random();
 
-    private CertificateRequestSessionRemote certificateRequestSession = InterfaceCache.getCertficateRequestSession();
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private CertificateRequestSessionRemote certificateRequestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
     @Before
     public void setup() throws Exception {

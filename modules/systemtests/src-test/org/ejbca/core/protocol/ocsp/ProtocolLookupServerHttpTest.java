@@ -66,13 +66,13 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -104,9 +104,9 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     private static X509Certificate ocspTestCert = null;
     private static KeyPair keys = null;
 
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private RevocationSessionRemote revocationSession = InterfaceCache.getRevocationSession();
-    private SignSessionRemote signSession = InterfaceCache.getSignSession();
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {

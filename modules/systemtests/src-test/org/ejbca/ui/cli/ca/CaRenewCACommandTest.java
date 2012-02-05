@@ -13,9 +13,9 @@
 
 package org.ejbca.ui.cli.ca;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
 
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
@@ -23,12 +23,13 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.ejb.ca.CaTestCase;
-import org.cesecore.certificates.ca.X509CAInfo;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.ejbca.util.InterfaceCache;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public class CaRenewCACommandTest extends CaTestCase {
 	@Before
     public void setUp() throws Exception {
         super.setUp();
-    	final X509CAInfo info = (X509CAInfo) InterfaceCache.getCaSession().getCAInfo(internalAdmin, CA_NAME);
+    	final X509CAInfo info = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(internalAdmin, CA_NAME);
     	orgCert = (X509Certificate) info.getCertificateChain().iterator().next();
     }
 
@@ -78,7 +79,7 @@ public class CaRenewCACommandTest extends CaTestCase {
         final CaRenewCACommand command = new CaRenewCACommand();
         command.execute(new String[]{"renewca", CA_NAME, "false", "foo123"});
         
-        final X509CAInfo newinfo = (X509CAInfo) InterfaceCache.getCaSession().getCAInfo(internalAdmin, CA_NAME);
+        final X509CAInfo newinfo = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(internalAdmin, CA_NAME);
         final X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         
         assertTrue("new serial number", !orgCert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
@@ -107,7 +108,7 @@ public class CaRenewCACommandTest extends CaTestCase {
     	final CaRenewCACommand command = new CaRenewCACommand();
         command.execute(new String[]{"renewca", CA_NAME, "true", "foo123"});
     	
-		final X509CAInfo newinfo2 = (X509CAInfo) InterfaceCache.getCaSession().getCAInfo(internalAdmin, CA_NAME);
+		final X509CAInfo newinfo2 = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(internalAdmin, CA_NAME);
 		final X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
 		
 		assertTrue("new serial number", !orgCert.getSerialNumber().equals(newcertnewkeys.getSerialNumber()));
@@ -142,7 +143,7 @@ public class CaRenewCACommandTest extends CaTestCase {
         final CaRenewCACommand command = new CaRenewCACommand();
         command.execute(new String[]{"renewca", CA_NAME, "false", "foo123", notBefore});
         
-        final X509CAInfo newinfo = (X509CAInfo) InterfaceCache.getCaSession().getCAInfo(internalAdmin, CA_NAME);
+        final X509CAInfo newinfo = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(internalAdmin, CA_NAME);
         final X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         
         assertTrue("new serial number", !orgCert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
@@ -181,7 +182,7 @@ public class CaRenewCACommandTest extends CaTestCase {
     	final CaRenewCACommand command = new CaRenewCACommand();
         command.execute(new String[]{"renewca", CA_NAME, "true", "foo123", notBefore});
     	
-		final X509CAInfo newinfo2 = (X509CAInfo) InterfaceCache.getCaSession().getCAInfo(internalAdmin, CA_NAME);
+		final X509CAInfo newinfo2 = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(internalAdmin, CA_NAME);
 		final X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
 		
 		assertTrue("new serial number", !orgCert.getSerialNumber().equals(newcertnewkeys.getSerialNumber()));
@@ -213,7 +214,7 @@ public class CaRenewCACommandTest extends CaTestCase {
         final CaRenewCACommand command = new CaRenewCACommand();
         command.execute(new String[]{"renewca", CA_NAME});
         
-        final X509CAInfo newinfo = (X509CAInfo) InterfaceCache.getCaSession().getCAInfo(internalAdmin, CA_NAME);
+        final X509CAInfo newinfo = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(internalAdmin, CA_NAME);
         final X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         
         assertTrue("new serial number", !orgCert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));

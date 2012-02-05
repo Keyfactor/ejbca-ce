@@ -16,7 +16,10 @@ package org.ejbca.ui.cli.ca;
 import java.util.Collection;
 
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.crl.CRLInfo;
+import org.cesecore.certificates.crl.CrlStoreSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.ValidityDate;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -41,12 +44,12 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
         }
 	    
         try {
-        	Collection<Integer> caIds = ejb.getCaSession().getAvailableCAs(getAdmin(cliUserName, cliPassword));
+        	Collection<Integer> caIds = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getAvailableCAs(getAdmin(cliUserName, cliPassword));
         	for (Integer caId : caIds) {
-        		final CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caId);
+        		final CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caId);
         		final StringBuilder sb = new StringBuilder();
         		sb.append("\"").append(cainfo.getName()).append("\" \"").append(cainfo.getSubjectDN()).append("\"");
-        		final CRLInfo crlInfo = ejb.getCrlStoreSession().getLastCRLInfo(cainfo.getSubjectDN(), false);
+        		final CRLInfo crlInfo = ejb.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLInfo(cainfo.getSubjectDN(), false);
         		if (crlInfo != null) {
             		sb.append(" CRL# ").append(crlInfo.getLastCRLNumber());
             		sb.append(" issued ").append(ValidityDate.formatAsUTC(crlInfo.getCreateDate()));
@@ -54,7 +57,7 @@ public class CaGetCrlInfo extends BaseCaAdminCommand {
         		} else {
         			sb.append(" NO_CRL_ISSUED");
         		}
-        		final CRLInfo deltaCrlInfo = ejb.getCrlStoreSession().getLastCRLInfo(cainfo.getSubjectDN(), true);
+        		final CRLInfo deltaCrlInfo = ejb.getRemoteSession(CrlStoreSessionRemote.class).getLastCRLInfo(cainfo.getSubjectDN(), true);
         		if (deltaCrlInfo!=null) {
             		sb.append(" DELTACRL# ").append(deltaCrlInfo.getLastCRLNumber());
             		sb.append(" issued ").append(ValidityDate.formatAsUTC(deltaCrlInfo.getCreateDate()));

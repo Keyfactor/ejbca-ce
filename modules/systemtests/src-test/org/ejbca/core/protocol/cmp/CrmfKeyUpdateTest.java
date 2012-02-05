@@ -64,6 +64,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -73,6 +74,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.core.EjbcaException;
@@ -83,7 +85,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -127,11 +128,11 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     private int caid;
     private Certificate cacert;
     
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private SignSessionRemote signSession = InterfaceCache.getSignSession();
-    private ConfigurationSessionRemote confSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class); //InterfaceCache.getConfigurationSession();
-    private CertificateStoreSession certStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private ConfigurationSessionRemote confSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class); //EjbRemoteHelper.INSTANCE.getConfigurationSession();
+    private CertificateStoreSession certStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     
     @Before
     public void setUp() throws Exception {

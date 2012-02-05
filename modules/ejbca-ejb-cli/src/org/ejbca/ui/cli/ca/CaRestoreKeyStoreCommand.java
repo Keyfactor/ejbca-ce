@@ -18,6 +18,7 @@ import java.security.KeyStore;
 import java.util.Enumeration;
 
 import org.cesecore.util.FileTools;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -87,7 +88,7 @@ public class CaRestoreKeyStoreCommand extends BaseCaAdminCommand {
 				}
 				// else alias already contains the only alias, so we can use that
 			}
-			ejb.getCAAdminSession().restoreCAKeyStore(getAdmin(cliUserName, cliPassword), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
+			ejb.getRemoteSession(CAAdminSessionRemote.class).restoreCAKeyStore(getAdmin(cliUserName, cliPassword), caName, keystorebytes, kspwd, kspwd, alias, encryptionAlias);
 		} catch (ErrorAdminCommandException e) {
 			throw e;
 		} catch (Exception e) {

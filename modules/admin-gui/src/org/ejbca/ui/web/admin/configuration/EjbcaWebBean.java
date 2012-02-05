@@ -107,23 +107,23 @@ public class EjbcaWebBean implements Serializable {
             "/ra_functionality/view_end_entity_history", "/ra_functionality/view_hardtoken", "/ca_functionality/view_certificate",
             "/ra_functionality/keyrecovery" };
 
-    private final EjbLocalHelper ejb = new EjbLocalHelper();
-    private final AccessControlSessionLocal authorizationSession = ejb.getAccessControlSession();
-    private final CAAdminSessionLocal caAdminSession = ejb.getCaAdminSession();
-    private final CaSessionLocal caSession = ejb.getCaSession();
-    private final CertificateProfileSessionLocal certificateProfileSession = ejb.getCertificateProfileSession();
-    private final CertificateStoreSessionLocal certificateStoreSession = ejb.getCertificateStoreSession();
-    private final ComplexAccessControlSessionLocal complexAccessControlSession = ejb.getComplexAccessControlSession();
-    private final EndEntityProfileSessionLocal endEntityProfileSession = ejb.getEndEntityProfileSession();
-    private final HardTokenSessionLocal hardTokenSession = ejb.getHardTokenSession();
-    private final SecurityEventsLoggerSessionLocal auditSession = ejb.getSecurityEventsLoggerSession();
-    private final PublisherSessionLocal publisherSession = ejb.getPublisherSession();
-    private final RoleAccessSessionLocal roleAccessSession = ejb.getRoleAccessSession();
-    private final RoleManagementSessionLocal roleManagementSession = ejb.getRoleManagementSession();
-    private final UserAdminSessionLocal userAdminSession = ejb.getUserAdminSession();
-    private final UserDataSourceSessionLocal userDataSourceSession = ejb.getUserDataSourceSession();
-    private final GlobalConfigurationSessionLocal globalConfigurationSession = ejb.getGlobalConfigurationSession();
-    private final WebAuthenticationProviderSessionLocal authenticationSession = ejb.getWebAuthenticationProviderSession();
+    private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
+    private final AccessControlSessionLocal authorizationSession = ejbLocalHelper.getAccessControlSession();
+    private final CAAdminSessionLocal caAdminSession = ejbLocalHelper.getCaAdminSession();
+    private final CaSessionLocal caSession = ejbLocalHelper.getCaSession();
+    private final CertificateProfileSessionLocal certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
+    private final CertificateStoreSessionLocal certificateStoreSession = ejbLocalHelper.getCertificateStoreSession();
+    private final ComplexAccessControlSessionLocal complexAccessControlSession = ejbLocalHelper.getComplexAccessControlSession();
+    private final EndEntityProfileSessionLocal endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
+    private final HardTokenSessionLocal hardTokenSession = ejbLocalHelper.getHardTokenSession();
+    private final SecurityEventsLoggerSessionLocal auditSession = ejbLocalHelper.getSecurityEventsLoggerSession();
+    private final PublisherSessionLocal publisherSession = ejbLocalHelper.getPublisherSession();
+    private final RoleAccessSessionLocal roleAccessSession = ejbLocalHelper.getRoleAccessSession();
+    private final RoleManagementSessionLocal roleManagementSession = ejbLocalHelper.getRoleManagementSession();
+    private final UserAdminSessionLocal userAdminSession = ejbLocalHelper.getUserAdminSession();
+    private final UserDataSourceSessionLocal userDataSourceSession = ejbLocalHelper.getUserDataSourceSession();
+    private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
+    private final WebAuthenticationProviderSessionLocal authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
 
     private AdminPreferenceDataHandler adminspreferences;
     private AdminPreference currentadminpreference;
@@ -885,6 +885,6 @@ public class EjbcaWebBean implements Serializable {
     }
 
     public EjbLocalHelper getEjb() {
-        return ejb;
+        return ejbLocalHelper;
     }
 }

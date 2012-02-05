@@ -36,8 +36,8 @@ import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -57,9 +57,9 @@ public class CAKeystoreExportRemoveRestoreTest {
 
     private static final Logger log = Logger.getLogger(CAKeystoreExportRemoveRestoreTest.class);
 
-    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
+    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private CAAdminTestSessionRemote catestsession = JndiHelper.getRemoteSession(CAAdminTestSessionRemote.class);
     
     private AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CAKeystoreExportRemoveRestoreTest"));

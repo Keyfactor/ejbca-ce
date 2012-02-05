@@ -35,6 +35,7 @@ import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -50,7 +51,6 @@ import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -73,13 +73,13 @@ public class AuthenticationSessionTest extends CaTestCase {
     private static String username2;
     private static String pwd2;
 
-    private EndEntityAuthenticationSessionRemote authenticationSessionRemote = InterfaceCache.getAuthenticationSession();
+    private EndEntityAuthenticationSessionRemote authenticationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAuthenticationSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
-    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
+    private KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
-    private SignSessionRemote signSession = InterfaceCache.getSignSession();
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
     /** Creates a new TestAuthenticationSession object. */
     @BeforeClass

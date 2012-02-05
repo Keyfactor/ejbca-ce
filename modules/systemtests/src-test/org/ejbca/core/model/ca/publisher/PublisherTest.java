@@ -50,12 +50,12 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.ejb.ca.publisher.PublisherProxySessionRemote;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -122,7 +122,7 @@ public class PublisherTest {
     
     private final String commonname = this.getClass().getCanonicalName();
     
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
     private PublisherSessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherSessionRemote.class);
     private PublisherProxySessionRemote publisherProxySession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);

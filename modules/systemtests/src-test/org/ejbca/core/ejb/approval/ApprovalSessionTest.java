@@ -62,6 +62,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -79,7 +80,6 @@ import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
-import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
@@ -124,14 +124,14 @@ public class ApprovalSessionTest extends CaTestCase {
     private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
     private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
-    private AccessControlSessionRemote accessControlSession = InterfaceCache.getAccessControlSession();
-    private RoleManagementSessionRemote roleManagementSession = InterfaceCache.getRoleManagementSession();
-    private RoleAccessSessionRemote roleAccessSessionRemote = InterfaceCache.getRoleAccessSession();
-    private ApprovalSessionRemote approvalSessionRemote = InterfaceCache.getApprovalSession();
-    private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = InterfaceCache.getApprovalExecutionSession();
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
+    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+    private ApprovalSessionRemote approvalSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
+    private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
     private final SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
     

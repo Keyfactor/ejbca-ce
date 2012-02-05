@@ -34,7 +34,6 @@ import java.util.TreeMap;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.ejb.FinderException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;

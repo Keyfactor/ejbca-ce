@@ -55,6 +55,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
@@ -77,7 +78,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
-import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
@@ -154,18 +154,18 @@ public class XKMSKRSSTest {
     private static DocumentBuilderFactory dbf;
     private static Random ran;
 
-    private ApprovalExecutionSessionRemote approvalExecutionSession = InterfaceCache.getApprovalExecutionSession();
-    private ApprovalSessionRemote approvalSession = InterfaceCache.getApprovalSession();
-    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
-    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private ApprovalExecutionSessionRemote approvalExecutionSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
+    private ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
+    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
-    private KeyRecoverySessionRemote keyRecoverySession = InterfaceCache.getKeyRecoverySession();
-    private GlobalConfigurationSessionRemote globalConfigurationSession = InterfaceCache.getGlobalConfigurationSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
+    private KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {

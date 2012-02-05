@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli.ra;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -48,7 +49,7 @@ public class RaSetUserStatusCommand extends BaseRaAdminCommand {
             String username = args[1];
             int status = Integer.parseInt(args[2]);
             try {
-                ejb.getUserAdminSession().setUserStatus(getAdmin(cliUserName, cliPassword), username, status);
+                ejb.getRemoteSession(UserAdminSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), username, status);
                 getLogger().info("New status for user " + username + " is " + status);
             } catch (AuthorizationDeniedException e) {
             	getLogger().error("Not authorized to change userdata.");

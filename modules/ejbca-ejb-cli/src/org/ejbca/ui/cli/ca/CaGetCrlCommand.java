@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ca;
 import java.io.FileOutputStream;
 import java.util.List;
 
+import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -59,7 +60,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 			String caname = args[1];
 			String outfile = args[2];
 			String issuerdn = getIssuerDN(getAdmin(cliUserName, cliPassword), caname);
-			byte[] crl = ejb.getCrlStoreSession().getLastCRL(issuerdn, deltaSelector);
+			byte[] crl = ejb.getRemoteSession(CrlStoreSessionRemote.class).getLastCRL(issuerdn, deltaSelector);
 			if (crl != null) {
 				FileOutputStream fos = new FileOutputStream(outfile);
 				if (pem) {		

@@ -73,16 +73,16 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		}
 		try {
 		    final AuthenticationToken administrator = webBean.getAdminObject();
-			final EjbLocalHelper ejb = new EjbLocalHelper();
-		    final AccessRuleManagementSessionLocal accessRuleManagementSession = ejb.getAccessRuleManagementSession();
-		    final AccessUserAspectManagerSessionLocal accessUserAspectManagerSession = ejb.getAccessUserAspectSession();
-			final CAAdminSession caadminsession = ejb.getCaAdminSession();
-			final CaSession caSession = ejb.getCaSession();
-			final UserAdminSessionLocal adminsession = ejb.getUserAdminSession();
-			final GlobalConfigurationSession globalconfigurationsession = ejb.getGlobalConfigurationSession();
-			final CertificateProfileSession certificateProfileSession = ejb.getCertificateProfileSession();
-			final EndEntityProfileSession endEntityProfileSession = ejb.getEndEntityProfileSession();
-			final RevocationSessionLocal revocationSession = ejb.getRevocationSession();
+			final EjbLocalHelper ejbLocalhelper = new EjbLocalHelper();
+		    final AccessRuleManagementSessionLocal accessRuleManagementSession = ejbLocalhelper.getAccessRuleManagementSession();
+		    final AccessUserAspectManagerSessionLocal accessUserAspectManagerSession = ejbLocalhelper.getAccessUserAspectSession();
+			final CAAdminSession caadminsession = ejbLocalhelper.getCaAdminSession();
+			final CaSession caSession = ejbLocalhelper.getCaSession();
+			final UserAdminSessionLocal adminsession = ejbLocalhelper.getUserAdminSession();
+			final GlobalConfigurationSession globalconfigurationsession = ejbLocalhelper.getGlobalConfigurationSession();
+			final CertificateProfileSession certificateProfileSession = ejbLocalhelper.getCertificateProfileSession();
+			final EndEntityProfileSession endEntityProfileSession = ejbLocalhelper.getEndEntityProfileSession();
+			final RevocationSessionLocal revocationSession = ejbLocalhelper.getRevocationSession();
 			
             cadatahandler = new CADataHandler(administrator, accessRuleManagementSession, accessUserAspectManagerSession, caadminsession, caSession, endEntityProfileSession, adminsession,
                     globalconfigurationsession, certificateProfileSession, revocationSession,

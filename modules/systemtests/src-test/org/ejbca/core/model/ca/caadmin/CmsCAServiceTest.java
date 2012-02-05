@@ -42,13 +42,13 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceNotActiveException;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceResponse;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.ExtendedCAServiceTypes;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -65,8 +65,8 @@ public class CmsCAServiceTest extends CaTestCase {
 
     private final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmsCAServiceTest"));
 
-    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {

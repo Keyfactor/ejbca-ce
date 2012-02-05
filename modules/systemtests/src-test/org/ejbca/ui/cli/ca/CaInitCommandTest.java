@@ -24,8 +24,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -50,8 +50,8 @@ public class CaInitCommandTest {
     private CaInitCommand caInitCommand;
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaInitCommandTest"));
 
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private CertificateProfileSessionRemote certificateProfileSessionRemote = InterfaceCache.getCertificateProfileSession();
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private CertificateProfileSessionRemote certificateProfileSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {

@@ -15,7 +15,10 @@ package org.ejbca.ui.cli.ca;
 
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -46,13 +49,13 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
             String caname = args[1];
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
             if(cainfo == null){
             	getLogger().error("CA " + caname + " cannot be found");	
             	return;            	
             }
             if(cainfo.getStatus() == CAConstants.CA_ACTIVE){
-              ejb.getCAAdminSession().deactivateCAToken(getAdmin(cliUserName, cliPassword), cainfo.getCAId());                        
+              ejb.getRemoteSession(CAAdminSessionRemote.class).deactivateCAToken(getAdmin(cliUserName, cliPassword), cainfo.getCAId());                        
               getLogger().info("CA token deactivated.");
             }else{
             	getLogger().error("CA or CAToken must be active to be put offline.");

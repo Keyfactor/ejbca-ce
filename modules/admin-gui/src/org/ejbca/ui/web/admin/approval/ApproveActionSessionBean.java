@@ -21,6 +21,8 @@ import java.util.List;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
 import org.ejbca.core.model.approval.Approval;
@@ -165,7 +167,7 @@ public class ApproveActionSessionBean extends BaseManagedBean {
     	List<ApprovalDataVO> result;
     	try {
     		RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), ejb.getGlobalConfigurationSession(),
-    				ejb.getAccessControlSession(), ejb.getComplexAccessControlSession(), ejb.getCaSession(), ejb.getEndEntityProfileSession());
+    				ejb.getAccessControlSession(), ejb.getComplexAccessControlSession(), EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class), ejb.getEndEntityProfileSession());
     		result = ejb.getApprovalSession().query( EjbcaJSFHelper.getBean().getAdmin(), query, 0, 1, raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString());
     		if (result.size() > 0) {
     			this.approveRequestData = new ApprovalDataVOView(result.get(0));

@@ -20,7 +20,11 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
+import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -56,13 +60,13 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String roleName = args[1];     
-            RoleData role = ejb.getRoleAccessSession().findRole(roleName);
+            RoleData role = ejb.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName);
             if (role == null) {
                 getLogger().error("No such role \"" + roleName + "\".");
                 return;
             }
             String caName = args[2];
-            CAInfo caInfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caName);
+            CAInfo caInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName);
             if (caInfo == null) {
                 getLogger().error("No such CA \"" + caName + "\".");
                 return;
@@ -78,7 +82,7 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String matchValue = args[5];
-            int caId = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caName).getCAId();
+            int caId = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caName).getCAId();
             AccessUserAspectData accessUserAspectData = new AccessUserAspectData(roleName, caId, matchWith, matchType, matchValue);
             
             for (AccessUserAspectData currentAdminEntity : role.getAccessUsers().values()) {
@@ -87,7 +91,7 @@ public class AdminsRemoveAdminCommand extends BaseAdminsCommand {
                     Collection<AccessUserAspectData> adminEntities = new ArrayList<AccessUserAspectData>();
                     adminEntities.add(accessUserAspectData);
                    
-                    ejb.getRoleManagementSession().removeSubjectsFromRole(getAdmin(cliUserName, cliPassword), role, adminEntities);
+                    ejb.getRemoteSession(RoleManagementSessionRemote.class).removeSubjectsFromRole(getAdmin(cliUserName, cliPassword), role, adminEntities);
                    
                     return;
                 }

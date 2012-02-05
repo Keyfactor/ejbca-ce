@@ -35,6 +35,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -42,7 +43,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -56,15 +56,14 @@ import org.junit.Test;
 public class AddLotsofCertsPerUserTest extends CaTestCase {
     private static final Logger log = Logger.getLogger(AddLotsofCertsPerUserTest.class);
 
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private SignSessionRemote signSession = InterfaceCache.getSignSession();
-    private CertificateStoreSessionRemote storeSession = InterfaceCache.getCertificateStoreSession();
-    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private CertificateStoreSessionRemote storeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
-    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
-
+    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private int userNo = 0;
     private KeyPair keys;
 

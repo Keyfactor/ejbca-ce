@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ra;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -45,7 +46,7 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
             }
             String username = args[1];
             try {
-                EndEntityInformation data = ejb.getEndEntityAccessSession().findUser(getAdmin(cliUserName, cliPassword), username);
+                EndEntityInformation data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
                 if (data != null) {
                 	getLogger().info("Found user:");
                 	getLogger().info("username=" + data.getUsername());

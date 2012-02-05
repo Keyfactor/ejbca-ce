@@ -17,9 +17,13 @@ import javax.security.auth.login.FailedLoginException;
 
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -69,7 +73,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             }
             CryptoProviderTools.installBCProvider();
             // Get the CAs info and id
-            CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+            CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
             if (cainfo == null) {
                 getLogger().error("Error: CA " + caname + " cannot be found");
                 return;
@@ -77,7 +81,7 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
             // Check that CA has correct status.
             if ((cainfo.getStatus() == CAConstants.CA_OFFLINE) || (cainfo.getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_OFFLINE)) {
                 try {
-                    ejb.getCAAdminSession().activateCAToken(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), authorizationcode, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration());
+                    ejb.getRemoteSession(CAAdminSessionRemote.class).activateCAToken(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), authorizationcode, ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedGlobalConfiguration());
                     getLogger().info("CA token activated.");
 
                 } catch (CryptoTokenAuthenticationFailedException e) {

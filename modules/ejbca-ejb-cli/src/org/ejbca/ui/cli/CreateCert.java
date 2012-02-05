@@ -25,6 +25,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.FileTools;
+import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 
 /**
  * Issue a certificate for a user based on a CSR
@@ -66,7 +67,7 @@ public class CreateCert extends BaseCommand {
 				return;
 			}
 			// Call signsession to create a certificate
-			ResponseMessage resp = ejb.getSignSession().createCertificate(getAdmin(cliUserName, cliPassword), req, X509ResponseMessage.class, null);
+			ResponseMessage resp = ejb.getRemoteSession(SignSessionRemote.class).createCertificate(getAdmin(cliUserName, cliPassword), req, X509ResponseMessage.class, null);
 			byte[] respBytes = resp.getResponseMessage();
 			// Convert to PEM
 			Certificate cert = CertTools.getCertfromByteArray(respBytes);

@@ -24,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -33,15 +34,18 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
@@ -169,13 +173,13 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     profileId = CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA;
             	}
             } else {                
-                profileId = ejb.getCertificateProfileSession().getCertificateProfileId(profileName);
+                profileId = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(profileName);
             	if (profileId == 0) {
             		getLogger().info("Error: Certificate profile with name '"+profileName+"' does not exist.");
             		return;
             	}
             	
-                CertificateProfile certificateProfile  = ejb.getCertificateProfileSession().getCertificateProfile(profileName);
+                CertificateProfile certificateProfile  = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfile(profileName);
                 if(certificateProfile.getType() != CertificateConstants.CERTTYPE_ROOTCA && certificateProfile.getType() != CertificateConstants.CERTTYPE_SUBCA) {
                     getLogger().info("Error: Certificate profile " + profileName + " is not of type ROOTCA or SUBCA.");
                     return;
@@ -211,7 +215,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger().info("Signed by: "+(signedByCAId == CAInfo.SELFSIGNED ? "self signed " : signedByCAId));
             if (signedByCAId != CAInfo.SELFSIGNED) {
                 try {
-                    ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), signedByCAId);
+                    EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), signedByCAId);
                 } catch (CADoesntExistsException e) {
                 	throw new IllegalArgumentException("CA with id "+signedByCAId+" does not exist.");            		
             	}
@@ -323,9 +327,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
 			                                 );
             
             getLogger().info("Creating CA...");
-            ejb.getCAAdminSession().createCA(getAdmin(cliUserName, cliPassword), cainfo);
+            ejb.getRemoteSession(CAAdminSessionRemote.class).createCA(getAdmin(cliUserName, cliPassword), cainfo);
             
-            CAInfo newInfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+            CAInfo newInfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
             int caid = newInfo.getCAId();
             getLogger().info("CAId for created CA: " + caid);
             getLogger().info("-Created and published initial CRL.");

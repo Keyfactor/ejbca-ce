@@ -25,6 +25,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -35,7 +36,6 @@ import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.core.model.services.workers.UserPasswordExpireWorker;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -54,8 +54,8 @@ public class UserPasswordExpireTest extends CaTestCase {
     private static final String PWD = "foo123";
 
     private EndEntityAccessSessionRemote endEntityAccessSession = JndiHelper.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private ServiceSessionRemote serviceSession = InterfaceCache.getServiceSession();
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {

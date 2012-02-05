@@ -23,12 +23,17 @@ import java.util.Date;
 
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
+import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
+import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -95,14 +100,14 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			getLogger().info("CA: " + issuer);
 			// Fetch End Entity Profile info
 			getLogger().debug("Searching for End Entity Profile " + eeProfile);
-			final int endEntityProfileId = ejb.getEndEntityProfileSession().getEndEntityProfileId(eeProfile);
+			final int endEntityProfileId = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(eeProfile);
 			if (endEntityProfileId == 0) {
 				getLogger().error("End Entity Profile " + eeProfile + " does not exist.");
 				throw new Exception("End Entity Profile '" + eeProfile + "' does not exist.");
 			}
 			// Fetch Certificate Profile info
 			getLogger().debug("Searching for Certificate Profile " + certificateProfile);
-			int certificateProfileId = ejb.getCertificateProfileSession().getCertificateProfileId(certificateProfile);
+			int certificateProfileId = ejb.getRemoteSession(CertificateProfileSessionRemote.class).getCertificateProfileId(certificateProfile);
 			if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
 				getLogger().error("Certificate Profile " + certificateProfile + " does not exist.");
 				throw new Exception("Certificate Profile '" + certificateProfile + "' does not exist.");
@@ -160,7 +165,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 	private int performImport(String cliUserName, String cliPassword, X509Certificate certificate, int status, int endEntityProfileId, int certificateProfileId,
 			                   X509Certificate cacert, CAInfo caInfo, String filename, String issuer, String username) throws Exception {
 		final String fingerprint = CertTools.getFingerprintAsString(certificate);
-		if (ejb.getCertStoreSession().findCertificateByFingerprint(fingerprint) != null) {
+		if (ejb.getRemoteSession(CertificateStoreSessionRemote.class).findCertificateByFingerprint(fingerprint) != null) {
 			getLogger ().info("Certificate '" + CertTools.getSerialNumberAsString(certificate) + "' is already present, file: " +filename);
 			return STATUS_REDUNDANT;
 		}
@@ -181,7 +186,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 		}
 		getLogger().debug("Loading/updating user " + username);
 		// Check if username already exists.
-		EndEntityInformation userdata = ejb.getEndEntityAccessSession().findUser(getAdmin(cliUserName, cliPassword), username);
+		EndEntityInformation userdata = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
 		if (userdata==null) {
 			// Add a "user" to map this certificate to
 			final String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
@@ -190,22 +195,22 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 					UserDataConstants.STATUS_GENERATED, SecConst.USER_ENDUSER, endEntityProfileId,
 					certificateProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 			userdata.setPassword("foo123");
-			ejb.getUserAdminSession().addUser(getAdmin(cliUserName, cliPassword), userdata, false);
+			ejb.getRemoteSession(UserAdminSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), userdata, false);
 			getLogger().info("User '" + username + "' has been added.");
 		}
 		// addUser always adds the user with STATUS_NEW (even if we specified otherwise)
 		// We always override the userdata with the info from the certificate even if the user existed.
 		userdata.setStatus(UserDataConstants.STATUS_GENERATED);
-		ejb.getUserAdminSession().changeUser(getAdmin(cliUserName, cliPassword), userdata, false);
+		ejb.getRemoteSession(UserAdminSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword), userdata, false);
 		getLogger().info("User '" + username + "' has been updated.");
 		// Finally import the certificate and revoke it if necessary
-		ejb.getCertStoreSession().storeCertificate(getAdmin(cliUserName, cliPassword),
+		ejb.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAdmin(cliUserName, cliPassword),
 		                                           certificate, username, fingerprint,
 		                                           CertificateConstants.CERT_ACTIVE,
 		                                           SecConst.USER_ENDUSER, 
 		                                           certificateProfileId, null, now.getTime());
 		if (status == CertificateConstants.CERT_REVOKED) {
-			ejb.getUserAdminSession().revokeCert(getAdmin(cliUserName, cliPassword), certificate.getSerialNumber(), issuer, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+			ejb.getRemoteSession(UserAdminSessionRemote.class).revokeCert(getAdmin(cliUserName, cliPassword), certificate.getSerialNumber(), issuer, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 		}
 		getLogger().info("Certificate '" + CertTools.getSerialNumberAsString(certificate) + "' has been added.");
 		return STATUS_OK;

@@ -80,10 +80,10 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
-import org.ejbca.util.InterfaceCache;
 
 import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
 import com.novosec.pkix.asn1.cmp.CertConfirmContent;
@@ -126,7 +126,7 @@ public abstract class CmpTestCase extends CaTestCase {
     private String httpReqPath; // = "http://127.0.0.1:8080/ejbca";
     private String CMP_HOST; // = "127.0.0.1";
 
-    private CertificateStoreSessionRemote certificateStoreSession = InterfaceCache.getCertificateStoreSession();
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
 
     protected void setUp() throws Exception {

@@ -84,7 +84,7 @@ public class CAInterfaceBean implements Serializable {
     public static final int CATOKENTYPE_HSM          = 2;
 	public static final int CATOKENTYPE_NULL         = 3;
 
-	private EjbLocalHelper ejb = new EjbLocalHelper();
+	private EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
 
     // Private fields
     private CertificateStoreSession certificatesession;
@@ -125,25 +125,25 @@ public class CAInterfaceBean implements Serializable {
     // Public methods
     public void initialize(EjbcaWebBean ejbcawebbean) {
         if(!initialized){
-            this.accessRuleManagementSession = ejb.getAccessRuleManagementSession();
-            this.accessUserAspectManagerSession = ejb.getAccessUserAspectSession();
-          caSession = ejb.getCaSession();
-          certificatesession = ejb.getCertificateStoreSession();
-          certreqhistorysession = ejb.getCertReqHistorySession();
-          crlStoreSession = ejb.getCrlStoreSession();
-          crlCreateSession = ejb.getCrlCreateSession();
-          caadminsession = ejb.getCaAdminSession();
-          authorizationsession = ejb.getAccessControlSession();
-          adminsession = ejb.getUserAdminSession();
-          globalconfigurationsession = ejb.getGlobalConfigurationSession();               
-          signsession = ejb.getSignSession();
-          certcreatesession = ejb.getCertificateCreateSession();
-          hardtokensession = ejb.getHardTokenSession();               
-          publishersession = ejb.getPublisherSession();               
-          publisherqueuesession = ejb.getPublisherQueueSession();
-          certificateProfileSession = ejb.getCertificateProfileSession();
-          endEntityProfileSession = ejb.getEndEntityProfileSession(); 
-          revocationSession = ejb.getRevocationSession();
+            this.accessRuleManagementSession = ejbLocalHelper.getAccessRuleManagementSession();
+            this.accessUserAspectManagerSession = ejbLocalHelper.getAccessUserAspectSession();
+          caSession = ejbLocalHelper.getCaSession();
+          certificatesession = ejbLocalHelper.getCertificateStoreSession();
+          certreqhistorysession = ejbLocalHelper.getCertReqHistorySession();
+          crlStoreSession = ejbLocalHelper.getCrlStoreSession();
+          crlCreateSession = ejbLocalHelper.getCrlCreateSession();
+          caadminsession = ejbLocalHelper.getCaAdminSession();
+          authorizationsession = ejbLocalHelper.getAccessControlSession();
+          adminsession = ejbLocalHelper.getUserAdminSession();
+          globalconfigurationsession = ejbLocalHelper.getGlobalConfigurationSession();             
+          signsession = ejbLocalHelper.getSignSession();
+          certcreatesession = ejbLocalHelper.getCertificateCreateSession();
+          hardtokensession = ejbLocalHelper.getHardTokenSession();               
+          publishersession = ejbLocalHelper.getPublisherSession();               
+          publisherqueuesession = ejbLocalHelper.getPublisherQueueSession();
+          certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
+          endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession(); 
+          revocationSession = ejbLocalHelper.getRevocationSession();
           this.informationmemory = ejbcawebbean.getInformationMemory();
           this.administrator = ejbcawebbean.getAdminObject();
             

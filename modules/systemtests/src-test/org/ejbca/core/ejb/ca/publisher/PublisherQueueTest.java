@@ -39,6 +39,7 @@ import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.DatabaseConfiguration;
 import org.ejbca.config.InternalConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -48,7 +49,6 @@ import org.ejbca.core.model.ca.publisher.PublisherExistsException;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.ca.publisher.PublisherQueueVolatileData;
 import org.ejbca.core.model.ca.publisher.ValidationAuthorityPublisher;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -75,7 +75,7 @@ public class PublisherQueueTest {
     private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
     private PublisherSessionRemote publisherSession = JndiHelper.getRemoteSession(PublisherSessionRemote.class);
     private PublisherProxySessionRemote publisherProxySession = JndiHelper.getRemoteSession(PublisherProxySessionRemote.class);
-    private PublisherQueueSessionRemote publisherQueueSession = InterfaceCache.getPublisherQueueSession();
+    private PublisherQueueSessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {

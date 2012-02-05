@@ -31,11 +31,14 @@ import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.ValidityDate;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.ValidityDate;
 
 /**
  * Renews the CA certificate and optionally regenerates the key-pair. This is the CLI equivalent of pushing 
@@ -69,7 +72,7 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
             
         	// Get the CAs info and id
         	final String caname = args[1];
-        	CAInfo cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+        	CAInfo cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
         	
         	boolean regenerateKeys = false;
         	String authCode = null;
@@ -136,9 +139,9 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
                     System.console().readPassword();
     		}
             
-            ejb.getCAAdminSession().renewCA(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), authCode, regenerateKeys, customNotBefore);
+            ejb.getRemoteSession(CAAdminSessionRemote.class).renewCA(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), authCode, regenerateKeys, customNotBefore);
             getLogger().info("New certificate created:");
-            cainfo = ejb.getCaSession().getCAInfo(getAdmin(cliUserName, cliPassword), caname);
+            cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
             final Object newCertificate = cainfo.getCertificateChain().iterator().next();
             if (newCertificate instanceof Certificate) {
             	printCertificate((Certificate) newCertificate);

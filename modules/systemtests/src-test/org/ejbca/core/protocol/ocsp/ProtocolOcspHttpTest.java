@@ -91,6 +91,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -111,7 +112,6 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheTstFactory;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -200,12 +200,12 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     
     private String httpPort;
 
-    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private ConfigurationSessionRemote configurationSessionRemote = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
-    private RevocationSessionRemote revocationSession = InterfaceCache.getRevocationSession();
-    private SignSessionRemote signSession = InterfaceCache.getSignSession();
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() throws CertificateException {   

@@ -44,13 +44,13 @@ import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthentication
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.userdatasource.BaseUserDataSource;
 import org.ejbca.core.model.ra.userdatasource.CustomUserDataSourceContainer;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceExistsException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceVO;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -70,7 +70,7 @@ public class UserDataSourceTest extends CaTestCase {
 
     private RoleManagementSessionRemote roleManagementSessionRemote = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
-    private UserDataSourceSessionRemote userDataSourceSession = InterfaceCache.getUserDataSourceSession();
+    private UserDataSourceSessionRemote userDataSourceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserDataSourceSessionRemote.class);
 
     @Override
     public String getRoleName() {

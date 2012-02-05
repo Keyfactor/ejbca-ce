@@ -38,10 +38,10 @@ import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthentication
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.HardTokenIssuerData;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -55,7 +55,7 @@ import org.junit.Test;
 public class HardTokenIssuerTest {
     private static Logger log = Logger.getLogger(HardTokenIssuerTest.class);
     
-    private HardTokenSessionRemote hardTokenSession = InterfaceCache.getHardTokenSession();
+    private HardTokenSessionRemote hardTokenSession = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
     private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
     

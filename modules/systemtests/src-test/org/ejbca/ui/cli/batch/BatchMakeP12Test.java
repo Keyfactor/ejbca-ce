@@ -22,11 +22,11 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class BatchMakeP12Test extends CaTestCase {
     private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
     private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
 
     @Before

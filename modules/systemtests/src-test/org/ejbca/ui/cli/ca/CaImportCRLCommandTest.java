@@ -42,10 +42,10 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.util.InterfaceCache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -75,12 +75,12 @@ public class CaImportCRLCommandTest {
     
     private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaImportCRLCommandTest"));
 
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
-    private CrlStoreSessionRemote crlSession = InterfaceCache.getCrlStoreSession();
-    private CertificateRequestSessionRemote certReqSession = InterfaceCache.getCertficateRequestSession();
-    private CertificateStoreSessionRemote certStoreSession = InterfaceCache.getCertificateStoreSession();
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
+    private CrlStoreSessionRemote crlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
+    private CertificateRequestSessionRemote certReqSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
+    private CertificateStoreSessionRemote certStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {

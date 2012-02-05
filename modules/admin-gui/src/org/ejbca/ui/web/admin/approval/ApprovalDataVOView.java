@@ -35,8 +35,10 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -59,7 +61,7 @@ public class ApprovalDataVOView implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(ApprovalDataVOView.class);
-	private final EjbLocalHelper ejb = new EjbLocalHelper();
+	private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private ApprovalDataVO data;
     private boolean initialized = false;
 
@@ -103,7 +105,7 @@ public class ApprovalDataVOView implements Serializable {
             return helpBean.getEjbcaWebBean().getText("ANYCA", true);
         }
         try {
-			return ejb.getCaSession().getCAInfo(helpBean.getAdmin(), data.getCAId()).getName();
+			return EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(helpBean.getAdmin(), data.getCAId()).getName();
 		} catch (CADoesntExistsException e) {
 			log.error("Can not get CA with id: "+data.getCAId(), e);
 		} catch (AuthorizationDeniedException e) {
@@ -120,7 +122,7 @@ public class ApprovalDataVOView implements Serializable {
         if (data.getEndEntityProfileiId() == ApprovalDataVO.ANY_ENDENTITYPROFILE) {
             return helpBean.getEjbcaWebBean().getText("ANYENDENTITYPROFILE", true);
         }
-        return ejb.getEndEntityProfileSession().getEndEntityProfileName(data.getEndEntityProfileiId());
+        return ejbLocalHelper.getEndEntityProfileSession().getEndEntityProfileName(data.getEndEntityProfileiId());
     }
 
     public String getRemainingApprovals() {
@@ -388,11 +390,11 @@ public class ApprovalDataVOView implements Serializable {
     	ApprovalRequest approvalRequest = data.getApprovalRequest();
     	AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
     	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-    		return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, ejb.getCaSession(),
-    				ejb.getEndEntityProfileSession(), ejb.getCertificateProfileSession(), ejb.getHardTokenSession());
+    		return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class),
+    				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
     	} else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-    		return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, ejb.getCaSession(),
-    				ejb.getEndEntityProfileSession(), ejb.getCertificateProfileSession(), ejb.getHardTokenSession());
+    		return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class),
+    				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
     	} else {
     		return approvalRequest.getNewRequestDataAsText(admin);
     	}
@@ -402,8 +404,8 @@ public class ApprovalDataVOView implements Serializable {
     	ApprovalRequest approvalRequest = data.getApprovalRequest();
     	AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
     	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-    		return ((EditEndEntityApprovalRequest)approvalRequest).getOldRequestDataAsText(admin, ejb.getCaSession(),
-    				ejb.getEndEntityProfileSession(), ejb.getCertificateProfileSession(), ejb.getHardTokenSession());
+    		return ((EditEndEntityApprovalRequest)approvalRequest).getOldRequestDataAsText(admin, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class),
+    				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
     	} else {
     		return approvalRequest.getOldRequestDataAsText(admin);
     	}

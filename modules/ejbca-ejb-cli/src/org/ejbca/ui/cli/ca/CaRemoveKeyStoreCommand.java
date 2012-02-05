@@ -13,6 +13,7 @@
 
 package org.ejbca.ui.cli.ca;
 
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -43,7 +44,7 @@ public class CaRemoveKeyStoreCommand extends BaseCaAdminCommand {
 		}
 		try {
 			String caName = args[1];
-			ejb.getCAAdminSession().removeCAKeyStore(getAdmin(cliUserName, cliPassword), caName);
+			ejb.getRemoteSession(CAAdminSessionRemote.class).removeCAKeyStore(getAdmin(cliUserName, cliPassword), caName);
 		} catch (Exception e) {
 			throw new ErrorAdminCommandException(e);
 		}

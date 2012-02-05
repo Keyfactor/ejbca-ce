@@ -52,10 +52,10 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
 import org.junit.After;
 import org.junit.Before;
@@ -70,10 +70,10 @@ import org.junit.Test;
 public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
     private static final Logger log = Logger.getLogger(EndEntityProfileSessionBeanTest.class);
 
-    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
+    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
     private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     @BeforeClass
     public static void setUpCryptoProvider() throws Exception {
         CryptoProviderTools.installBCProvider();

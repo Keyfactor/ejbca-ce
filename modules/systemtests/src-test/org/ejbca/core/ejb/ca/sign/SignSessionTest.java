@@ -86,6 +86,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -102,7 +103,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.cvc.CardVerifiableCertificate;
-import org.ejbca.util.InterfaceCache;
 import org.ejbca.util.cert.SeisCardNumberExtension;
 import org.junit.After;
 import org.junit.Before;
@@ -178,13 +178,13 @@ public class SignSessionTest extends CaTestCase {
     
     private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SignSessionTest"));
 
-    private CAAdminSessionRemote caAdminSession = InterfaceCache.getCAAdminSession();
-    private CaSessionRemote caSession = InterfaceCache.getCaSession();
-    private CertReqHistorySessionRemote certReqHistorySession = InterfaceCache.getCertReqHistorySession();
-    private EndEntityProfileSessionRemote endEntityProfileSession = InterfaceCache.getEndEntityProfileSession();
-    private SignSessionRemote signSession = InterfaceCache.getSignSession();
-    private UserAdminSessionRemote userAdminSession = InterfaceCache.getUserAdminSession();
-    private CertificateProfileSessionRemote certificateProfileSession = InterfaceCache.getCertificateProfileSession();
+    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private CertReqHistorySessionRemote certReqHistorySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistorySessionRemote.class);
+    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
+    private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
 
     private CAInfo inforsa;
 

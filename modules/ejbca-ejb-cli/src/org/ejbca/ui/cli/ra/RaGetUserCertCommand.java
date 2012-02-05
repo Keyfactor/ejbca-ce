@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ra;
 import java.security.cert.Certificate;
 import java.util.Collection;
 
+import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.util.CertTools;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -38,7 +39,7 @@ public class RaGetUserCertCommand extends BaseRaAdminCommand {
                 return;
             }
             final String username = args[1];
-            final Collection<Certificate> data = ejb.getCertStoreSession().findCertificatesByUsername(username);
+            final Collection<Certificate> data = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findCertificatesByUsername(username);
             if (data != null) {
             	getLogger().info(new String(CertTools.getPEMFromCerts(data)));
             } else {
