@@ -157,23 +157,33 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
     public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) {
         
         if(msg == null) {
-            LOG.error("No PKIMessage was found");
+            errorMessage = "No PKIMessage was found";
+            LOG.error(errorMessage);
+            return false;
+        }
+        
+        if((msg.getProtection() == null) || (msg.getHeader().getProtectionAlg() == null)) {
+            errorMessage = "PKI Message is not athenticated properly. No HMAC protection was found.";
+            if(LOG.isDebugEnabled()) {
+                LOG.debug(errorMessage);
+            }
             return false;
         }
 
         try {   
             verifyer = new CmpPbeVerifyer(msg);
         } catch(Exception e) {
+            errorMessage = "Could not create CmpPbeVerifyer";
             if(LOG.isDebugEnabled()) {
-                LOG.debug("Could not create CmpPbeVerifyer");
-                LOG.debug(e.getLocalizedMessage());
+                LOG.debug(errorMessage, e);
             }
             return false;
         }
         
         if(verifyer == null) {
+            errorMessage = "Could not create CmpPbeVerifyer Object";
             if(LOG.isDebugEnabled()) {
-                LOG.debug("Could not create CmpPbeVerifyer Object");
+                LOG.debug(errorMessage);
             }
             return false;
         }

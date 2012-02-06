@@ -251,7 +251,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Received an unathenticated message in RA mode.");
+        checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "PKI Message is not athenticated properly. No HMAC protection was found.");
     }
 
     @Test
