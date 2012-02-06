@@ -565,14 +565,14 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 cainfo = caSession.getCAInfo(this.admin, CertTools.getIssuerDN(extracert).hashCode());
             }
         } catch (CADoesntExistsException e) {
-            errorMessage = e.getLocalizedMessage();
+            errorMessage = "CA does not exist";
             if(log.isDebugEnabled()) {
-                log.debug(errorMessage);
+                log.debug(errorMessage, e);
             }
         } catch (AuthorizationDeniedException e) {
             errorMessage = e.getLocalizedMessage();
             if(log.isDebugEnabled()) {
-                log.debug(errorMessage);
+                log.debug(errorMessage, e);
             }
         }
         
