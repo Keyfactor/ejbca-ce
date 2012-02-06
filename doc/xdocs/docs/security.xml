@@ -109,8 +109,17 @@ password scheme. When a user has enrolled for a certificate his status is
 set to GENERATED and the password can not be used again to enroll for a new
 certificate. An administrator must re-set the user's status and preferably
 set a new password.
-</p><p>
+</p>
 
+<p>If you are exposing your public web pages to a wider audience there are a few functions you can use in order to counter perceived threats such as brute-force attacks.
+</p>
+<ul>
+<li>Enable password expiry using the <a href="adminguide.html#Currently%20Available%20Services">User Password Expire Service</a>. If a user forgets to use his/her one-time password it will be automatically disabled.</li>
+<li>Use password expiry with the <a href="userguide.html#Maximum%20number%20of%20failed%20login%20attempts">Maximum number of failed login attempts</a> setting when registering users.</li>
+<li>Increase the number of BCrypt rounds, making password hashing slower. See the setting of ejbca.passwordlogrounds in conf/ejbca.properties.sample.</li>
+</ul>
+
+<p>
 If implementing other user authentication scenarios you should remember
 that certificate authentication is stronger than password based
 authentication (for example LDAP). If EJBCA users authenticate 
