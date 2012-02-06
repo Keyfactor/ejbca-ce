@@ -92,7 +92,7 @@
     %>
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <%= ejbcawebbean.getText("KEYSPEC") %>
+        <%= ejbcawebbean.getText("KEYSPEC") %> <%= ejbcawebbean.getHelpReference("/adminguide.html#Named%20curves") %>
       </td>
       <td width="50%"> 
            <% if(editca){
