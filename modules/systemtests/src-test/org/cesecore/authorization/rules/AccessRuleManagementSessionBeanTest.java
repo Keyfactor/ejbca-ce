@@ -17,7 +17,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import junit.framework.Assert;
 
-import org.cesecore.jndi.JndiHelper;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.junit.Test;
 
@@ -32,7 +32,7 @@ import org.junit.Test;
  */
 public class AccessRuleManagementSessionBeanTest {
 
-    AccessRuleManagementTestSessionRemote accessRuleManagementSession = JndiHelper.getRemoteSession(AccessRuleManagementTestSessionRemote.class);
+    AccessRuleManagementTestSessionRemote accessRuleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessRuleManagementTestSessionRemote.class);
 
     /**
      * Test all CRUD operations. Pure sanity test.

@@ -79,7 +79,6 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
@@ -153,7 +152,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
     private String httpPort;
     private String httpReqPath;
 
-    private ConfigurationSessionRemote configurationSessionRemote = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
+    private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
     private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
     @BeforeClass
@@ -746,7 +745,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
     private void updatePropertyOnServer(String property, String value) {
         log.debug("Setting property on server: " + property + "=" + value);
         assertTrue("Failed to set property \"" + property + "\" to \"" + value + "\"",
-                JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).updateProperty(property, value));
+                EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class).updateProperty(property, value));
     }
 
     static class InternalResourcesStub extends InternalEjbcaResources {

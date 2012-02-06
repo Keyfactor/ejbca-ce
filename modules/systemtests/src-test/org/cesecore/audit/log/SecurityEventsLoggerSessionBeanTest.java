@@ -50,11 +50,11 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.query.Criteria;
 import org.cesecore.util.query.QueryCriteria;
 import org.junit.AfterClass;
@@ -70,9 +70,9 @@ import org.junit.Test;
 public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
 
     private static final Logger log = Logger.getLogger(SecurityEventsLoggerSessionBeanTest.class);
-    private final SecurityEventsLoggerSession securityEventsLogger = JndiHelper.getRemoteSession(SecurityEventsLoggerSessionRemote.class);
-    private final SecurityEventsAuditorSession securityEventsAuditor = JndiHelper.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
-    private final TxFailureLoggerOperationSessionRemote txFailure = JndiHelper.getRemoteSession(TxFailureLoggerOperationSessionRemote.class);
+    private final SecurityEventsLoggerSession securityEventsLogger = EjbRemoteHelper.INSTANCE.getRemoteSession(SecurityEventsLoggerSessionRemote.class);
+    private final SecurityEventsAuditorSession securityEventsAuditor = EjbRemoteHelper.INSTANCE.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
+    private final TxFailureLoggerOperationSessionRemote txFailure = EjbRemoteHelper.INSTANCE.getRemoteSession(TxFailureLoggerOperationSessionRemote.class);
 
     @BeforeClass
     public static void setUpCryptoProvider() {

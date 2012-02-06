@@ -37,7 +37,6 @@ import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -68,8 +67,8 @@ public class UserDataSourceTest extends CaTestCase {
 
     private static final String ROLENAME = "USERDATASOURCE_EDITOR";
 
-    private RoleManagementSessionRemote roleManagementSessionRemote = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
-    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
+    private RoleManagementSessionRemote roleManagementSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderRemote.class);
     private UserDataSourceSessionRemote userDataSourceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserDataSourceSessionRemote.class);
 
     @Override

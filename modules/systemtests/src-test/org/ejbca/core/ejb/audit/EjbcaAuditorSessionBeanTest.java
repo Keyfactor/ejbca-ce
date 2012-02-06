@@ -26,12 +26,12 @@ import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,9 +47,9 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
     private final static String DEVICE_NAME = IntegrityProtectedDevice.class.getSimpleName();
     private final static String ROLE_NAME = "EjbcaSecurityAuditTest";
     
-    private EjbcaAuditorTestSessionRemote ejbcaAuditorSession = JndiHelper.getRemoteSession(EjbcaAuditorTestSessionRemote.class);
-    private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
+    private EjbcaAuditorTestSessionRemote ejbcaAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EjbcaAuditorTestSessionRemote.class);
+    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     
     @Before
     public void setup() throws RoleExistsException, RoleNotFoundException, AccessRuleNotFoundException, AuthorizationDeniedException {

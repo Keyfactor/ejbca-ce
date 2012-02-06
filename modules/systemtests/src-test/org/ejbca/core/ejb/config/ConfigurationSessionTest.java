@@ -18,7 +18,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Properties;
 
-import org.cesecore.jndi.JndiHelper;
+import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,7 +30,7 @@ import org.junit.Test;
  */
 public class ConfigurationSessionTest {
 
-    private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
+    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
     
 
     @Before

@@ -21,7 +21,7 @@ import java.util.List;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.roles.RoleData;
-import org.cesecore.roles.access.RoleAccessSession;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
@@ -88,7 +88,7 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
                 return;
             }
             String groupName = args[1];
-            RoleData role = ejb.getRemoteSession(RoleAccessSession.class).findRole(groupName);
+            RoleData role = ejb.getRemoteSession(RoleAccessSessionRemote.class).findRole(groupName);
             if (role == null) {
                 getLogger().error("No such role \"" + groupName + "\".");
                 return;

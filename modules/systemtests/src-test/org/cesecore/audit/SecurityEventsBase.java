@@ -20,13 +20,13 @@ import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
 
@@ -43,8 +43,8 @@ public abstract class SecurityEventsBase extends RoleUsingTestCase {
     public static final String keyPairAlgorithm = "1024";
     public static final String keyPairSignAlgorithm = "SHA512withRSA";
 
-    protected RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
-    protected RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
+    protected RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+    protected RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
 
     public static final CryptoToken createTokenWithKeyPair() throws Exception {
 

@@ -32,7 +32,6 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
@@ -60,8 +59,8 @@ public class HardTokenProfileTest {
     private static Logger log = Logger.getLogger(HardTokenProfileTest.class);
 
     private HardTokenSessionRemote hardTokenSession = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
-    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = JndiHelper.getRemoteSession(SimpleAuthenticationProviderRemote.class);
+    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderRemote.class);
 
     private static int SVGFILESIZE = 512 * 1024; // 1/2 Mega char
 

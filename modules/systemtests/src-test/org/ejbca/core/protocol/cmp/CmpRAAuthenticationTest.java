@@ -33,7 +33,6 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -75,7 +74,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     private static X509Certificate caCertificate1;
     private static X509Certificate caCertificate2;
     
-    private UserAdminSessionRemote userAdminSession = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);
+    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {
@@ -228,7 +227,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         super.tearDown();
         removeTestCA(CA_NAME_1);
         removeTestCA(CA_NAME_2);
-        JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).restoreConfiguration();
+        EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class).restoreConfiguration();
         EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).removeEndEntityProfile(ADMIN, EEP_1);
     }
     

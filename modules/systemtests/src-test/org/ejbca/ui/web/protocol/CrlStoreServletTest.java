@@ -19,7 +19,7 @@ import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
-import org.cesecore.jndi.JndiHelper;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
@@ -36,8 +36,8 @@ import org.junit.Test;
 public class CrlStoreServletTest extends CaTestCase {
     private final static Logger log = Logger.getLogger(CrlStoreServletTest.class);
 
-    private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
-    private CrlStoreSessionRemote crlSession = JndiHelper.getRemoteSession(CrlStoreSessionRemote.class);
+    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
+    private CrlStoreSessionRemote crlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
 
     @Before
     public void setUp() throws Exception{

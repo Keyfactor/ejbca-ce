@@ -39,12 +39,12 @@ import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.query.Criteria;
 import org.cesecore.util.query.QueryCriteria;
 import org.ejbca.core.EjbcaException;
@@ -78,16 +78,15 @@ public class CliAuthenticationTest {
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
     
-    private final AccessControlSessionRemote accessControlSession = JndiHelper.getRemoteSession(AccessControlSessionRemote.class);
-    private final CliAuthenticationProviderRemote cliAuthenticationProvider = JndiHelper.getRemoteSession(CliAuthenticationProviderRemote.class);
-    private final ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
-    private final RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
-    private final RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
-    private final SecurityEventsAuditorSessionRemote securityEventsAuditorSession = JndiHelper.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
-    private final UserAdminSessionRemote userAdminSessionRemote = JndiHelper.getRemoteSession(UserAdminSessionRemote.class);    
+    private final AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
+    private final CliAuthenticationProviderRemote cliAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationProviderRemote.class);
+    private final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
+    private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+    private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private final SecurityEventsAuditorSessionRemote securityEventsAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
+    private final UserAdminSessionRemote userAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);    
 
-    private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = JndiHelper
-            .getRemoteSession(CliAuthenticationTestHelperSessionRemote.class);
+    private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationTestHelperSessionRemote.class);
 
     private final TestAlwaysAllowLocalAuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             CliAuthenticationProviderRemote.class.getSimpleName()));

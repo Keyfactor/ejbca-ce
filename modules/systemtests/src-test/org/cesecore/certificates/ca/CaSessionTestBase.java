@@ -56,13 +56,13 @@ import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 
 /**
  * Tests the CA session bean.
@@ -76,15 +76,15 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     private CA testx509ca;
     private CA testcvcca;
     
-    private CaSessionRemote caSession = JndiHelper.getRemoteSession(CaSessionRemote.class);
-    private CaTestSessionRemote caTestSession = JndiHelper.getRemoteSession(CaTestSessionRemote.class);
-    private CaTokenSessionRemote caTokenSession = JndiHelper.getRemoteSession(CaTokenSessionRemote.class);
-    private CertificateCreateSessionRemote certificateCreateSession = JndiHelper.getRemoteSession(CertificateCreateSessionRemote.class);
-    private RoleAccessSessionRemote roleAccessSession = JndiHelper.getRemoteSession(RoleAccessSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = JndiHelper.getRemoteSession(RoleManagementSessionRemote.class);
-    private CrlCreateSessionRemote crlCreateSession = JndiHelper.getRemoteSession(CrlCreateSessionRemote.class);
-    private CrlStoreSessionRemote crlStoreSession = JndiHelper.getRemoteSession(CrlStoreSessionRemote.class);
-    private InternalCertificateStoreSessionRemote internalCertStoreSession = JndiHelper.getRemoteSession(InternalCertificateStoreSessionRemote.class);
+    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+    private CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class);
+    private CaTokenSessionRemote caTokenSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTokenSessionRemote.class);
+    private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
+    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private CrlCreateSessionRemote crlCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlCreateSessionRemote.class);
+    private CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
+    private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
 
     public CaSessionTestBase(CA x509ca, CA cvcca) {
     	this.testx509ca = x509ca;
