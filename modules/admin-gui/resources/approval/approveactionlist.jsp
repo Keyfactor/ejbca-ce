@@ -44,9 +44,11 @@ function viewcert(link){
   <h:selectOneMenu id="timespan" value="#{listApproveActionSessionBean.selectedTimeSpan}">
   <f:selectItems value="#{listApproveActionSessionBean.availableTimeSpans}"/>
 </h:selectOneMenu>
-  <h:commandButton id="list" action="#{listApproveActionSessionBean.list}" value="#{web.text.LIST}"/>
+  <h:outputText value=" "/>
+  <h:commandButton id="list" action="#{listApproveActionSessionBean.list}" value="#{web.text.SEARCH}"/>
   </p>
 </h:form>
+
   <div class="message"><h:messages layout="table" errorClass="alert"/></div>
   <hr/>
   <h:form >
