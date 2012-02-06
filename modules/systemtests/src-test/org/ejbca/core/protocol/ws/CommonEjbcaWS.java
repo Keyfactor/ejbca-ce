@@ -174,15 +174,15 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(CommonEjbcaWS.class);
 
-    private final static String TEST_ADMIN_USERNAME = "wstest";
-    private final static String TEST_ADMIN_FILE = "p12/"+TEST_ADMIN_USERNAME+".jks";
-    protected final static String TEST_NONADMIN_USERNAME = "wsnonadmintest";
-    protected final static String TEST_NONADMIN_FILE = "p12/" + TEST_NONADMIN_USERNAME + ".jks";
-    protected final static String TEST_NONADMIN_CN = "CN="+TEST_NONADMIN_USERNAME;
-    protected final static String PASSWORD = "foo123";
+    private static final String TEST_ADMIN_USERNAME = "wstest";
+    private static final String TEST_ADMIN_FILE = "p12/"+TEST_ADMIN_USERNAME+".jks";
+    protected static final String TEST_NONADMIN_USERNAME = "wsnonadmintest";
+    protected static final String TEST_NONADMIN_FILE = "p12/" + TEST_NONADMIN_USERNAME + ".jks";
+    protected static final String TEST_NONADMIN_CN = "CN="+TEST_NONADMIN_USERNAME;
+    protected static final String PASSWORD = "foo123";
 
-    private final String cliUserName = "ejbca";
-    private final String cliPassword = "ejbca";
+    private static final String CLI_USERNAME = "ejbca";
+    private static final String CLI_PASSWORD = "ejbca";
     
     protected EjbcaWS ejbcaraws;
 
@@ -224,7 +224,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     private static final String WSTESTPROFILE = "WSTESTPROFILE";
 
-	private final AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private final CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private final CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private final ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
@@ -234,10 +233,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     private final PublisherProxySessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class);
     private final PublisherQueueSessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueSessionRemote.class);
-    private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     protected final UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
-
     
     public CommonEjbcaWS() {
 
@@ -247,7 +243,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     }
 
-    protected String getAdminCAName() {
+    protected static String getAdminCAName() {
         return "AdminCA1";
     }
 
@@ -275,8 +271,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
 
-    protected void setupAccessRights(final String wsadminRoleName) throws Exception {
-
+    protected static void setupAccessRights(final String wsadminRoleName) throws Exception {
+        AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+        RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+        UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+        
         EndEntityInformation user1 = new EndEntityInformation();
         user1.setUsername(TEST_ADMIN_USERNAME);
         user1.setPassword(PASSWORD);
@@ -320,10 +321,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         			TEST_ADMIN_USERNAME));
         	roleManagementSession.addSubjectsToRole(intAdmin, role, list);
         	accessControlSession.forceCacheExpire();
-        } else {
-        	log.info("Admin already exists in role: "+getRoleName());
-        }
-
+        } 
         EndEntityInformation user2 = new EndEntityInformation();
         user2.setUsername(TEST_NONADMIN_USERNAME);
         user2.setPassword(PASSWORD);
@@ -347,8 +345,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         BatchMakeP12 batch = new BatchMakeP12();
         batch.setMainStoreDir("p12");
-        batch.createUser(cliUserName, cliPassword, user1.getUsername());
-        batch.createUser(cliUserName, cliPassword, user2.getUsername());
+        batch.createUser(CLI_USERNAME, CLI_PASSWORD, user1.getUsername());
+        batch.createUser(CLI_USERNAME, CLI_PASSWORD, user2.getUsername());
     }
 
     private String getDN(String userName) {
@@ -2626,7 +2624,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         deleteDVCAExt();
     }
 
-    protected void cleanUpAdmins(final String wsadminRoleName) throws Exception {
+    protected static void cleanUpAdmins(final String wsadminRoleName) throws Exception {
+        AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
+        EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+        RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+        RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+        UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+        
             // Remove from role
     	RoleData role = roleAccessSession.findRole(wsadminRoleName);
     	if (role != null) {

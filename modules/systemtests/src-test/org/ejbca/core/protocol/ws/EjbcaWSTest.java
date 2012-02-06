@@ -89,6 +89,7 @@ import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -102,6 +103,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(EjbcaWSTest.class);
 
+    public final static String WS_ADMIN_ROLENAME = "WsTEstRole";
+    public final static String WS_TEST_ROLENAME = "WsTestRoleMgmt";
+    
     private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
     private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
@@ -117,32 +121,32 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     
     private final SimpleAuthenticationProviderRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderRemote.class);
     
-    private final String wsadminRoleName = "WsTEstRole";
-    
+
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws Exception {
     	adminBeforeClass();
+    	setupAccessRights(WS_ADMIN_ROLENAME);
     }
 
     @Before
     public void setUpAdmin() throws Exception {
     	adminSetUpAdmin();
     }
+    
+    @AfterClass
+    public static void afterClass() throws Exception {
+        cleanUpAdmins(WS_ADMIN_ROLENAME);
+        cleanUpAdmins(WS_TEST_ROLENAME);
+    }
 
     @Override
 	public String getRoleName() {
-        return "WsTestRoleMgmt";
+        return WS_TEST_ROLENAME;
     }
 
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-    }
-
-
-    @Test
-    public void test00SetupAccessRights() throws Exception {
-        super.setupAccessRights(wsadminRoleName);
     }
 
     @Test
@@ -703,12 +707,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         criteria.setMatchvalue(userName);
         UserDataVOWS user = ejbcaraws.findUser(criteria).get(0);
         assertEquals("stored cardnumber ws", "1234fa", user.getCardNumber());
-    }
-    
-    @Test
-    public void test99cleanUpAdmins() throws Exception {
-        super.cleanUpAdmins(wsadminRoleName);
-        super.cleanUpAdmins(getRoleName());
     }
 
     private void testCertificateRequestWithSpecialChars(String requestedSubjectDN, String expectedSubjectDN) throws Exception {
