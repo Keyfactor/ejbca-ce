@@ -13,6 +13,7 @@
 package org.ejbca.core.protocol.ws;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -30,21 +31,26 @@ public class EjbcaWsCommonCriteriaTest {
     private EjbcaWSTest test;
     
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws Exception {
         EjbcaWSTest.beforeClass();
     }
     
     @Before
     public void setUp() throws Exception {
         test = new EjbcaWSTest();
-        test.test00SetupAccessRights();
+        EjbcaWSTest.setupAccessRights(EjbcaWSTest.WS_ADMIN_ROLENAME);
         test.setUpAdmin();
     }
     
     @After
     public void tearDown() throws Exception {
-        test.test99cleanUpAdmins();
+     
         test.tearDown();
+    }
+    
+    @AfterClass
+    public static void afterClass() throws Exception {
+        EjbcaWSTest.afterClass();
     }
     
     @Test
@@ -82,7 +88,7 @@ public class EjbcaWsCommonCriteriaTest {
     public void testIsAuthorized() throws Exception {
         test.testIsAuthorized(true);
         // Test non authorized by revoking the certificate
-        test.test99cleanUpAdmins();
+        EjbcaWSTest.afterClass();
         test.tearDown();
         test.testIsAuthorized(false);
     }
