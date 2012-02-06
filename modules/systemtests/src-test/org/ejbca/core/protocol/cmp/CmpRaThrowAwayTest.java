@@ -35,7 +35,6 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -119,7 +118,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         super.tearDown();
         LOG.trace(">testZZZTearDown");
         boolean cleanUpOk = true;
-        cleanUpOk &= JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).restoreConfiguration();
+        cleanUpOk &= EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class).restoreConfiguration();
         removeTestCA(TESTCA_NAME);
         assertTrue("Clean up failed!", cleanUpOk);
         LOG.trace("<testZZZTearDown");

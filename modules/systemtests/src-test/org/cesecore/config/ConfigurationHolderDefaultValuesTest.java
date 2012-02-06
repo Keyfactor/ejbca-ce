@@ -13,7 +13,7 @@
 package org.cesecore.config;
 
 import org.cesecore.configuration.ConfigurationHolderProxySessionRemote;
-import org.cesecore.jndi.JndiHelper;
+import org.cesecore.util.EjbRemoteHelper;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -28,7 +28,7 @@ import org.junit.Test;
  */
 public class ConfigurationHolderDefaultValuesTest {
     
-    ConfigurationHolderProxySessionRemote configurationHolderProxySession = JndiHelper.getRemoteSession(ConfigurationHolderProxySessionRemote.class);
+    ConfigurationHolderProxySessionRemote configurationHolderProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationHolderProxySessionRemote.class);
     
     @Test
     public void testDefaultValues() {

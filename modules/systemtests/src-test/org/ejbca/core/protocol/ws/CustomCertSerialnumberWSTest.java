@@ -15,7 +15,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.jndi.JndiHelper;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
@@ -46,7 +46,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
 	private static final String TEST_USER3 = "customSerialNrUser3";
 
-    private UniqueSernoHelperTestSessionRemote sernoHelperSession= JndiHelper.getRemoteSession(UniqueSernoHelperTestSessionRemote.class);
+    private UniqueSernoHelperTestSessionRemote sernoHelperSession= EjbRemoteHelper.INSTANCE.getRemoteSession(UniqueSernoHelperTestSessionRemote.class);
 
     @BeforeClass
     public static void setupAccessRights() {

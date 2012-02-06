@@ -62,11 +62,11 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.query.Criteria;
 import org.cesecore.util.query.QueryCriteria;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -83,13 +83,10 @@ public class WebAuthenticationProviderSessionBeanTest {
 
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    private final CertificateStoreSessionRemote certificateStoreSession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class);
-    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = JndiHelper
-            .getRemoteSession(InternalCertificateStoreSessionRemote.class);
-    private final SecurityEventsAuditorSessionRemote securityEventsAuditorSession = JndiHelper
-            .getRemoteSession(SecurityEventsAuditorSessionRemote.class);
-    private final WebAuthenticationProviderProxySessionRemote authenticationProviderProxy = JndiHelper
-            .getRemoteSession(WebAuthenticationProviderProxySessionRemote.class);
+    private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
+    private final SecurityEventsAuditorSessionRemote securityEventsAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
+    private final WebAuthenticationProviderProxySessionRemote authenticationProviderProxy = EjbRemoteHelper.INSTANCE.getRemoteSession(WebAuthenticationProviderProxySessionRemote.class);
 
     private static KeyPair keys;
 

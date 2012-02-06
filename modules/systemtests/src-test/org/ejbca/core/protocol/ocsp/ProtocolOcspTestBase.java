@@ -46,9 +46,9 @@ import org.bouncycastle.ocsp.UnknownStatus;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 
 import com.gargoylesoftware.htmlunit.WebClient;
@@ -87,7 +87,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 
     protected int caid;
     
-    private CertificateStoreSessionRemote certificateStoreOnlyDataSession = JndiHelper.getRemoteSession(CertificateStoreSessionRemote.class); // Stand alone OCSP version..
+    private CertificateStoreSessionRemote certificateStoreOnlyDataSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class); // Stand alone OCSP version..
 
     
     public void test01Access() throws Exception { // NOPMD, this is not a test class itself

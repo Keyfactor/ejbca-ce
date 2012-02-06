@@ -26,7 +26,7 @@ import java.net.Socket;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
-import org.cesecore.jndi.JndiHelper;
+import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.junit.Before;
@@ -51,7 +51,7 @@ public class HttpMethodsTest {
     private String httpBaseUrl;
     private String httpPort;
 
-    private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
+    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
 
     @Before
     public void setUp() {

@@ -78,7 +78,6 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.WebConfiguration;
@@ -127,7 +126,7 @@ public abstract class CmpTestCase extends CaTestCase {
     private String CMP_HOST; // = "127.0.0.1";
 
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private ConfigurationSessionRemote configurationSession = JndiHelper.getRemoteSession(ConfigurationSessionRemote.class);
+    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
 
     protected void setUp() throws Exception {
         super.setUp();
@@ -836,7 +835,7 @@ public abstract class CmpTestCase extends CaTestCase {
     protected void updatePropertyOnServer(String property, String value) {
         log.debug("Setting property on server: " + property + "=" + value);
         assertTrue("Failed to set property \"" + property + "\" to \"" + value + "\"",
-                JndiHelper.getRemoteSession(ConfigurationSessionRemote.class).updateProperty(property, value));
+                EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class).updateProperty(property, value));
     }
 
     //

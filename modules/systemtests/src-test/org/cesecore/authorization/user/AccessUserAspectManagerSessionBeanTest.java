@@ -17,8 +17,8 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
-import org.cesecore.jndi.JndiHelper;
 import org.cesecore.roles.RoleData;
+import org.cesecore.util.EjbRemoteHelper;
 import org.junit.Test;
 
 /**
@@ -32,7 +32,7 @@ import org.junit.Test;
  */
 public class AccessUserAspectManagerSessionBeanTest {
 
-    AccessUserAspectManagerTestSessionRemote accessUserAspectManagerSession = JndiHelper.getRemoteSession(AccessUserAspectManagerTestSessionRemote.class);
+    AccessUserAspectManagerTestSessionRemote accessUserAspectManagerSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessUserAspectManagerTestSessionRemote.class);
 
     /**
      * Simple sanity test, meant to involve other session beans as little as possible.
