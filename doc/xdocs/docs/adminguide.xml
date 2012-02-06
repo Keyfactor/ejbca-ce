@@ -599,7 +599,7 @@ The following CMP messages are supported:
 <li>Certification confirm (certConf)</li>
 <li>Revocation request (rr)</li>
 <li>NestedMessageContent (nested)</li>
-<li>Key Update Request (kur) - available only in client mode</li>
+<li>Key Update Request (kur)</li>
 </ul>
 Certificate requests use the CRMF (RFC4211).
 </p>
@@ -804,6 +804,24 @@ This property will otherwise override the CA specific configuration.
 </p>
 </subsubsection>
 </subsection>
+
+<subsection name="Key Update Request (kur)">
+<p>Also known as the Certificate Update request. When a key pair is due to expire, the relevant end entity may request a key update. The CMP request is signed 
+and the sender attaches their certificate in the extraCert field in the CMP message.</p>
+	
+<subsubsection name="In Client Mode">
+<p>In client mode, the only end entity that is allowed to send a KeyUpdate request is the end entity that owns the certificate to be renewed. This end entity 
+should be the one signing the request and attaching its "old" certificate (that has not been expired yet) to the CMP message. The CA will only look into the 
+certificate in extraCert to find which certificate is to be updated.</p>  
+</subsubsection>
+<subsubsection name="In RA Mode">
+<p>In RA mode, an administrator is allowed to send a KeyUpdate request on behalf of an end entity. The adminstrator should be the one signing the request and 
+attaching his own certificate to the CMP message. Either only the subjectDN or both the subjectDN and the issuerDN of the certificate to be updated 
+are specified in the CertificateTemplate field in the CMP message.</p>
+
+<p>In order for this request to succeed, the administrator sending the update request has to be authorized to perform this operation.</p>   
+</subsubsection>
+
 
 <subsection name="Proof of possession">
 <p>
