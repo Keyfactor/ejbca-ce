@@ -185,7 +185,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             int caid = 0;
             try {
-                EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname).getCAId();
+                caid = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname).getCAId();
             } catch (CADoesntExistsException e) {
                 // NOPMD: let it be 0, we will print a suitable error message below
             }            
@@ -227,7 +227,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             }
 
             if (caid == 0) { // CA not found i database.
-                getLogger().error("Could not find CA '"+caname+"'in database.");
+                getLogger().error("Could not find CA '"+caname+"' in database.");
                 error = true;
             }
 
@@ -248,7 +248,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             // Check if username already exists.
             if (ejb.getRemoteSession(UserAdminSessionRemote.class).existsUser(username)) {
-                getLogger().error("User already exists in the database.");
+                getLogger().error("User '"+username+"' already exists in the database.");
                 error = true;
             }
 
