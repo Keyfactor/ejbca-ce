@@ -515,6 +515,16 @@
     <!-- =================================================================== -->
     <target name="va-ear" depends="fail-unless-appserver-detected, display-properties, vahealthcheck.war, create-log4config-bundle">
 		<property name="eardd.src" value="${tmp}/va-ear" />
+			<!-- This is quite ugly, we use two variables in order to decide if the systemtest files will be 
+			     included in the ear file or not. In ant 1.8 we could us an "if" to the "include" directive,
+			     and only need one variable, but that does not work in ant 1.7 so... --> 
+	    <condition property="in-test-mode" else="false">
+	    	<equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
+	    </condition>
+	    <condition property="in-test-mode-include" value="" else="dontinclude/">
+	   		<equals arg1="${ejbca.productionmode}" arg2="false" casesensitive="false"/>
+	    </condition>
+			
 		<mkdir dir="${eardd.src}/META-INF"/>
 		<copy todir="${eardd.src}/META-INF" file="src/deploy/va-ear/META-INF/application.xml" flatten="true" failonerror="true"/>
 		<antcall target="va_replacings_in_application.xml">
@@ -546,6 +556,7 @@
                 <include name="certstore.war" />
                 <include name="crlstore.war" />
                 <include name="va-ejb.jar" />
+                <include name="${in-test-mode-include}systemtests-ejb.jar"/>
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="ejbca-properties.jar" />
@@ -553,6 +564,7 @@
                 <include name="va-entity.jar" />
                 <include name="va-common.jar" />
                 <include name="log4jconfig.jar" />
+                <include name="${in-test-mode-include}systemtests-interfaces.jar"/>
         	</zipfileset>
         	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>
 	</ear>
