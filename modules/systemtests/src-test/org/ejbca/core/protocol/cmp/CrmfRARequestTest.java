@@ -38,15 +38,19 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
+import org.cesecore.jndi.JndiHelper;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
+import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
+import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -85,6 +89,8 @@ public class CrmfRARequestTest extends CmpTestCase {
     private EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
     private CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityAccessSession eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = JndiHelper.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
+    private GlobalConfigurationSession globalConfSession = JndiHelper.getRemoteSession(GlobalConfigurationSession.class);
 
     @Before
     public void setUp() throws Exception {
@@ -349,6 +355,10 @@ public class CrmfRARequestTest extends CmpTestCase {
     @Test
     public void test03UseKeyID() throws Exception {
 
+        GlobalConfiguration gc = globalConfSession.getCachedGlobalConfiguration();
+        gc.setEnableEndEntityProfileLimitations(true);
+        globalConfigurationProxySession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
+        
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "KeyId");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "KeyId");
 
