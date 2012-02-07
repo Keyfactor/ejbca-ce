@@ -560,7 +560,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
                     } catch (AuthenticationFailedException e) {
                         // If AuthenticationFailedException was thrown for this token, then the token
                         // was invalid to begin with. Fail nicely and return false;
-                        log.error("AuthenticationFailedException when evaluating authentication token " + admin, e);
+                        log.info("AuthenticationFailedException when evaluating authentication token " + admin, e);
                         break;
                     }
                 }
