@@ -748,6 +748,21 @@ When used, the card number needs to be set for the end entity before creating a 
 The extension is specified in the the Seis document  SS 614331 chapter 4.3 and has OID 1.2.752.34.2.1.
 </p>
 </subsubsection>
+<subsubsection name="Subset of Subject DN">
+<p>By Using a subset of Subject DN in the certificate you can register users with more information than is present in the issued certificate.
+Example:
+</p>
+<ul>
+<li>Use "Subset of Subject DN" in a certificate profile, with selected values CN,O and C.</li>
+<li>Register an end entity with "CN=Tomas Gustavsson,O=PrimeKey,OU=Ignored,C=SE", and the configured certificate profile.</li>
+<li>Issue a certificate using the certificate profile.</li>
+<li>Issue a certificate. The issued certificate will contain subject DN "CN=Tomas Gustavsson,O=PrimeKey,C=SE".</li>
+</ul>
+<note>
+Do not use a "Subset of Subject DN" when issuing CA certificates. That can have undesired consequences, such as colliding CAIds and inability to find CA certificates.
+</note>
+</subsubsection>
+
 </subsection>
 </section>
 

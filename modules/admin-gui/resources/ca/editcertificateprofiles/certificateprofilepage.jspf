@@ -1434,7 +1434,7 @@ function checkallfields(){
 
     <tr  id="Row<%=row++%2%>"> 
       <td width="50%"  align="right"> 
-        <c:out value="<%= ejbcawebbean.getText(\"CERT_SUBJECTDN_SUBSET\") %>" /> 
+        <c:out value="<%= ejbcawebbean.getText(\"CERT_SUBJECTDN_SUBSET\") %>" /> <%= ejbcawebbean.getHelpReference("/userguide.html#Subset%20of%20Subject%20DN") %>
       </td>
       <td width="50%">
            <input type="checkbox" name="<%=CHECKBOX_USESUBJECTDNSUBSET  %>"  onclick="checkusesubjectdnsubsetfield()" value="<%=CHECKBOX_VALUE %>" 
