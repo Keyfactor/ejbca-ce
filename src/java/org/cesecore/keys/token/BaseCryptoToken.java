@@ -139,7 +139,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
             final PrintStream ps = new PrintStream(baos);
             KeyTools.printPublicKeyInfo(publicKey, ps);
             ps.flush();
-            log.debug("Using of " + baos.toString());
+            log.debug("Testing key of type " + baos.toString());
         }
         if (!doPermitExtractablePrivateKey() && KeyTools.isPrivateKeyExtractable(privateKey)) {
             String msg = intres.getLocalizedMessage("token.extractablekey", CesecoreConfiguration.isPermitExtractablePrivateKeys());
