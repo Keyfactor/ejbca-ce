@@ -41,7 +41,6 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.cmp.authentication.EndEntityCertificateAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 
@@ -62,7 +61,6 @@ import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
 	
 	private static final Logger LOG = Logger.getLogger(ConfirmationMessageHandler.class);
-	private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 	
 //	/** Parameter used to authenticate RA messages if we are using RA mode to create users */
 //	private String raAuthenticationSecret = null;
@@ -160,7 +158,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			    }
 			    
 		         if(cmpRaAuthSecret == null) {
-		             LOG.error("Failed to verify the CertConf message. The request will be processed without verification");
+		             LOG.info("The CertConf message could not be verified. The request will be processed without verification");
 		         }
 			}
 			
