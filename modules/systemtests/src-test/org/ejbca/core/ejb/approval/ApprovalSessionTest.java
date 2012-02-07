@@ -83,6 +83,7 @@ import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -134,19 +135,22 @@ public class ApprovalSessionTest extends CaTestCase {
 
     private final SimpleAuthenticationProviderRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderRemote.class);
     
+    private final AuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(ApprovalSessionTest.class.getSimpleName()));
+    
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
+        createTestCA();
 
     }
 
-    public void init() throws Exception {
-
+    @AfterClass
+    public static void afterClass() throws Exception {
+        removeTestCA();
     }
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         // An if on a static thing here, just so we don't have to batch generate new certs for every test
         if (adminusername1 == null) {
             adminusername1 = genRandomUserName();
@@ -188,7 +192,7 @@ public class ApprovalSessionTest extends CaTestCase {
         accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.REGULAR_APPROVEENDENTITY, AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.ENDENTITYPROFILEBASE, AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(roleName, StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+        roleManagementSession.addAccessRulesToRole(internalToken, role, accessRules);
         
         adminentities = new ArrayList<AccessUserAspectData>();
         adminentities.add(new AccessUserAspectData(role.getRoleName(), caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASEINS,
@@ -225,7 +229,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
     @After
     public void tearDown() throws Exception {
-        super.tearDown();
+    
         Collection<ApprovalDataVO> approvals = approvalSessionRemote.findApprovalDataVO(intadmin, removeApprovalId);
         if (approvals != null) {
         	for (ApprovalDataVO approvalDataVO : approvals) {
