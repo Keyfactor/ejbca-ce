@@ -821,7 +821,7 @@ are specified in the CertificateTemplate field in the CMP message.</p>
 
 <p>In order for this request to succeed, the administrator sending the update request has to be authorized to perform this operation.</p>   
 </subsubsection>
-
+</subsection>
 
 <subsection name="Proof of possession">
 <p>
