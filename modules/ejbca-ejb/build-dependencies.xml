@@ -311,6 +311,13 @@
 					<!-- GlobalConfiguration is more of RA/AdminGUI component, but is hard to get rid of w/o database changes.. -->
 					<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
 					<include name="org/ejbca/config/WebConfiguration.java"/>
+					<!-- CliAuthenticationtoken, should reside in another package -->
+					<include name="org/ejbca/ui/cli/CliAuthenticationToken.java"/>
+                    <include name="org/ejbca/ui/cli/CliAuthenticationTokenReferenceRegistry.java"/>
+                    <include name="org/ejbca/ui/cli/CliUserAccessMatchValue.java"/>
+                    <include name="org/ejbca/ui/cli/exception/UninitializedCliAuthenticationTokenException.java"/>
+                    <include name="org/ejbca/util/crypto/BCrypt.java"/>
+                    <include name="org/ejbca/util/crypto/CryptoTools.java"/>
 					<!-- Exclude RA approval requests.. org.ejbca.core.model.ra.approvalrequests would be a better location for these -->
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/AddEndEntityApprovalRequest.java"/>
