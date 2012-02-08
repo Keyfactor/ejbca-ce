@@ -37,6 +37,8 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.model.log.Admin;
+import org.ejbca.ui.cli.CliAuthenticationToken;
+import org.ejbca.ui.cli.CliAuthenticationTokenReferenceRegistry;
 
 /**
  * Abstract Base class representing one approval request created when an administrator performs an action that requires an approval.
@@ -382,7 +384,7 @@ public abstract class ApprovalRequest implements Externalizable {
         	// Version 4 after conversion to CESeCore where Admin was deprecated.
             this.requestAdmin = (AuthenticationToken) in.readObject();
             if (log.isTraceEnabled()) {
-            	log.trace("ApprovalRequest has a requestAdmin token of type: "+this.requestAdmin.getClass().getName());
+                log.trace("ApprovalRequest has a requestAdmin token of type: "+this.requestAdmin.getClass().getName());
             }
             if (this.requestAdmin instanceof LocalJvmOnlyAuthenticationToken) {
                 if (log.isTraceEnabled()) {
@@ -390,7 +392,11 @@ public abstract class ApprovalRequest implements Externalizable {
                 }
 				LocalJvmOnlyAuthenticationToken localtoken = (LocalJvmOnlyAuthenticationToken) this.requestAdmin;
 				localtoken.initRandomToken();
-			}
+            } else if (this.requestAdmin instanceof CliAuthenticationToken) {
+                // A Cli authentication token was probably used already and must thus be "re-registered"
+                CliAuthenticationToken ctok = (CliAuthenticationToken)this.requestAdmin;
+                CliAuthenticationTokenReferenceRegistry.INSTANCE.registerToken(ctok);
+            }
             this.requestSignature = (String) in.readObject();
             this.approvalRequestType = in.readInt();
             this.numOfRequiredApprovals = in.readInt();

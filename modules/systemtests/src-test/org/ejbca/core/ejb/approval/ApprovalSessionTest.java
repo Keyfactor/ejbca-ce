@@ -32,6 +32,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -65,6 +66,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
@@ -75,10 +77,15 @@ import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestExpiredException;
+import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.DummyApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.ViewHardTokenDataApprovalRequest;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.UserDataConstants;
+import org.ejbca.ui.cli.CliAuthenticationToken;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
+import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
@@ -412,6 +419,54 @@ public class ApprovalSessionTest extends CaTestCase {
         next = (ApprovalDataVO) result.iterator().next();
         approvalSessionRemote.removeApprovalRequest(admin1, next.getId());
 
+    }
+
+    @Test
+    public void testApproveFromCli() throws Exception {
+        final AuthenticationToken cliReqAuthToken = getCliAdmin();
+        final String username = "ApprovalEndEntityUsername";
+        final String clearpwd = "foo123";
+        final EndEntityInformation userdata = new EndEntityInformation(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null,
+                UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
+                SecConst.TOKEN_SOFT_P12, 0, null);
+        userdata.setPassword(clearpwd);
+        final AddEndEntityApprovalRequest eeApprovalRequest = new AddEndEntityApprovalRequest(userdata, false, cliReqAuthToken, null, 1, caid, SecConst.EMPTY_ENDENTITYPROFILE);
+        removeApprovalId = eeApprovalRequest.generateApprovalId();
+        approvalSessionRemote.addApprovalRequest(cliReqAuthToken, eeApprovalRequest, gc);
+        // Use the authentication token
+        try {
+            userAdminSession.changeUser(cliReqAuthToken, userdata, false);
+        } catch (Exception e) {
+            // NOPMD we only did the above to use our one time authentication token, we know the user does not exist
+        }
+        try {
+            final Approval approval1 = new Approval("ap1test");
+            approvalExecutionSessionRemote.approve(intadmin, eeApprovalRequest.generateApprovalId(), approval1, gc);
+        } finally {
+            try {
+                EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class).deleteUser(intadmin, username);
+            } catch (NotFoundException e) {
+                // NOPMD: ignore if the user does not exist
+            }
+        }
+    }
+
+    private AuthenticationToken getCliAdmin() {
+        final String username = EjbcaConfiguration.getCliDefaultUser();
+        final String password = EjbcaConfiguration.getCliDefaultPassword();
+        final Set<Principal> principals = new HashSet<Principal>();
+        principals.add(new UsernamePrincipal(username));
+
+        final AuthenticationSubject subject = new AuthenticationSubject(principals, null);
+
+        final CliAuthenticationToken authenticationToken = (CliAuthenticationToken) EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationProviderRemote.class).authenticate(subject);
+        // Set hashed value anew in order to send back
+        if (authenticationToken == null) {
+            throw new CliAuthenticationFailedException("Authentication failed. Username or password were not correct.");
+        } else {
+            authenticationToken.setSha1HashFromCleartextPassword(password);
+            return authenticationToken;
+        }
     }
 
     @Test
