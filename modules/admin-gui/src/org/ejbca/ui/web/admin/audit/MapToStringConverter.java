@@ -38,7 +38,10 @@ public class MapToStringConverter implements Converter {
 		@SuppressWarnings("unchecked")
         final Map<Object,Object> map = (Map<Object, Object>) value;
 		if (map.size() == 1 && map.containsKey("msg")) {
-			return (String) map.get("msg");
+			final String ret = (String) map.get("msg");
+			if (ret != null) {
+			    return ret;
+			}
 		}
 		for (final Object key : map.keySet()) {
 			if (sb.length()!=0) {
