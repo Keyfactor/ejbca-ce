@@ -281,6 +281,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
      */
     @Test
     public void test06DnEmail() throws Exception {
+       try {
         String subjectDN = "C=SE,CN=Göran Strömförare,E=adam@eva.se";
         // createCmpUser("cmptest2", subjectDN);
 
@@ -313,7 +314,9 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, nonce, transid, false, null);
         checkCmpPKIConfirmMessage(subjectDN, cacert, resp);
-
+       } finally {
+           userAdminSession.deleteUser(admin, "Göran Strömförare");
+       }
     }
 
     //
