@@ -166,8 +166,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws CryptoTokenOfflineException
      * @throws CAExistsException
      */
-    private boolean createTestCA() throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+    protected static boolean createTestCA() throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+        removeTestCA(); // We cant be sure this CA was not left over from
         return createTestCA(getTestCAName(), 1024);
     }
 
@@ -384,7 +385,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     /**
      * @return the name of the test CA
      */
-    public String getTestCAName() {
+    public static String getTestCAName() {
         return "TEST";
     }
 
@@ -402,7 +403,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws AuthorizationDeniedException
      * @throws CADoesntExistsException
      */
-    private void removeTestCA() throws AuthorizationDeniedException {
+    protected static void removeTestCA() throws AuthorizationDeniedException {
         removeTestCA(getTestCAName());
     }
 
