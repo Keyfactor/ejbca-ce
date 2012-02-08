@@ -318,9 +318,9 @@ public class CrmfRARequestTest extends CmpTestCase {
         
         final PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
         final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, null, 567);
-
-        reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
         Assert.assertNotNull(req);
+        reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        
         final ByteArrayOutputStream bao = new ByteArrayOutputStream();
         final DEROutputStream out = new DEROutputStream(bao);
         out.writeObject(req);
