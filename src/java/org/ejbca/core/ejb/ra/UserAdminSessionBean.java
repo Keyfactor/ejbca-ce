@@ -485,7 +485,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         final UserData userData = UserData.findByUsername(entityManager, username);
         if (userData == null) {
             final String msg = intres.getLocalizedMessage("ra.erroreditentity", username);
-            log.error(msg);
+            log.info(msg);
             throw new EJBException(msg);
         }
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
