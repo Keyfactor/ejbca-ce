@@ -80,6 +80,7 @@ import org.ejbca.core.protocol.xkms.common.XKMSUtil;
 import org.ejbca.util.query.ApprovalMatch;
 import org.ejbca.util.query.BasicMatch;
 import org.ejbca.util.query.Query;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -147,7 +148,7 @@ public class XKMSKRSSTest {
     private static String certprofilename2;
     private static String endentityprofilename;
 
-    private GlobalConfiguration orgGlobalConfig;
+    private static GlobalConfiguration orgGlobalConfig;
 	private static CAInfo orgCaInfo;
 
     private static DocumentBuilderFactory dbf;
@@ -157,17 +158,21 @@ public class XKMSKRSSTest {
     private ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
-    private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
+    private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class); 
+    private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
-    @BeforeClass
-    public static void beforeClass() {
+
+    @Before
+    public void setUp() throws Exception {
+        orgGlobalConfig = globalConfigurationSession.getCachedGlobalConfiguration();
+        orgCaInfo = caSession.getCAInfo(administrator, "AdminCA1");
+    }
+    
+	@BeforeClass
+    public static void setupDatabase() throws Exception {
         org.apache.xml.security.Init.init();
         try {
             CryptoProviderTools.installBCProviderIfNotAvailable();
@@ -196,17 +201,16 @@ public class XKMSKRSSTest {
             log.error("Error initializing RequestAbstractTypeResponseGenerator", e);
             throw new Error(e);
         }
-    }
-
-    @Before
-    public void setUp() throws Exception {
-        orgGlobalConfig = globalConfigurationSession.getCachedGlobalConfiguration();
-        orgCaInfo = caSession.getCAInfo(administrator, "AdminCA1");
-    }
-    
-	@Test
-    public void test00SetupDatabase() throws Exception {
-
+	    
+	    CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+	    CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+	    CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+	    EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+	    EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+	    GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
+	    GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+	    UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+	    
         final CAInfo caInfo = caSession.getCAInfo(administrator, "AdminCA1");
         // make sure same keys for different users is prevented
         caInfo.setDoEnforceUniquePublicKeys(true);
@@ -276,7 +280,11 @@ public class XKMSKRSSTest {
 
     }
 
-    private void addUser(String userName, String dn) throws Exception {
+    private static void addUser(String userName, String dn) throws Exception {
+        EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
+        EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+        UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+        
         final String pwd = "foo123";
         final int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
         {
@@ -1183,10 +1191,16 @@ public class XKMSKRSSTest {
         userAdminSession.deleteUser(administrator, usernameX);
     }
 
-	@Test
-    public void test99CleanDatabase() throws Exception {
+	@AfterClass
+    public static void cleanDatabase() throws Exception {
     	AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-        userAdminSession.deleteUser(administrator, username2);
+    	CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+    	CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
+    	EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
+    	GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
+    	UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    	
+    	userAdminSession.deleteUser(administrator, username2);
         userAdminSession.deleteUser(administrator, username3);
 
         endEntityProfileSession.removeEndEntityProfile(administrator, endentityprofilename);

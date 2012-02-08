@@ -13,6 +13,7 @@
 package org.ejbca.core.protocol.xkms;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -30,9 +31,14 @@ public class XkmsCommonCriteraTest {
     private XKMSKRSSTest test;
     
     @BeforeClass
-    public static void beforeClass() {
-        XKMSKRSSTest.beforeClass();
+    public static void beforeClass() throws Exception {
+        XKMSKRSSTest.setupDatabase();
         
+    }
+    
+    @AfterClass
+    public static void afterClass() throws Exception {
+        XKMSKRSSTest.cleanDatabase();
     }
     
     @Before
@@ -47,13 +53,9 @@ public class XkmsCommonCriteraTest {
     
     @Test
     public void testCommonCriteria() throws Exception {
-        try {
-            test.test00SetupDatabase();
+    
             test.test01SimpleRegistration();
-
             test.test17SimpleRevoke();
-        } finally {
-            test.test99CleanDatabase();
-        }
+  
     }   
 }
