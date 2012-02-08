@@ -2441,7 +2441,7 @@ attributes(*,CKO_PRIVATE_KEY,*) = {
   CKA_PRIVATE = true
   CKA_SIGN = true
   CKA_DECRYPT = true
-  CKA_EXTRACTABLE = true
+  CKA_EXTRACTABLE = false
   CKA_SENSITIVE = true
 }
 </source>
