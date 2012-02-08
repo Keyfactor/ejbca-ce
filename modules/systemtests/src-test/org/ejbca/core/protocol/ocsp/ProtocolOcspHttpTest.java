@@ -209,7 +209,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
     @BeforeClass
     public static void beforeClass() throws CertificateException {   
         // Install BouncyCastle provider
-        CryptoProviderTools.installBCProvider();
+        CryptoProviderTools.installBCProviderIfNotAvailable();
     }
 
 
@@ -880,7 +880,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
      *             error
      */
     public void removeECDSACA() throws Exception {
-        log.trace(">test08RemoveECDSACA()");
         assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
                 .getResponseCode() == 200);
         try {
@@ -893,7 +892,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         } catch (Exception e) {
             log.info("Could not remove CA with SubjectDN CN=OCSPECDSAIMPCATEST");
         }
-        log.trace("<test99RemoveECDSACA()");
     }
 
     //
