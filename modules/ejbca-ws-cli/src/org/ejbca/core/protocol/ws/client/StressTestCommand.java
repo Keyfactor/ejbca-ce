@@ -174,8 +174,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
                 StressTestCommand.this.performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
                 StressTestCommand.this.performanceTest.getLog().result(CertTools.getSerialNumber(cert));
                 ret = true;
+            } else {
+                StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");              
             }
-            StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");            	
         }
         return ret;
 	}
