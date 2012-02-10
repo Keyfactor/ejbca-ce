@@ -463,8 +463,8 @@ function checkallfields(){
     <%   }else{ %>
     <form name="changecatokentype" action="<%= THIS_FILENAME %>" method="post">
        <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CHOOSE_CATOKENTYPE %>'>
-       <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
-       <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<%=catype %>'>
+       <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'>
+       <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<c:out value="<%= catype %>"/>'>
        <tr id="Row<%=row++%2%>">
           <td width="50%"  align="right">          
             <%= ejbcawebbean.getText("CATOKENTYPE") %>
@@ -482,19 +482,19 @@ function checkallfields(){
      } // if(!processrequest){ %>
 
   <form name="ca" method="post" action="<%=THIS_FILENAME %>" ENCTYPE="post">
-    <input type="hidden" name='<%= HIDDEN_CATOKENTYPE %>' value='<%=catokentype %>'>
-    <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<%=catype %>'>
+    <input type="hidden" name='<%= HIDDEN_CATOKENTYPE %>' value='<c:out value="<%= catokentype %>"/>'>
+    <input type="hidden" name='<%= HIDDEN_CATYPE %>' value='<c:out value="<%= catype %>"/>'>
   <% if(processrequest){ %>  
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_PROCESSREQUEST2 %>'>
-    <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
+    <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'>
   <% } else { %>
   <%   if(editca){ %>  
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_CA %>'>
     <input type="hidden" name='<%= HIDDEN_CAID %>' value='<%=caid %>'>
-    <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=cainfo.getName() %>'>
+    <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= cainfo.getName() %>"/>'>
   <%   } else { %>
     <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_CREATE_CA %>'>
-    <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<%=caname %>'>
+    <input type="hidden" name='<%= HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'>
   <%   }
      }
    if( catokentype == CAInterfaceBean.CATOKENTYPE_P12 && !processrequest && !isexternal){ %>
@@ -1416,7 +1416,7 @@ function checkallfields(){
     <tr  id="Row<%=row++%2%>"> 
       <td width="49%" valign="top"  align="right"><%= ejbcawebbean.getText("EXPORTCAHELP") %></td>
       <td width="51%" valign="top">             
-		<input type="hidden" name='<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.HIDDEN_CANAME %>' value='<%=caname %>' />
+		<input type="hidden" name='<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.HIDDEN_CANAME %>' value='<c:out value="<%= caname %>"/>'/>
         <input type="password" name="<%= org.ejbca.ui.web.admin.cainterface.CAExportServlet.TEXTFIELD_EXPORTCA_PASSWORD %>"  value="" />
         <input type="submit" name="<%= BUTTON_EXPORTCA %>"  value="<%= ejbcawebbean.getText("EXPORTCA")+"..." %>" />
       </td>

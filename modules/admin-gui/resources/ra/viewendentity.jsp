@@ -249,9 +249,9 @@
 
        <tr id="Row<%=(viewendentityhelper.row++)%2%>">
 	 <td align="right" width="<%=ViewEndEntityHelper.columnwidth%>"><%= ejbcawebbean.getText("CERTIFICATEPROFILE") %></td>
-	 <td><% if(viewendentityhelper.userdata.getCertificateProfileId() != 0)
-                  out.write(rabean.getCertificateProfileName(viewendentityhelper.userdata.getCertificateProfileId())); 
-                else out.write(ejbcawebbean.getText("NOCERTIFICATEPROFILEDEFINED")); %>
+	 <td><% if(viewendentityhelper.userdata.getCertificateProfileId() != 0){%>
+                  <c:out value="<%=rabean.getCertificateProfileName(viewendentityhelper.userdata.getCertificateProfileId())%>"/>
+                <%} else out.write(ejbcawebbean.getText("NOCERTIFICATEPROFILEDEFINED")); %>
          </td>
        </tr>
 
