@@ -25,7 +25,7 @@ function checkallfields(){
 </script>
 <div align="center"> 
   <h2><%= ejbcawebbean.getText("EDITHARDTOKENISSUER") %></h2>
-  <h3><%= ejbcawebbean.getText("HARDTOKENISSUER")+ " : " + issuerdata.getAlias() %></h3>
+  <h3><c:out value='<%= ejbcawebbean.getText("HARDTOKENISSUER") + " : " + issuerdata.getAlias() %>'/></h3>
 </div>
 <form name="editissuer" method="post" action="<%=THIS_FILENAME %>">
   <input type="hidden" name='<%= ACTION %>' value='<%=ACTION_EDIT_ISSUER %>'>
@@ -86,7 +86,7 @@ function checkallfields(){
          <%= ejbcawebbean.getText("DESCRIPTION") %> 
       </td>
       <td width="70%"> 
-          <textarea name="<%=TEXTFIELD_DESCRIPTION%>" cols="45" rows="4"><% out.write(issuerdata.getHardTokenIssuer().getDescription());%></textarea>
+          <textarea name="<%=TEXTFIELD_DESCRIPTION%>" cols="45" rows="4"><c:out value="<%= issuerdata.getHardTokenIssuer().getDescription() %>"/></textarea>
       </td>
     </tr>
     <tr  id="Row<%=row++%2%>"> 
