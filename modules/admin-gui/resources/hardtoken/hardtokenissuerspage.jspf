@@ -64,7 +64,7 @@ function checkselected(){
                HardTokenIssuerData data = (HardTokenIssuerData) issuerdatas.get(curalias);
                 %>
             <option value='<c:out value="<%=curalias%>"/>'>
-                <% out.write(curalias + ", " + adminidtonamemap.get(Integer.valueOf(data.getRoleDataId()))); %>
+                <c:out value='<%= curalias + ", "+ adminidtonamemap.get(new Integer(data.getRoleDataId()))%>'/>
              </option>
           <%}%>
         </select>
