@@ -409,73 +409,93 @@ public class CrmfRARequestTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
         
-        if(userAdminSession.existsUser("keyIDTestUser")) {
+        try {
             userAdminSession.deleteUser(admin, "keyIDTestUser");
+        } catch (NotFoundException e) {
+            // NOPMD
         }
-        final PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
-        final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
-        //final PKIMessage req = protectPKIMessageNoKeyID(one, false, PBEPASSWORD, 567);
-
-        reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
-        Assert.assertNotNull(req);
-        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        final DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(req);
-        final byte[] ba = bao.toByteArray();
-        // Send request and receive response
-        final byte[] resp = sendCmpHttp(ba, 200);
-        // do not check signing if we expect a failure (sFailMessage==null)
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        //X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
-        //BigInteger serialnumber = cert.getSerialNumber();
-        checkCmpFailMessage(resp, "Subject DN field 'ORGANIZATION' must exist.", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId, FailInfo.BAD_REQUEST.hashCode());
-
-
-        // Create a new user that fulfills the end entity profile
-
-        userDN = "CN=keyidtest2,O=org";
-        final KeyPair keys2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        final byte[] nonce2 = CmpMessageHelper.createSenderNonce();
-        final byte[] transid2 = CmpMessageHelper.createSenderNonce();
-        final int reqId2;
+        try {
+            userAdminSession.deleteUser(admin, "keyidtest2");
+        } catch (NotFoundException e) {
+            // NOPMD
+        }
         
-        final PKIMessage one2 = genCertReq(issuerDN, userDN, keys2, cacert, nonce2, transid2, true, null, null, null, null);
-        final PKIMessage req2 = protectPKIMessage(one2, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
+        try {
+            final PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
+            final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
+            //final PKIMessage req = protectPKIMessageNoKeyID(one, false, PBEPASSWORD, 567);
 
-        reqId2 = req2.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
-        Assert.assertNotNull(req2);
-        final ByteArrayOutputStream bao2 = new ByteArrayOutputStream();
-        final DEROutputStream out2 = new DEROutputStream(bao2);
-        out2.writeObject(req2);
-        final byte[] ba2 = bao2.toByteArray();
-        // Send request and receive response
-        final byte[] resp2 = sendCmpHttp(ba2, 200);
-        // do not check signing if we expect a failure (sFailMessage==null)
-        checkCmpResponseGeneral(resp2, issuerDN, userDN, cacert, nonce2, transid2, true, null);
-        X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp2, reqId2);
-        BigInteger serialnumber = cert.getSerialNumber();
+            reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            Assert.assertNotNull(req);
+            final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+            final DEROutputStream out = new DEROutputStream(bao);
+            out.writeObject(req);
+            final byte[] ba = bao.toByteArray();
+            // Send request and receive response
+            final byte[] resp = sendCmpHttp(ba, 200);
+            // do not check signing if we expect a failure (sFailMessage==null)
+            checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
+            //X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+            //BigInteger serialnumber = cert.getSerialNumber();
+            checkCmpFailMessage(resp, "Subject DN field 'ORGANIZATION' must exist.", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId, FailInfo.BAD_REQUEST.hashCode());
 
-        
-        
-        EndEntityInformation ee = eeAccessSession.findUser(admin, "keyidtest2");
-        Assert.assertEquals("Wrong certificate profile", cpId, ee.getCertificateProfileId());
-        
-        // Revoke the created certificate and use keyid
-        //final String hash = "foo123";
-        final PKIMessage con = genRevReq(issuerDN, userDN, serialnumber, cacert, nonce2, transid2, false);
-        Assert.assertNotNull(con);
-        PKIMessage revmsg = protectPKIMessage(con, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
-        final ByteArrayOutputStream baorev = new ByteArrayOutputStream();
-        final DEROutputStream outrev = new DEROutputStream(baorev);
-        outrev.writeObject(revmsg);
-        final byte[] barev = baorev.toByteArray();
-        // Send request and receive response
-        final byte[] resprev = sendCmpHttp(barev, 200);
-        checkCmpResponseGeneral(resprev, issuerDN, userDN, cacert, nonce2, transid2, true, null);
-        //checkCmpRevokeConfirmMessage(issuerDN, userDN, serialnumber, cert, resprev, true);
-        int revstatus = checkRevokeStatus(issuerDN, serialnumber);
-        Assert.assertEquals("Certificate revocation failed.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, revstatus);
-        
+
+            // Create a new user that fulfills the end entity profile
+
+            userDN = "CN=keyidtest2,O=org";
+            final KeyPair keys2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+            final byte[] nonce2 = CmpMessageHelper.createSenderNonce();
+            final byte[] transid2 = CmpMessageHelper.createSenderNonce();
+            final int reqId2;
+
+            final PKIMessage one2 = genCertReq(issuerDN, userDN, keys2, cacert, nonce2, transid2, true, null, null, null, null);
+            final PKIMessage req2 = protectPKIMessage(one2, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
+
+            reqId2 = req2.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            Assert.assertNotNull(req2);
+            final ByteArrayOutputStream bao2 = new ByteArrayOutputStream();
+            final DEROutputStream out2 = new DEROutputStream(bao2);
+            out2.writeObject(req2);
+            final byte[] ba2 = bao2.toByteArray();
+            // Send request and receive response
+            final byte[] resp2 = sendCmpHttp(ba2, 200);
+            // do not check signing if we expect a failure (sFailMessage==null)
+            checkCmpResponseGeneral(resp2, issuerDN, userDN, cacert, nonce2, transid2, true, null);
+            X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp2, reqId2);
+            BigInteger serialnumber = cert.getSerialNumber();
+
+
+
+            EndEntityInformation ee = eeAccessSession.findUser(admin, "keyidtest2");
+            Assert.assertEquals("Wrong certificate profile", cpId, ee.getCertificateProfileId());
+
+            // Revoke the created certificate and use keyid
+            //final String hash = "foo123";
+            final PKIMessage con = genRevReq(issuerDN, userDN, serialnumber, cacert, nonce2, transid2, false);
+            Assert.assertNotNull(con);
+            PKIMessage revmsg = protectPKIMessage(con, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
+            final ByteArrayOutputStream baorev = new ByteArrayOutputStream();
+            final DEROutputStream outrev = new DEROutputStream(baorev);
+            outrev.writeObject(revmsg);
+            final byte[] barev = baorev.toByteArray();
+            // Send request and receive response
+            final byte[] resprev = sendCmpHttp(barev, 200);
+            checkCmpResponseGeneral(resprev, issuerDN, userDN, cacert, nonce2, transid2, true, null);
+            //checkCmpRevokeConfirmMessage(issuerDN, userDN, serialnumber, cert, resprev, true);
+            int revstatus = checkRevokeStatus(issuerDN, serialnumber);
+            Assert.assertEquals("Certificate revocation failed.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, revstatus);
+        } finally {
+            try {
+                userAdminSession.deleteUser(admin, "keyIDTestUser");
+            } catch (NotFoundException e) {
+                // NOPMD
+            }
+            try {
+                userAdminSession.deleteUser(admin, "keyidtest2");
+            } catch (NotFoundException e) {
+                // NOPMD
+            }
+        }        
     }
     
     @After
