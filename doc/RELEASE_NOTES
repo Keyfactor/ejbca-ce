@@ -3,6 +3,22 @@ EJBCA 5.1.0
 
 - The term 'Admin Group' has been mostly purged and replaced with 'Role'.
 
+EJBCA 5.0.3
+-----------
+This is a maintenance release with a few bug fixes and new features. In all, 16 issues have been resolved.
+
+* Noteworthy changes:
+- CMP: SenderKeyID no longer needs to be set in the request if it is not needed.
+- CMP: KeyUpdateRequest works in RA mode as well as in client mode.
+- CMP: It is now possible to skip verification of a CertConfRequest if desired.
+- CMP: The CMP Proxy can now debug logging actual CMP messages.
+- Approvals now work when approval requests were created using the CLI.
+- Fixed all tests running on Glassfish and Windows platform.
+- Fixed few minor XSS issues and other minor bugs
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE
+
 EJBCA 5.0.2
 -----------
 This minor release primarily addressed issues that cropped up during manual testing for Common Criteria
@@ -66,6 +82,31 @@ So if you require uptime and roll-back capabilities, only allow to create new ap
 - 'Users' are now ubiquitously referred to as 'End Entities'.
 - Usage of access rules have in some cases changed, and some new access rules have been added (edit publishers). After an 
 upgrade to 5.0, verify your roles and privileges.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE
+
+EJBCA 4.0.9
+------------
+This is a maintenance release containing 1 security bug fix.
+
+* Noteworthy changes: 
+- Fixed XSS issues in admin GUI.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
+EJBCA 4.0.8
+-----------
+This is a maintenance release with a few bug fixes and new features. In all, 16 issues have been resolved.
+
+* Noteworthy changes:
+- CMP: SenderKeyID no longer needs to be set in the request if it is not needed.
+- CMP: KeyUpdateRequest works in RA mode as well as in client mode.
+- CMP: It is now possible to skip verification of a CertConfRequest if desired.
+- CRL: More efficient CRL download 
+- AdminGUI: Improvement in the appearance.
+- Fixed few minor XSS issues and other minor bugs
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE
