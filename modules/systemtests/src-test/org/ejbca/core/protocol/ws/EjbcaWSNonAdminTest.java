@@ -78,6 +78,7 @@ import org.ejbca.core.protocol.ws.client.gen.EjbcaWSService;
 import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -90,6 +91,8 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     private static final Logger log = Logger.getLogger(EjbcaWSNonAdminTest.class);
 
+    private static final String WS_ADMIN_ROLENAME = "WsNonAdminTestRole";
+    
     private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
     private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
@@ -110,14 +113,19 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private final ApprovalSessionRemote approvalSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalSessionRemote.class);
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private final HardTokenSessionRemote hardTokenSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(HardTokenSessionRemote.class);
-    private final GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private final SimpleAuthenticationProviderRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderRemote.class);
     
-    private final String wsadminRoleName = "WsNonAdminTestRole";
+    
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
+        
+        GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
+        
+        setupAccessRights(WS_ADMIN_ROLENAME);
+        gc = globalConfigurationSession.getCachedGlobalConfiguration();
+        assertNotNull("Unable to fetch GlobalConfiguration.");
     }
 
     @Before
@@ -151,14 +159,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             log.error("No file '"+TEST_NONADMIN_FILE+"' exists.");
         }
     }
-
-    @Test
-    public void test00SetupAccessRights() throws Exception {        
-        super.setupAccessRights(wsadminRoleName);
-        gc = globalConfigurationSession.getCachedGlobalConfiguration();
-        assertNotNull("Unable to fetch GlobalConfiguration.");
-    }
-
+    
     @Test
     public void test01checkNonAuthorized() throws Exception {
         setUpNonAdmin();
@@ -444,9 +445,9 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     }
 
-    @Test
-    public void test99cleanUpAdmins() throws Exception {
-        super.cleanUpAdmins(wsadminRoleName);
+    @AfterClass
+    public static void cleanUpAdmins() throws Exception {
+        cleanUpAdmins(WS_ADMIN_ROLENAME);
     }
 
     //
