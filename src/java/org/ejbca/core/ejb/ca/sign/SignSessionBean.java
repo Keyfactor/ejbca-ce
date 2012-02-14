@@ -651,7 +651,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @param certificate the newly created Certificate
      * @throws AuthorizationDeniedException if access is denied to the CA issuing certificate
      */
-    private void postCreateCertificate(AuthenticationToken authenticationToken, EndEntityInformation endEntity, CA ca, Certificate certificate)
+    private void postCreateCertificate(final AuthenticationToken authenticationToken, final EndEntityInformation endEntity, final CA ca, final Certificate certificate)
             throws AuthorizationDeniedException {
         // Store the request data in history table.
         if (ca.isUseCertReqHistory()) {
@@ -671,13 +671,13 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final String username = endEntity.getUsername();
             final Certificate cacert = ca.getCACertificate();
             final String cafingerprint = CertTools.getFingerprintAsString(cacert);
-            String tag = null;
+            final String tag = null; // TODO: this should not be hard coded here, but as of now (2012-02-14) tag is not used, but only there for the future.
             final long updateTime = System.currentTimeMillis();
 
             int revreason = RevokedCertInfo.NOT_REVOKED;
-            long revocationDate = System.currentTimeMillis(); // This might not be in the millisecond exact, but it's rounded to seconds anyhow
-            int certstatus = CertificateConstants.CERT_ACTIVE;
-            ExtendedInformation ei = endEntity.getExtendedinformation();
+            final long revocationDate = System.currentTimeMillis(); // This might not be in the millisecond exact, but it's rounded to seconds anyhow
+            final int certstatus = CertificateConstants.CERT_ACTIVE;
+            final ExtendedInformation ei = endEntity.getExtendedinformation();
             if (ei != null) {
                 revreason = ei.getIssuanceRevocationReason();
             }
