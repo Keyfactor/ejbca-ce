@@ -13,7 +13,6 @@
 package org.cesecore.certificates.certificate.request;
 
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 
 /**
  * Interface extending ResponseMessage to add certificate functionality.
@@ -27,8 +26,6 @@ public interface CertificateResponseMessage extends ResponseMessage {
      * Gets the complete certificate in the response message.
      *
      * @return certificate in the response message.
-     * 
-     * @throws CertificateException if the byte array in this response does not contain a proper certificate
      */
     Certificate getCertificate();
     

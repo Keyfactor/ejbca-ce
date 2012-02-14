@@ -178,7 +178,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
                 log.error(msg, e);                  
                 Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
-                logSession.log(EventTypes.CRL_CREATION, EventStatus.FAILURE, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);              
+                logSession.log(EventTypes.CRL_CREATION, EventStatus.FAILURE, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);              
             }                
         }
         return createddeltacrls;
@@ -486,8 +486,6 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			log.info(msg);   
     			throw new CAOfflineException(msg);
     		}
-    	} catch (CryptoTokenOfflineException e) {
-    		throw e;            
     	} catch (FinderException e) {
     		// Should really not happen
     		log.error(e);
@@ -570,8 +568,6 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			log.info(msg);   
     			throw new CAOfflineException(msg);
     		}
-        } catch (CryptoTokenOfflineException e) {
-        	throw e;            
         } catch (CRLException e) {
     		// Should really not happen
         	log.error(e);
@@ -646,7 +642,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			String msg = intres.getLocalizedMessage("createcrl.createdcrl", Integer.valueOf(nextCrlNumber), ca.getName(), ca.getSubjectDN());
     			Map<String, Object> details = new LinkedHashMap<String, Object>();
     			details.put("msg", msg);
-    			logSession.log(EventTypes.CRL_CREATION, EventStatus.SUCCESS, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);	                	
+    			logSession.log(EventTypes.CRL_CREATION, EventStatus.SUCCESS, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);	                	
     			// Now all is finished and audit logged, now we are ready to "really" set the return value
     			crlBytes = tmpcrlBytes; 
     		}
@@ -656,14 +652,14 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     		String auditmsg = intres.getLocalizedMessage("createcrl.errorcreate", ca.getName(), ctoe.getMessage());
     		Map<String, Object> details = new LinkedHashMap<String, Object>();
     		details.put("msg", auditmsg);
-    		logSession.log(EventTypes.CRL_CREATION, EventStatus.FAILURE, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+    		logSession.log(EventTypes.CRL_CREATION, EventStatus.FAILURE, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
     		throw ctoe;
     	} catch (Exception e) {
     		log.info("Error generating CRL: ", e);
     		String msg = intres.getLocalizedMessage("createcrl.errorcreate", ca.getName(), e.getMessage());
     		Map<String, Object> details = new LinkedHashMap<String, Object>();
     		details.put("msg", msg);
-    		logSession.log(EventTypes.CRL_CREATION, EventStatus.FAILURE, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+    		logSession.log(EventTypes.CRL_CREATION, EventStatus.FAILURE, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
     		if (e instanceof EJBException) {
     			throw (EJBException)e;
     		}

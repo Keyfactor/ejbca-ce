@@ -85,7 +85,7 @@ public class X509CAInfo extends CAInfo{
         // As of EJBCA 3.9.3 we decided that we don't have to support Glassfish v1 anymore.
 		try {
 			if (certificatechain != null) {
-		        X509Certificate[] certs = (X509Certificate[])certificatechain.toArray(new X509Certificate[0]);
+		        X509Certificate[] certs = (X509Certificate[])certificatechain.toArray(new X509Certificate[certificatechain.size()]);
 		        Collection<Certificate> list = CertTools.getCertCollectionFromArray(certs, null);
 		        this.certificatechain = list;        				
 			} else {

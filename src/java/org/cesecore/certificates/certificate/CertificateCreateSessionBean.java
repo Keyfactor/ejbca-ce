@@ -329,7 +329,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         details.put("notafter", notAfter);
         details.put("sequence", sequence);
         details.put("publickey", new String(Base64.encode(pk.getEncoded(), false)));
-        logSession.log(EventTypes.CERT_REQUEST, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), Integer.valueOf(ca.getCAId()).toString(), null, data.getUsername(), details);
+        logSession.log(EventTypes.CERT_REQUEST, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(ca.getCAId()), null, data.getUsername(), details);
 
         try {
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
@@ -466,7 +466,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             issuedetails.put("certprofile", data.getCertificateProfileId());
             issuedetails.put("issuancerevocationreason", revreason);
             issuedetails.put("cert", new String(Base64.encode(cert.getEncoded(), false)));
-            logSession.log(EventTypes.CERT_CREATION, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), Integer.valueOf(ca.getCAId()).toString(), serialNo, data.getUsername(),
+            logSession.log(EventTypes.CERT_CREATION, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(ca.getCAId()), serialNo, data.getUsername(),
             		issuedetails);
 
             if (log.isTraceEnabled()) {
@@ -549,7 +549,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         if (extraDetails != null) {
             details.put("details", extraDetails);
         }
-        logSession.log(EventTypes.CERT_CREATION, EventStatus.FAILURE, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, username, details);
+        logSession.log(EventTypes.CERT_CREATION, EventStatus.FAILURE, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, username, details);
         if (log.isTraceEnabled()) {
             if (tracelog != null) {
                 log.trace(tracelog);

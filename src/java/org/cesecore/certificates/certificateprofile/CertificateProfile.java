@@ -519,7 +519,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     }
 
     public void setValidity(long validity) {
-        data.put(VALIDITY, new Long(validity));
+        data.put(VALIDITY, Long.valueOf(validity));
     }
 
     /**
@@ -1766,7 +1766,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if ( (data.get(USEOCSPSERVICELOCATOR) == null) && (data.get(USEAUTHORITYINFORMATIONACCESS) == null) ) {
                 // Only set this flag if we have not already set the new flag USEAUTHORITYINFORMATIONACCESS
                 // setUseOCSPServiceLocator(false);
-                data.put(USEOCSPSERVICELOCATOR, Boolean.valueOf(false));
+                data.put(USEOCSPSERVICELOCATOR, Boolean.FALSE);
                 setOCSPServiceLocatorURI("");
             }
 
@@ -1882,7 +1882,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
             if ( (data.get(USECAISSUERS) == null) && (data.get(USEAUTHORITYINFORMATIONACCESS) == null) ) {
                 // Only set this flag if we have not already set the new flag USEAUTHORITYINFORMATIONACCESS
                 // setUseCaIssuers(false); // v24
-                data.put(USECAISSUERS, Boolean.valueOf(false)); // v24
+                data.put(USECAISSUERS, Boolean.FALSE); // v24
                 setCaIssuers(new ArrayList<String>());
             }
             if ( ((data.get(USEOCSPSERVICELOCATOR) != null) || (data.get(USECAISSUERS) != null)) && (data.get(USEAUTHORITYINFORMATIONACCESS) == null) ) {

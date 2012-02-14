@@ -118,13 +118,6 @@ public class CVCCA extends CA implements Serializable {
 		super.setCAInfo(info);
 	}
 
-    public void updateCA(CAInfo cainfo) throws IllegalCryptoTokenException {
-    	super.updateCA(cainfo); 
-    	//CVCCAInfo info = (CVCCAInfo) cainfo;
-    	// do something with this if needed
-    }
-
-
 	public byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException {
     	String msg = intres.getLocalizedMessage("cvc.info.nocvcpkcs7");
 		log.info(msg);
