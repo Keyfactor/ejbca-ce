@@ -46,6 +46,7 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
+import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaTestSessionRemote;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
@@ -56,6 +57,7 @@ import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -100,19 +102,33 @@ import org.junit.Assert;
 public abstract class CaTestCase extends RoleUsingTestCase {
 
     public static final String TEST_RSA_REVERSE_CA_NAME = "TESTRSAREVERSE";
-    public static final String TEST_RSA_REVSERSE_CA_DN = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE");
+    public static final String TEST_ECDSA_CA_NAME = "TESTECDSA";
+    public static final String TEST_ECDSA_IMPLICIT_CA_NAME = "TESTECDSAImplicitlyCA";
+    public static final String TEST_SHA256_WITH_MFG1_CA_NAME = "TESTSha256WithMGF1";
+    public static final String TEST_SHA256_WITH_MFG1_CA_DN = "CN="+TEST_SHA256_WITH_MFG1_CA_NAME;
+    public static final String TEST_RSA_REVSERSE_CA_DN = CertTools.stringToBCDNString("CN=TESTRSAReverse,O=FooBar,OU=BarFoo,C=SE"); 
+    public static final String TEST_CVC_RSA_CA_DN = "CN=TESTCVCA,C=SE";
+    public static final String TEST_CVC_RSA_CA_NAME = "TESTCVCA";
+    public static final String TEST_CVC_ECC_CA_DN = "CN=TCVCAEC,C=SE";
+    public static final String TEST_CVC_ECC_CA_NAME = "TESTCVCAECC";
+    public static final String TEST_CVC_ECC_DOCUMENT_VERIFIER_DN = "CN=TDVEC-D,C=SE";
+    public static final String TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME = "TESTDVECC-D";
+    public static final String TEST_DSA_CA_NAME = "TESTDSA";
 
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
     private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
-    private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);  
+    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(GlobalConfigurationSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderRemote.class);
+    private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(SimpleAuthenticationProviderRemote.class);
 
     private String roleName;
+
+    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
 
     protected TestX509CertificateAuthenticationToken caAdmin;
 
@@ -139,8 +155,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
 
         final List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
-        accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(certificate).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
-                AccessMatchType.TYPE_EQUALCASE, CertTools.getPartFromDN(CertTools.getSubjectDN(certificate), "CN")));
+        accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(certificate).hashCode(),
+                X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, CertTools.getPartFromDN(
+                        CertTools.getSubjectDN(certificate), "CN")));
         roleManagementSession.addSubjectsToRole(roleMgmgToken, role, accessUsers);
 
         accessControlSession.forceCacheExpire();
@@ -166,8 +183,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws CryptoTokenOfflineException
      * @throws CAExistsException
      */
-    protected static boolean createTestCA() throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
-            CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+    public static boolean createTestCA() throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
+            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         removeTestCA(); // We cant be sure this CA was not left over from
         return createTestCA(getTestCAName(), 1024);
     }
@@ -215,8 +232,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws CryptoTokenOfflineException
      * @throws CAExistsException
      */
-    public static boolean createTestCA(String caName, int keyStrength) throws CADoesntExistsException, AuthorizationDeniedException, CAExistsException,
-            CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+    public static boolean createTestCA(String caName, int keyStrength) throws CADoesntExistsException, AuthorizationDeniedException,
+            CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
         return createTestCA(caName, keyStrength, "CN=" + caName, CAInfo.SELFSIGNED, null);
     }
 
@@ -244,11 +261,11 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         log.trace(">createTestCA");
 
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
-        
+
         CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-        
+
         // Search for requested CA
         try {
             caSession.getCAInfo(internalAdmin, caName);
@@ -292,7 +309,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         X509CAInfo cainfo = new X509CAInfo(dn, caName, CAConstants.CA_ACTIVE, new Date(), "",
-                signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
+                signedBy == CAInfo.SELFSIGNED ? CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA
+                        : CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
                 CAInfo.CATYPE_X509, signedBy, certificateChain, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
                 24, // CRLPeriod
                 0, // CRLIssueInterval
@@ -342,7 +360,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
             log.error("CA certificate not available in database!!");
             return false;
         }
-        log.trace("<createTestCA: "+info.getCAId());
+        log.trace("<createTestCA: " + info.getCAId());
         return true;
     }
 
@@ -417,7 +435,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public static void removeTestCA(String caName) throws AuthorizationDeniedException {
         // Search for requested CA
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-        CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class);        
+        CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class);
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         try {
             CA ca = caTestSession.getCA(internalAdmin, caName);
@@ -495,7 +513,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         return this.caSession.getCAInfo(admin, name);
     }
 
-    protected void createTestRSAReverseCa(AuthenticationToken admin) throws CAExistsException, CryptoTokenOfflineException,
+    public static void createTestRSAReverseCa(AuthenticationToken admin) throws CAExistsException, CryptoTokenOfflineException,
             CryptoTokenAuthenticationFailedException, AuthorizationDeniedException, InvalidAlgorithmException {
         String dn = TEST_RSA_REVSERSE_CA_DN;
         String name = TEST_RSA_REVERSE_CA_NAME;
@@ -574,9 +592,10 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 null // cmpRaAuthSecret
         );
 
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(admin, cainfo);
     }
-    
+
     /**
      * 
      * @return an AuthenticationToken which matches the default test CA
@@ -591,5 +610,477 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         credentials.add(getTestCACert());
         AuthenticationSubject subject = new AuthenticationSubject(principals, credentials);
         return simpleAuthenticationProvider.authenticate(subject);
+    }
+
+    protected static void createRSASha256WithMGF1CA() throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+        removeOldCa(TEST_SHA256_WITH_MFG1_CA_NAME);    
+        CATokenInfo catokeninfo = new CATokenInfo();
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        // Create and active OSCP CA Service.
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + TEST_SHA256_WITH_MFG1_CA_DN, "", "1024",
+                AlgorithmConstants.KEYALGORITHM_RSA));
+
+        Properties prop = catokeninfo.getProperties();
+        // Set some CA token properties if they are not set already
+        if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        }
+        catokeninfo.setProperties(prop);
+
+        X509CAInfo cainfo = new X509CAInfo(TEST_SHA256_WITH_MFG1_CA_DN, TEST_SHA256_WITH_MFG1_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
+                365, null, // Expiretime
+                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
+                24, // CRLPeriod
+                0, // CRLIssueInterval
+                10, // CRLOverlapTime
+                0, // Delta CRL period
+                new ArrayList<Integer>(), true, // Authority Key Identifier
+                false, // Authority Key Identifier Critical
+                true, // CRL Number
+                false, // CRL Number Critical
+                null, // defaultcrldistpoint
+                null, // defaultcrlissuer
+                null, // defaultocsplocator
+                null, // Authority Information Access
+                null, // defaultfreshestcrl
+                true, // Finish User
+                extendedcaservices, false, // use default utf8 settings
+                new ArrayList<Integer>(), // Approvals Settings
+                1, // Number of Req approvals
+                false, // Use UTF8 subject DN by default
+                true, // Use LDAP DN order by default
+                false, // Use CRL Distribution Point on CRL
+                false, // CRL Distribution Point on CRL critical
+                true, // Include in healthCheck
+                true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true, // useCertReqHistory
+                true, // useUserStorage
+                true, // useCertificateStorage
+                null // cmpRaAuthSecret
+        );
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        caAdminSession.createCA(internalAdmin, cainfo);
+    }
+
+    protected static void createEllipticCurveDsaImplicitCa() throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+        removeOldCa(TEST_ECDSA_IMPLICIT_CA_NAME);
+
+        CATokenInfo catokeninfo = new CATokenInfo();
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+
+        Properties prop = catokeninfo.getProperties();
+        // Set some CA token properties if they are not set already
+        if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("implicitlyCA"));
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        }
+        catokeninfo.setProperties(prop);
+
+        // Create and active OSCP CA Service.
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+
+        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN="
+                + TEST_ECDSA_IMPLICIT_CA_NAME, "", "prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA));
+        extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+
+        ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+        policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
+
+        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECDSA_IMPLICIT_CA_NAME, TEST_ECDSA_IMPLICIT_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365,
+                null, // Expiretime
+                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit ECDSA ImplicitlyCA CA", -1, null,
+                policies, // PolicyId
+                24, // CRLPeriod
+                0, // CRLIssueInterval
+                10, // CRLOverlapTime
+                0, // Delta CRL period
+                new ArrayList<Integer>(), true, // Authority Key Identifier
+                false, // Authority Key Identifier Critical
+                true, // CRL Number
+                false, // CRL Number Critical
+                null, // defaultcrldistpoint
+                null, // defaultcrlissuer
+                null, // defaultocsplocator
+                null, // Authority Information Access
+                null, // defaultfreshestcrl
+                true, // Finish User
+                extendedcaservices, false, // use default utf8 settings
+                new ArrayList<Integer>(), // Approvals Settings
+                1, // Number of Req approvals
+                false, // Use UTF8 subject DN by default
+                true, // Use LDAP DN order by default
+                false, // Use CRL Distribution Point on CRL
+                false, // CRL Distribution Point on CRL critical
+                true, // Include in healthCheck
+                true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true, // useCertReqHistory
+                true, // useUserStorage
+                true, // useCertificateStorage
+                null // cmpRaAuthSecret
+        );
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        caAdminSession.createCA(internalAdmin, cainfo);
+    }
+
+    protected static void createEllipticCurveDsaCa() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException,
+            InvalidAlgorithmException, AuthorizationDeniedException {
+        CATokenInfo catokeninfo = new CATokenInfo();
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        // Create and active OSCP CA Service.
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
+                "CN=XKMSSignerCertificate, " + "CN=" + TEST_ECDSA_CA_NAME, "", "prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA));
+        extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+
+        ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+        policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
+
+        Properties prop = catokeninfo.getProperties();
+        // Set some CA token properties if they are not set already
+        if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("prime192v1"));
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        }
+        catokeninfo.setProperties(prop);
+
+        X509CAInfo cainfo = new X509CAInfo("CN=" + TEST_ECDSA_CA_NAME, TEST_ECDSA_CA_NAME, CAConstants.CA_ACTIVE, new Date(), "",
+                CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
+                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit ECDSA CA", -1, null, policies, // PolicyId
+                24, // CRLPeriod
+                0, // CRLIssueInterval
+                10, // CRLOverlapTime
+                0, // Delta CRL period
+                new ArrayList<Integer>(), true, // Authority Key Identifier
+                false, // Authority Key Identifier Critical
+                true, // CRL Number
+                false, // CRL Number Critical
+                null, // defaultcrldistpoint
+                null, // defaultcrlissuer
+                null, // defaultocsplocator
+                null, // Authority Information Access
+                null, // defaultfreshestcrl
+                true, // Finish User
+                extendedcaservices, false, // use default utf8 settings
+                new ArrayList<Integer>(), // Approvals Settings
+                1, // Number of Req approvals
+                false, // Use UTF8 subject DN by default
+                true, // Use LDAP DN order by default
+                false, // Use CRL Distribution Point on CRL
+                false, // CRL Distribution Point on CRL critical
+                true, // include in Health Check
+                true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true, // useCertReqHistory
+                true, // useUserStorage
+                true, // useCertificateStorage
+                null // cmpRaAuthSecret
+        );
+
+        removeOldCa(TEST_ECDSA_CA_NAME);
+
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        caAdminSession.createCA(internalAdmin, cainfo);
+    }
+
+    /**
+     * Creates a root CA if one doesn't already exist
+     * @throws AuthorizationDeniedException 
+     * @throws InvalidAlgorithmException 
+     * @throws CryptoTokenAuthenticationFailedException 
+     * @throws CryptoTokenOfflineException 
+     * @throws CAExistsException 
+     */
+    protected static void createDefaultCvcEccCaDomestic() throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        try {
+            caSession.getCAInfo(internalAdmin, TEST_CVC_ECC_CA_NAME);
+        } catch(CADoesntExistsException e) {
+            createDefaultCvcEccCa();
+        }
+        removeOldCa(TEST_CVC_ECC_DOCUMENT_VERIFIER_DN);
+        
+        CATokenInfo catokeninfo = new CATokenInfo();
+        // catokeninfo.setSignKeySpec("secp256r1");
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+
+        Properties prop = catokeninfo.getProperties();
+        // Set some CA token properties if they are not set already
+        if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("secp256r1"));
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        }
+        catokeninfo.setProperties(prop);
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        
+        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_ECC_DOCUMENT_VERIFIER_DN, TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
+                CAInfo.CATYPE_CVC, TEST_CVC_ECC_CA_DN.hashCode(), null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
+                0, // CRLIssueInterval
+                10, // CRLOverlapTime
+                10, // Delta CRL period
+                new ArrayList<Integer>(), // CRL publishers
+                true, // Finish User
+                extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
+                1, // Number of Req approvals
+                true, // Include in health check
+                true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true, // useCertReqHistory
+                true, // useUserStorage
+                true // useCertificateStorage
+        );
+
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        caAdminSession.createCA(internalAdmin, cvccainfo);
+
+    }
+    
+    protected static void createDefaultDsaCa() throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+        removeOldCa(TEST_DSA_CA_NAME);
+        
+        // over from some other failed test
+        CATokenInfo catokeninfo = new CATokenInfo();
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+
+        Properties prop = catokeninfo.getProperties();
+        // Set some CA token properties if they are not set already
+        if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        }
+        catokeninfo.setProperties(prop);
+
+        // Create and active OSCP CA Service.
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+        extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN=TESTDSA", "", "1024",
+                AlgorithmConstants.KEYALGORITHM_DSA));
+
+        X509CAInfo cainfo = new X509CAInfo("CN=TESTDSA", "TESTDSA", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650,
+                null, // Expiretime
+                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit DSA CA", -1, null, null, // PolicyId
+                24, // CRLPeriod
+                0, // CRLIssueInterval
+                10, // CRLOverlapTime
+                10, // Delta CRL period
+                new ArrayList<Integer>(), true, // Authority Key Identifier
+                false, // Authority Key Identifier Critical
+                true, // CRL Number
+                false, // CRL Number Critical
+                null, // defaultcrldistpoint
+                null, // defaultcrlissuer
+                null, // defaultocsplocator
+                null, // Authority Information Access
+                null, // defaultfreshestcrl
+                true, // Finish User
+                extendedcaservices, false, // use default utf8 settings
+                new ArrayList<Integer>(), // Approvals Settings
+                1, // Number of Req approvals
+                false, // Use UTF8 subject DN by default
+                true, // Use LDAP DN order by default
+                false, // Use CRL Distribution Point on CRL
+                false, // CRL Distribution Point on CRL critical
+                true, true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true, // useCertReqHistory
+                true, // useUserStorage
+                true, // useCertificateStorage
+                null // cmpRaAuthSecret
+        );
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        caAdminSession.createCA(internalAdmin, cainfo);
+        
+       
+    }
+    
+    protected static void createDefaultCvcEccCa() throws CAExistsException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException {
+        removeOldCa(TEST_CVC_ECC_CA_NAME);
+        CATokenInfo catokeninfo = new CATokenInfo();
+        // catokeninfo.setSignKeySpec("secp256r1");
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
+
+        Properties prop = catokeninfo.getProperties();
+        // Set some CA token properties if they are not set already
+        if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("secp256r1"));
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        }
+        catokeninfo.setProperties(prop);
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+        
+        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_ECC_CA_DN, TEST_CVC_ECC_CA_NAME, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
+                CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
+                0, // CRLIssueInterval
+                10, // CRLOverlapTime
+                10, // Delta CRL period
+                new ArrayList<Integer>(), // CRL publishers
+                true, // Finish User
+                extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
+                1, // Number of Req approvals
+                true, // Include in health check
+                true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true, // useCertReqHistory
+                true, // useUserStorage
+                true // useCertificateStorage
+        );
+
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        caAdminSession.createCA(internalAdmin, cvccainfo);
+    }
+    
+    protected static void createDefaultCvcRsaCA() throws AuthorizationDeniedException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, InvalidAlgorithmException {
+        removeOldCa(TEST_CVC_RSA_CA_NAME);
+        CATokenInfo catokeninfo = new CATokenInfo();
+        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        // No CA Services.
+        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+
+        Properties prop = catokeninfo.getProperties();
+        // Set some CA token properties if they are not set already
+        if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        }
+        if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
+            prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        }
+        catokeninfo.setProperties(prop);
+        
+        CVCCAInfo cvccainfo = new CVCCAInfo(TEST_CVC_RSA_CA_DN, TEST_CVC_RSA_CA_NAME, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
+                CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit CVC CA", -1, null, 24, // CRLPeriod
+                0, // CRLIssueInterval
+                10, // CRLOverlapTime
+                10, // Delta CRL period
+                new ArrayList<Integer>(), // CRL publishers
+                true, // Finish User
+                extendedcaservices, new ArrayList<Integer>(), // Approvals Settings
+                1, // Number of Req approvals
+                true, // Include in health check
+                true, // isDoEnforceUniquePublicKeys
+                true, // isDoEnforceUniqueDistinguishedName
+                false, // isDoEnforceUniqueSubjectDNSerialnumber
+                true, // useCertReqHistory
+                true, // useUserStorage
+                true // useCertificateStorage
+        );
+        
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        caAdminSession.createCA(internalAdmin, cvccainfo);
+
+    }
+    
+    /**
+     * Preemtively remove CA in case it was created by a previous run:
+     * 
+     * @throws AuthorizationDeniedException
+     * @throws CADoesntExistsException 
+     */
+    private static void removeOldCa(String caName) throws AuthorizationDeniedException {
+        CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        try {
+            CAInfo info = caSession.getCAInfo(internalAdmin, caName);
+            caSession.removeCA(internalAdmin, info.getCAId());
+        } catch (CADoesntExistsException e) {
+            // NOPMD: we ignore this
+        }
     }
 }

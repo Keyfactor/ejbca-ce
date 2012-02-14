@@ -180,18 +180,6 @@ public class CrmfRequestTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
 
-        // org.bouncycastle.util.encoders.Base64 base = new org.bouncycastle.util.encoders.Base64();
-        // File file = new File("/home/aveen/Desktop/cmpreq.req");
-        // FileOutputStream outs = new FileOutputStream(file);
-        // base.encode(ba, outs);
-        // outs.close();
-
-        // Send request and receive response
-        /*
-         * FileOutputStream fos = new
-         * FileOutputStream("/home/tomas/dev/support/cmp_0_ir"); fos.write(ba);
-         * fos.close();
-         */
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
         checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error
@@ -217,11 +205,6 @@ public class CrmfRequestTest extends CmpTestCase {
         out.writeObject(req);
         byte[] ba = bao.toByteArray();
         // Send request and receive response
-        /*
-         * FileOutputStream fos = new
-         * FileOutputStream("/home/tomas/dev/support/cmp_0_ir"); fos.write(ba);
-         * fos.close();
-         */
         byte[] resp = sendCmpHttp(ba, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
         checkCmpFailMessage(resp, "User " + user + " not found.", 1, reqId, 7); // Expects a CertificateResponse (reject) message with error
