@@ -30,12 +30,15 @@ import org.cesecore.audit.audit.AuditLogValidationReport;
 import org.cesecore.audit.audit.AuditLogValidatorException;
 import org.cesecore.audit.audit.SecurityEventsAuditorSession;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionRemote;
+import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedAuditorProxySessionRemote;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -65,6 +68,14 @@ public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
         CryptoProviderTools.installBCProvider();
 
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        
+        /*
+         * Clean out audit logs. Sorry, but this test becomes untenable with full 
+         * log tables. Full deletion of the logs occurs in test05ExportLogs in any case. 
+         */
+        IntegrityProtectedAuditorProxySessionRemote integrityProtectedAuditorProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(IntegrityProtectedAuditorProxySessionRemote.class);
+        final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(SecurityEventsAuditorSessionBeanTest.class.getSimpleName()));
+        integrityProtectedAuditorProxySession.deleteRows(authenticationToken, new Date(), null);
     }
 
     @Test
@@ -113,7 +124,6 @@ public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
                     logDeviceId).getExportedFile();
             final File f0 = new File(file0);
             final long length0 = f0.length();
-            // System.out.println(length0);
             assertTrue("file does not exist, " + f0.getAbsolutePath(), f0.exists());
             assertTrue("file length is not > 0, " + f0.getAbsolutePath(), length0 > 0);
             assertTrue("file can not be deleted, " + f0.getAbsolutePath(), f0.delete());
@@ -122,7 +132,6 @@ public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
                     logDeviceId).getExportedFile();
             final File f1 = new File(file1);
             final long length1 = f1.length();
-            // System.out.println(length1);
             assertTrue("file does not exist, " + f1.getAbsolutePath(), f1.exists());
             assertTrue("file length is not > 0, " + f1.getAbsolutePath(), length1 > 0);
             assertTrue("f1 length is not >= f0 length", length1 >= length0);
@@ -132,8 +141,6 @@ public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
                     logDeviceId).getExportedFile();
             final File f2 = new File(file2);
             final long length2 = f2.length();
-            // System.out.println(length2);
-
             assertTrue("file does not exist, " + f2.getAbsolutePath(), f2.exists());
             assertTrue("file length is not > 0, " + f2.getAbsolutePath(), length2 > 0);
 
