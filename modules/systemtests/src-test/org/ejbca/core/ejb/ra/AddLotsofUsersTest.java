@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -82,7 +83,7 @@ public class AddLotsofUsersTest extends CaTestCase {
         for (int i = 0; i < 2000; i++) {
             String username = genUserName(baseUsername);
             String pwd = genRandomPwd();
-            int type = SecConst.USER_ENDUSER;
+            int type = EndEntityConstants.USER_ENDUSER;
             int token = SecConst.TOKEN_SOFT_P12;
             int profileid = SecConst.EMPTY_ENDENTITYPROFILE;
             int certificatetypeid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;

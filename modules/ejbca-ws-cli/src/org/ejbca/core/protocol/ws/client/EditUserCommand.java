@@ -17,7 +17,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.core.model.SecConst;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
@@ -103,10 +103,10 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             
             int type = Integer.parseInt(myArgs[ARG_TYPE]);
             
-            if((type & SecConst.USER_SENDNOTIFICATION) != 0){
+            if((type & EndEntityConstants.USER_SENDNOTIFICATION) != 0){
             	userdata.setSendNotification(true);
             }
-            if((type & SecConst.USER_KEYRECOVERABLE) != 0){
+            if((type & EndEntityConstants.USER_KEYRECOVERABLE) != 0){
             	userdata.setKeyRecoverable(true);
             }
 

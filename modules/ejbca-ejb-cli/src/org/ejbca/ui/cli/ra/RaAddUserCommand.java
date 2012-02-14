@@ -25,6 +25,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
@@ -241,7 +242,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 error = true;
             }
 
-            if (email.equalsIgnoreCase("NULL") && ((type & SecConst.USER_SENDNOTIFICATION) == SecConst.USER_SENDNOTIFICATION)) {
+            if (email.equalsIgnoreCase("NULL") && ((type & EndEntityConstants.USER_SENDNOTIFICATION) == EndEntityConstants.USER_SENDNOTIFICATION)) {
                 getLogger().error("Email field cannot be null when send notification type is given.");
                 error = true;
             }

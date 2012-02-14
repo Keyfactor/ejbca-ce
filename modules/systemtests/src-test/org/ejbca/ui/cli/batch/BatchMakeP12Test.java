@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
@@ -72,7 +73,7 @@ public class BatchMakeP12Test extends CaTestCase {
         try {
             userAdminSession.addUser(admin, username, "foo123", "C=SE, O=AnaTom, CN=" + username, "", username + "@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+                    EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
             userAdminSession.setClearTextPassword(admin, username, "foo123");
             o = new String("");
         } catch (Exception e) {
@@ -86,7 +87,7 @@ public class BatchMakeP12Test extends CaTestCase {
         try {
         	userAdminSession.addUser(admin, username1, "foo123", "C=SE, O=AnaTom, CN=" + username1, "", username1 + "@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+                    EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
         	userAdminSession.setClearTextPassword(admin, username1, "foo123");
             o = new String("");
         } catch (Exception e) {

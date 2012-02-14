@@ -19,6 +19,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
@@ -52,14 +53,14 @@ public abstract class SignSessionCommon extends CaTestCase{
         // Make user that we know...
         if (!userAdminSession.existsUser(username)) {
             userAdminSession.addUser(internalAdmin, username, "foo123", "C=SE,CN="+username, null, username+"@anatom.se", false, endEntityProfileId,
-                    certificateProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, caId);
+                    certificateProfileId, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, caId);
             if (log.isDebugEnabled()) {
                 log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
             }
         } else {
             log.info("User " + username + " already exists, resetting status.");
             userAdminSession.changeUser(internalAdmin, username, "foo123", "C=SE,CN="+username, null, username+"@anatom.se", false, endEntityProfileId,
-                    certificateProfileId, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caId);
+                    certificateProfileId, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caId);
             if (log.isDebugEnabled()) {
                 log.debug("Reset status to NEW");
             }

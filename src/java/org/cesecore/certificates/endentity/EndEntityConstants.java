@@ -24,6 +24,19 @@ public final class EndEntityConstants {
     // User types
 	//
 	
+    /**
+     * Constants for users and certificates. Constants for Type of user: Type is constructed as a mask
+     * since one user can be of several types. To test a user type:
+     * <pre>
+     * if (((type & USER_ENDUSER) == USER_ENDUSER) && ((type & USER_CAADMIN) == USER_ADMINISTOR) || ...
+     *    ...
+     * </pre>
+     * Bit usage: bits 0-7   (1:st byte):  user types bits 8-15  (2:nd byte):  unused bits 16-23 (3:rd
+     * byte):  unused bits 24-30 (4:th byte):  unused Constants for certificates are simple integer
+     * types. Constants for Token Types Token type is constructed of integer constants since only one
+     * token type can be generated.
+     */
+    
     /** Dummy type. */
     public static final int USER_INVALID = 0x0;
     /** This is an end user certificate (default). */

@@ -130,7 +130,7 @@ public class CaImportCRLCommandTest {
             caGetCrlCommand.execute(CAGETCRL_ARGS);
             assertTrue("Get CRL command failed, no file exists.", f.exists());
             // Now create a certificate that we can play with and run the commands
-            EndEntityInformation userdata = new EndEntityInformation(testUsername, "CN=4711CRLUSER", cainfo.getCAId(), null, null, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
+            EndEntityInformation userdata = new EndEntityInformation(testUsername, "CN=4711CRLUSER", cainfo.getCAId(), null, null, EndEntityConstants.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
             userdata.setPassword("foo123");
             userdata.setStatus(EndEntityConstants.STATUS_NEW);

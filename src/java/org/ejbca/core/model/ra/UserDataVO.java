@@ -18,12 +18,12 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.HashMap;
 
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.dn.DNFieldsUtil;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.StringTools;
-import org.ejbca.core.model.SecConst;
 
 
 /**
@@ -33,7 +33,7 @@ import org.ejbca.core.model.SecConst;
  * use class EndEntityInformation instead.
  *
  * @version $Id$
- * @deprecated Use org.cesecore.certificates.endentity.EndEntityInformation instead.
+ * @deprecated Use org.cesecore.certificates.endentity.EndEntityInformation instead. Since EJBCA 5.0.0.
  */
 public class UserDataVO implements Serializable {
 
@@ -202,7 +202,7 @@ public class UserDataVO implements Serializable {
      * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean. 
      */
     public boolean getAdministrator(){
-      return (type & SecConst.USER_ADMINISTRATOR) == SecConst.USER_ADMINISTRATOR;
+      return (type & EndEntityConstants.USER_ADMINISTRATOR) == EndEntityConstants.USER_ADMINISTRATOR;
     }
 
     /**
@@ -210,46 +210,46 @@ public class UserDataVO implements Serializable {
      */
     public void setAdministrator(boolean administrator){
       if(administrator) {
-        type = type | SecConst.USER_ADMINISTRATOR;
+        type = type | EndEntityConstants.USER_ADMINISTRATOR;
       } else {
-        type = type & (~SecConst.USER_ADMINISTRATOR);
+        type = type & (~EndEntityConstants.USER_ADMINISTRATOR);
       }
     }
 
     public boolean getKeyRecoverable(){
-      return (type & SecConst.USER_KEYRECOVERABLE) == SecConst.USER_KEYRECOVERABLE;
+      return (type & EndEntityConstants.USER_KEYRECOVERABLE) == EndEntityConstants.USER_KEYRECOVERABLE;
     }
 
     public void setKeyRecoverable(boolean keyrecoverable){
       if(keyrecoverable) {
-        type = type | SecConst.USER_KEYRECOVERABLE;
+        type = type | EndEntityConstants.USER_KEYRECOVERABLE;
       } else {
-        type = type & (~SecConst.USER_KEYRECOVERABLE);
+        type = type & (~EndEntityConstants.USER_KEYRECOVERABLE);
       }
     }
 
     public boolean getSendNotification(){
-      return (type & SecConst.USER_SENDNOTIFICATION) == SecConst.USER_SENDNOTIFICATION;
+      return (type & EndEntityConstants.USER_SENDNOTIFICATION) == EndEntityConstants.USER_SENDNOTIFICATION;
     }
 
     
     public void setSendNotification(boolean sendnotification){
       if(sendnotification) {
-        type = type | SecConst.USER_SENDNOTIFICATION;
+        type = type | EndEntityConstants.USER_SENDNOTIFICATION;
       } else {
-        type = type & (~SecConst.USER_SENDNOTIFICATION);
+        type = type & (~EndEntityConstants.USER_SENDNOTIFICATION);
       }
     }
     
     public boolean getPrintUserData(){
-        return (type & SecConst.USER_SENDNOTIFICATION) == SecConst.USER_SENDNOTIFICATION;
+        return (type & EndEntityConstants.USER_SENDNOTIFICATION) == EndEntityConstants.USER_SENDNOTIFICATION;
       }
 
     public void setPrintUserData(boolean printUserData){
         if(printUserData) {
-          type = type | SecConst.USER_PRINT;
+          type = type | EndEntityConstants.USER_PRINT;
         } else {
-          type = type & (~SecConst.USER_PRINT);
+          type = type & (~EndEntityConstants.USER_PRINT);
         }
    }
 
