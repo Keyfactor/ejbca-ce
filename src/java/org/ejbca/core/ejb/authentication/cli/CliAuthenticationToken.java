@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.cli;
+package org.ejbca.core.ejb.authentication.cli;
 
 import java.security.Principal;
 import java.util.HashSet;
@@ -20,7 +20,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
-import org.ejbca.ui.cli.exception.UninitializedCliAuthenticationTokenException;
+import org.ejbca.core.ejb.authentication.cli.exception.UninitializedCliAuthenticationTokenException;
 import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.CryptoTools;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;

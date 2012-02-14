@@ -53,13 +53,13 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.ui.cli.CliUserAccessMatchValue;
 
 /**
  * Servlet used to start services by calling the ServiceSession.load() at startup<br>

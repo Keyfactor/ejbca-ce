@@ -234,8 +234,8 @@
 		<!-- Dependecies from EJB CLI, EJBCA WS -->
 		<include name="org/ejbca/core/model/hardtoken/types/EnhancedEIDHardToken.java"/>
 		<include name="org/ejbca/core/model/hardtoken/types/SwedishEIDHardToken.java"/>
-		<include name="org/ejbca/ui/cli/CliAuthenticationToken.java"/>
-		<include name="org/ejbca/ui/cli/CliUserAccessMatchValue.java"/>
+		<include name="org/ejbca/core/ejb/authentication/cli/CliAuthenticationToken.java"/>
+		<include name="org/ejbca/core/ejb/authentication/cli/CliUserAccessMatchValue.java"/>
 		<include name="org/ejbca/util/crypto/BCrypt.java"/>
 		<include name="org/ejbca/util/crypto/CryptoTools.java"/>
 		<include name="org/ejbca/util/crypto/SupportedPasswordHashAlgorithm.java"/>	
@@ -255,7 +255,7 @@
 		<include name="org/ejbca/util/PerformanceTest.java"/>
 		<!-- Dependecies from all CLIs -->
 		<include name="org/ejbca/ui/cli/IllegalAdminCommandException.java"/>
-		<include name="org/ejbca/ui/cli/exception/CliAuthenticationFailedException.java"/>
+		<include name="org/ejbca/core/ejb/authentication/cli/exception/CliAuthenticationFailedException.java"/>
 		<!-- Dependencies from VA WAR and Appserver Extensions -->
 		<include name="org/cesecore/util/log/SaferAppenderListener.java"/>
 		<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*.java"/>

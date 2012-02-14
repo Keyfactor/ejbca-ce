@@ -55,8 +55,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
-import org.ejbca.ui.cli.CliAuthenticationToken;
-import org.ejbca.ui.cli.CliUserAccessMatchValue;
 import org.ejbca.util.crypto.CryptoTools;
 import org.junit.After;
 import org.junit.Before;

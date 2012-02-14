@@ -151,7 +151,14 @@
 					<include name="org/cesecore/authorization/user/matchvalues/ReverseMatchValueLookupException.java"/>
 					<include name="org/cesecore/authorization/user/matchvalues/X500PrincipalAccessMatchValue.java"/>
 					<include name="org/ejbca/core/model/log/Admin.java"/>
-					<include name="org/ejbca/core/model/authorization/AdminInformation.java"/>
+					<include name="org/ejbca/core/model/authorization/AdminInformation.java"/>				
+					<include name="org/ejbca/core/ejb/authentication/cli/CliAuthenticationToken.java"/>
+                    <include name="org/ejbca/core/ejb/authentication/cli/CliAuthenticationTokenReferenceRegistry.java"/>
+                    <include name="org/ejbca/core/ejb/authentication/cli/CliUserAccessMatchValue.java"/>
+					<include name="org/ejbca/core/ejb/authentication/cli/exception/UninitializedCliAuthenticationTokenException.java"/>
+                    <include name="org/ejbca/util/crypto/BCrypt.java"/>
+                    <include name="org/ejbca/util/crypto/CryptoTools.java"/>
+					<include name="org/ejbca/util/crypto/SupportedPasswordHashAlgorithm.java"/>	
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/admins" destdir="${build-temp.dir}/admins" debug="on" includeantruntime="no"
@@ -257,8 +264,7 @@
 					<include name="org/cesecore/util/ProfileID.java"/>
 					<include name="org/ejbca/config/*.java"/>			
 					<include name="org/ejbca/core/model/authorization/*.java"/>
-                    <include name="org/ejbca/core/model/ra/NotFoundException*.java"/>					
-					<include name="org/ejbca/util/crypto/SupportedPasswordHashAlgorithm.java"/>	
+                    <include name="org/ejbca/core/model/ra/NotFoundException*.java"/>							
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/authorization" destdir="${build-temp.dir}/authorization" debug="on" includeantruntime="no"
@@ -310,14 +316,7 @@
 					<include name="org/ejbca/core/model/approval/**/*.java"/>
 					<!-- GlobalConfiguration is more of RA/AdminGUI component, but is hard to get rid of w/o database changes.. -->
 					<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
-					<include name="org/ejbca/config/WebConfiguration.java"/>
-					<!-- CliAuthenticationtoken, should reside in another package -->
-					<include name="org/ejbca/ui/cli/CliAuthenticationToken.java"/>
-                    <include name="org/ejbca/ui/cli/CliAuthenticationTokenReferenceRegistry.java"/>
-                    <include name="org/ejbca/ui/cli/CliUserAccessMatchValue.java"/>
-                    <include name="org/ejbca/ui/cli/exception/UninitializedCliAuthenticationTokenException.java"/>
-                    <include name="org/ejbca/util/crypto/BCrypt.java"/>
-                    <include name="org/ejbca/util/crypto/CryptoTools.java"/>
+					<include name="org/ejbca/config/WebConfiguration.java"/>                
 					<!-- Exclude RA approval requests.. org.ejbca.core.model.ra.approvalrequests would be a better location for these -->
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/EditEndEntityApprovalRequest.java"/>
 					<exclude name="org/ejbca/core/model/approval/approvalrequests/AddEndEntityApprovalRequest.java"/>
