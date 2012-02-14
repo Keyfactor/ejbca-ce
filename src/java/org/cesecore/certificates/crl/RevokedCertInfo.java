@@ -42,6 +42,7 @@ public class RevokedCertInfo implements Serializable {
     public static final int REVOCATION_REASON_SUPERSEDED           = 4;
     public static final int REVOCATION_REASON_CESSATIONOFOPERATION = 5;
     public static final int REVOCATION_REASON_CERTIFICATEHOLD      = 6;
+    // Value 7 is not used, see RFC5280
     public static final int REVOCATION_REASON_REMOVEFROMCRL        = 8;
     public static final int REVOCATION_REASON_PRIVILEGESWITHDRAWN  = 9;
     public static final int REVOCATION_REASON_AACOMPROMISE         = 10;
