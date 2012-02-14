@@ -160,7 +160,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 		final String msg = INTRES.getLocalizedMessage("store.storecert", username, data1.getFingerprint(), data1.getSubjectDN(), data1.getIssuerDN(), serialNo);
 		Map<String, Object> details = new LinkedHashMap<String, Object>();
 		details.put("msg", msg);
-		final String caId = Integer.valueOf(CertTools.getIssuerDN(incert).hashCode()).toString();
+		final String caId = String.valueOf(CertTools.getIssuerDN(incert).hashCode());
 		logSession.log(EventTypes.CERT_STORED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, adminForLogging.toString(), caId, serialNo, username, details);
         if (log.isTraceEnabled()) {
             log.trace("<storeCertificateNoAuth()");
@@ -603,7 +603,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     		final String msg = INTRES.getLocalizedMessage("store.revokedcert", username, rev.getFingerprint(), Integer.valueOf(reason), rev.getSubjectDN(), rev.getIssuerDN(), serialNo);
     		Map<String, Object> details = new LinkedHashMap<String, Object>();
     		details.put("msg", msg);
-    		logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), serialNo, username, details);
+    		logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNo, username, details);
     		returnVal = true; // we did change status
         } else if (((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL))
                 && (rev.getRevocationReason() == RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD)) {
@@ -620,7 +620,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     		final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, rev.getFingerprint(), Integer.valueOf(reason), rev.getSubjectDN(), rev.getIssuerDN(), serialNo);
     		Map<String, Object> details = new LinkedHashMap<String, Object>();
     		details.put("msg", msg);
-    		logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), serialNo, username, details);            
+    		logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNo, username, details);            
     		returnVal = true; // we did change status
         } else {
             final String msg = INTRES.getLocalizedMessage("store.ignorerevoke", serialNo, Integer.valueOf(rev.getStatus()), Integer.valueOf(reason));
@@ -677,7 +677,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             final String msg = INTRES.getLocalizedMessage("store.revokedallbyca", issuerdn, Integer.valueOf(revoked + temprevoked), Integer.valueOf(reason));
     		Map<String, Object> details = new LinkedHashMap<String, Object>();
     		details.put("msg", msg);
-    		logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);            
+    		logSession.log(EventTypes.CERT_REVOKED, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);            
         } catch (Exception e) {
             final String msg = INTRES.getLocalizedMessage("store.errorrevokeallbyca", issuerdn);
             log.info(msg);
@@ -842,7 +842,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             final String msg = INTRES.getLocalizedMessage("store.setstatus", data.getUsername(), fingerprint, status, data.getSubjectDN(), data.getIssuerDN(), serialNo);
     		Map<String, Object> details = new LinkedHashMap<String, Object>();
     		details.put("msg", msg);
-    		logSession.log(EventTypes.CERT_CHANGEDSTATUS, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), serialNo, data.getUsername(), details);            
+    		logSession.log(EventTypes.CERT_CHANGEDSTATUS, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNo, data.getUsername(), details);            
     	} else {
             if (log.isDebugEnabled()) {
                 final String msg = INTRES.getLocalizedMessage("store.setstatusfailed", fingerprint, status);

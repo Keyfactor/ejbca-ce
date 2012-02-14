@@ -50,9 +50,7 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
 
     private final X509Certificate certificate;
 
-    private String certstring;
     private final int adminCaId;
-    private final String altNameString;
     private final DNFieldExtractor dnExtractor;
     private final DNFieldExtractor anExtractor;
 
@@ -80,10 +78,10 @@ public class X509CertificateAuthenticationToken extends LocalJvmOnlyAuthenticati
             certificate = certificateArray[0];
         }
         
-        certstring = CertTools.getSubjectDN(certificate).toString();
+        String certstring = CertTools.getSubjectDN(certificate).toString();
         adminCaId = CertTools.getIssuerDN(certificate).hashCode();
         certstring = serialPattern.matcher(certstring).replaceAll("SN=");
-        altNameString = CertTools.getSubjectAlternativeName(certificate);
+        String altNameString = CertTools.getSubjectAlternativeName(certificate);
 
         dnExtractor = new DNFieldExtractor(certstring, DNFieldExtractor.TYPE_SUBJECTDN);
         anExtractor = new DNFieldExtractor(altNameString, DNFieldExtractor.TYPE_SUBJECTALTNAME);

@@ -92,7 +92,7 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         final String msg = intres.getLocalizedMessage("catoken.deactivated", caid);
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
-        logSession.log(EventTypes.CA_TOKENDEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+        logSession.log(EventTypes.CA_TOKENDEACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<deactivateCAToken: " + caid);
         }
@@ -112,7 +112,7 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         final String msg = intres.getLocalizedMessage("catoken.activated", caid);
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
-        logSession.log(EventTypes.CA_TOKENACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+        logSession.log(EventTypes.CA_TOKENACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<activateCAToken: " + caid);
         }
@@ -149,7 +149,7 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         details.put("oldsequence", oldsequence);
         details.put("properties", prop);
         details.put("sequence", sequence);
-        logSession.log(EventTypes.CA_KEYGEN, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+        logSession.log(EventTypes.CA_KEYGEN, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<generateKeys: " + caid);
         }
@@ -181,7 +181,7 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         details.put("msg", msg);
         details.put("properties", prop);
         details.put("sequence", sequence);
-        logSession.log(EventTypes.CA_KEYACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+        logSession.log(EventTypes.CA_KEYACTIVATE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<activateNextSignKey: " + caid);
         }
@@ -217,7 +217,7 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         details.put("msg", msg);
         details.put("oldproperties", oldprop);
         details.put("properties", prop);
-        logSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+        logSession.log(EventTypes.CA_EDITING, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<setTokenProperty: " + caid);
         }
@@ -245,7 +245,7 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         final String msg = intres.getLocalizedMessage("token.deleteentry", alias, caid);
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
-        logSession.log(EventTypes.CA_KEYDELETE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+        logSession.log(EventTypes.CA_KEYDELETE, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
         if (log.isTraceEnabled()) {
             log.trace("<deleteTokenEntry: " + caid);
         }
@@ -274,7 +274,7 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         final String msg = intres.getLocalizedMessage("token.generatedkeypair", keySpec, alias, caid);
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
-        logSession.log(EventTypes.CA_KEYGEN, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+        logSession.log(EventTypes.CA_KEYGEN, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
         if (log.isTraceEnabled()) {
             log.trace(">generateKeyPair: " + caid);
         }
@@ -304,7 +304,7 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         final String msg = intres.getLocalizedMessage("token.generatedkeypair", spec.getClass(), alias, caid);
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("msg", msg);
-        logSession.log(EventTypes.CA_KEYGEN, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+        logSession.log(EventTypes.CA_KEYGEN, EventStatus.SUCCESS, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
         if (log.isTraceEnabled()) {
             log.trace(">generateKeyPair: " + caid);
         }

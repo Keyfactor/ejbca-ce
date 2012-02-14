@@ -266,11 +266,8 @@ public class BasicCertificateExtension extends CertificateExtension {
             byte[] byteArray = bigInteger.toByteArray();
             if (byteArray[0] == 0) {
                 // Remove empty extra byte
-                byte[] shorterByteArray = new byte[byteArray.length - 1];
-                for (int i = 0; i < shorterByteArray.length; i++) {
-                    shorterByteArray[i] = byteArray[i + 1];
-                }
-                byteArray = shorterByteArray;
+                // System.arraycopy handles creating of temporary array when destinatio is the same
+                System.arraycopy(byteArray, 1, byteArray, 0, byteArray.length-1);
             }
             retval = new DERBitString(byteArray, padBits);
         } catch (NumberFormatException e) {

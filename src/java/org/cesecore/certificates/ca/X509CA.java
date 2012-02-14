@@ -474,7 +474,7 @@ public class X509CA extends CA implements Serializable {
             req = new PKCS10CertificationRequest(signAlg, x509dn, keyPair.getPublic(), attrset, keyPair.getPrivate(), catoken.getCryptoToken().getSignProviderName());
             log.trace("<createRequest");
             return req.getEncoded();
-        } catch (CryptoTokenOfflineException e) {
+        } catch (CryptoTokenOfflineException e) { // NOPMD, since we catch wide below
             throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);

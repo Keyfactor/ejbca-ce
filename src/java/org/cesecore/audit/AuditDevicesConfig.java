@@ -198,7 +198,7 @@ public class AuditDevicesConfig {
     private static int getInt(final Properties properties, final String key, final int defaultValue) {
         int ret = defaultValue;
         try {
-            ret = Integer.valueOf(properties.getProperty(key, Integer.valueOf(ret).toString()));
+            ret = Integer.valueOf(properties.getProperty(key, String.valueOf(ret)));
         } catch (NumberFormatException e) {
             log.error("Invalid value in " + key + ", must be decimal number. Using default " + defaultValue + ". Message: " + e.getMessage());
         }

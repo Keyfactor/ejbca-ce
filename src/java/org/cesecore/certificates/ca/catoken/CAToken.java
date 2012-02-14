@@ -173,7 +173,7 @@ public class CAToken extends UpgradeableDataHashMap {
         					token.testKeyPair(privateKey, publicKey);
         					// If we can test the testkey, we are finally active!
         					ret = CryptoToken.STATUS_ACTIVE;
-        				} catch (Throwable th) {
+        				} catch (Throwable th) { // NOPMD: we need to catch _everything_ when dealing with HSMs
         					log.error(intres.getLocalizedMessage("token.activationtestfail", token.getId()), th);
         				}
         			}
