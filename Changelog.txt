@@ -1,3 +1,27 @@
+EJBCA 5.0.3, 2012-02-24
+---
+New Feature
+    [ECA-2539] - CMP: Get KeyUpdateRequest working even in RA mode
+
+Improvement
+    [ECA-2543] - We need a way to log CMP messages from CMPProxy
+
+Task
+    [ECA-2536] - Modify tests in CliCommandAuthenticationTest to play with Glassfish
+
+Bug
+    [ECA-2261] - SenderKeyID does not need to be set in a CMP request
+    [ECA-2527] - Wrong exception thrown in HardTokenSessionBean for some errors.
+    [ECA-2534] - Regression: Not checking that the administrator has the role defined in the hard token issuer any more.
+    [ECA-2535] - Security Audit Log with a single empty "msg" gives NullPointerException in Admin GUI
+    [ECA-2538] - Creating certificates from CLI with approvals enabled does not work
+    [ECA-2544] - Upgrading Certificate Profiles can remove Authority Information access under certain conditions
+    [ECA-2548] - Error clicking some service buttons when no service selected
+    [ECA-2551] - test:runone does not work on windows
+    [ECA-2552] - CMP: Skip verifying CertificateConfirmationRequest if not required
+    [ECA-2567] - CMP: Should use EjbRemoteHelper in CrmfRARequestTest
+    [ECA-2574] - Minor XSS issue
+
 EJBCA 5.0.2, 2012-01-23
 ---
 Bug
@@ -200,6 +224,37 @@ Task
     [ECA-2318] - Merge revision #1208 from CESECORE-266 into EJBCA
     [ECA-2320] - Merge changes from CESECORE-197
     [ECA-2324] - Merge changes from CESECORE-269 to EJBCA
+
+EJBCA 4.0.9, 2012-02-13
+---
+** Bug
+    * [ECA-2574] - Minor XSS issue
+
+EJBCA 4.0.8, 2012-02-09
+---
+** New Feature
+    * [ECA-2539] - CMP: Get KeyUpdateRequest working even in RA mode 
+
+** Bug
+    * [ECA-2261] - SenderKeyID does not need to be set in a CMP request
+    * [ECA-2476] - null pointer when trying to recover lost HSM in external OCSP
+    * [ECA-2482] - Minor XSS issues
+    * [ECA-2504] - Rename LIST button in Approve Actions section
+    * [ECA-2544] - Upgrading Certificate Profiles can remove Authority Information access under certain conditions
+    * [ECA-2552] - CMP: Skip verifying CertificateConfirmationRequest if not required
+    * [ECA-2567] - CMP: Should use EjbRemoteHelper in CrmfRARequestTest
+
+** Improvement
+    * [ECA-1978] - Certificate Profile form improved
+    * [ECA-2094] - Edit CA form improved
+    * [ECA-2454] - Improve all table layout (rows: header, sections, footer)
+    * [ECA-2468] - Formats and Units (GUI usability and keys refactoring)
+    * [ECA-2497] - Unreadable code in VerifyPKIMessage
+    * [ECA-2501] - More efficient CRL download
+    * [ECA-2518] - Add link to Help page for ECDSA keys
+
+** Task
+    * [ECA-2157] - Clean up CSS code
 
 EJBCA 4.0.7, 2011-12-25
 ---
