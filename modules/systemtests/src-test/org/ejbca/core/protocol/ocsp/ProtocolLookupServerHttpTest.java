@@ -63,6 +63,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
@@ -144,7 +145,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         boolean userExists = false;
         try {
             userAdminSession.addUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest", null,
-                    "unidtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER,
+                    "unidtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER,
                     SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: unidtest, foo123, C=SE, O=AnaTom,surname=Jansson,serialNumber=123456789, CN=UNIDTest");
         } catch (EJBException e) {
@@ -155,7 +156,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         if (userExists) {
             log.debug("User unidtest already exists.");
             userAdminSession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest", null,
-                    "unidtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER,
+                    "unidtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER,
                     SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caid);
             log.debug("Reset status to NEW");
         }
@@ -232,7 +233,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     public void test03OcspGoodWithNoFnr() throws Exception {
         // Change uses to a Unid that we don't have mapping for
         userAdminSession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=12345678,CN=UNIDTest", null,
-                "unidtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER,
+                "unidtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caid);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
@@ -270,7 +271,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     public void test04OcspGoodNoSerialNo() throws Exception {
         // Change uses to not have any serialNumber
         userAdminSession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,CN=UNIDTest", null, "unidtest@anatom.se", false,
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
                 UserDataConstants.STATUS_NEW, caid);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
@@ -308,7 +309,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     public void test05HttpsNotAuthorized() throws Exception {
         // Change uses to a Unid that is OK
         userAdminSession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest", null,
-                "unidtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER,
+                "unidtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caid);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
@@ -349,7 +350,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         httpReqPath = "http://127.0.0.1:8080/ejbca";
         // Change uses to a Unid that is OK
         userAdminSession.changeUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest", null,
-                "unidtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER,
+                "unidtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, caid);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user

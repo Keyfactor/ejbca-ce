@@ -22,8 +22,8 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
@@ -111,10 +111,10 @@ public class GenerateNewUserCommand extends EJBCAWSRABaseCommand implements IAdm
             
             int type = Integer.parseInt(myArgs[ARG_TYPE]);
             
-            if((type & SecConst.USER_SENDNOTIFICATION) != 0){
+            if((type & EndEntityConstants.USER_SENDNOTIFICATION) != 0){
             	userdata.setSendNotification(true);
             }
-            if((type & SecConst.USER_KEYRECOVERABLE) != 0){
+            if((type & EndEntityConstants.USER_KEYRECOVERABLE) != 0){
             	userdata.setKeyRecoverable(true);
             }
 

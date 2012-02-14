@@ -66,6 +66,7 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -401,12 +402,12 @@ public class RsaSignSessionTest extends SignSessionCommon {
         if (!userAdminSession.existsUser(RSA_REVERSE_USERNAME)) {
             userAdminSession.addUser(internalAdmin, RSA_REVERSE_USERNAME, "foo123", "C=SE,O=AnaTom,CN=" + RSA_REVERSE_USERNAME, null,
                     "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsareversecaid);
+                    EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsareversecaid);
             log.debug("created user: " + RSA_REVERSE_USERNAME + ", foo123, C=SE, O=AnaTom, CN=" + RSA_REVERSE_USERNAME);
         } else {
             log.info("User " + RSA_REVERSE_USERNAME + " already exists, resetting status.");
             userAdminSession.changeUser(internalAdmin, "foorev", "foo123", "C=SE,O=AnaTom,CN=" + RSA_REVERSE_USERNAME, null, "foo@anatom.se", false,
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER,
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER,
                     SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsareversecaid);
             log.debug("Reset status to NEW");
         }
@@ -447,7 +448,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
                             "foo123",
                             "C=SE,O=AnaTom,CN=foo",
                             "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1",
-                            "foo@anatom.se", false, eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER,
+                            "foo@anatom.se", false, eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER,
                             SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
@@ -471,7 +472,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             // Change a user that we know...
             userAdminSession.changeUser(internalAdmin, RSA_USERNAME, "foo123", "C=SE,O=AnaTom,CN=foo",
                     "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1",
-                    "foo@anatom.se", false, eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER,
+                    "foo@anatom.se", false, eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER,
                     SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
@@ -533,7 +534,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         try {
             // Change a user that we know...
             userAdminSession.changeUser(internalAdmin, qcCertEndEntityName, "foo123", "C=SE,CN=qc", null, "foo@anatom.nu", false, eeprofile, cprofile,
-                    SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
+                    EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
             log.debug("created user: foo, foo123, C=SE, CN=qc");
 
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, qcCertEndEntityName, "foo123", anotheKey.getPublic());
@@ -591,7 +592,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         try {
            
             EndEntityInformation user = new EndEntityInformation(validityOverrideEndEntityName, "C=SE,CN=validityoverride", rsacaid, null, "foo@anatom.nu",
-                    SecConst.USER_ENDUSER, eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
+                    EndEntityConstants.USER_ENDUSER, eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
             user.setPassword("foo123");
             user.setStatus(UserDataConstants.STATUS_NEW);
             user.setCardNumber("123456789");
@@ -713,7 +714,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             // We use unicode encoding for the three Swedish character åäö
             userAdminSession.addUser(internalAdmin, username, "foo123", "C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6", null, username
                     + "@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
-                    SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+                    EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
             log.debug("created user: " + username + ", foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
         } else {
             log.debug("user " + username + " already exists: " + username + ", foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
@@ -762,7 +763,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         try {
     
             EndEntityInformation user = new EndEntityInformation(endEntityName, "C=SE,O=PrimeKey,CN=dnorder", rsacaid, null, "foo@primekey.se",
-                    SecConst.USER_ENDUSER, eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
+                    EndEntityConstants.USER_ENDUSER, eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
             user.setStatus(UserDataConstants.STATUS_NEW);
             // Change a user that we know...
             userAdminSession.changeUser(internalAdmin, user, false);
@@ -825,7 +826,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         // New random username and create cert
         String username = genRandomUserName();
         userAdminSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         // Check that certreq history was created
@@ -838,7 +839,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         // New random username and create cert
         username = genRandomUserName();
         userAdminSession.addUser(internalAdmin, username, "foo123", "C=SE,O=AnaTom,CN=" + username, null, "foo@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, rsacaid);
         cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         // Check that certreq history was not created
@@ -888,7 +889,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTSIGALG", profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTSIGALG");
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
-        EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=testsigalg", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
+        EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=testsigalg", rsacaid, null, "foo@anatom.nu", EndEntityConstants.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
@@ -947,7 +948,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTEXTENSIONOVERRIDE", profile);
         int eeprofile = endEntityProfileSession.getEndEntityProfileId("TESTEXTENSIONOVERRIDE");
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
-        EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", SecConst.USER_ENDUSER, eeprofile, cprofile,
+        EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", EndEntityConstants.USER_ENDUSER, eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);
@@ -1040,7 +1041,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         endEntityProfileSession.addEndEntityProfile(internalAdmin, "TESTREQUESTCOUNTER", profile);
         pid = endEntityProfileSession.getEndEntityProfileId("TESTREQUESTCOUNTER");
         // Change already existing user
-        EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, SecConst.USER_ENDUSER, pid, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
+        EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, EndEntityConstants.USER_ENDUSER, pid, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         userAdminSession.changeUser(internalAdmin, user, false);
         userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
@@ -1133,7 +1134,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         createEndEntity(dnOverrideEndEntityName, eeprofile, cprofile, rsacaid);
         try {
             EndEntityInformation user = new EndEntityInformation(dnOverrideEndEntityName, "C=SE,CN=dnoverride", rsacaid, null, "foo@anatom.nu",
-                    SecConst.USER_ENDUSER, eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
+                    EndEntityConstants.USER_ENDUSER, eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
             user.setPassword("foo123");
             user.setStatus(UserDataConstants.STATUS_NEW);
             // Change a user that we know...
@@ -1182,7 +1183,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             KeyPair rsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
             CAInfo infocvcca = caSession.getCAInfo(internalAdmin, TEST_CVC_RSA_CA_NAME); //"TESTDV-D"
             int cvccaid = infocvcca.getCAId();
-            EndEntityInformation user = new EndEntityInformation(cvcEndEntityName, "C=SE,CN=TESTCVC", cvccaid, null, null, SecConst.USER_ENDUSER,
+            EndEntityInformation user = new EndEntityInformation(cvcEndEntityName, "C=SE,CN=TESTCVC", cvccaid, null, null, EndEntityConstants.USER_ENDUSER,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
             user.setPassword("cvc");
             userAdminSession.addUser(internalAdmin, user, false);

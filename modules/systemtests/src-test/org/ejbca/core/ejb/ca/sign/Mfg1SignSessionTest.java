@@ -34,6 +34,7 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -79,7 +80,7 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
         UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
         if (!userAdminSession.existsUser("foorsamgf1ca")) {
             userAdminSession.addUser(internalAdmin, "foorsamgf1ca", "foo123", "C=SE,O=AnaTom,CN=foorsamgf1ca", null, "foo@anatom.se", false,
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER,
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER,
                     SecConst.TOKEN_SOFT_PEM, 0, rsamgf1cacaid);
             log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
         } else {

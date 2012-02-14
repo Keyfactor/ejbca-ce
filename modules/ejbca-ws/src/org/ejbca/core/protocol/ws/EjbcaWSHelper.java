@@ -87,13 +87,13 @@ import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ws.logger.TransactionTags;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.ExtendedInformationWS;
-import org.ejbca.util.cert.OID;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.objects.NameAndId;
 import org.ejbca.core.protocol.ws.objects.PinDataWS;
 import org.ejbca.core.protocol.ws.objects.UserDataVOWS;
 import org.ejbca.core.protocol.ws.objects.UserMatch;
 import org.ejbca.util.IPatternLogger;
+import org.ejbca.util.cert.OID;
 import org.ejbca.util.query.Query;
 
 /** Helper class for other classes that wants to call remote EJBs.

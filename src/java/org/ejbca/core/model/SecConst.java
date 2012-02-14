@@ -28,27 +28,6 @@ package org.ejbca.core.model;
  * @version $Id$
  */
 public final class SecConst {
-    // User types
-
-    /** Dummy type. */
-    public static final int USER_INVALID = 0x0;
-
-    /** This is an end user certificate (default). */
-    public static final int USER_ENDUSER = 0x1;
-
-    /** This user is an administrator. */
-    public static final int USER_ADMINISTRATOR = 0x40;
-
-    /** This users keystores are key recoverable. */
-    public static final int USER_KEYRECOVERABLE = 0x80;
-
-    
-    /** Notification will be sent to this users emailaddress */
-    public static final int USER_SENDNOTIFICATION = 0x100;
-    
-    /** Registration data will be printed for this user */
-    public static final int USER_PRINT = 0x200;
-
 
     // Token types.
 

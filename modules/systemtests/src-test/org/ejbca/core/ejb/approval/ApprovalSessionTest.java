@@ -52,6 +52,7 @@ import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -427,7 +428,7 @@ public class ApprovalSessionTest extends CaTestCase {
         final String username = "ApprovalEndEntityUsername";
         final String clearpwd = "foo123";
         final EndEntityInformation userdata = new EndEntityInformation(username, "C=SE, O=AnaTom, CN=" + username, caid, null, null,
-                UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
+                UserDataConstants.STATUS_NEW, EndEntityConstants.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
                 SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword(clearpwd);
         final AddEndEntityApprovalRequest eeApprovalRequest = new AddEndEntityApprovalRequest(userdata, false, cliReqAuthToken, null, 1, caid, SecConst.EMPTY_ENDENTITYPROFILE);

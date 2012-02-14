@@ -37,8 +37,6 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderLocal;
-import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
 import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;

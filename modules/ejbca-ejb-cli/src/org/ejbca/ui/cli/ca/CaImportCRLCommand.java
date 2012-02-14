@@ -38,6 +38,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
@@ -145,7 +146,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                        // Add the user and change status to REVOKED
 	                        getLogger().debug("Loading/updating user " + missing_user_name);
 	                        final EndEntityInformation userdataNew = new EndEntityInformation(missing_user_name, CertTools.getSubjectDN(certificate), cainfo.getCAId(), null, null,
-	                                UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
+	                                UserDataConstants.STATUS_NEW, EndEntityConstants.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE,
 	                                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null,
 	                                SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 	                        userdataNew.setPassword("foo123");
@@ -155,7 +156,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                        getLogger().info("User '" + missing_user_name + "' has been updated.");
 	                    }
 	                    ejb.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAdmin(cliUserName, cliPassword), certificate, missing_user_name, fingerprint,
-	                            CertificateConstants.CERT_ACTIVE, SecConst.USER_ENDUSER, 
+	                            CertificateConstants.CERT_ACTIVE, EndEntityConstants.USER_ENDUSER, 
 	                            CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, new Date().getTime());
 	                    getLogger().info("Dummy certificate  '" + serialHex + "' has been stored.");
 	                }

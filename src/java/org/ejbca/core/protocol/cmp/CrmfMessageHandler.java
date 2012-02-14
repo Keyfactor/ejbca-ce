@@ -37,6 +37,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.util.CertTools;
@@ -388,7 +389,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			} else {
 				ei = null;
 			}
-			final EndEntityInformation userdata = new EndEntityInformation(username, dnname.toString(), caId, altNames, email, UserDataConstants.STATUS_NEW, SecConst.USER_ENDUSER, eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, ei);
+			final EndEntityInformation userdata = new EndEntityInformation(username, dnname.toString(), caId, altNames, email, UserDataConstants.STATUS_NEW, EndEntityConstants.USER_ENDUSER, eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, ei);
 			userdata.setPassword(pwd);
 			// Set so we have the right params in the call to processCertReq. 
 			// Username and pwd in the UserDataVO and the IRequestMessage must match

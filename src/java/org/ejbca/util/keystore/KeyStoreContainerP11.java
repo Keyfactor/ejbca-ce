@@ -15,9 +15,9 @@ package org.ejbca.util.keystore;
 import java.io.IOException;
 import java.security.Key;
 import java.security.KeyStore;
+import java.security.KeyStore.CallbackHandlerProtection;
 import java.security.Provider;
 import java.security.Security;
-import java.security.KeyStore.CallbackHandlerProtection;
 import java.security.cert.Certificate;
 
 import javax.security.auth.callback.CallbackHandler;

@@ -33,6 +33,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -189,7 +190,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = false;
         EndEntityInformation user = new EndEntityInformation("extkeyusagefoo", "C=SE,O=AnaTom,CN=extkeyusagefoo", rsacaid, null, "foo@anatom.se",
-                SecConst.USER_ENDUSER, fooEEProfile, fooCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                EndEntityConstants.USER_ENDUSER, fooEEProfile, fooCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         user.setStatus(UserDataConstants.STATUS_NEW);
         user.setPassword("foo123");
         try {

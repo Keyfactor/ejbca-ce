@@ -25,6 +25,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -79,7 +80,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				certificateprofile = args[8];				
 			}
 			
-			int type = SecConst.USER_ENDUSER;
+			int type = EndEntityConstants.USER_ENDUSER;
 			int status;
 			if ("ACTIVE".equalsIgnoreCase(active)) {
 				status = CertificateConstants.CERT_ACTIVE;

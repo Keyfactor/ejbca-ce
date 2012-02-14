@@ -30,6 +30,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
@@ -272,7 +273,7 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
         endEntityProfileSession.addEndEntityProfile(internalAdmin, EEPROFILE_PRIVKEYUSAGEPERIOD, eeProfile);
         final int eeProfileId = endEntityProfileSession.getEndEntityProfileId(EEPROFILE_PRIVKEYUSAGEPERIOD);
         int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
-        final EndEntityInformation user = new EndEntityInformation(USER_PRIVKEYUSAGEPERIOD, DN_PRIVKEYUSAGEPERIOD, rsacaid, null, "fooprivatekeyusae@example.com", SecConst.USER_ENDUSER, eeProfileId, certProfileId,
+        final EndEntityInformation user = new EndEntityInformation(USER_PRIVKEYUSAGEPERIOD, DN_PRIVKEYUSAGEPERIOD, rsacaid, null, "fooprivatekeyusae@example.com", EndEntityConstants.USER_ENDUSER, eeProfileId, certProfileId,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(UserDataConstants.STATUS_NEW);

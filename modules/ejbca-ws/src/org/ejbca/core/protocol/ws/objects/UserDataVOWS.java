@@ -16,7 +16,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.ejbca.core.model.SecConst;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
@@ -248,14 +248,14 @@ public class UserDataVOWS implements Serializable{
 		int type = 1;
 		
     	if(sendNotification) {
-    		type = type | SecConst.USER_SENDNOTIFICATION;
+    		type = type | EndEntityConstants.USER_SENDNOTIFICATION;
     	} else {
-    		type = type & (~SecConst.USER_SENDNOTIFICATION);
+    		type = type & (~EndEntityConstants.USER_SENDNOTIFICATION);
     	}
     	if(keyRecoverable) {
-    		type = type | SecConst.USER_KEYRECOVERABLE;
+    		type = type | EndEntityConstants.USER_KEYRECOVERABLE;
     	} else {
-    		type = type & (~SecConst.USER_KEYRECOVERABLE);
+    		type = type & (~EndEntityConstants.USER_KEYRECOVERABLE);
     	}
 		return type;
 	}

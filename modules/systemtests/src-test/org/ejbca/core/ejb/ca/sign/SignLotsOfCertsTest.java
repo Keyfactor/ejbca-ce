@@ -34,6 +34,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
@@ -116,7 +117,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         try {
             userAdminSession.addUser(admin, "performancefoo" + post, "foo123", "C=SE,O=AnaTom,OU=Performance Test,CN=performancefoo", null,
                     "performancefoo@foo.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.USER_ENDUSER,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER,
                     SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: performancefoo" + post + ", foo123, C=SE, O=AnaTom, OU=Performance Test,CN=performancefoo");
         } catch (EJBException e) {

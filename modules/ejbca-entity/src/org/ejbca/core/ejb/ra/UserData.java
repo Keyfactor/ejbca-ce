@@ -94,7 +94,7 @@ public class UserData extends ProtectedData implements Serializable {
      * @param cardnumber the number printed on the card.
      * @param altname string of alternative names, i.e. rfc822name=foo2bar.com,dnsName=foo.bar.com, can be null
      * @param email user email address, can be null
-     * @param type user type, i.e. SecConst.USER_ENDUSER etc
+     * @param type user type, i.e. EndEntityConstants.USER_ENDUSER etc
      * @param eeprofileid end entity profile id, can be 0
      * @param certprofileid certificate profile id, can be 0
      * @param tokentype token type to issue to the user, i.e. SecConst.TOKEN_SOFT_BROWSERGEN

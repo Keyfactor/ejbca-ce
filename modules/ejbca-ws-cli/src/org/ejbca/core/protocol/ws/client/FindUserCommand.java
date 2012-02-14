@@ -17,7 +17,7 @@ package org.ejbca.core.protocol.ws.client;
 import java.util.Iterator;
 import java.util.List;
 
-import org.ejbca.core.model.SecConst;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
@@ -219,14 +219,14 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		int type = 1;
 		
     	if(userData.isSendNotification()) {
-    		type = type | SecConst.USER_SENDNOTIFICATION;
+    		type = type | EndEntityConstants.USER_SENDNOTIFICATION;
     	} else {
-    		type = type & (~SecConst.USER_SENDNOTIFICATION);
+    		type = type & (~EndEntityConstants.USER_SENDNOTIFICATION);
     	}
     	if(userData.isKeyRecoverable()) {
-    		type = type | SecConst.USER_KEYRECOVERABLE;
+    		type = type | EndEntityConstants.USER_KEYRECOVERABLE;
     	} else {
-    		type = type & (~SecConst.USER_KEYRECOVERABLE);
+    		type = type & (~EndEntityConstants.USER_KEYRECOVERABLE);
     	}
 		return type;
 	}
