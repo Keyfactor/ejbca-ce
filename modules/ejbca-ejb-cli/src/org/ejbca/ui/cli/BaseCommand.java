@@ -47,9 +47,11 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
+import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
+import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
-import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 
 /**
  * Base for Commands, contains useful functions

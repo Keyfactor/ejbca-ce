@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.cli;
+package org.ejbca.core.ejb.authentication.cli;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.Principal;
@@ -39,12 +39,12 @@ import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderLocal;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
+import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.log.LogConstants;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.ui.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 

@@ -10,32 +10,35 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.cli.exception;
+package org.ejbca.core.ejb.authentication.cli.exception;
+
+import javax.ejb.ApplicationException;
 
 /**
- * An exception thrown when a CliAuthenticationToken is used without having its password field set.
+ * This exception is thrown if authentication fails during the authorization phase of a CliAuthenticationToken
  * 
  * @version $Id$
- * 
+ *
  */
-public class UninitializedCliAuthenticationTokenException extends RuntimeException {
+@ApplicationException(rollback=true)  
+public class CliAuthenticationFailedException extends RuntimeException {
 
-    private static final long serialVersionUID = -3404632335972154544L;
+    private static final long serialVersionUID = 1092700837332116526L;
 
-    public UninitializedCliAuthenticationTokenException() {
+    public CliAuthenticationFailedException() {
         super();
     }
 
-    public UninitializedCliAuthenticationTokenException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
+    public CliAuthenticationFailedException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public UninitializedCliAuthenticationTokenException(String arg0) {
-        super(arg0);
+    public CliAuthenticationFailedException(String message) {
+        super(message);
     }
 
-    public UninitializedCliAuthenticationTokenException(Throwable arg0) {
-        super(arg0);
+    public CliAuthenticationFailedException(Throwable cause) {
+        super(cause);
     }
 
 }

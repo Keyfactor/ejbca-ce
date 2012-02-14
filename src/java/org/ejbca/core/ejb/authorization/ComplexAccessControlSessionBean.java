@@ -51,10 +51,10 @@ import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.cesecore.util.ValueExtractor;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
-import org.ejbca.ui.cli.CliUserAccessMatchValue;
 
 /**
  * This session bean handles complex authorization queries.

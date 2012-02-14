@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.ejbca.ui.cli;
+package org.ejbca.core.ejb.authentication.cli;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -26,8 +26,6 @@ import org.cesecore.authentication.AuthenticationFailedException;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.easymock.EasyMock;
-import org.ejbca.ui.cli.CliAuthenticationToken;
-import org.ejbca.ui.cli.CliAuthenticationTokenReferenceRegistry;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
 import org.junit.Test;
 
