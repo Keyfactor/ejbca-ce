@@ -136,7 +136,7 @@ public class CmpConfiguration {
 	}
 	
 	public static int getTCPPortNumber() {
-		return Integer.valueOf(EjbcaConfigurationHolder.getString("cmp.tcp.portno")).intValue();
+		return Integer.valueOf(EjbcaConfigurationHolder.getString("cmp.tcp.portno"));
 	}
 	
 	public static String getTCPLogDir() {

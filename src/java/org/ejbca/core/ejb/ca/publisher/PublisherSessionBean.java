@@ -256,7 +256,7 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     }
 
     @Override
-    public void testConnection(int publisherid) throws PublisherConnectionException {
+    public void testConnection(int publisherid) throws PublisherConnectionException { // NOPMD: this is not a JUnit test
         if (log.isTraceEnabled()) {
             log.trace(">testConnection(id: " + publisherid + ")");
         }

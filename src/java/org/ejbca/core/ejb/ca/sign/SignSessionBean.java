@@ -289,8 +289,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             CryptoTokenOfflineException ex = new CryptoTokenOfflineException(msg);
             ex.initCause(ctoe);
             throw ex;
-        } catch (EjbcaException e) {
-            throw e;
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
