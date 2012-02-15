@@ -1309,7 +1309,9 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 throw new AlreadyRevokedException(msg);
             }
         } else {
-            if (info.getRevocationReason() != RevokedCertInfo.NOT_REVOKED) {
+            if (    info.getRevocationReason()!=RevokedCertInfo.NOT_REVOKED &&
+                    // a valid certificate could have reason "REVOCATION_REASON_REMOVEFROMCRL" if it has been revoked in the past.
+                    info.getRevocationReason()!=RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL ) {
                 final String msg = intres.getLocalizedMessage("ra.errorrevocationexists");
                 log.info(msg);
                 throw new AlreadyRevokedException(msg);
