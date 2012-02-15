@@ -614,8 +614,7 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
             // long revocationDate = -1L; // A null Date to setRevocationDate will result in -1 stored in long column
             rev.setRevocationDate(null);
             rev.setUpdateTime(now.getTime());
-            int revocationReason = RevokedCertInfo.NOT_REVOKED;
-            rev.setRevocationReason(revocationReason);
+            rev.setRevocationReason(RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
             
     		final String msg = INTRES.getLocalizedMessage("store.unrevokedcert", username, rev.getFingerprint(), Integer.valueOf(reason), rev.getSubjectDN(), rev.getIssuerDN(), serialNo);
     		Map<String, Object> details = new LinkedHashMap<String, Object>();
