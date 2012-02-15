@@ -111,10 +111,10 @@ public class AdminPreference extends UpgradeableDataHashMap implements java.io.S
     public void setLastLogFilterMode(int lastlogfiltermode) {data.put(LASTLOGFILTERMODE, Integer.valueOf(lastlogfiltermode));}    
     
     public boolean getFrontpageCaStatus(){return Boolean.TRUE.equals(data.get(FRONTPAGECASTATUS));}
-    public void setFrontpageCaStatus(boolean frontpagecastatus){ data.put(FRONTPAGECASTATUS, new Boolean(frontpagecastatus));}
+    public void setFrontpageCaStatus(boolean frontpagecastatus){ data.put(FRONTPAGECASTATUS, Boolean.valueOf(frontpagecastatus));}
     
     public boolean getFrontpagePublisherQueueStatus(){return Boolean.TRUE.equals(data.get(FRONTPAGEPUBQSTATUS));}
-    public void setFrontpagePublisherQueueStatus(boolean frontpagepubqstatus){ data.put(FRONTPAGEPUBQSTATUS, new Boolean(frontpagepubqstatus));}
+    public void setFrontpagePublisherQueueStatus(boolean frontpagepubqstatus){ data.put(FRONTPAGEPUBQSTATUS, Boolean.valueOf(frontpagepubqstatus));}
     
     public Object clone() throws CloneNotSupportedException {
       AdminPreference clone = new AdminPreference();

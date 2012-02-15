@@ -82,7 +82,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             int lastNo = getLastCRLNumber(issuerDN, deltaCRL);
             if (number <= lastNo) {
                 // There is already a CRL with this number, or a later one stored. Don't create duplicates
-                String msg = intres.getLocalizedMessage("store.errorstorecrlwrongnumber", new Integer(number), new Integer(lastNo), issuerDN);
+                final String msg = intres.getLocalizedMessage("store.errorstorecrlwrongnumber", Integer.valueOf(number), Integer.valueOf(lastNo), issuerDN);
                 throw new CrlStoreException(msg);
             }
             CRLData data = new CRLData(incrl, number, issuerDN, thisUpdate, nextUpdate, cafp, deltaCRLIndicator);
@@ -126,7 +126,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             log.info(msg);
             throw new EJBException(e);
         }
-        final String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, new Integer(maxnumber));
+        final String msg = intres.getLocalizedMessage("store.errorgetcrl", issuerdn, Integer.valueOf(maxnumber));
         log.info(msg);
         if (log.isTraceEnabled()) {
             log.trace("<getLastCRL()");
@@ -187,7 +187,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
                 if (log.isDebugEnabled()) {
                     log.debug("No CRL exists with fingerprint '" + fingerprint + "'");
                 }
-                final String msg = intres.getLocalizedMessage("store.errorgetcrl", fingerprint, new Integer(0));
+                final String msg = intres.getLocalizedMessage("store.errorgetcrl", fingerprint, Integer.valueOf(0));
                 log.info(msg);
             }
             if (log.isTraceEnabled()) {

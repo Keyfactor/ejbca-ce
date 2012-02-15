@@ -67,7 +67,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
         if (!running) {
             try {
                 synchronized (runmap) {
-                    runmap.put(this.serviceName, Boolean.valueOf(true));
+                    runmap.put(this.serviceName, Boolean.TRUE);
                 }
                 Object o = properties.get(PROP_PUBLISHER_IDS);
                 if (o != null) {
@@ -77,7 +77,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                     // anything in the queue
                     String[] ids = StringUtils.split(idstr, ';');
                     for (int i = 0; i < ids.length; i++) {
-                        int publisherId = Integer.valueOf(ids[i]).intValue();
+                        int publisherId = Integer.valueOf(ids[i]);
                         // Get everything from the queue for this publisher id
                         BasePublisher publisher = publisherSession.getPublisher(publisherId);
                         publisherQueueSession.plainFifoTryAlwaysLimit100EntriesOrderByTimeCreated(getAdmin(), publisherId, publisher);
@@ -87,7 +87,7 @@ public class PublishQueueProcessWorker extends EmailSendingWorker {
                 }
             } finally {
                 synchronized (runmap) {
-                    runmap.put(this.serviceName, Boolean.valueOf(false));
+                    runmap.put(this.serviceName, Boolean.FALSE);
                 }
             }
         } else {

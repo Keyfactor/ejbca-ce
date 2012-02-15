@@ -46,8 +46,10 @@ public class TrustedTime implements Serializable {
     public Long getNextUpdate() { return this.nextUpdate; }
 
     public void setNextUpdate(Integer when, Integer poll) {
-        Long nextUpdate = Integer.valueOf(((poll - when) + delta)*1000).longValue();
-        if(nextUpdate.longValue() <= 0) { nextUpdate = new Long(1); }
+        Long nextUpdate = Long.valueOf(((poll - when) + delta)*1000);
+        if(nextUpdate.longValue() <= 0) { 
+            nextUpdate = Long.valueOf(1); 
+        }
 
         if(this.nextUpdate != null) {
             this.previousUpdate = this.nextUpdate;

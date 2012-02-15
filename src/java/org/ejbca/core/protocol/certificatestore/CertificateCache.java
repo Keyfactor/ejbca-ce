@@ -214,7 +214,7 @@ class CertificateCache implements ICertificateCache {
 	/* private helper methods */
 
 	private Integer keyFromCertificateID(CertificateID certID) {
-		return new Integer(new BigInteger(certID.getIssuerNameHash()).hashCode()^new BigInteger(certID.getIssuerKeyHash()).hashCode());
+		return Integer.valueOf(new BigInteger(certID.getIssuerNameHash()).hashCode()^new BigInteger(certID.getIssuerKeyHash()).hashCode());
 	}
 	/** Loads CA certificates but holds a cache so it's reloaded only every five minutes (configurable).
 	 *

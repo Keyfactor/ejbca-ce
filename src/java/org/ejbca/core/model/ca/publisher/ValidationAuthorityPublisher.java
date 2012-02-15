@@ -69,7 +69,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 	 */
 	public ValidationAuthorityPublisher() {
 		super();
-		this.data.put(TYPE, new Integer(TYPE_VAPUBLISHER));
+		this.data.put(TYPE, Integer.valueOf(TYPE_VAPUBLISHER));
 		setDataSource(DEFAULT_DATASOURCE);
 		setProtect(DEFAULT_PROTECT);
 	}

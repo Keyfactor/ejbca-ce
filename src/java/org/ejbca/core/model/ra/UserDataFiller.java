@@ -53,7 +53,7 @@ public class UserDataFiller {
         }
     	if (userData.getSendNotification()==false) {
     		if(StringUtils.isNotEmpty(profile.getValue(EndEntityProfile.SENDNOTIFICATION, 0))) {
-    			Boolean isSendNotification = new Boolean(profile.getValue(EndEntityProfile.SENDNOTIFICATION, 0));
+    			Boolean isSendNotification = Boolean.valueOf(profile.getValue(EndEntityProfile.SENDNOTIFICATION, 0));
     			userData.setSendNotification(isSendNotification.booleanValue());    			
     		}
         }
