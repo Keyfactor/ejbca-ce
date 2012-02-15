@@ -127,6 +127,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
     public static final String CHECKBOX_USEQUEUEFORCERTIFICATES = "textfieldusequeueforcertificates";
     public static final String CHECKBOX_VA_STORECERT           = "textfieldvastorecert";
     public static final String CHECKBOX_VA_STORECRL            = "textfieldvastorecrl";
+    public static final String CHECKBOX_VA_ONLY_PUBLISH_REVOKED = "checkboxonlypublishrevoked";
     
     public static final String SELECT_LDAPUSEFIELDINLDAPDN     = "selectldapusefieldsinldapdn";
 
@@ -501,19 +502,23 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                             }
                             
                             // Get parameters for ValidationAuthorityPublisher
-                            if(publisherdata instanceof ValidationAuthorityPublisher){
-                            	final ValidationAuthorityPublisher vaPub = (ValidationAuthorityPublisher) publisherdata;
+                            if(this.publisherdata instanceof ValidationAuthorityPublisher){
+                            	final ValidationAuthorityPublisher vaPub = (ValidationAuthorityPublisher)this.publisherdata;
                             	
-                            	value = request.getParameter(TEXTFIELD_VA_DATASOURCE);
-                            	if(value != null){
-                            		value = value.trim();
-                            		vaPub.setDataSource(value);
+                            	final String vDataSource = request.getParameter(TEXTFIELD_VA_DATASOURCE);
+                            	if(vDataSource != null){
+                            		vaPub.setDataSource(vDataSource.trim());
                             	}
                             	final String vCert = request.getParameter(CHECKBOX_VA_STORECERT);
                             	final boolean isCert = vCert!=null && vCert.equals(CHECKBOX_VALUE);
                             	vaPub.setStoreCert( isCert );
+
+                            	final String vOnlyRevoked = request.getParameter(CHECKBOX_VA_ONLY_PUBLISH_REVOKED);
+                            	final boolean isOnlyRevoked = vOnlyRevoked!=null && vOnlyRevoked.equals(CHECKBOX_VALUE);
+                            	vaPub.setOnlyPublishRevoked(isOnlyRevoked);
+
                             	final String vCRL = request.getParameter(CHECKBOX_VA_STORECRL);
-                            	vaPub.setStoreCRL( isCert && vCRL!=null && vCRL.equals(CHECKBOX_VALUE) );
+                            	vaPub.setStoreCRL( isCert && !isOnlyRevoked && vCRL!=null && vCRL.equals(CHECKBOX_VALUE) );
                             }
 
 
