@@ -98,7 +98,7 @@ public class ValidityDate {
 			if (isDeltaTime(days)) {
 				returnValue = days;
 			} else {
-				returnValue = Integer.valueOf(Integer.MAX_VALUE-1).longValue();
+				returnValue = Long.valueOf(Integer.MAX_VALUE-1);
 				log.info(sValidity + " was parsed as a relative time, but is too far in the future. Limiting to " + returnValue + " days.");
 			}
 		} else {

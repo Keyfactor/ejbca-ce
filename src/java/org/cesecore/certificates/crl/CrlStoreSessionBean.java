@@ -90,7 +90,7 @@ public class CrlStoreSessionBean implements CrlStoreSessionLocal, CrlStoreSessio
             String msg = intres.getLocalizedMessage("store.storecrl", Integer.valueOf(number), data.getFingerprint(), data.getIssuerDN());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
-            logSession.log(EventTypes.CRL_STORED, EventStatus.SUCCESS, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), Integer.valueOf(caid).toString(), null, null, details);
+            logSession.log(EventTypes.CRL_STORED, EventStatus.SUCCESS, ModuleTypes.CRL, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), null, null, details);
         } catch (Exception e) {
             String msg = intres.getLocalizedMessage("store.errorstorecrl", Integer.valueOf(number), issuerDN);
             log.error(msg, e);

@@ -479,7 +479,7 @@ public class DnComponents {
                 oids.putAll(map);
                 Set<String> keys = map.keySet();
                 // Set the maps to the desired ordering
-                dNObjectsForward = (String[])keys.toArray(new String[0]);                
+                dNObjectsForward = (String[])keys.toArray(new String[keys.size()]);                
             } else {
                 log.debug("Using default values for DN components");                
             }

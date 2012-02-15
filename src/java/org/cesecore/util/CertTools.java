@@ -496,10 +496,10 @@ public class CertTools {
                 last = last.substring(0, last.indexOf('='));
                 int firsti = 0, lasti = 0;
                 for (int i = 0; i < dNObjects.length; i++) {
-                    if (first.toLowerCase().equals(dNObjects[i])) {
+                    if (first.equalsIgnoreCase(dNObjects[i])) {
                         firsti = i;
                     }
-                    if (last.toLowerCase().equals(dNObjects[i])) {
+                    if (last.equalsIgnoreCase(dNObjects[i])) {
                         lasti = i;
                     }
                 }

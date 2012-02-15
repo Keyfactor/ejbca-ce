@@ -172,7 +172,7 @@ public class CryptoTokenFactory {
     		Class<?> implClass = Class.forName(classpath);
     		Object obj = implClass.newInstance();
     		token = (CryptoToken) obj;
-    	}catch(Throwable e){
+    	}catch(Throwable e){ // NOPMD: when dealing with HSMs we need to catch everything
     		log.error("Error contructing Crypto Token (setting to null). Classpath="+classpath, e);
     		token = null;
     	}

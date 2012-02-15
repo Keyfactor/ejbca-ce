@@ -133,7 +133,7 @@ public abstract class BaseCryptoToken implements CryptoToken {
     }
 
     @Override
-    public void testKeyPair(PrivateKey privateKey, PublicKey publicKey) throws InvalidKeyException, NoSuchProviderException {
+    public void testKeyPair(PrivateKey privateKey, PublicKey publicKey) throws InvalidKeyException, NoSuchProviderException { // NOPMD:this is not a junit test
         if (log.isDebugEnabled()) {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             final PrintStream ps = new PrintStream(baos);

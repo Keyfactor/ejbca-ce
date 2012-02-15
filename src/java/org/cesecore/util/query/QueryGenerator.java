@@ -258,7 +258,7 @@ public final class QueryGenerator implements Serializable {
     }
 
     /**
-     * Validates the provided name against our namnig strategy ... columns with alphanumeric chars only.
+     * Validates the provided name against our naming strategy ... columns with alphanumeric chars only.
      * 
      * @param name to be validated
      */
@@ -283,7 +283,7 @@ public final class QueryGenerator implements Serializable {
     private String genAndStoreParameter(final String name, final Object value) {
         int i = 0;
         while (true) {
-            final String parameter = name + Integer.valueOf(i++).toString();
+            final String parameter = name + String.valueOf(i++);
             if (!parameters.containsKey(parameter)) {
                 parameters.put(parameter, value);
                 return parameter;

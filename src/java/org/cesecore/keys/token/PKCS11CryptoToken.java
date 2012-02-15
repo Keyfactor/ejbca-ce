@@ -122,7 +122,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         try {
             final KeyStore keyStore = createKeyStore(authCode);
             setKeyStore(keyStore);
-        } catch (Throwable t) {
+        } catch (Throwable t) { // NOPMD: when dealing with HSMs we need to catch everything
             log.warn("Failed to initialize PKCS11 provider slot '" + this.sSlotLabel + "'.", t);
             CryptoTokenAuthenticationFailedException authfe = new CryptoTokenAuthenticationFailedException(
                     "Failed to initialize PKCS11 provider slot '" + this.sSlotLabel + "'.");

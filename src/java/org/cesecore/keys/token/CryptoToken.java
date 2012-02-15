@@ -210,7 +210,7 @@ public interface CryptoToken extends Serializable {
      * @throws InvalidKeyException
      * @throws NoSuchProviderException
      */
-    void testKeyPair(PrivateKey privateKey, PublicKey publicKey) throws InvalidKeyException, NoSuchProviderException;
+    void testKeyPair(PrivateKey privateKey, PublicKey publicKey) throws InvalidKeyException, NoSuchProviderException; // NOPMD:this is not a junit test
 
     /**
      * This method extracts a PrivateKey from the keystore and wraps it, using a symmetric encryption key
