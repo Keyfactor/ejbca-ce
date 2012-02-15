@@ -89,7 +89,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
      *  Sets if user password should be set when creating users.
      */        
     public void setUseUserPassword (boolean useuserpassword){
-    	data.put(USEPASSWORD, new Boolean(useuserpassword));	
+    	data.put(USEPASSWORD, Boolean.valueOf(useuserpassword));	
     }
 
     /**

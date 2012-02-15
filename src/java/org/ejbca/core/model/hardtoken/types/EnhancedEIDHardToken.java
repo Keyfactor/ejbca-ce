@@ -119,7 +119,7 @@ public class EnhancedEIDHardToken extends HardToken {
 	}
 
 	public void setEncKeyRecoverable(boolean enckeyrecoverable) {
-		data.put(ENCKEYRECOVERABLE, new Boolean(enckeyrecoverable));
+		data.put(ENCKEYRECOVERABLE, Boolean.valueOf(enckeyrecoverable));
 	}
 
 

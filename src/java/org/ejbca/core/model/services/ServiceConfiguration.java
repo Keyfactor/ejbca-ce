@@ -106,7 +106,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	 * @param active the active to set
 	 */
 	public void setActive(boolean active) {
-		data.put(ACTIVE, new Boolean(active));
+		data.put(ACTIVE, Boolean.valueOf(active));
 	}
 	
 	public boolean isHidden() {
@@ -114,7 +114,7 @@ public class ServiceConfiguration extends UpgradeableDataHashMap implements Seri
 	}
 	
 	public void setHidden(boolean b) {
-		data.put(HIDDEN, new Boolean(b));
+		data.put(HIDDEN, Boolean.valueOf(b));
 	}
 	
 	/**

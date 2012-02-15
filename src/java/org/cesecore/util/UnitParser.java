@@ -50,7 +50,7 @@ public class UnitParser {
     	sb.append("^");
     	for(Object o : units) {
     		String unit = (String) o;
-    		defaultValues.put(unit.toLowerCase(), new Long(0));
+    		defaultValues.put(unit.toLowerCase(), Long.valueOf(0));
     		sb.append("(\\d+");
     		for(char c : unit.toCharArray()) {
     			sb.append("[");
@@ -95,7 +95,7 @@ public class UnitParser {
 				}
 				long value = Long.parseLong(valueMatcher.group(1));
 				String type = typeMatcher.group(1).toLowerCase();
-				values.put(type, new Long(value));
+				values.put(type, Long.valueOf(value));
 			}
 		}
 		return values;

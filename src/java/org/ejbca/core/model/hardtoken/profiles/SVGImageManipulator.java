@@ -201,7 +201,7 @@ public class SVGImageManipulator {
 	  {
 		  final String aDoNot = clone.getRootElement().getAttribute("doNotScaleToPage");
 		  t.addTranscodingHint( PrintTranscoder.KEY_SCALE_TO_PAGE,
-		                        new Boolean(aDoNot==null||aDoNot.trim().length()<=0) );
+		                        Boolean.valueOf(aDoNot==null||aDoNot.trim().length()<=0) );
 	  }
       return t;
     }

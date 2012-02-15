@@ -55,7 +55,7 @@ public class HashID {
 			b64w = b64padded.substring(0, 27);
 		}
 		this.b64 = b64w.replaceAll("\\+", "%2B");
-		this.key = new Integer(new BigInteger(hash).hashCode());
+		this.key = Integer.valueOf(new BigInteger(hash).hashCode());
 	}
 	private static byte[] hashFromPrincipalDN( X500Principal principal ) {
 		return CertTools.generateSHA1Fingerprint(principal.getEncoded());
