@@ -574,9 +574,7 @@ public final class KeyTools {
         final Certificate[] chain = new Certificate[len];
         chain[0] = cert;
         if (cachain != null) {
-            for (int i = 0; i < cachain.length; i++) {
-                chain[i + 1] = cachain[i];
-            }
+            System.arraycopy(cachain, 0, chain, 1, cachain.length);
         }
 
         // store the key and the certificate chain
@@ -1069,7 +1067,7 @@ public final class KeyTools {
      * @throws NoSuchProviderException
      *             if the provider is not installed.
      */
-    public static void testKey(final PrivateKey priv, final PublicKey pub, final String provider) throws InvalidKeyException, NoSuchProviderException {
+    public static void testKey(final PrivateKey priv, final PublicKey pub, final String provider) throws InvalidKeyException, NoSuchProviderException { // NOPMD:this is not a junit test
         final byte input[] = "Lillan gick pa vagen ut, motte dar en katt...".getBytes();
         final byte signBV[];
         final String testSigAlg;

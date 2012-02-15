@@ -453,7 +453,7 @@ public final class StringTools {
                 log.debug("Using encrypted " + sDebug);
             }
             return tmp;
-        } catch (Throwable t) {
+        } catch (Throwable t) { // NOPMD: we want to catch everything here
             if (log.isDebugEnabled()) {
                 log.debug("Using cleartext " + sDebug);
             }
