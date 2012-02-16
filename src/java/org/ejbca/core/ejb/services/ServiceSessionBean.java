@@ -60,6 +60,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
+import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSessionLocal;
@@ -155,10 +156,11 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     private CertificateRequestSessionLocal certificateRequestSession;
     @EJB
     private WebAuthenticationProviderSessionLocal webAuthenticationSession;
+    @EJB
+    private ComplexAccessControlSessionLocal complexAccessControlSession;
 
-    private AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceSession")); // The administrator that
-                                                                                                                             // the services should be
-                                                                                                                             // run as.
+    // The administrator that the services should be run as. Internal, allow all.
+    private AuthenticationToken intAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ServiceSession"));
 
     @PostConstruct
     public void ejbCreate() {
@@ -607,6 +609,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(CertificateRequestSessionLocal.class, certificateRequestSession);
             ejbs.put(EndEntityAccessSessionLocal.class, endEntityAccessSession);
             ejbs.put(WebAuthenticationProviderSessionLocal.class, webAuthenticationSession);
+            ejbs.put(ComplexAccessControlSessionLocal.class, complexAccessControlSession);
             worker.work(ejbs);
             final String msg = intres.getLocalizedMessage("services.serviceexecuted", serviceName);
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
