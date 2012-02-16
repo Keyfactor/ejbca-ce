@@ -107,19 +107,23 @@ function checkallfields(){
  <% } %>
  <% if( publisherdata instanceof ValidationAuthorityPublisher){ %>
 
-	if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_VA_DATASOURCE%>.value == ""){
+    if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_VA_DATASOURCE%>.value == ""){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("DATASOURCE", true)%>");
       illegalfields++;
     }
-	if(document.editpublisher.<%=EditPublisherJSPHelper.CHECKBOX_VA_STORECERT%>.value == ""){
+    if(document.editpublisher.<%=EditPublisherJSPHelper.CHECKBOX_VA_STORECERT%>.value == ""){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("STORECERT", true)%>");
       illegalfields++;
-	}
-	if(document.editpublisher.<%=EditPublisherJSPHelper.CHECKBOX_VA_STORECRL%>.value == ""){
+    }
+    if(document.editpublisher.<%=EditPublisherJSPHelper.CHECKBOX_VA_ONLY_PUBLISH_REVOKED%>.value == ""){
+      alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("ONLYREVOKED", true)%>");
+      illegalfields++;
+    }
+    if(document.editpublisher.<%=EditPublisherJSPHelper.CHECKBOX_VA_STORECRL%>.value == ""){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("STORECRL", true)%>");
       illegalfields++;
     }
-<% } %>
+ <% } %>
  <% if( publisherdata instanceof CustomPublisherContainer){ %>
     if(document.editpublisher.<%=EditPublisherJSPHelper.TEXTFIELD_CUSTOMCLASSPATH%>.value == ""){
       alert("<%= ejbcawebbean.getText("YOUAREREQUIRED", true) + " " + ejbcawebbean.getText("CLASSPATH", true)%>");
