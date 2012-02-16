@@ -586,7 +586,7 @@
     int tabindex = 1;
 %>
 <head>
-  <title><%= globalconfiguration.getEjbcaTitle() %></title>
+  <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />

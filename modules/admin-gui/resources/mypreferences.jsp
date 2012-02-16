@@ -84,7 +84,7 @@
    AdminPreference dup = ejbcawebbean.getAdminPreference(); %>
 <html>
 <head>
-<title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
+  <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script type="text/javascript" src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
