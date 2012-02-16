@@ -518,6 +518,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                             	vaPub.setOnlyPublishRevoked(isOnlyRevoked);
 
                             	final String vCRL = request.getParameter(CHECKBOX_VA_STORECRL);
+                            	// the CA certificate must be in the DB of the VA in order to fetch the CRL for this CA (isCert && !isOnlyRevoked)
                             	vaPub.setStoreCRL( isCert && !isOnlyRevoked && vCRL!=null && vCRL.equals(CHECKBOX_VALUE) );
                             }
 
