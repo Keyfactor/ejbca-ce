@@ -922,7 +922,7 @@
     	<ant dir="modules" target="externalra-service"/>
 	</target>
 
-	<target name="externalra-client">
+	<target name="externalra-client" description="Build the EJBCA External RA Service CLI">
     	<ant dir="modules" target="externalra-client"/>
 	</target>
 
