@@ -10,7 +10,7 @@
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
 %>
 <head>
-  <title><%= globalconfiguration.getEjbcaTitle() %></title>
+  <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
