@@ -92,6 +92,6 @@ public class UserDataTest {
 		assertEquals(now, ei.getTimeCreated());
 		assertEquals(now, ei.getTimeModified());
 		assertEquals(3, ei.getTokenType());
-		assertEquals(65, ei.getType());
+		assertEquals(65, ei.getType().getHexValue());
 	}
 }
