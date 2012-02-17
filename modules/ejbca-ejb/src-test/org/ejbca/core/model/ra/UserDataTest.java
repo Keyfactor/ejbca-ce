@@ -78,7 +78,7 @@ public class UserDataTest {
 		data.setTimeCreated(now);
 		data.setTimeModified(now);
 		data.setTokenType(3);
-		data.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.KEYRECOVERABLE));
+		data.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
 		data.setUsername("wstest");
 		EndEntityInformation ei = data.toEndEntityInformation();
 		assertEquals("wstest", ei.getUsername());
