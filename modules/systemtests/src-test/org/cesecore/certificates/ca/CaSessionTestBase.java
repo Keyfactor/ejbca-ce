@@ -55,6 +55,8 @@ import org.cesecore.certificates.crl.CrlCreateSessionRemote;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.util.KeyTools;
@@ -161,7 +163,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertTrue("CAInfo expire time should be after now: "+ca2.getCAInfo().getExpireTime(), now.before(ca2.getCAInfo().getExpireTime()));
 
         // See that we can do something with the CAs to verify that everything was stored as we think
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", EndEntityConstants.USER_ENDUSER, 0,
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0,
                 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -295,7 +297,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertEquals(ca1.getSubjectDN(), ca2.getSubjectDN());
 
         // See that we can do something with the CAs to verify that everything was stored as we think
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User001,C=SE", 666, null, null, EndEntityConstants.USER_ENDUSER, 0,
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User001,C=SE", 666, null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0,
                 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -373,7 +375,8 @@ public class CaSessionTestBase extends RoleUsingTestCase {
             // We need the CA public key, since we activated the newly generated key, we know that it has a key purpose now
             PublicKey pk = caTokenSession.getPublicKey(roleMgmgToken, ca.getCAId(), tokenpwd.toCharArray(), CATokenConstants.CAKEYPURPOSE_CERTSIGN);
             
-            EndEntityInformation user = new EndEntityInformation("casessiontestca",cadn,ca.getCAId(),null,null,EndEntityConstants.USER_ENDUSER,0,CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            EndEntityInformation user = new EndEntityInformation("casessiontestca", cadn, ca.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER), 0,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
         	SimpleRequestMessage req = new SimpleRequestMessage(pk, user.getUsername(), user.getPassword());
@@ -421,7 +424,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
 //        	Collection<Certificate> certs = info.getCertificateChain(); 
 //        	assertEquals(0, certs.size());
 //
-//            EndEntityInformation user = new EndEntityInformation("casessiontestca",cadn,ca.getCAId(),null,null,EndEntityConstants.USER_ENDUSER,0,CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
+//            EndEntityInformation user = new EndEntityInformation("casessiontestca",cadn,ca.getCAId(),null,null,new EndEntityType(EndEntityTypes.USER_ENDUSER),0,CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
 //            user.setStatus(EndEntityConstants.STATUS_NEW);
 //            user.setPassword("foo123");
 //        	SimpleRequestMessage req = new SimpleRequestMessage(pubK, user.getUsername(), user.getPassword());
@@ -462,7 +465,8 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         	Collection<Certificate> certs = info.getCertificateChain(); 
         	assertEquals(0, certs.size());
 
-            EndEntityInformation user = new EndEntityInformation("casessiontestca",ca.getSubjectDN(),ca.getCAId(),null,null,EndEntityConstants.USER_ENDUSER,0,CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            EndEntityInformation user = new EndEntityInformation("casessiontestca", ca.getSubjectDN(), ca.getCAId(), null, null,
+                    new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, EndEntityConstants.TOKEN_USERGEN, 0, null);
             user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setPassword("foo123");
         	SimpleRequestMessage req = new SimpleRequestMessage(pubK, user.getUsername(), user.getPassword());

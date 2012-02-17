@@ -49,8 +49,9 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -211,7 +212,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
         String username = "throwAwayTest-" + random.nextInt();
         String password = "foo123";
         EndEntityInformation userData = new EndEntityInformation(username, "CN=" + username, super.getTestCAId(TESTCA_NAME), null, null,
-                UserDataConstants.STATUS_NEW, EndEntityConstants.USER_ENDUSER, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null,
+                UserDataConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null,
                 SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         userData.setPassword(password);
         return userData;

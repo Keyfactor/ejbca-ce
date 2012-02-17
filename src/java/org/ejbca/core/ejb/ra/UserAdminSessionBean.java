@@ -65,8 +65,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.jndi.JndiConstants;
@@ -225,7 +226,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
     @Override
     public void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
-            boolean clearpwd, int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardwaretokenissuerid, int caid)
+            boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int hardwaretokenissuerid, int caid)
             throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
             CADoesntExistsException, EjbcaException {
         EndEntityInformation userdata = new EndEntityInformation(username, subjectdn, caid, subjectaltname, email, UserDataConstants.STATUS_NEW,
@@ -280,7 +281,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         endEntity.setSubjectAltName(altName);
         endEntity.setEmail(email);
         final String username = endEntity.getUsername();
-        final int type = endEntity.getType();
+        final EndEntityType type = endEntity.getType();
         String newpassword = endEntity.getPassword();
         EndEntityProfile profile = null; // Only look this up if we need it..
         if (endEntity.getPassword() == null) {
@@ -299,8 +300,8 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 final String dirattrs = endEntity.getExtendedinformation() != null ? endEntity.getExtendedinformation()
                         .getSubjectDirectoryAttributes() : null;
                 profile.doesUserFullfillEndEntityProfile(username, endEntity.getPassword(), dn, altName, dirattrs, email,
-                        endEntity.getCertificateProfileId(), clearpwd, (type & EndEntityConstants.USER_KEYRECOVERABLE) != 0,
-                        (type & EndEntityConstants.USER_SENDNOTIFICATION) != 0, endEntity.getTokenType(), endEntity.getHardTokenIssuerId(), caid,
+                        endEntity.getCertificateProfileId(), clearpwd, type.contains(EndEntityTypes.KEYRECOVERABLE),
+                        type.contains(EndEntityTypes.SENDNOTIFICATION), endEntity.getTokenType(), endEntity.getHardTokenIssuerId(), caid,
                         endEntity.getExtendedinformation());
             } catch (UserDoesntFullfillEndEntityProfile e) {
                 final String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", endEntityProfileName, dn, e.getMessage());
@@ -343,7 +344,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 // single
                 // insert statement. If we do a home.create and the some setXX, it will create one insert and one update statement to the database.
                 // Probably not important in EJB3 anymore.
-                final UserData userData = new UserData(username, newpassword, clearpwd, dn, caid, endEntity.getCardNumber(), altName, email, type,
+                final UserData userData = new UserData(username, newpassword, clearpwd, dn, caid, endEntity.getCardNumber(), altName, email, type.getHexValue(),
                         endEntityProfileId, endEntity.getCertificateProfileId(), endEntity.getTokenType(), endEntity.getHardTokenIssuerId(),
                         endEntity.getExtendedinformation());
                 // Since persist will not commit and fail if the user already exists, we need to check for this
@@ -359,7 +360,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 endEntity.setPassword(newpassword);
                 // Send notifications, if they should be sent
                 sendNotification(admin, endEntity, UserDataConstants.STATUS_NEW);
-                if ((type & EndEntityConstants.USER_PRINT) != 0) {
+                if (type.contains(EndEntityTypes.PRINT)) {
                     if (profile == null) {
                         profile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
                     }
@@ -437,7 +438,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     @Deprecated
     @Override
     public void changeUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
-            boolean clearpwd, int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardwaretokenissuerid, int status,
+            boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int hardwaretokenissuerid, int status,
             int caid) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException,
             EjbcaException {
         EndEntityInformation userdata = new EndEntityInformation(username, subjectdn, caid, subjectaltname, email, status, type, endentityprofileid,
@@ -530,7 +531,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             newpassword = profile.getAutoGeneratedPasswd();
         }
 
-        final int type = userDataVO.getType();
+        final EndEntityType type = userDataVO.getType();
         final ExtendedInformation ei = userDataVO.getExtendedinformation();
         // Check if user fulfills it's profile.
         if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
@@ -542,12 +543,12 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 // It is only meaningful to verify the password if we change it in some way, and if we are not autogenerating it
                 if (!profile.useAutoGeneratedPasswd() && StringUtils.isNotEmpty(newpassword)) {
                     profile.doesUserFullfillEndEntityProfile(username, userDataVO.getPassword(), dn, altName, dirattrs, userDataVO.getEmail(),
-                            userDataVO.getCertificateProfileId(), clearpwd, (type & EndEntityConstants.USER_KEYRECOVERABLE) != 0,
-                            (type & EndEntityConstants.USER_SENDNOTIFICATION) != 0, userDataVO.getTokenType(), userDataVO.getHardTokenIssuerId(), caid, ei);
+                            userDataVO.getCertificateProfileId(), clearpwd, type.contains(EndEntityTypes.KEYRECOVERABLE),
+                            type.contains(EndEntityTypes.SENDNOTIFICATION), userDataVO.getTokenType(), userDataVO.getHardTokenIssuerId(), caid, ei);
                 } else {
                     profile.doesUserFullfillEndEntityProfileWithoutPassword(username, dn, altName, dirattrs, userDataVO.getEmail(),
-                            userDataVO.getCertificateProfileId(), (type & EndEntityConstants.USER_KEYRECOVERABLE) != 0,
-                            (type & EndEntityConstants.USER_SENDNOTIFICATION) != 0, userDataVO.getTokenType(), userDataVO.getHardTokenIssuerId(), caid, ei);
+                            userDataVO.getCertificateProfileId(), type.contains(EndEntityTypes.KEYRECOVERABLE),
+                            type.contains(EndEntityTypes.SENDNOTIFICATION), userDataVO.getTokenType(), userDataVO.getHardTokenIssuerId(), caid, ei);
                 }
             } catch (UserDoesntFullfillEndEntityProfile e) {
                 final String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", Integer.valueOf(endEntityProfileId), dn, e.getMessage());
@@ -580,7 +581,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
             userData.setSubjectAltName(altName);
             userData.setSubjectEmail(userDataVO.getEmail());
             userData.setCaId(caid);
-            userData.setType(type);
+            userData.setType(type.getHexValue());
             userData.setEndEntityProfileId(endEntityProfileId);
             userData.setCertificateProfileId(userDataVO.getCertificateProfileId());
             userData.setTokenType(userDataVO.getTokenType());
@@ -628,7 +629,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                 // Only print stuff on a printer on the same conditions as for
                 // notifications, we also only print if the status changes, not for
                 // every time we press save
-                if ((type & EndEntityConstants.USER_PRINT) != 0
+                if (type.contains(EndEntityTypes.PRINT)
                         && (newstatus == UserDataConstants.STATUS_NEW || newstatus == UserDataConstants.STATUS_KEYRECOVERY || newstatus == UserDataConstants.STATUS_INITIALIZED)) {
                     print(profile, userDataVO);
                 }
@@ -1674,7 +1675,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         }
 
         // Make check if we should send notifications at all
-        if (((data.getType() & EndEntityConstants.USER_SENDNOTIFICATION) != 0)) {
+        if (data.getType().contains(EndEntityTypes.SENDNOTIFICATION)) {
             int profileId = data.getEndEntityProfileId();
             EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(profileId);
             Collection<UserNotification> l = profile.getUserNotifications();
@@ -1767,10 +1768,10 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
                     }
                 }
             }
-        } else { // if ( ((data.getType() & EndEntityConstants.USER_SENDNOTIFICATION) !=
+        } else { // if ( ((data.getType() & EndEntityTypes.USER_SENDNOTIFICATION) !=
                  // 0) )
             if (log.isDebugEnabled()) {
-                log.debug("Type does not contain EndEntityConstants.USER_SENDNOTIFICATION, no notification sent.");
+                log.debug("Type does not contain EndEntityTypes.USER_SENDNOTIFICATION, no notification sent.");
             }
         }
         if (log.isTraceEnabled()) {

@@ -41,7 +41,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -329,7 +329,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         boolean userExists = false;
         try {
             userAdminSession.addUser(admin, username, "foo123", userDN, null, "cmptest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, caid);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: " + username + ", foo123, " + userDN);
         } catch (EJBException e) {
             if (e.getCause() instanceof PersistenceException) {

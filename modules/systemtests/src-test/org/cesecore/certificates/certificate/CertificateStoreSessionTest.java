@@ -48,7 +48,6 @@ import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.roles.RoleData;
@@ -295,7 +294,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 			log.debug("status=" + data3.getStatus());
 			assertTrue("wrong status", data3.getStatus() == CertificateConstants.CERT_ACTIVE);
 			log.debug("type=" + data3.getType());
-			assertTrue("wrong type", (data3.getType() & EndEntityConstants.USER_ENDUSER) == EndEntityConstants.USER_ENDUSER);
+			assertTrue("wrong type", (data3.getType() & CertificateConstants.CERTTYPE_ENDENTITY) == CertificateConstants.CERTTYPE_ENDENTITY);
 			log.debug("serno=" + data3.getSerialNumber());
 			log.debug("expiredate=" + data3.getExpireDate());
 			log.debug("revocationdate=" + data3.getRevocationDate());
@@ -314,7 +313,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 			log.debug("status=" + data3.getStatus());
 			assertTrue("wrong status", data3.getStatus() == CertificateConstants.CERT_REVOKED);
 			log.debug("type=" + data3.getType());
-			assertTrue("wrong type", (data3.getType() & EndEntityConstants.USER_ENDUSER) == EndEntityConstants.USER_ENDUSER);
+			assertTrue("wrong type", (data3.getType() & CertificateConstants.CERTTYPE_ENDENTITY) == CertificateConstants.CERTTYPE_ENDENTITY);
 			log.debug("serno=" + data3.getSerialNumber());
 			log.debug("expiredate=" + data3.getExpireDate());
 			log.debug("revocationdate=" + data3.getRevocationDate());

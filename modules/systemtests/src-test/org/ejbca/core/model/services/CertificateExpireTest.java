@@ -33,7 +33,7 @@ import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -132,7 +132,7 @@ public class CertificateExpireTest extends CaTestCase {
         username = genRandomUserName();
         pwd = genRandomPwd();
         userAdminSession.addUser(admin, username, pwd, "C=SE,O=AnaTom,CN=" + username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, caid);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
         log.debug("created user: " + username);
 
         KeyPair keys = KeyTools.genKeys("1024", "RSA");

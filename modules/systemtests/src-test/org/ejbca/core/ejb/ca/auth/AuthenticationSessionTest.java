@@ -28,8 +28,9 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -108,7 +109,7 @@ public class AuthenticationSessionTest extends CaTestCase {
             throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
             WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
-        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId, SecConst.TOKEN_SOFT_P12, 0,
                 null);
         ExtendedInformation ei = new ExtendedInformation();
         ei.setMaxLoginAttempts(maxFailedLogins);
@@ -126,7 +127,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         pwd1 = genRandomPwd();
         String email = username1 + "@anatom.se";
         userAdminSession.addUser(internalAdmin, username1, pwd1, "C=SE, O=AnaTom, CN=" + username1, "rfc822name=" + email, email, false,
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, caid);
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
         log.debug("created user: " + username1 + ", " + pwd1 + ", C=SE, O=AnaTom, CN=" + username1);
 
         // Make another user that we know later...
@@ -152,7 +153,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         assertTrue("Email is wrong", data.getEmail().equals(username1 + "@anatom.se"));
 
         log.debug("Type: " + data.getType());
-        assertTrue("Type is wrong", data.getType() == EndEntityConstants.USER_ENDUSER);
+        assertTrue("Type is wrong", data.getType().contains(EndEntityTypes.ENDUSER));
         log.trace("<test02AuthenticateUser()");
     }
 

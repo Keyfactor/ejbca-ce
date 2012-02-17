@@ -62,6 +62,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.util.KeyTools;
@@ -489,7 +491,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
     private X509Certificate createCertWithValidity(int validity) throws Exception {
         // Make user that we know...
         EndEntityInformation user = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=crltest", testx509ca.getCAId(), null, "crltest@anatom.se",
-                EndEntityConstants.USER_ENDUSER, 0, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
+                new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
         // user that we know exists...
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         int keyusage = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment;

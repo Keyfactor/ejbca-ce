@@ -26,6 +26,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -67,7 +68,7 @@ public interface UserAdminSession {
      * @throws CADoesntExistsException if the caid of the user does not exist
      */
     void addUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email,
-    		boolean clearpwd, int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardwaretokenissuerid, int caid)
+    		boolean clearpwd, int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int hardwaretokenissuerid, int caid)
     		throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
     		CADoesntExistsException, EjbcaException;
 
@@ -169,7 +170,7 @@ public interface UserAdminSession {
      */
     @Deprecated
     void changeUser(AuthenticationToken admin, String username, String password, String subjectdn, String subjectaltname, String email, boolean clearpwd,
-    		int endentityprofileid, int certificateprofileid, int type, int tokentype, int hardwaretokenissuerid, int status, int caid) throws AuthorizationDeniedException,
+    		int endentityprofileid, int certificateprofileid, EndEntityType type, int tokentype, int hardwaretokenissuerid, int status, int caid) throws AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, CADoesntExistsException, EjbcaException;
 
     /**

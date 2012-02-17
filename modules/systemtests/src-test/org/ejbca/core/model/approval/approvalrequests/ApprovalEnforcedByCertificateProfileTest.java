@@ -49,8 +49,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
@@ -322,8 +323,8 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             String email = "test@example.com";
             KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
             userAdminSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC1" + username1, 
-            		/*"rfc822name="+email*/null, email, false, endEntityProfileId,
-                    certProfileIdNoApprovals, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
+            		null, email, false, endEntityProfileId,
+                    certProfileIdNoApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username1, "foo123", keypair.getPublic());
             assertNotNull("Cert should have been created.", cert);
             keyRecoverySession.addKeyRecoveryData(admin1, cert, username1, keypair);
@@ -343,12 +344,8 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             String username1 = genRandomUserName("test04_2");
             String email = "test@example.com";
             KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            userAdminSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC2" + username1, /*
-                                                                                                 * "rfc822name="
-                                                                                                 * +
-                                                                                                 * email
-                                                                                                 */null, email, false, endEntityProfileId,
-                    certProfileIdKeyRecoveryApprovals, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
+            userAdminSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC2" + username1, null, email, false, endEntityProfileId,
+                    certProfileIdKeyRecoveryApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username1, "foo123", keypair.getPublic());
             keyRecoverySession.addKeyRecoveryData(admin1, cert, username1, keypair);
 
@@ -472,7 +469,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
             WaitingForApprovalException, Exception {
         log.info("createUser: username=" + username + ", certProfileId=" + certProfileId);
-        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, endEntityProfileId, certProfileId,
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId,
                 SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
         // userdata.setKeyRecoverable(true);

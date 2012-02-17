@@ -18,6 +18,8 @@ import java.util.Date;
 import java.util.Map;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.util.StringTools;
@@ -42,7 +44,7 @@ public class UserView implements Serializable, Comparable<UserView> {
 
     public UserView() {
         userdata = new EndEntityInformation();
-        userdata.setType(1);
+        userdata.setType(EndEntityTypes.ENDUSER.toEndEntityType());
         subjectdnfields = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTDN);
         subjectaltnames = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTALTNAME);
         subjectdirattrs = new DNFieldExtractor("", DNFieldExtractor.TYPE_SUBJECTDIRATTR);
@@ -134,11 +136,11 @@ public class UserView implements Serializable, Comparable<UserView> {
         return userdata.getStatus();
     }
 
-    public void setType(int type) {
+    public void setType(EndEntityType type) {
         userdata.setType(type);
     }
 
-    public int getType() {
+    public EndEntityType getType() {
         return userdata.getType();
     }
 

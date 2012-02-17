@@ -82,7 +82,7 @@ import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
@@ -1199,13 +1199,13 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
         if (!userAdminSession.existsUser("ocsptest")) {
 
             userAdminSession.addUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, caid);
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
 
         } else {
             log.debug("User ocsptest already exists.");
             userAdminSession.changeUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0,
                     UserDataConstants.STATUS_NEW, caid);
             // usersession.setUserStatus(admin,"ocsptest",UserDataConstants.STATUS_NEW);
             log.debug("Reset status to NEW");

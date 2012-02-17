@@ -37,8 +37,9 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -356,7 +357,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
         CAInfo infocvccaec = caSession.getCAInfo(internalAdmin, "TESTDVECC-D");
         int cvccaecid = infocvccaec.getCAId();
         // Same thing but with ECC keys
-        EndEntityInformation userec = new EndEntityInformation(eccUsername, "C=SE,CN=TCVCEC", cvccaecid, null, null, EndEntityConstants.USER_ENDUSER,
+        EndEntityInformation userec = new EndEntityInformation(eccUsername, "C=SE,CN=TCVCEC", cvccaecid, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         userec.setPassword("cvc");
         userAdminSession.addUser(internalAdmin, userec, false);

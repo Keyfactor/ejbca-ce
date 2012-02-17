@@ -69,8 +69,8 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
@@ -333,7 +333,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
         try {
             // If the user is of type USER_INVALID, it cannot have any other type (in the mask)
-            if (data.getType() == EndEntityConstants.USER_INVALID) {
+            if (data.getType().isType(EndEntityTypes.INVALID)) {
                 final String msg = intres.getLocalizedMessage("createcert.usertypeinvalid", data.getUsername());
                 throw new CertificateCreateException(msg);
             }

@@ -26,8 +26,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -119,7 +119,7 @@ public class UserDataTest extends CaTestCase {
         username = genRandomUserName();
         pwd = genRandomPwd();
         userAdminSession.addUser(admin, username, pwd, "C=SE,O=AnaTom,CN=" + username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
     }
 
     @Test
@@ -138,13 +138,13 @@ public class UserDataTest extends CaTestCase {
         log.debug("status=" + data2.getStatus());
         assertTrue("wrong status", data2.getStatus() == UserDataConstants.STATUS_NEW);
         log.debug("type=" + data2.getType());
-        assertTrue("wrong type", data2.getType() == EndEntityConstants.USER_INVALID);
+        assertTrue("wrong type", data2.getType().isType(EndEntityTypes.INVALID));
         assertTrue("wrong pwd (foo123 works)", userAdminSession.verifyPassword(admin, username, "foo123") == false);
         assertTrue("wrong pwd " + pwd, userAdminSession.verifyPassword(admin, username, pwd));
 
         // Change DN
         userAdminSession.changeUser(admin, username, "foo123", "C=SE,O=AnaTom,OU=Engineering, CN=" + username, null, username + "@anatom.se", false,
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0,
                 UserDataConstants.STATUS_GENERATED, caid);
         log.debug("Changed it");
         log.trace("<test02LookupAndChangeUser()");
@@ -162,13 +162,13 @@ public class UserDataTest extends CaTestCase {
         log.debug("status=" + data.getStatus());
         assertTrue("wrong status", data.getStatus() == UserDataConstants.STATUS_GENERATED);
         log.debug("type=" + data.getType());
-        assertTrue("wrong type", data.getType() == EndEntityConstants.USER_ENDUSER);
+        assertTrue("wrong type", data.getType().isType(EndEntityTypes.ENDUSER));
         assertTrue("wrong pwd foo123", userAdminSession.verifyPassword(admin, username, "foo123"));
         assertTrue("wrong pwd (" + pwd + " works)" + pwd, userAdminSession.verifyPassword(admin, username, pwd) == false);
 
         // Use clear text pwd instead, new email, reverse DN again
         userAdminSession.changeUser(admin, username, "foo234", "C=SE,O=AnaTom,CN=" + username, null, username + "@anatom.nu", true,
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0,
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0,
                 UserDataConstants.STATUS_GENERATED, caid);
         log.trace("<test03LookupChangedUser()");
 
@@ -185,7 +185,7 @@ public class UserDataTest extends CaTestCase {
         log.debug("status=" + data.getStatus());
         assertTrue("wrong status", data.getStatus() == UserDataConstants.STATUS_GENERATED);
         log.debug("type=" + data.getType());
-        assertTrue("wrong type", data.getType() == EndEntityConstants.USER_ENDUSER);
+        assertTrue("wrong type", data.getType().isType(EndEntityTypes.ENDUSER));
         assertTrue("wrong pwd foo234", userAdminSession.verifyPassword(admin, username, "foo234"));
         assertEquals("wrong clear pwd foo234", data.getPassword(), "foo234");
         assertTrue("wrong pwd (" + pwd + " works)", userAdminSession.verifyPassword(admin, username, pwd) == false);
@@ -218,7 +218,7 @@ public class UserDataTest extends CaTestCase {
         log.trace(">test06RequestCounter()");
 
         // Change already existing user to add extended information with counter
-        EndEntityInformation user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, caid, null, null, EndEntityConstants.USER_INVALID,
+        EndEntityInformation user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, caid, null, null, EndEntityTypes.INVALID.toEndEntityType(),
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setStatus(UserDataConstants.STATUS_GENERATED);
         userAdminSession.changeUser(admin, user, false);
@@ -234,7 +234,7 @@ public class UserDataTest extends CaTestCase {
         ExtendedInformation ei = new ExtendedInformation();
         int allowedrequests = 2;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
-        user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, caid, null, null, EndEntityConstants.USER_INVALID,
+        user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, caid, null, null, EndEntityTypes.INVALID.toEndEntityType(),
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ei);
         boolean thrown = false;
         try {
@@ -266,7 +266,7 @@ public class UserDataTest extends CaTestCase {
         ei = new ExtendedInformation();
         allowedrequests = 2;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
-        user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, caid, null, null, EndEntityConstants.USER_INVALID, pid,
+        user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, caid, null, null, EndEntityTypes.INVALID.toEndEntityType(), pid,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, ei);
         thrown = false;
         try {
@@ -586,10 +586,10 @@ public class UserDataTest extends CaTestCase {
         ;
         String pwd = genRandomPwd();
         userAdminSession.addUser(admin, username1, pwd, "C=SE,O=EJBCA Sample,CN=" + username1, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
         try {
             userAdminSession.addUser(admin, username2, pwd, "C=SE,O=EJBCA Sample,CN=" + username2, null, null, false,
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
         } catch (Exception e) {
             userAdminSession.deleteUser(admin, username1);
             assertTrue("Database (mapping) is not case sensitive!", false);
@@ -609,11 +609,11 @@ public class UserDataTest extends CaTestCase {
         String username = "sameun" + genRandomUserName();
         String pwd = genRandomPwd();
         userAdminSession.addUser(admin, username, pwd, "C=SE,O=EJBCA Sample,CN=" + username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
         boolean ok = true;
         try {
             userAdminSession.addUser(admin, username, pwd, "C=SE,O=EJBCA Sample,CN=" + username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, caid);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
             ok = false;
         } catch (Exception e) {
         }

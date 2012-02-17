@@ -16,7 +16,8 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.List;
 
-import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
@@ -240,26 +241,24 @@ public class UserDataVOWS implements Serializable{
 		return tokenType;
 	}
 
-
 	/**
 	 * @return Returns the type.
 	 */
-	public int getType() {
-		int type = 1;
+	public EndEntityType getType() {
+		EndEntityType type = EndEntityTypes.ENDUSER.toEndEntityType();
 		
     	if(sendNotification) {
-    		type = type | EndEntityConstants.USER_SENDNOTIFICATION;
+    		type.addType(EndEntityTypes.SENDNOTIFICATION);
     	} else {
-    		type = type & (~EndEntityConstants.USER_SENDNOTIFICATION);
+    		type.removeType(EndEntityTypes.SENDNOTIFICATION);
     	}
     	if(keyRecoverable) {
-    		type = type | EndEntityConstants.USER_KEYRECOVERABLE;
+    		type.addType(EndEntityTypes.KEYRECOVERABLE);
     	} else {
-    		type = type & (~EndEntityConstants.USER_KEYRECOVERABLE);
+    		type.removeType(EndEntityTypes.KEYRECOVERABLE);
     	}
 		return type;
 	}
-
 
 	/**
 	 * @return Returns the username.

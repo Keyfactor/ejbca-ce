@@ -23,6 +23,8 @@ import javax.naming.ldap.Rdn;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.util.CertTools;
@@ -79,9 +81,10 @@ public class UserDataFiller {
         String subjectAltName = userData.getSubjectAltName();
         subjectAltName = mergeSubjectAltNameWithDefaultValues(subjectAltName, profile, userData.getEmail());
         userData.setSubjectAltName(subjectAltName);
-        if (userData.getType()==0) {
+        if (userData.getType().getHexValue()==EndEntityTypes.INVALID.hexValue()) {
         	if(StringUtils.isNotEmpty(profile.getValue(EndEntityProfile.FIELDTYPE, 0))){
-        		userData.setType(Integer.valueOf(profile.getValue(EndEntityProfile.FIELDTYPE, 0)).intValue());
+        	    int type = Integer.valueOf(profile.getValue(EndEntityProfile.FIELDTYPE, 0)).intValue();
+        		userData.setType(new EndEntityType(type));
         	}
         }
         return userData;

@@ -49,6 +49,8 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
@@ -122,13 +124,14 @@ public class RevocationApprovalTest extends CaTestCase {
         if (adminUsername == null) {
         	adminUsername = genRandomUserName("revocationTestAdmin");
         	requestingAdminUsername = genRandomUserName("revocationTestRequestingAdmin");
-        	EndEntityInformation userdata = new EndEntityInformation(adminUsername, "CN=" + adminUsername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+        	EndEntityInformation userdata = new EndEntityInformation(adminUsername, "CN=" + adminUsername, caid, null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
         			CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         	userdata.setPassword("foo123");
         	userAdminSession.addUser(internalAdmin, userdata, true);
-        	EndEntityInformation userdata2 = new EndEntityInformation(requestingAdminUsername, "CN=" + requestingAdminUsername, caid, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
-        			CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
-        	userdata2.setPassword("foo123");
+            EndEntityInformation userdata2 = new EndEntityInformation(requestingAdminUsername, "CN=" + requestingAdminUsername, caid, null, null,
+                    new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+            userdata2.setPassword("foo123");
         	userAdminSession.addUser(internalAdmin, userdata2, true);
         	BatchMakeP12 makep12 = new BatchMakeP12();
         	File tmpfile = File.createTempFile("ejbca", "p12");
@@ -194,7 +197,7 @@ public class RevocationApprovalTest extends CaTestCase {
     }
 
     private void createUser(AuthenticationToken admin, String username, int caID) throws Exception {
-        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+        EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword("foo123");
         userAdminSession.addUser(admin, userdata, true);

@@ -103,6 +103,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.dn.PrintableStringEntryConverter;
@@ -524,7 +526,7 @@ public class X509CA extends CA implements Serializable {
                     log.debug("We will create a link certificate.");
                     X509CAInfo info = (X509CAInfo) getCAInfo();
                     EndEntityInformation cadata = new EndEntityInformation("nobody", info.getSubjectDN(), info.getSubjectDN().hashCode(), info.getSubjectAltName(), null,
-                            0, 0, 0, info.getCertificateProfileId(), null, null, 0, 0, null);
+                            0, new EndEntityType(EndEntityTypes.INVALID), 0, info.getCertificateProfileId(), null, null, 0, 0, null);
 
                     CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
                     if ((info.getPolicies() != null) && (info.getPolicies().size() > 0)) {

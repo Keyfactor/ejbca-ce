@@ -18,6 +18,8 @@ import java.util.Date;
 import java.util.Properties;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.ejbca.util.PrinterManager;
 
 /**
@@ -51,7 +53,7 @@ public class SVGTemplatePrinter extends BaseCommand {
 				Properties data = new Properties();
 				data.load(new FileInputStream(USERDATAFILENAME));
 				EndEntityInformation userdata = new EndEntityInformation("", data.getProperty("DN"),0,"", data.getProperty("EMAIL"), 
-						                                           0,0,0,0, (Date) null, (Date) null,0,0 ,null);
+						                                           0,new EndEntityType(EndEntityTypes.INVALID),0,0, (Date) null, (Date) null,0,0 ,null);
 				String[] pins = new String[2];
 				String[] puks = new String[2];
 				pins[0] = data.getProperty("PIN1");

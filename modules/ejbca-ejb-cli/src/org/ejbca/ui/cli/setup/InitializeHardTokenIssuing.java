@@ -24,6 +24,8 @@ import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -231,7 +233,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         int hardtokenissuerid = ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenIssuerId(getAdmin(cliUserName, cliPassword), ISSUERALIAS);
 
         this.ejb.getRemoteSession(UserAdminSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), SUPERADMINTOKENNAME, null, "CN=" + SUPERADMINTOKENNAME, null, null, true,
-                endentityprofileid, certificateprofileid, 65, tokenid, hardtokenissuerid, caid);
+                endentityprofileid, certificateprofileid, new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.KEYRECOVERABLE), tokenid, hardtokenissuerid, caid);
     }
 
     /**

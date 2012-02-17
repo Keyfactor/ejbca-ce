@@ -25,7 +25,8 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
@@ -171,9 +172,9 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             String subjectaltname = args[4];
             String caname = args[5];
             String email = args[6];
-            int type = 1;
+            EndEntityType type = EndEntityTypes.ENDUSER.toEndEntityType();
             try {
-                type = Integer.parseInt(args[7]);
+                type = new EndEntityType(EndEntityTypes.getTypesFromHexCode(Integer.parseInt(args[7])));
             } catch (NumberFormatException e) {
                 throw new NumberFormatException("Invalid type, '" + args[7] + "'.\n" + types);
             }
@@ -242,7 +243,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 error = true;
             }
 
-            if (email.equalsIgnoreCase("NULL") && ((type & EndEntityConstants.USER_SENDNOTIFICATION) == EndEntityConstants.USER_SENDNOTIFICATION)) {
+            if (email.equalsIgnoreCase("NULL") && type.contains(EndEntityTypes.SENDNOTIFICATION)) {
                 getLogger().error("Email field cannot be null when send notification type is given.");
                 error = true;
             }

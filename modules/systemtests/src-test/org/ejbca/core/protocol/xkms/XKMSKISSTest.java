@@ -42,7 +42,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -189,7 +190,7 @@ public class XKMSKISSTest {
 
         username1 = genUserName();
         String pwd = "foo123";
-        int type = EndEntityConstants.USER_ENDUSER;
+        EndEntityType type = EndEntityTypes.ENDUSER.toEndEntityType();
         int token = SecConst.TOKEN_SOFT_P12;
         int certificatetypeid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
         int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
