@@ -65,7 +65,7 @@ public class UserDataVO implements Serializable {
     /** Status of user, from UserDataConstants.STATUS_XX */
     private int status;
     /** Type of user, from SecConst */
-    private EndEntityType type;
+    private EndEntityType type = EndEntityTypes.INVALID.toEndEntityType();
     private int endentityprofileid;
     private int certificateprofileid;
     private Date timecreated;
