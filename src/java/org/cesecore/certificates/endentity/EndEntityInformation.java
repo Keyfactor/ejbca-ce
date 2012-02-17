@@ -59,7 +59,6 @@ public class EndEntityInformation implements Serializable {
     private String cardNumber;
     /** Status of user, from {@link EndEntityConstants#STATUS_NEW} etc*/
     private int status;
-    /** Type of user, from {@link EndEntityConstants#ENDUSER} etc*/
     private EndEntityType type;
     private int endentityprofileid;
     private int certificateprofileid;
