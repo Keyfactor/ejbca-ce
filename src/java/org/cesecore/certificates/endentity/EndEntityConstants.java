@@ -19,10 +19,6 @@ package org.cesecore.certificates.endentity;
  * @version $Id$
  */
 public final class EndEntityConstants {
-
-	//
-    // User types
-	//
 	
     //
     // User status codes
