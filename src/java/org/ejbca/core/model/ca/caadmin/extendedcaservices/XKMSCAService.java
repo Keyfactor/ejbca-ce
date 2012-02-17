@@ -47,6 +47,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -153,7 +154,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     	final KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
     	keystore.load(null, null);                              
     	final KeyPair xKMSkeys = KeyTools.genKeys(info.getKeySpec(), info.getKeyAlgorithm());
-    	final EndEntityInformation user = new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,0,0,0, null,null,0,0,null);
+    	final EndEntityInformation user = new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,EndEntityTypes.INVALID.toEndEntityType(),0,0, null,null,0,0,null);
 		// A simple hard coded certificate profile that works for the XKMS CA service
 		CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
 		certProfile.setUseKeyUsage(true);

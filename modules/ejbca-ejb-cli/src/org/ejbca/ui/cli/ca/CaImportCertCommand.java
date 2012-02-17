@@ -25,8 +25,9 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -80,7 +81,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				certificateprofile = args[8];				
 			}
 			
-			int type = EndEntityConstants.USER_ENDUSER;
+			EndEntityType endEntityType = EndEntityTypes.ENDUSER.toEndEntityType();
 			int status;
 			if ("ACTIVE".equalsIgnoreCase(active)) {
 				status = CertificateConstants.CERT_ACTIVE;
@@ -153,7 +154,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			if (subjectAltName != null) {
 				getLogger().info("SubjectAltName: " + subjectAltName);
 			}
-			getLogger().info("Type: " + type);
+			getLogger().info("Type: " + endEntityType);
 			
 			getLogger().debug("Loading/updating user " + username);
 			if (userdata == null) {
@@ -164,7 +165,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 						false,
 						endentityprofileid,
 						certificateprofileid,
-						type,
+						endEntityType,
 						SecConst.TOKEN_SOFT_BROWSERGEN,
 						SecConst.NO_HARDTOKENISSUER,
 						cainfo.getCAId());
@@ -184,7 +185,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 						false,
 						endentityprofileid,
 						certificateprofileid,
-						type,
+						endEntityType,
 						SecConst.TOKEN_SOFT_BROWSERGEN,
 						SecConst.NO_HARDTOKENISSUER,
 						(status == CertificateConstants.CERT_ACTIVE ?
@@ -193,11 +194,11 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 									cainfo.getCAId());
 				getLogger().info("User '" + username + "' has been updated.");
 			}
-			
+			int certificateType = CertificateConstants.CERTTYPE_ENDENTITY;
 			ejb.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAdmin(cliUserName, cliPassword),
 					certificate, username,
 					fingerprint,
-					status, type, certificateprofileid, null, new Date().getTime());
+					status, certificateType, certificateprofileid, null, new Date().getTime());
 			
 			getLogger().info("Certificate number '" + CertTools.getSerialNumberAsString(certificate) + "' has been added.");
 		}

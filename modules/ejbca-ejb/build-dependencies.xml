@@ -221,7 +221,7 @@
 					<include name="org/cesecore/authorization/user/AccessUserAspectManager*.java"/>
 					<include name="org/cesecore/authorization/cache/AccessTreeUpdateSession*.java"/>
 					<include name="org/cesecore/authorization/control/AccessControlSession*.java"/>
-					<include name="org/cesecore/authorization/rules/AccessRuleManagementSession*.java"/>	
+					<include name="org/cesecore/authorization/rules/AccessRuleManagementSession*.java"/>						
 					<include name="org/cesecore/certificates/ca/CaSession*.java"/>	
 					<include name="org/cesecore/roles/access/*.java"/>
 					<include name="org/cesecore/roles/management/*.java"/>
@@ -257,6 +257,8 @@
 					<include name="org/cesecore/certificates/certificateprofile/CertificatePolicy.java"/>
 					<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
 					<include name="org/cesecore/certificates/endentity/EndEntityInformation.java"/>
+					<include name="org/cesecore/certificates/endentity/EndEntityType.java"/>
+					<include name="org/cesecore/certificates/endentity/EndEntityTypes.java"/>
 					<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
 					<include name="org/cesecore/roles/access/*.java"/>
 					<include name="org/cesecore/roles/management/*.java"/>
@@ -396,6 +398,8 @@
 					<include name="org/ejbca/core/model/ca/store/CertReqHistory*.java"/>
 					<!-- RA classes that maybe shouldn't be here.. -->
 					<include name="org/cesecore/certificates/endentity/EndEntityInformation.java"/>
+					<include name="org/cesecore/certificates/endentity/EndEntityType.java"/>
+					<include name="org/cesecore/certificates/endentity/EndEntityTypes.java"/>
 					<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
 					<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
 					<include name="org/cesecore/certificates/util/dn/DNFieldsUtil.java"/>

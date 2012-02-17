@@ -17,7 +17,8 @@ import java.math.BigInteger;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
@@ -101,12 +102,12 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
             userdata.setEndEntityProfileName(myArgs[ARG_ENDENTITYPROFILE]);
             userdata.setCertificateProfileName(myArgs[ARG_CERTIFICATEPROFILE]);
             
-            int type = Integer.parseInt(myArgs[ARG_TYPE]);
+            EndEntityType type = new EndEntityType(EndEntityTypes.getTypesFromHexCode(Integer.parseInt(myArgs[ARG_TYPE])));
             
-            if((type & EndEntityConstants.USER_SENDNOTIFICATION) != 0){
+            if(type.contains(EndEntityTypes.SENDNOTIFICATION)){
             	userdata.setSendNotification(true);
             }
-            if((type & EndEntityConstants.USER_KEYRECOVERABLE) != 0){
+            if(type.contains(EndEntityTypes.KEYRECOVERABLE)){
             	userdata.setKeyRecoverable(true);
             }
 

@@ -17,7 +17,8 @@ package org.ejbca.core.protocol.ws.client;
 import java.util.Iterator;
 import java.util.List;
 
-import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
@@ -215,18 +216,18 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
 		return "ERROR : Status text not found";
 	}
 	
-	private int getType(UserDataVOWS userData) {
-		int type = 1;
+	private EndEntityType getType(UserDataVOWS userData) {
+		EndEntityType type = EndEntityTypes.ENDUSER.toEndEntityType();
 		
     	if(userData.isSendNotification()) {
-    		type = type | EndEntityConstants.USER_SENDNOTIFICATION;
+    		type.addType(EndEntityTypes.SENDNOTIFICATION);
     	} else {
-    		type = type & (~EndEntityConstants.USER_SENDNOTIFICATION);
+    		type.removeType(EndEntityTypes.SENDNOTIFICATION);
     	}
     	if(userData.isKeyRecoverable()) {
-    		type = type | EndEntityConstants.USER_KEYRECOVERABLE;
+    		type.addType(EndEntityTypes.KEYRECOVERABLE);
     	} else {
-    		type = type & (~EndEntityConstants.USER_KEYRECOVERABLE);
+    		type.removeType(EndEntityTypes.KEYRECOVERABLE);
     	}
 		return type;
 	}

@@ -41,6 +41,8 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -215,8 +217,9 @@ public class AutoEnrollServlet extends HttpServlet {
 	        }
 	        log.info("sdn=" + subjectDN + ", san=" + subjectAN);
 	        debugInfo += "\nsdn=" + subjectDN + ", san=" + subjectAN + "\n";
-	        EndEntityInformation userData = new EndEntityInformation(username, subjectDN, caid, subjectAN, null, UserDataConstants.STATUS_NEW, 1,endEntityProfileId, certProfileId,
-	                new Date(), new Date(), SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+            EndEntityInformation userData = new EndEntityInformation(username, subjectDN, caid, subjectAN, null, UserDataConstants.STATUS_NEW,
+                    new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId, new Date(), new Date(),
+                    SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
 	        String password = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS).getNewPassword(8,8);
 	        userData.setPassword(password);
 	        try {

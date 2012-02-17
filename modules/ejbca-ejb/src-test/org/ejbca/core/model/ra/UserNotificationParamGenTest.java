@@ -7,8 +7,9 @@ import static org.junit.Assert.assertNotNull;
 import java.util.Date;
 
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.ejbca.core.model.SecConst;
 import org.junit.Test;
 
@@ -27,7 +28,7 @@ public class UserNotificationParamGenTest {
 		        new EndEntityInformation("foo", "CN=foo,O=Org,C=SE", caid, 
 		                                 "rfc822Name=fooalt@foo.se", "fooee@foo.se", 
 		                                 UserDataConstants.STATUS_GENERATED, 
-		                                 EndEntityConstants.USER_ENDUSER, 
+		                                 new EndEntityType(EndEntityTypes.ENDUSER), 
 		                                 SecConst.EMPTY_ENDENTITYPROFILE, 
 		                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
 		                                 now, null, SecConst.TOKEN_SOFT_P12, SecConst.NO_HARDTOKENISSUER, null);
@@ -36,7 +37,7 @@ public class UserNotificationParamGenTest {
 		        new EndEntityInformation("admin", "CN=Test Admin,C=NO", caid, 
 		                                 "rfc822Name=adminalt@foo.se", "adminee@foo.se",
 		                                 UserDataConstants.STATUS_GENERATED, 
-		                                 EndEntityConstants.USER_ENDUSER, 
+		                                 new EndEntityType(EndEntityTypes.ENDUSER), 
 		                                 SecConst.EMPTY_ENDENTITYPROFILE, 
 		                                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, 
 		                                 now, null, SecConst.TOKEN_SOFT_P12, 

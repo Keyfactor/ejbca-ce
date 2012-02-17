@@ -16,6 +16,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.DnComponents;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.Before;
@@ -31,8 +33,8 @@ public class UserDataFillerTest {
 
 	@Before
     public void setUp() throws Exception {
-        userData = new EndEntityInformation("userName","CN=userName,O=linagora",-1688117755,"",
-        		"user@linagora.com",1,3,1,2,0,new org.cesecore.certificates.endentity.ExtendedInformation());
+        userData = new EndEntityInformation("userName", "CN=userName,O=linagora", -1688117755, "", "user@linagora.com", new EndEntityType(EndEntityTypes.ENDUSER), 3, 1, 2, 0,
+                new org.cesecore.certificates.endentity.ExtendedInformation());
         profile = new EndEntityProfile();
         profile.addField(EndEntityProfile.USERNAME);//0
         profile.addField(EndEntityProfile.PASSWORD);//1

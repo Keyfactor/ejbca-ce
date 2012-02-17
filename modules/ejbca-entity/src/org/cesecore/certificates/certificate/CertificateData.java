@@ -108,7 +108,7 @@ public class CertificateData extends ProtectedData implements Serializable {
      * @param username the username in UserData to map the certificate to
      * @param cafp CA certificate fingerprint, can be null
      * @param status status of the certificate, active, revoked etcc, i.e. SecConst.CERT_ACTIVE etc
-     * @param type the user type the certificate belongs to, i.e. EndEntityConstants.USER_ENDUSER etc
+     * @param type the user type the certificate belongs to, i.e. EndEntityTypes.USER_ENDUSER etc
      * @param certprofileid certificate profile id, can be 0
      * @param tag a custom tag to map the certificate to any custom defined tag
      * @param updatetime the time the certificate was updated in the database, i.e. System.currentTimeMillis().
@@ -262,7 +262,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /**
-     * What type of user the certificate belongs to, ex EndEntityConstants.USER_ENDUSER
+     * What type of user the certificate belongs to, ex EndEntityTypes.USER_ENDUSER
      * 
      * @return user type
      */
@@ -272,7 +272,7 @@ public class CertificateData extends ProtectedData implements Serializable {
     }
 
     /**
-     * What type of user the certificate belongs to, ex EndEntityConstants.USER_ENDUSER
+     * What type of user the certificate belongs to, ex EndEntityTypes.USER_ENDUSER
      * 
      * @param type type
      */

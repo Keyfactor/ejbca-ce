@@ -59,8 +59,8 @@ public class EndEntityInformation implements Serializable {
     private String cardNumber;
     /** Status of user, from {@link EndEntityConstants#STATUS_NEW} etc*/
     private int status;
-    /** Type of user, from {@link EndEntityConstants#USER_ENDUSER} etc*/
-    private int type;
+    /** Type of user, from {@link EndEntityConstants#ENDUSER} etc*/
+    private EndEntityType type;
     private int endentityprofileid;
     private int certificateprofileid;
     private Date timecreated;
@@ -84,7 +84,7 @@ public class EndEntityInformation implements Serializable {
      * @param subjectaltname DOCUMENT ME!
      * @param email DOCUMENT ME!
      * @param status Status of user, from {@link EndEntityConstants#STATUS_NEW} etc
-     * @param type Type of user, from {@link EndEntityConstants#USER_ENDUSER} etc, can be "ored" together, i.e. EndEntityConstants#USER_ENDUSER | {@link EndEntityConstants#USER_SENDNOTIFICATION}
+     * @param type Type of user, from {@link EndEntityConstants#ENDUSER} etc, can be "ored" together, i.e. EndEntityConstants#USER_ENDUSER | {@link EndEntityConstants#SENDNOTIFICATION}
      * @param endentityprofileid DOCUMENT ME!
      * @param certificateprofileid DOCUMENT ME!
      * @param timecreated DOCUMENT ME!
@@ -93,7 +93,7 @@ public class EndEntityInformation implements Serializable {
      * @param hardtokenissuerid DOCUMENT ME!
 
      */
-    public EndEntityInformation(String user, String dn, int caid, String subjectaltname, String email, int status, int type, int endentityprofileid, int certificateprofileid,
+    public EndEntityInformation(String user, String dn, int caid, String subjectaltname, String email, int status, EndEntityType type, int endentityprofileid, int certificateprofileid,
                          Date timecreated, Date timemodified, int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
         setUsername(user);
         setPassword(null);
@@ -123,14 +123,14 @@ public class EndEntityInformation implements Serializable {
      * @param caid the id of the CA that should be used to issue the users certificate
      * @param subjectaltname the Subject Alternative Name to be used.
      * @param email the email of the subject (may be null).
-     * @param type one of EndEntityConstants.USER_ENDUSER || ...
+     * @param type one of EndEntityTypes.USER_ENDUSER || ...
      * @param endentityprofileid the id number of the end entity profile bound to this user.
      * @param certificateprofileid the id number of the certificate profile that should be generated for the user.
      * @param tokentype the type of token to be generated, one of SecConst.TOKEN constants
      * @param hardtokenissuerid if token should be hard, the id of the hard token issuer, else 0.
      * @param extendedinfo
      */
-    public EndEntityInformation(String user, String dn, int caid, String subjectaltname, String email,  int type, int endentityprofileid, int certificateprofileid,
+    public EndEntityInformation(String user, String dn, int caid, String subjectaltname, String email,  EndEntityType type, int endentityprofileid, int certificateprofileid,
                           int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
         setUsername(user);
         setPassword(null);
@@ -181,8 +181,8 @@ public class EndEntityInformation implements Serializable {
     public String getPassword() {return StringTools.getBase64String(password);}
     public void setStatus(int status) {this.status=status;}
     public int getStatus() {return status;}
-    public void setType(int type) {this.type=type;}
-    public int getType() {return type;}
+    public void setType(EndEntityType type) {this.type=type;}
+    public EndEntityType getType() {return type;}
     public void setEndEntityProfileId(int endentityprofileid) { this.endentityprofileid=endentityprofileid; }
     public int getEndEntityProfileId(){ return this.endentityprofileid; }
     public void setCertificateProfileId(int certificateprofileid) { this.certificateprofileid=certificateprofileid; }
@@ -200,7 +200,7 @@ public class EndEntityInformation implements Serializable {
      * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean. 
      */
     public boolean getAdministrator(){
-      return (type & EndEntityConstants.USER_ADMINISTRATOR) == EndEntityConstants.USER_ADMINISTRATOR;
+      return type.contains(EndEntityTypes.ADMINISTRATOR);
     }
 
     /**
@@ -208,46 +208,46 @@ public class EndEntityInformation implements Serializable {
      */
     public void setAdministrator(boolean administrator){
       if(administrator) {
-        type = type | EndEntityConstants.USER_ADMINISTRATOR;
+        type.addType(EndEntityTypes.ADMINISTRATOR);
       } else {
-        type = type & (~EndEntityConstants.USER_ADMINISTRATOR);
+        type.removeType(EndEntityTypes.ADMINISTRATOR);
       }
     }
 
     public boolean getKeyRecoverable(){
-      return (type & EndEntityConstants.USER_KEYRECOVERABLE) == EndEntityConstants.USER_KEYRECOVERABLE;
+      return type.contains(EndEntityTypes.KEYRECOVERABLE);
     }
 
     public void setKeyRecoverable(boolean keyrecoverable){
       if(keyrecoverable) {
-        type = type | EndEntityConstants.USER_KEYRECOVERABLE;
+        type.addType(EndEntityTypes.KEYRECOVERABLE);
       } else {
-        type = type & (~EndEntityConstants.USER_KEYRECOVERABLE);
+        type.removeType(EndEntityTypes.KEYRECOVERABLE);
       }
     }
 
     public boolean getSendNotification(){
-      return (type & EndEntityConstants.USER_SENDNOTIFICATION) == EndEntityConstants.USER_SENDNOTIFICATION;
+      return type.contains(EndEntityTypes.SENDNOTIFICATION);
     }
 
     
     public void setSendNotification(boolean sendnotification){
       if(sendnotification) {
-        type = type | EndEntityConstants.USER_SENDNOTIFICATION;
+        type.addType(EndEntityTypes.SENDNOTIFICATION);
       } else {
-        type = type & (~EndEntityConstants.USER_SENDNOTIFICATION);
+        type.removeType(EndEntityTypes.SENDNOTIFICATION);
       }
     }
     
     public boolean getPrintUserData(){
-        return (type & EndEntityConstants.USER_SENDNOTIFICATION) == EndEntityConstants.USER_SENDNOTIFICATION;
+        return type.contains(EndEntityTypes.PRINT);
       }
 
     public void setPrintUserData(boolean printUserData){
         if(printUserData) {
-          type = type | EndEntityConstants.USER_PRINT;
+          type.addType(EndEntityTypes.PRINT);
         } else {
-          type = type & (~EndEntityConstants.USER_PRINT);
+          type.removeType(EndEntityTypes.PRINT);
         }
    }
 

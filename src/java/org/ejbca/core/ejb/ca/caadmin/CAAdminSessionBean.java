@@ -111,6 +111,8 @@ import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -372,7 +374,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 Certificate cacertificate = null;
                 log.debug("CAAdminSessionBean : " + cainfo.getSubjectDN());
                 EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName,
-                        null, 0, 0, 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
+                        null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
                 cacertificate = ca.generateCertificate(cadata, catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), -1, null, cainfo.getValidity(),
                         certprofile, sequence);
                 log.debug("CAAdminSessionBean : " + CertTools.getSubjectDN(cacertificate));
@@ -416,7 +418,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 Certificate cacertificate = null;
 
                 EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(), caAltName,
-                        null, 0, 0, 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
+                        null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
 
                 cacertificate = signca.generateCertificate(cadata, catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), -1, null, cainfo.getValidity(),
                         certprofile, sequence);
@@ -1134,7 +1136,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         subjectAltName = ((X509CAInfo) cainfo).getSubjectAltName();
                     }
                     EndEntityInformation cadata = new EndEntityInformation("nobody", cainfo.getSubjectDN(), cainfo.getSubjectDN().hashCode(),
-                            subjectAltName, null, 0, 0, 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
+                            subjectAltName, null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, cainfo.getCertificateProfileId(), null, null, 0, 0, null);
                     // We can pass the PKCS10 request message as extra
                     // parameters
                     if (requestmessage instanceof PKCS10RequestMessage) {
@@ -1406,7 +1408,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                         subjectAltName = x509ca.getSubjectAltName();
                     }
                     EndEntityInformation cainfodata = new EndEntityInformation("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(),
-                            subjectAltName, null, 0, 0, 0, ca.getCertificateProfileId(), null, null, 0, 0, null);
+                            subjectAltName, null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, ca.getCertificateProfileId(), null, null, 0, 0, null);
 
                     CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
                     // get from CAtoken to make sure it is fresh
@@ -1432,7 +1434,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                             subjectAltName = x509ca.getSubjectAltName();
                         }
                         EndEntityInformation cainfodata = new EndEntityInformation("nobody", ca.getSubjectDN(), ca.getSubjectDN().hashCode(),
-                                subjectAltName, null, 0, 0, 0, ca.getCertificateProfileId(), null, null, 0, 0, null);
+                                subjectAltName, null, 0, new EndEntityType(EndEntityTypes.INVALID), 0, ca.getCertificateProfileId(), null, null, 0, 0, null);
 
                         CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(ca.getCertificateProfileId());
                         String sequence = caToken.getTokenInfo().getKeySequence(); // get from CAtoken to make sure it is fresh

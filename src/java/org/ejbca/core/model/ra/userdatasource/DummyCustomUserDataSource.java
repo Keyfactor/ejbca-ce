@@ -21,6 +21,8 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.ejbca.core.model.SecConst;
 
 
@@ -59,7 +61,7 @@ public class DummyCustomUserDataSource implements ICustomUserDataSource{
 
 		List<UserDataSourceVO> result = new ArrayList<UserDataSourceVO>();
 		if(searchstring.equalsIgnoreCase("per")){
-			EndEntityInformation userDataVO = new EndEntityInformation("PER","CN=PER,C=SE",1,"RFC822NAME=per@test.com", "per@test.com",0,1,1,1,null,null,SecConst.TOKEN_SOFT_BROWSERGEN,0,null);
+			EndEntityInformation userDataVO = new EndEntityInformation("PER","CN=PER,C=SE",1,"RFC822NAME=per@test.com", "per@test.com",0,new EndEntityType(EndEntityTypes.ENDUSER),1,1,null,null,SecConst.TOKEN_SOFT_BROWSERGEN,0,null);
 			result.add(new UserDataSourceVO(userDataVO));
 		}
 		

@@ -33,8 +33,9 @@ import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
@@ -188,7 +189,7 @@ public class DemoCertReqServlet extends HttpServlet {
         log.debug("includeEmail=" + includeEmail);
 
         EndEntityInformation newuser = new EndEntityInformation();
-        newuser.setType(EndEntityConstants.USER_ENDUSER);
+        newuser.setType(new EndEntityType(EndEntityTypes.ENDUSER));
         newuser.setUsername(username);
         newuser.setDN(dn);
         newuser.setTokenType(SecConst.TOKEN_SOFT_BROWSERGEN);

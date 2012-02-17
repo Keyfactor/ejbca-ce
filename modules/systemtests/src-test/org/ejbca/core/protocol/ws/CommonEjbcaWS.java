@@ -89,6 +89,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileExistsExce
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
@@ -290,7 +292,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
         user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
         user1.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        user1.setType(65);
+        user1.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.KEYRECOVERABLE));
 
         if (!userAdminSession.existsUser(TEST_ADMIN_USERNAME)) {
         	log.info("Adding new user: "+user1.getUsername());
@@ -332,7 +334,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user2.setTokenType(SecConst.TOKEN_SOFT_JKS);
         user2.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
         user2.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        user2.setType(1);
+        user2.setType(EndEntityTypes.ENDUSER.toEndEntityType());
 
         if (!userAdminSession.existsUser(TEST_NONADMIN_USERNAME)) {
         	log.debug("Adding new user: "+user2.getUsername());

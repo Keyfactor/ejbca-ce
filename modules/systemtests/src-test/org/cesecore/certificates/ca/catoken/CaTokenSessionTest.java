@@ -46,6 +46,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -126,7 +128,7 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
     	int caid = testx509ca.getCAId();
     	Certificate cert = ca.getCACertificate();
     	// See that we can do something with the CAs to verify that everything was stored as we think
-    	EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", EndEntityConstants.USER_ENDUSER, 0,
+    	EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0,
     			0, EndEntityConstants.TOKEN_USERGEN, 0, null);
     	KeyPair keypair = KeyTools.genKeys("512", "RSA");
     	CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
@@ -168,7 +170,7 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
             CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, testx509ca.getCAId());
             assertEquals("CA Token should be active", CryptoToken.STATUS_ACTIVE, cainfo.getCATokenInfo().getTokenStatus());
         	// See that we can do something with the CAs to verify that everything was stored as we think
-        	EndEntityInformation user = new EndEntityInformation("username", "CN=User", testx509ca.getCAId(), "rfc822Name=user@user.com", "user@user.com", EndEntityConstants.USER_ENDUSER, 0,
+        	EndEntityInformation user = new EndEntityInformation("username", "CN=User", testx509ca.getCAId(), "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0,
         			0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         	user.setPassword("foo123");
         	SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
@@ -247,7 +249,7 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
     	caTokenSession.generateKeyPair(roleMgmgToken, testx509ca.getCAId(), "foo123".toCharArray(), "512", "newAlias");
     	
     	// See that we can do something with the CAs to verify that everything was stored as we think
-    	EndEntityInformation user = new EndEntityInformation("username", "CN=User", testx509ca.getCAId(), "rfc822Name=user@user.com", "user@user.com", EndEntityConstants.USER_ENDUSER, 0,
+    	EndEntityInformation user = new EndEntityInformation("username", "CN=User", testx509ca.getCAId(), "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0,
     			0, EndEntityConstants.TOKEN_USERGEN, 0, null);
     	user.setPassword("foo123");
     	SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());

@@ -43,7 +43,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -149,7 +149,7 @@ public class XKMSSigTest {
         username = baseUsername + "1";
         try {
             userAdminSession.addUser(administrator, username, "foo123", "CN=superadmin", null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
-                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_ADMINISTRATOR, SecConst.TOKEN_SOFT_JKS, 0, caid);
+                    CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ADMINISTRATOR.toEndEntityType(), SecConst.TOKEN_SOFT_JKS, 0, caid);
             userAdminSession.setClearTextPassword(administrator, username, "foo123");
         } catch (Exception e) {
             assertTrue("Failed to create user " + username, false);

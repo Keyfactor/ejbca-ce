@@ -29,8 +29,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -215,7 +215,7 @@ public class ServiceServiceTest extends CaTestCase {
         // Create a new user
         final String pwd = genRandomPwd();
         getUserAdminSession().addUser(admin, username, pwd, "C=SE,O=AnaTom,CN=" + username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
-                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.USER_INVALID, SecConst.TOKEN_SOFT_PEM, 0, getTestCAId(caName));
+                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, getTestCAId(caName));
         log.debug("created user: " + username);
 
         // Create a new UserPasswordExpireService

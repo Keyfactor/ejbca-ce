@@ -36,8 +36,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -155,7 +156,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         p10.setUsername("foo");
         p10.setPassword("foo123");
 
-        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", EndEntityConstants.USER_ENDUSER,
+        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
@@ -192,7 +193,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         p10.setUsername("foo2");
         p10.setPassword("foo123");
 
-        EndEntityInformation user = new EndEntityInformation("foo2", "C=SE,O=AnaTom,CN=foo2", rsacaid, null, "foo@anatom.se", EndEntityConstants.USER_ENDUSER,
+        EndEntityInformation user = new EndEntityInformation("foo2", "C=SE,O=AnaTom,CN=foo2", rsacaid, null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         user.setPassword("foo123");
 
@@ -226,7 +227,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         p10.setUsername("foo3");
         p10.setPassword("foo123");
 
-        EndEntityInformation user = new EndEntityInformation("foo3", "C=SE,O=AnaTom,CN=foo3", rsacaid, null, "foo@anatom.se", EndEntityConstants.USER_ENDUSER,
+        EndEntityInformation user = new EndEntityInformation("foo3", "C=SE,O=AnaTom,CN=foo3", rsacaid, null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();
@@ -266,7 +267,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         fooCertProfile.setAllowCertSerialNumberOverride(false);
         certificateProfileSession.changeCertificateProfile(internalAdmin, "FOOCERTPROFILE", fooCertProfile);
 
-        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", EndEntityConstants.USER_ENDUSER,
+        EndEntityInformation user = new EndEntityInformation("foo", "C=SE,O=AnaTom,CN=foo", rsacaid, null, "foo@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 fooEEProfileId, fooCertProfileId, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         user.setPassword("foo123");
         ExtendedInformation ei = new ExtendedInformation();

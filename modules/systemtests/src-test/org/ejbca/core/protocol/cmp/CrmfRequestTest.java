@@ -43,8 +43,9 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -359,7 +360,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Make user that we know...
         boolean userExists = false;
         userDN = "C=SE,O=PrimeKey,CN=cmptest";
-        EndEntityInformation user = new EndEntityInformation("cmptest", userDN, caid, null, "cmptest@primekey.se", EndEntityConstants.USER_ENDUSER,
+        EndEntityInformation user = new EndEntityInformation("cmptest", userDN, caid, null, "cmptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         try {

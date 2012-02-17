@@ -19,6 +19,8 @@ import static org.junit.Assert.assertTrue;
 import java.util.Date;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.ejbca.core.ejb.ra.UserData;
 import org.junit.Test;
 
@@ -76,7 +78,7 @@ public class UserDataTest {
 		data.setTimeCreated(now);
 		data.setTimeModified(now);
 		data.setTokenType(3);
-		data.setType(65);
+		data.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.KEYRECOVERABLE));
 		data.setUsername("wstest");
 		EndEntityInformation ei = data.toEndEntityInformation();
 		assertEquals("wstest", ei.getUsername());

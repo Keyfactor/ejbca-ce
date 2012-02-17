@@ -49,8 +49,9 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -251,7 +252,7 @@ public class XKMSKRSSTest {
         final int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
         addUser(username1, dn1);
 
-        final int type = EndEntityConstants.USER_ENDUSER | EndEntityConstants.USER_KEYRECOVERABLE;
+        final EndEntityType type = new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.KEYRECOVERABLE);
         final int token = SecConst.TOKEN_SOFT_P12;
 
         {
@@ -289,7 +290,7 @@ public class XKMSKRSSTest {
         final String pwd = "foo123";
         final int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
         {
-            final int type = EndEntityConstants.USER_ENDUSER;
+            final EndEntityType type = EndEntityTypes.ENDUSER.toEndEntityType();
             final int token = SecConst.TOKEN_SOFT_BROWSERGEN;
             final int certificatetypeid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
             final String subjectaltname1 = "RFC822NAME=" + userName + "@foo.se";
@@ -1100,7 +1101,7 @@ public class XKMSKRSSTest {
             // Admin approvingAdmin = new Admin(adminCert, APPROVINGADMINNAME, null);
             try {
                 // Create new user
-                EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, 1, SecConst.EMPTY_ENDENTITYPROFILE,
+                EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
                 userdata.setPassword("foo123");
                 userAdminSession.addUser(administrator, userdata, true);

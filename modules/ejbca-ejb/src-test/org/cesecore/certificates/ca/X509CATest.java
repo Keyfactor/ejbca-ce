@@ -79,6 +79,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.certificates.util.cert.CrlExtensions;
@@ -174,7 +176,7 @@ public class X509CATest {
         assertNull(signedReq);
         
         // Generate a client certificate and check that it was generated correctly
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", EndEntityConstants.USER_ENDUSER, 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
@@ -362,7 +364,7 @@ public class X509CATest {
 	public void testStoreAndLoad() throws Exception {
 		X509CA ca = createTestCA(CADN);
 		
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", EndEntityConstants.USER_ENDUSER, 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         KeyPair keypair = KeyTools.genKeys("512", "RSA");
         CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));
@@ -474,7 +476,7 @@ public class X509CATest {
 	    X509CA x509ca = createTestCA(CADN);
 
 	    // Generate a client certificate and check that it was generated correctly
-	    EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", EndEntityConstants.USER_ENDUSER, 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
+	    EndEntityInformation user = new EndEntityInformation("username", "CN=User", 666, "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
 	    KeyPair keypair = KeyTools.genKeys("512", "RSA");
 	    CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
 	    cp.addCertificatePolicy(new CertificatePolicy("1.1.1.2", null, null));

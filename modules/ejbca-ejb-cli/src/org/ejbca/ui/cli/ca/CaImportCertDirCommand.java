@@ -27,8 +27,9 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
@@ -193,7 +194,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			final String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
 			final String email = CertTools.getEMailAddress(certificate);				
 			userdata = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), caInfo.getCAId(), subjectAltName, email,
-					UserDataConstants.STATUS_GENERATED, EndEntityConstants.USER_ENDUSER, endEntityProfileId,
+					UserDataConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId,
 					certificateProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 			userdata.setPassword("foo123");
 			ejb.getRemoteSession(UserAdminSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), userdata, false);
@@ -208,7 +209,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 		ejb.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAdmin(cliUserName, cliPassword),
 		                                           certificate, username, fingerprint,
 		                                           CertificateConstants.CERT_ACTIVE,
-		                                           EndEntityConstants.USER_ENDUSER, 
+		                                           CertificateConstants.CERTTYPE_ENDENTITY, 
 		                                           certificateProfileId, null, now.getTime());
 		if (status == CertificateConstants.CERT_REVOKED) {
 			ejb.getRemoteSession(UserAdminSessionRemote.class).revokeCert(getAdmin(cliUserName, cliPassword), certificate.getSerialNumber(), issuer, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
