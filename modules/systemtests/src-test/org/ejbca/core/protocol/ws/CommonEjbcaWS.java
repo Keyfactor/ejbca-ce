@@ -292,7 +292,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setTokenType(SecConst.TOKEN_SOFT_JKS);
         user1.setEndEntityProfileId(SecConst.EMPTY_ENDENTITYPROFILE);
         user1.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        user1.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.KEYRECOVERABLE));
+        user1.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
 
         if (!userAdminSession.existsUser(TEST_ADMIN_USERNAME)) {
         	log.info("Adding new user: "+user1.getUsername());
