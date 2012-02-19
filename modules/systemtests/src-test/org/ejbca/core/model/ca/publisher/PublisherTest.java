@@ -15,6 +15,8 @@ package org.ejbca.core.model.ca.publisher;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import java.security.Principal;
 import java.security.cert.CRLException;
@@ -397,10 +399,10 @@ public class PublisherTest {
 
 		final CertificateInfo info = this.certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
 		if ( doDelete ) {
-			assertEquals("The certificate should not exist in the DB.", null, info);
+			assertNull("The certificate should not exist in the DB.", info);
 			return;
 		}
-		assertTrue("The certificate must be in DB.", info!=null);
+		assertNotNull("The certificate must be in DB.", info);
 		assertEquals( CertificateConstants.CERT_ACTIVE, info.getStatus() );
 		assertEquals( revokationReason, info.getRevocationReason() );
 		assertEquals( certProfileID, info.getCertificateProfileId() );
