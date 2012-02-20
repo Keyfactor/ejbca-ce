@@ -144,13 +144,13 @@ public class EjbcaHardTokenBatchJobSessionBean implements HardTokenBatchJobSessi
     @Override
     public int getNumberOfHardTokensToGenerate(AuthenticationToken admin, String alias){
     	log.trace(">getNumberOfHardTokensToGenerate()");
-    	int count = 0;
+    	long count = 0;
     	int hardTokenIssuerId = hardTokenSession.getHardTokenIssuerId(admin, alias);
     	if (hardTokenIssuerId != HardTokenSessionBean.NO_ISSUER) {
-    		count = Long.valueOf(UserData.countNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId)).intValue();
+    		count = UserData.countNewOrKeyrecByHardTokenIssuerId(entityManager, hardTokenIssuerId);
     	}
     	log.trace("<getNumberOfHardTokensToGenerate()");
-    	return count;
+    	return (int)count;
     }
 
     @Override

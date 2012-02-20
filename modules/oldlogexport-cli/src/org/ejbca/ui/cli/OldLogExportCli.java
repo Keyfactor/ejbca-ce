@@ -115,11 +115,11 @@ public class OldLogExportCli {
 		final StringBuilder sb = new StringBuilder();
 		for (final LogEntryData logEntryData : batch) {
 			final LogEntry logEntry = logEntryData.getLogEntry();
-			sb.append(Integer.valueOf(logEntry.getId()).toString()).append(';');
+			sb.append(String.valueOf(logEntry.getId())).append(';');
 			sb.append(ValidityDate.formatAsISO8601(logEntry.getTime(), ValidityDate.TIMEZONE_UTC)).append(';');
 			sb.append(LogConstants.MODULETEXTS[logEntry.getModule()]).append(';');
 			sb.append(logEntry.getEventName()).append(';');
-			sb.append(Integer.valueOf(logEntry.getCAId()).toString()).append(';');
+			sb.append(String.valueOf(logEntry.getCAId())).append(';');
 			sb.append(Admin.ADMINTYPETEXTS[logEntry.getAdminType()]).append(';');
 			sb.append(logEntry.getAdminData()).append(';');
 			sb.append(logEntry.getUsername()).append(';');

@@ -31,7 +31,6 @@ import java.util.Date;
 
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -107,17 +106,6 @@ public class CertDistServlet extends HttpServlet {
     private CrlStoreSessionLocal crlSession;
     @EJB
     private SignSessionLocal signSession;
-
-    /**
-     * init servlet
-     *
-     * @param config servlet configuration
-     *
-     * @throws ServletException error
-     */
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-    }
 
     /**
      * handles http post

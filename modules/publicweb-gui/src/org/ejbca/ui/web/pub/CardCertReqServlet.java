@@ -185,7 +185,7 @@ public class CardCertReqServlet extends HttpServlet {
                         }
                     }
                 }
-                notRevokedCerts = (X509Certificate[])set.toArray(new X509Certificate[0]);
+                notRevokedCerts = (X509Certificate[])set.toArray(new X509Certificate[set.size()]);
             }
             if (data == null) {
                 throw new ObjectNotFoundException();
@@ -243,7 +243,7 @@ public class CardCertReqServlet extends HttpServlet {
 
                 		sendCertificates(authb64cert, signb64cert, response,  getServletContext(),
                 				getInitParameter("responseTemplate"), notRevokedCerts);
-                	} catch( Throwable t ) {
+                	} catch( Throwable t ) { // NOPMD: catch all to report error
                         if (t instanceof Exception) {
                             throw (Exception)t;
                         }

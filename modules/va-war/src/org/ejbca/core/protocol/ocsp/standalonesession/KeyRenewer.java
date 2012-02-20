@@ -318,7 +318,7 @@ class KeyRenewer {
         }
         final List<X509Certificate> lCertChain = new ArrayList<X509Certificate>(this.caChain);
         lCertChain.add(0, tmpCert);
-        final X509Certificate certChain[] = lCertChain.toArray(new X509Certificate[0]);
+        final X509Certificate certChain[] = lCertChain.toArray(new X509Certificate[lCertChain.size()]);
         if ( this.privateKeyContainerKeyStore.fileName!=null && this.privateKeyContainerKeyStore.sessionData.mKeyPassword==null ) {
             m_log.error("Key password must be configured when updating SW keystore.");
             return null;

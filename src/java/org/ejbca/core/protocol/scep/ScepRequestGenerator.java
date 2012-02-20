@@ -62,7 +62,6 @@ public class ScepRequestGenerator {
     private String reqdn = null;
     private KeyPair keys = null;
     private String digestOid = CMSSignedGenerator.DIGEST_SHA1;
-    private PKCS10CertificationRequest p10request;
     private String senderNonce = null;
 
     /** A good random source for nounces, can take a long time to initialize on vmware */
@@ -149,7 +148,7 @@ public class ScepRequestGenerator {
         v.add(new DERSequence(extensionattr));
         DERSet attributes = new DERSet(v);
         // Create PKCS#10 certificate request
-        this.p10request = new PKCS10CertificationRequest("SHA1WithRSA",
+        final PKCS10CertificationRequest p10request = new PKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name(reqdn), keys.getPublic(), attributes, keys.getPrivate());
         
         // Create self signed cert, validity 1 day

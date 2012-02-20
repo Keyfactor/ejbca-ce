@@ -90,12 +90,8 @@ public class CmpPbeVerifyer {
 			}			
 			byte[] raSecret = raAuthenticationSecret.getBytes();
 			byte[] basekey = new byte[raSecret.length + salt.length];
-			for (int i = 0; i < raSecret.length; i++) {
-				basekey[i] = raSecret[i];
-			}
-			for (int i = 0; i < salt.length; i++) {
-				basekey[raSecret.length+i] = salt[i];
-			}
+	        System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
+	        System.arraycopy(salt, 0, basekey, raSecret.length, salt.length);
 			// Construct the base key according to rfc4210, section 5.1.3.1
 			MessageDigest dig = MessageDigest.getInstance(owfOid, "BC");
 			for (int i = 0; i < iterationCount; i++) {

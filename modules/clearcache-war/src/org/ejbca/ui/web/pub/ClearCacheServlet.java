@@ -20,7 +20,6 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.ejb.EJB;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -59,10 +58,6 @@ public class ClearCacheServlet extends HttpServlet {
 	@EJB
 	private CaSessionLocal casession;
 	
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-    }
-  
     public void doPost(HttpServletRequest req, HttpServletResponse res)	throws IOException, ServletException {
     	doGet(req,res);
     }

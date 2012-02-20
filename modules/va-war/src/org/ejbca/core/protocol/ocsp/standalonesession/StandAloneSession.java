@@ -73,7 +73,7 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
     /**
      * Called when a servlet is initialized. This should only occur once.
      * 
-     * @param _servlet The servlet object.
+     * @param tmpData The OCSPData object.
      * @throws ServletException
      */
     StandAloneSession(OCSPData tmpData) throws ServletException {
@@ -196,8 +196,6 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
             this.sessionData = new SessionData(slot, tmpData, webURL, renewTimeBeforeCertExpiresInSeconds, storePassword, cardPassword, keystoreDirectoryName, keyAlias, doNotStorePasswordsInMemory, p11Password);
             this.signEntitycontainer = new SigningEntityContainer(this.sessionData);
             loadPrivateKeys(null);
-        } catch( ServletException e ) {
-            throw e;
         } catch (Exception e) {
             throw new ServletException(e);
         }
@@ -306,12 +304,12 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
         final Map<Integer, SigningEntity> map = this.signEntitycontainer.getSigningEntityMap();
         SigningEntity se = null;
         if ( map!=null ) {
-            se = map.get(new Integer(caid));
+            se = map.get(Integer.valueOf(caid));
             if ( se==null ) {
                 if (m_log.isDebugEnabled()) {
                     m_log.debug("No key is available for caid=" + caid + " even though a valid certificate was present. Trying to use the default responder's key instead.");
                 }
-                se = map.get(new Integer(this.sessionData.data.getCaid(null)));	// Use the key issued by the default responder ID instead
+                se = map.get(Integer.valueOf(this.sessionData.data.getCaid(null)));	// Use the key issued by the default responder ID instead
             }
         }
         if ( se==null ) {

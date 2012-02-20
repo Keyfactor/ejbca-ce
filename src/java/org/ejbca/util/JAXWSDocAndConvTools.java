@@ -117,9 +117,7 @@ public class JAXWSDocAndConvTools {
         		}
         		Token nxt = scan ();
         		if (nxt.getType () == Types.LEFTPAR){
-        			while (scan ().getType () != Types.RIGHTPAR){
-        				// NOPMD, just loop through
-        			}
+        			while (scan ().getType () != Types.RIGHTPAR) {} // NOPMD, just loop through
             		continue;
         		}
         		return nxt;
@@ -138,8 +136,7 @@ public class JAXWSDocAndConvTools {
         		}
         		if (lines.charAt(c_index) == '/'){
         			c_index++;
-        			while (lines.charAt(c_index++) != '\n'){
-        			    // NOPMD, just loop through
+        			while (lines.charAt(c_index++) != '\n') { // NOPMD, just loop through
         			}
         			continue;
         		}
@@ -322,8 +319,7 @@ public class JAXWSDocAndConvTools {
     		if (ws_gen && !byte_array) {
     			bad ("did not expect [] in WS-gen");
     		}
-    		while ((nxt = scan()).getType() != Types.RIGHTARRAY){
-                // NOPMD, just loop through
+    		while ((nxt = scan()).getType() != Types.RIGHTARRAY) { // NOPMD, just loop through
     		}
     		if (byte_array) {
     			type_decl.append("[]");

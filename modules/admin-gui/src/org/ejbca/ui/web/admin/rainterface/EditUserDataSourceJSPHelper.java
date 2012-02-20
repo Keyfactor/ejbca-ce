@@ -232,7 +232,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
                                 request.getParameter(BUTTON_TESTCONNECTION) != null){
 
                             if(userdatasourcedata == null){
-                                int tokentype = Integer.valueOf(request.getParameter(HIDDEN_USERDATASOURCETYPE)).intValue();
+                                int tokentype = Integer.parseInt(request.getParameter(HIDDEN_USERDATASOURCETYPE));
                                 if(tokentype == CustomUserDataSourceContainer.TYPE_CUSTOMUSERDATASOURCECONTAINER) {
                                     userdatasourcedata = new CustomUserDataSourceContainer();
                                 }

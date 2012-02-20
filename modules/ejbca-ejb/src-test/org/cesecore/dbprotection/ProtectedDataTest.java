@@ -64,7 +64,7 @@ public class ProtectedDataTest extends ProtectedData {
     	assertTrue("Length not < 100: "+getRowProtection().length(), getRowProtection().length() < 100);
     	verifyData(); // will throw if fails
     	// Alter the data
-    	protectString = protectString += ", and malicous data";
+    	protectString = protectString + ", and malicous data";
     	try {
     		verifyData(); // will throw if fails
     		assertTrue("Should throw", false);
@@ -98,7 +98,7 @@ public class ProtectedDataTest extends ProtectedData {
     	assertTrue("Length "+getRowProtection().length(), getRowProtection().length() > 200);
     	verifyData(); // will throw if fails
     	// Alter the data
-    	protectString = protectString += ", and malicous data";
+    	protectString = protectString + ", and malicous data";
     	try {
     		verifyData(); // will throw if fails
     		assertTrue("Should throw", false);
@@ -130,14 +130,6 @@ public class ProtectedDataTest extends ProtectedData {
     @Override
     protected int getProtectVersion() {
         return 1;
-    }
-    @Override
-    protected void protectData() {
-        super.protectData();
-    }
-    @Override
-    protected void verifyData() {
-        super.verifyData();
     }
     @Override
     protected String getRowId() {

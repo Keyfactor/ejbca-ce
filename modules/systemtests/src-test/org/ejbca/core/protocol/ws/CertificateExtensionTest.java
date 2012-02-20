@@ -106,8 +106,8 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 		final int certProfID; {
 			final CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
 			final List<Integer> usedCertificateExtensions = new LinkedList<Integer>();
-			usedCertificateExtensions.add(new Integer(1));
-			usedCertificateExtensions.add(new Integer(2));
+			usedCertificateExtensions.add(Integer.valueOf(1));
+			usedCertificateExtensions.add(Integer.valueOf(2));
 			profile.setUsedCertificateExtensions(usedCertificateExtensions);
 			this.certificateProfileSession.addCertificateProfile(intAdmin, CERTIFICATE_PROFILE, profile);
 			certProfID = this.certificateProfileSession.getCertificateProfileId(CERTIFICATE_PROFILE);
@@ -136,22 +136,22 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	public void test99cleanUpAdmins() {
 	    try {
 	        this.certificateProfileSession.removeCertificateProfile(intAdmin, CERTIFICATE_PROFILE);
-	    } catch (Throwable e) {
+	    } catch (Exception e) {
 	        // do nothing
 	    }
 	    try {
 	        this.endEntityProfileSession.removeEndEntityProfile(intAdmin, END_ENTITY_PROFILE);
-	    } catch (Throwable e) {
+	    } catch (Exception e) {
 	        // do nothing
 	    }
 	    try {
 	        this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-	    } catch (Throwable e) {
+	    } catch (Exception e) {
 	        // do nothing
 	    }
 	    try {
 	        super.cleanUpAdmins(this.wsadminRoleName);
-	    } catch (Throwable e) {
+	    } catch (Exception e) {
 	        // do nothing
 	    }
 	}

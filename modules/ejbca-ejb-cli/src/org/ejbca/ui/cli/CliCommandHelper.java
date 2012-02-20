@@ -136,9 +136,7 @@ public class CliCommandHelper {
      */
     private static String[] shiftStringArray(String[] input) {
         String[] output = new String[input.length - 1];
-        for (int i = 1; i < input.length; i++) {
-            output[i - 1] = input[i];
-        }
+        System.arraycopy(input, 1, output, 0, input.length-1);
         return output;
     }
 }

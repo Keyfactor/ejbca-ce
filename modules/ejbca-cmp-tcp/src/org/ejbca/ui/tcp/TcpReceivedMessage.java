@@ -102,7 +102,7 @@ public class TcpReceivedMessage {
 			byte[] ba = new byte[command.length-cmpMessageStartOffset];
 			dis.read(ba);
 			return new TcpReceivedMessage( (flags&0x01)>0, ba);
-		} catch( Throwable e ) {
+		} catch( Throwable e ) { // NOPMD: any error return empty
 			log.error( intres.getLocalizedMessage("cmp.errornoasn1"), e );
 			return new TcpReceivedMessage();
 		}

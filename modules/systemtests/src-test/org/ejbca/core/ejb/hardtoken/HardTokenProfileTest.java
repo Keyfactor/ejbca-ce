@@ -100,7 +100,7 @@ public class HardTokenProfileTest {
 
         final String svgdata2 = swedishProfile.getPINEnvelopeData();
 
-        assertTrue(  "Profile not authorized", authorizedHardTokenIds.contains( new Integer(this.hardTokenSession.getHardTokenProfileId(internalAdmin, "SWETEST")) )  );
+        assertTrue(  "Profile not authorized", authorizedHardTokenIds.contains(Integer.valueOf(this.hardTokenSession.getHardTokenProfileId(internalAdmin, "SWETEST")) )  );
         assertTrue("Saving certificate profile failed", swedishProfile.getCertificateProfileId(SwedishEIDProfile.CERTUSAGE_SIGN)==CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
         assertTrue("Saving SVG Data failed", svgdata.equals(svgdata2));
         assertTrue("Saving Hard Token Profile failed", enhancedProfile.getIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC));

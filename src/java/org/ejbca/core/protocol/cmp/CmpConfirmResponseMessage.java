@@ -165,21 +165,6 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 	}
 
 	@Override
-	public void setSenderNonce(String senderNonce) {
-		super.setSenderNonce(senderNonce);
-	}
-
-	@Override
-	public void setRecipientNonce(String recipientNonce) {
-		super.setRecipientNonce(recipientNonce);
-	}
-
-	@Override
-	public void setTransactionId(String transactionId) {
-		super.setTransactionId(transactionId);
-	}
-
-	@Override
 	public void setRecipientKeyInfo(byte[] recipientKeyInfo) {
 	}
 

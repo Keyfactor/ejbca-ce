@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.Certificate;
 
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -59,10 +58,6 @@ public class EndEntityCertServlet extends HttpServlet {
     private static final String ISSUER_PROPERTY = "issuer";
     private static final String CERTIFICATEDN_PROPERTY = "certificatesn";
 
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-    }
-    
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doPost()");
         doGet(req, res);

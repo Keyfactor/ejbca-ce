@@ -131,7 +131,6 @@ public class XKMSProvider implements Provider<Source> {
 	
 	private ObjectFactory xKMSObjectFactory = new ObjectFactory();
 	
-    private JAXBContext jAXBContext = null;
     private Marshaller marshaller = null;
     private Unmarshaller unmarshaller = null;
     private DocumentBuilderFactory dbf = null;
@@ -163,7 +162,7 @@ public class XKMSProvider implements Provider<Source> {
 	public void postConstruct() {
     	try {
     		org.apache.xml.security.Init.init();
-    		jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");    		
+    	    final JAXBContext jAXBContext = JAXBContext.newInstance("org.w3._2002._03.xkms_:org.w3._2001._04.xmlenc_:org.w3._2000._09.xmldsig_");    		
 			marshaller = jAXBContext.createMarshaller();
 	    	dbf = DocumentBuilderFactory.newInstance();
 	    	dbf.setNamespaceAware(true);

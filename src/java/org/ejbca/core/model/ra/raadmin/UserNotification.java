@@ -56,7 +56,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     /** recipient of notification is the admin of the user */
     public static final String   RCPT_CUSTOM    = "CUSTOM";
 
-    public static final String EVENTS_EDITUSER = String.valueOf(UserDataConstants.STATUS_NEW)+";"+String.valueOf(UserDataConstants.STATUS_KEYRECOVERY)+";"+String.valueOf(UserDataConstants.STATUS_INITIALIZED);
+    public static final String EVENTS_EDITUSER = UserDataConstants.STATUS_NEW+";"+UserDataConstants.STATUS_KEYRECOVERY+";"+UserDataConstants.STATUS_INITIALIZED;
     public static final String EVENTS_USERENROL = String.valueOf(UserDataConstants.STATUS_GENERATED);
     
     // protected in order to upgrade in EndEntityProfile.upgrade()

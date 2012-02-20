@@ -45,7 +45,7 @@ public class CaGetRootCertCommand extends BaseCaAdminCommand {
 		// Get and remove switches
 		List<String> argsList = CliTools.getAsModifyableList(args);
 		boolean pem = !argsList.remove("-der");
-		args = argsList.toArray(new String[0]);
+		args = argsList.toArray(new String[argsList.size()]);
 		// Parse the rest of the arguments
         if (args.length < 3) {
         	getLogger().info("Description: " + getDescription());

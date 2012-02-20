@@ -151,7 +151,6 @@ public class ProtocolScepHttpTest extends CaTestCase {
     private static String transId = null;
 
     private Random rand = new Random();
-    private String httpPort;
     private String httpReqPath;
 
     private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
@@ -174,7 +173,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
+        final String httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
         httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
         cacert = (X509Certificate) getTestCACert();
 

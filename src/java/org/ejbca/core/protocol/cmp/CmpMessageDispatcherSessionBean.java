@@ -128,7 +128,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			if ( req==null ) {
 				throw new Exception("No CMP message could be parsed from received Der object.");
 			}
-		} catch (Throwable t) {
+		} catch (Throwable t) { // NOPMD: catch all to report errors back to client
 			final String eMsg = intres.getLocalizedMessage("cmp.errornotcmpmessage");
 			log.error(eMsg, t);
 			// If we could not read the message, we should return an error BAD_REQUEST

@@ -668,7 +668,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     /** Set the minimum strength that a password is allowed to have in bits */
     public void setMinPwdStrength(int minPwdStrength) {
     	this.setUse(MINPWDSTRENGTH, 0, true);
-    	this.setValue(MINPWDSTRENGTH, 0, Integer.valueOf(minPwdStrength).toString());
+    	this.setValue(MINPWDSTRENGTH, 0, String.valueOf(minPwdStrength));
     }
     
     /**
@@ -987,7 +987,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (availablecertprofiles == null) {
     		throw new UserDoesntFullfillEndEntityProfile("Error Available certificate profiles is null.");
     	}
-    	final String certificateprofileidString = Integer.valueOf(certificateprofileid).toString();
+    	final String certificateprofileidString = String.valueOf(certificateprofileid);
     	boolean certprofilefound = false;
     	for (final String currentAvailableCertProfile : availablecertprofiles) {
     		if (certificateprofileidString.equals(currentAvailableCertProfile)) {
@@ -1008,7 +1008,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	if (availablesofttokentypes == null) {
     		throw new UserDoesntFullfillEndEntityProfile("Error available  token types is null.");
     	}
-    	final String tokenTypeString = Integer.valueOf(tokentype).toString();
+    	final String tokenTypeString = String.valueOf(tokentype);
     	boolean softtokentypefound = false;
     	for (final String currentAvailableSoftTokenType : availablesofttokentypes) {
     		if (tokenTypeString.equals(currentAvailableSoftTokenType)) {
@@ -1036,7 +1036,7 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     		if (availablehardtokenissuers == null) {
     			throw new UserDoesntFullfillEndEntityProfile("Error available hard token issuers is null.");
     		}
-    		final String hardwaretokenissueridString = Integer.valueOf(hardwaretokenissuerid).toString();
+    		final String hardwaretokenissueridString = String.valueOf(hardwaretokenissuerid);
     		boolean hardtokentypefound = false;
     		for (final String currentAvailableHardTokenIssuer : availablehardtokenissuers) {
     			if (hardwaretokenissueridString.equals(currentAvailableHardTokenIssuer)) {

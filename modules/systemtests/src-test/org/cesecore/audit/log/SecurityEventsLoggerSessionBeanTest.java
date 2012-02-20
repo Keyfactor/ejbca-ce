@@ -147,7 +147,7 @@ public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
             Thread.sleep(250);
         }
         time.stop();
-        final int completedTaskCount = Long.valueOf(workers.getCompletedTaskCount()).intValue();
+        final long completedTaskCount = workers.getCompletedTaskCount();
         log.info("securityEventsLogger.log: " + completedTaskCount + " completed in " + time.toString() + " using " + THREADS + " threads.");
         workers.shutdown();
 
@@ -185,7 +185,7 @@ public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
         log.trace(">test05TxFailure");
         try {
             txFailure.willLaunchExceptionAfterLog();
-            fail("No exception was thrown..");
+            fail("No exception was thrown.."); // NOPMD
         } catch (final Exception e) {
             // Expected
         }

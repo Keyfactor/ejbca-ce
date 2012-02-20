@@ -260,7 +260,7 @@ public class ActiveDirectoryPublisher extends LdapPublisher{
 		@SuppressWarnings("unchecked")
         HashMap<Object, Object> clonedata = (HashMap<Object, Object>) clone.saveData();
 
-		Iterator<Object> i = (data.keySet()).iterator();;
+		Iterator<Object> i = (data.keySet()).iterator();
 		while(i.hasNext()){
 			Object key = i.next();
 			clonedata.put(key, data.get(key));

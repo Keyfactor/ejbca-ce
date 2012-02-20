@@ -289,7 +289,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.KEYRECOVERY_SENT, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), caidString, certSerialNumber, username, details);
-        	} catch (AuthorizationDeniedException e) {
+        	} catch (AuthorizationDeniedException e) { // NOPMD: we catch wide below
         	    throw e;
         	} catch (Exception e) {
         		String msg = intres.getLocalizedMessage("keyrecovery.errorsenddata", username);            	

@@ -37,7 +37,6 @@ import java.util.Properties;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.spec.IvParameterSpec;
 
@@ -583,6 +582,7 @@ public abstract class CryptoTokenTestBase {
         token.deleteEntry(tokenpin.toCharArray(), "aestest00001");
     }
 
+    /* Not used because HMAC on HSMs is too hard... keep for future reference though 
     protected void doGenerateHmacKey(CryptoToken token) throws InvalidKeyException, CryptoTokenOfflineException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, SignatureException, CryptoTokenAuthenticationFailedException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException {
         token.activate(tokenpin.toCharArray());
         assertEquals(CryptoToken.STATUS_ACTIVE, token.getTokenStatus());
@@ -622,7 +622,8 @@ public abstract class CryptoTokenTestBase {
             //token.deleteEntry(tokenpin.toCharArray(), "aestest00001");
         }
     }
-
+    */
+    
     protected void doExtractKeyFalse(CryptoToken token) throws InvalidKeyException, CryptoTokenOfflineException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException, CertificateException, SignatureException, CryptoTokenAuthenticationFailedException, IOException, InvalidAlgorithmParameterException, NoSuchPaddingException, IllegalBlockSizeException {
 
         assertFalse("Token should not allow extraction on this test", token.doPermitExtractablePrivateKey());

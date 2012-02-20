@@ -51,7 +51,7 @@ public class RaDelUserCommand extends BaseRaAdminCommand {
         // Get and remove switches
         List<String> argsList = CliTools.getAsModifyableList(args);
         boolean force = argsList.remove("-force");
-        args = argsList.toArray(new String[0]);
+        args = argsList.toArray(new String[argsList.size()]);
         // Parse the rest of the arguments
         if (args.length < 2) {
             getLogger().info("Description: " + getDescription());

@@ -538,14 +538,12 @@ public class RequestInstance {
 		FileInputStream vpnfile = new FileInputStream(fin);
 		out.setContentType("application/x-msdos-program");
 		out.setHeader("Content-disposition", "filename=" + filename);
-		out.setContentLength(new Long(fin.length()).intValue());
+		out.setContentLength((int)fin.length());
 		OutputStream os = out.getOutputStream();
 		byte[] buf = new byte[4096];
-		int offset = 0;
 		int bytes = 0;
 		while ((bytes = vpnfile.read(buf)) != -1) {
 			os.write(buf, 0, bytes);
-			offset += bytes;
 		}
 		vpnfile.close();
 		// delete OpenVPN windows installer, the script will delete cert.

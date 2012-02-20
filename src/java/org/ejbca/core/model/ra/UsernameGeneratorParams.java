@@ -40,7 +40,6 @@ public class UsernameGeneratorParams {
 	public static final String FIXED = "FIXED";
 	
 	private String[] modes = {"RANDOM", "USERNAME", "DN", "FIXED"};
-	private List<String> modeList = null;
 
 	// Generator configuration parameters, with good default values
 	private int mode = MODE_RANDOM;
@@ -101,7 +100,7 @@ public class UsernameGeneratorParams {
 	}
 
 	public void setMode(String mode) {
-		modeList = Arrays.asList(modes);
+	    final List<String> modeList = Arrays.asList(modes);
 		if (!modeList.contains(mode)) {
 			throw new IllegalArgumentException("Mode " + mode + " is not supported");
 		}

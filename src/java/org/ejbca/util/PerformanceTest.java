@@ -101,7 +101,7 @@ public class PerformanceTest {
                 this.isSuccess = this.command.doIt();
                 this.time = (int)(new Date().getTime()-startTime);
                 this.bIsFinished = true;
-            } catch (Throwable t) {
+            } catch (Throwable t) { // NOPMD: keep on testing 
                 PerformanceTest.this.log.error("Command failure. "+this.command, t);
             } finally {
                 synchronized(this) {
@@ -179,7 +179,7 @@ public class PerformanceTest {
                     } else {
                         PerformanceTest.this.log.error(sResult);
                     }
-                } catch( Throwable t ) {
+                } catch( Throwable t ) { // NOPMD: keep on testing...
                     this.statistic.taskFailed();
                     PerformanceTest.this.log.error("Exeption in thread "+this.nr+".", t);
                 }

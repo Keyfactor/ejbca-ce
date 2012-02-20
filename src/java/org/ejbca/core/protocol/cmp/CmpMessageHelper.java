@@ -206,12 +206,8 @@ public class CmpMessageHelper {
 		// Calculate the protection bits
 		byte[] rasecret = raSecret.getBytes();
 		byte[] basekey = new byte[rasecret.length + saltbytes.length];
-		for (int i = 0; i < rasecret.length; i++) {
-			basekey[i] = rasecret[i];
-		}
-		for (int i = 0; i < saltbytes.length; i++) {
-			basekey[rasecret.length+i] = saltbytes[i];
-		}
+        System.arraycopy(rasecret, 0, basekey, 0, rasecret.length);
+        System.arraycopy(saltbytes, 0, basekey, rasecret.length, saltbytes.length);
 		// Construct the base key according to rfc4210, section 5.1.3.1
 		MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId(), "BC");
 		for (int i = 0; i < iterationCount; i++) {

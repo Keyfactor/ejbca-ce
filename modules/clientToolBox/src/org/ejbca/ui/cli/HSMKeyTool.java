@@ -157,7 +157,7 @@ public class HSMKeyTool extends ClientToolBox {
         	// First we check if we have a switch for "-explicitecc" for explicit ecc parameters used in ICAO epassports.
     		List<String> argsList = CliTools.getAsModifyableList(args);
     		boolean explicitEccParameters = argsList.remove("-explicitecc");
-    		args = argsList.toArray(new String[0]);
+    		args = argsList.toArray(new String[argsList.size()]);
             if ( args.length < 7 ) {
                 System.err.println(commandString + '<'+getKeyStoreDescription()+'>' + " <key entry name> [<CN>] -explicitecc");
                 tooFewArguments(args);

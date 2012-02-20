@@ -188,7 +188,7 @@ public class ApplyBean implements java.io.Serializable {
                     String name = ejbLocalHelper.getCertificateProfileSession().getCertificateProfileName(id);
                 	names.add(name);
                 }
-                returnval = (String[])names.toArray(new String[0]);            	
+                returnval = (String[])names.toArray(new String[names.size()]);            	
             }
         }
         this.username = username;

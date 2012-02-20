@@ -240,11 +240,6 @@ public abstract class EIDProfile extends HardTokenProfileWithAdressLabel {
 	
 	public abstract int[] getAvailableMinimumKeyLengths();
 	  		      
-    public void upgrade(){
-      // Perform upgrade functionality 
-      super.upgrade();             
-    }
-    
     // Protected methods
 	public boolean isTokenSupported(String[][] supportedcards, String tokenidentificationstring){
       boolean returnval = true;	

@@ -324,15 +324,14 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
             String[] cmdcommand = (externalCommand).split("\\s");
             additionalArguments.add(0, tempFileName);
 
-            String[] cmdargs = (String[]) additionalArguments.toArray(new String[0]);
+            String[] cmdargs = (String[]) additionalArguments.toArray(new String[additionalArguments.size()]);
             String[] cmdarray = new String[cmdcommand.length + cmdargs.length];
             System.arraycopy(cmdcommand, 0, cmdarray, 0, cmdcommand.length);
             System.arraycopy(cmdargs, 0, cmdarray, cmdcommand.length, cmdargs.length);
             Process externalProcess = Runtime.getRuntime().exec(cmdarray, null, null);
             BufferedReader stdError = new BufferedReader(new InputStreamReader(externalProcess.getErrorStream()));
             BufferedReader stdInput = new BufferedReader(new InputStreamReader(externalProcess.getInputStream()));
-            while (stdInput.readLine() != null) {
-            } // Required under win32 to avoid lock
+            while (stdInput.readLine() != null) {} // NOPMD: Required under win32 to avoid lock
             String stdErrorOutput = null;
             // Check errorcode and the external applications output to stderr
             if (((externalProcess.waitFor() != 0) && failOnCode) || (stdError.ready() && failOnOutput)) {

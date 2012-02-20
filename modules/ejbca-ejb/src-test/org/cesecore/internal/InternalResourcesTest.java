@@ -51,17 +51,17 @@ public class InternalResourcesTest {
     @Test
     public void testGetLocalizedMessageStringObject() {
         InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
-        String res = intres.getLocalizedMessage("raadmin.testparams", new Long(1), Integer.valueOf(3), "hi", Boolean.valueOf(true), "bye");
+        String res = intres.getLocalizedMessage("raadmin.testparams", Long.valueOf(1), Integer.valueOf(3), "hi", Boolean.TRUE, "bye");
         assertEquals("Test 1 3 hi true bye message 1", res);
-        assertEquals("Test 1 3 hi true bye message 1", intres.getLocalizedMessageCs("raadmin.testparams", new Long(1), Integer.valueOf(3), "hi", Boolean.valueOf(true), "bye").toString());
+        assertEquals("Test 1 3 hi true bye message 1", intres.getLocalizedMessageCs("raadmin.testparams", Long.valueOf(1), Integer.valueOf(3), "hi", Boolean.TRUE, "bye").toString());
     }
 
     @Test
     public void testGetLocalizedMessageStringObjectWithNull() {
         InternalResources intres = new InternalResources(TEST_RESOURCE_LOCATION);
-        String res = intres.getLocalizedMessage("raadmin.testparams", null, Integer.valueOf(3), null, Boolean.valueOf(true), "bye");
+        String res = intres.getLocalizedMessage("raadmin.testparams", null, Integer.valueOf(3), null, Boolean.TRUE, "bye");
         assertEquals("Test  3  true bye message ", res);
-        assertEquals("Test  3  true bye message ", intres.getLocalizedMessageCs("raadmin.testparams", null, Integer.valueOf(3), null, Boolean.valueOf(true), "bye").toString());
+        assertEquals("Test  3  true bye message ", intres.getLocalizedMessageCs("raadmin.testparams", null, Integer.valueOf(3), null, Boolean.TRUE, "bye").toString());
 
         res = intres.getLocalizedMessage("raadmin.testparams");
         assertEquals("Test      message ", res);

@@ -19,9 +19,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyStore;
+import java.security.KeyStore.PasswordProtection;
 import java.security.KeyStoreException;
 import java.security.PrivateKey;
-import java.security.KeyStore.PasswordProtection;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateParsingException;
@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.keys.util.KeyTools;
@@ -129,7 +128,7 @@ class  SigningEntityContainer {
     }
     /**
      * Test if all criterias for key loading is fulfilled.
-     * If it is {@link #loadPrivateKeys2(AuthenticationToken, String)} is called after calculating time fot new update.
+     * If it is {@link #loadPrivateKeys2(String)} is called after calculating time for new update.
      * @param adm Administrator to be used when getting the certificate chain from the DB.
      * @param password This password is only set if passwords should not be stored in memory.
      * @throws Exception
@@ -461,7 +460,7 @@ class  SigningEntityContainer {
         if ( chain==null || chain.size()<1 ) {
             return false;
         }
-        final Integer caid = new Integer(this.sessionData.data.getCaid(chain.get(0)));
+        final Integer caid = Integer.valueOf(this.sessionData.data.getCaid(chain.get(0)));
         {
             final SigningEntity entityForSameCA = newSignEntitys.get(caid);
             final X509Certificate otherChainForSameCA[] = entityForSameCA!=null ? entityForSameCA.getCertificateChain() : null;

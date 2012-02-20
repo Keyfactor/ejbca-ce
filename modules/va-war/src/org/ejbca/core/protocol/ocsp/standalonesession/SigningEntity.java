@@ -75,7 +75,7 @@ class SigningEntity {
             return null;
         }
         entityChain.add(0, entityCert);
-        return entityChain.toArray(new X509Certificate[0]);
+        return entityChain.toArray(new X509Certificate[entityChain.size()]);
     }
     /**
      * Initiates key key renewal.
@@ -141,9 +141,9 @@ class SigningEntity {
         } catch( ExtendedCAServiceRequestException e) {
             this.providerHandler.reload();
             throw e;
-        } catch( IllegalExtendedCAServiceRequestException e ) {
+        } catch( IllegalExtendedCAServiceRequestException e ) { // NOPMD: we catch wide below
             throw e;
-        } catch( Throwable e ) {
+        } catch( Throwable e ) { // NOPMD: dealing with HSMs we want to catch all errors
             this.providerHandler.reload();
             final ExtendedCAServiceRequestException e1 = new ExtendedCAServiceRequestException(hsmErrorString);
             e1.initCause(e);

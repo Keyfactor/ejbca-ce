@@ -267,7 +267,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 				UserDataVO olddata = (UserDataVO)o;
 				useradmindata = olddata.toEndEntityInformation();
 			}
-		} catch( Throwable t ) {
+		} catch( Throwable t ) { // NOPMD: catch all to try to repair
 			// try to repair the end of the XML string.
 			// this will only succeed if a limited number of chars is lost in the end of the string
 			// note that this code will not make anything worse and that it will not be run if the XML can be encoded.

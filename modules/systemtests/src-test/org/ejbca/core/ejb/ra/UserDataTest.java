@@ -591,8 +591,7 @@ public class UserDataTest extends CaTestCase {
         String rnd = "sens" + genRandomUserName();
         String username1 = rnd.toLowerCase();
         String username2 = rnd.toUpperCase();
-        ;
-        String pwd = genRandomPwd();
+        final String pwd = genRandomPwd();
         userAdminSession.addUser(admin, username1, pwd, "C=SE,O=EJBCA Sample,CN=" + username1, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
         try {

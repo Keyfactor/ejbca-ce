@@ -20,8 +20,9 @@ import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import javax.servlet.ServletConfig;
@@ -108,10 +109,10 @@ public class RemoteVerifyServlet extends HttpServlet {
     protected static final int PROTOCOL_VERSION_MINOR = 0;
 
     /**
-     * Basic structure containing users. Top level keyed on instance gives new Hashtable keyed on
+     * Basic structure containing users. Top level keyed on instance gives new HashMap keyed on
      * username with String[] = { password, result } as data.
      */
-    protected static Hashtable<String, String[]> users;
+    protected static HashMap<String, String[]> users;
 
     /**
      * Delimiter between parts in DN
@@ -453,13 +454,12 @@ public class RemoteVerifyServlet extends HttpServlet {
                     debugLog("GRANTING request for '" + username + "'");
 
                     // loop over all elements in resultHash, print one by one
-                    Hashtable<String, String> resultParams = result.getResult();
-                    String key;
+                    Map<String, String> resultParams = result.getResult();
 
                     // Standard code for printing a Hash.
-                    for (Enumeration<String> keys = resultParams.keys(); keys.hasMoreElements();) {
-                        key = keys.nextElement();
-                        out.println(key + "=" + resultParams.get(key));
+                    Set<String> keys = resultParams.keySet();
+                    for (String key : keys) {
+                        out.println(key + "=" + resultParams.get(key));                        
                     }
                 } else { // rejected.
                     increaseRejected();
@@ -546,7 +546,7 @@ public class RemoteVerifyServlet extends HttpServlet {
      */
     protected synchronized void loadUserDB() {
         // First we clear cached users.
-        Hashtable<String, String[]> oldEnUsers = users;
+        HashMap<String, String[]> oldEnUsers = users;
         users = null;
 
         BufferedReader in = null;
@@ -614,7 +614,7 @@ public class RemoteVerifyServlet extends HttpServlet {
     protected void addUserData(String username, String[] userData) {
         if (users == null) {
             debugLog("addUserData: Creating new users.");
-            users = new Hashtable<String, String[]>();
+            users = new HashMap<String, String[]>();
         }
 
         debugLog("addUserData: Adding '" + username);

@@ -17,7 +17,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.ejb.EJB;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServlet;
@@ -49,17 +48,6 @@ public class CmpServlet extends HttpServlet {
 
     @EJB
     private CmpMessageDispatcherSessionLocal cmpMessageDispatcherLocal;
-
-    /**
-     * Inits the CMP servlet
-     * 
-     * @param config servlet configuration
-     * 
-     * @throws ServletException on error during initialization
-     */
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-    }
 
     /**
      * Handles HTTP post

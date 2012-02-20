@@ -73,7 +73,7 @@ class ParseUserData {
 		if ( lei.size()>0 ) {
 			userData.setExtendedInformation(lei);
 		}
-		return lArgs.toArray(new String[0]);
+		return lArgs.toArray(new String[lArgs.size()]);
 	}
 	/**
 	 * Prints info for the user about the optional user data arguments.

@@ -281,7 +281,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		while(iter.hasNext()){
 			int next = iter.next().intValue();
 			try {
-				availableCANames.add(new SelectItem(Integer.valueOf(next).toString(), EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(), next).getName()));
+				availableCANames.add(new SelectItem(String.valueOf(next), EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(), next).getName()));
 			} catch (CADoesntExistsException e) {
 				log.debug("CA does not exist: "+next);
 			} catch (AuthorizationDeniedException e) {
@@ -290,7 +290,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		}
 		if (includeAllCAs) {
 			String caname = (String) EjbcaJSFHelper.getBean().getText().get("ANYCA");
-			availableCANames.add(new SelectItem(Integer.valueOf(SecConst.ALLCAS).toString(), caname));
+			availableCANames.add(new SelectItem(String.valueOf(SecConst.ALLCAS), caname));
 		}
 		return availableCANames;		
 	}
@@ -302,7 +302,7 @@ public class EditServiceManagedBean extends BaseManagedBean {
 		while(iter.hasNext()){
 			int next = iter.next().intValue();
 			// Display it in the list as "PublisherName (publisherId)" with publisherId as the value sent
-			availablePublisherNames.add(new SelectItem(Integer.valueOf(next).toString(), ejb.getPublisherSession().getPublisherName(next)+" ("+next+")"));
+			availablePublisherNames.add(new SelectItem(String.valueOf(next), ejb.getPublisherSession().getPublisherName(next)+" ("+next+")"));
 		}
 		return availablePublisherNames;		
 	}

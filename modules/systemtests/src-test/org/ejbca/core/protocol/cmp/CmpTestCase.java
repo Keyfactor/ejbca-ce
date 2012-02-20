@@ -135,10 +135,6 @@ public abstract class CmpTestCase extends CaTestCase {
         httpReqPath = "http://" + CMP_HOST + ":" + httpServerPubHttp + "/ejbca";
     }
     
-    protected void tearDown() throws Exception {
-        super.tearDown();
-    }
-
     protected PKIMessage genCertReq(String issuerDN, String userDN, KeyPair keys, Certificate cacert, byte[] nonce, byte[] transid,
             boolean raVerifiedPopo, X509Extensions extensions, Date notBefore, Date notAfter, BigInteger customCertSerno)
             throws NoSuchAlgorithmException, NoSuchProviderException, IOException, InvalidKeyException, SignatureException {

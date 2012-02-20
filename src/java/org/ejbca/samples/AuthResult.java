@@ -13,7 +13,8 @@
  
 package org.ejbca.samples;
 
-import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -33,8 +34,8 @@ public class AuthResult {
     /** What was the reason to reject this request? */
     private String reason = ""; //No reason
 
-    /** This Hashtable keeps all the name-value pairs in the result. */
-    private Hashtable<String, String> resultHash = new Hashtable<String, String>();
+    /** This map keeps all the name-value pairs in the result. */
+    private Map<String, String> resultHash = new HashMap<String, String>();
 
     /**
      * Adds a new key, value pair to the grant response.
@@ -56,11 +57,11 @@ public class AuthResult {
     }
 
     /**
-     * Get result as Hashtable.
+     * Get result as Map.
      *
      * @return hash table of results
      */
-    public Hashtable<String, String> getResult() {
+    public Map<String, String> getResult() {
         return resultHash;
     }
 

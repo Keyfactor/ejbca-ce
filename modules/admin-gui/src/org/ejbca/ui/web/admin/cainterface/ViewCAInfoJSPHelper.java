@@ -168,16 +168,9 @@ public class ViewCAInfoJSPHelper implements java.io.Serializable {
 	         	 }
     	      }
     	      // If Make off-line button is pressed, the admin is authorized and the current status is active then de-activate.
-    	      if(request.getParameter(BUTTON_MAKEOFFLINE) != null &&
-    	      	 can_activate &&
-				 status == CAConstants.CA_ACTIVE){
-    	         
-    	      	 try{
-    	      	   cabean.getCADataHandler().deactivateCAToken(caid);
-    	      	   activationmessage = "MAKEOFFLINESUCCESSFUL";
-    	      	 }catch(Exception e){
-    	      	 	throw e;
-    	      	 }
+    	      if (request.getParameter(BUTTON_MAKEOFFLINE) != null && can_activate && status == CAConstants.CA_ACTIVE) {    	         
+    	          cabean.getCADataHandler().deactivateCAToken(caid);
+    	          activationmessage = "MAKEOFFLINESUCCESSFUL";
     	      }   	    
     	    }
     	        	        	        	        	        	      	  

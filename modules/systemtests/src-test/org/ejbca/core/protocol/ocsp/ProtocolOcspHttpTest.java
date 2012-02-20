@@ -990,12 +990,8 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
      */
     private byte[] concatByteArrays(byte[] array1, byte[] array2) {
         byte[] ret = new byte[array1.length + array2.length];
-        for (int i = 0; i < array1.length; i++) {
-            ret[i] = array1[i];
-        }
-        for (int i = 0; i < array2.length; i++) {
-            ret[array1.length + i] = array2[i];
-        }
+        System.arraycopy(array1, 0, ret, 0, array1.length);
+        System.arraycopy(array2, 0, ret, array1.length, array2.length);
         return ret;
     }
 

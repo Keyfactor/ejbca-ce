@@ -110,7 +110,7 @@ class P11ProviderHandler implements ProviderHandler {
             		P11ProviderHandler.this.data.setNextKeyUpdate(new Date().getTime()); // since all keys are now reloaded we should wait an whole interval for next key update
             		P11ProviderHandler.this.data.isNotReloadingP11Keys = true;
             		return;
-            	} catch ( Throwable t ) {
+            	} catch ( Throwable t ) { // NOPMD: dealing with HSMs we need to handle all crazy errors without crashing
             		m_log.debug("Failing to reload p11 keystore. "+errorMessage, t);
             	}
             }

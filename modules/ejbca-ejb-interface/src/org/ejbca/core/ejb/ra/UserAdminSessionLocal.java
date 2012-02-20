@@ -19,7 +19,6 @@ import javax.ejb.Local;
 import javax.ejb.ObjectNotFoundException;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -100,8 +99,6 @@ public interface UserAdminSessionLocal extends UserAdminSession {
      * 
      * @param admin the administrator performing the action
      * @param username the unique username of the user
-     * @throws AuthorizationDeniedException if administrator isn't authorized
-     *            to edit user
      * @throws FinderException if the entity does not exist
      */
     void decRemainingLoginAttempts(String username) throws FinderException;

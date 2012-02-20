@@ -45,7 +45,7 @@ public class CaGetCrlCommand extends BaseCaAdminCommand {
 		List<String> argsList = CliTools.getAsModifyableList(args);
 		boolean deltaSelector = argsList.remove("-delta");
 		boolean pem = argsList.remove("-pem");
-		args = argsList.toArray(new String[0]);
+		args = argsList.toArray(new String[argsList.size()]);
 		// Parse the rest of the arguments
 		if (args.length < 3) {
 			getLogger().info("Description: " + getDescription());

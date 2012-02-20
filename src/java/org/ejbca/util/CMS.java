@@ -155,7 +155,7 @@ public class CMS {
         boolean result = false;
         try {
             result = signerInfo.verify(cert, "BC");
-        } catch ( Throwable t ) {
+        } catch ( Throwable t ) { // NOPMD
             log.debug("Exception when verifying", t);
         }
         return new VerifyResult(date, result, id);            

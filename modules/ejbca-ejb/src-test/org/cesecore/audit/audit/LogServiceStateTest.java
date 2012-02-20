@@ -33,11 +33,11 @@ public class LogServiceStateTest {
 	@Test
 	public void testStateChanges() throws AuditLogResetException {
 		// We want to run this test twice to toggle it back and forth..
-		testStateChangesInternal();
-		testStateChangesInternal();
+	    stateChangesInternalTest();
+	    stateChangesInternalTest();
 	}
 
-	public void testStateChangesInternal() throws AuditLogResetException {
+	public void stateChangesInternalTest() throws AuditLogResetException {
 		// Since it is a singleton, we go with the state it happens to be in.
 		final boolean originalStateDisabled = LogServiceState.INSTANCE.isDisabled();
 		// Toggle the state once and verify that it changed.

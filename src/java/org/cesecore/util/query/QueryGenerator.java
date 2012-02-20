@@ -283,7 +283,7 @@ public final class QueryGenerator implements Serializable {
     private String genAndStoreParameter(final String name, final Object value) {
         int i = 0;
         while (true) {
-            final String parameter = name + String.valueOf(i++);
+            final String parameter = name + i++;
             if (!parameters.containsKey(parameter)) {
                 parameters.put(parameter, value);
                 return parameter;
