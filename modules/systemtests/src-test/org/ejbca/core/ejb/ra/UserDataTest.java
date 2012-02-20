@@ -143,9 +143,13 @@ public class UserDataTest extends CaTestCase {
         assertTrue("wrong pwd " + pwd, userAdminSession.verifyPassword(admin, username, pwd));
 
         // Change DN
-        userAdminSession.changeUser(admin, username, "foo123", "C=SE,O=AnaTom,OU=Engineering, CN=" + username, null, username + "@anatom.se", false,
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0,
-                UserDataConstants.STATUS_GENERATED, caid);
+        EndEntityInformation endEntity = new EndEntityInformation(username,  "C=SE,O=AnaTom,OU=Engineering,CN=" + username,
+                caid, null, 
+                username + "@anatom.se", UserDataConstants.STATUS_GENERATED, EndEntityTypes.ENDUSER.toEndEntityType(),
+                SecConst.EMPTY_ENDENTITYPROFILE,  CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
+                null);
+        endEntity.setPassword("foo123");
+        userAdminSession.changeUser(admin, endEntity, false);  
         log.debug("Changed it");
         log.trace("<test02LookupAndChangeUser()");
 
@@ -167,9 +171,13 @@ public class UserDataTest extends CaTestCase {
         assertTrue("wrong pwd (" + pwd + " works)" + pwd, userAdminSession.verifyPassword(admin, username, pwd) == false);
 
         // Use clear text pwd instead, new email, reverse DN again
-        userAdminSession.changeUser(admin, username, "foo234", "C=SE,O=AnaTom,CN=" + username, null, username + "@anatom.nu", true,
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0,
-                UserDataConstants.STATUS_GENERATED, caid);
+        EndEntityInformation user = new EndEntityInformation(username,  "C=SE,O=AnaTom,CN=" + username,
+                caid, null, 
+                username + "@anatom.nu", UserDataConstants.STATUS_GENERATED, EndEntityTypes.ENDUSER.toEndEntityType(),
+                SecConst.EMPTY_ENDENTITYPROFILE,  CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
+                null);
+        user.setPassword("foo234");
+        userAdminSession.changeUser(admin, user, true);  
         log.trace("<test03LookupChangedUser()");
 
         data = endEntityAccessSession.findUser(admin, username);

@@ -407,9 +407,12 @@ public class RsaSignSessionTest extends SignSessionCommon {
             log.debug("created user: " + RSA_REVERSE_USERNAME + ", foo123, C=SE, O=AnaTom, CN=" + RSA_REVERSE_USERNAME);
         } else {
             log.info("User " + RSA_REVERSE_USERNAME + " already exists, resetting status.");
-            userAdminSession.changeUser(internalAdmin, "foorev", "foo123", "C=SE,O=AnaTom,CN=" + RSA_REVERSE_USERNAME, null, "foo@anatom.se", false,
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsareversecaid);
+            EndEntityInformation userData = new EndEntityInformation("foorev", "C=SE,O=AnaTom,CN="+ RSA_REVERSE_USERNAME,
+                    rsareversecaid, null, "foo@anatom.se", UserDataConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
+                    null);
+            userData.setPassword("foo123");
+            userAdminSession.changeUser(internalAdmin, userData, false);
             log.debug("Reset status to NEW");
         }
     }
@@ -442,15 +445,13 @@ public class RsaSignSessionTest extends SignSessionCommon {
             int eeprofile = endEntityProfileSession.getEndEntityProfileId(multipleAltNameEndEntityProfileName);
             int rsacaid = caSession.getCAInfo(internalAdmin, getTestCAName()).getCAId();
             // Change a user that we know...
-            userAdminSession
-                    .changeUser(
-                            internalAdmin,
-                            RSA_USERNAME,
-                            "foo123",
-                            "C=SE,O=AnaTom,CN=foo",
-                            "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1",
-                            "foo@anatom.se", false, eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                            SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
+            EndEntityInformation userData = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
+                    rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1", 
+                    "foo@anatom.se", UserDataConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
+                    null);
+            userData.setPassword("foo123");
+            userAdminSession.changeUser(internalAdmin, userData, false);   
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
             assertNotNull("Failed to create certificate", cert);
@@ -471,10 +472,13 @@ public class RsaSignSessionTest extends SignSessionCommon {
             name = CertTools.getPartFromDN(altNames, CertTools.IPADDR);
             assertEquals("10.1.1.1", name);
             // Change a user that we know...
-            userAdminSession.changeUser(internalAdmin, RSA_USERNAME, "foo123", "C=SE,O=AnaTom,CN=foo",
-                    "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1",
-                    "foo@anatom.se", false, eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
-                    SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
+            EndEntityInformation endEntity = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
+                    rsacaid, "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1", 
+                    "foo@anatom.se", UserDataConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
+                    null);
+            endEntity.setPassword("foo123");
+            userAdminSession.changeUser(internalAdmin, endEntity, false);   
             log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
             assertNotNull("Failed to create certificate", cert);
@@ -534,8 +538,13 @@ public class RsaSignSessionTest extends SignSessionCommon {
         createEndEntity(qcCertEndEntityName, eeprofile, cprofile, rsacaid);
         try {
             // Change a user that we know...
-            userAdminSession.changeUser(internalAdmin, qcCertEndEntityName, "foo123", "C=SE,CN=qc", null, "foo@anatom.nu", false, eeprofile, cprofile,
-                    EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, UserDataConstants.STATUS_NEW, rsacaid);
+            EndEntityInformation endEntity = new EndEntityInformation(qcCertEndEntityName,  "C=SE,CN=qc",
+                    rsacaid, null, 
+                    "foo@anatom.nu", UserDataConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    eeprofile, cprofile, null, null, SecConst.TOKEN_SOFT_PEM, 0,
+                    null);
+            endEntity.setPassword("foo123");
+            userAdminSession.changeUser(internalAdmin, endEntity, false); 
             log.debug("created user: foo, foo123, C=SE, CN=qc");
 
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, qcCertEndEntityName, "foo123", anotheKey.getPublic());

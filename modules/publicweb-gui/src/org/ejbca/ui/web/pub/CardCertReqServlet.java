@@ -214,14 +214,17 @@ public class CardCertReqServlet extends HttpServlet {
                 final byte[] signReqBytes = signReq.getBytes();
                 if ( authReqBytes!=null && signReqBytes!=null) {
                 	try {
-                		userAdminSession.changeUser(administrator, username,data.getPassword(), data.getDN(), data.getSubjectAltName(),
-                				data.getEmail(), true, data.getEndEntityProfileId(), authCertProfile, data.getType(),
-                				SecConst.TOKEN_SOFT_BROWSERGEN, 0, data.getStatus(), authCA);
+                	    EndEntityInformation a = new EndEntityInformation(username, data.getDN(), authCA, data.getSubjectAltName(), data.getEmail(), data.getType(), 
+                	            data.getEndEntityProfileId(), authCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                	    a.setStatus(data.getStatus());
+                	    a.setPassword(data.getPassword());
+                	    userAdminSession.changeUser(administrator, a, true);          	    
                 		final byte[] authb64cert=pkcs10CertRequest(administrator, signSession, authReqBytes, username, data.getPassword());
-
-                		userAdminSession.changeUser(administrator, username, data.getPassword(), data.getDN(), data.getSubjectAltName(),
-                				data.getEmail(), true, data.getEndEntityProfileId(), signCertProfile, data.getType(),
-                				SecConst.TOKEN_SOFT_BROWSERGEN, 0, UserDataConstants.STATUS_NEW, signCA);
+                		EndEntityInformation b = new EndEntityInformation(username, data.getDN(), signCA, data.getSubjectAltName(), data.getEmail(), data.getType(), 
+                		        data.getEndEntityProfileId(), signCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
+                		b.setPassword(data.getPassword());
+                		b.setStatus(UserDataConstants.STATUS_NEW);
+                		userAdminSession.changeUser(administrator, b, true);     
                 		final byte[] signb64cert=pkcs10CertRequest(administrator, signSession, signReqBytes, username, data.getPassword());
 
 

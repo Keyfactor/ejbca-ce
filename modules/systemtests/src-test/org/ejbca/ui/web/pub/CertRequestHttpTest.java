@@ -42,6 +42,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -435,16 +436,21 @@ public class CertRequestHttpTest extends CaTestCase {
         }
         if (userExists) {
             log.debug("User reqtest already exists.");
-            userAdminSession.changeUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@anatom.se", false,
-                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), tokentype, 0,
-                    UserDataConstants.STATUS_NEW, caid);
+            EndEntityInformation endEntityInformation = new EndEntityInformation("reqtest", "C=SE,O=PrimeKey,CN=ReqTest", caid, null, "reqtest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), 
+                    SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, tokentype, 0, null);
+            endEntityInformation.setPassword("foo123");
+            endEntityInformation.setStatus(UserDataConstants.STATUS_NEW);
+            userAdminSession.changeUser(admin, endEntityInformation, false);
             log.debug("Reset status to NEW");
         }
     }
 
     private void setupUserStatus(int status) throws Exception {
-        userAdminSession.changeUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@anatom.se", false,
-                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, status, caid);
+        EndEntityInformation endEntityInformation = new EndEntityInformation("reqtest", "C=SE,O=PrimeKey,CN=ReqTest", caid, null, "reqtest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), 
+                SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
+        endEntityInformation.setPassword("foo123");
+        endEntityInformation.setStatus(status);
+        userAdminSession.changeUser(admin, endEntityInformation, false);
         log.debug("Set status to: " + status);
     }
 
