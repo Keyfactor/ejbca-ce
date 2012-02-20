@@ -26,11 +26,13 @@ Validation Authority Settings :
 </p>
 <ul>
 <li>'Data Source' - is the database of the standalone VA where this publisher will publish certificates. Use java:/OcspDS if ocsp-datasource.jndi-name=OcspDS.</li>
-<li>'Store certificate on responder' - stores the complete certificate on the responder. If this is unchecked only the information needed to answer OCSP requests are stored, but not the certificate itself.
+<li>'Store certificate at the Validation Authority' - stores the complete certificate on the VA. If this is unchecked only the information needed to answer OCSP requests are stored, but not the certificate itself.
 There are good reasons not to publish the whole certificate. It is large, thus making it a bit of heavy insert and it may contain sensitive information. 
-On the other hand some OCSP Extension plug-ins may not work without the certificate. A regular OCSP responder works fine without the certificate. Publisher for CA certificates (used on a 'Edit Certificate Authorities' page) must have this enabled.
+On the other hand some OCSP Extension plug-ins may not work without the certificate. A regular OCSP responder works fine without the certificate. A publisher for CA certificates (used on a 'Edit Certificate Authorities' page) must have this enabled.
 </li>
-<li>'Store CRL at the Validation Authority' should be set if the CRL store service of the VA should be used for a CA (only has a meaning for publishers used on a 'Edit Certificate Authorities' page).</li>
+<li>'Publish only revoked certificates' - If checked only revoked certificate are stored on the VA. The OCSP responder of the VA must have the 'nonexistingisgood' enabled if only revoked certificates are published.
+A publisher for CA certificates (used on a 'Edit Certificate Authorities' page) must have this disabled.</li>
+<li>'Store CRL at the Validation Authority' - should be set if the CRL store service of the VA should be used for a CA (only has a meaning for publishers used on a 'Edit Certificate Authorities' page).</li>
 </ul>
 <p>
 All certificate profiles for certificates that should be available to the OCSP responder should
