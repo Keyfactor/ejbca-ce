@@ -203,7 +203,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 			}
 		}
 		private void prepareDelete(PreparedStatement ps) throws Exception {
-			ps.setString(1, this.cafp);
+			ps.setString(1, CertTools.getFingerprintAsString(this.incert));
 		}
 		private void prepareNewUpdate(PreparedStatement ps) throws Exception {
 			// We can select to publish the whole certificate, or not to.
