@@ -178,20 +178,11 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				getLogger().info("User '" + username + "' has been added.");
 			}
 			else {
-				ejb.getRemoteSession(UserAdminSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword),
-						username, password,
-						CertTools.getSubjectDN(certificate),
-						subjectAltName, email,
-						false,
-						endentityprofileid,
-						certificateprofileid,
-						endEntityType,
-						SecConst.TOKEN_SOFT_BROWSERGEN,
-						SecConst.NO_HARDTOKENISSUER,
-						(status == CertificateConstants.CERT_ACTIVE ?
-								UserDataConstants.STATUS_GENERATED :
-									UserDataConstants.STATUS_REVOKED),
-									cainfo.getCAId());
+                EndEntityInformation endEntityInformation = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), cainfo.getCAId(), subjectAltName, email, 
+                        (status == CertificateConstants.CERT_ACTIVE ? UserDataConstants.STATUS_GENERATED : UserDataConstants.STATUS_REVOKED), endEntityType, endentityprofileid, 
+                        certificateprofileid, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
+                endEntityInformation.setPassword(password);
+                ejb.getRemoteSession(UserAdminSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword), endEntityInformation, false);
 				getLogger().info("User '" + username + "' has been updated.");
 			}
 			int certificateType = CertificateConstants.CERTTYPE_ENDENTITY;

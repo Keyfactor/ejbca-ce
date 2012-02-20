@@ -129,7 +129,7 @@ public class EndEntityInformation implements Serializable {
      * @param hardtokenissuerid if token should be hard, the id of the hard token issuer, else 0.
      * @param extendedinfo
      */
-    public EndEntityInformation(String user, String dn, int caid, String subjectaltname, String email,  EndEntityType type, int endentityprofileid, int certificateprofileid,
+    public EndEntityInformation(String user, String dn, int caid, String subjectaltname, String email, EndEntityType type, int endentityprofileid, int certificateprofileid,
                           int tokentype, int hardtokenissuerid, ExtendedInformation extendedinfo) {
         setUsername(user);
         setPassword(null);
