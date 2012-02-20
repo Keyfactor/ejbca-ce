@@ -118,7 +118,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
     			argsList.remove("-superadmincn");
     		}
     		
-    		args = argsList.toArray(new String[0]); // new args array without the optional switches
+    		args = argsList.toArray(new String[argsList.size()]); // new args array without the optional switches
 
     		final String caname = args[1];
             final String dn = CertTools.stringToBCDNString(StringTools.strip(args[2]));

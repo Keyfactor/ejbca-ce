@@ -1049,10 +1049,10 @@ public class EjbcaWS implements IEjbcaWS {
                       hardTokenSession.addHardTokenCertificateMapping(admin,hardTokenSN,cert);                 
                   }
                   return retval;
-              } catch (AuthLoginException e) {
-                  throw e; // NOPMD, since we catch wide below
-              } catch (AuthStatusException e) {
-                  throw e; // NOPMD, since we catch wide below
+              } catch (AuthLoginException e) { // NOPMD, since we catch wide below
+                  throw e;
+              } catch (AuthStatusException e) { // NOPMD, since we catch wide below
+                  throw e;
               } catch (Exception e) {
                   throw EjbcaWSHelper.getInternalException(e, logger);
 			  } 

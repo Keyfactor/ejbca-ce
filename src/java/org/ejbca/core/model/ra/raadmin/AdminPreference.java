@@ -66,7 +66,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements java.io.S
     public void setPreferedLanguage(String[] languages, String languagecode) {
         if(languages != null){
             for(int i=0; i < languages.length; i++){
-                if(languages[i].toUpperCase().equals(languagecode.toUpperCase())) {
+                if(languages[i].equalsIgnoreCase(languagecode)) {
                     data.put(PREFEREDLANGUAGE, Integer.valueOf(i));
                 }
             }
@@ -84,7 +84,7 @@ public class AdminPreference extends UpgradeableDataHashMap implements java.io.S
     public void setSecondaryLanguage(String[] languages, String languagecode){
         if(languages != null){
             for(int i=0; i < languages.length; i++){
-                if(languages[i].toUpperCase().equals(languagecode.toUpperCase())) {
+                if(languages[i].equalsIgnoreCase(languagecode)) {
                     data.put(SECONDARYLANGUAGE, Integer.valueOf(i));
                 }
             }

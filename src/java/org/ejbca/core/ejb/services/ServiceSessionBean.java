@@ -448,7 +448,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             String serviceName = null;
             try {
                 serviceName = serviceDataSession.findNameById(timerInfo);
-            } catch (Throwable t) {
+            } catch (Throwable t) { // NOPMD: we really need to catch everything to not risk hanging somewhere in limbo
                 if (log.isDebugEnabled()) {
                     log.debug("Exception: ", t); // Don't spam log with stacktraces in normal production cases
                 }
@@ -462,7 +462,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                 // Get interval of worker
                 try {
                     serviceInterval = serviceSession.getServiceInterval(timerInfo);
-                } catch (Throwable t) {
+                } catch (Throwable t) { // NOPMD: we really need to catch everything to not risk hanging somewhere in limbo
                     if (log.isDebugEnabled()) {
                         log.debug("Exception: ", t); // Don't spam log with stacktraces in normal production cases
                     }
@@ -476,7 +476,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
                     try {
                         // Try to acquire lock / see if this node should run
                         worker = serviceSession.getWorkerIfItShouldRun(timerInfo, nextTrigger.getNextTimeout().getTime());
-                    } catch (Throwable t) {
+                    } catch (Throwable t) { // NOPMD: we really need to catch everything to not risk hanging somewhere in limbo
                         if (log.isDebugEnabled()) {
                             log.debug("Exception: ", t); // Don't spam log with stacktraces in normal production cases
                         }
@@ -684,9 +684,8 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             try {
                 Serializable info = timer.getInfo();
                 existingTimers.add(info);
-            } catch (Throwable e) {
-                // EJB 2.1 only?: We need this try because weblogic seems to
-                // suck...
+            } catch (Throwable e) { // NOPMD: we really need to catch everything to not risk hanging somewhere in limbo
+                // EJB 2.1 only?: We need this try because weblogic seems to ... suck ...
                 log.debug("Error invoking timer.getInfo(): ", e);
             }
         }

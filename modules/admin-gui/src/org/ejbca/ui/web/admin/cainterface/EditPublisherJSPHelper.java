@@ -249,7 +249,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
                                 request.getParameter(BUTTON_TESTCONNECTION) != null){
 
                             if(publisherdata == null){
-                                int tokentype = Integer.valueOf(request.getParameter(HIDDEN_PUBLISHERTYPE)).intValue();
+                                int tokentype = Integer.parseInt(request.getParameter(HIDDEN_PUBLISHERTYPE));
                                 if(tokentype == PublisherConst.TYPE_CUSTOMPUBLISHERCONTAINER) {
                                     publisherdata = new CustomPublisherContainer();
                                 }

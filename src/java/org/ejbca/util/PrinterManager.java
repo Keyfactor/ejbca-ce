@@ -68,7 +68,7 @@ public class PrinterManager {
 				}
 				printerNames[i] = name;					
 			}			
-		} catch (Throwable e) {
+		} catch (Throwable e) { // NOPMD: printers will give all sorts of wacky errors.
 			String msg = "There might be a problem with one of the printers' configuration: ";
 			log.warn(msg + e.getMessage());
 			if (log.isDebugEnabled()) {

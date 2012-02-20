@@ -135,7 +135,7 @@ class CertificateCache implements ICertificateCache {
 				}
 				return null;
 			}
-			return sCert.toArray(new X509Certificate[0]);
+			return sCert.toArray(new X509Certificate[sCert.size()]);
 		} finally {
 			this.rebuildlock.unlock();
 		}
@@ -256,7 +256,7 @@ class CertificateCache implements ICertificateCache {
 				final X509Certificate cert = (X509Certificate)tmp;
 	            try { // test if certificate is OK. we have experienced that BC could decode a certificate that later on could not be used.
 					this.certsFromSubjectKeyIdentifier.put(HashID.getFromKeyID(cert).key, cert);
-	            } catch ( Throwable t ) {
+	            } catch ( Throwable t ) { // NOPMD: catch all to not break with an error here.
 	            	if ( log.isDebugEnabled() ) {
 		            	final StringWriter sw = new StringWriter();
 		            	final PrintWriter pw = new PrintWriter(sw);

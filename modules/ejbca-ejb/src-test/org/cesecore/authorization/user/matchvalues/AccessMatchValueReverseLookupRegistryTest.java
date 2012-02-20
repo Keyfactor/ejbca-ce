@@ -41,7 +41,7 @@ public class AccessMatchValueReverseLookupRegistryTest {
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(VanillaAccessMatchValueMock.TOKEN_TYPE,
                     VanillaAccessMatchValueMock.class.getMethod("lookup", Integer.class));
-            fail("Added the same lookup method twice");
+            fail("Added the same lookup method twice"); // NOPMD
         } catch (InvalidMatchValueException e) {
             //Ignore
         }

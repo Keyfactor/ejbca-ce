@@ -57,15 +57,7 @@ public abstract class HardTokenProfileWithPINEnvelope extends HardTokenProfile i
 
     // Public Methods mostly used by PrimeCard
     
-    
-    public void upgrade(){
-      // Perform upgrade functionality 
-      super.upgrade(); 
-    }
-    
-
-
-	/** 
+    /** 
 	 * @see org.ejbca.core.model.hardtoken.hardtokenprofiles.IPINEnvelopeSettings#getPINEnvelopeType()
 	 */
 	public int getPINEnvelopeType() {

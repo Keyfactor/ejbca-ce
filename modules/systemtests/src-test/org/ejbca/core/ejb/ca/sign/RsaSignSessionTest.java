@@ -224,8 +224,6 @@ public class RsaSignSessionTest extends SignSessionCommon {
             X509Certificate rsarevcacert = (X509Certificate) inforsareverse.getCertificateChain().toArray()[0];
             try {
                 cert.verify(rsarevcacert.getPublicKey());
-            } catch (RuntimeException e) {
-                throw e;
             } catch (Exception e) {
                 fail("Verify failed: " + e.getMessage());
             }

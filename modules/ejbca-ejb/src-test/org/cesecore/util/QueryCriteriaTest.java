@@ -245,7 +245,6 @@ public class QueryCriteriaTest {
     @Test
     public void testAttributeValidation() {
         try {
-            ;
             QueryGenerator.generator(FakeEntity.class, QueryCriteria.create().add(Criteria.isNull("eventType IS NOT NULL or 1=1")), "a").generate();
             Assert.fail("attribute validation should throw exception");
         } catch (QueryParameterException e) {

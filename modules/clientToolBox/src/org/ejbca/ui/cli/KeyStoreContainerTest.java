@@ -103,7 +103,7 @@ class KeyStoreContainerTest {
             	}
             }
         }
-        return testSet.toArray(new NormalTest[0]);
+        return testSet.toArray(new NormalTest[testSet.size()]);
     }
     private static void startNormal(final String providerClassName,
                                     final String encryptProviderClassName,

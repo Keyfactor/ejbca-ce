@@ -128,7 +128,7 @@ public class PublisherQueueSessionBean implements PublisherQueueSessionRemote, P
 
     @Override
     public int getPendingEntriesCountForPublisher(int publisherId) {
-    	return Long.valueOf(org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findCountOfPendingEntriesForPublisher(entityManager, publisherId)).intValue();
+    	return (int)org.ejbca.core.ejb.ca.publisher.PublisherQueueData.findCountOfPendingEntriesForPublisher(entityManager, publisherId);
     }
     
     @Override

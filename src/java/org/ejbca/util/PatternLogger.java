@@ -45,8 +45,6 @@ public class PatternLogger implements IPatternLogger {
 	final private Matcher m;
 	final private String orderString;
 	final private Logger logger;
-	final private String logDateFormat;
-	final private String timeZone;
     final private Date startTime;
     private Date startProcessTime = null;
 	
@@ -61,14 +59,12 @@ public class PatternLogger implements IPatternLogger {
 		this.m = m;
 		this.orderString=orderString;
 		this.logger = logger;
-		this.logDateFormat = logDateFormat;
-		this.timeZone =timeZone;
         this.startTime = new Date();
         final FastDateFormat dateformat;
-        if (this.timeZone == null) {
-        	dateformat = FastDateFormat.getInstance(this.logDateFormat);
+        if (timeZone == null) {
+        	dateformat = FastDateFormat.getInstance(logDateFormat);
         } else {
-        	dateformat = FastDateFormat.getInstance(this.logDateFormat, TimeZone.getTimeZone(this.timeZone));
+        	dateformat = FastDateFormat.getInstance(logDateFormat, TimeZone.getTimeZone(timeZone));
         }
         paramPut(LOG_TIME, dateformat.format(new Date()));
         this.paramPut(REPLY_TIME,REPLY_TIME);

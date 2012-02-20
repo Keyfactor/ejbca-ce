@@ -106,7 +106,7 @@ public class CaImportCACommand extends BaseCaAdminCommand {
         		String tokenpwd = args[3];
         		String catokenproperties = new String(FileTools.readFiletoBuffer(args[4]));
         		Collection<Certificate> cacerts = CertTools.getCertsFromPEM(args[5]);
-        		Certificate[] cacertarray = cacerts.toArray(new Certificate[0]);
+        		Certificate[] cacertarray = cacerts.toArray(new Certificate[cacerts.size()]);
         		ejb.getRemoteSession(CAAdminSessionRemote.class).importCAFromHSM(getAdmin(cliUserName, cliPassword), caName, cacertarray, tokenpwd, tokenclasspath, catokenproperties);
         	}
         } catch (ErrorAdminCommandException e) {

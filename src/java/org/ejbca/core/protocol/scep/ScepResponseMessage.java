@@ -100,9 +100,6 @@ public class ScepResponseMessage implements CertificateResponseMessage {
     /** recipient key identifier, usually IssuerAndSerialno in X509 world. */
     private byte[] recipientKeyInfo = null;
 
-    /** The un-encoded response message itself */
-    private transient CMSSignedData signedData = null;
-
     /** Certificate to be in response message, not serialized */
     private transient Certificate cert = null;
     private transient CRL crl = null;
@@ -351,7 +348,8 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             // Add our signer info and sign the message
             log.debug("Signing SCEP message with cert: "+CertTools.getSubjectDN(signCert));
             gen1.addSigner(signKey, (X509Certificate)signCert, digestAlg, new AttributeTable(attributes), null);
-            signedData = gen1.generate(msg, true, provider);
+            // The un-encoded response message itself
+            final CMSSignedData signedData = gen1.generate(msg, true, provider);
             responseMessage = signedData.getEncoded();
             if (responseMessage != null) {
                 ret = true;

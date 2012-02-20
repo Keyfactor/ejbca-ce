@@ -109,7 +109,7 @@ public class ServiceServiceTest extends CaTestCase {
         nodes.add(NOT_THIS_HOST1);
         nodes.addAll(thisHosts);
         nodes.add(NOT_THIS_HOST2);
-        config.setPinToNodes(nodes.toArray(new String[0]));
+        config.setPinToNodes(nodes.toArray(new String[nodes.size()]));
 
         addAndActivateService(TEST01_SERVICE, config, TESTCA1);
 

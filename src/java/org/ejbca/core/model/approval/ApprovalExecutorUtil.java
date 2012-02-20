@@ -119,7 +119,7 @@ public class ApprovalExecutorUtil {
             	ApprovalOveradableClassName o = new ApprovalOveradableClassName(t.trim(), null);
             	arr.add(o);
             }              
-            globallyAllowed = (ApprovalOveradableClassName[])arr.toArray(new ApprovalOveradableClassName[0]);
+            globallyAllowed = (ApprovalOveradableClassName[])arr.toArray(new ApprovalOveradableClassName[arr.size()]);
 		}
 		return globallyAllowed;
 	}

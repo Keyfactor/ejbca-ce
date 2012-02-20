@@ -147,7 +147,7 @@ public class CAInterfaceBean implements Serializable {
           this.informationmemory = ejbcawebbean.getInformationMemory();
           this.administrator = ejbcawebbean.getAdminObject();
             
-          certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caSession, certificateProfileSession, informationmemory);;
+          certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caSession, certificateProfileSession, informationmemory);
             cadatahandler = new CADataHandler(administrator, accessRuleManagementSession, accessUserAspectManagerSession,caadminsession, caSession, endEntityProfileSession, adminsession, globalconfigurationsession,
                     certificateProfileSession, revocationSession, ejbcawebbean);
           publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificateProfileSession,  informationmemory);

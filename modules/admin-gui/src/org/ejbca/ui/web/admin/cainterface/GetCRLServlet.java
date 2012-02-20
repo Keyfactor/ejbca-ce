@@ -16,7 +16,6 @@ package org.ejbca.ui.web.admin.cainterface;
 import java.io.IOException;
 
 import javax.ejb.EJB;
-import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -55,10 +54,6 @@ public class GetCRLServlet extends HttpServlet {
 
     @EJB
     private CrlStoreSessionLocal crlStoreSession;
-
-    public void init(ServletConfig config) throws ServletException {
-        super.init(config);
-    }
 
     public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException, ServletException {
         log.trace(">doPost()");

@@ -205,8 +205,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             String username2 = genRandomUserName("test01_2");
             createUser(admin1, username2, approvalCAID, endEntityProfileId, certProfileIdEndEntityApprovals);
             fail("This should have caused an approval request");
-        } catch (WaitingForApprovalException ex) {
-            // OK
+        } catch (WaitingForApprovalException ex) { // NOPMD: OK
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
             fail();
@@ -217,8 +216,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             String username3 = genRandomUserName("test01_3");
             createUser(admin1, username3, approvalCAID, endEntityProfileId, certProfileIdAllApprovals);
             fail("This should have caused an approval request");
-        } catch (WaitingForApprovalException ex) {
-            // OK
+        } catch (WaitingForApprovalException ex) { // NOPMD: OK
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
             fail();
@@ -269,8 +267,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             assertEquals("CA should be offline", CAConstants.CA_OFFLINE, cainfo.getStatus());
             caAdminSession.activateCAToken(admin1, anotherCAID2, "foo123", globalConfigurationSession.getCachedGlobalConfiguration());
             fail("This should have caused an approval request");
-        } catch (WaitingForApprovalException ex) {
-            // OK
+        } catch (WaitingForApprovalException ex) { // NOPMD: OK
         } catch (ApprovalException ex) {
             // OK
         }
@@ -301,8 +298,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             String username2 = genRandomUserName("test03_2");
             createUser(admin1, username2, approvalCAID, endEntityProfileId, certProfileIdEndEntityApprovals);
             fail("This should have caused an approval request");
-        } catch (WaitingForApprovalException ex) {
-            // OK
+        } catch (WaitingForApprovalException ex) { // NOPMD: OK
         } catch (Exception ex) {
             log.error(ex.getMessage(), ex);
             fail();
@@ -523,11 +519,11 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         profile.setUse(EndEntityProfile.ENDTIME, 0, true);
         profile.setUse(EndEntityProfile.CLEARTEXTPASSWORD, 0, true);
         profile.setValue(EndEntityProfile.CLEARTEXTPASSWORD, 0, EndEntityProfile.TRUE);
-        profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.valueOf(approvalCAID).toString());
+        profile.setValue(EndEntityProfile.AVAILCAS, 0, String.valueOf(approvalCAID));
         profile.setUse(EndEntityProfile.STARTTIME, 0, true);
         profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, availableCertProfiles.toString());
-        profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, Integer.valueOf(certProfiles[0]).toString());
-        profile.setValue(EndEntityProfile.DEFAULTCA, 0, Integer.valueOf(approvalCAID).toString());
+        profile.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, String.valueOf(certProfiles[0]));
+        profile.setValue(EndEntityProfile.DEFAULTCA, 0, String.valueOf(approvalCAID));
         endEntityProfileSession.addEndEntityProfile(admin, endEntityProfileName, profile);
 
         int endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(endEntityProfileName);

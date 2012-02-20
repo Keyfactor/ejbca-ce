@@ -126,7 +126,7 @@ public class UserPasswordExpireTest extends CaTestCase {
         workerprop.setProperty(BaseWorker.PROP_TIMEUNIT, BaseWorker.UNIT_SECONDS);
         // Include a dummy CA so we can see that the query works with checking
         // several CAs
-        workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, String.valueOf(caid) + ";45");
+        workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, caid + ";45");
         config.setWorkerProperties(workerprop);
         serviceSession.changeService(admin, "TestUserPasswordService", config, false);
 

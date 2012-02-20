@@ -83,7 +83,7 @@ public class UserDataFiller {
         userData.setSubjectAltName(subjectAltName);
         if (userData.getType().getHexValue()==EndEntityTypes.INVALID.hexValue()) {
         	if(StringUtils.isNotEmpty(profile.getValue(EndEntityProfile.FIELDTYPE, 0))){
-        	    int type = Integer.valueOf(profile.getValue(EndEntityProfile.FIELDTYPE, 0)).intValue();
+        	    int type = Integer.parseInt(profile.getValue(EndEntityProfile.FIELDTYPE, 0));
         		userData.setType(new EndEntityType(type));
         	}
         }

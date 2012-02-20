@@ -49,7 +49,7 @@ public class CmpTcpInitServlet extends HttpServlet {
 		LOG.info("Stopping CMP TCP Service..");
 		try {
 			cmpTcpServer.stop();
-		} catch (Throwable t) {
+		} catch (Throwable t) { // NOPMD: never bail out and crash here
 			LOG.error("", t);
 		}
 		super.destroy();

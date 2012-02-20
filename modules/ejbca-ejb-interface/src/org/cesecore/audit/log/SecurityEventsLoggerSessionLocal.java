@@ -20,7 +20,6 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventType;
 import org.cesecore.audit.enums.ModuleType;
 import org.cesecore.audit.enums.ServiceType;
-import org.cesecore.time.TrustedTime;
 
 /**
  * Local interface for the SecurityEventsLogger
@@ -42,7 +41,6 @@ public interface SecurityEventsLoggerSessionLocal extends SecurityEventsLoggerSe
      * @param searchDetail2 A detail of this event that can be queried for using QueryCriteria (database) searches (e.g. a username)
      * @param additionalDetails Additional details to be logged.
      * @throws AuditRecordStorageException
-     * @see {@link #log(TrustedTime, EventType, EventStatus, ModuleType, ServiceType, String, String, String, String, Map)}
      */
 	void log(EventType eventType, EventStatus eventStatus, ModuleType module, ServiceType service, String authToken, 
 			String customId, String searchDetail1, String searchDetail2, Map<String, Object> additionalDetails) throws AuditRecordStorageException;

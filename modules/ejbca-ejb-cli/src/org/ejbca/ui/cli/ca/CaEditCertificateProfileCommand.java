@@ -62,7 +62,7 @@ public class CaEditCertificateProfileCommand extends BaseCaAdminCommand {
                 paramType = argsList.get(index + 1);
                 argsList.remove(index + 1);
                 argsList.remove(index);
-                args = argsList.toArray(new String[0]);
+                args = argsList.toArray(new String[argsList.size()]);
             }
 
             final String name = args[1];

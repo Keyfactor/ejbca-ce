@@ -134,7 +134,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     public abstract String getRoleName();
 
-    protected void setUp() throws Exception {
+    protected void setUp() throws Exception { // NOPMD: this is a base class
         roleName = getRoleName();
         super.setUpAuthTokenAndRole(getRoleName());
         removeTestCA(); // We cant be sure this CA was not left over from
@@ -163,7 +163,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         accessControlSession.forceCacheExpire();
     }
 
-    protected void tearDown() throws Exception {
+    protected void tearDown() throws Exception { // NOPMD: this is a base class
         super.tearDownRemoveRole();
         removeTestCA();
         RoleData role = roleAccessSession.findRole(roleName);

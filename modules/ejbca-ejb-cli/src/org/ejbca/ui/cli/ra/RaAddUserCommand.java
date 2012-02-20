@@ -266,13 +266,13 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 getLogger().info("Token: " + tokenname);
                 getLogger().info("Certificate profile: " + certificatetypeid);
                 getLogger().info("End entity profile: " + profileid);
-                if (password.toUpperCase().equals("NULL")) {
+                if (password.equalsIgnoreCase("NULL")) {
                     password = null;
                 }
-                if (subjectaltname.toUpperCase().equals("NULL")) {
+                if (subjectaltname.equalsIgnoreCase("NULL")) {
                     subjectaltname = null;
                 }
-                if (email.toUpperCase().equals("NULL")) {
+                if (email.equalsIgnoreCase("NULL")) {
                     email = null;
                 }
                 try {

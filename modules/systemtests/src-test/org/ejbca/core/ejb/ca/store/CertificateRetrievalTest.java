@@ -88,7 +88,6 @@ public class CertificateRetrievalTest {
 
     private static final Logger log = Logger.getLogger(CertificateRetrievalTest.class);
 
-    private HashSet<Certificate> m_certs;
     private HashSet<String> m_certfps;
     private String rootCaFp = null;
     private String subCaFp = null;
@@ -119,7 +118,7 @@ public class CertificateRetrievalTest {
         CryptoProviderTools.installBCProvider();
         Certificate cert;
         AuthenticationToken adm = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-        m_certs = new HashSet<Certificate>();
+        final HashSet<Certificate> m_certs = new HashSet<Certificate>();
         m_certfps = new HashSet<String>();
         cert = CertTools.getCertfromByteArray(testrootcert);
         m_certs.add(cert);

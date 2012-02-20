@@ -319,8 +319,7 @@ public class GeneralPurposeCustomPublisherTest {
             String[] cmdarray = externalCommandToTest.split("\\s");
             Process externalProcess = Runtime.getRuntime().exec(cmdarray, null, null);
             BufferedReader br = new BufferedReader(new InputStreamReader(externalProcess.getInputStream()));
-            while (br.readLine() != null) {
-            }
+            while (br.readLine() != null) {} // NOPMD
             if (externalProcess.waitFor() == 0) {
                 ret = true;
             }

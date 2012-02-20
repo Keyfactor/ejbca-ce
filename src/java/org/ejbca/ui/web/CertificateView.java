@@ -85,7 +85,7 @@ public class CertificateView implements Serializable {
         	X509Certificate x509cert = (X509Certificate)certificate;
             return Integer.toString(x509cert.getVersion());
         } else {
-        	return Integer.valueOf(CVCertificateBody.CVC_VERSION).toString();
+        	return String.valueOf(CVCertificateBody.CVC_VERSION);
         }
     }
 

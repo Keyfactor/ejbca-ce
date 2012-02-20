@@ -76,7 +76,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
         super();
         try {
             Thread.currentThread().getContextClassLoader().loadClass(KeyTools.SUNPKCS11CLASS);
-        } catch (Throwable t) {
+        } catch (ClassNotFoundException t) {
             throw new InstantiationException("PKCS11 provider class " + KeyTools.SUNPKCS11CLASS + " not found.");
         }
     }

@@ -33,7 +33,6 @@ import org.ejbca.core.protocol.scep.ScepRequestMessage;
  */
 public class ScepPkiOpHelper {
     private static Logger log = Logger.getLogger(ScepPkiOpHelper.class);
-    private ScepRequestMessage reqmsg = null;
     private AuthenticationToken admin = null;
     private SignSessionLocal signsession;
 
@@ -70,7 +69,7 @@ public class ScepPkiOpHelper {
         	log.trace(">getRequestMessage(" + msg.length + " bytes)");
         }
         try {
-            reqmsg = new ScepRequestMessage(msg, includeCACert);
+            final ScepRequestMessage reqmsg = new ScepRequestMessage(msg, includeCACert);
 
             if (reqmsg.getErrorNo() != 0) {
                 log.error("Error '" + reqmsg.getErrorNo() + "' receiving Scep request message.");
