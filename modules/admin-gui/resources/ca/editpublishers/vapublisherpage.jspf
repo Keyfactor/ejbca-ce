@@ -40,7 +40,7 @@
       </td>
       <td width="50%" valign="top">
           <input type="checkbox" name="<%= EditPublisherJSPHelper.CHECKBOX_VA_ONLY_PUBLISH_REVOKED %>" value="<%=EditPublisherJSPHelper.CHECKBOX_VALUE %>"
-           <%  if(vapublisher.getStoreCert()) {
+           <%  if(vapublisher.getOnlyPublishRevoked()) {
                  out.write(" CHECKED ");
            } %>>
       </td>
