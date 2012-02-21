@@ -97,7 +97,6 @@ public class CrmfRARequestTest extends CmpTestCase {
 
         // Configure CMP for this test, we allow custom certificate serial numbers
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        // profile.setAllowCertSerialNumberOverride(true);
         try {
             certProfileSession.addCertificateProfile(admin, "CMPTESTPROFILE", profile);
         } catch (CertificateProfileExistsException e) {
@@ -259,18 +258,15 @@ public class CrmfRARequestTest extends CmpTestCase {
             crmfHttpUserTest(userDN1, key1, null, null);
             crmfHttpUserTest(userDN2, key2, null, null);
             // check that the request fails when asking for certificate for another user with same key.
-            //InternalResources.getInstance().getLocalizedMessage("createcert.key_exists_for_another_user", "'" + userName2 + "'","'" + userName1 + "'")
             crmfHttpUserTest(
                     userDN2,
                     key1,
                     "User 'cmptest2' is not allowed to use same key as the user(s) 'cmptest1' is/are using.", null);
-            // InternalResources.getInstance().getLocalizedMessage("createcert.key_exists_for_another_user", "'" + userName1 + "'","'" + userName2 + "'")
             crmfHttpUserTest(
                     userDN1,
                     key2,
                     "User 'cmptest1' is not allowed to use same key as the user(s) 'cmptest2' is/are using.", null);
             // check that you can not issue a certificate with same DN as another user.
-            //InternalResources.getInstance().getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'AdminCA1'","'SYSTEMCA'")
             crmfHttpUserTest(
                     "CN=AdminCA1,O=EJBCA Sample,C=SE",
                     key3,
@@ -278,7 +274,6 @@ public class CrmfRARequestTest extends CmpTestCase {
 
             hostname = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME);
 
-            // InternalResources.getInstance().getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'" + hostname + "'","'tomcat'")
             crmfHttpUserTest(
                     "CN=" + hostname + ",O=EJBCA Sample,C=SE",
                     key4,
@@ -331,10 +326,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
         BigInteger serialnumber = cert.getSerialNumber();
         
-        
-        
         // Revoke the created certificate
-        //final String hash = "foo123";
         final PKIMessage con = genRevReq(issuerDN, userDN, serialnumber, cacert, nonce, transid, false);
         Assert.assertNotNull(con);
         PKIMessage revmsg = protectPKIMessage(con, false, PBEPASSWORD, null, 567);
@@ -345,7 +337,6 @@ public class CrmfRARequestTest extends CmpTestCase {
         // Send request and receive response
         final byte[] resprev = sendCmpHttp(barev, 200);
         checkCmpResponseGeneral(resprev, issuerDN, userDN, cacert, nonce, transid, false, null);
-        //checkCmpRevokeConfirmMessage(issuerDN, userDN, serialnumber, cert, resprev, true);
         int revstatus = checkRevokeStatus(issuerDN, serialnumber);
         Assert.assertEquals("Certificate revocation failed.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, revstatus);
         
@@ -366,30 +357,23 @@ public class CrmfRARequestTest extends CmpTestCase {
             eeProfileSession.removeEndEntityProfile(admin, "CMPKEYIDTESTPROFILE");
         } catch(Exception e) {}
 
-        
-        
         // Configure CMP for this test, we allow custom certificate serial numbers
         CertificateProfile profile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        // profile.setAllowCertSerialNumberOverride(true);
         try {
             certProfileSession.addCertificateProfile(admin, "CMPKEYIDTESTPROFILE", profile);
         } catch (CertificateProfileExistsException e) {
             log.error("Could not create certificate profile.", e);
         }
         
-        
-        
-        
         int cpId = certProfileSession.getCertificateProfileId("CMPKEYIDTESTPROFILE");
         
         EndEntityProfile eep = new EndEntityProfile();
         eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "" + cpId);
         eep.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + cpId);
-        eep.setValue(EndEntityProfile.DEFAULTCA, 0, "" + caid); //CertificateProfile.ANYCA
+        eep.setValue(EndEntityProfile.DEFAULTCA, 0, "" + caid);
         eep.setValue(EndEntityProfile.AVAILCAS, 0, "" + caid);
         eep.addField(DnComponents.ORGANIZATION);
         eep.setRequired(DnComponents.ORGANIZATION, 0, true);
-        //eep.setModifyable(DnComponents.ORGANIZATION, 0, false);
         eep.addField(DnComponents.RFC822NAME);
         eep.addField(DnComponents.UPN);
         eep.setModifyable(DnComponents.RFC822NAME, 0, true);
@@ -423,7 +407,6 @@ public class CrmfRARequestTest extends CmpTestCase {
         try {
             final PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
             final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
-            //final PKIMessage req = protectPKIMessageNoKeyID(one, false, PBEPASSWORD, 567);
 
             reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
             Assert.assertNotNull(req);
@@ -435,8 +418,6 @@ public class CrmfRARequestTest extends CmpTestCase {
             final byte[] resp = sendCmpHttp(ba, 200);
             // do not check signing if we expect a failure (sFailMessage==null)
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-            //X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
-            //BigInteger serialnumber = cert.getSerialNumber();
             checkCmpFailMessage(resp, "Subject DN field 'ORGANIZATION' must exist.", CmpPKIBodyConstants.INITIALIZATIONRESPONSE, reqId, FailInfo.BAD_REQUEST.hashCode());
 
 
@@ -464,13 +445,10 @@ public class CrmfRARequestTest extends CmpTestCase {
             X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp2, reqId2);
             BigInteger serialnumber = cert.getSerialNumber();
 
-
-
             EndEntityInformation ee = eeAccessSession.findUser(admin, "keyidtest2");
             Assert.assertEquals("Wrong certificate profile", cpId, ee.getCertificateProfileId());
 
             // Revoke the created certificate and use keyid
-            //final String hash = "foo123";
             final PKIMessage con = genRevReq(issuerDN, userDN, serialnumber, cacert, nonce2, transid2, false);
             Assert.assertNotNull(con);
             PKIMessage revmsg = protectPKIMessage(con, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
@@ -481,7 +459,6 @@ public class CrmfRARequestTest extends CmpTestCase {
             // Send request and receive response
             final byte[] resprev = sendCmpHttp(barev, 200);
             checkCmpResponseGeneral(resprev, issuerDN, userDN, cacert, nonce2, transid2, true, null);
-            //checkCmpRevokeConfirmMessage(issuerDN, userDN, serialnumber, cert, resprev, true);
             int revstatus = checkRevokeStatus(issuerDN, serialnumber);
             Assert.assertEquals("Certificate revocation failed.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, revstatus);
         } finally {

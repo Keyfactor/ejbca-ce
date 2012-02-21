@@ -156,7 +156,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     private CertificateStoreSession certStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    //private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
     
     @Before
     public void setUp() throws Exception {
@@ -193,11 +192,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
     }
 
-    
-    
-    
-    
-    
     /**
      * A "Happy Path" test. Sends a KeyUpdateRequest and receives a new certificate.
      * 
@@ -230,7 +224,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
         assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");
-
         
         //--------------- create the user and issue his first certificate -----------------
         createUser(username, userDN, "foo123");
@@ -251,8 +244,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         }
         assertNotNull("Failed to create a test certificate", certificate);
 
-        
-        
         PKIMessage req = genRenewalReq(keys, false, null, null);
         assertNotNull("Failed to generate a CMP renewal request", req);
         int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
@@ -262,13 +253,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         addExtraCert(req, certificate);
         signPKIMessage(req, keys);
         assertNotNull(req);
-        /*
-        final Signature sig = Signature.getInstance(req.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
-        sig.initVerify(certificate.getPublicKey());
-        sig.update(req.getProtectedBytes());
-        boolean verified = sig.verify(req.getProtection().getBytes());
-        assertTrue("Signing the message failed.", verified);
-        */
         
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -341,8 +325,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         }
         assertNotNull("Failed to create a test certificate", certificate);
 
-        
-        
         PKIMessage req = genRenewalReq(keys, false, null, null);
         assertNotNull("Failed to generate a CMP renewal request", req);
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -430,8 +412,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
         certStoreSession.setRevokeStatus(admin, certificate, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION, null);
         assertTrue("Failed to revoke the test certificate", certStoreSession.isRevoked(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate)));
-
-        
         
         PKIMessage req = genRenewalReq(keys, false, null, null);
         assertNotNull("Failed to generate a CMP renewal request", req);
@@ -500,10 +480,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         
         //--------------- create the user and issue his first certificate -----------------
         final String fakeUserDN = "CN=fakeuser,C=SE";
-        //createUser(username, userDN, "foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         Certificate fakeCert = null;
-            //certificate = (X509Certificate) signSession.createCertificate(admin, username, "foo123", keys.getPublic());
         fakeCert = CertTools.genSelfCert(fakeUserDN, 30, null, keys.getPrivate(), keys.getPublic(),
                     AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
         assertNotNull("Failed to create a test certificate", fakeCert);
@@ -539,83 +517,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         }
 
     }
-    
 
-    /**
-     * Sends a KeyUpdateRequest in RA mode. A CMP error message is expected and no certificate renewal.
-     * 
-     * - Pre-configuration: Sets the operational mode to RA mode (cmp.raoperationalmode=ra)
-     * - Pre-configuration: Sets cmp.allowautomaticrenewal to 'true' and tests that the resetting of configuration has worked.
-     * - Pre-configuration: Sets cmp.allowupdatewithsamekey to 'true'
-     * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
-     * - Generates a CMP KeyUpdate Request and tests that such request has been created.
-     * - Signs the CMP request using fakecert and attaches fakecert to the CMP request. Tests that the CMP request is still not null
-     * - Sends the request using HTTP and receives a response.
-     * - Examines the response:
-     * 		- Checks that the response is not empty or null
-     * 		- Checks that the protection algorithm is sha1WithRSAEncryption
-     * 		- Checks that the signer is the expected CA
-     * 		- Verifies the response signature
-     * 		- Checks that the response's senderNonce is 16 bytes long
-     * 		- Checks that the request's senderNonce is the same as the response's recipientNonce
-     * 		- Checks that the request and the response has the same transactionID
-     * 		- Parses the response and checks that the parsing did not result in a 'null'
-     * 		- Checks that the CMP response message tag number is '23', indicating a CMP error message
-     * 		- Checks that the CMP response message contain the expected error details text
-     * 
-     * @throws Exception
-     * /
-    @Test
-    public void test05UpdateKeyInRAMode() throws Exception {
-        if(log.isTraceEnabled()) {
-            log.trace(">test04UpdateKeyWithFakeCert");
-        }
-        
-        updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
-        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
-        assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
-        
-        //--------------- create the user and issue his first certificate -----------------
-        createUser(username, userDN, "foo123");
-        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-        Certificate certificate = null;
-        certificate = (X509Certificate) signSession.createCertificate(admin, username, "foo123", keys.getPublic());
-        assertNotNull("Failed to create a test certificate", certificate);
-
-        
-        
-        PKIMessage req = genRenewalReq(keys, false);
-        assertNotNull("Failed to generate a CMP renewal request", req);
-        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-        req.getHeader().setProtectionAlg(pAlg);      
-        req.getHeader().setSenderKID(new DEROctetString(nonce));
-        addExtraCert(req, certificate);
-        signPKIMessage(req, keys);
-        assertNotNull(req);
-        
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        DEROutputStream out = new DEROutputStream(bao);
-        out.writeObject(req);
-        byte[] ba = bao.toByteArray();
-        // Send request and receive response
-        byte[] resp = sendCmpHttp(ba, 200);
-        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        
-        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
-        assertNotNull(respObject);
-
-        final PKIBody body = respObject.getBody();
-        assertEquals(23, body.getTagNo());
-        final String errMsg = body.getError().getPKIStatus().getStatusString().getString(0).getString();
-        final String expectedErrMsg = "This request can only be processed in client mode";
-        assertEquals(expectedErrMsg, errMsg);
-
-        if(log.isTraceEnabled()) {
-            log.trace("<test04UpdateKeyWithFakeCert");
-        }
-
-    }
-*/
     /**
      * Sends a KeyUpdateRequest using the same old keys and the configurations is NOT to allow the use of the same key. 
      * A CMP error message is expected and no certificate renewal.
@@ -642,7 +544,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * @throws Exception
      */
     @Test
-    public void test07UpdateWithSameKeyNotAllowed() throws Exception {
+    public void test05UpdateWithSameKeyNotAllowed() throws Exception {
         if(log.isTraceEnabled()) {
             log.trace(">test07UpdateWithSameKeyNotAllowed");
         }
@@ -659,8 +561,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         certificate = (X509Certificate) signSession.createCertificate(admin, username, "foo123", keys.getPublic());
         assertNotNull("Failed to create a test certificate", certificate);
 
-        
-        
         PKIMessage req = genRenewalReq(keys, false, null, null);
         assertNotNull("Failed to generate a CMP renewal request", req);
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
@@ -690,7 +590,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         if(log.isTraceEnabled()) {
             log.trace("<test07UpdateWithSameKeyNotAllowed");
         }
-
     }
 
     /**
@@ -718,7 +617,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
      * @throws Exception
      */
     @Test
-    public void test08UpdateWithDifferentKey() throws Exception {
+    public void test06UpdateWithDifferentKey() throws Exception {
         if(log.isTraceEnabled()) {
             log.trace(">test08UpdateWithDifferentKey");
         }
@@ -727,7 +626,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
         assertTrue("The CMP Authentication module was not configured correctly.", confSession.verifyProperty(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true"));
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "false");
-
         
         //--------------- create the user and issue his first certificate -----------------
         createUser(username, userDN, "foo123");
@@ -735,7 +633,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         Certificate certificate = null;
         certificate = (X509Certificate) signSession.createCertificate(admin, username, "foo123", keys.getPublic());
         assertNotNull("Failed to create a test certificate", certificate);
-
         
         KeyPair newkeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         PKIMessage req = genRenewalReq(newkeys, false, null, null);
@@ -770,11 +667,10 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         if(log.isTraceEnabled()) {
             log.trace("<test08UpdateWithDifferentKey");
         }
-
     }
     
     @Test
-    public void test09RAMode() throws Exception {
+    public void test07RAMode() throws Exception {
         if(log.isTraceEnabled()) {
             log.trace("test09RAMode()");
         }
@@ -813,20 +709,17 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200);
-        //chechCmpResponseGeneral(resp, issuerDN, cacert, nonce, transid, true, null);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
 
-
         if(log.isTraceEnabled()) {
             log.trace("<test09RAMode()");
         }
-
     }
 
     @Test
-    public void test10RAModeNonAdmin() throws Exception {
+    public void test08RAModeNonAdmin() throws Exception {
         if(log.isTraceEnabled()) {
             log.trace("test10RAModeNonAdmin()");
         }
@@ -843,7 +736,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
         PKIMessage req = genRenewalReq(keys, false, userDN, issuerDN);
         assertNotNull("Failed to generate a CMP renewal request", req);
-        //int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
         req.getHeader().setProtectionAlg(pAlg);
@@ -859,7 +751,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200);
-        //chechCmpResponseGeneral(resp, issuerDN, cacert, nonce, transid, true, null);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         
         PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
@@ -878,7 +769,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     }
     
     @Test
-    public void test11RANoIssuer() throws Exception {
+    public void test09RANoIssuer() throws Exception {
         if(log.isTraceEnabled()) {
             log.trace("test11RANoIssuer()");
         }
@@ -916,7 +807,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200);
-        //chechCmpResponseGeneral(resp, issuerDN, cacert, nonce, transid, true, null);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
@@ -927,9 +817,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
     }
     
-    
     @Test
-    public void test12RANoIssuerNoSubjectDN() throws Exception {
+    public void test10RANoIssuerNoSubjectDN() throws Exception {
         if(log.isTraceEnabled()) {
             log.trace("test12RANoIssuerNoSubjetDN()");
         }
@@ -946,7 +835,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
         PKIMessage req = genRenewalReq(keys, false, null, null);
         assertNotNull("Failed to generate a CMP renewal request", req);
-        //int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
         req.getHeader().setProtectionAlg(pAlg);
@@ -966,7 +854,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200);
-        //chechCmpResponseGeneral(resp, issuerDN, cacert, nonce, transid, true, null);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         
         PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
@@ -985,7 +872,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     }
     
     @Test
-    public void test13RAMultipleAuthenticationModules() throws Exception {
+    public void test11RAMultipleAuthenticationModules() throws Exception {
         if(log.isTraceEnabled()) {
             log.trace("test13RAMultipleAuthenticationModules");
         }
@@ -1024,7 +911,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200);
-        //chechCmpResponseGeneral(resp, issuerDN, cacert, nonce, transid, true, null);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
@@ -1036,7 +922,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     }
 
     @Test
-    public void test14RANoCA() throws Exception {
+    public void test12RANoCA() throws Exception {
         if(log.isTraceEnabled()) {
             log.trace("test14RANoCA()");
         }
@@ -1053,11 +939,9 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
         PKIMessage req = genRenewalReq(keys, false, userDN, null);
         assertNotNull("Failed to generate a CMP renewal request", req);
-        //int reqId = req.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
 
         AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
         req.getHeader().setProtectionAlg(pAlg);
-        //req.getHeader().setSenderKID(new DEROctetString("CMPTESTPROFILE".getBytes()));
         
         createUser("cmpTestAdmin", "CN=cmpTestAdmin,C=SE", "foo123");
         KeyPair admkeys = KeyTools.genKeys("1024", "RSA");
@@ -1073,7 +957,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         byte[] ba = bao.toByteArray();
         //send request and recieve response
         byte[] resp = sendCmpHttp(ba, 200);
-        //chechCmpResponseGeneral(resp, issuerDN, cacert, nonce, transid, true, null);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         
         PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
@@ -1082,7 +965,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final PKIBody body = respObject.getBody();
         assertEquals(23, body.getTagNo());
         final String errMsg = body.getError().getPKIStatus().getStatusString().getString(0).getString();
-        //final String expectedErrMsg = "Cannot find a SubjectDN in the request";
         final String expectedErrMsg = "CA does not exist";
         assertEquals(expectedErrMsg, errMsg);
 
