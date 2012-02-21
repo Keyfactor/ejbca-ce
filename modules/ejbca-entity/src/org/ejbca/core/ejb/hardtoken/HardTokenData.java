@@ -201,7 +201,10 @@ public class HardTokenData extends ProtectedData implements Serializable {
 	/** @return return a List<String> of all usernames where the searchPattern matches the token serial number. */
 	@SuppressWarnings("unchecked")
     public static List<String> findUsernamesByHardTokenSerialNumber(EntityManager entityManager, String searchPattern, int maxResults) {
-    	Query query = entityManager.createNativeQuery("SELECT DISTINCT a.username FROM HardTokenData a WHERE tokenSN LIKE '%" + searchPattern + "%'");
+        Query query = entityManager.createNativeQuery("SELECT DISTINCT a.username FROM HardTokenData a WHERE tokenSN LIKE :search");
+        // To use parameterized values in LIKE queries we must put the % in the parameter
+        final String parameter = "%" + searchPattern + "%";
+        query.setParameter("search", parameter);
     	query.setMaxResults(maxResults);
     	return query.getResultList();
 	}
