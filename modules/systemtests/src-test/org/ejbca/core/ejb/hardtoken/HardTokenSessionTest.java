@@ -13,11 +13,13 @@
 
 package org.ejbca.core.ejb.hardtoken;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.security.cert.Certificate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
@@ -51,8 +53,8 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class HardTokenTest extends CaTestCase {
-    private static final Logger log = Logger.getLogger(HardTokenTest.class);
+public class HardTokenSessionTest extends CaTestCase {
+    private static final Logger log = Logger.getLogger(HardTokenSessionTest.class);
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("HardTokenTest"));
 
     private static int orgEncryptCAId;
@@ -206,5 +208,33 @@ public class HardTokenTest extends CaTestCase {
         assertFalse("Removing hard token with tokensn 1234 failed.", hardTokenSessionRemote.existsHardToken(internalAdmin, "1234"));
         assertFalse("Removing hard token with tokensn 2345 failed.", hardTokenSessionRemote.existsHardToken(internalAdmin, "2345"));
     }
+    
+    @Test
+    public void testSQLInjection() throws Exception {
+    /* Vulnerability type : SQL Injection
+    First, hardtokenissuer table in the database should not be empty in order to exploit the vulnerability
+    The PoC is : We inject a test that will always return the records in the table.*/
+        try {
+            SwedishEIDHardToken token = new SwedishEIDHardToken("1234", "1234", "123456", "123456", 1);
+            ArrayList<Certificate> certs = new ArrayList<Certificate>();
+            certs.add(CertTools.getCertfromByteArray(testcert));
+            hardTokenSessionRemote.addHardToken(internalAdmin, "12344321", "TESTUSERSQL", "CN=TESTSQL", SecConst.TOKEN_SWEDISHEID, token, certs, null);
+            Collection<String> tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber(internalAdmin, "12344321");
+            assertEquals("Search query should have returned one result, the database does not contain any records like 12344321.", 1, tokens.size());
+            tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber(internalAdmin, "12344"); // Like query should work on partial serno
+            assertEquals("Search query should have returned one result, the database does not contain any records like 12344.", 1, tokens.size());
+            tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber(internalAdmin, "12345678");
+            assertEquals("Search query should have returned no results, the database contains a hard token with serno like 12345678.", 0, tokens.size());
+            // Now try the SQL injection, should return nothing
+            tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber(internalAdmin, "x' or (1=1) or tokenSN LIKE 'x");
+            assertEquals("Search query should have returned no results, vulnerable to sql injection?", 0, tokens.size());
+        } finally {
+            try {
+                hardTokenSessionRemote.removeHardToken(internalAdmin, "12344321");
+            } catch (HardTokenDoesntExistsException e) {} // NOPMD            
+        }
+
+    }
+    
 
 }
