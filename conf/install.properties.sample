@@ -67,3 +67,9 @@ ca.validity=3650
 # The policy id of the administrative CA. Policy id determines which PKI policy the CA uses.
 # Type your policy id or use '2.5.29.32.0' for 'any policy' (rfc5280) or 'null' for no policy at all.
 ca.policy=null
+
+# Certificate profile used for the CA certificate created during 'ant install'. 
+# If you have a certificate profile imported you can use that. Otherwise default
+# profile for ROOTCA is used.
+# Default: ROOTCA
+#ca.certificateprofile=MyOwnRootCACertificateProfile
