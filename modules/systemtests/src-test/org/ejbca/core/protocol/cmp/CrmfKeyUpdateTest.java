@@ -669,6 +669,32 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         }
     }
     
+    /**
+     * Sends a KeyUpdateRequest in RA mode. 
+     * Successful operation is expected and a new certificate is received.
+     * 
+     * - Pre-configuration: Sets the operational mode to RA mode (cmp.raoperationalmode=ra)
+     * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
+     * - Pre-configuration: Sets the cmp.authenticationparameters to 'AdminCA1'
+     * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
+     * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
+     * - Generates a CMP KeyUpdate Request and tests that such request has been created.
+     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
+     * - Verifies the signature of the CMP request
+     * - Sends the request using HTTP and receives an response.
+     * - Examines the response:
+     *      - Checks that the response is not empty or null
+     *      - Checks that the protection algorithm is sha1WithRSAEncryption
+     *      - Check that the signer is the expected CA
+     *      - Verifies the response signature
+     *      - Checks that the response's senderNonce is 16 bytes long
+     *      - Checks that the request's senderNonce is the same as the response's recipientNonce
+     *      - Checks that the request and the response has the same transactionID
+     *      - Obtains the certificate from the response
+     *      - Checks that the obtained certificate has the right subjectDN and issuerDN
+     * 
+     * @throws Exception
+     */
     @Test
     public void test07RAMode() throws Exception {
         if(log.isTraceEnabled()) {
@@ -713,11 +739,40 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
 
+        removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
+
         if(log.isTraceEnabled()) {
             log.trace("<test09RAMode()");
         }
     }
 
+    /**
+     * Sends a KeyUpdateRequest in RA mode and the request sender is not an authorized administrator. 
+     * A CMP error message is expected and no certificate renewal.
+     * 
+     * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
+     * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
+     * - Pre-configuration: Sets the cmp.authenticationparameters to 'AdminCA1'
+     * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
+     * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
+     * - Generates a CMP KeyUpdate Request and tests that such request has been created.
+     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
+     * - Verifies the signature of the CMP request
+     * - Sends the request using HTTP and receives an response.
+     * - Examines the response:
+     *      - Checks that the response is not empty or null
+     *      - Checks that the protection algorithm is sha1WithRSAEncryption
+     *      - Check that the signer is the expected CA
+     *      - Verifies the response signature
+     *      - Checks that the response's senderNonce is 16 bytes long
+     *      - Checks that the request's senderNonce is the same as the response's recipientNonce
+     *      - Checks that the request and the response has the same transactionID
+     *      - Parse the response and make sure that the parsing did not result in a 'null'
+     *      - Check that the CMP response message tag number is '23', indicating a CMP error message
+     *      - Check that the CMP response message contain the expected error details text
+     * 
+     * @throws Exception
+     */
     @Test
     public void test08RAModeNonAdmin() throws Exception {
         if(log.isTraceEnabled()) {
@@ -768,6 +823,32 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
     }
     
+    /**
+     * Sends a KeyUpdateRequest in RA mode without filling the 'issuerDN' field in the request. 
+     * Successful operation is expected and a new certificate is received.
+     * 
+     * - Pre-configuration: Sets the operational mode to RA mode (cmp.raoperationalmode=ra)
+     * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
+     * - Pre-configuration: Sets the cmp.authenticationparameters to 'AdminCA1'
+     * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
+     * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
+     * - Generates a CMP KeyUpdate Request and tests that such request has been created.
+     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
+     * - Verifies the signature of the CMP request
+     * - Sends the request using HTTP and receives an response.
+     * - Examines the response:
+     *      - Checks that the response is not empty or null
+     *      - Checks that the protection algorithm is sha1WithRSAEncryption
+     *      - Check that the signer is the expected CA
+     *      - Verifies the response signature
+     *      - Checks that the response's senderNonce is 16 bytes long
+     *      - Checks that the request's senderNonce is the same as the response's recipientNonce
+     *      - Checks that the request and the response has the same transactionID
+     *      - Obtains the certificate from the response
+     *      - Checks that the obtained certificate has the right subjectDN and issuerDN
+     * 
+     * @throws Exception
+     */
     @Test
     public void test09RANoIssuer() throws Exception {
         if(log.isTraceEnabled()) {
@@ -811,12 +892,41 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         
+        removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
+        
         if(log.isTraceEnabled()) {
             log.trace("<test11RANoIssuer()");
         }
 
     }
     
+    /**
+     * Sends a KeyUpdateRequest in RA mode with neither subjectDN nor issuerDN are set in the request. 
+     * A CMP error message is expected and no certificate renewal.
+     * 
+     * - Pre-configuration: Sets the operational mode to client mode (cmp.raoperationalmode=normal)
+     * - Pre-configuration: Sets the cmp.authenticationmodule to 'EndEntityCertificate'
+     * - Pre-configuration: Sets the cmp.authenticationparameters to 'AdminCA1'
+     * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
+     * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
+     * - Generates a CMP KeyUpdate Request and tests that such request has been created.
+     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
+     * - Verifies the signature of the CMP request
+     * - Sends the request using HTTP and receives an response.
+     * - Examines the response:
+     *      - Checks that the response is not empty or null
+     *      - Checks that the protection algorithm is sha1WithRSAEncryption
+     *      - Check that the signer is the expected CA
+     *      - Verifies the response signature
+     *      - Checks that the response's senderNonce is 16 bytes long
+     *      - Checks that the request's senderNonce is the same as the response's recipientNonce
+     *      - Checks that the request and the response has the same transactionID
+     *      - Parse the response and make sure that the parsing did not result in a 'null'
+     *      - Check that the CMP response message tag number is '23', indicating a CMP error message
+     *      - Check that the CMP response message contain the expected error details text
+     * 
+     * @throws Exception
+     */
     @Test
     public void test10RANoIssuerNoSubjectDN() throws Exception {
         if(log.isTraceEnabled()) {
@@ -865,12 +975,40 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final String expectedErrMsg = "Cannot find a SubjectDN in the request";
         assertEquals(expectedErrMsg, errMsg);
 
+        removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
+        
         if(log.isTraceEnabled()) {
             log.trace("<test12RANoIssuerNoSubjectDN()");
         }
 
     }
     
+    /**
+     * Sends a KeyUpdateRequest in RA mode when there are more than one authentication module configured. 
+     * Successful operation is expected and a new certificate is received.
+     * 
+     * - Pre-configuration: Sets the operational mode to RA mode (cmp.raoperationalmode=ra)
+     * - Pre-configuration: Sets the cmp.authenticationmodule to "HMAC;DnPartPwd;EndEntityCertificate"
+     * - Pre-configuration: Sets the cmp.authenticationparameters to "-;OU;AdminCA1"
+     * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
+     * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
+     * - Generates a CMP KeyUpdate Request and tests that such request has been created.
+     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
+     * - Verifies the signature of the CMP request
+     * - Sends the request using HTTP and receives an response.
+     * - Examines the response:
+     *      - Checks that the response is not empty or null
+     *      - Checks that the protection algorithm is sha1WithRSAEncryption
+     *      - Check that the signer is the expected CA
+     *      - Verifies the response signature
+     *      - Checks that the response's senderNonce is 16 bytes long
+     *      - Checks that the request's senderNonce is the same as the response's recipientNonce
+     *      - Checks that the request and the response has the same transactionID
+     *      - Obtains the certificate from the response
+     *      - Checks that the obtained certificate has the right subjectDN and issuerDN
+     * 
+     * @throws Exception
+     */
     @Test
     public void test11RAMultipleAuthenticationModules() throws Exception {
         if(log.isTraceEnabled()) {
@@ -915,12 +1053,40 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         X509Certificate cert = checkKurCertRepMessage(userDN, cacert, resp, reqId);
         assertNotNull("Failed to renew the certificate", cert);
         
+        removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
+        
         if(log.isTraceEnabled()) {
             log.trace("<test13RAMultipleAuthenticationModules()");
         }
 
     }
 
+    /**
+     * Sends a KeyUpdateRequest in RA mode when the authentication module is NOT set to 'EndEntityCertificate'. 
+     * Successful operation is expected and a new certificate is received.
+     * 
+     * - Pre-configuration: Sets the operational mode to RA mode (cmp.raoperationalmode=ra)
+     * - Pre-configuration: Sets the cmp.authenticationmodule to 'HMAC'
+     * - Pre-configuration: Sets the cmp.authenticationparameters to '-'
+     * - Pre-configuration: Set cmp.checkadminauthorization to 'true'
+     * - Creates a new user and obtains a certificate, cert, for this user. Tests whether obtaining the certificate was successful.
+     * - Generates a CMP KeyUpdate Request and tests that such request has been created.
+     * - Signs the CMP request using cert and attaches cert to the CMP request. Tests that the CMP request is still not null
+     * - Verifies the signature of the CMP request
+     * - Sends the request using HTTP and receives an response.
+     * - Examines the response:
+     *      - Checks that the response is not empty or null
+     *      - Checks that the protection algorithm is sha1WithRSAEncryption
+     *      - Check that the signer is the expected CA
+     *      - Verifies the response signature
+     *      - Checks that the response's senderNonce is 16 bytes long
+     *      - Checks that the request's senderNonce is the same as the response's recipientNonce
+     *      - Checks that the request and the response has the same transactionID
+     *      - Obtains the certificate from the response
+     *      - Checks that the obtained certificate has the right subjectDN and issuerDN
+     * 
+     * @throws Exception
+     */
     @Test
     public void test12RANoCA() throws Exception {
         if(log.isTraceEnabled()) {
@@ -930,6 +1096,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_DN_PART_PWD);
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "OU");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");
 
         //------------------ create the user and issue his first certificate -------------
         createUser(username, userDN, "foo123");
@@ -968,6 +1136,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         final String expectedErrMsg = "CA does not exist";
         assertEquals(expectedErrMsg, errMsg);
 
+        removeAuthenticationToken(admToken, admCert, "cmpTestAdmin");
+        
         if(log.isTraceEnabled()) {
             log.trace("<test14RANoCA()");
         }
@@ -1330,9 +1500,6 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
         RoleData roledata = roleAccessSessionRemote.findRole("Super Administrator Role");
         if (roledata != null) {
-
-            //Set<X509Certificate> credentials = (Set<X509Certificate>) authToken.getCredentials();
-            //Certificate cert = credentials.iterator().next();
 
             List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
             accessUsers.add(new AccessUserAspectData(rolename, CertTools.getIssuerDN(cert).hashCode(), X500PrincipalAccessMatchValue.WITH_COMMONNAME,
