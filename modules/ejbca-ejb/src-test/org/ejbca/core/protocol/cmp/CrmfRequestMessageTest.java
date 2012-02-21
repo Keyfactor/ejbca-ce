@@ -245,15 +245,15 @@ public class CrmfRequestMessageTest {
 
 	@Test
     public void testBc146RARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
-    	testBcRARequest(bc146rapopir);
+    	internalBcRARequestTest(bc146rapopir);
     }
 
 	@Test
     public void testBc147RARequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
-    	testBcRARequest(bc147rapopir);
+    	internalBcRARequestTest(bc147rapopir);
     }
 
-    private void testBcRARequest(byte[] message) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+    private void internalBcRARequestTest(byte[] message) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
     	// Check that we can parse request from BouncyCastle version 1.46.
     	// Read an initialization request with RAVerifiedPOP with PBE protection to see that we can process it
     	ASN1InputStream in = new ASN1InputStream(message);
@@ -281,15 +281,17 @@ public class CrmfRequestMessageTest {
     	assertFalse(verifyer.verify("foo123"));
     }
 
+    @Test
     public void testBc146ClientRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
-    	testBcClientRequest(bc146sigpopir);
+    	internalBcClientRequestTest(bc146sigpopir);
     }
     
+    @Test
     public void testBc147ClientRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
-    	testBcClientRequest(bc147sigpopir);
+    	internalBcClientRequestTest(bc147sigpopir);
     }
 
-    private void testBcClientRequest(byte[] message) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+    private void internalBcClientRequestTest(byte[] message) throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
     	// Check that we can parse request from BouncyCastle version 1.46.    	
     	// Read an initialization request with a signature POP, and signature protection, to see that we can process it
     	ASN1InputStream in = new ASN1InputStream(message);
@@ -318,6 +320,7 @@ public class CrmfRequestMessageTest {
     	assertTrue(CmpMessageHelper.verifyCertBasedPKIProtection(msg.getMessage(), msg.getRequestPublicKey()));
     }
 
+    @Test
     public void testHuaweiEnodeBClientRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
     	// Read an initialization request to see that we can process it
     	ASN1InputStream in = new ASN1InputStream(huaweiir);
