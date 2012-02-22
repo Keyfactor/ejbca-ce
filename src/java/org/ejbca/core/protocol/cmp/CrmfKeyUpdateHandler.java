@@ -316,21 +316,14 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
     }
 
     private String getEECCA() {
-        
-        // Read the CA from the cmp.authenticationparameters
-    	String authmethods = CmpConfiguration.getAuthenticationModule();
-    	String authparams = CmpConfiguration.getAuthenticationParameters();
+
+        // Read the CA from the properties file first
+        String parameter = CmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        if(!StringUtils.equals("-", parameter)) {
+            return parameter;
+        }
     	
-    	String[] methods = authmethods.split(";");
-    	String[] params = authparams.split(";");
-    	
-    	for(int i=0; i<methods.length; i++) {
-    		if(StringUtils.equals(methods[i], CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
-    			return params[i];
-    		}
-    	}
-    	
-    	//The CA is not set in the cmp.authenticationparameters. Set the CA depending on the operation mode
+    	// The CA is not set in the cmp.authenticationparameters. Set the CA depending on the operation mode
     	if(CmpConfiguration.getRAOperationMode()) {
     	    return CmpConfiguration.getDefaultCA();
     	} else {

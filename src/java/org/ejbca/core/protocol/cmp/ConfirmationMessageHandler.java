@@ -121,7 +121,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			        int caId = getUsedCaId(keyId, eeProfileId);
 			        CAInfo caInfo = caSession.getCAInfo(admin, caId);
 			            
-			        final HMACAuthenticationModule hmac = new HMACAuthenticationModule(getParam(CmpConfiguration.AUTHMODULE_HMAC));
+			        final HMACAuthenticationModule hmac = new HMACAuthenticationModule(CmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_HMAC) );
 			        hmac.setSession(admin, endEntityAccessSession, certificateStoreSession);
 			        hmac.setCaInfo(caInfo);
 			        if(hmac.verifyOrExtract(msg.getMessage(), null, authenticated)) {
@@ -150,7 +150,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			                LOG.debug("Trying to verify the CertConf message using EndEntityCertificate");
 			            }
 			            
-			            final EndEntityCertificateAuthenticationModule eemodule = new EndEntityCertificateAuthenticationModule(getParam(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE));
+			            final EndEntityCertificateAuthenticationModule eemodule = new EndEntityCertificateAuthenticationModule(CmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE));
 			            eemodule.setSession(admin, caSession, certificateStoreSession, authorizationSession, endEntityProfileSession, endEntityAccessSession, authenticationProviderSession);
 			            if (eemodule.verifyOrExtract(msg.getMessage(), null, authenticated)) {
 			                cmpRaAuthSecret = eemodule.getAuthenticationString();
@@ -204,7 +204,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 					}
 					if (ca != null) {
 						CAToken catoken = ca.getCAToken();
-						cresp.setSignKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());						
+						cresp.setSignKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());
 					} else {
 						if (LOG.isDebugEnabled()) {
 							LOG.info("Could not find CA to sign Certificate Confirm, either from recipient ("+cadn+") or default ("+CmpConfiguration.getDefaultCA()+"). Not signing Certificate Confirm.");
@@ -242,19 +242,4 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 		return resp;
 	}
 
-	private String getParam(String module) {
-	    String confModule = CmpConfiguration.getAuthenticationModule();
-	    String confParams = CmpConfiguration.getAuthenticationParameters();
-	    
-	    String modules[] = confModule.split(";");
-	    String params[] = confParams.split(";");
-	    
-	    for(int i=0; i<modules.length; i++) {
-	        if(StringUtils.equals(modules[i].trim(), module)) {
-	            return params[i];
-	        }
-	    }
-	    
-	    return "-";
-	}
 }
