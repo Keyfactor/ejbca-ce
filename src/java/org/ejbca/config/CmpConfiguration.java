@@ -13,6 +13,8 @@
 
 package org.ejbca.config;
 
+import org.apache.commons.lang.StringUtils;
+
 public class CmpConfiguration {
 	
 	public static final String CONFIG_DEFAULTCA               = "cmp.defaultca";
@@ -89,6 +91,24 @@ public class CmpConfiguration {
 	
 	public static String getAuthenticationParameters() {
 		return EjbcaConfigurationHolder.getString(CONFIG_AUTHENTICATIONPARAMETERS);
+	}
+	
+	public static String getAuthenticationParameter(String authModule) {
+	    
+	    String confModule = getAuthenticationModule();
+	    String confParams = getAuthenticationParameters();
+	    
+	    String modules[] = confModule.split(";");
+	    String params[] = confParams.split(";");
+	    
+	    for(int i=0; i<modules.length; i++) {
+	        if(StringUtils.equals(modules[i].trim(), authModule)) {
+	            return params[i];
+	        }
+	    }
+	    
+	    return "-";
+
 	}
 	
 	public static boolean getRAOperationMode() {
