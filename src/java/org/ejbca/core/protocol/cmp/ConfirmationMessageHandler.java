@@ -110,7 +110,8 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			    if(LOG.isDebugEnabled()) {
 			        LOG.debug("The CertConfirm message recieved is signed");
 			    }
-			    
+
+			    // First, try to verify using HMAC/Pbe
 			    try {
 			        if(LOG.isDebugEnabled()) {
 			            LOG.debug("Trying to verify the CertConf signature using HMAC/PBE");
@@ -133,12 +134,16 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 	                        LOG.debug("The CertConf message was verified successfully");
 	                    }
 			        }
-			    } catch (Exception e) {
-			        
+			    } catch (Exception e) { 
+			        // NotFoundException, CADoesntExistsException, AuthorizationDeniedException, InvalidKeyException, 
+			        // NoSuchAlgorithmException or NoSuchProviderException 
                     if(LOG.isDebugEnabled()) {
                         LOG.debug("Verifying the CertConf message using HMAC/PBE failed.");
                     }
-			        
+			    }
+			     
+			    // If HMAC verification fails, try verifying using EndEntityCertificateAuthenticationModule
+			    if(cmpRaAuthSecret == null) {
 			        if(msg.getMessage().getExtraCert(0) != null) {
 			            
 			            if(LOG.isDebugEnabled()) {
@@ -157,10 +162,14 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 			        }
 			    }
 			    
-		         if(cmpRaAuthSecret == null) {
-		             LOG.info("The CertConf message could not be verified. The request will be processed without verification");
-		         }
+			    // If neither HMA nor EndEntityCertificate succeed, skip the verification all together
+		        if(cmpRaAuthSecret == null) {
+		            LOG.info("The CertConf message could not be verified. The request will be processed without verification");
+		        }
 			}
+			
+			
+			// Creating the confirm message response
 			
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Creating a PKI confirm message response");
