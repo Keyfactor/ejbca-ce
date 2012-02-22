@@ -38,8 +38,8 @@ public class CaImportCACertCommand extends BaseCaAdminCommand {
         if (args.length < 3) {
         	getLogger().info("Description: " + getDescription());
         	getLogger().info("Usage: " + getCommand() + " <CA name> <PEM file> [-initauthorization] [-superadmincn SuperAdmin]\n");
-			getLogger().info("Add the argument initauthorization if you are importing an initial administration CA, and this will be the first CA in your system. Only used during installation when there is no local AdminCA on the EJBCA instance, but an external CA is used for administration.\n");
-    		getLogger().info("Adding the parameters '-superadmincn SuperAdmin' makes an initial CA use the common name SuperAdmin when initializing the authorization module with an initial super administrator. Note only used together with -initauthorization when creating initial CA.");
+			getLogger().info("Add the argument '-initauthorization' if you are importing an initial administration CA, and this will be the first CA in your system. Only used during installation when there is no local AdminCA on the EJBCA instance, but an external CA is used for administration.\n");
+    		getLogger().info("Adding the parameters '-superadmincn SuperAdmin' (required when using -initauthorization) makes an initial super administrator using the common name SuperAdmin (select you CN) when initializing the authorization module. Note only used together with -initauthorization when importing initial CA.");
 			return;
 		}
 		String caName = args[1];
