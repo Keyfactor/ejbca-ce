@@ -189,16 +189,19 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                                         List<String> cas = Arrays.asList(availableCAs.split(";"));
                                         availableCAs = "";
                                         for ( String currentCA : cas ) {
-                                        	Integer currentCAInt = Integer.parseInt(currentCA);
-                                        	// The constant ALLCAS will not be searched for among available CAs
-                                        	if ( (currentCAInt.intValue() != SecConst.ALLCAS) && (EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), currentCAInt) == null) ) {
-                                        		getLogger().warn("CA with id " + currentCA + " was not found and will not be used in end entity profile '" + profilename + "'.");
-                                                if (defaultCA.equals(currentCA)) {
-                                                	defaultCA = "";
+                                            Integer currentCAInt = Integer.parseInt(currentCA);
+                                            // The constant ALLCAS will not be searched for among available CAs
+                                            try {
+                                                if (currentCAInt.intValue() != SecConst.ALLCAS) {                                               
+                                                    EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), currentCAInt);
                                                 }
-                                        	} else {
-                                        		availableCAs += (availableCAs.equals("") ? "" : ";" ) + currentCA;
-                                        	}
+                                                availableCAs += (availableCAs.equals("") ? "" : ";" ) + currentCA; // No Exception means CA exists
+                                            } catch (CADoesntExistsException e) {
+                                                getLogger().warn("CA with id " + currentCA + " was not found and will not be used in end entity profile '" + profilename + "'.");
+                                                if (defaultCA.equals(currentCA)) {
+                                                    defaultCA = "";
+                                                }
+                                            } 
                                         }
                                         if (availableCAs.equals("")) {
                                         	if (caid == null) {
