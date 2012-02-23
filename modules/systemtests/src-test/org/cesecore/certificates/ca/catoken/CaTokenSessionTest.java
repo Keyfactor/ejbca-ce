@@ -39,6 +39,7 @@ import org.cesecore.certificates.ca.CaTestSessionRemote;
 import org.cesecore.certificates.ca.internal.CATokenCacheManager;
 import org.cesecore.certificates.certificate.CertificateCreateException;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
+import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
@@ -246,7 +247,7 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
     public void testGenerateGetAndDeleteKeys() throws Exception {
     	Certificate cacert = testx509ca.getCACertificate();
 
-    	caTokenSession.generateKeyPair(roleMgmgToken, testx509ca.getCAId(), "foo123".toCharArray(), "512", "newAlias");
+    	caTokenSession.generateKeyPair(roleMgmgToken, testx509ca.getCAId(), "foo123".toCharArray(), "1024", "newAlias");
     	
     	// See that we can do something with the CAs to verify that everything was stored as we think
     	EndEntityInformation user = new EndEntityInformation("username", "CN=User", testx509ca.getCAId(), "rfc822Name=user@user.com", "user@user.com", new EndEntityType(EndEntityTypes.ENDUSER), 0,
@@ -308,5 +309,23 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
     		// NOPMD
     	}
 	}
+    
+    /** Test that the CATokenSessionBean does not let us create CAs with too short key lengths
+     */
+    @Test
+    public void testIllegalCAKeyLength() throws Exception {
+        try {
+            caTokenSession.generateKeyPair(roleMgmgToken, testx509ca.getCAId(), "foo123".toCharArray(), "512", "newAlias");
+            fail("Should nt be able to generate CA keystore keys with 512 bit RSA");
+        } catch (InvalidKeyException e) {} // NOPMD
+        try {
+            caTokenSession.generateKeyPair(roleMgmgToken, testx509ca.getCAId(), "foo123".toCharArray(), "DSA512", "newAlias");
+            fail("Should nt be able to generate CA keystore keys with 512 bit RSA");
+        } catch (InvalidKeyException e) {} // NOPMD
+        try {
+            caTokenSession.generateKeyPair(roleMgmgToken, testx509ca.getCAId(), "foo123".toCharArray(), "prime192v1", "newAlias");
+            fail("Should nt be able to generate CA keystore keys with 512 bit RSA");
+        } catch (InvalidKeyException e) {} // NOPMD
+    }
 
 }

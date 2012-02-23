@@ -133,7 +133,7 @@ public class PKCS12ReqCommand extends EJBCAWSRABaseCommand implements IAdminComm
 
 	protected void usage() {
 		getPrintStream().println("Command used to generate a users keystore");
-		getPrintStream().println("Usage : pkcs12req <username> <password>  <keyspec (1024|1536|2048|4096|8192|prime192v1|etc.)> <keyalg (RSA|ECDSA)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");                
+		getPrintStream().println("Usage : pkcs12req <username> <password>  <keyspec (1024|1536|2048|4096|8192|secp256r1|etc.)> <keyalg (RSA|ECDSA)> <hardtokensn (or NONE)> <outputpath (optional)> \n\n");                
    }
 
 

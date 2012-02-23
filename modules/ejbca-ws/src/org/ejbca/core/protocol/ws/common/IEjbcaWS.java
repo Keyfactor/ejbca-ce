@@ -354,7 +354,7 @@ public interface IEjbcaWS {
 	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
 	 * possible to map it by give the hardTokenSN here, this will simplify revocation of a tokens
 	 * certificates. Use null if no hardtokenSN should be associated with the certificate.
-	 * @param keyspec that the generated key should have, examples are 1024 for RSA or prime192v1 for ECDSA.
+	 * @param keyspec that the generated key should have, examples are 1024 for RSA or secp256r1 for ECDSA.
 	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in
 	 * {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
 	 * @return the generated keystore
@@ -862,7 +862,7 @@ public interface IEjbcaWS {
 	 * @param hardTokenSN If the certificate should be connected with a hardtoken, it is
 	 * possible to map it by give the hardTokenSN here, this will simplify revocation of a token
 	 * certificates. Use null if no hardtokenSN should be associated with the certificate.
-	 * @param keyspec that the generated key should have, examples are 1024 for RSA or prime192v1 for ECDSA.
+	 * @param keyspec that the generated key should have, examples are 1024 for RSA or secp256r1 for ECDSA.
 	 * @param keyalg that the generated key should have, RSA, ECDSA. Use one of the constants in 
 	 * {@link org.cesecore.certificates.util.AlgorithmConstants}.KEYALGORITHM_...
 	 * @return the generated token data 

@@ -222,7 +222,7 @@ public class RevocationApprovalTest extends CaTestCase {
         catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catokeninfo.setClassPath(SoftCryptoToken.class.getName());
         Properties prop = catokeninfo.getProperties();
-        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("512"));
+        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
         prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
         prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);

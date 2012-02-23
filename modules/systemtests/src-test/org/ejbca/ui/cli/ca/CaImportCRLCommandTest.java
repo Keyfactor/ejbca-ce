@@ -61,7 +61,7 @@ public class CaImportCRLCommandTest {
     private static final String CA_NAME = "4711CRL";
     private static final String CRL_FILENAME = "4711CRL.crl";
     private static final String CA_DN = "CN=CLI Test CA 4711CRL,O=EJBCA,C=SE";
-    private static final String[] CAINIT_ARGS = { "init", CA_NAME, "\""+CA_DN+"\"", "soft", "foo123", "512", "RSA",
+    private static final String[] CAINIT_ARGS = { "init", CA_NAME, "\""+CA_DN+"\"", "soft", "foo123", "1024", "RSA",
             "365", "null", "SHA1WithRSA" };
     private static final String[] CACREATECRL_ARGS = { "createcrl", CA_NAME };
     private static final String[] CAGETCRL_ARGS = { "getcrl", CA_NAME, CRL_FILENAME };

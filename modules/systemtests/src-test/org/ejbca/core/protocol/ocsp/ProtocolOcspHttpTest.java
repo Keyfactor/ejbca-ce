@@ -442,7 +442,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 				((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
 
 		int ecdsacaid = "CN=OCSPECDSATEST".hashCode();
-		X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSATEST", "prime192v1");
+		X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSATEST", "secp256r1");
 		helper.reloadKeys();
 		try {
 			// Make user and ocspTestCert that we know...
@@ -1069,7 +1069,9 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 			X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
 			assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
 			assertTrue("Creating CA failed", info.getSubjectDN().equals(dn));
-			PublicKey pk = cert.getPublicKey();
+            // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
+            X509Certificate bccert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());
+            PublicKey pk = bccert.getPublicKey();
 			if (pk instanceof JCEECPublicKey) {
 				JCEECPublicKey ecpk = (JCEECPublicKey) pk;
 				assertEquals(ecpk.getAlgorithm(), "EC");
@@ -1077,10 +1079,10 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 				if (StringUtils.equals(keySpec, "implicitlyCA")) {
 					assertNull("ImplicitlyCA must have null spec", spec);
 				} else {
-					assertNotNull("prime192v1 must not have null spec", spec);
+					assertNotNull("secp256r1 must not have null spec", spec);
 				}
 			} else {
-				assertTrue("Public key is not EC", false);
+				assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
 			}
 
 			ret = true;

@@ -327,6 +327,7 @@ public class KeyToolsTest {
     public void testGenKeysDSA() throws Exception {
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_DSA);
         assertNotNull("keys must not be null", keys);
+        assertEquals("Length must be 512", 512, KeyTools.getKeyLength(keys.getPublic()));
         String b64private = new String(Base64.encode(keys.getPrivate().getEncoded()));
         assertNotNull("b64private must not be null", b64private);
         // log.debug(b64private);

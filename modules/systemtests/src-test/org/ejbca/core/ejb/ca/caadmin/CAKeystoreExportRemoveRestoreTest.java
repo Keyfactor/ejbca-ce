@@ -121,7 +121,7 @@ public class CAKeystoreExportRemoveRestoreTest {
 
     /**
      * Tries to export, remove and restore with a CA that is using SHA1withECDSA
-     * and a key using the prime192v1 curve for signing but SHA256WithRSA and a
+     * and a key using the secp256r1 curve for signing but SHA256WithRSA and a
      * 1024 bit RSA key for encryption.
      * 
      * @throws Exception

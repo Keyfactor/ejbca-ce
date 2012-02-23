@@ -102,7 +102,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
 
     private X509Certificate setupCA(String caName, String pbeSecret) throws Exception {
         LOG.trace(">setupCA");
-        assertTrue("Failed to create " + caName, createTestCA(caName, 512));
+        assertTrue("Failed to create " + caName, createTestCA(caName, 1024));
         X509CAInfo x509CaInfo = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, getTestCAId(caName));
         x509CaInfo.setCmpRaAuthSecret(pbeSecret);
         x509CaInfo.setUseCertReqHistory(false); // Disable storage of certificate history, to save some clean up

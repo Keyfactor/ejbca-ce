@@ -80,7 +80,7 @@ public class CAImportExportTest  {
     @BeforeClass
     public static void beforeTest() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException, CertificateEncodingException, SignatureException, IllegalStateException {
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate certificate = CertTools.genSelfCert("C=SE,O=Test,CN=Test CertProfileSessionNoAuth", 365, null, keys.getPrivate(), keys.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, true);
         Set<X509Certificate> credentials = new HashSet<X509Certificate>();
@@ -145,7 +145,7 @@ public class CAImportExportTest  {
     @Test
 	public void test02ImportExportSHA1withECDSA() throws Exception {
 	    log.trace("<test02ImportExport..()");
-        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, "prime192v1", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA1_WITH_ECDSA, "prime256v1", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         subTest(catokeninfo);
 	    log.trace("<test02ImportExport()");
 	} // test02ImportExport
@@ -171,7 +171,7 @@ public class CAImportExportTest  {
     @Test
 	public void test04ImportExportSHA256withECDSA() throws Exception {
 	    log.trace("<test04ImportExport..()");
-        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, "prime192v1", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, "prime256v1", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
         subTest(catokeninfo);
 	    log.trace("<test04ImportExport()");
 	} // test04ImportExport
@@ -186,7 +186,7 @@ public class CAImportExportTest  {
     @Test
 	public void test05ImportExportAccess() throws Exception {
 	    log.trace("<test05ImportExport..()");
-        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, "prime192v1", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        CATokenInfo catokeninfo = createCaTokenInfo(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, "prime256v1", AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
 		subTestPublicAccess(catokeninfo, adminTokenNoAuth);
 	    log.trace("<test05ImportExport()");
 	} // test05ImportExport

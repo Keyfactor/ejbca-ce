@@ -37,6 +37,7 @@ import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenFactory;
@@ -150,13 +151,19 @@ public class CaSessionTest extends RoleUsingTestCase {
     public static X509CA createTestX509CA(String cadn, String tokenpin, boolean pkcs11) throws Exception {
         return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11);
     }
+    public static X509CA createTestX509CA(String cadn, String tokenpin, boolean pkcs11, final String keyspec) throws Exception {
+        return createTestX509CAOptionalGenKeys(cadn, tokenpin, true, pkcs11, keyspec);
+    }
 
     public static X509CA createTestX509CAOptionalGenKeys(String cadn, String tokenpin, boolean genKeys, boolean pkcs11) throws Exception {
+        return createTestX509CAOptionalGenKeys(cadn, tokenpin, genKeys, pkcs11, "1024");
+    }
+    private static X509CA createTestX509CAOptionalGenKeys(String cadn, String tokenpin, boolean genKeys, boolean pkcs11, final String keyspec) throws Exception {
         // Create catoken
         CryptoToken cryptoToken = createCryptoToken(tokenpin, pkcs11);
         if (genKeys) {
-            cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATESIGNKEYALIAS);
-            cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATEDECKEYALIAS);
+            cryptoToken.generateKeyPair(keyspec, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            cryptoToken.generateKeyPair(keyspec, CAToken.SOFTPRIVATEDECKEYALIAS);
         }
 
         CAToken catoken = new CAToken(cryptoToken);
@@ -208,8 +215,15 @@ public class CaSessionTest extends RoleUsingTestCase {
         // A CA certificate
         Collection<Certificate> cachain = new ArrayList<Certificate>();
         if (genKeys) {
+            final String keyalg = AlgorithmTools.getKeyAlgorithm(catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            String sigalg = AlgorithmConstants.SIGALG_SHA256_WITH_RSA;
+            if (keyalg.equals(AlgorithmConstants.KEYALGORITHM_DSA)) {
+                sigalg = AlgorithmConstants.SIGALG_SHA1_WITH_DSA;
+            } else if (keyalg.equals(AlgorithmConstants.KEYALGORITHM_ECDSA)) {
+                sigalg = AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA;
+            }
             X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
-                    catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), "SHA256WithRSA", true, catoken.getCryptoToken()
+                    catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), sigalg, true, catoken.getCryptoToken()
                             .getSignProviderName());
             assertNotNull(cacert);
             cachain.add(cacert);
