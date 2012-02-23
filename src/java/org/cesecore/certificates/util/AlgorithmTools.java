@@ -147,7 +147,7 @@ public final class AlgorithmTools {
 	
 	/**
 	 * Gets the key specification from a public key. Example: "1024" for a RSA 
-	 * or DSA key or "prime192v1" for EC key. The EC curve is only detected 
+	 * or DSA key or "secp256r1" for EC key. The EC curve is only detected 
 	 * if <i>publickey</i> is an object created with the bouncy castle provider.
 	 * @param publicKey The public key to get the key specification from
 	 * @return The key specification, "unknown" if it could not be determined and

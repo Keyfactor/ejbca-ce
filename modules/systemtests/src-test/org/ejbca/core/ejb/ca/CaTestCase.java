@@ -711,7 +711,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE, "CN=XKMSCertificate, " + "CN="
-                + TEST_ECDSA_IMPLICIT_CA_NAME, "", "prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA));
+                + TEST_ECDSA_IMPLICIT_CA_NAME, "", "secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA));
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
@@ -769,7 +769,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new XKMSCAServiceInfo(ExtendedCAServiceInfo.STATUS_INACTIVE,
-                "CN=XKMSSignerCertificate, " + "CN=" + TEST_ECDSA_CA_NAME, "", "prime192v1", AlgorithmConstants.KEYALGORITHM_ECDSA));
+                "CN=XKMSSignerCertificate, " + "CN=" + TEST_ECDSA_CA_NAME, "", "secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA));
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 
@@ -779,7 +779,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         Properties prop = catokeninfo.getProperties();
         // Set some CA token properties if they are not set already
         if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("prime192v1"));
+            prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("secp256r1"));
         }
         if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
             prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);

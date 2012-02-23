@@ -15,6 +15,7 @@ package org.cesecore.certificates.ca.catoken;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
+import java.security.KeyPair;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -32,6 +33,7 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -44,13 +46,17 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
+import org.ejbca.cvc.AlgorithmUtil;
 
 /**
  * Implementation of CaTokenSession
@@ -131,6 +137,9 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         final CATokenInfo oldinfo = ca.getCAToken().getTokenInfo();
         final Properties oldprop = oldinfo.getProperties();
         final String oldsequence = oldinfo.getKeySequence();
+        // Check that we don't try to generate keys with too small sizes
+        final String keyspec = token.getCryptoToken().getProperties().getProperty(CryptoToken.KEYSPEC_PROPERTY);
+        checkValidKeyLength(keyspec);
         token.generateKeys(authenticationcode, renew, activate);
         try {
 			ca.setCAToken(token);
@@ -155,6 +164,52 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         }
     }
 
+    private void checkValidKeyLength(String keyspec) throws InvalidKeyException, NoSuchAlgorithmException,
+            NoSuchProviderException, InvalidAlgorithmParameterException {
+        String keyAlg;
+        int len;
+        if (StringUtils.isNumeric(keyspec)) {
+            keyAlg = AlgorithmConstants.KEYALGORITHM_RSA;
+            len = Integer.valueOf(keyspec); 
+        } else if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
+            keyAlg = AlgorithmConstants.KEYALGORITHM_DSA;
+            if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
+                keyspec = keyspec.substring(3);
+            }
+            len = Integer.valueOf(keyspec);
+        } else {
+            keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
+            final KeyPair kp = KeyTools.genKeys(keyspec, keyAlg);
+            len = KeyTools.getKeyLength(kp.getPublic());
+        }
+        checkValidKeyLength(keyAlg, len);
+    }
+
+    private void checkValidKeyLength(final PublicKey pk) throws InvalidKeyException, NoSuchAlgorithmException,
+    NoSuchProviderException, InvalidAlgorithmParameterException {
+
+        final String keyAlg = AlgorithmTools.getKeyAlgorithm(pk);
+        final int len = KeyTools.getKeyLength(pk);
+        checkValidKeyLength(keyAlg, len);
+    }
+
+    private void checkValidKeyLength(final String keyAlg, final int len) throws InvalidKeyException {
+        if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyAlg)) {
+            // We allow key lengths of 0, because that means that implicitlyCA is used. 
+            // for ImplicitlyCA we have no idea what the key length is, on the other hand only real professionals
+            // will ever use that to we will allow it.
+            if ((len > 0) && (len < 224)) {
+                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "ECDSA", "224", len);
+                throw new InvalidKeyException(msg);
+            }                            
+        } else if (AlgorithmConstants.KEYALGORITHM_RSA.equals(keyAlg) || AlgorithmConstants.KEYALGORITHM_DSA.equals(keyAlg)) {
+            if (len < 1024) {
+                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "RSA/DSA", "1024", len);
+                throw new InvalidKeyException(msg);
+            }
+        }
+    }
+    
     @Override
     public void activateNextSignKey(final AuthenticationToken admin, final int caid, final char[] authenticationcode) throws CADoesntExistsException,
             AuthorizationDeniedException, InvalidKeyException, CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException,
@@ -262,6 +317,7 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         final CA ca = caSession.getCA(admin, caid);
         final CAToken token = ca.getCAToken();
         token.getCryptoToken().activate(authenticationcode);
+        checkValidKeyLength(keySpec);
         token.getCryptoToken().generateKeyPair(keySpec, alias);
         try {
 			ca.setCAToken(token);
@@ -291,6 +347,7 @@ public class CaTokenSessionBean implements CaTokenSessionLocal, CaTokenSessionRe
         final CA ca = caSession.getCA(admin, caid);
         final CAToken token = ca.getCAToken();
         token.getCryptoToken().activate(authenticationcode);
+        checkValidKeyLength(template);
         final AlgorithmParameterSpec spec = KeyTools.getKeyGenSpec(template);
         token.getCryptoToken().generateKeyPair(spec, alias);
         try {
