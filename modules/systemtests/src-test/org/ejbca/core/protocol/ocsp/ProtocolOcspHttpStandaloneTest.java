@@ -190,7 +190,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
                 200, con.getResponseCode());
         assertNotNull(con.getContentType());
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+        OCSPResp response = new OCSPResp(con.getInputStream());
         assertNotNull("Response should not be null.", response);
         assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
         final String dubbleSlashEncReq = httpReqPath
@@ -204,7 +204,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         assertEquals("Response code did not match. ", 200, con.getResponseCode());
         assertNotNull(con.getContentType());
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-        response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+        response = new OCSPResp(con.getInputStream());
         assertNotNull("Response should not be null.", response);
         assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
     }
@@ -238,7 +238,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         // "application/ocsp-response; charset=UTF-8"
         assertNotNull(con.getContentType());
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+        OCSPResp response = new OCSPResp(con.getInputStream());
         assertEquals("Response status not the expected.", OCSPRespGenerator.SUCCESSFUL, response.getStatus());
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
         // Just output the headers to stdout so we can visually inspect them if
@@ -317,7 +317,7 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         // "application/ocsp-response; charset=UTF-8"
         assertNotNull(con.getContentType());
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(OcspJunitHelper.inputStreamToBytes(con.getInputStream())));
+        OCSPResp response = new OCSPResp(con.getInputStream());
         assertEquals("Response status not the expected.", 0, response.getStatus());
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
         X509Certificate[] chain = brep.getCerts("BC");
