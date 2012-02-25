@@ -1751,7 +1751,7 @@ public class CAsTest extends CaTestCase {
            caAdminSession.createCA(caAdmin, cainfo);
            fail("It should not be possoble to create a CA with 512 bit RSA keys.");
        } catch (EJBException e) { 
-           Throwable cause = e.getCause();
+           Throwable cause = e.getCausedByException();
            if (cause instanceof InvalidKeyException) {
                // This is what we want in JBoss
            } else if (cause instanceof ServerException) {
@@ -1770,7 +1770,7 @@ public class CAsTest extends CaTestCase {
                }
            } else {
                log.info("Error should be InvalidKeyException: ", cause);
-               fail("Error should be InvalidKeyException: "+e.toString());
+               fail("Error should be InvalidKeyException: "+cause.toString());
            }
        } finally {
            caSession.removeCA(caAdmin, caid);
