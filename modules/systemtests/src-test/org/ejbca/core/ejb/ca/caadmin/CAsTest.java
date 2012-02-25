@@ -1764,12 +1764,12 @@ public class CAsTest extends CaTestCase {
                    if (t != null && t instanceof InvalidKeyException) {
                        // This is what we want on glassfish
                    } else {
-                       log.info("Error should be InvalidKeyException: ", e);
+                       log.info("Error should be InvalidKeyException: ", t);
                        fail("Error should be InvalidKeyException: "+t.toString());                       
                    }
                }
            } else {
-               log.info("Error should be InvalidKeyException: ", e);
+               log.info("Error should be InvalidKeyException: ", cause);
                fail("Error should be InvalidKeyException: "+e.toString());
            }
        } finally {
