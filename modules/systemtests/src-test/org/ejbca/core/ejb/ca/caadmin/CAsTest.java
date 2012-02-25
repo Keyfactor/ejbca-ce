@@ -1790,7 +1790,7 @@ public class CAsTest extends CaTestCase {
            caAdminSession.createCA(caAdmin, cainfo);
            fail("It should not be possoble to create a CA with 512 bit DSA keys.");
        } catch (EJBException e) { 
-           Throwable cause = e.getCause();
+           Throwable cause = e.getCausedByException();
            if (cause instanceof InvalidKeyException) {
                // This is what we want in JBoss
            } else if (cause instanceof ServerException) {
@@ -1803,13 +1803,13 @@ public class CAsTest extends CaTestCase {
                    if (t != null && t instanceof InvalidKeyException) {
                        // This is what we want on glassfish
                    } else {
-                       log.info("Error should be InvalidKeyException: ", e);
+                       log.info("Error should be InvalidKeyException: ", t);
                        fail("Error should be InvalidKeyException: "+t.toString());                       
                    }
                }
            } else {
-               log.info("Error should be InvalidKeyException: ", e);
-               fail("Error should be InvalidKeyException: "+e.toString());
+               log.info("Error should be InvalidKeyException: ", cause);
+               fail("Error should be InvalidKeyException: "+cause.toString());
            }
        } finally {
            caSession.removeCA(caAdmin, caid);
@@ -1829,10 +1829,26 @@ public class CAsTest extends CaTestCase {
            caAdminSession.createCA(caAdmin, cainfo);
            fail("It should not be possoble to create a CA with 192 bit ECC keys.");
        } catch (EJBException e) { 
-           Throwable cause = e.getCause();
-           if (!(cause instanceof InvalidKeyException)) {
-               log.info("Error should be InvalidKeyException: ", e);
-               fail("Error should be InvalidKeyException: "+e.toString());
+           Throwable cause = e.getCausedByException();
+           if (cause instanceof InvalidKeyException) {
+               // This is what we want in JBoss
+           } else if (cause instanceof ServerException) {
+               // Glassfish 2 throws EJBException(java.rmi.ServerException(java.rmi.RemoteException(javax.persistence.EntityExistsException)))), can
+               // you believe this?
+               Throwable t = cause.getCause();
+               if (t != null && t instanceof RemoteException) {
+                   t = t.getCause();
+                   log.debug("Exception cause thrown: " + t.getClass().getName() + " message: " + t.getMessage());
+                   if (t != null && t instanceof InvalidKeyException) {
+                       // This is what we want on glassfish
+                   } else {
+                       log.info("Error should be InvalidKeyException: ", t);
+                       fail("Error should be InvalidKeyException: "+t.toString());                       
+                   }
+               }
+           } else {
+               log.info("Error should be InvalidKeyException: ", cause);
+               fail("Error should be InvalidKeyException: "+cause.toString());
            }
        } finally {
            caSession.removeCA(caAdmin, caid);
