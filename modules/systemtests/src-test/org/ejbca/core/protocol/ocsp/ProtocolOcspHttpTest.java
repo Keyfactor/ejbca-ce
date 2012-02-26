@@ -764,9 +764,34 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		loadUserCert(this.caid);
 		// An OCSP request for an unknown certificate (not exist in db)
 		this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
-		final Map<String,String> map = new HashMap<String, String>();
-		map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD, "true");
-		this.helper.alterConfig(map);
+		final String bad1 = "Bad";
+		final String bad2 = "Ugly";
+		final String good1 = "Good";
+		final String good2 = "Beautiful";
+		{
+			final Map<String,String> map = new HashMap<String, String>();
+			map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD, "true");
+			map.put(OcspConfiguration.NONE_EXISTING_IS_BAD_URI+'1', ".*"+bad1+"$");
+			map.put(OcspConfiguration.NONE_EXISTING_IS_BAD_URI+'2', ".*"+bad2+"$");
+			map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'1', ".*"+good1+"$");
+			map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'2', ".*"+good2+"$");
+			this.helper.alterConfig(map);
+		}
+		this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+		this.helper.setURLEnding(bad1);
+		this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+		this.helper.setURLEnding(bad2);
+		this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+		{
+			final Map<String,String> map = new HashMap<String, String>();
+			map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD, "false");
+			this.helper.alterConfig(map);
+		}
+		this.helper.setURLEnding("");
+		this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+		this.helper.setURLEnding(good1);
+		this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
+		this.helper.setURLEnding(good2);
 		this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
 		log.trace("<test50OcspUnknownMayBeGood()");
 	}
@@ -904,22 +929,22 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		return ArrayUtils.subarray(buf, header.length, buf.length);
 	}
 
-    /**
-     * For small streams only.
-     */
-    private static byte[] inputStreamToBytes(InputStream in) throws IOException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        while ( true ) {
-            final int b = in.read();
-            if ( b<0 ) {
-            	break;
-            }
-        	baos.write(b);
-        }
-        baos.flush();
-        in.close();
-        return  baos.toByteArray();
-    }
+	/**
+	 * For small streams only.
+	 */
+	private static byte[] inputStreamToBytes(InputStream in) throws IOException {
+		final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		while ( true ) {
+			final int b = in.read();
+			if ( b<0 ) {
+				break;
+			}
+			baos.write(b);
+		}
+		baos.flush();
+		in.close();
+		return  baos.toByteArray();
+	}
 
 	/**
 	 * @return a new byte array with the two arguments concatenated.

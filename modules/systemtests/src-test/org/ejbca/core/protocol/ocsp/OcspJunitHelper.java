@@ -69,6 +69,9 @@ public class OcspJunitHelper {
 	}
 
 	public void setURLEnding(String ending) {
+		if ( ending==null || ending.length()<1 ) {
+			this.urlEnding = "";
+		}
 		this.urlEnding = "/" + ending;
 	}
 	/**

@@ -28,6 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -134,6 +135,14 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 	 * will be treated as not revoked. Default (when value is true) is to treat is as "unknown".
 	 */
 	private static boolean nonExistingIsGood;
+	/**
+	 * If this regex is fulfilled the "good" will be return even if {@link #nonExistingIsGood} is false;
+	 */
+	private static Pattern nonExistingIsGoodOverideRegex;
+	/**
+	 * If this regex is fulfilled the "unknown" will be return even if {@link #nonExistingIsGood} is true;
+	 */
+	private static Pattern nonExistingIsBadOverideRegex;
 	/** Controls which of the two possible types of responderId should be used. See RFC2560 for details.
 	 * Default is to use KeyId, the other possible type is X500name.
 	 */
@@ -171,6 +180,13 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 	 */
 	private static void reloadConfig() {
 		nonExistingIsGood = OcspConfiguration.getNonExistingIsGood();
+		{
+			final String value = OcspConfiguration.getNonExistingIsGoodOverideRegex();
+			nonExistingIsGoodOverideRegex = value!=null ? Pattern.compile( value ) : null;
+		}{
+			final String value = OcspConfiguration.getNonExistingIsBadOverideRegex();
+			nonExistingIsBadOverideRegex = value!=null ? Pattern.compile( value ) : null;
+		}
 	}
 	static {
 		reloadConfig();
@@ -563,7 +579,18 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 		}
 		return ret;
 	}
-	
+	private static boolean isRegexFulFilled( String target, Pattern pattern ) {
+		if ( pattern==null ) {
+			return false;
+		}
+		return pattern.matcher(target).matches();
+	}
+	private static boolean nonExistingIsGood( StringBuffer url) {
+		if ( nonExistingIsGood ) {
+			return !isRegexFulFilled( url.toString(), nonExistingIsBadOverideRegex);
+		}
+		return isRegexFulFilled( url.toString(), nonExistingIsGoodOverideRegex);		
+	}
 	/** Performs service of the actual OCSP request, which is contained in reqBytes. 
 	 *  
 	 *  @param reqBytes the binary OCSP request bytes. This parameter must already have been checked for max or min size. 
@@ -809,7 +836,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 							// OR
 							// we don't actually handle requests for the CA issuing the certificate asked about
 							// then we return unknown
-							if ( (!nonExistingIsGood) || (this.data.m_caCertCache.findByOcspHash(certId) == null) ) {
+							if ( !nonExistingIsGood(request.getRequestURL()) || this.data.m_caCertCache.findByOcspHash(certId)==null ) {
 								sStatus = "unknown";
 								certStatus = new UnknownStatus();
 								transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_UNKNOWN);
