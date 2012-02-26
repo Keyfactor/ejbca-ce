@@ -49,6 +49,7 @@ public class OcspConfiguration {
     public static final String WSSWKEYSTOREPASSWORD = "ocsp.rekeying.swKeystorePassword";
     public static final String WARNING_BEFORE_EXPERATION_TIME = "ocsp.warningBeforeExpirationTime";
     public static final String OCSP_KEYS_DIR= "ocsp.keys.dir";
+    public static final String NONE_EXISTING_IS_GOOD = "ocsp.nonexistingisgood";
 
     public static final int RESTRICTONISSUER = 0;
     public static final int RESTRICTONSIGNER = 1;
@@ -153,7 +154,7 @@ public class OcspConfiguration {
      * If true a certificate that does not exist in the database, but is issued by a CA the responder handles will be treated as not revoked.
      */
     public static boolean getNonExistingIsGood() {
-        String value = ConfigurationHolder.getString("ocsp.nonexistingisgood");
+        String value = ConfigurationHolder.getString(NONE_EXISTING_IS_GOOD);
         return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
     }
 

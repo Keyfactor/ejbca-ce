@@ -18,9 +18,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
@@ -61,15 +62,14 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
 
     private static final int myCaId = issuerDN.hashCode();
 
+    public ProtocolOcspHttpStandaloneTest() throws MalformedURLException, URISyntaxException {
+    	super("http", "127.0.0.1", 8080, "ejbca", "publicweb/status/ocsp");
+    }
     // Required to override check in baseclass
     @Before
     public void setUp() throws Exception {
         //super.setUp(); We don't want to initialize roles etc, since this is a standalone test!
         caid = myCaId;
-        httpPort = "8080";
-        httpReqPath = "http://127.0.0.1:" + "8080" + "/ejbca";
-        resourceOcsp = "publicweb/status/ocsp";
-        helper = new OcspJunitHelper(httpReqPath, resourceOcsp);
         unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
     }
 
