@@ -134,7 +134,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     	}
     }
 
-    public void testAddRenameAndRemoveX509CA() throws Exception {
+    public void addRenameAndRemoveX509CA() throws Exception {
         caSession.addCA(roleMgmgToken, testx509ca);
         // Try to add the same CA again
         try {
@@ -244,7 +244,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         }        
     } // testAddRenameAndRemoveX509CA
 
-    public void testAddAndGetCAWithDifferentCaid() throws Exception {
+    public void addAndGetCAWithDifferentCaid() throws Exception {
         caSession.addCA(roleMgmgToken, testx509ca);
         CA ca1 = caTestSession.getCA(roleMgmgToken, testx509ca.getCAId());
         Certificate cert = testx509ca.getCACertificate();
@@ -281,7 +281,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertEquals(ca4.getCAId(), testx509ca.getCAId());
     } // testAddAndGetCAWithDifferentCaid
 
-    public void testAddRenameAndRemoveCVCCA() throws Exception {
+    public void addRenameAndRemoveCVCCA() throws Exception {
         caSession.addCA(roleMgmgToken, testcvcca);
         // Try to add the same CA again
         try {
@@ -560,7 +560,7 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     	}    	
     }
 
-    public void testAuthorization() throws Exception {
+    public void authorization() throws Exception {
     	
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); 
 

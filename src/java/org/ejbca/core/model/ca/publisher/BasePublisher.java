@@ -173,7 +173,7 @@ public abstract class BasePublisher extends UpgradeableDataHashMap implements Se
      * 
      * @throws PublisherConnectionException when couldn't be set up correctly in any way.
      */
-    public abstract void testConnection() throws PublisherConnectionException;
+    public abstract void testConnection() throws PublisherConnectionException; // NOPMD: this is not a JUnit test
     
 
     public abstract Object clone() throws CloneNotSupportedException;

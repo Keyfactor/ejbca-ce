@@ -55,7 +55,7 @@ class KeyStoreContainerTest {
         this.keyPair = kp;
         this.providerName = pn;
     }
-    static void test(final String providerClassName,
+    static void test(final String providerClassName, // NOPMD: this is not a JUnit test
                      final String encryptProviderClassName,
                      final String keyStoreType,
                      final String storeID,
@@ -123,7 +123,7 @@ class KeyStoreContainerTest {
                     termOut.println();
                     tests[j].doIt();
                 }
-            } catch( Throwable t ) {
+            } catch( Throwable t ) { // NOPMD: dealing with HSMs we really want to catch all
                 tests = null;
                 t.printStackTrace(termErr);
             }
@@ -159,7 +159,7 @@ class KeyStoreContainerTest {
             try {
                 keyStore = KeyStoreContainerFactory.getInstance(keyStoreType, providerName,
                                                    encryptProviderClassName, storeID, null, null);
-            } catch( Throwable t ) {
+            } catch( Throwable t ) { // NOPMD: dealing with HSMs we really want to catch all
                 t.printStackTrace(termErr);
                 termErr.println("Not possible to load keys. Maybe a smart card should be inserted or maybe you just typed the wrong PIN. Press enter when the problem is fixed.");
                 new BufferedReader(new InputStreamReader(System.in)).readLine();
@@ -354,7 +354,7 @@ class KeyStoreContainerTest {
         NormalTest(String alias, KeyPair keyPair, String providerName) {
             super(alias, keyPair, providerName);
         }
-        private long test(Test test) throws Exception {
+        private long test(Test test) throws Exception { // NOPMD: this is not a JUnit test
             test.prepare();
             final long startTime = System.nanoTime();
             test.doOperation();

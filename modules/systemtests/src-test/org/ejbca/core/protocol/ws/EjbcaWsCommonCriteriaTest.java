@@ -86,10 +86,10 @@ public class EjbcaWsCommonCriteriaTest {
     
     @Test
     public void testIsAuthorized() throws Exception {
-        test.testIsAuthorized(true);
+        test.isAuthorized(true);
         // Test non authorized by revoking the certificate
         EjbcaWSTest.afterClass();
         test.tearDown();
-        test.testIsAuthorized(false);
+        test.isAuthorized(false);
     }
 }

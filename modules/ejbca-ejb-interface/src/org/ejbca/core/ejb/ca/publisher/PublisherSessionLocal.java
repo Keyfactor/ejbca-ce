@@ -53,7 +53,7 @@ public interface PublisherSessionLocal extends PublisherSession {
      * @throws PublisherConnectionException if connection test with publisher fails.
      * @see org.ejbca.core.model.ca.publisher.BasePublisher
      */
-    void testConnection(int publisherid) throws PublisherConnectionException;
+    void testConnection(int publisherid) throws PublisherConnectionException; // NOPMD: this is not a JUnit test
 
     /**
      * Adds a publisher to the database.
@@ -126,9 +126,9 @@ public interface PublisherSessionLocal extends PublisherSession {
     String getPublisherName(int id);
 
     /**
-     * Use from Healtcheck only! Test connection for all publishers. No
+     * Use from Healthcheck only! Test connection for all publishers. No
      * authorization checks are performed.
      * @return an error message or an empty String if all are ok.
      */
-    String testAllConnections();
+    String testAllConnections(); // NOPMD: this is not a JUnit test
 }

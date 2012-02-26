@@ -2011,7 +2011,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         log.trace("<getLastCertChain");
     }
 
-    protected void testIsAuthorized(boolean authorized) throws Exception {
+    protected void isAuthorized(boolean authorized) throws Exception {
         // This is a superadmin keystore, improve in the future
         if (authorized) {
             assertTrue(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_SUPERADMINISTRATOR));

@@ -122,7 +122,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 		log.trace(">test04OcspUnknown()");
 		loadUserCert(this.caid);
 		// An OCSP request for an unknown certificate (not exist in db)
-		this.helper.testStatusUnknown( this.caid, this.cacert, new BigInteger("1"));
+		this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1"));
 		log.trace("<test04OcspUnknown()");
 	}
 
@@ -136,7 +136,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 		log.trace(">test05OcspUnknownCA()");
 		loadUserCert(this.caid);
 		// An OCSP request for a certificate from an unknwon CA
-		this.helper.testStatusUnknown( this.caid, this.unknowncacert, new BigInteger("1"));
+		this.helper.verifyStatusUnknown( this.caid, this.unknowncacert, new BigInteger("1"));
 
 		log.trace("<test05OcspUnknownCA()");
 	}

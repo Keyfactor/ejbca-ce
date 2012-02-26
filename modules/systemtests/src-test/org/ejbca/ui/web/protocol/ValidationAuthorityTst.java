@@ -34,7 +34,7 @@ import org.junit.Assert;
  */
 class ValidationAuthorityTst {
 	private final static Logger log = Logger.getLogger(ValidationAuthorityTst.class);
-	static String testCRLStore(X509Certificate caCert, CrlStoreSessionRemote crlSession, String port) throws Exception {
+	static String cRLStore(X509Certificate caCert, CrlStoreSessionRemote crlSession, String port) throws Exception {
         // Before running this we need to make sure the certificate cache is refreshed, there may be a cache delay which is acceptable in real life, 
         // but not when running JUnit tests  
 		final String sURI = "http://localhost:" + port + "/crls/search.cgi?reloadcache=true";
@@ -44,16 +44,16 @@ class ValidationAuthorityTst {
 		log.debug("reloadcache returned code: "+connection.getResponseCode());
 		// Now on to the actual tests, with fresh caches
 		String problems = new String();
-		problems += testCRLStore( RFC4387URL.sKIDHash, false, caCert, crlSession, port);
-		problems += testCRLStore( RFC4387URL.iHash, false, caCert, crlSession, port);
-		problems += testCRLStore( RFC4387URL.sKIDHash, true, caCert, crlSession, port);
-		problems += testCRLStore( RFC4387URL.iHash, true, caCert, crlSession, port);
+		problems += cRLStore( RFC4387URL.sKIDHash, false, caCert, crlSession, port);
+		problems += cRLStore( RFC4387URL.iHash, false, caCert, crlSession, port);
+		problems += cRLStore( RFC4387URL.sKIDHash, true, caCert, crlSession, port);
+		problems += cRLStore( RFC4387URL.iHash, true, caCert, crlSession, port);
 		if ( !problems.isEmpty() ) {
 			return problems; // some tests has failed
 		}
 		return null; // everything OK
 	}
-	private static String testCRLStore( RFC4387URL urlType, boolean isDelta, X509Certificate caCert, CrlStoreSessionRemote crlSession, String port) throws Exception {
+	private static String cRLStore( RFC4387URL urlType, boolean isDelta, X509Certificate caCert, CrlStoreSessionRemote crlSession, String port) throws Exception {
 		final HashID id;
 		switch( urlType ) {
 		case sKIDHash:

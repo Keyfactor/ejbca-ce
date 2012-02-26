@@ -99,17 +99,17 @@ public class CaSessionTest extends RoleUsingTestCase {
 
     @Test
     public void testAddRenameAndRemoveX509CA() throws Exception {
-        testBase.testAddRenameAndRemoveX509CA();
+        testBase.addRenameAndRemoveX509CA();
     }
 
     @Test
     public void testAddAndGetCAWithDifferentCaid() throws Exception {
-        testBase.testAddAndGetCAWithDifferentCaid();
+        testBase.addAndGetCAWithDifferentCaid();
     }
 
     @Test
     public void testAddRenameAndRemoveCVCCA() throws Exception {
-        testBase.testAddRenameAndRemoveCVCCA();
+        testBase.addRenameAndRemoveCVCCA();
     }
 
     @Test
@@ -145,7 +145,7 @@ public class CaSessionTest extends RoleUsingTestCase {
 
     @Test
     public void testAuthorization() throws Exception {
-        testBase.testAuthorization();
+        testBase.authorization();
     }
 
     public static X509CA createTestX509CA(String cadn, String tokenpin, boolean pkcs11) throws Exception {
