@@ -69,6 +69,7 @@ import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceReq
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
+import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -113,7 +114,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 
 	private static final long serialVersionUID = -6214465452158073038L;
 
-    private static final Logger m_log = Logger.getLogger(OCSPServletBase.class);
+	private static final Logger m_log = Logger.getLogger(OCSPServletBase.class);
 	
 	/** Internal localization of logs and errors */
 	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -132,7 +133,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 	/** If true a certificate that does not exist in the database, but is issued by a CA the responder handles
 	 * will be treated as not revoked. Default (when value is true) is to treat is as "unknown".
 	 */
-	private final boolean m_nonExistingIsGood = OcspConfiguration.getNonExistingIsGood();
+	private static boolean nonExistingIsGood;
 	/** Controls which of the two possible types of responderId should be used. See RFC2560 for details.
 	 * Default is to use KeyId, the other possible type is X500name.
 	 */
@@ -157,14 +158,23 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 	/** Method gotten through reflection, we put it in a variable so we don't have to use
 	 * reflection every time we use the audit or transaction log */
 	private Method m_errorHandlerMethod = null;
-    private TransactionLogger transactionLogger;
-    private AuditLogger auditLogger;
+	private TransactionLogger transactionLogger;
+	private AuditLogger auditLogger;
 	private static final String PROBABLE_ERRORHANDLER_CLASS = ProbableErrorHandler.class.getName();
 	private static final String SAFER_LOG4JAPPENDER_CLASS = SaferDailyRollingFileAppender.class.getName();
 
 	private final AuthenticationToken m_internalAdmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("OCSP ServletBase"));
 	
 	OCSPData data;	// Data to be used also by the standalone session.
+	/**
+	 * Call this to update the configuration.
+	 */
+	private static void reloadConfig() {
+		nonExistingIsGood = OcspConfiguration.getNonExistingIsGood();
+	}
+	static {
+		reloadConfig();
+	}
 
 	synchronized void loadTrustDir() throws Exception {
 		// Check if we have a cached collection that is not too old
@@ -174,7 +184,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 			}
 			mTrustedReqSigIssuers = OCSPUtil.getCertificatesFromDirectory(m_signTrustDir);
 			if (m_log.isDebugEnabled()) {
-				m_log.debug("Loaded "+mTrustedReqSigIssuers == null ? "0":mTrustedReqSigIssuers.size()+" CA-certificates as trusted for OCSP-request signing");        	
+				m_log.debug("Loaded "+mTrustedReqSigIssuers == null ? "0":mTrustedReqSigIssuers.size()+" CA-certificates as trusted for OCSP-request signing");			
 			}
 			m_trustDirValidTo = m_signTrustValidTime>0 ? new Date().getTime()+m_signTrustValidTime : Long.MAX_VALUE;
 		}
@@ -184,7 +194,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 			}
 			mTrustedReqSigSigners = OCSPUtil.getCertificatesFromDirectory(m_signTrustDir);
 			if (m_log.isDebugEnabled()) {
-				m_log.debug("Loaded "+mTrustedReqSigSigners == null ? "0":mTrustedReqSigSigners.size()+" Signer-certificates as trusted for OCSP-request signing");        	
+				m_log.debug("Loaded "+mTrustedReqSigSigners == null ? "0":mTrustedReqSigSigners.size()+" Signer-certificates as trusted for OCSP-request signing");			
 			}
 			m_trustDirValidTo = m_signTrustValidTime>0 ? new Date().getTime()+m_signTrustValidTime : Long.MAX_VALUE;
 		}
@@ -201,16 +211,16 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 	private BasicOCSPResp signOCSPResponse(OCSPReq req, ArrayList<OCSPResponseItem> responseList, X509Extensions exts, X509Certificate cacert)
 	throws CADoesntExistsException, ExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, IllegalExtendedCAServiceRequestException, AuthorizationDeniedException {
 
-	    // Call extended CA services to get our OCSP stuff
-	    OCSPCAServiceRequest ocspservicerequest = new OCSPCAServiceRequest(req, responseList, exts, m_sigAlg, m_includeChain);
-	    ocspservicerequest.setRespIdType(m_respIdType);
-	    OCSPCAServiceResponse caserviceresp = extendedService(this.m_internalAdmin, this.data.getCaid(cacert), ocspservicerequest);
-	    // Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
-	    if (m_log.isDebugEnabled()) {
-	        Collection<X509Certificate> coll = caserviceresp.getOCSPSigningCertificateChain();
-	        m_log.debug("Cert chain for OCSP signing is of size " + coll.size());            	
-	    }
-	    return caserviceresp.getBasicOCSPResp();
+		// Call extended CA services to get our OCSP stuff
+		OCSPCAServiceRequest ocspservicerequest = new OCSPCAServiceRequest(req, responseList, exts, m_sigAlg, m_includeChain);
+		ocspservicerequest.setRespIdType(m_respIdType);
+		OCSPCAServiceResponse caserviceresp = extendedService(this.m_internalAdmin, this.data.getCaid(cacert), ocspservicerequest);
+		// Now we can use the returned OCSPServiceResponse to get private key and cetificate chain to sign the ocsp response
+		if (m_log.isDebugEnabled()) {
+			Collection<X509Certificate> coll = caserviceresp.getOCSPSigningCertificateChain();
+			m_log.debug("Cert chain for OCSP signing is of size " + coll.size());				
+		}
+		return caserviceresp.getBasicOCSPResp();
 	}
 
 	/* (non-Javadoc)
@@ -243,7 +253,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 		if (m_log.isDebugEnabled()) {
 			m_log.debug("Responder Id type: '" + m_respIdType + "'");
 			m_log.debug("Include certificate chain: '" + m_includeChain + "'");
-			m_log.debug("Non existing certificates are good: '" + m_nonExistingIsGood + "'");
+			m_log.debug("Non existing certificates are good: '" + nonExistingIsGood + "'");
 			m_log.debug("Are we doing auditLogging?: '" + mDoAuditLog + "'");
 		}
 		// Set up Audit and Transaction Logging
@@ -264,34 +274,34 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 			m_log.debug("Pattern used for transactionLogPattern: '" + transactionLogPattern + "'");
 			final String transactionLogOrder = OcspConfiguration.getTransactionLogOrder();
 			m_log.debug("Pattern used for transactionLogOrder: '" + transactionLogOrder + "'");
-            this.transactionLogger = new TransactionLogger(transactionLogPattern, transactionLogOrder, logDateFormat, timezone);
+			this.transactionLogger = new TransactionLogger(transactionLogPattern, transactionLogOrder, logDateFormat, timezone);
 		}
 		// Are we supposed to abort the response if logging is failing?
 		m_log.debug("Are we doing safer logging?: '" + mDoSaferLogging + "'");
-        if (mDoSaferLogging==true) {
-            try {
-                @SuppressWarnings("unchecked")
-                final Class<SaferDailyRollingFileAppender> implClass = (Class<SaferDailyRollingFileAppender>) Class.forName(SAFER_LOG4JAPPENDER_CLASS);
-                final Method method = implClass.getMethod("addSubscriber", SaferAppenderListener.class);
-                method.invoke(null, this); // first object parameter can be null because this is a static method
-                m_log.info("added us as subscriber to org.ejbca.appserver.jboss.SaferDailyRollingFileAppender");
-                // create the method object of the static probeable error handler, so we don't have to do this every time we log
-    			@SuppressWarnings("unchecked")
-                final Class<ProbableErrorHandler> errHandlerClass = (Class<ProbableErrorHandler>) Class.forName(PROBABLE_ERRORHANDLER_CLASS);
-    			m_errorHandlerMethod = errHandlerClass.getMethod("hasFailedSince", Date.class);
-            } catch (Exception e) {
-                m_log.error("Was configured to do safer logging but could not instantiate needed classes", e);
-            }
-        }
+		if (mDoSaferLogging==true) {
+			try {
+				@SuppressWarnings("unchecked")
+				final Class<SaferDailyRollingFileAppender> implClass = (Class<SaferDailyRollingFileAppender>) Class.forName(SAFER_LOG4JAPPENDER_CLASS);
+				final Method method = implClass.getMethod("addSubscriber", SaferAppenderListener.class);
+				method.invoke(null, this); // first object parameter can be null because this is a static method
+				m_log.info("added us as subscriber to org.ejbca.appserver.jboss.SaferDailyRollingFileAppender");
+				// create the method object of the static probeable error handler, so we don't have to do this every time we log
+				@SuppressWarnings("unchecked")
+				final Class<ProbableErrorHandler> errHandlerClass = (Class<ProbableErrorHandler>) Class.forName(PROBABLE_ERRORHANDLER_CLASS);
+				m_errorHandlerMethod = errHandlerClass.getMethod("hasFailedSince", Date.class);
+			} catch (Exception e) {
+				m_log.error("Was configured to do safer logging but could not instantiate needed classes", e);
+			}
+		}
 		// Setup extensions
-        if (m_extensionOids.size() == 0) {
+		if (m_extensionOids.size() == 0) {
 			m_log.info("ExtensionOids not defined.");
-        }
-        if (m_extensionClasses.size() == 0) {
+		}
+		if (m_extensionClasses.size() == 0) {
 			m_log.info("ExtensionClass not defined.");
-        }
+		}
 		if (m_extensionClasses.size() != m_extensionOids.size()) {
-			throw new ServletException("Number of extension classes does not match no of extension oids.");        	
+			throw new ServletException("Number of extension classes does not match no of extension oids.");			
 		}
 		Iterator<String> iter = m_extensionClasses.iterator();
 		Iterator<String> iter2 = m_extensionOids.iterator();
@@ -332,75 +342,88 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 	 * @param startTime
 	 * @return true if an error has occurred since startTime 
 	 */
-    private boolean hasErrorHandlerFailedSince(Date startTime) {
-    	boolean result = true; // Default true. If something goes wrong we will fail
-        if ( m_errorHandlerMethod == null ) {
-        	result = false;
-        } else {
-            try {
-                result = ((Boolean)m_errorHandlerMethod.invoke(null, startTime)).booleanValue(); // first object parameter can be null because this is a static method
-                if (result) {
-                    m_log.error("Audit and/or account logging failed since "+startTime);
-                }
-            } catch (Exception e) {
-                m_log.error(e);
-            }
-        }
-        return result;
-    }
+	private boolean hasErrorHandlerFailedSince(Date startTime) {
+		boolean result = true; // Default true. If something goes wrong we will fail
+		if ( m_errorHandlerMethod == null ) {
+			result = false;
+		} else {
+			try {
+				result = ((Boolean)m_errorHandlerMethod.invoke(null, startTime)).booleanValue(); // first object parameter can be null because this is a static method
+				if (result) {
+					m_log.error("Audit and/or account logging failed since "+startTime);
+				}
+			} catch (Exception e) {
+				m_log.error(e);
+			}
+		}
+		return result;
+	}
 
-    public void doPost(HttpServletRequest request, HttpServletResponse response)
+	@Override
+	public void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
-        m_log.trace(">doPost()");
-        try {
-            final String contentType = request.getHeader("Content-Type");
-            if ( contentType!=null && contentType.equalsIgnoreCase("application/ocsp-request")) {
-                serviceOCSP(request, response);
-                return;
-            }
-            if ( contentType!=null ) {
-                final String sError = "Content-type is not application/ocsp-request. It is \'"+HTMLTools.htmlescape(contentType)+"\'.";
-                m_log.debug(sError);
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, sError);
-                return;
-            }
-            final String password=request.getHeader("activate");
-            if ( password==null ) {
-                final String sError = "No \'Content-Type\' or \'activate\' property in request.";
-                m_log.debug(sError);
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, sError);
-                return;
-            }
-            final String remoteAddr = request.getRemoteAddr();
-            if ( !remoteAddr.equals("127.0.0.1") ) {
-                final String sError = "You have connected from \'"+remoteAddr+"\'. You may only connect from 127.0.0.1";
-                m_log.debug(sError);
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, sError);
-                return;
-            }
-            // Also reload signing keys
-            this.data.mKeysValidTo = 0;
-            try {
-                loadPrivateKeys(password);
-            } catch (Exception e) {
-                m_log.error("Problem loading keys.", e);
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
-            }
-        } finally {
-            m_log.trace("<doPost()");
-        }
+		m_log.trace(">doPost()");
+		try {
+			final String contentType = request.getHeader("Content-Type");
+			if ( contentType!=null && contentType.equalsIgnoreCase("application/ocsp-request")) {
+				serviceOCSP(request, response);
+				return;
+			}
+			if ( contentType!=null ) {
+				final String sError = "Content-type is not application/ocsp-request. It is \'"+HTMLTools.htmlescape(contentType)+"\'.";
+				m_log.debug(sError);
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, sError);
+				return;
+			}
+			final String password=request.getHeader("activate");
+			if ( password==null ) {
+				final String sError = "No \'Content-Type\' or \'activate\' property in request.";
+				m_log.debug(sError);
+				response.sendError(HttpServletResponse.SC_BAD_REQUEST, sError);
+				return;
+			}
+			final String remoteAddr = request.getRemoteAddr();
+			if ( !remoteAddr.equals("127.0.0.1") ) {
+				final String sError = "You have connected from \'"+remoteAddr+"\'. You may only connect from 127.0.0.1";
+				m_log.debug(sError);
+				response.sendError(HttpServletResponse.SC_UNAUTHORIZED, sError);
+				return;
+			}
+			// Also reload signing keys
+			this.data.mKeysValidTo = 0;
+			try {
+				loadPrivateKeys(password);
+			} catch (Exception e) {
+				m_log.error("Problem loading keys.", e);
+				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
+			}
+		} finally {
+			m_log.trace("<doPost()");
+		}
 	} //doPost
 
+	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
-	throws IOException, ServletException {
-		m_log.trace(">doGet()");
-		// We have a command to force reloading of keys that can only be run from localhost
-		final boolean doReload = StringUtils.equals(request.getParameter("reloadkeys"), "true");
-		if ( doReload ) {
-			final String remote = request.getRemoteAddr();
-			if (StringUtils.equals(remote, "127.0.0.1")) {
-				String iMsg = intres.getLocalizedMessage("ocsp.reloadkeys", remote);
-				m_log.info(iMsg);
+			throws IOException, ServletException {
+		try {
+			m_log.trace(">doGet()");
+			// We have a command to force reloading of keys that can only be run from localhost
+			final boolean doReload = StringUtils.equals(request.getParameter("reloadkeys"), "true");
+			final String newConfig = request.getParameter("newConfig");
+			final boolean doNewConfig = newConfig!=null && newConfig.length()>0;
+			final String remote;
+			if ( doReload || doNewConfig ) {
+				remote = request.getRemoteAddr();
+				if ( !StringUtils.equals(remote, "127.0.0.1") ) {
+					m_log.info("Got reloadKeys or updateConfig command from unauthorized ip: "+remote);
+					response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+					return;
+				}
+			} else {
+				remote = null;
+			}
+			if ( doReload ) {
+				m_log.info( intres.getLocalizedMessage("ocsp.reloadkeys", remote) );
 				// Reload CA certificates
 				this.data.m_caCertCache.forceReload();
 				try {
@@ -408,17 +431,30 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 					this.data.mKeysValidTo = 0;
 					loadPrivateKeys(null);
 				} catch (Exception e) {
-                    m_log.error("Problem loading keys.", e);
-                    response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
+					m_log.error("Problem loading keys.", e);
+					response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
 				}
-			} else {
-				m_log.info("Got reloadKeys command from unauthorized ip: "+remote);
-				response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+				return;
 			}
-		} else {
+			if ( doNewConfig ) {
+				final String aConfig[] = newConfig.split("\\|\\|");
+				for ( int i=0; i<aConfig.length; i++) {
+					m_log.debug("Config change: "+aConfig[i]);
+					final int separatorIx = aConfig[i].indexOf('=');
+					if ( separatorIx<0 ) {
+						ConfigurationHolder.updateConfiguration(aConfig[i], null);
+						continue;
+					}
+					ConfigurationHolder.updateConfiguration(aConfig[i].substring(0, separatorIx), aConfig[i].substring(separatorIx+1, aConfig[i].length()));
+				}
+				reloadConfig();
+				m_log.info( "Call from "+remote+" to update configuration" );
+				return;
+			}
 			serviceOCSP(request, response);
+		} finally {
+			m_log.trace("<doGet()");
 		}
-		m_log.trace("<doGet()");
 	} // doGet
 
 	/**
@@ -679,15 +715,15 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 
 				// Add standard response extensions
 				Hashtable<DERObjectIdentifier, X509Extension> responseExtensions = OCSPUtil.getStandardResponseExtensions(req);
-            	transactionLogger.paramPut(ITransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
-            	auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
+				transactionLogger.paramPut(ITransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
+				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
 				// Look over the status requests
 				ArrayList<OCSPResponseItem> responseList = new ArrayList<OCSPResponseItem>();
 				for (int i = 0; i < requests.length; i++) {
 					CertificateID certId = requests[i].getCertID();
 					// now some Logging
 					transactionLogger.paramPut(ITransactionLogger.SERIAL_NOHEX, certId.getSerialNumber().toByteArray());
-					transactionLogger.paramPut(ITransactionLogger.DIGEST_ALGOR, certId.getHashAlgOID()); //todo, find text version of this or find out if it should be something else                    
+					transactionLogger.paramPut(ITransactionLogger.DIGEST_ALGOR, certId.getHashAlgOID()); //todo, find text version of this or find out if it should be something else					
 					transactionLogger.paramPut(ITransactionLogger.ISSUER_NAME_HASH, certId.getIssuerNameHash());
 					transactionLogger.paramPut(ITransactionLogger.ISSUER_KEY, certId.getIssuerKeyHash());
 					auditLogger.paramPut(IAuditLogger.ISSUER_KEY, certId.getIssuerKeyHash());
@@ -696,7 +732,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
  					byte[] hashbytes = certId.getIssuerNameHash();
 					String hash = null;
 					if (hashbytes != null) {
-						hash = new String(Hex.encode(hashbytes));                    	
+						hash = new String(Hex.encode(hashbytes));						
 					}
 					String infoMsg = intres.getLocalizedMessage("ocsp.inforeceivedrequest", certId.getSerialNumber().toString(16), hash, request.getRemoteAddr());
 					m_log.info(infoMsg);
@@ -735,61 +771,61 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 					 * chapter 2.7 in RFC2560
 					 * 
 					 * 2.7  CA Key Compromise
-					 *    If an OCSP responder knows that a particular CA's private key has
-					 *    been compromised, it MAY return the revoked state for all
-					 *    certificates issued by that CA.
+					 *	If an OCSP responder knows that a particular CA's private key has
+					 *	been compromised, it MAY return the revoked state for all
+					 *	certificates issued by that CA.
 					 */
 					final org.bouncycastle.ocsp.CertificateStatus certStatus;
 					transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); // it seems to be correct
-                    // Check if the cacert (or the default responderid) is revoked
-                    final CertificateStatus cacertStatus = this.data.certificateStoreSession.getStatus(CertTools.getIssuerDN(cacert), CertTools.getSerialNumber(cacert));
+					// Check if the cacert (or the default responderid) is revoked
+					final CertificateStatus cacertStatus = this.data.certificateStoreSession.getStatus(CertTools.getIssuerDN(cacert), CertTools.getSerialNumber(cacert));
 					if ( !cacertStatus.equals(CertificateStatus.REVOKED) ) {
 						// Check if cert is revoked
 						final CertificateStatus status = this.data.certificateStoreSession.getStatus(cacert.getSubjectDN().getName(), certId.getSerialNumber());
 						// If we have different maxAge and untilNextUpdate for different certificate profiles, we have to fetch these
 						// values now that we have fetched the certificate status, that includes certificate profile.
-                        nextUpdate = OcspConfiguration.getUntilNextUpdate(status.certificateProfileId);
-                        maxAge = OcspConfiguration.getMaxAge(status.certificateProfileId);
-                        if (m_log.isDebugEnabled()) {
-                        	m_log.debug("Set nextUpdate="+nextUpdate+", and maxAge="+maxAge+" for certificateProfileId="+status.certificateProfileId);
-                        }
+						nextUpdate = OcspConfiguration.getUntilNextUpdate(status.certificateProfileId);
+						maxAge = OcspConfiguration.getMaxAge(status.certificateProfileId);
+						if (m_log.isDebugEnabled()) {
+							m_log.debug("Set nextUpdate="+nextUpdate+", and maxAge="+maxAge+" for certificateProfileId="+status.certificateProfileId);
+						}
 
-                        final String sStatus;
+						final String sStatus;
 						if (status.equals(CertificateStatus.NOT_AVAILABLE)) {
 							// No revocation info available for this cert, handle it
 							if (m_log.isDebugEnabled()) {
 								m_log.debug("Unable to find revocation information for certificate with serial '"
 										+ certId.getSerialNumber().toString(16) + "'"
-										+ " from issuer '" + cacert.getSubjectDN().getName() + "'");                                
+										+ " from issuer '" + cacert.getSubjectDN().getName() + "'");								
 							}
 							// If we do not treat non existing certificates as good 
 							// OR
 							// we don't actually handle requests for the CA issuing the certificate asked about
 							// then we return unknown
-							if ( (!m_nonExistingIsGood) || (this.data.m_caCertCache.findByOcspHash(certId) == null) ) {
+							if ( (!nonExistingIsGood) || (this.data.m_caCertCache.findByOcspHash(certId) == null) ) {
 								sStatus = "unknown";
 								certStatus = new UnknownStatus();
 								transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_UNKNOWN);
 							} else {
-                                sStatus = "good";
-                                certStatus = null; // null means "good" in OCSP
-                                transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
-                            }
+								sStatus = "good";
+								certStatus = null; // null means "good" in OCSP
+								transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
+							}
 						} else if ( status.equals(CertificateStatus.REVOKED) ) {
-						    // Revocation info available for this cert, handle it
-						    sStatus ="revoked";
-						    certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(status.revocationDate),
-						                                                   new CRLReason(status.revocationReason)));
-						    transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
+							// Revocation info available for this cert, handle it
+							sStatus ="revoked";
+							certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(status.revocationDate),
+																		   new CRLReason(status.revocationReason)));
+							transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
 						} else {
-						    sStatus = "good";
-						    certStatus = null;
-						    transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
+							sStatus = "good";
+							certStatus = null;
+							transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_GOOD); 
 						}
-                        infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
-                        m_log.info(infoMsg);
-                        responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
-                        transactionLogger.writeln();
+						infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", sStatus, certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
+						m_log.info(infoMsg);
+						responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
+						transactionLogger.writeln();
 					} else {
 						certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(cacertStatus.revocationDate),
 								new CRLReason(cacertStatus.revocationReason)));
@@ -848,7 +884,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 					throw new ServletException(errMsg);
 				}
 			} catch (MalformedRequestException e) {
-			    	transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+					transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg);
@@ -860,7 +896,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 				transactionLogger.writeln();
 				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
 			} catch (SignRequestException e) {
-			    	transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+					transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg); // No need to log the full exception here
@@ -869,7 +905,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 				transactionLogger.writeln();
 				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.SIG_REQUIRED);
 			} catch (SignRequestSignatureException e) {
-			    	transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+					transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg); // No need to log the full exception here
@@ -878,7 +914,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 				transactionLogger.writeln();
 				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 			} catch (InvalidKeyException e) {
-			    	transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+					transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.info(errMsg, e);
@@ -887,7 +923,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 				transactionLogger.writeln();
 				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.UNAUTHORIZED);
 			} catch (Throwable e) { // NOPMD, we really want to catch everything here
-			    	transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+					transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
 				String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
 				m_log.error(errMsg, e);
@@ -898,7 +934,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 			}
 			byte[] respBytes = ocspresp.getEncoded();
 			auditLogger.paramPut(IAuditLogger.OCSPRESPONSE, new String (Hex.encode(respBytes)));
-            auditLogger.writeln();
+			auditLogger.writeln();
 			auditLogger.flush();
 			transactionLogger.flush();
 			if (mDoSaferLogging){

@@ -24,9 +24,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.Socket;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.KeyStore;
@@ -40,7 +43,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.ejb.ObjectNotFoundException;
@@ -83,6 +88,7 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
@@ -92,11 +98,9 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.StringTools;
-import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -199,12 +203,11 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
 	private String httpPort;
 
-	private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-	private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-	private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
-	private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
-	private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-	private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+	final private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+	final private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+	final private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
+	final private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
+	final private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
 
 	@BeforeClass
 	public static void beforeClass() throws CertificateException {
@@ -212,14 +215,13 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		CryptoProviderTools.installBCProviderIfNotAvailable();
 	}
 
+	public ProtocolOcspHttpTest() throws MalformedURLException, URISyntaxException {
+		super("http", "127.0.0.1", 8080, "ejbca", "publicweb/status/ocsp");
+	}
 
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		httpPort = configurationSessionRemote.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
-		httpReqPath = "http://127.0.0.1:" + httpPort + "/ejbca";
-		resourceOcsp = "publicweb/status/ocsp";
-		helper = new OcspJunitHelper(httpReqPath, resourceOcsp);
 		unknowncacert = (X509Certificate) CertTools.getCertfromByteArray(unknowncacertBytes);
 
 		log.debug("httpReqPath=" + httpReqPath);
@@ -227,8 +229,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 				.getResponseCode() == 200);
 		cacert = (X509Certificate) getTestCACert();
 		caid = getTestCAId();
-
-		this.configurationSessionRemote.backupConfiguration();
 	}
 
 	@After
@@ -239,8 +239,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		removeECDSACA();
 		assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
 				.getResponseCode() == 200);
-
-        assertTrue("Unable to clean up properly.", this.configurationSessionRemote.restoreConfiguration());
 	}
 
 	public String getRoleName() {
@@ -761,18 +759,19 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 	 *
 	 * @throws Exception
 	 *			 error
-	 *//* Not yet ready
+	 */
 	@Test
 	public void test50OcspUnknownMayBeGood() throws Exception {
 		log.trace(">test50OcspUnknownMayBeGood()");
 		loadUserCert(this.caid);
 		// An OCSP request for an unknown certificate (not exist in db)
-		this.helper.testOCSP( this.caid, this.cacert, new BigInteger("1"), Status.Unknown);
-		this.configurationSessionRemote.updateProperty(OcspConfiguration.NONE_EXISTING_IS_GOOD, "true");
-		//OCSPServletBase.updateParams();
-		this.helper.testOCSP( this.caid, this.cacert, new BigInteger("1"), Status.Good);
+		this.helper.testStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+		final Map<String,String> map = new HashMap<String, String>();
+		map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD, "true");
+		this.helper.alterConfig(map);
+		this.helper.testStatusGood( this.caid, this.cacert, new BigInteger("1") );
 		log.trace("<test50OcspUnknownMayBeGood()");
-	}*/
+	}
 
 	/**
 	 * removes DSA CA

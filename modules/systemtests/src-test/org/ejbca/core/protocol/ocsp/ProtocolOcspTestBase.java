@@ -21,6 +21,8 @@ import static org.junit.Assert.assertTrue;
 import java.io.OutputStream;
 import java.math.BigInteger;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
@@ -65,7 +67,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 	private static final Logger log = Logger.getLogger(ProtocolOcspTestBase.class);
 
 	protected static final String issuerDN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
-	protected static byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
+	protected static final byte[] unknowncacertBytes = Base64.decode(("MIICLDCCAZWgAwIBAgIIbzEhUVZYO3gwDQYJKoZIhvcNAQEFBQAwLzEPMA0GA1UE"
 			+ "AxMGVGVzdENBMQ8wDQYDVQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMB4XDTAyMDcw" + "OTEyNDc1OFoXDTA0MDgxNTEyNTc1OFowLzEPMA0GA1UEAxMGVGVzdENBMQ8wDQYD"
 			+ "VQQKEwZBbmFUb20xCzAJBgNVBAYTAlNFMIGdMA0GCSqGSIb3DQEBAQUAA4GLADCB" + "hwKBgQDZlACHRwJnQKlgpMqlZQmxvCrJPpPFyhxvjDHlryhp/AQ6GCm+IkGUVlwL"
 			+ "sCnjgZH5BXDNaVXpkmME8334HFsxVlXqmZ2GqyP6kptMjbWZ2SRLBRKjAcI7EJIN" + "FPDIep9ZHXw1JDjFGoJ4TLFd99w9rQ3cB6zixORoyCZMw+iebwIBEaNTMFEwDwYD"
@@ -74,11 +76,10 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 			+ "FgrCpX5kBKVbbQLO6TjJKCjX29CfoJ2TbP1QQ6UbBAY=").getBytes());
 
 
-	protected String httpPort;
-	protected String httpReqPath;
-	protected String resourceOcsp;
-
-	protected OcspJunitHelper helper = null;
+	final protected String httpPort;
+	final protected String httpReqPath;
+	final protected String resourceOcsp;
+	final protected OcspJunitHelper helper;
 
 	protected X509Certificate cacert = null;
 	protected X509Certificate ocspTestCert = null;
@@ -88,6 +89,13 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 
 	private CertificateStoreSessionRemote certificateStoreOnlyDataSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class); // Stand alone OCSP version..
 
+	ProtocolOcspTestBase(String protocol, String host, int port, String applicationPath, String _resourceOcsp) throws MalformedURLException, URISyntaxException {
+		this.httpPort = Integer.toString(port);
+		this.httpReqPath = protocol+"://"+host+":" + port + "/" + applicationPath;
+		this.resourceOcsp = _resourceOcsp;
+		this.helper = new OcspJunitHelper(this.httpReqPath, this.resourceOcsp);
+
+	}
 
 	public void test01Access() throws Exception { // NOPMD, this is not a test class itself
 		// Hit with GET does work since EJBCA 3.8.2
