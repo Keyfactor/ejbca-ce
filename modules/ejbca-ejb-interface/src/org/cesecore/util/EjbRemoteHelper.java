@@ -41,7 +41,9 @@ public enum EjbRemoteHelper {
         T session = (T) interfaceCache.get(key);
         if (session == null) {
             session = JndiHelper.getRemoteSession(key);
-            interfaceCache.put(key, session);
+            if (session != null) {
+                interfaceCache.put(key, session);
+            }
         }
         return session;
     }
