@@ -288,4 +288,14 @@
         </stateless-session-descriptor>
         <enable-call-by-reference>True</enable-call-by-reference>
     </weblogic-enterprise-bean>
+    <weblogic-enterprise-bean>
+        <ejb-name>GlobalConfigurationSessionBean</ejb-name>
+        <stateless-session-descriptor>
+            <business-interface-jndi-name-map>
+                <business-remote>org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote</business-remote>
+                <jndi-name>ejbca/GlobalConfigurationSessionRemote</jndi-name>
+            </business-interface-jndi-name-map>
+        </stateless-session-descriptor>
+        <enable-call-by-reference>True</enable-call-by-reference>
+    </weblogic-enterprise-bean>
 </weblogic-ejb-jar>
