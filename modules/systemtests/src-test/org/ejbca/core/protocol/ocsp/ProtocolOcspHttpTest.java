@@ -267,7 +267,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		// Get user and ocspTestCert that we know...
 		loadUserCert(this.caid);
 
-		this.helper.testStatusGood( this.caid, this.cacert, this.ocspTestCert.getSerialNumber());
+		this.helper.verifyStatusGood( this.caid, this.cacert, this.ocspTestCert.getSerialNumber());
 		log.trace("<test02OcspGood()");
 	}
 
@@ -284,7 +284,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		loadUserCert(this.caid);
 		// Now revoke the certificate and try again
 		this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
-		this.helper.testStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+		this.helper.verifyStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 		log.trace("<test03OcspRevoked()");
 	}
 
@@ -407,7 +407,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 			// Make user and ocspTestCert that we know...
 			createUserCert(ecdsacaid);
 
-			this.helper.testStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
+			this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
 		} finally {
 			userAdminSession.deleteUser(admin, "ocsptest");
 		}
@@ -431,7 +431,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 			// Make user and ocspTestCert that we know...
 			createUserCert(ecdsacaid);
 
-			this.helper.testStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
+			this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
 		} finally {
 			userAdminSession.deleteUser(admin, "ocsptest");
 		}
@@ -486,7 +486,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
 		// An OCSP request, ocspTestCert is already created in earlier tests
 		loadUserCert(this.caid);
-		this.helper.testStatusGood( this.caid, this.cacert, this.ocspTestCert.getSerialNumber() );
+		this.helper.verifyStatusGood( this.caid, this.cacert, this.ocspTestCert.getSerialNumber() );
 	}
 
 	@Test
@@ -517,7 +517,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		// Make user and ocspTestCert that we know...
 		createUserCert(dsacaid);
 
-		this.helper.testStatusGood( dsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
+		this.helper.verifyStatusGood( dsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
 	} // test16OcspDsaGood
 
 	/**
@@ -763,11 +763,11 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		log.trace(">test50OcspUnknownMayBeGood()");
 		loadUserCert(this.caid);
 		// An OCSP request for an unknown certificate (not exist in db)
-		this.helper.testStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
+		this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );
 		final Map<String,String> map = new HashMap<String, String>();
 		map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD, "true");
 		this.helper.alterConfig(map);
-		this.helper.testStatusGood( this.caid, this.cacert, new BigInteger("1") );
+		this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
 		log.trace("<test50OcspUnknownMayBeGood()");
 	}
 

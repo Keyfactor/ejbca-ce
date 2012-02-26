@@ -128,7 +128,7 @@ public abstract class CmpTestCase extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
 
-    protected void setUp() throws Exception {
+    protected void setUp() throws Exception { // NOPMD: this is a test base class
         super.setUp();
         String httpServerPubHttp = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
         CMP_HOST = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSSERVERHOSTNAME);

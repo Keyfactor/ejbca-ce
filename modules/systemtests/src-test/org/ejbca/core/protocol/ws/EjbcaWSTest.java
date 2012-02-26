@@ -239,7 +239,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test12IsAuthorized() throws Exception {
         // This is a superadmin keystore, improve in the future
-        testIsAuthorized(true);
+        isAuthorized(true);
     }
 
     @Test
