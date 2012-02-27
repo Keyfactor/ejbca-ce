@@ -86,7 +86,19 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # all certificates.
 #
 # Default: false
-#ocsp.nonexistingisgood=false 
+#ocsp.nonexistingisgood=false
+
+# The value of 'ocsp.nonexistingisgood=false' may be overridden if the URL that the client used to send the request is matching some regular expression.
+# The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisgood=false' is numbered from 1 and up. It may be any numbers.
+# Here follows an example of 2:
+#ocsp.nonexistingisgood.uri.1=.*/thisEndingIsGood$
+#ocsp.nonexistingisgood.uri.2=^http://good.myhost.nu:8080/.*
+
+# The value of 'ocsp.nonexistingisgood=true' may be overridden if the URL that the client used to send the request is matching some regular expression.
+# The regular expressions that if any of them is fulfilled will override 'ocsp.nonexistingisgood=true' is numbered from 1 and up. It may be any numbers.
+# Here follows an example of 2:
+#ocsp.nonexistingisbad.uri.1=.*/thisEndingIsBad$
+#ocsp.nonexistingisbad.uri.2=^http://bad.myhost.nu:8080/.*
 
 # For HTTP get requests according to RFC5019 we can set HTTP headers in the response to allow caching proxies to cache responses.
 # untilNextUpdate is the number of seconds a response will be valid. 0 = disable.
