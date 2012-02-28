@@ -246,17 +246,25 @@ public class Ocsp extends ClientToolBox {
                 System.out.println("Just the stress argument gives further info about the stress test.");
                 return;
             }
-            OCSPUnidResponse response;
-            Matcher matcher = Pattern.compile("[0-9a-fA-F]{16}").matcher(certfilename);
+            OCSPUnidResponse response = null;
+            BigInteger serial = null;
+            final Matcher matcher = Pattern.compile("[0-9a-fA-F]+").matcher(certfilename);
             if (matcher.matches()) {
             	// It is a certificate serial number instead if a certificate filename
-            	if (ocspUrlFromCLI == null) {
-            		System.out.println("OCSP URL is reqired if a serial number is used.");
-                    System.exit(-1); // NOPMD, it's not a JEE app
-            	}
-                final OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspUrlFromCLI, signRequest, ksfilename!=null);
-                response = client.lookup(new BigInteger(certfilename, 16), getCertFromPemFile(cacertfilename), useGet);
-            } else {
+                try {
+                    serial = new BigInteger(certfilename, 16);
+                    if (ocspUrlFromCLI == null) {
+                        System.out.println("OCSP URL is reqired if a serial number is used.");
+                        System.exit(-1); // NOPMD, it's not a JEE app
+                    }
+                    final OCSPUnidClient client = OCSPUnidClient.getOCSPUnidClient(ksfilename, kspwd, ocspUrlFromCLI, signRequest, ksfilename!=null);
+                    response = client.lookup(new BigInteger(certfilename, 16), getCertFromPemFile(cacertfilename), useGet);
+                } catch (NumberFormatException e) {
+                    // Not a hex serial number
+                    System.out.println("The input that looked like a serial number was not one, try to read it as a file.");
+                }
+            } 
+            if (serial == null) {
             	// It's not a certificate serial number, so treat it as a filename
                 final Certificate userCert = getCertFromPemFile(certfilename);
                 String ocspUrl = ocspUrlFromCLI;
