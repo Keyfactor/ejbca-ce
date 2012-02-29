@@ -347,7 +347,12 @@ public class LdapPublisher extends BasePublisher {
     				}
     			} catch (LDAPException e) {
     				connectionFailed = true;
-    				if (servers.hasNext()) {
+    				// If multiple certificates are allowed per entity, and the certificate is already published, 
+    				// an exception will be thrown. Catch this type of exception and just log an informational message.
+    				if (e.getResultCode() == LDAPException.ATTRIBUTE_OR_VALUE_EXISTS) {
+                        final String msg = intres.getLocalizedMessage("publisher.certalreadyexists", CertTools.getFingerprintAsString(incert), dn, e.getMessage());
+    				    log.info(msg);
+    				} else if (servers.hasNext()) {
     					log.warn("Failed to publish to " + currentServer + ". Trying next in list.");
     				} else {
     					String msg = intres.getLocalizedMessage("publisher.errorldapstore", "certificate", attribute, objectclass, dn, e.getMessage());
