@@ -30,12 +30,10 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
-import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
@@ -55,8 +53,7 @@ public class CertificateFinderBean {
 
 	private EjbLocalHelper ejb = new EjbLocalHelper();
 	private SignSession mSignSession = ejb.getSignSession();
-	private CaSession mCaSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-	private CaSession caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+	private CaSession caSession = ejb.getCaSession();
 	private CertificateStoreSession mStoreSession = ejb.getCertificateStoreSession();
 
 	private boolean mInitialized = false;
@@ -112,7 +109,7 @@ public class CertificateFinderBean {
 		}
 		CAInfo cainfo = null;
 		try {
-			cainfo = mCaSession.getCAInfo(mAdmin, mCurrentCA);
+			cainfo = caSession.getCAInfo(mAdmin, mCurrentCA);
 		} catch (CADoesntExistsException e) {
 			log.info("CA does not exist : "+mCurrentCA, e);
 		} catch (AuthorizationDeniedException e) {
