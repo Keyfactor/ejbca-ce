@@ -1,15 +1,36 @@
 <project name="jboss" basedir=".." default="j2ee:deploy">
 	<property environment="env"/>
 
-	<property name="appserver.home" value="${env.APPSRV_HOME}"/>
-	<property name="jboss.config" value="default"/>
-	<property name="jboss.farm.name" value="deploy"/>
-	<property name="jboss.server.home.dir" location="${appserver.home}/server/${jboss.config}"/>
-	<property name="jboss.conf.dir" location="${jboss.server.home.dir}/conf"/>
-	<property name="jboss.farm.dir" location="${jboss.server.home.dir}/${jboss.farm.name}"/>
-	<property name="jboss.deploy.dir" location="${jboss.server.home.dir}/deploy"/>
-	<property name="keystore.file" value="conf/keystore/keystore.jks"/>
-	<property name="truststore.file" value="conf/keystore/truststore.jks"/>
+    <condition property="jboss7">
+        <equals arg1="${appserver.subtype}" arg2="jboss7" />
+    </condition>
+    
+    <target name="set-paths-jboss7" if="jboss7">
+        <!-- Paths for JBoss 7 -->
+        <property name="jboss7.mode" value="standalone"/>
+	    <property name="jboss.server.home.dir" location="${appserver.home}/${jboss7.mode}"/>
+        <property name="jboss.conf.dir" location="${jboss.server.home.dir}/configuration"/>
+	    <property name="jboss.deploy.dir" location="${jboss.server.home.dir}/deployments"/>
+	    <property name="jboss.farm.dir" location="${jboss.deploy.dir}"/> <!-- TODO -->
+	    <property name="keystore.file" value="configuration/keystore/keystore.jks"/>
+	    <property name="truststore.file" value="configuration/keystore/truststore.jks"/>
+    </target>
+    
+    <target name="set-paths-not-jboss7" unless="jboss7">
+        <!-- Paths for JBoss 4, 5 and 6 -->
+        <property name="jboss.config" value="default"/>
+        <property name="jboss.farm.name" value="deploy"/>
+	    <property name="jboss.server.home.dir" location="${appserver.home}/server/${jboss.config}"/>
+        <property name="jboss.conf.dir" location="${jboss.server.home.dir}/conf"/>
+	    <property name="jboss.farm.dir" location="${jboss.server.home.dir}/${jboss.farm.name}"/>
+	    <property name="jboss.deploy.dir" location="${jboss.server.home.dir}/deploy"/>
+	    <property name="keystore.file" value="conf/keystore/keystore.jks"/>
+	    <property name="truststore.file" value="conf/keystore/truststore.jks"/>
+	</target>
+	
+	<target name="set-paths" depends="set-paths-jboss7, set-paths-not-jboss7">
+	</target>
+
 
 	<!--
 	 Do not configure the servlet container, deploys blindly ears
@@ -18,16 +39,17 @@
 	<!--property name="j2ee.web-noconfigure" value="true"/-->
 
 
-	<target name="j2ee:check">
+	<target name="j2ee:check" depends="set-paths">
 		<!--
             we could have a dedicated jboss for ejbca, so give users a chance to override
             otherwise, try to pick the one from environment if it exists
             -->
 		<fail message="Please set the property 'appserver.home' for this project" unless="appserver.home"/>
-		<!-- jboss-j2ee.jar is JBoss 4.2.x, jboss-appclient.jar is JBoss 5.x and 6.x. Available does not touch the property
+		<!-- jboss-j2ee.jar is JBoss 4.2.x, jboss-appclient.jar is JBoss 5.x and 6.x, modules.xml is JBoss 7.x. Available does not touch the property
 		     if the file does not exist, which is why this works. -->
 		<available file="${appserver.home}/client/jboss-j2ee.jar" property="appserver.home.valid"/>
 		<available file="${appserver.home}/client/jboss-appclient.jar" property="appserver.home.valid"/>
+        <available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.home.valid"/>
 		<fail message="'appserver.home' (${appserver.home}) does not seem to be a valid JBoss home directory" unless="appserver.home.valid"/>
 		<echo message="Using appserver.home : ${appserver.home}"/>
 	</target>
@@ -36,7 +58,7 @@
 	<target name="j2ee:configure" depends="j2ee:check, j2ee:web-configure">
 	</target>
 
-	<target name="j2ee:deploytruststore">
+	<target name="j2ee:deploytruststore" depends="set-paths">
 		<!-- copy the truststore file to the server -->
 		<available file="${ejbca.home}/p12/truststore.jks" property="truststore.file.present"/>
 		<fail message="Missing JKS truststorestore file in '${basedir}/p12/truststore.jks'" unless="truststore.file.present"/>
@@ -65,13 +87,16 @@
 
 	</target>
 
-	<target name="detect-tomcatdir">
+	<target name="detect-tomcatdir" depends="set-paths">
 		<!-- detect jboss web version -->
+		<!-- JBoss 7 has very different TLS config in the big standalone.xml file -->
 		<available file="${jboss.deploy.dir}/jbossweb-tomcat41.sar" type="dir" property="jboss.web" value="tomcat41"/>
 		<available file="${jboss.deploy.dir}/jbossweb-tomcat50.sar" type="dir" property="jboss.web" value="tomcat50"/>
 		<available file="${jboss.deploy.dir}/jbossweb-tomcat55.sar" type="dir" property="jboss.web" value="tomcat55"/>
 		<available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir" property="jboss.web" value="tomcat60"/>
 		<available file="${jboss.deploy.dir}/jbossweb.sar" type="dir" property="jboss.web" value="tomcat60jboss5"/>
+		<available file="${jboss.conf.dir}/${jboss7.mode}.xml" type="file" property="jboss.web" value="jboss7"/>
+		
 		<fail message="Could not detect JBoss Servlet container version" unless="jboss.web"/>
 
 		<!-- configure the tomcat bundle -->
@@ -81,6 +106,8 @@
 		<available file="${jboss.deploy.dir}/jboss-web.deployer" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jboss-web.deployer"/>
 		<!-- For JBoss 5.0.0 tomcat has yet a new naming scheme -->
 		<available file="${jboss.deploy.dir}/jbossweb.sar" type="dir" property="tomcat.dir" value="${jboss.deploy.dir}/jbossweb.sar"/>
+		<!-- For JBoss 7.1.0 tomcat has yet a new configuration in the unified global config file -->
+		<available file="${jboss.conf.dir}/${jboss7.mode}.xml" type="file" property="tomcat.dir" value="${jboss.conf.dir}"/>
 	</target>
 
 	<target name="deploytomcat" depends="detect-tomcatdir">
@@ -113,7 +140,8 @@
 		<chmod file="${tomcat.dir}/server.xml" perm="600"/>
 	</target>
 
-	<target name="j2ee:deployBase" depends="j2ee:configure">
+	
+	<target name="j2ee:deployServices" unless="jboss7">
 		<copy todir="${jboss.farm.dir}" overwrite="true">
 			<fileset dir="src/appserver/jboss">
 				<include name="ejbca-ds.xml" />
@@ -130,11 +158,18 @@
 		</copy>
 		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600"/>
 		<chmod file="${jboss.farm.dir}/ejbca-mail-service.xml" perm="600"/>
+	</target>
 
+	<target name="j2ee:deployBase" depends="j2ee:configure, j2ee:deployServices">
 		<copy todir="${jboss.farm.dir}">
 			<fileset dir="${dist.dir}" includes="ejbca.ear"/>
 		</copy>
 		<chmod file="${dist.dir}/ejbca.ear" perm="600"/>
+		<antcall target="notifyDeploymentScanner" />
+	</target>
+	
+	<target name="notifyDeploymentScanner" depends="set-paths" if="jboss7">
+	    <touch file="${jboss.farm.dir}/ejbca.ear.dodeploy" />
 	</target>
 
 	<!-- This target takes the current deployed ear and stores it in ejbca.old -->

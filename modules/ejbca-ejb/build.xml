@@ -230,10 +230,9 @@
        	<include name="org/ejbca/core/model/ca/publisher/*Publisher.java"/>
        	<include name="org/ejbca/core/model/ca/publisher/*PublisherContainer.java"/>
 		<!-- Dependecies from EJB CLI, AdminWeb, PublicWeb -->
-		<include name="org/ejbca/core/model/hardtoken/profiles/SwedishEIDProfile.java"/>
+		<include name="org/ejbca/core/model/hardtoken/profiles/*Profile.java"/>
 		<!-- Dependecies from EJB CLI, EJBCA WS -->
-		<include name="org/ejbca/core/model/hardtoken/types/EnhancedEIDHardToken.java"/>
-		<include name="org/ejbca/core/model/hardtoken/types/SwedishEIDHardToken.java"/>
+		<include name="org/ejbca/core/model/hardtoken/types/*.java"/>
 		<include name="org/ejbca/core/ejb/authentication/cli/CliAuthenticationToken.java"/>
 		<include name="org/ejbca/core/ejb/authentication/cli/CliUserAccessMatchValue.java"/>
 		<include name="org/ejbca/util/crypto/BCrypt.java"/>
@@ -288,8 +287,6 @@
 		<include name="org/ejbca/core/model/ra/RAAuthorization.java"/>
 		<include name="org/ejbca/core/model/approval/approvalrequests/DummyApprovalRequest.java"/>
 		<include name="org/ejbca/util/cert/CertificateNotBeforeComparator.java"/>
-		<include name="org/ejbca/core/model/ca/publisher/CustomPublisherContainer.java"/>
-		<include name="org/ejbca/core/model/ca/publisher/*Publisher.java"/>
 		<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerDoesntExistsException.java"/>
 		<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerExistsException.java"/>
 		<include name="org/ejbca/core/model/ra/userdatasource/CustomUserDataSourceContainer.java"/>
@@ -391,8 +388,21 @@
 	</target>
 
 	<target name="build" description="Build this module" depends="compile-ejbca-ejb">
+
+		<!-- Make sure we do not include files that are already in ejbca-util in this jar file -->
+		<zipfileset id="util-zipfiles" includes="**/*.class" src="${mod.ejbca-util.lib}"/>
+		<pathconvert refid="util-zipfiles" pathsep=" " property="exclude.fileset.ejbca-util.files">
+			<map from="${mod.ejbca-util.lib}:" to=""/>
+		</pathconvert>
+
+		<!-- Make sure we do not include files that are already in ejbca-util in this jar file -->
+		<zipfileset id="common-zipfiles" includes="**/*.class" src="${mod.ejbca-common-web.lib}"/>
+		<pathconvert refid="common-zipfiles" pathsep=" " property="exclude.fileset.ejbca-common-web.files">
+			<map from="${mod.ejbca-common-web.lib}:" to=""/>
+		</pathconvert>
+
 		<jar destfile="${mod.ejbca-ejb.lib}">
-			<fileset dir="${build.dir}"/>
+			<fileset dir="${build.dir}" excludes="${exclude.fileset.ejbca-util.files} ${exclude.fileset.ejbca-common-web.files}"/>
 			<!--
             <fileset dir="${tmp}/caTokenClasses">
         		<exclude name="**/META-INF/**"/>
@@ -471,7 +481,15 @@
 	<target name="build-common-web" description="Build the ejbca-common-web JAR" depends="compile-common-web">
 		<dirname file="${mod.ejbca-common-web.lib}" property="mod.ejbca-common-web.lib.dir"/>
 		<mkdir dir="${mod.ejbca-common-web.lib.dir}" />
-		<jar destfile="${mod.ejbca-common-web.lib}" basedir="${build-common-web.dir}">
+
+		<!-- Make sure we do not include files that are already in ejbca-util in this jar file -->
+		<zipfileset id="util-zipfiles" includes="**/*.class" src="${mod.ejbca-util.lib}"/>
+		<pathconvert refid="util-zipfiles" pathsep=" " property="exclude.fileset.ejbca-util.files">
+			<map from="${mod.ejbca-util.lib}:" to=""/>
+		</pathconvert>
+
+		<jar destfile="${mod.ejbca-common-web.lib}">
+			<fileset dir="${build-common-web.dir}" excludes="${exclude.fileset.ejbca-util.files}"/>
 			<manifest>
 				<attribute name="Implementation-Version" value="${app.version}"/>
 			</manifest>
