@@ -79,7 +79,9 @@
 	
 	<!-- Auto-detect supported application server type -->
 	<available file="${appserver.home}/client/jboss-appclient.jar" property="appserver.type" value="jboss"/>
+	<available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.type" value="jboss"/>
 	<available file="${appserver.home}/client/cxf-api.jar" property="appserver.subtype" value="jboss6"/>
+	<available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.subtype" value="jboss7"/>
 	<available file="${appserver.home}/lib/javaee.jar" property="appserver.type" value="glassfish"/>
 	<available file="${appserver.home}/lib/appserv-ext.jar.jar" property="appserver.subtype" value="glassfish2"/>
 	<available file="${appserver.home}/modules/bean-validator.jar" property="appserver.subtype" value="glassfish3"/>
@@ -89,7 +91,7 @@
 		<available file="${appserver.home}/bin/server.jar" property="appserver.type" value="geronimo"/>
 	-->
 	<property name="appserver.type.detected.errormessage"
-		value="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, Glassfish 3.1, JBoss 5.1.0.GA, JBoss 6.0.0, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Is 'appserver.home' configured?)"/>
+		value="'appserver.type' could not be detected or is not configured. Glassfish 2.1.1, Glassfish 3.1, JBoss 5.1.0.GA, JBoss 6.x.0, JBoss 7.1.0, WebLogic 10.3.3, WebSphere 7.0.0.13 can be detected. (Is 'appserver.home' configured?)"/>
 	<ant antfile="${ejbca.home}/echo.xml" target="appserver.error.message"/>
 	
 	<condition property="bundle-hibernate-jpa">
@@ -111,6 +113,7 @@
 	<condition property="exclude-xerces">
 		<or>
 			<matches pattern="jboss6" string="${appserver.subtype}"/>
+			<matches pattern="jboss7" string="${appserver.subtype}"/>
 			<matches pattern="glassfish" string="${appserver.type}"/>
 			<!-- ... -->
 		</or>
@@ -119,6 +122,7 @@
 	<condition property="exclude-xalan">
 		<or>
 			<matches pattern="jboss6" string="${appserver.subtype}"/>
+			<matches pattern="jboss7" string="${appserver.subtype}"/>
 			<!-- ... -->
 		</or>
 	</condition>
@@ -126,6 +130,7 @@
 	<condition property="exclude-serializer">
 		<or>
 			<matches pattern="jboss6" string="${appserver.subtype}"/>
+			<matches pattern="jboss7" string="${appserver.subtype}"/>
 			<!-- ... -->
 		</or>
 	</condition>
