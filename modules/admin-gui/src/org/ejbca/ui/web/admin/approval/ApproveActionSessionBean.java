@@ -167,7 +167,7 @@ public class ApproveActionSessionBean extends BaseManagedBean {
     	List<ApprovalDataVO> result;
     	try {
     		RAAuthorization raAuthorization = new RAAuthorization(EjbcaJSFHelper.getBean().getAdmin(), ejb.getGlobalConfigurationSession(),
-    				ejb.getAccessControlSession(), ejb.getComplexAccessControlSession(), EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class), ejb.getEndEntityProfileSession());
+    				ejb.getAccessControlSession(), ejb.getComplexAccessControlSession(), ejb.getCaSession(), ejb.getEndEntityProfileSession());
     		result = ejb.getApprovalSession().query( EjbcaJSFHelper.getBean().getAdmin(), query, 0, 1, raAuthorization.getCAAuthorizationString(), raAuthorization.getEndEntityProfileAuthorizationString());
     		if (result.size() > 0) {
     			this.approveRequestData = new ApprovalDataVOView(result.get(0));

@@ -105,7 +105,7 @@ public class ApprovalDataVOView implements Serializable {
             return helpBean.getEjbcaWebBean().getText("ANYCA", true);
         }
         try {
-			return EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(helpBean.getAdmin(), data.getCAId()).getName();
+			return ejbLocalHelper.getCaSession().getCAInfo(helpBean.getAdmin(), data.getCAId()).getName();
 		} catch (CADoesntExistsException e) {
 			log.error("Can not get CA with id: "+data.getCAId(), e);
 		} catch (AuthorizationDeniedException e) {
@@ -291,7 +291,7 @@ public class ApprovalDataVOView implements Serializable {
                         + "viewcertificate.jsp?certsernoparameter="
                         + java.net.URLEncoder.encode(certificateSerialNumbers.get(i) + "," + certificateIssuerDN.get(i), "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                log.warn("UnsupportedEncoding creating approval data link. ", e);
             }
             certificateLinks.add(new LinkView(link, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(CERTSERIALNUMBER) + ": ",
                     (String) certificateSerialNumbers.get(i), ""));
@@ -302,7 +302,7 @@ public class ApprovalDataVOView implements Serializable {
                         + EjbcaJSFHelper.getBean().getEjbcaWebBean().getGlobalConfiguration().getAdminWebPath() + "ra/viewendentity.jsp?username="
                         + java.net.URLEncoder.encode((String) usernames.get(i), "UTF-8");
             } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
+                log.warn("UnsupportedEncoding creating approval data link. ", e);
             }
             certificateLinks.add(new LinkView(link, EjbcaJSFHelper.getBean().getEjbcaWebBean().getText(USERNAME) + ": ", (String) usernames.get(i),
                     ""));
@@ -390,10 +390,10 @@ public class ApprovalDataVOView implements Serializable {
     	ApprovalRequest approvalRequest = data.getApprovalRequest();
     	AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
     	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-    		return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class),
+    		return ((EditEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, ejbLocalHelper.getCaSession(),
     				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
     	} else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-    		return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class),
+    		return ((AddEndEntityApprovalRequest)approvalRequest).getNewRequestDataAsText(admin, ejbLocalHelper.getCaSession(),
     				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
     	} else {
     		return approvalRequest.getNewRequestDataAsText(admin);
@@ -404,7 +404,7 @@ public class ApprovalDataVOView implements Serializable {
     	ApprovalRequest approvalRequest = data.getApprovalRequest();
     	AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
     	if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-    		return ((EditEndEntityApprovalRequest)approvalRequest).getOldRequestDataAsText(admin, EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class),
+    		return ((EditEndEntityApprovalRequest)approvalRequest).getOldRequestDataAsText(admin, ejbLocalHelper.getCaSession(),
     				ejbLocalHelper.getEndEntityProfileSession(), ejbLocalHelper.getCertificateProfileSession(), ejbLocalHelper.getHardTokenSession());
     	} else {
     		return approvalRequest.getOldRequestDataAsText(admin);
