@@ -378,7 +378,9 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 	@Override
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
 	throws IOException, ServletException {
-		m_log.trace(">doPost()");
+        if (m_log.isTraceEnabled()) {
+            m_log.trace(">doPost()");
+        }
 		try {
 			final String contentType = request.getHeader("Content-Type");
 			if ( contentType!=null && contentType.equalsIgnoreCase("application/ocsp-request")) {
@@ -414,7 +416,9 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
 			}
 		} finally {
-			m_log.trace("<doPost()");
+		    if (m_log.isTraceEnabled()) {
+		        m_log.trace("<doPost()");
+		    }
 		}
 	} //doPost
 
@@ -422,7 +426,9 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws IOException, ServletException {
 		try {
-			m_log.trace(">doGet()");
+		    if (m_log.isTraceEnabled()) {
+		        m_log.trace(">doGet()");
+		    }
 			// We have a command to force reloading of keys that can only be run from localhost
 			final boolean doReload = StringUtils.equals(request.getParameter("reloadkeys"), "true");
 			final String newConfig = request.getParameter("newConfig");
@@ -476,7 +482,9 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 			}
 			serviceOCSP(request, response);
 		} finally {
-			m_log.trace("<doGet()");
+            if (m_log.isTraceEnabled()) {
+                m_log.trace("<doGet()");
+            }
 		}
 	} // doGet
 
