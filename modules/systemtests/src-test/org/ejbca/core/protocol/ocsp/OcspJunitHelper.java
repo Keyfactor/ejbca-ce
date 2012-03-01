@@ -244,18 +244,19 @@ public class OcspJunitHelper {
 		final CertificateID certId = singleResp.getCertID();
 		assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), certSerial);
 		final Object status = singleResp.getCertStatus();
+		final String statusClassName = status!=null ? status.getClass().getName() : "GOOD";// status==null means GOOD
 		switch ( expectedStatus ) {
 		case Unknown:
-			assertTrue("Status is not Unknown: "+status.getClass().getName(), status instanceof UnknownStatus);
+			assertTrue("Status is not Unknown: "+statusClassName, status instanceof UnknownStatus);
 			break;
 		case Good:
 			if ( status!=org.bouncycastle.ocsp.CertificateStatus.GOOD ) {
 				log.debug("Certificate status: " + status.getClass().getName());
 			}
-			assertEquals("Status is not Good: "+status != null ? status.getClass().getName() : null, org.bouncycastle.ocsp.CertificateStatus.GOOD, status);
+			assertEquals("Status is not Good: "+statusClassName, org.bouncycastle.ocsp.CertificateStatus.GOOD, status);
 			break;
 		case Revoked:
-			assertTrue("Status is not Revoked: "+status.getClass().getName(), status instanceof RevokedStatus);
+			assertTrue("Status is not Revoked: "+statusClassName, status instanceof RevokedStatus);
 			final int reason = ((RevokedStatus)status).getRevocationReason();
 			assertEquals("Wrong revocation reason", expectedReason, reason);
 			break;
