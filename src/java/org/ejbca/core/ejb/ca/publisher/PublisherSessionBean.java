@@ -115,7 +115,9 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
                     		if (publisherQueueSession.storeCertificateNonTransactional(pub, admin, incert, username, password, userDN, cafp, status, type, revocationDate, revocationReason,
                     				tag, certificateProfileId, lastUpdate, extendedinformation)) {
                     			publishStatus = PublisherConst.STATUS_SUCCESS;
-                    		}
+                            } else {
+                                throw new PublisherException("Return code from publisher is false.");
+                            }
                         } catch (EJBException e) {
                         	final Throwable t = e.getCause();
                         	if (t instanceof PublisherException) {
