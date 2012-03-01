@@ -252,7 +252,7 @@ public class OcspJunitHelper {
 			if ( status!=org.bouncycastle.ocsp.CertificateStatus.GOOD ) {
 				log.debug("Certificate status: " + status.getClass().getName());
 			}
-			assertEquals("Status is not Good: "+status.getClass().getName(), org.bouncycastle.ocsp.CertificateStatus.GOOD, status);
+			assertEquals("Status is not Good: "+status != null ? status.getClass().getName() : null, org.bouncycastle.ocsp.CertificateStatus.GOOD, status);
 			break;
 		case Revoked:
 			assertTrue("Status is not Revoked: "+status.getClass().getName(), status instanceof RevokedStatus);
