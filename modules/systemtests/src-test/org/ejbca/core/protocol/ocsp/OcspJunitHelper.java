@@ -246,16 +246,16 @@ public class OcspJunitHelper {
 		final Object status = singleResp.getCertStatus();
 		switch ( expectedStatus ) {
 		case Unknown:
-			assertTrue("Status is not Unknown", status instanceof UnknownStatus);
+			assertTrue("Status is not Unknown: "+status.getClass().getName(), status instanceof UnknownStatus);
 			break;
 		case Good:
 			if ( status!=org.bouncycastle.ocsp.CertificateStatus.GOOD ) {
 				log.debug("Certificate status: " + status.getClass().getName());
 			}
-			assertEquals("Status is not Good", org.bouncycastle.ocsp.CertificateStatus.GOOD, status);
+			assertEquals("Status is not Good: "+status.getClass().getName(), org.bouncycastle.ocsp.CertificateStatus.GOOD, status);
 			break;
 		case Revoked:
-			assertTrue("Status is not Revoked", status instanceof RevokedStatus);
+			assertTrue("Status is not Revoked: "+status.getClass().getName(), status instanceof RevokedStatus);
 			final int reason = ((RevokedStatus)status).getRevocationReason();
 			assertEquals("Wrong revocation reason", expectedReason, reason);
 			break;
