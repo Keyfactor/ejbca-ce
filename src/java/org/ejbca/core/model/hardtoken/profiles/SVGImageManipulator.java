@@ -71,7 +71,7 @@ public class SVGImageManipulator {
 	private static final Logger log = Logger.getLogger(SVGImageManipulator.class);
 	
 	/**
-     * Availabe vairables used to replace text in a printlayout
+     * Available variables used to replace text in a printlayout
      * Variable text are case-insensitive.
      */
     private static final Pattern USERNAME = Pattern.compile("\\$USERNAME", Pattern.CASE_INSENSITIVE);
