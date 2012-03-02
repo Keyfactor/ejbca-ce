@@ -108,6 +108,9 @@ public class PrinterManager {
 			int visualVaildity,  EndEntityInformation userDataVO, 
 			String[] pINs, String[] pUKs, String hardTokenSerialPrefix,
 			String hardTokenSN, String copyOfHardTokenSN) throws PrinterException{
+	    if (log.isTraceEnabled()) {
+            log.trace(">print: "+userDataVO.getUsername()+", "+printerName);
+	    }
 		if(currentService == null 
 		   || currentPrinterName == null 
 		   || !printerName.equals(currentPrinterName)){
@@ -131,7 +134,7 @@ public class PrinterManager {
 				PrinterJob job = PrinterJob.getPrinterJob();
 
 				job.setPrintService(currentService);
-				PageFormat pf = job.defaultPage();	   	  
+				PageFormat pf = job.defaultPage();
 				Paper paper = new Paper();
 				paper.setSize(pf.getWidth(), pf.getHeight());
 				paper.setImageableArea(0.0,0.0,pf.getWidth(), pf.getHeight());				
@@ -139,7 +142,8 @@ public class PrinterManager {
 				pf.setPaper(paper);	   	  
 				job.setPrintable(sVGImagemanipulator.print(userDataVO,pINs,pUKs,hardTokenSN, copyOfHardTokenSN),pf);	   	  
                 job.setCopies(copies);
-				job.print();	   	  	   	  	   	  	   	 
+				job.print();
+				log.info("Sent print job for end entity '"+userDataVO.getUsername()+"' to printer '"+currentService.getName()+"'.");
 			}else{
 				throw new PrinterException("Error, couldn't find the right printer");		  	   	
 			}	
@@ -147,5 +151,8 @@ public class PrinterManager {
 			log.error(e);
 			throw new PrinterException("Error occured when processing the SVG data :" + e.getMessage());		
 		}
+        if (log.isTraceEnabled()) {
+            log.trace("<print: "+userDataVO.getUsername()+", "+printerName);
+        }
 	}
 }
