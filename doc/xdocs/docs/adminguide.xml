@@ -4845,6 +4845,47 @@ cd dist/ejbca-db-cli
 
 </section>
 
+<section name="Backup and Restore">
+<p>EJBCA is an enterprise software designed to operate in a high avaialbility and high performance environment.
+Backup of EJBCA is essential for most organizations, and EJBCA is designed to make backup easy.
+Backing up of EJBCA consists of static and dynamic data. Static data does not change during normal operations, and only needs to be backed up when changed. 
+Dynamic data is the data that is changed during daily operations. All dynamic data is stored in the database. 
+</p>
+<ul>
+<li>Dynamic data that needs to be backed up regularly:</li>
+<ol>
+<li>Database contents.</li>
+</ol>
+<li>Static data that only needs to be backed up when changed:</li>
+<ol>
+<li>EJBCA program files.</li>
+<li>EJBCA configuration (ejbca/conf).</li>
+<li>Admin and SSL keystores (ejbca/p12).</li>
+</ol>
+</ul>
+
+<subsection name="Backup and Restore CLI">
+<p>EJBCA provides a command line interface (CLI) for backup and restore operations. This is a simple CLI that shows the principles and the data that needs to be backed up.
+The CLI provides integrity protected backup, with verification during restore. This is often needed, in some form, in certified (CWA, Common Criteria, etc) installations.
+</p>
+<note>
+The CLI is not suitable for use in very large or high volume installations. In those cases we recommnd using database native backup tools as recommended by your database.
+</note>
+<note>
+Access control on the local OS is out of the scope for EJBCA. Users with access to the OS (and database passwords etc) can access the backup and restore scripts. 
+To enforce role separation set appropriate file system privileges on all files. 
+</note>
+<p>
+Run backup and restore with the commands:
+</p>
+<source>
+cd bin/backup
+./backup.sh
+./restore.sh
+</source>
+</subsection>
+</section>
+
 <section name="High Availability (HA), a.k.a Clustering">
 <p>
 EJBCA is designed to work well in a clustered, high availability configuration. The key to EJBCA high availability is to have a HA database, since all EJBCA nodes shares the same database.
