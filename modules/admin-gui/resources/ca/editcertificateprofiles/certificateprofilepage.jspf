@@ -984,9 +984,10 @@ function checkallfields(){
         <table border="0">
           <tr>
             <td valign="middle" align="center" width="35%"><input type="submit" name="<%= BUTTON_ADD_POLICY %>" value="<%= ejbcawebbean.getText("ADD") %>" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/></td>
-            <td id="Row<%=(row-1)%2%>" align="right"><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CP_POLICYID\") %>" /><br/><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CP_USERNOTICE\") %>" /><br/><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CP_CPSURI\") %>" /></td>
+            <td id="Row<%=(row-1)%2%>" align="right"><nobr><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CP_POLICYID\") %>" /></nobr><br/><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CP_USERNOTICE\") %>" /><br/><c:out value="<%= ejbcawebbean.getText(\"EXT_PKIX_CP_CPSURI\") %>" /></td>
           </tr>
         </table>
+      </td>
       <td width="50%">
         <input type="text" name="<%=TEXTFIELD_CERTIFICATEPOLICYID%>" size="20" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/><br/>
         <input type="text" name="<%=TEXTAREA_POLICYNOTICE_UNOTICE%>" size="45" maxlength="255" <%=certificateprofiledata.getUseCertificatePolicies() ? "" : "disabled"%>/><br/>
