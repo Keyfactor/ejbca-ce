@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -51,14 +51,14 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
             int status = Integer.parseInt(args[1]);
             Collection<EndEntityInformation> coll = null;
             if (status==0) {
-                coll = ejb.getRemoteSession(UserAdminSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 10);
-                coll.addAll(ejb.getRemoteSession(UserAdminSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 11));
-                coll.addAll(ejb.getRemoteSession(UserAdminSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 20));
-                coll.addAll(ejb.getRemoteSession(UserAdminSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 30));
-                coll.addAll(ejb.getRemoteSession(UserAdminSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 40));
-                coll.addAll(ejb.getRemoteSession(UserAdminSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 50));
+                coll = ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 10);
+                coll.addAll(ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 11));
+                coll.addAll(ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 20));
+                coll.addAll(ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 30));
+                coll.addAll(ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 40));
+                coll.addAll(ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), 50));
             } else {
-                coll = ejb.getRemoteSession(UserAdminSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), status);
+                coll = ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), status);
             }
             Iterator<EndEntityInformation> iter = coll.iterator();
             while (iter.hasNext()) {

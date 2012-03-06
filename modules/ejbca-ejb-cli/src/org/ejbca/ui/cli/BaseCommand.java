@@ -51,7 +51,7 @@ import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 
 /**
  * Base for Commands, contains useful functions
@@ -180,7 +180,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
             throw new CliUsernameException();
         }
 
-        if (!ejb.getRemoteSession(UserAdminSessionRemote.class).existsUser(cliUserName)) {
+        if (!ejb.getRemoteSession(EndEntityManagementSessionRemote.class).existsUser(cliUserName)) {
             //We only check for username here, but it's needless to give too much info. 
             getLogger().info("CLI authentication failed. The user '" + cliUserName +"' with the given password does not exist.");
             throw new CliUsernameException("Authentication failed. User " + cliUserName + " not exist.");

@@ -62,7 +62,7 @@ import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -116,7 +116,7 @@ public class CardCertReqServlet extends HttpServlet {
 	@EJB
 	private SignSessionLocal signSession;
 	@EJB
-	private UserAdminSessionLocal userAdminSession;
+	private EndEntityManagementSessionLocal userAdminSession;
 
     /**
      * Servlet init

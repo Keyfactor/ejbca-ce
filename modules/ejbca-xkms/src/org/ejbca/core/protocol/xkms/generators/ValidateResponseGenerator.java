@@ -20,7 +20,7 @@ import java.util.List;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.crl.CrlStoreSession;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.w3._2002._03.xkms_.KeyBindingType;
 import org.w3._2002._03.xkms_.ValidateRequestType;
@@ -35,7 +35,7 @@ import org.w3._2002._03.xkms_.ValidateResultType;
  */
 public class ValidateResponseGenerator extends KISSResponseGenerator {
 
-	public ValidateResponseGenerator(String remoteIP, ValidateRequestType req, CertificateStoreSession certificateStoreSession, UserAdminSessionLocal userAdminSession, CrlStoreSession crlSession, CaSession caSession) {
+	public ValidateResponseGenerator(String remoteIP, ValidateRequestType req, CertificateStoreSession certificateStoreSession, EndEntityManagementSessionLocal userAdminSession, CrlStoreSession crlSession, CaSession caSession) {
 		super(remoteIP, req, certificateStoreSession, userAdminSession, crlSession, caSession);
 	}
 	

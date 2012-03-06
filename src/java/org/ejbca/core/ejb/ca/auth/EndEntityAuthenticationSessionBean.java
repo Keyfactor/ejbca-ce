@@ -35,7 +35,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -60,7 +60,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     private EntityManager entityManager;
 
     @EJB
-    private UserAdminSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal userAdminSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     

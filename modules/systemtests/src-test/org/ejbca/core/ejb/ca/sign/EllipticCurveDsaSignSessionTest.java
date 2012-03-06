@@ -46,7 +46,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.cvc.CardVerifiableCertificate;
@@ -67,7 +67,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     private static final String RSA_USERNAME = "RsaUser";
     private static final String ECDSA_USERNAME = "EcdsaUser";
@@ -94,7 +94,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
 
     @AfterClass
     public static void afterClass() throws Exception {
-        UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         cleanUpEndEntity(RSA_USERNAME);
         userAdminSession.deleteUser(internalAdmin, ECDSA_USERNAME);
         removeTestCA();

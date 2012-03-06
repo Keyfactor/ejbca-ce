@@ -33,7 +33,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.cesecore.util.FileTools;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -158,7 +158,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			
 			getLogger().debug("Loading/updating user " + username);
 			if (userdata == null) {
-				ejb.getRemoteSession(UserAdminSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword),
+				ejb.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword),
 						username, password,
 						CertTools.getSubjectDN(certificate),
 						subjectAltName, email,
@@ -170,10 +170,10 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 						SecConst.NO_HARDTOKENISSUER,
 						cainfo.getCAId());
 				if (status == CertificateConstants.CERT_ACTIVE) {
-					ejb.getRemoteSession(UserAdminSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), username, UserDataConstants.STATUS_GENERATED);
+					ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), username, UserDataConstants.STATUS_GENERATED);
 				}
 				else {
-					ejb.getRemoteSession(UserAdminSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), username, UserDataConstants.STATUS_REVOKED);
+					ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), username, UserDataConstants.STATUS_REVOKED);
 				}
 				getLogger().info("User '" + username + "' has been added.");
 			}
@@ -182,7 +182,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
                         (status == CertificateConstants.CERT_ACTIVE ? UserDataConstants.STATUS_GENERATED : UserDataConstants.STATUS_REVOKED), endEntityType, endentityprofileid, 
                         certificateprofileid, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
                 endEntityInformation.setPassword(password);
-                ejb.getRemoteSession(UserAdminSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword), endEntityInformation, false);
+                ejb.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword), endEntityInformation, false);
 				getLogger().info("User '" + username + "' has been updated.");
 			}
 			int certificateType = CertificateConstants.CERTTYPE_ENDENTITY;

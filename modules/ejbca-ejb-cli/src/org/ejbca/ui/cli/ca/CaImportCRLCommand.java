@@ -47,7 +47,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -151,9 +151,9 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null,
 	                                SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 	                        userdataNew.setPassword("foo123");
-	                        ejb.getRemoteSession(UserAdminSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), userdataNew, false);
+	                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), userdataNew, false);
 	                        getLogger().info("User '" + missing_user_name + "' has been added.");
-	                        ejb.getRemoteSession(UserAdminSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), missing_user_name, UserDataConstants.STATUS_REVOKED);
+	                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), missing_user_name, UserDataConstants.STATUS_REVOKED);
 	                        getLogger().info("User '" + missing_user_name + "' has been updated.");
 	                    }
 	                    ejb.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAdmin(cliUserName, cliPassword), certificate, missing_user_name, fingerprint,
@@ -171,7 +171,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                try {
 	                    int reason = getCRLReasonValue(entry);
 	                    getLogger().info("Reason code: "+reason);
-	                    ejb.getRemoteSession(UserAdminSessionRemote.class).revokeCert(getAdmin(cliUserName, cliPassword), serialNr, entry.getRevocationDate(), issuer, reason);
+	                    ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeCert(getAdmin(cliUserName, cliPassword), serialNr, entry.getRevocationDate(), issuer, reason);
 	                    revoked++;
 	                } catch (AlreadyRevokedException e) {
 	                    already_revoked++;

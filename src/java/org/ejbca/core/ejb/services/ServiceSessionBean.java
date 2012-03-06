@@ -71,7 +71,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -147,7 +147,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private SignSessionLocal signSession;
     @EJB
-    private UserAdminSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal userAdminSession;
     @EJB
     private PublisherQueueSessionLocal publisherQueueSession;
     @EJB
@@ -603,7 +603,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(AdminPreferenceSessionLocal.class, raAdminSession);
             ejbs.put(GlobalConfigurationSessionLocal.class, globalConfigurationSession);
             ejbs.put(SignSessionLocal.class, signSession);
-            ejbs.put(UserAdminSessionLocal.class, userAdminSession);
+            ejbs.put(EndEntityManagementSessionLocal.class, userAdminSession);
             ejbs.put(PublisherQueueSessionLocal.class, publisherQueueSession);
             ejbs.put(PublisherSessionLocal.class, publisherSession);
             ejbs.put(CertificateRequestSessionLocal.class, certificateRequestSession);

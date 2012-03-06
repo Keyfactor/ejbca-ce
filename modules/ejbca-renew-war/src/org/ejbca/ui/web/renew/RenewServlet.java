@@ -32,7 +32,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -61,7 +61,7 @@ public class RenewServlet extends HttpServlet {
 	@EJB
 	private EndEntityProfileSessionLocal endEntityProfileSession;
 	@EJB
-	private UserAdminSessionLocal useradminhome;
+	private EndEntityManagementSessionLocal useradminhome;
     
     /**
      * Servlet init

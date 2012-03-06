@@ -32,7 +32,7 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.authorization.DefaultRoles;
 import org.ejbca.core.model.hardtoken.HardTokenIssuer;
@@ -232,7 +232,7 @@ public class InitializeHardTokenIssuing extends BaseCommand {
         int tokenid = ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenProfileId(getAdmin(cliUserName, cliPassword), ADMINTOKENPROFILENAME);
         int hardtokenissuerid = ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenIssuerId(getAdmin(cliUserName, cliPassword), ISSUERALIAS);
 
-        this.ejb.getRemoteSession(UserAdminSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), SUPERADMINTOKENNAME, null, "CN=" + SUPERADMINTOKENNAME, null, null, true,
+        this.ejb.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), SUPERADMINTOKENNAME, null, "CN=" + SUPERADMINTOKENNAME, null, null, true,
                 endentityprofileid, certificateprofileid, new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR), tokenid, hardtokenissuerid, caid);
     }
 

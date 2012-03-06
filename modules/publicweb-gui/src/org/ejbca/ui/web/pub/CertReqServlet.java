@@ -31,7 +31,7 @@ import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 
@@ -81,7 +81,7 @@ public class CertReqServlet extends HttpServlet {
 	@EJB
 	private SignSessionLocal signSession;
 	@EJB
-	private UserAdminSessionLocal userAdminSession;
+	private EndEntityManagementSessionLocal userAdminSession;
 	@EJB
 	private GlobalConfigurationSessionLocal globalConfigurationSession;
 

@@ -31,7 +31,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -249,7 +249,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             }
 
             // Check if username already exists.
-            if (ejb.getRemoteSession(UserAdminSessionRemote.class).existsUser(username)) {
+            if (ejb.getRemoteSession(EndEntityManagementSessionRemote.class).existsUser(username)) {
                 getLogger().error("User '"+username+"' already exists in the database.");
                 error = true;
             }
@@ -276,7 +276,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                     email = null;
                 }
                 try {
-                    ejb.getRemoteSession(UserAdminSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), username, password, dn, subjectaltname, email, false, profileid, certificatetypeid, type, tokenid,
+                    ejb.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), username, password, dn, subjectaltname, email, false, profileid, certificatetypeid, type, tokenid,
                             hardtokenissuerid, caid);
                     getLogger().info("User '" + username + "' has been added.");
                     getLogger().info("Note: If batch processing should be possible, also use 'ra setclearpwd " + username + " <pwd>'.");

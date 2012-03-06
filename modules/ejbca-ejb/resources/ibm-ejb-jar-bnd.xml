@@ -10,7 +10,7 @@
      this file if you move stuff around or change names.    
      -->
     <session name="CrlCreateSessionBean"><interface class="org.cesecore.certificates.crl.CrlCreateSessionRemote" binding-name="ejbca/CrlCreateSessionRemote"/></session>  
-    <session name="UserAdminSessionBean"><interface class="org.ejbca.core.ejb.ra.UserAdminSessionRemote" binding-name="ejbca/UserAdminSessionRemote"/></session>  
+    <session name="EndEntityManagementBean"><interface class="org.ejbca.core.ejb.ra.EndEntityManagementRemote" binding-name="ejbca/EndEntityManagementRemote"/></session>  
     <session name="EndEntityProfileSessionBean"><interface class="org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote" binding-name="ejbca/EndEntityProfileSessionRemote"/></session>  
     <session name="AuthorizationTreeUpdateDataSessionBean"><interface class="org.cesecore.core.ejb.authorization.AuthorizationTreeUpdateDataSessionRemote" binding-name="ejbca/AuthorizationTreeUpdateDataSessionRemote"/></session>  
     <session name="PublisherSessionBean"><interface class="org.ejbca.core.ejb.ca.publisher.PublisherSessionRemote" binding-name="ejbca/PublisherSessionRemote"/></session>  

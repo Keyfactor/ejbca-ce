@@ -51,7 +51,7 @@ import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSession;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -61,7 +61,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.UserAdminConstants;
+import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
@@ -88,7 +88,7 @@ public class RAInterfaceBean implements Serializable {
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    public static final int MAXIMUM_QUERY_ROWCOUNT = UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT;
+    public static final int MAXIMUM_QUERY_ROWCOUNT = EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT;
     
     public static final String[] tokentexts = SecConst.TOKENTEXTS;
     public static final int[]    tokenids   = SecConst.TOKENIDS;
@@ -105,7 +105,7 @@ public class RAInterfaceBean implements Serializable {
     private EndEntityProfileSessionLocal endEntityProfileSession;
     private HardTokenSession hardtokensession;
     private KeyRecoverySession keyrecoverysession;
-    private UserAdminSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal userAdminSession;
     private UserDataSourceSession userdatasourcesession;
     private ComplexAccessControlSessionLocal complexAccessControlSession;
     
@@ -415,7 +415,7 @@ public class RAInterfaceBean implements Serializable {
     	Collection<String> usernames = certificatesession.findUsernamesByExpireTimeWithLimit(finddate);
     	if (!usernames.isEmpty()) {
     		Iterator<String> i = usernames.iterator();
-    		while (i.hasNext() && userlist.size() <= UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT +1 ) {
+    		while (i.hasNext() && userlist.size() <= EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT +1 ) {
     			EndEntityInformation user = null;
     			try {
     				user = endEntityAccessSession.findUser(administrator, (String) i.next());

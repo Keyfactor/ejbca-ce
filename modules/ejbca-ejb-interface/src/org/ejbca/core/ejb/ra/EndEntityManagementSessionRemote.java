@@ -15,9 +15,9 @@ package org.ejbca.core.ejb.ra;
 import javax.ejb.Remote;
 
 /**
- * Remote interface for UserAdminSession.
+ * Remote interface for EndEntityManagementSession.
  */
 @Remote
-public interface UserAdminSessionRemote extends UserAdminSession {
+public interface EndEntityManagementSessionRemote extends EndEntityManagementSession {
 
 }

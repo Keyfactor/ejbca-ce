@@ -60,7 +60,7 @@ import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -96,7 +96,7 @@ public class CAInterfaceBean implements Serializable {
     private AccessControlSessionLocal authorizationsession;
     private AccessRuleManagementSessionLocal accessRuleManagementSession;
     private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
-    private UserAdminSessionLocal adminsession;
+    private EndEntityManagementSessionLocal adminsession;
     private GlobalConfigurationSession globalconfigurationsession;
     private SignSession signsession;
     private CertificateCreateSessionLocal certcreatesession;

@@ -41,7 +41,7 @@ import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLoc
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
@@ -80,7 +80,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
     @EJB
 	private SignSessionLocal signSession;
 	@EJB
-	private UserAdminSessionLocal userAdminSession;
+	private EndEntityManagementSessionLocal userAdminSession;
 	@EJB
 	private CaSessionLocal caSession;
 	@EJB

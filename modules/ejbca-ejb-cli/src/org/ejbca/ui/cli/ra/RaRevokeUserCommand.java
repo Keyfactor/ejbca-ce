@@ -16,7 +16,7 @@ package org.ejbca.ui.cli.ra;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
@@ -66,7 +66,7 @@ public class RaRevokeUserCommand extends BaseRaAdminCommand {
                 getLogger().info("Old status=" + data.getStatus());
                 // Revoke users certificates
                 try {
-                    ejb.getRemoteSession(UserAdminSessionRemote.class).revokeUser(getAdmin(cliUserName, cliPassword), username, reason);
+                    ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeUser(getAdmin(cliUserName, cliPassword), username, reason);
                     data = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
                     getLogger().info("New status=" + data.getStatus());
                 } catch (AuthorizationDeniedException e) {

@@ -88,7 +88,7 @@ import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
-import org.ejbca.core.model.ra.UserAdminConstants;
+import org.ejbca.core.model.ra.EndEntityManagementConstants;
 
 /**
  * Stores data used by web server clients. Uses JNDI name for datasource as
@@ -928,7 +928,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     @Override
     public Collection<String> matchHardTokenByTokenSerialNumber(AuthenticationToken admin, String searchpattern) {
         log.trace(">findHardTokenByTokenSerialNumber()");
-        return org.ejbca.core.ejb.hardtoken.HardTokenData.findUsernamesByHardTokenSerialNumber(entityManager, searchpattern, UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT);
+        return org.ejbca.core.ejb.hardtoken.HardTokenData.findUsernamesByHardTokenSerialNumber(entityManager, searchpattern, EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT);
     }
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)

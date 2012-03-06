@@ -70,7 +70,7 @@ import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLoc
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -116,12 +116,12 @@ public class EjbcaWSHelper {
     private HardTokenSession hardTokenSession;
     private EndEntityAccessSession endEntityAccessSession;
     private EndEntityProfileSession endEntityProfileSession;
-    private UserAdminSession userAdminSession;
+    private EndEntityManagementSession userAdminSession;
     private WebAuthenticationProviderSessionLocal authenticationSession;
 
     protected EjbcaWSHelper(WebServiceContext wsContext, AccessControlSessionLocal authorizationSession, CAAdminSession caAdminSession, CaSession caSession,
             CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
-            EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, UserAdminSession userAdminSession, WebAuthenticationProviderSessionLocal authenticationSession) {
+            EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, EndEntityManagementSession userAdminSession, WebAuthenticationProviderSessionLocal authenticationSession) {
     	this.wsContext = wsContext;
 		this.authorizationSession = authorizationSession;
 		this.caAdminSession = caAdminSession;

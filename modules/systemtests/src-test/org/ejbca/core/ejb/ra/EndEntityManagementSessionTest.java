@@ -99,9 +99,9 @@ import org.junit.Test;
  * 
  * @version $Id$
  */
-public class UserAdminSessionTest extends CaTestCase {
+public class EndEntityManagementSessionTest extends CaTestCase {
 
-    private static final Logger log = Logger.getLogger(UserAdminSessionTest.class);
+    private static final Logger log = Logger.getLogger(EndEntityManagementSessionTest.class);
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserAdminSessionTest"));
     private int caid = getTestCAId();
 
@@ -114,7 +114,7 @@ public class UserAdminSessionTest extends CaTestCase {
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
-    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private CertificateStoreSessionRemote storeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private SimpleAuthenticationProviderRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderRemote.class);
@@ -123,7 +123,7 @@ public class UserAdminSessionTest extends CaTestCase {
     private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
-    private UserAdminProxySessionRemote userAdminProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminProxySessionRemote.class); 
+    private EndEntityManagementProxySessionRemote userAdminProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class); 
 
     @BeforeClass
     public static void beforeClass() {

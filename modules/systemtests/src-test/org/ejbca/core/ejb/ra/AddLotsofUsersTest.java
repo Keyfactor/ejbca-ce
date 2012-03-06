@@ -29,7 +29,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserAdminConstants;
+import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.junit.After;
 import org.junit.Before;
@@ -47,7 +47,7 @@ public class AddLotsofUsersTest extends CaTestCase {
     private int userNo = 0;
     
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
@@ -111,7 +111,7 @@ public class AddLotsofUsersTest extends CaTestCase {
     public void test02FindAllBatchUsersByStatusWithLimit() {
         log.trace(">test02FindAllBatchUsersByStatusWithLimit()");
     	List<EndEntityInformation> userDataVOs = userAdminSession.findAllBatchUsersByStatusWithLimit(UserDataConstants.STATUS_NEW);
-    	assertEquals("Did not returned the maximum hardcoded limit in query.", UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT, userDataVOs.size());
+    	assertEquals("Did not returned the maximum hardcoded limit in query.", EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT, userDataVOs.size());
         log.trace("<test02FindAllBatchUsersByStatusWithLimit()");
     }
 }

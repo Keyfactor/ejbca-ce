@@ -67,7 +67,7 @@ import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -113,12 +113,12 @@ public class KRSSResponseGenerator extends
 	 private KeyRecoverySession keyRecoverySession;
 	 private GlobalConfigurationSession globalConfigurationSession;
 	 private SignSession signSession;
-	 private UserAdminSession userAdminSession;
+	 private EndEntityManagementSession userAdminSession;
 	 
     public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc,
     		CaSession casession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
-    		SignSession signSession, UserAdminSession userAdminSession, CrlStoreSession crlSession) {
+    		SignSession signSession, EndEntityManagementSession userAdminSession, CrlStoreSession crlSession) {
         super(remoteIP, req, casession, certificateStoreSession, crlSession);
         this.requestDoc = requestDoc;
         this.casession = casession;

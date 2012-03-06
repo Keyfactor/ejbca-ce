@@ -105,7 +105,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
-    private UserAdminSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal userAdminSession;
     @EJB
     private SignSessionLocal signSession;
     @Resource

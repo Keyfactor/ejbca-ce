@@ -659,8 +659,8 @@
 					<include name="org/cesecore/certificates/certificate/CertificateCreateSession*.java"/>
 					<include name="org/ejbca/core/ejb/ca/auth/EndEntityAuthenticationSessionLocal.java"/>
 					<include name="org/ejbca/core/ejb/ca/auth/EndEntityAuthenticationSession.java"/>
-					<include name="org/ejbca/core/ejb/ra/UserAdminSessionLocal.java"/>
-					<include name="org/ejbca/core/ejb/ra/UserAdminSession.java"/>				
+					<include name="org/ejbca/core/ejb/ra/EndEntityManagementSessionLocal.java"/>
+					<include name="org/ejbca/core/ejb/ra/EndEntityManagementSession.java"/>				
 				</fileset>
 				<fileset dir="${src.dir}">
 					<include name="org/cesecore/certificates/certificate/UniqueSernoHelper.java"/>
@@ -848,7 +848,7 @@
 					<include name="org/ejbca/core/ejb/hardtoken/*SessionBean.java"/>
 					<include name="org/ejbca/core/model/hardtoken/**/*.java"/>
 					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/HardTokenEncryptCAService*.java"/>
-					<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
+					<include name="org/ejbca/core/model/ra/EndEntityManagementConstants.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/hardtoken" destdir="${build-temp.dir}/hardtoken" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}">
