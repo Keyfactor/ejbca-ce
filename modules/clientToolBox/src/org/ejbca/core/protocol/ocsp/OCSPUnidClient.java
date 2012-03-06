@@ -29,12 +29,12 @@ import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SecureRandom;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Hashtable;
+import java.util.Random;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.HttpsURLConnection;
@@ -112,7 +112,7 @@ public class OCSPUnidClient {
         this.nonce = new byte[16];
 	    {
 	        final Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
-	        final SecureRandom randomSource = SecureRandom.getInstance("SHA1PRNG");
+	        final Random randomSource = new Random();
 	        randomSource.nextBytes(nonce);
 	        final X509Extension nonceext = new X509Extension(false, new DEROctetString(nonce));
 	        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, nonceext);
