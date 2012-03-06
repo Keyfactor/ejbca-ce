@@ -59,7 +59,7 @@ public class EndEntityInformation implements Serializable {
     private String cardNumber;
     /** Status of user, from {@link EndEntityConstants#STATUS_NEW} etc*/
     private int status;
-    private EndEntityType type;
+    private int type;
     private int endentityprofileid;
     private int certificateprofileid;
     private Date timecreated;
@@ -180,8 +180,8 @@ public class EndEntityInformation implements Serializable {
     public String getPassword() {return StringTools.getBase64String(password);}
     public void setStatus(int status) {this.status=status;}
     public int getStatus() {return status;}
-    public void setType(EndEntityType type) {this.type=type;}
-    public EndEntityType getType() {return type;}
+    public void setType(EndEntityType type) {this.type=type.getHexValue();}
+    public EndEntityType getType() {return new EndEntityType(type);}
     public void setEndEntityProfileId(int endentityprofileid) { this.endentityprofileid=endentityprofileid; }
     public int getEndEntityProfileId(){ return this.endentityprofileid; }
     public void setCertificateProfileId(int certificateprofileid) { this.certificateprofileid=certificateprofileid; }
@@ -199,56 +199,63 @@ public class EndEntityInformation implements Serializable {
      * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean. 
      */
     public boolean getAdministrator(){
-      return type.contains(EndEntityTypes.ADMINISTRATOR);
+      return getType().contains(EndEntityTypes.ADMINISTRATOR);
     }
 
     /**
      * @deprecated from EJBCA 3.8.0. The admin property is no longer used. This method is still used for deserializing objects in CertReqHistoryDataBean. 
      */
-    public void setAdministrator(boolean administrator){
-      if(administrator) {
-        type.addType(EndEntityTypes.ADMINISTRATOR);
-      } else {
-        type.removeType(EndEntityTypes.ADMINISTRATOR);
-      }
+    public void setAdministrator(final boolean administrator){
+        final EndEntityType type = getType();
+        if (administrator) {
+            type.addType(EndEntityTypes.ADMINISTRATOR);
+        } else {
+            type.removeType(EndEntityTypes.ADMINISTRATOR);
+        }
+        setType(type);
     }
 
     public boolean getKeyRecoverable(){
-      return type.contains(EndEntityTypes.KEYRECOVERABLE);
+        return getType().contains(EndEntityTypes.KEYRECOVERABLE);
     }
 
-    public void setKeyRecoverable(boolean keyrecoverable){
-      if(keyrecoverable) {
-        type.addType(EndEntityTypes.KEYRECOVERABLE);
-      } else {
-        type.removeType(EndEntityTypes.KEYRECOVERABLE);
-      }
+    public void setKeyRecoverable(final boolean keyrecoverable){
+        final EndEntityType type = getType();
+        if (keyrecoverable) {
+            type.addType(EndEntityTypes.KEYRECOVERABLE);
+        } else {
+            type.removeType(EndEntityTypes.KEYRECOVERABLE);
+        }
+        setType(type);
     }
 
     public boolean getSendNotification(){
-      return type.contains(EndEntityTypes.SENDNOTIFICATION);
+        return getType().contains(EndEntityTypes.SENDNOTIFICATION);
     }
 
-    
-    public void setSendNotification(boolean sendnotification){
-      if(sendnotification) {
-        type.addType(EndEntityTypes.SENDNOTIFICATION);
-      } else {
-        type.removeType(EndEntityTypes.SENDNOTIFICATION);
-      }
+    public void setSendNotification(final boolean sendnotification){
+        final EndEntityType type = getType();
+        if (sendnotification) {
+            type.addType(EndEntityTypes.SENDNOTIFICATION);
+        } else {
+            type.removeType(EndEntityTypes.SENDNOTIFICATION);
+        }
+        setType(type);
     }
     
     public boolean getPrintUserData(){
-        return type.contains(EndEntityTypes.PRINT);
-      }
+        return getType().contains(EndEntityTypes.PRINT);
+    }
 
-    public void setPrintUserData(boolean printUserData){
-        if(printUserData) {
-          type.addType(EndEntityTypes.PRINT);
+    public void setPrintUserData(final boolean printUserData){
+        final EndEntityType type = getType();
+        if (printUserData) {
+            type.addType(EndEntityTypes.PRINT);
         } else {
-          type.removeType(EndEntityTypes.PRINT);
+            type.removeType(EndEntityTypes.PRINT);
         }
-   }
+        setType(type);
+    }
 
 	/**
 	 * @return Returns the extendedinformation or null if no extended information exists.
