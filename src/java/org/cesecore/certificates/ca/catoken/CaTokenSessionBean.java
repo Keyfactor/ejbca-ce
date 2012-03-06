@@ -56,7 +56,6 @@ import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.cvc.AlgorithmUtil;
 
 /**
  * Implementation of CaTokenSession
