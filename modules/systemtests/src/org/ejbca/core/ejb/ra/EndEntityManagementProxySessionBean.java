@@ -33,12 +33,12 @@ import org.ejbca.util.query.Query;
  * @version $Id$
  *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UserAdminProxySessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityManagementProxySessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class UserAdminProxySessionBean implements UserAdminProxySessionRemote{
+public class EndEntityManagementProxySessionBean implements EndEntityManagementProxySessionRemote{
 
     @EJB
-    private UserAdminSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal userAdminSession;
     
     @Override
     public int decRequestCounter(String username) throws AuthorizationDeniedException, FinderException, ApprovalException,

@@ -41,7 +41,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.junit.AfterClass;
@@ -62,7 +62,7 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     private static KeyPair rsakeys;
 
@@ -77,7 +77,7 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
         CAInfo inforsamgf1ca = caSession.getCAInfo(internalAdmin, TEST_SHA256_WITH_MFG1_CA_NAME);
         int rsamgf1cacaid = inforsamgf1ca.getCAId();
 
-        UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         if (!userAdminSession.existsUser("foorsamgf1ca")) {
             userAdminSession.addUser(internalAdmin, "foorsamgf1ca", "foo123", "C=SE,O=AnaTom,CN=foorsamgf1ca", null, "foo@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
@@ -92,7 +92,7 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
 
     @AfterClass
     public static void afterClass() throws Exception {
-        UserAdminSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         userAdminSession.deleteUser(internalAdmin, RSA_MFG1_ENTITY_NAME);
 
         removeTestCA(TEST_SHA256_WITH_MFG1_CA_NAME);

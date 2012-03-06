@@ -29,11 +29,11 @@
         <enable-call-by-reference>True</enable-call-by-reference>
     </weblogic-enterprise-bean>
     <weblogic-enterprise-bean>
-        <ejb-name>UserAdminSessionBean</ejb-name>
+        <ejb-name>EndEntityManagementSessionBean</ejb-name>
         <stateless-session-descriptor>
             <business-interface-jndi-name-map>
-                <business-remote>org.ejbca.core.ejb.ra.UserAdminSessionRemote</business-remote>
-                <jndi-name>ejbca/UserAdminSessionRemote</jndi-name>
+                <business-remote>org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote</business-remote>
+                <jndi-name>ejbca/EndEntityManagementSessionRemote</jndi-name>
             </business-interface-jndi-name-map>
         </stateless-session-descriptor>
         <enable-call-by-reference>True</enable-call-by-reference>

@@ -71,7 +71,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
@@ -120,7 +120,7 @@ public class EjbcaWebBean implements Serializable {
     private final PublisherSessionLocal publisherSession = ejbLocalHelper.getPublisherSession();
     private final RoleAccessSessionLocal roleAccessSession = ejbLocalHelper.getRoleAccessSession();
     private final RoleManagementSessionLocal roleManagementSession = ejbLocalHelper.getRoleManagementSession();
-    private final UserAdminSessionLocal userAdminSession = ejbLocalHelper.getUserAdminSession();
+    private final EndEntityManagementSessionLocal userAdminSession = ejbLocalHelper.getUserAdminSession();
     private final UserDataSourceSessionLocal userDataSourceSession = ejbLocalHelper.getUserDataSourceSession();
     private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
     private final WebAuthenticationProviderSessionLocal authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();

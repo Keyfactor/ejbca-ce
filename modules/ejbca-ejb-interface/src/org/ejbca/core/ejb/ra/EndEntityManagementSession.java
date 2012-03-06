@@ -40,7 +40,7 @@ import org.ejbca.util.query.Query;
  * 
  * @version $Id$
  */
-public interface UserAdminSession {
+public interface EndEntityManagementSession {
 
     /**
      * Important: this method is old and shouldn't be used, use

@@ -35,8 +35,8 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSession;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSession;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -74,7 +74,7 @@ public class ServiceServiceTest extends CaTestCase {
     private static Collection<String> services = Arrays.asList(TEST01_SERVICE, TEST02_SERVICE, TEST03_SERVICE);
     private static Collection<String> cas = Arrays.asList(TESTCA1, TESTCA2, TESTCA3);
 
-    private UserAdminSession userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+    private EndEntityManagementSession userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private ServiceSession serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     
@@ -188,7 +188,7 @@ public class ServiceServiceTest extends CaTestCase {
     @AfterClass
     public static void afterClass() throws Exception {       
         ServiceSession serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
-        UserAdminSession userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(UserAdminSessionRemote.class);
+        EndEntityManagementSession userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         for (String username : usernames) {
             if(userAdminSession.existsUser(username)) {
                 userAdminSession.deleteUser(admin, username);            
@@ -284,7 +284,7 @@ public class ServiceServiceTest extends CaTestCase {
         return hostnames;
     }
 
-    private UserAdminSession getUserAdminSession() {
+    private EndEntityManagementSession getUserAdminSession() {
         return userAdminSession;
     }
 

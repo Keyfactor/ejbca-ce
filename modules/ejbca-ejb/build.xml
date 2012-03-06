@@ -220,7 +220,7 @@
 		<include name="org/ejbca/core/protocol/scep/ScepResponseMessage.java"/>
 		<!-- Dependecies from EJB CLI, AdminWeb -->
 		<include name="org/ejbca/core/model/authorization/AccessRulesConstants.java"/>
-		<include name="org/ejbca/core/model/ra/UserAdminConstants.java"/>
+		<include name="org/ejbca/core/model/ra/EndEntityManagementConstants.java"/>
 		<include name="org/ejbca/config/LogConfiguration.java"/>
 		<include name="org/ejbca/util/PrinterManager.java"/>
 		<include name="org/ejbca/core/model/hardtoken/profiles/HardTokenProfileWithPINEnvelope.java"/>

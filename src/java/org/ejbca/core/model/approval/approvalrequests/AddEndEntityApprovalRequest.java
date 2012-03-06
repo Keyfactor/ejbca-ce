@@ -32,7 +32,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -72,7 +72,7 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		throw new RuntimeException("This execution requires additional bean references.");
 	}
 	
-	public void execute(UserAdminSession userAdminSession) throws ApprovalRequestExecutionException {
+	public void execute(EndEntityManagementSession userAdminSession) throws ApprovalRequestExecutionException {
 		log.debug("Executing AddEndEntity for user:" + userdata.getUsername());
 		try{
 			userAdminSession.addUser(getRequestAdmin(), userdata, clearpwd);

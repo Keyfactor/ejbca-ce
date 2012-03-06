@@ -21,7 +21,7 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -76,7 +76,7 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
             	getLogger().error("The user doesn't exist.");
             	return;
             }
-            if (ejb.getRemoteSession(UserAdminSessionRemote.class).prepareForKeyRecovery(getAdmin(cliUserName, cliPassword), userdata.getUsername(), userdata.getEndEntityProfileId(), cert)) {
+            if (ejb.getRemoteSession(EndEntityManagementSessionRemote.class).prepareForKeyRecovery(getAdmin(cliUserName, cliPassword), userdata.getUsername(), userdata.getEndEntityProfileId(), cert)) {
                 getLogger().info("Keys corresponding to given certificate has been marked for recovery.");                           
             } else {
                 getLogger().info("Failed to mark keys corresponding to given certificate for recovery.");                           

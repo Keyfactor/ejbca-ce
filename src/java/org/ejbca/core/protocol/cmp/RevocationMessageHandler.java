@@ -51,7 +51,7 @@ import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -83,13 +83,13 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
 	
-	private UserAdminSession userAdminSession;
+	private EndEntityManagementSession userAdminSession;
     private CertificateStoreSession certificateStoreSession;
     private AccessControlSession authorizationSession;
     private EndEntityAccessSession endEntityAccessSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
 	
-	public RevocationMessageHandler(final AuthenticationToken admin, final UserAdminSession userAdminSession, final CaSessionLocal caSession, 
+	public RevocationMessageHandler(final AuthenticationToken admin, final EndEntityManagementSession userAdminSession, final CaSessionLocal caSession, 
 	        final EndEntityProfileSession endEntityProfileSession, final CertificateProfileSession certificateProfileSession, final CertificateStoreSession certStoreSession,
 	        final AccessControlSession authSession, final EndEntityAccessSession eeAccessSession, final WebAuthenticationProviderSessionLocal authProviderSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);

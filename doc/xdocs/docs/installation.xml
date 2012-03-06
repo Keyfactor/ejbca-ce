@@ -657,7 +657,7 @@ Create a new Generic DataSource "EjbcaDS" with JNDI name "EjbcaDS" of type "Orac
 (The URL for the pool should be something like "jdbc:oracle:thin:@127.0.0.1:1521:XE" for Oracle XE.)</li>
 <li>Deployments -> Install -> wlserver_10.3/common/deployable-libraries/jsf-1.2.war as a library named "jsf".</li>
 <li>Increase transaction timeout: Services -> JTA -> Timeout Seconds=300</li>
-<li>Create a new java mail session for user notification in UserAdminSessionBean. In Weblogic, the JNDI name should
+<li>Create a new java mail session for user notification in EndEntityManagementSessionBean. In Weblogic, the JNDI name should
  be "mail/EjbcaMail" (same as you configured in mail.properties).<br/>
 key in the properties:
   <pre>

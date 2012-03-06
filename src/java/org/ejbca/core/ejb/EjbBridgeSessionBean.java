@@ -48,7 +48,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenBatchJobSessionLocal;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
@@ -102,7 +102,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB ServiceSessionLocal serviceSession;
 	@EJB SignSessionLocal signSession;
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
-	@EJB UserAdminSessionLocal userAdminSession;
+	@EJB EndEntityManagementSessionLocal userAdminSession;
 	@EJB WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
 	@EJB EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
 	@EJB AccessUserAspectManagerSessionLocal accessUserAspectSession;
@@ -138,7 +138,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public ServiceSessionLocal getServiceSession() { return serviceSession; }
 	@Override public SignSessionLocal getSignSession() { return signSession; }
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
-	@Override public UserAdminSessionLocal getUserAdminSession() { return userAdminSession; }
+	@Override public EndEntityManagementSessionLocal getUserAdminSession() { return userAdminSession; }
 	@Override public WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession() { return webAuthenticationProviderSession; }
 	@Override public EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession() { return endEntityAuthenticationSession; }
 	@Override public AccessUserAspectManagerSessionLocal getAccessUserAspectSession() { return accessUserAspectSession; }

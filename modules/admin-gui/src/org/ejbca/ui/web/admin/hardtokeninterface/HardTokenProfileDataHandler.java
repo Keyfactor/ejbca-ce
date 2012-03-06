@@ -26,7 +26,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.util.Base64PutHashMap;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.hardtoken.HardTokenProfileExistsException;
 import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
@@ -45,14 +45,14 @@ public class HardTokenProfileDataHandler implements Serializable {
     private HardTokenSession hardtokensession; 
     private AccessControlSessionLocal authorizationsession;
     private CertificateProfileSession certificateProfileSession;
-    private UserAdminSessionLocal useradminsession;
+    private EndEntityManagementSessionLocal useradminsession;
     private CaSession caSession; 
     private AuthenticationToken administrator;
     private InformationMemory info;
     
     /** Creates a new instance of HardTokenProfileDataHandler */
     public HardTokenProfileDataHandler(AuthenticationToken administrator, HardTokenSession hardtokensession, CertificateProfileSession certificatesession, AccessControlSessionLocal authorizationsession, 
-            UserAdminSessionLocal useradminsession, CaSession caSession, InformationMemory info) {
+            EndEntityManagementSessionLocal useradminsession, CaSession caSession, InformationMemory info) {
        this.hardtokensession = hardtokensession;           
        this.authorizationsession = authorizationsession;
        this.certificateProfileSession = certificatesession;

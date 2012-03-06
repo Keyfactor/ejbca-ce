@@ -15,7 +15,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -83,7 +83,7 @@ public class RevocationApprovalRequest extends ApprovalRequest {
 		throw new RuntimeException("This execution requires additional bean references.");
 	}
 	
-	public void execute(UserAdminSession userAdminSession) throws ApprovalRequestExecutionException {
+	public void execute(EndEntityManagementSession userAdminSession) throws ApprovalRequestExecutionException {
 		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES[approvalType] + " (" + approvalType + ").");
 		try {
 			switch (approvalType) {

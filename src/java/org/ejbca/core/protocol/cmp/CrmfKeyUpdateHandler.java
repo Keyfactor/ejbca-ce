@@ -41,7 +41,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -68,7 +68,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
     private final CertificateStoreSession certStoreSession;
     private final AccessControlSession authorizationSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
-    private final UserAdminSession userAdminSession;
+    private final EndEntityManagementSession userAdminSession;
 
     /**
      * Used only by unit test.
@@ -96,7 +96,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
     public CrmfKeyUpdateHandler(final AuthenticationToken admin, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession, 
             EndEntityAccessSession endEntityAccessSession, EndEntityProfileSession endEntityProfileSession, SignSession signSession, 
             CertificateStoreSession certStoreSession, AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession, 
-            UserAdminSession userAdminSession) {
+            EndEntityManagementSession userAdminSession) {
         
         super(admin, caSession, endEntityProfileSession, certificateProfileSession);
         this.signSession = signSession;

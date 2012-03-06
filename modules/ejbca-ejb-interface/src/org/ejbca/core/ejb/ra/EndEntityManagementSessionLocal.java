@@ -25,10 +25,10 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
- * Local interface for UserAdminSession.
+ * Local interface for EndEntityManagementSession.
  */
 @Local
-public interface UserAdminSessionLocal extends UserAdminSession {
+public interface EndEntityManagementSessionLocal extends EndEntityManagementSession {
 
     /**
      * Finds all users and returns the first MAXIMUM_QUERY_ROWCOUNT.

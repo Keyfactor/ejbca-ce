@@ -32,7 +32,7 @@ import org.ejbca.util.query.Query;
  *
  */
 @Remote
-public interface UserAdminProxySessionRemote {
+public interface EndEntityManagementProxySessionRemote {
 
     /**
      * Decreases (the optional) request counter by 1, until it reaches 0.

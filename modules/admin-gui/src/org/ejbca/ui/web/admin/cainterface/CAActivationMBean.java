@@ -32,7 +32,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -78,7 +78,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		    final AccessUserAspectManagerSessionLocal accessUserAspectManagerSession = ejbLocalhelper.getAccessUserAspectSession();
 			final CAAdminSession caadminsession = ejbLocalhelper.getCaAdminSession();
 			final CaSession caSession = ejbLocalhelper.getCaSession();
-			final UserAdminSessionLocal adminsession = ejbLocalhelper.getUserAdminSession();
+			final EndEntityManagementSessionLocal adminsession = ejbLocalhelper.getUserAdminSession();
 			final GlobalConfigurationSession globalconfigurationsession = ejbLocalhelper.getGlobalConfigurationSession();
 			final CertificateProfileSession certificateProfileSession = ejbLocalhelper.getCertificateProfileSession();
 			final EndEntityProfileSession endEntityProfileSession = ejbLocalhelper.getEndEntityProfileSession();

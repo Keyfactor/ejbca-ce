@@ -42,7 +42,7 @@ import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
-import org.ejbca.core.ejb.ra.UserAdminSessionLocal;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -94,7 +94,7 @@ public class DemoCertReqServlet extends HttpServlet {
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
-    private UserAdminSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal userAdminSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
 

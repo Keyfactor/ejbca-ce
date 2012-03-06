@@ -25,7 +25,7 @@ import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
-import org.ejbca.core.ejb.ra.UserAdminSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -52,12 +52,12 @@ public class ReissueResponseGenerator extends KRSSResponseGenerator {
 
 	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
-	private UserAdminSession userAdminSession;
+	private EndEntityManagementSession userAdminSession;
 	
 	public ReissueResponseGenerator(String remoteIP, ReissueRequestType req, Document requestDoc,
     		CaSession caadminsession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
-    		SignSession signSession, UserAdminSession userAdminSession, CrlStoreSession crlSession) {
+    		SignSession signSession, EndEntityManagementSession userAdminSession, CrlStoreSession crlSession) {
 		super(remoteIP, req,requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
 				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
 		this.userAdminSession = userAdminSession;

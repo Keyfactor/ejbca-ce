@@ -18,7 +18,7 @@ import java.security.cert.Certificate;
 
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.ra.UserAdminSessionRemote;
+import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -71,7 +71,7 @@ public class RaRevokeCertCommand extends BaseRaAdminCommand {
         			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
         			// that was permanently revoked
         			try {
-            			ejb.getRemoteSession(UserAdminSessionRemote.class).revokeCert(getAdmin(cliUserName, cliPassword), serno, issuerDN, reason);
+            			ejb.getRemoteSession(EndEntityManagementSessionRemote.class).revokeCert(getAdmin(cliUserName, cliPassword), serno, issuerDN, reason);
                         getLogger().info( (reason == 8 ? "Unrevoked":"Revoked") + " certificate with issuerDN '"+issuerDN+"' and serialNumber "+certserno+". Revocation reason="+reason);        				
                     } catch (AlreadyRevokedException e) {
                     	if (reason == 8) {

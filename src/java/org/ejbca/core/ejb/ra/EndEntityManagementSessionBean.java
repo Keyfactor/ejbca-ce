@@ -101,11 +101,11 @@ import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
+import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.FieldValidator;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
-import org.ejbca.core.model.ra.UserAdminConstants;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataFiller;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
@@ -122,15 +122,15 @@ import org.ejbca.util.query.Query;
 import org.ejbca.util.query.UserMatch;
 
 /**
- * Administrates users in the database using UserData Entity Bean.
+ * Manages end entities in the database using UserData Entity Bean.
  * 
  * @version $Id$
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "UserAdminSessionRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "EndEntityManagementSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSessionRemote {
+public class EndEntityManagementSessionBean implements EndEntityManagementSessionLocal, EndEntityManagementSessionRemote {
 
-    private static final Logger log = Logger.getLogger(UserAdminSessionBean.class);
+    private static final Logger log = Logger.getLogger(EndEntityManagementSessionBean.class);
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
@@ -707,11 +707,11 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
 
     private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS = {
             new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.ChangeStatusEndEntityApprovalRequest.class.getName(), null),
-            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "revokeUser"),
-            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "revokeCert"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.EndEntityManagementSessionBean.class.getName(), "revokeUser"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.EndEntityManagementSessionBean.class.getName(), "revokeCert"),
             new ApprovalOveradableClassName(org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionBean.class.getName(), "finishUser"),
-            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "unrevokeCert"),
-            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "prepareForKeyRecovery"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.EndEntityManagementSessionBean.class.getName(), "unrevokeCert"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.EndEntityManagementSessionBean.class.getName(), "prepareForKeyRecovery"),
             /**
              * can not use .class.getName() below, because it is not part of base EJBCA dist
              */
@@ -1175,7 +1175,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
     }
 
     private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_REVOKEUSER = {
-            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.UserAdminSessionBean.class.getName(), "revokeAndDeleteUser"),
+            new ApprovalOveradableClassName(org.ejbca.core.ejb.ra.EndEntityManagementSessionBean.class.getName(), "revokeAndDeleteUser"),
             new ApprovalOveradableClassName(org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest.class.getName(), null), };
 
     @Override
@@ -1501,7 +1501,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         if (log.isTraceEnabled()) {
             log.trace(">findAllUsersByStatusWithLimit()");
         }
-        final List<UserData> userDataList = UserData.findAllBatchUsersByStatus(entityManager, status, UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT);
+        final List<UserData> userDataList = UserData.findAllBatchUsersByStatus(entityManager, status, EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT);
         final List<EndEntityInformation> returnval = new ArrayList<EndEntityInformation>(userDataList.size());
         for (UserData ud : userDataList) {
             EndEntityInformation userDataVO = ud.toUserDataVO();
@@ -1544,7 +1544,7 @@ public class UserAdminSessionBean implements UserAdminSessionLocal, UserAdminSes
         String caauthstring = caauthorizationstring;
         String endentityauth = endentityprofilestring;
         String sqlquery = "";
-        int fetchsize = UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT;
+        int fetchsize = EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT;
 
         if (numberofrows != 0) {
             fetchsize = numberofrows;
