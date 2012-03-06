@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.audit.log;
 
+import javax.ejb.ApplicationException;
+
 /**
  * Handles secure audit log storage exceptions
  * 
@@ -21,6 +23,7 @@ package org.cesecore.audit.log;
  * @version $Id$
  * 
  */
+@ApplicationException(rollback=true)
 public class AuditRecordStorageException extends RuntimeException {
 
     private static final long serialVersionUID = -2049206241984967597L;

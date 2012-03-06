@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.audit.audit;
 
+import javax.ejb.ApplicationException;
+
 /**
  * Error during export of secure audit log events.
  * 
@@ -20,6 +22,7 @@ package org.cesecore.audit.audit;
  * 
  * @version $Id$
  */
+@ApplicationException(rollback=true)
 public class AuditLogExporterException extends Exception {
 
     private static final long serialVersionUID = -4260121156919588354L;
