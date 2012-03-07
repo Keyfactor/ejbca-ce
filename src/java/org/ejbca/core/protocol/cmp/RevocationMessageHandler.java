@@ -108,9 +108,15 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		
         CA ca = null;
         try {
-            ca = caSession.getCA(admin, msg.getHeader().getRecipient().getName().toString().hashCode());
+            final String caDN = msg.getHeader().getRecipient().getName().toString();
+            final int caId = CertTools.stringToBCDNString(caDN).hashCode();
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("CA DN is '"+caDN+"' and resulting caId is "+caId+", after CertTools.stringToBCDNString conversion.");
+            }
+            ca = caSession.getCA(admin, caId);
         } catch (CADoesntExistsException e) {
             final String errMsg = "CA with DN '" + msg.getHeader().getRecipient().getName().toString() + "' is unknown";
+            LOG.info(errMsg);
             return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg);
         } catch (AuthorizationDeniedException e) {
             LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage()), e);
