@@ -1,3 +1,33 @@
+EJBCA 5.0.4, 2012-03-08
+---
+New Feature
+    [ECA-2590] - Possibility to only publish revoked certificates to external VA DB
+    [ECA-2603] - "unknown is good" changed for some URLs used in the OCSP request.
+    [ECA-2612] - Add Kerberos PKINIT-related EKU's to default configuration file
+
+Task
+    [ECA-2588] - Missing run.bat in ejbca db cli
+    [ECA-2613] - Annotate @ApplicationException(rollback=true) in all exceptions thrown from log system
+
+Improvement
+    [ECA-2563] - CMP: clean up CMP tests
+    [ECA-2600] - Add possibility to specify certificate profile to ca init CLI command
+    [ECA-2602] - Do not allow creationg of CAs with weak key lengths
+    [ECA-2607] - clientToolBox OCSP only accepts 16 char hex serial numbers
+    [ECA-2614] - ClientToolBox OCSP starts slow
+
+Bug
+    [ECA-2564] - CMP: Correct the CrmfKeyUpdateTest
+    [ECA-2589] - External RA Junit test target does not work on windows
+    [ECA-2591] - Regression: ExternalRA does not work
+    [ECA-2594] - XSS issues
+    [ECA-2595] - EndEntityInformation.getPrintUserData compares to EndEntityConstants.USER_SENDNOTIFICATION instead of EndEntityConstants.USER_PRINT
+    [ECA-2601] - Prevent possible SQL injection
+    [ECA-2604] - Importing end entity profiles with an unknown CAid in it causes error
+    [ECA-2608] - CMP revocation requests are sensitive about DN order
+    [ECA-2609] - Publisher logs success even if publisher returns false
+    [ECA-2610] - Certificate Profile GUI weirdness in MSIE
+
 EJBCA 5.0.3, 2012-02-24
 ---
 New Feature

@@ -3,6 +3,23 @@ EJBCA 5.1.0
 
 - The term 'Admin Group' has been mostly purged and replaced with 'Role'.
 
+EJBCA 5.0.4
+-----------
+This is a maintenance release with a few bug fixes and new features. In all, 20 issues have been resolved.
+
+* Noteworthy changes:
+- OCSP: Possibility to only publish revoked certificates to Validation Authority.
+- OCSP: Possibility to treat "non existing is good" based on URI on the Validation Authority.
+- Do not allow creation of CAs using weak keys.
+- Add Kerberos extended key usages.
+- Add possibility to specify certificate profile to CA init CLI command.
+- Fix a few more tests on windows platform.
+- Fixed minor security issues in admin web.
+- Fixed a few cosmetic issues improving usability.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE
+
 EJBCA 5.0.3
 -----------
 This is a maintenance release with a few bug fixes and new features. In all, 16 issues have been resolved.
