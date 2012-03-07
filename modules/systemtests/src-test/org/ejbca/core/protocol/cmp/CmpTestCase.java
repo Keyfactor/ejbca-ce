@@ -73,6 +73,7 @@ import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.jce.X509Principal;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.request.FailInfo;
@@ -474,8 +475,9 @@ public abstract class CmpTestCase extends CaTestCase {
 
         // Check that the signer is the expected CA
         assertEquals(header.getSender().getTagNo(), 4);
-        X509Name name = X509Name.getInstance(header.getSender().getName());
-        assertEquals(CertTools.stringToBCDNString(issuerDN), CertTools.stringToBCDNString(name.toString()));
+        X509Principal sender = new X509Principal(header.getSender().getName().toString());
+        X509Principal issuer = new X509Principal(issuerDN);
+        assertEquals(issuer, sender);
 
         if (signed) {
             // Verify the signature
@@ -694,10 +696,14 @@ public abstract class CmpTestCase extends CaTestCase {
         assertNotNull(respObject);
         PKIHeader header = respObject.getHeader();
         assertEquals(header.getSender().getTagNo(), 4);
-        X509Name name = X509Name.getInstance(header.getSender().getName());
-        assertEquals(CertTools.stringToBCDNString(((X509Certificate) cacert).getSubjectDN().getName()), CertTools.stringToBCDNString(name.toString()));
-        name = X509Name.getInstance(header.getRecipient().getName());
-        assertEquals(userDN, name.toString());
+        
+        X509Principal responseDN = new X509Principal(header.getSender().getName().toString());
+        X509Principal expectedDN = new X509Principal(((X509Certificate) cacert).getSubjectDN().getName().toString());
+        assertEquals(expectedDN, responseDN);
+        
+        responseDN = new X509Principal(header.getRecipient().getName().toString());
+        expectedDN = new X509Principal(userDN);
+        assertEquals(expectedDN, responseDN);
 
         PKIBody body = respObject.getBody();
         int tag = body.getTagNo();
@@ -715,10 +721,14 @@ public abstract class CmpTestCase extends CaTestCase {
         assertNotNull(respObject);
         PKIHeader header = respObject.getHeader();
         assertEquals(header.getSender().getTagNo(), 4);
-        X509Name name = X509Name.getInstance(header.getSender().getName());
-        assertEquals(CertTools.stringToBCDNString(CertTools.getSubjectDN(cacert)), CertTools.stringToBCDNString(name.toString()));
-        name = X509Name.getInstance(header.getRecipient().getName());
-        assertEquals(name.toString(), userDN);
+        
+        X509Principal responseDN = new X509Principal(header.getSender().getName().toString());
+        X509Principal expectedDN = new X509Principal(CertTools.getSubjectDN(cacert));
+        assertEquals(expectedDN, responseDN);
+        
+        responseDN = new X509Principal(header.getRecipient().getName().toString());
+        expectedDN = new X509Principal(userDN);
+        assertEquals(expectedDN, responseDN);
 
         PKIBody body = respObject.getBody();
         int tag = body.getTagNo();
