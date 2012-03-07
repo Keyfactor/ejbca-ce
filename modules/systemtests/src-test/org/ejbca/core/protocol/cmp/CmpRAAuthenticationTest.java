@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -86,8 +87,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     public void setUp() throws Exception {
         super.setUp();
         // Create and configure CAs with different CMP RA secrets
-        caCertificate1 = setupCA(CA_NAME_1, PBE_SECRET_1);
-        caCertificate2 = setupCA(CA_NAME_2, PBE_SECRET_2);
+        caCertificate1 = setupCA(CA_NAME_1, null, PBE_SECRET_1);
+        caCertificate2 = setupCA(CA_NAME_2, null, PBE_SECRET_2);
         // Configure CMP for this test. RA mode with individual shared PBE secrets for each CA.
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWRAVERIFYPOPO, "true");
@@ -100,10 +101,13 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "-;-");
     }
 
-    private X509Certificate setupCA(String caName, String pbeSecret) throws Exception {
+    private X509Certificate setupCA(String caName, String caDN, String pbeSecret) throws Exception {
         LOG.trace(">setupCA");
-        assertTrue("Failed to create " + caName, createTestCA(caName, 1024));
-        X509CAInfo x509CaInfo = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, getTestCAId(caName));
+        if(caDN == null) {
+            caDN = "CN=" + caName;
+        }
+        assertTrue("Failed to create " + caName, createTestCA(caName, 1024, caDN, CAInfo.SELFSIGNED, null));
+        X509CAInfo x509CaInfo = (X509CAInfo) EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(ADMIN, caDN.hashCode());
         x509CaInfo.setCmpRaAuthSecret(pbeSecret);
         x509CaInfo.setUseCertReqHistory(false); // Disable storage of certificate history, to save some clean up
         EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class).editCA(ADMIN, x509CaInfo);
@@ -117,7 +121,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     @Test
     public void test01IssueConfirmRevoke1() throws Exception {
         LOG.trace(">test01IssueConfirmRevoke1");
-        testIssueConfirmRevoke(caCertificate1, PBE_SECRET_1, CA_NAME_1);
+        testIssueConfirmRevoke(caCertificate1, PBE_SECRET_1, CA_NAME_1, false);
         LOG.trace("<test01IssueConfirmRevoke1");
     }
 
@@ -125,7 +129,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     @Test
     public void test02IssueConfirmRevoke2() throws Exception {
         LOG.trace(">test02IssueConfirmRevoke2");
-        testIssueConfirmRevoke(caCertificate2, PBE_SECRET_2, CA_NAME_2);
+        testIssueConfirmRevoke(caCertificate2, PBE_SECRET_2, CA_NAME_2, false);
         LOG.trace("<test02IssueConfirmRevoke2");
     }
 
@@ -134,7 +138,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     public void test03IssueConfirmRevokeWithCommonSecret() throws Exception {
         LOG.trace(">test03IssueConfirmRevokeWithCommonSecret");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, PBE_SECRET_3);
-        testIssueConfirmRevoke(caCertificate2, PBE_SECRET_3, CA_NAME_2);
+        testIssueConfirmRevoke(caCertificate2, PBE_SECRET_3, CA_NAME_2, false);
         LOG.trace("<test03IssueConfirmRevokeWithCommonSecret");
     }
 
@@ -161,16 +165,61 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
                 LOG.error("Could not create end entity profile " + EEP_1, e);
             }
         }
-        testIssueConfirmRevoke(caCertificate1, PBE_SECRET_1, EEP_1);
+        testIssueConfirmRevoke(caCertificate1, PBE_SECRET_1, EEP_1, false);
         LOG.trace("<test04IssueConfirmRevokeEEP");
     }
 
+    
+    /** Test that the proper secret is used if CA is configured to ProfileDefault (= use default from EEP). */
+    @Test
+    public void test05IssuerDNOrder() throws Exception {
+        LOG.trace(">test04IssuerDNOrder");
+        String caName = "DNOrderCA";
+        String caDN = "CN=" + caName + ",O=PrimeKey";
+        X509Certificate dnOrderCA = setupCA(caName, caDN, PBE_SECRET_1);
+        
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_AUTHENTICATIONSECRET, null);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, caName);
+        updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, EEP_1);
+        
+        // Create EEP
+        if (EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(EEP_1) == null) {
+            // Configure an EndEntity profile that allows CN, O, C in DN and rfc822Name, MS UPN in altNames.
+            EndEntityProfile eep = new EndEntityProfile(true);
+            eep.setValue(EndEntityProfile.DEFAULTCERTPROFILE, 0, "" + CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            eep.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, "" + CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+            eep.setValue(EndEntityProfile.DEFAULTCA, 0, "" + caDN.hashCode());
+            eep.setValue(EndEntityProfile.AVAILCAS, 0, "" + caDN.hashCode());
+            eep.setModifyable(DnComponents.RFC822NAME, 0, true);
+            eep.setUse(DnComponents.RFC822NAME, 0, false); // Don't use field from "email" data
+            try {
+                EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).addEndEntityProfile(ADMIN, EEP_1, eep);
+            } catch (EndEntityProfileExistsException e) {
+                LOG.error("Could not create end entity profile " + EEP_1, e);
+            }
+        }
+        
+
+        testIssueConfirmRevoke(dnOrderCA, PBE_SECRET_1, EEP_1, false);
+        testIssueConfirmRevoke(dnOrderCA, PBE_SECRET_1, EEP_1, true);
+       
+        removeTestCA(caName);
+        LOG.trace("<test04IssueConfirmRevokeEEP");
+    }
+    
+    
     /**
      * Sends a certificate request message and verifies result. Sends a confirm message and verifies result. Sends a revocation message and verifies
      * result.
      */
-    private void testIssueConfirmRevoke(X509Certificate caCertificate, String pbeSecret, String keyId) throws Exception {
+    private void testIssueConfirmRevoke(X509Certificate caCertificate, String pbeSecret, String keyId, boolean reverseIssuerDN) throws Exception {
         LOG.trace(">testIssueConfirmRevoke");
+
+        String issuerDN = CertTools.getSubjectDN(caCertificate);
+        if(reverseIssuerDN) {
+            issuerDN = CertTools.reverseDN(issuerDN); 
+        }        
+        
         // Generate and send certificate request
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce(); 
@@ -179,7 +228,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         String subjectDN = "CN=" + USERNAME;
         try {
-            PKIMessage one = genCertReq(CertTools.getSubjectDN(caCertificate), subjectDN, keys, caCertificate, nonce, transid, true, null, notBefore,
+            PKIMessage one = genCertReq(issuerDN, subjectDN, keys, caCertificate, nonce, transid, true, null, notBefore,
                     notAfter, null);
             PKIMessage req = protectPKIMessage(one, false, pbeSecret, keyId, 567);
             assertNotNull("Request was not created properly.", req);
@@ -191,6 +240,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
             X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
 
+            assertTrue("Failed to create user " + USERNAME, userAdminSession.existsUser(USERNAME));
+            
             // Send a confirm message to the CA
             String hash = "foo123";
             PKIMessage confirm = genCertConfirm(subjectDN, caCertificate, nonce, transid, hash, reqId);
@@ -204,7 +255,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             checkCmpPKIConfirmMessage(subjectDN, caCertificate, resp);
 
             // Now revoke the bastard using the CMPv1 reason code!
-            PKIMessage rev = genRevReq(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, nonce, transid, false);
+            PKIMessage rev = genRevReq(issuerDN, subjectDN, cert.getSerialNumber(), caCertificate, nonce, transid, false);
             PKIMessage revReq = protectPKIMessage(rev, false, pbeSecret, keyId, 567);
             assertNotNull("Could not create revocation message.", revReq);
             bao = new ByteArrayOutputStream();
