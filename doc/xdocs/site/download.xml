@@ -10,12 +10,12 @@
     <note>
     If you have problems with any of the download links below or need older releases, try to download through the Sourceforge <a href="http://sourceforge.net/projects/ejbca/files/">download page</a>.
     <br/><br/>
-    EJBCA 5.0.3 is now available, contact PrimeKey for details. 
+    EJBCA 5.0.4 is now available, contact PrimeKey for details. 
     <!-- for <a
     href="http://sourceforge.net/projects/ejbca/files/ejbca5/ejbca_5_0_3/ejbca_5_0_3.zip">download</a>.
      -->
     <br/>
-    SHA1 checksum: 93e831952ebbd9d4e944badc5af9b97b1e701cc0
+    SHA1 checksum:
     <br/><br/>
     Cert-cvc library 1.2.13 with full RSA and ECC support is now available for <a
     href="http://downloads.sourceforge.net/ejbca/cert-cvc-1.2.13.zip">download</a>.
