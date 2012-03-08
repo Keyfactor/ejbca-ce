@@ -54,7 +54,7 @@ import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
  * @version $Id$
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CliAuthenticationProviderRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CliAuthenticationProviderSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public class CliAuthenticationProviderSessionBean implements CliAuthenticationProviderSessionLocal, CliAuthenticationProviderSessionRemote {
 
