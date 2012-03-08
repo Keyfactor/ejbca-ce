@@ -32,7 +32,7 @@ import org.junit.Test;
  */
 public class AccessRuleManagementSessionBeanTest {
 
-    AccessRuleManagementTestSessionRemote accessRuleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessRuleManagementTestSessionRemote.class);
+    AccessRuleManagementTestSessionRemote accessRuleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessRuleManagementTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     /**
      * Test all CRUD operations. Pure sanity test.

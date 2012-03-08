@@ -33,7 +33,7 @@ import org.junit.Test;
 public class WebEjbcaClearCacheTest {
     private static final Logger log = Logger.getLogger(WebEjbcaClearCacheTest.class);
 
-    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
+    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     protected String httpPort;
     protected String httpReqPath;

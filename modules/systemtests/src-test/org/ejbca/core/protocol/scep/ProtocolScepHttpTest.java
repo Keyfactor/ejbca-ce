@@ -153,7 +153,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
     private Random rand = new Random();
     private String httpReqPath;
 
-    private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
+    private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @BeforeClass
@@ -746,7 +746,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
     private void updatePropertyOnServer(String property, String value) {
         log.debug("Setting property on server: " + property + "=" + value);
         assertTrue("Failed to set property \"" + property + "\" to \"" + value + "\"",
-                EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class).updateProperty(property, value));
+                EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).updateProperty(property, value));
     }
 
     static class InternalResourcesStub extends InternalEjbcaResources {

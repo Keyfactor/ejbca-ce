@@ -118,7 +118,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         super.tearDown();
         LOG.trace(">testZZZTearDown");
         boolean cleanUpOk = true;
-        cleanUpOk &= EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class).restoreConfiguration();
+        cleanUpOk &= EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).restoreConfiguration();
         removeTestCA(TESTCA_NAME);
         assertTrue("Clean up failed!", cleanUpOk);
         LOG.trace("<testZZZTearDown");

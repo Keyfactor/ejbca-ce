@@ -49,9 +49,9 @@ import org.cesecore.util.CryptoProviderTools;
  * @version $Id$
  * 
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SimpleAuthenticationProviderRemote")
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "SimpleAuthenticationProviderSessionRemote")
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
-public class SimpleAuthenticationProviderSessionBean implements SimpleAuthenticationProviderRemote, SimpleAuthenticationProviderLocal {
+public class SimpleAuthenticationProviderSessionBean implements SimpleAuthenticationProviderSessionRemote, SimpleAuthenticationProviderSessionLocal {
 
     private static final Logger log = Logger.getLogger(SimpleAuthenticationProviderSessionBean.class);
 

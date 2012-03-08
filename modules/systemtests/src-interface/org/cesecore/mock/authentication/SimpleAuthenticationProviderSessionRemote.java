@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.cesecore.mock.authentication;
 
-import javax.ejb.Local;
+import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationProvider;
 
@@ -22,8 +22,11 @@ import org.cesecore.authentication.tokens.AuthenticationProvider;
  * 
  * TODO: Remove me when proper authentication infrastructure falls into place.
  * 
+ * Based on cesecore version:
+ *      SimpleAuthenticationProviderRemote.java 841 2011-05-19 14:14:29Z johane
+ * 
  * @version $Id$
  */
-@Local
-public interface SimpleAuthenticationProviderLocal extends AuthenticationProvider {
+@Remote
+public interface SimpleAuthenticationProviderSessionRemote extends AuthenticationProvider {
 }

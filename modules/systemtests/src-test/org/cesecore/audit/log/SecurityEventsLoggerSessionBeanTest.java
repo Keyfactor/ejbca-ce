@@ -72,7 +72,7 @@ public class SecurityEventsLoggerSessionBeanTest extends SecurityEventsBase {
     private static final Logger log = Logger.getLogger(SecurityEventsLoggerSessionBeanTest.class);
     private final SecurityEventsLoggerSession securityEventsLogger = EjbRemoteHelper.INSTANCE.getRemoteSession(SecurityEventsLoggerSessionRemote.class);
     private final SecurityEventsAuditorSession securityEventsAuditor = EjbRemoteHelper.INSTANCE.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
-    private final TxFailureLoggerOperationSessionRemote txFailure = EjbRemoteHelper.INSTANCE.getRemoteSession(TxFailureLoggerOperationSessionRemote.class);
+    private final TxFailureLoggerOperationSessionRemote txFailure = EjbRemoteHelper.INSTANCE.getRemoteSession(TxFailureLoggerOperationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
     public static void setUpCryptoProvider() {

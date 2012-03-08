@@ -73,7 +73,7 @@ public class SecurityEventsAuditorSessionBeanTest extends SecurityEventsBase {
          * Clean out audit logs. Sorry, but this test becomes untenable with full 
          * log tables. Full deletion of the logs occurs in test05ExportLogs in any case. 
          */
-        IntegrityProtectedAuditorProxySessionRemote integrityProtectedAuditorProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(IntegrityProtectedAuditorProxySessionRemote.class);
+        IntegrityProtectedAuditorProxySessionRemote integrityProtectedAuditorProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(IntegrityProtectedAuditorProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         final AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(SecurityEventsAuditorSessionBeanTest.class.getSimpleName()));
         integrityProtectedAuditorProxySession.deleteRows(authenticationToken, new Date(), null);
     }

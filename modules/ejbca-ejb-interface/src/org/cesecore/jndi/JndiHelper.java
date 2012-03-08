@@ -55,11 +55,12 @@ public abstract class JndiHelper {
 	 * Example usage: CAAdminSessionRemote caadminsession = JndiHelper.getRemoteSession(CAAdminSessionRemote.class);
 	 * 
 	 * @param <T>
+     * @param module the module where the bean is deployed, i.e. ejbca-ejb or systemtests-ejb.
 	 * @param remoteInterface
 	 * @return
 	 */
     @SuppressWarnings("unchecked")
-	public static <T> T getRemoteSession(final Class<T> remoteInterface) {
+	public static <T> T getRemoteSession(final Class<T> remoteInterface, final String module) {
 		// JEE5, JBoss 5 and 6 and Glassfish 2
         final String jndiNameJEE5 = JndiConstants.APP_JNDI_PREFIX + remoteInterface.getSimpleName();
 		// JEE6, JBoss 7
@@ -67,7 +68,7 @@ public abstract class JndiHelper {
 	    // Get the remote interface class, GlobalConfigurationSessionRemote, and return GlobalConfigurationSessionBean
 	    // This works when we follow our own naming standard
 	    final String beanName = remoteInterface.getSimpleName().replace("Remote", "Bean");
-        final String jndiNameJEE6 = "ejb:ejbca" + "/" + "ejbca-ejb" + "//"  + beanName + "!" + viewClassName;
+	    final String jndiNameJEE6 = "ejb:ejbca" + "/" + module + "//"  + beanName + "!" + viewClassName;
         String jndiName = isJEE6 ? jndiNameJEE6 : jndiNameJEE5;
         T ret = null;
         try {

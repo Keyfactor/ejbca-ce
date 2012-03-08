@@ -278,7 +278,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         super.tearDown();
         removeTestCA(CA_NAME_1);
         removeTestCA(CA_NAME_2);
-        EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class).restoreConfiguration();
+        EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).restoreConfiguration();
         EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class).removeEndEntityProfile(ADMIN, EEP_1);
     }
     
