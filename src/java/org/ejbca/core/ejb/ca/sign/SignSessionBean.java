@@ -335,7 +335,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         // Get CA object and make sure it's active
         CA ca = caSession.getCA(admin, data.getCAId());
         if (ca.getStatus() != CAConstants.CA_ACTIVE) {
-            String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+            String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
             throw new EJBException(msg);
         }
         Certificate cert;
@@ -464,7 +464,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         try {
             CAToken catoken = ca.getCAToken();
             if (ca.getStatus() != CAConstants.CA_ACTIVE) {
-                String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+                String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
                 throw new EJBException(msg);
             }
             // See if we need some key material to decrypt request
@@ -555,7 +555,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
 
         if (ca.getStatus() != CAConstants.CA_ACTIVE) {
-            String msg = intres.getLocalizedMessage("signsession.canotactive", ca.getSubjectDN());
+            String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
             throw new EJBException(msg);
         }
         return ca;
