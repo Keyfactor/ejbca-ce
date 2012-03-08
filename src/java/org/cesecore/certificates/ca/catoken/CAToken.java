@@ -576,7 +576,7 @@ public class CAToken extends UpgradeableDataHashMap {
      * @throws InvalidKeyException
      * 
      */
-    protected void generateKeys(final char[] authenticationCode, final boolean renew, final boolean activate)
+    public void generateKeys(final char[] authenticationCode, final boolean renew, final boolean activate)
             throws CryptoTokenAuthenticationFailedException, IOException, CryptoTokenOfflineException, NoSuchAlgorithmException,
             CertificateException, KeyStoreException, InvalidKeyException, NoSuchProviderException, InvalidAlgorithmParameterException,
             SignatureException {
@@ -769,7 +769,7 @@ public class CAToken extends UpgradeableDataHashMap {
      * @throws InvalidKeyException
      * 
      */
-    protected void activateNextSignKey(char[] authenticationCode) throws CryptoTokenAuthenticationFailedException, IOException,
+    public void activateNextSignKey(char[] authenticationCode) throws CryptoTokenAuthenticationFailedException, IOException,
             CryptoTokenOfflineException, InvalidKeyException, KeyStoreException, NoSuchProviderException, NoSuchAlgorithmException,
             CertificateException, SignatureException {
         if (log.isTraceEnabled()) {
