@@ -68,7 +68,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -461,7 +461,7 @@ public class ApprovalSessionTest extends CaTestCase {
 
         final AuthenticationSubject subject = new AuthenticationSubject(principals, null);
 
-        final CliAuthenticationToken authenticationToken = (CliAuthenticationToken) EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationProviderRemote.class).authenticate(subject);
+        final CliAuthenticationToken authenticationToken = (CliAuthenticationToken) EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationProviderSessionRemote.class).authenticate(subject);
         // Set hashed value anew in order to send back
         if (authenticationToken == null) {
             throw new CliAuthenticationFailedException("Authentication failed. Username or password were not correct.");

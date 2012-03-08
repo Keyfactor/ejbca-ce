@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.cli;
 
-import javax.ejb.Local;
+import javax.ejb.Remote;
 
 import org.cesecore.authentication.tokens.AuthenticationProvider;
 
@@ -22,7 +22,7 @@ import org.cesecore.authentication.tokens.AuthenticationProvider;
  * @version $Id$
  *
  */
-@Local
-public interface CliAuthenticationProviderLocal extends AuthenticationProvider {
+@Remote
+public interface CliAuthenticationProviderSessionRemote extends AuthenticationProvider {
 
 }
