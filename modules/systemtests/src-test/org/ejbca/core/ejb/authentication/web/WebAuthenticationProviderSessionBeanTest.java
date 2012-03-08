@@ -84,9 +84,9 @@ public class WebAuthenticationProviderSessionBeanTest {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     private final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class);
+    private final InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final SecurityEventsAuditorSessionRemote securityEventsAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
-    private final WebAuthenticationProviderProxySessionRemote authenticationProviderProxy = EjbRemoteHelper.INSTANCE.getRemoteSession(WebAuthenticationProviderProxySessionRemote.class);
+    private final WebAuthenticationProviderProxySessionRemote authenticationProviderProxy = EjbRemoteHelper.INSTANCE.getRemoteSession(WebAuthenticationProviderProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private static KeyPair keys;
 

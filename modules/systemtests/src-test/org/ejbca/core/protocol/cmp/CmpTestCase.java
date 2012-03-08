@@ -127,7 +127,7 @@ public abstract class CmpTestCase extends CaTestCase {
     private String CMP_HOST; // = "127.0.0.1";
 
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
+    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     protected void setUp() throws Exception { // NOPMD: this is a test base class
         super.setUp();
@@ -841,7 +841,7 @@ public abstract class CmpTestCase extends CaTestCase {
     protected void updatePropertyOnServer(String property, String value) {
         log.debug("Setting property on server: " + property + "=" + value);
         assertTrue("Failed to set property \"" + property + "\" to \"" + value + "\"",
-                EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class).updateProperty(property, value));
+                EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).updateProperty(property, value));
     }
 
     //

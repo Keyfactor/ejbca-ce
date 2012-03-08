@@ -25,6 +25,9 @@ import org.cesecore.jndi.JndiHelper;
 public enum EjbRemoteHelper {
     INSTANCE;
 
+    public final static String MODULE_EJBCA = "ejbca-ejb";
+    public final static String MODULE_TEST = "systemtests-ejb";
+    
     private Map<Class<?>, Object> interfaceCache; 
     
     /**
@@ -34,17 +37,32 @@ public enum EjbRemoteHelper {
      * @return the sought interface, or null if it doesn't exist in JNDI context.
      */
     public <T> T getRemoteSession(final Class<T> key) {
+        return getRemoteSession(key, null);
+    }
+
+    /**
+     * Returns a cached remote session bean.
+     * 
+     * @param key the @Remote-appended interface for this session bean
+     * @param module the module where the bean is deployed, i.e. systemtests-ejb, if null defaults to ejbca-ejb.
+     * @return the sought interface, or null if it doesn't exist in JNDI context.
+     */
+    public <T> T getRemoteSession(final Class<T> key, String module) {
         if(interfaceCache == null) {
             interfaceCache = new ConcurrentHashMap<Class<?>, Object>();
         }
         @SuppressWarnings("unchecked")
         T session = (T) interfaceCache.get(key);
         if (session == null) {
-            session = JndiHelper.getRemoteSession(key);
+            if (module == null) {
+                module = "ejbca-ejb";
+            }
+            session = JndiHelper.getRemoteSession(key, module);
             if (session != null) {
                 interfaceCache.put(key, session);
             }
         }
         return session;
     }
+
 }

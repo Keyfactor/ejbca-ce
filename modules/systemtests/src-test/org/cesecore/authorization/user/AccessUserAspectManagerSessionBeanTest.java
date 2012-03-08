@@ -32,7 +32,7 @@ import org.junit.Test;
  */
 public class AccessUserAspectManagerSessionBeanTest {
 
-    AccessUserAspectManagerTestSessionRemote accessUserAspectManagerSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessUserAspectManagerTestSessionRemote.class);
+    AccessUserAspectManagerTestSessionRemote accessUserAspectManagerSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessUserAspectManagerTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     /**
      * Simple sanity test, meant to involve other session beans as little as possible.

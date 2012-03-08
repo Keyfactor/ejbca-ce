@@ -35,7 +35,7 @@ public class WebEjbcaHealthCheckTest extends WebHealthTestAbstract {
 
 	private static final Logger log = Logger.getLogger(WebEjbcaHealthCheckTest.class);
 
-    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class);
+    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @Before
     public void setUp() throws Exception {

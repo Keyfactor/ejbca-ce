@@ -28,7 +28,7 @@ import org.junit.Test;
  */
 public class ConfigurationHolderDefaultValuesTest {
     
-    ConfigurationHolderProxySessionRemote configurationHolderProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationHolderProxySessionRemote.class);
+    ConfigurationHolderProxySessionRemote configurationHolderProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationHolderProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
     @Test
     public void testDefaultValues() {

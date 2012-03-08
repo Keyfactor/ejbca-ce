@@ -46,7 +46,7 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 
 	private static final String TEST_USER3 = "customSerialNrUser3";
 
-    private UniqueSernoHelperTestSessionRemote sernoHelperSession= EjbRemoteHelper.INSTANCE.getRemoteSession(UniqueSernoHelperTestSessionRemote.class);
+    private UniqueSernoHelperTestSessionRemote sernoHelperSession= EjbRemoteHelper.INSTANCE.getRemoteSession(UniqueSernoHelperTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
     public static void setupAccessRights() {
