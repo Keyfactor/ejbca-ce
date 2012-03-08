@@ -132,6 +132,7 @@
 		<copy file="${log4j.test.file}" tofile="${build.test.dir}/log4j.xml" failonerror="true"/>
 		<!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
 		<copy file="${jndi.properties.file}" todir="${build.dir}" failonerror="false"/>
+		<copy file="${jboss-ejb-client.properties}" todir="${build.dir}" failonerror="false"/>
 		<!-- needed by the cesecore tests -->
 		<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
 	</target>

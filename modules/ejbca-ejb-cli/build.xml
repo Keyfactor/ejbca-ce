@@ -93,6 +93,7 @@
     	</copy>
         <copy file="${log4j.cli.file}" tofile="${mod.ejbca-ejb-cli.dist}/log4j.xml" failonerror="true"/>
 		<copy file="${jndi.properties.file}" tofile="${mod.ejbca-ejb-cli.dist}/jndi.properties" failonerror="true"/>
+		<copy file="${jboss-ejb-client.properties}" todir="${mod.ejbca-ejb-cli.dist}" failonerror="false"/>
     </target>
 
 </project>

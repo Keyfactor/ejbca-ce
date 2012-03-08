@@ -110,7 +110,7 @@
 	<condition property="externalra.enabled.true"><istrue value="${externalra.enabled}"/></condition>
 
 	<!-- Files of global interest -->
-	<!-- Depends on load of propertyDefaults.xml..
+	<!-- Depends on load of propertyDefaults.xml...therefore put in the end
     <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.${appserver.type}" />
     -->
     <property name="profilemappings.properties.file" location="${ejbca.home}/src/java/profilemappings.properties" />
@@ -219,6 +219,7 @@
 			<include name="client/jboss-metadata-ejb.jar"/>
 
 			<!-- JBoss 7.1.0 for javax.peristence, transaction, remote EJB, ...-->
+			<include name="bin/client/jboss-client-7.1.0.Final.jar"/>
 			<include name="modules/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
 			<include name="modules/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.0.Final.jar"/>
 
@@ -376,6 +377,11 @@
 	</path>
 
     <!-- Now when everything is set up, we can load the old property defaults -->
+    <condition property="jndi.properties.file" value="${ejbca.home}/conf/jndi.properties.${appserver.subtype}">
+        <available file="${ejbca.home}/conf/jndi.properties.${appserver.subtype}"/>
+    </condition>
     <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.${appserver.type}" />
-
+    <!-- jboss-ejb-client.properties is only used in JBoss 7 (or higher?), but it does not hurt to simply copy it for earlier versions either -->
+    <property name="jboss-ejb-client.properties" location="${ejbca.home}/conf/jboss-ejb-client.properties" />
+	<echo message="jndi.properties.file: ${jndi.properties.file}"/>
 </project>
