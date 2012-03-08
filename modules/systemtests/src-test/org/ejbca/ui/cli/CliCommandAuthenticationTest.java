@@ -30,7 +30,7 @@ import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticatio
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationTestHelperSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
 import org.ejbca.core.ejb.config.GlobalConfigurationProxySessionRemote;
@@ -57,7 +57,7 @@ public class CliCommandAuthenticationTest {
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class);
     private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationTestHelperSessionRemote.class);
     private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-    private CliAuthenticationProviderRemote cliAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationProviderRemote.class);
+    private CliAuthenticationProviderSessionRemote cliAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationProviderSessionRemote.class);
 
     private final TestAlwaysAllowLocalAuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
             "CliCommandAuthenticationTest"));

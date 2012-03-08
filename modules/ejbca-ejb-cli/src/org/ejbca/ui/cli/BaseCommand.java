@@ -46,7 +46,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderRemote;
+import org.ejbca.core.ejb.authentication.cli.CliAuthenticationProviderSessionRemote;
 import org.ejbca.core.ejb.authentication.cli.CliAuthenticationToken;
 import org.ejbca.core.ejb.authentication.cli.CliUserAccessMatchValue;
 import org.ejbca.core.ejb.authentication.cli.exception.CliAuthenticationFailedException;
@@ -217,7 +217,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
 
         AuthenticationSubject subject = new AuthenticationSubject(principals, null);
 
-        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) ejb.getRemoteSession(CliAuthenticationProviderRemote.class).authenticate(subject);
+        CliAuthenticationToken authenticationToken = (CliAuthenticationToken) ejb.getRemoteSession(CliAuthenticationProviderSessionRemote.class).authenticate(subject);
         // Set hashed value anew in order to send back
         if (authenticationToken == null) {
             throw new CliAuthenticationFailedException("Authentication failed. Username or password were not correct.");
