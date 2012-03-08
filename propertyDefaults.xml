@@ -251,6 +251,7 @@ xkms.serviceport                = ${xkms.serviceport}
 	<target name="fail-unless-appserver-detected">
 		<echo message="appserver.home: ${appserver.home}"/>
 		<echo message="appserver.type: ${appserver.type}"/>
+		<echo message="appserver.subtype: ${appserver.subtype}"/>
 		<fail message="${appserver.type.detected.errormessage}" unless="appserver.type"/>
 	</target>
 	
