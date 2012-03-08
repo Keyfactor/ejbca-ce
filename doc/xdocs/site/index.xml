@@ -7,6 +7,39 @@
 
 <body>
   <section name="News and Info">
+
+<div class="frame note" id="twitter" style="border:0;">
+  <script charset="utf-8" src="http://widgets.twimg.com/j/2/widget.js">
+  </script>
+<script>
+new TWTR.Widget({
+  version: 2,
+  type: 'profile',
+  rpp: 1,
+  interval: 30000,
+  width: 1100,
+  height: 50,
+  theme: {
+    shell: {
+      background: '#8ca8d0',
+      color: '#ffffff'
+    },
+    tweets: {
+      background: '#eee',
+      color: '#333',
+      links: '#da5c05'
+    }
+  },
+  features: {
+    scrollbar: false,
+    loop: true,
+    live: false,
+    behavior: 'all'
+  }
+}).render().setUser('primekeyPKI').start();
+</script>
+</div>
+
   <note>
   <p><strong>2012-03-08: EJBCA 5.0.4 is now out!</strong>
   <br/>Visit the <a href="download.html">download</a> section. There is also a LiveCD!
