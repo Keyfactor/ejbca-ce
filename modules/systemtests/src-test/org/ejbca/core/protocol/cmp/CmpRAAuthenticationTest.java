@@ -251,7 +251,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             new DEROutputStream(bao).writeObject(req1);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
+            checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
             checkCmpPKIConfirmMessage(subjectDN, caCertificate, resp);
 
             // Now revoke the bastard using the CMPv1 reason code!
@@ -262,8 +262,8 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             new DEROutputStream(bao).writeObject(revReq);
             ba = bao.toByteArray();
             resp = sendCmpHttp(ba, 200);
-            checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
-            checkCmpRevokeConfirmMessage(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
+            checkCmpResponseGeneral(resp, caCertificate.getSubjectX500Principal().getName(), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
+            checkCmpRevokeConfirmMessage(caCertificate.getSubjectX500Principal().getName(), subjectDN, cert.getSerialNumber(), caCertificate, resp, true);
             int reason = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class).getStatus(CertTools.getSubjectDN(caCertificate), cert.getSerialNumber()).revocationReason;
             assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
             LOG.trace("<testIssueConfirmRevoke");
