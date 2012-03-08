@@ -103,6 +103,28 @@ upgrade to 5.0, verify your roles and privileges.
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE
 
+EJBCA 4.0.10
+------------
+This is a maintenance release containing 1 new VA publisher feature, 1 security fix and GUI improvements..
+
+* Noteworthy changes: 
+- Possibility to only publish revoked certificates to VA.
+- Possibility for OCS to handle "non existing is good" different depending on OCSP uri. 
+- Fixed XSS issue in admin GUI.
+- Admin GUI improvements for looks and consistency.
+
+David Carella has contributed many GUI improvements for the last few releases.
+- forms and tables are colored according to consistent rules.
+- all forms and tables are split in several logical sections.
+- all similar fields (e.g. “[_] Use”, “[_] Critical”, “[_] Required”, “[_] Modifiable”, etc.) are vertically aligned.
+- all check boxes (and radio boxes) can be checked by clicking on its label,
+- two rules for in-line help for PKI administrators and RA officers.
+- forms are globally more compact (the page heights are smaller). 
+- naming of certain object are more consistent across the web.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 EJBCA 4.0.9
 ------------
 This is a maintenance release containing 1 security bug fix.
