@@ -477,7 +477,7 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals(header.getSender().getTagNo(), 4);
         X509Principal sender = new X509Principal(header.getSender().getName().toString());
         X509Principal issuer = new X509Principal(issuerDN);
-        assertEquals(issuer, sender);
+        assertEquals(issuer.getName(), sender.getName());
 
         if (signed) {
             // Verify the signature
@@ -699,11 +699,11 @@ public abstract class CmpTestCase extends CaTestCase {
         
         X509Principal responseDN = new X509Principal(header.getSender().getName().toString());
         X509Principal expectedDN = new X509Principal(((X509Certificate) cacert).getSubjectDN().getName().toString());
-        assertEquals(expectedDN, responseDN);
+        assertEquals(expectedDN.getName(), responseDN.getName());
         
         responseDN = new X509Principal(header.getRecipient().getName().toString());
         expectedDN = new X509Principal(userDN);
-        assertEquals(expectedDN, responseDN);
+        assertEquals(expectedDN.getName(), responseDN.getName());
 
         PKIBody body = respObject.getBody();
         int tag = body.getTagNo();
@@ -723,12 +723,12 @@ public abstract class CmpTestCase extends CaTestCase {
         assertEquals(header.getSender().getTagNo(), 4);
         
         X509Principal responseDN = new X509Principal(header.getSender().getName().toString());
-        X509Principal expectedDN = new X509Principal(CertTools.getSubjectDN(cacert));
-        assertEquals(expectedDN, responseDN);
+        X509Principal expectedDN = new X509Principal(((X509Certificate)cacert).getSubjectX500Principal().getName());
+        assertEquals(expectedDN.getName(), responseDN.getName());
         
         responseDN = new X509Principal(header.getRecipient().getName().toString());
         expectedDN = new X509Principal(userDN);
-        assertEquals(expectedDN, responseDN);
+        assertEquals(expectedDN.getName(), responseDN.getName());
 
         PKIBody body = respObject.getBody();
         int tag = body.getTagNo();
