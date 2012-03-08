@@ -186,7 +186,7 @@ public class CliAuthenticationToken extends AuthenticationToken {
      * Note that this clone method will return a CliAuthenticationToken which will *not* contain the SHA1 hash.
      */
     @Override
-    protected CliAuthenticationToken clone() {
+    public CliAuthenticationToken clone() {
         CliAuthenticationToken clone = new CliAuthenticationToken(new UsernamePrincipal(userName), null, this.sha1Salt, this.referenceNumber,
                 hashAlgorithm);
         clone.setPasswordSalt(passwordSalt);
