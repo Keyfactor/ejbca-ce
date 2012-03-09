@@ -26,6 +26,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSession;
+import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -88,7 +89,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 return;
             }
             String roleName = args[1];
-            if (ejb.getRemoteSession(RoleAccessSession.class).findRole(roleName) == null) {
+            if (ejb.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName) == null) {
                 getLogger().error("No such group \"" + roleName + "\".");
                 return;
             }
@@ -113,7 +114,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
             AccessUserAspectData accessUser = new AccessUserAspectData(roleName, caid, matchWith, matchType, matchValue);
             Collection<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
             accessUsers.add(accessUser);
-            ejb.getRemoteSession(RoleManagementSessionRemote.class).addSubjectsToRole(getAdmin(cliUserName, cliPassword), ejb.getRemoteSession(RoleAccessSession.class).findRole(roleName),
+            ejb.getRemoteSession(RoleManagementSessionRemote.class).addSubjectsToRole(getAdmin(cliUserName, cliPassword), ejb.getRemoteSession(RoleAccessSessionRemote.class).findRole(roleName),
                     accessUsers);
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
