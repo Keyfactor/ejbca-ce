@@ -86,7 +86,6 @@ import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
-import org.cesecore.keys.KeyCreationException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -154,12 +153,7 @@ public final class KeyTools {
             log.trace(">genKeys(" + keySpec + ", " + keyAlg + ")");
         }
 
-        KeyPairGenerator keygen = null;
-        try {
-            keygen = KeyPairGenerator.getInstance(keyAlg, "BC");
-        } catch (NoSuchProviderException e) {
-            throw new KeyCreationException("BouncyCastle was not found as a provider", e);
-        }
+        final KeyPairGenerator keygen = KeyPairGenerator.getInstance(keyAlg, "BC");
         if (StringUtils.equals(keyAlg, AlgorithmConstants.KEYALGORITHM_ECDSA)) {
             AlgorithmParameterSpec ecSpec = null;
             if ((keySpec != null) && !StringUtils.equals(keySpec, "implicitlyCA")) {
