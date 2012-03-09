@@ -25,11 +25,6 @@ import org.apache.log4j.Logger;
  * Use like this:
  * <at>Stateless(mappedName=(JndiConstants.APP_JNDI_PREFIX + RemoteInterfaceClass.class.getSimpleName()))
  * 
- * Version copied from EJBCA: 
- *      JndiHelper.java 10288 2010-10-26 11:27:21Z anatom
- * Based on CESeCore version:
- *      JndiHelper.java 897 2011-06-20 11:17:25Z johane
- * 
  * @version $Id$
  */
 public abstract class JndiHelper {
