@@ -177,9 +177,9 @@ public class HardTokenProfileTest {
         int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
         String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
         String rolename = "testGetAuthorizedToHardTokenProfile";
-        RoleData role = roleManagementSession.create(internalAdmin, rolename);
         final String alias = "spacemonkeys";
         try {
+            RoleData role = roleManagementSession.create(internalAdmin, rolename);
             Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
             subjects.add(new AccessUserAspectData(rolename, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
             role = roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);

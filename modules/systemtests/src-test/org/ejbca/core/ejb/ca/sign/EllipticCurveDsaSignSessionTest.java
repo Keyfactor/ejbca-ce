@@ -360,10 +360,10 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
         EndEntityInformation userec = new EndEntityInformation(eccUsername, "C=SE,CN=TCVCEC", cvccaecid, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         userec.setPassword("cvc");
-        userAdminSession.addUser(internalAdmin, userec, false);
-        userAdminSession.setUserStatus(internalAdmin, eccUsername, UserDataConstants.STATUS_NEW);
-        userAdminSession.setPassword(internalAdmin, eccUsername, "foo123");
         try {
+            userAdminSession.addUser(internalAdmin, userec, false);
+            userAdminSession.setUserStatus(internalAdmin, eccUsername, UserDataConstants.STATUS_NEW);
+            userAdminSession.setPassword(internalAdmin, eccUsername, "foo123");
             log.debug("Reset status of 'cvcec' to NEW");
             // user that we know exists...
             KeyPair ecdsasecpkeys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);

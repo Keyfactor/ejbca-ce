@@ -72,11 +72,12 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
     @Test
     public void testIsAuthorized() throws RoleExistsException, AuthorizationDeniedException, RoleNotFoundException {
         // Let's set up a role and a nice resource tree to play with.
-        RoleData nerfHerder = roleManagementSession.create(roleMgmgToken, "NerfHerder");
-        X509Certificate[] certificateArray = new X509Certificate[1]; 
-        certificateArray = roleMgmgToken.getCredentials().toArray(certificateArray);       
-        int caId = CertTools.getIssuerDN(certificateArray[0]).hashCode();       
+        final String roleName = "NerfHerder";
         try {
+            RoleData nerfHerder = roleManagementSession.create(roleMgmgToken, roleName);
+            X509Certificate[] certificateArray = new X509Certificate[1]; 
+            certificateArray = roleMgmgToken.getCredentials().toArray(certificateArray);       
+            int caId = CertTools.getIssuerDN(certificateArray[0]).hashCode();       
             List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
             accessUsers.add(new AccessUserAspectData(nerfHerder.getRoleName(), caId, X500PrincipalAccessMatchValue.WITH_COUNTRY,
                     AccessMatchType.TYPE_EQUALCASE, "SE"));
@@ -129,7 +130,7 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
             assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/decline/unexistent"));
       
         } finally {
-            roleManagementSession.remove(roleMgmgToken, nerfHerder);
+            roleManagementSession.remove(roleMgmgToken, roleName);
         }
     }
     
