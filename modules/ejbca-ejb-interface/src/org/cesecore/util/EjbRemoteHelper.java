@@ -55,7 +55,7 @@ public enum EjbRemoteHelper {
         T session = (T) interfaceCache.get(key);
         if (session == null) {
             if (module == null) {
-                module = "ejbca-ejb";
+                module = EjbRemoteHelper.MODULE_EJBCA;
             }
             session = JndiHelper.getRemoteSession(key, module);
             if (session != null) {
