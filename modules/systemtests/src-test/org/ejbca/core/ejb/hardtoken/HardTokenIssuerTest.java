@@ -151,15 +151,15 @@ public class HardTokenIssuerTest {
 
     @Test
     public void testIsAuthorizedToHardTokenIssuer() throws Exception {
-        TestX509CertificateAuthenticationToken admin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
+        final TestX509CertificateAuthenticationToken admin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
                 .authenticate(new AuthenticationSubject(null, null));
 
-        int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
-        String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
-        String rolename = "testGetAuthorizedToHardTokenIssuer";
-        RoleData role = roleManagementSession.create(internalAdmin, rolename);
+        final int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
+        final String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
+        final String rolename = "testGetAuthorizedToHardTokenIssuer";
         final String alias = "spacemonkeys";
         try {
+            RoleData role = roleManagementSession.create(internalAdmin, rolename);
             Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
             subjects.add(new AccessUserAspectData(rolename, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
             role = roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);
@@ -217,17 +217,17 @@ public class HardTokenIssuerTest {
     
     @Test
     public void testIsAuthorizedToHardTokenIssuerWithoutBeingMemberOfRole() throws Exception {
-        TestX509CertificateAuthenticationToken admin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
+        final TestX509CertificateAuthenticationToken admin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
                 .authenticate(new AuthenticationSubject(null, null));
 
-        int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
-        String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
+        final int caid = CertTools.getIssuerDN(admin.getCertificate()).hashCode();
+        final String cN = CertTools.getPartFromDN(CertTools.getIssuerDN(admin.getCertificate()), "CN");
         final String rolename = "testGetAuthorizedToHardTokenIssuer";
-        RoleData role = roleManagementSession.create(internalAdmin, rolename);
         final String anotherRolename = "AnotherRoleName";
-        RoleData anotherRole = roleManagementSession.create(internalAdmin, anotherRolename);
         final String alias = "spacemonkeys";
         try {
+            RoleData role = roleManagementSession.create(internalAdmin, rolename);
+            RoleData anotherRole = roleManagementSession.create(internalAdmin, anotherRolename);
             Collection<AccessUserAspectData> subjects = new ArrayList<AccessUserAspectData>();
             subjects.add(new AccessUserAspectData(rolename, caid, X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, cN));
             role = roleManagementSession.addSubjectsToRole(internalAdmin, role, subjects);
@@ -244,7 +244,7 @@ public class HardTokenIssuerTest {
         } finally {
             hardTokenSession.removeHardTokenIssuer(internalAdmin, alias);
             roleManagementSession.remove(internalAdmin, rolename);
-            roleManagementSession.remove(internalAdmin, anotherRole);
+            roleManagementSession.remove(internalAdmin, anotherRolename);
         }
     }
 
