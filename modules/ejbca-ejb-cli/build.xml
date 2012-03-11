@@ -71,6 +71,7 @@
     </target>
 
     <target name="setup-external-deps" unless="external-deps-satfisfied"><antcall target="ejbca-ejb-interface"/></target>
+	
     <target name="setup" depends="setup-external-deps">
     	<mkdir dir="${mod.ejbca-ejb-cli.dist}" />
     	<mkdir dir="${mod.ejbca-ejb-cli.dist}/lib" />
@@ -84,6 +85,7 @@
     	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" flatten="true" verbose="false">
 			<path refid="lib.jee.classpath"/>
     		<path refid="lib.jpa.classpath"/>
+    		<path refid="lib.hibernate.compatibility.classpath"/>
     	</copy>
 		<!-- clover.jar is needed if we compiled with clover (see modules/build.xml). Without this cli does not work when using clover -->
     	<copy todir="${mod.ejbca-ejb-cli.dist}/lib" file="${clover.jar}" flatten="true" verbose="false" failonerror="false"/>
