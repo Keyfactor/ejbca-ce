@@ -32,7 +32,7 @@ public class XkmsCommonCriteraTest {
     
     @BeforeClass
     public static void beforeClass() throws Exception {
-        XKMSKRSSTest.setupDatabase();
+        XKMSKRSSTest.setupDatabaseAndInvoker();
         
     }
     

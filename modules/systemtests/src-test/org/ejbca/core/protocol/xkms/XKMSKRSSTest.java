@@ -36,6 +36,7 @@ import java.util.Set;
 import javax.security.auth.x500.X500Principal;
 import javax.xml.bind.JAXBElement;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.ws.WebServiceException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -120,7 +121,7 @@ public class XKMSKRSSTest {
 
     private final static String HTTPPORT = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
 
-    private final static XKMSInvoker xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/xkms", null);
+    private static XKMSInvoker xKMSInvoker;
 
     private final static ObjectFactory xKMSObjectFactory = new ObjectFactory();
     private final static org.w3._2000._09.xmldsig_.ObjectFactory sigFactory = new org.w3._2000._09.xmldsig_.ObjectFactory();
@@ -174,7 +175,14 @@ public class XKMSKRSSTest {
     }
     
 	@BeforeClass
-    public static void setupDatabase() throws Exception {
+    public static void setupDatabaseAndInvoker() throws Exception {
+	    try {
+	        xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/xkms", null);
+	    } catch (WebServiceException e) {
+	        // We have the second URI (JBoss 7)
+	        xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/XKMSProvider", null);
+	    }
+
         org.apache.xml.security.Init.init();
         try {
             CryptoProviderTools.installBCProviderIfNotAvailable();

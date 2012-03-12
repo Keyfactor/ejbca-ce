@@ -19,6 +19,7 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyStore;
 import java.security.Principal;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
+import javax.xml.ws.WebServiceException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -146,22 +148,30 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
     private void setUpNonAdmin() throws Exception {
         if (new File(TEST_NONADMIN_FILE).exists()) {
-            String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
-            log.info("Contacting webservice at " + urlstr);
             
             System.setProperty("javax.net.ssl.trustStore", TEST_NONADMIN_FILE);
             System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
             System.setProperty("javax.net.ssl.keyStore", TEST_NONADMIN_FILE);
             System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
-            
-            QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
-            EjbcaWSService service = new EjbcaWSService(new URL(urlstr), qname);
-            ejbcaraws = service.getEjbcaWSPort();
+
+            try {
+                createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");
+            } catch (WebServiceException e) {
+                // We have the second URI (JBoss 7)
+                createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/EjbcaWSService/EjbcaWS?wsdl");
+            }
         } else {
             log.error("No file '"+TEST_NONADMIN_FILE+"' exists.");
         }
     }
     
+    private void createEjbcaWSPort(final String url) throws MalformedURLException {
+        log.info("Contacting webservice at " + url);
+        QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
+        EjbcaWSService service = new EjbcaWSService(new URL(url), qname);
+        this.ejbcaraws = service.getEjbcaWSPort();        
+    }
+
     @Test
     public void test01checkNonAuthorized() throws Exception {
         setUpNonAdmin();
