@@ -371,6 +371,16 @@ Bug
     [ECA-2286] - The VA page listing URLs to to CA certificates and the VA page listing URLs to CRLs is blank for some installations.
     [ECA-2299] - Reading CMP messages over http1/1 with chunked encoding can fail
 
+EJBCA 3.11.5, 2012-03-12
+---
+Bug
+    * [ECA-2594] - Fixed some XSS issues.
+     
+EJBCA 3.11.4, 2012-02-13
+---
+Bug
+    * [ECA-2557] - Minor XSS issues: merge bugfix from ECA-2482
+
 EJBCA 3.11.3, 2011-07-08
 ---
 Bug
