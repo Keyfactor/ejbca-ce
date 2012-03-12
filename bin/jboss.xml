@@ -136,12 +136,15 @@
 					<replacestring from="@definitions_away_end@" to="${definitions_away_end}"/>
 				</tokenfilter>
 			</filterchain>
+			<filterchain>
+				<expandproperties />
+			</filterchain>
 		</copy>
 		<chmod file="${tomcat.dir}/server.xml" perm="600"/>
+		<chmod file="${tomcat.dir}/standalone.xml" perm="600"/>
 	</target>
 
-	
-	<target name="j2ee:deployServices" unless="jboss7">
+	<target name="j2ee:deployDSJBoss5" unless="jboss7">
 		<copy todir="${jboss.farm.dir}" overwrite="true">
 			<fileset dir="src/appserver/jboss">
 				<include name="ejbca-ds.xml" />
@@ -158,6 +161,14 @@
 		</copy>
 		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600"/>
 		<chmod file="${jboss.farm.dir}/ejbca-mail-service.xml" perm="600"/>
+	</target>
+
+	<!-- On JBoss 7 this is the same as deloying tomcat config (only one config file) -->
+	<target name="j2ee:deployDSJBoss7" if="jboss7">
+		<antcall target="deploytomcat"/>
+	</target>
+
+	<target name="j2ee:deployServices" depends="j2ee:deployDSJBoss5, j2ee:deployDSJBoss7">
 	</target>
 
 	<target name="j2ee:deployBase" depends="j2ee:configure, j2ee:deployServices">
