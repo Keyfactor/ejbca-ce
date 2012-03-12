@@ -133,6 +133,7 @@
 		<include name="org/cesecore/certificates/*Exception.java"/>
 		<include name="org/cesecore/certificates/ca/*.java"/>
 		<include name="org/cesecore/certificates/crl/*.java"/>
+		<include name="org/cesecore/certificates/ocsp/exception/*Exception.java"/>
 		<include name="org/cesecore/certificates/certificateprofile/*.java"/>
 		<exclude name="org/cesecore/certificates/certificateprofile/*Cache.java"/>
 		<exclude name="org/cesecore/audit/AuditDevicesConfig.java"/>
@@ -197,7 +198,6 @@
 		<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfileExistsException.java"/>
 		<include name="org/ejbca/core/model/approval/AdminAlreadyApprovedRequestException.java"/>
 		<include name="org/ejbca/core/model/approval/WaitingForApprovalException.java"/>
-		<include name="org/ejbca/core/model/authorization/AuthorizationDeniedException.java"/>
 		<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
 		<include name="org/ejbca/core/model/ca/AuthStatusException.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/PublisherQueueData.java"/>

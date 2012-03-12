@@ -10,42 +10,25 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp.exception;
+package org.cesecore.configuration;
+
+import javax.ejb.Remote;
 
 /**
- * Thrown when a byte array couldn't be formed into a proper OCSP request.
+ * Acts as a proxy for ConfigurationHolder tests
  * 
- * @version $Id: MalformedRequestException.java 12583 2011-09-15 08:46:19Z anatom $
- * 
+ * @version $Id$
+ *
  */
-public class MalformedRequestException extends Exception {
-
-    private static final long serialVersionUID = -6603931681530067622L;
-
-    public MalformedRequestException() {
-
-    }
-
+@Remote
+public interface CesecoreConfigurationProxySessionRemote {
+  
     /**
-     * @param arg0
+     * Use this method to (from a test) set a configuration property.
+     * 
+     * @param key
+     * @param value
      */
-    public MalformedRequestException(String arg0) {
-        super(arg0);
-    }
-
-    /**
-     * @param arg0
-     */
-    public MalformedRequestException(Throwable arg0) {
-        super(arg0);
-    }
-
-    /**
-     * @param arg0
-     * @param arg1
-     */
-    public MalformedRequestException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
-    }
-
-}
+    void setConfigurationValue(String key, String value);
+    
+}                           

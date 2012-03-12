@@ -13,39 +13,31 @@
 package org.cesecore.certificates.ocsp.exception;
 
 /**
- * Thrown when a byte array couldn't be formed into a proper OCSP request.
+ * A exception wrapper to cover different BouncyCastle provider errors.
  * 
- * @version $Id: MalformedRequestException.java 12583 2011-09-15 08:46:19Z anatom $
- * 
+ * @version $Id$
+ *
  */
-public class MalformedRequestException extends Exception {
+public class CryptoProviderException extends RuntimeException {
 
-    private static final long serialVersionUID = -6603931681530067622L;
 
-    public MalformedRequestException() {
-
+    private static final long serialVersionUID = -3334600937753128052L;
+    
+    public CryptoProviderException() {
+        super();
     }
 
-    /**
-     * @param arg0
-     */
-    public MalformedRequestException(String arg0) {
-        super(arg0);
+    public CryptoProviderException(String msg, Throwable t) {
+        super(msg, t);
     }
 
-    /**
-     * @param arg0
-     */
-    public MalformedRequestException(Throwable arg0) {
-        super(arg0);
+    public CryptoProviderException(String msg) {
+        super(msg);
     }
 
-    /**
-     * @param arg0
-     * @param arg1
-     */
-    public MalformedRequestException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
+    public CryptoProviderException(Throwable msg) {
+        super(msg);
     }
+
 
 }

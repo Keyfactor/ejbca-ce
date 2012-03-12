@@ -10,42 +10,27 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp.exception;
+package org.cesecore.certificates.ocsp.logging;
+
+import org.cesecore.util.GUIDGenerator;
 
 /**
- * Thrown when a byte array couldn't be formed into a proper OCSP request.
+ * Keeps track of a GUID which identifies this instance.
  * 
- * @version $Id: MalformedRequestException.java 12583 2011-09-15 08:46:19Z anatom $
+ * @version $Id$
  * 
  */
-public class MalformedRequestException extends Exception {
+public enum GuidHolder {
+    INSTANCE;
 
-    private static final long serialVersionUID = -6603931681530067622L;
-
-    public MalformedRequestException() {
-
+    private GuidHolder() {
+        guid = GUIDGenerator.generateGUID(this);
     }
 
-    /**
-     * @param arg0
-     */
-    public MalformedRequestException(String arg0) {
-        super(arg0);
+    public String getGlobalUid() {
+        return guid;
     }
 
-    /**
-     * @param arg0
-     */
-    public MalformedRequestException(Throwable arg0) {
-        super(arg0);
-    }
-
-    /**
-     * @param arg0
-     * @param arg1
-     */
-    public MalformedRequestException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
-    }
+    private final String guid;
 
 }

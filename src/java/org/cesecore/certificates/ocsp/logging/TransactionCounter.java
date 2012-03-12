@@ -10,42 +10,26 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp.exception;
+package org.cesecore.certificates.ocsp.logging;
+
 
 /**
- * Thrown when a byte array couldn't be formed into a proper OCSP request.
+ * An enum based singleton which returns transaction numbers. Not a static volatile value, because these are forbidden by the EJB standard.
  * 
- * @version $Id: MalformedRequestException.java 12583 2011-09-15 08:46:19Z anatom $
+ * @version $Id$
  * 
  */
-public class MalformedRequestException extends Exception {
+public enum TransactionCounter {
+    INSTANCE;
 
-    private static final long serialVersionUID = -6603931681530067622L;
-
-    public MalformedRequestException() {
-
+    private TransactionCounter() {
+        transactionNumber = 0;
     }
 
-    /**
-     * @param arg0
-     */
-    public MalformedRequestException(String arg0) {
-        super(arg0);
+    public synchronized int getTransactionNumber() {
+        return transactionNumber++;
     }
 
-    /**
-     * @param arg0
-     */
-    public MalformedRequestException(Throwable arg0) {
-        super(arg0);
-    }
-
-    /**
-     * @param arg0
-     * @param arg1
-     */
-    public MalformedRequestException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
-    }
+    private int transactionNumber;
 
 }
