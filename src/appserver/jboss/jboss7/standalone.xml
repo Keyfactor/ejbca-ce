@@ -107,13 +107,13 @@
                         <password>sa</password>
                     </security>
                 </datasource>
-                <datasource jta="true" jndi-name="java:/EjbcaDS" pool-name="Ejbca" enabled="true" use-ccm="true">
-                    <connection-url>jdbc:mysql://127.0.0.1:3306/ejbca</connection-url>
-                    <driver-class>com.mysql.jdbc.Driver</driver-class>
+                <datasource jta="true" jndi-name="java:/${datasource.jndi-name}" pool-name="Ejbca" enabled="true" use-ccm="true">
+                    <connection-url><![CDATA[${database.url}]]></connection-url>
+                    <driver-class>${database.driver}</driver-class>
                     <driver>mysql-connector-java-5.1.18-bin.jar</driver>
                     <security>
-                        <user-name>ejbca</user-name>
-                        <password>ejbca</password>
+                        <user-name>${database.username}</user-name>
+                        <password>${database.password}</password>
                     </security>
                     <validation>
                         <validate-on-match>false</validate-on-match>
@@ -283,12 +283,12 @@
             <coordinator-environment default-timeout="300"/>
         </subsystem>
         <subsystem xmlns="urn:jboss:domain:web:1.1" native="false" default-virtual-server="default-host">
-            <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http" redirect-port="8443"/>
-            <connector name="httpspub" protocol="HTTP/1.1" scheme="https" socket-binding="httpspub" redirect-port="8443" secure="true">
-                <ssl password="serverpwd" certificate-key-file="/home/tomas/Dev/jboss-as-7.1.0.Final/standalone/configuration/keystore/keystore.jks" protocol="SSLv3,TLSv1"/>
+            <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http" redirect-port="@httpserver.privhttps@"/>
+            <connector name="httpspub" protocol="HTTP/1.1" scheme="https" socket-binding="httpspub" redirect-port="@httpserver.privhttps@" secure="true">
+                <ssl password="@httpsserver.password@" certificate-key-file="${jboss.server.home.dir}/@keystore.file@" protocol="SSLv3,TLSv1"/>
             </connector>
-            <connector name="httpspriv" protocol="HTTP/1.1" scheme="https" socket-binding="httpspriv" redirect-port="8443" secure="true">
-                <ssl password="serverpwd" certificate-key-file="/home/tomas/Dev/jboss-as-7.1.0.Final/standalone/configuration/keystore/keystore.jks" protocol="SSLv3,TLSv1" verify-client="true" ca-certificate-file="/home/tomas/Dev/jboss-as-7.1.0.Final/standalone/configuration/keystore/keystore.jks"/>
+            <connector name="httpspriv" protocol="HTTP/1.1" scheme="https" socket-binding="httpspriv" redirect-port="@httpserver.privhttps@" secure="true">
+                <ssl password="@httpsserver.password@" certificate-key-file="${jboss.server.home.dir}/@keystore.file@" protocol="SSLv3,TLSv1" verify-client="true" ca-certificate-file="${jboss.server.home.dir}/@keystore.file@"/>
             </connector>
             <virtual-server name="default-host" enable-welcome-root="true">
                 <alias name="localhost"/>
@@ -318,9 +318,9 @@
     </interfaces>
 
     <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
-        <socket-binding name="http" port="8080"/>
-        <socket-binding name="httpspub" port="8442"/>
-        <socket-binding name="httpspriv" port="8443"/>
+        <socket-binding name="http" port="@httpserver.pubhttp@"/>
+        <socket-binding name="httpspub" port="@httpserver.pubhttps@"/>
+        <socket-binding name="httpspriv" port="@httpserver.privhttps@"/>
         <socket-binding name="management-native" interface="management" port="${jboss.management.native.port:9999}"/>
         <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
         <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9443}"/>
