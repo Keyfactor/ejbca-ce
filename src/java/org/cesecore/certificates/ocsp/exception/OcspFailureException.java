@@ -13,39 +13,45 @@
 package org.cesecore.certificates.ocsp.exception;
 
 /**
- * Thrown when a byte array couldn't be formed into a proper OCSP request.
+ * General RuntimeException for OCSP error that can't be handled.
  * 
- * @version $Id: MalformedRequestException.java 12583 2011-09-15 08:46:19Z anatom $
- * 
+ * @version $Id$
+ *
  */
-public class MalformedRequestException extends Exception {
+public class OcspFailureException extends RuntimeException {
 
-    private static final long serialVersionUID = -6603931681530067622L;
+    private static final long serialVersionUID = 3024801898030204798L;
 
-    public MalformedRequestException() {
+    /**
+     * 
+     */
+    public OcspFailureException() {
+    
+    }
+
+    /**
+     * @param arg0
+     */
+    public OcspFailureException(String msg) {
+        super(msg);
 
     }
 
     /**
      * @param arg0
      */
-    public MalformedRequestException(String arg0) {
-        super(arg0);
-    }
+    public OcspFailureException(Throwable t) {
+        super(t);
 
-    /**
-     * @param arg0
-     */
-    public MalformedRequestException(Throwable arg0) {
-        super(arg0);
     }
 
     /**
      * @param arg0
      * @param arg1
      */
-    public MalformedRequestException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
+    public OcspFailureException(String msg, Throwable t) {
+        super(msg, t);
+        
     }
 
 }

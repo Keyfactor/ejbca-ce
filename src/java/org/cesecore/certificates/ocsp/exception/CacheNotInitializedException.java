@@ -13,39 +13,30 @@
 package org.cesecore.certificates.ocsp.exception;
 
 /**
- * Thrown when a byte array couldn't be formed into a proper OCSP request.
+ * This exception is thrown in the case that a cache is accessed before it is initialized.  
  * 
- * @version $Id: MalformedRequestException.java 12583 2011-09-15 08:46:19Z anatom $
- * 
+ * @version $Id$
+ *
  */
-public class MalformedRequestException extends Exception {
+public class CacheNotInitializedException extends RuntimeException {
 
-    private static final long serialVersionUID = -6603931681530067622L;
-
-    public MalformedRequestException() {
-
+    private static final long serialVersionUID = -2298500892023694050L;
+    
+    public CacheNotInitializedException() {
+        super();
     }
 
-    /**
-     * @param arg0
-     */
-    public MalformedRequestException(String arg0) {
-        super(arg0);
-    }
-
-    /**
-     * @param arg0
-     */
-    public MalformedRequestException(Throwable arg0) {
-        super(arg0);
-    }
-
-    /**
-     * @param arg0
-     * @param arg1
-     */
-    public MalformedRequestException(String arg0, Throwable arg1) {
+    public CacheNotInitializedException(String arg0, Throwable arg1) {
         super(arg0, arg1);
     }
 
+    public CacheNotInitializedException(String arg0) {
+        super(arg0);
+    }
+
+    public CacheNotInitializedException(Throwable arg0) {
+        super(arg0);
+    }
+
+    
 }

@@ -10,42 +10,23 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp.exception;
+package org.cesecore.configuration;
+
+import javax.ejb.Stateless;
+
+import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.jndi.JndiConstants;
 
 /**
- * Thrown when a byte array couldn't be formed into a proper OCSP request.
- * 
- * @version $Id: MalformedRequestException.java 12583 2011-09-15 08:46:19Z anatom $
+ * @version $Id$
  * 
  */
-public class MalformedRequestException extends Exception {
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CesecoreConfigurationProxySessionRemote")
+public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurationProxySessionRemote {
 
-    private static final long serialVersionUID = -6603931681530067622L;
-
-    public MalformedRequestException() {
-
-    }
-
-    /**
-     * @param arg0
-     */
-    public MalformedRequestException(String arg0) {
-        super(arg0);
-    }
-
-    /**
-     * @param arg0
-     */
-    public MalformedRequestException(Throwable arg0) {
-        super(arg0);
-    }
-
-    /**
-     * @param arg0
-     * @param arg1
-     */
-    public MalformedRequestException(String arg0, Throwable arg1) {
-        super(arg0, arg1);
+    @Override
+    public void setConfigurationValue(String key, String value) {
+        ConfigurationHolder.updateConfiguration(key, value);
     }
 
 }

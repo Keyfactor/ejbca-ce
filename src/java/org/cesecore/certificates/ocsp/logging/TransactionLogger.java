@@ -1,0 +1,85 @@
+/*************************************************************************
+ *                                                                       *
+ *  CESeCore: CE Security Core                                           *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+package org.cesecore.certificates.ocsp.logging;
+
+import org.cesecore.config.OcspConfiguration;
+
+/**
+ * TODO: DOCUMENT ME.
+ * 
+ * @version $Id$
+ *
+ */
+public class TransactionLogger extends PatternLogger {
+
+    /**
+     * The Common Name (CN) of the client making the request
+     */
+    public static final String REQ_NAME = "REQ_NAME";
+    /**
+     * DN of the issuer of the certificate used to sign the request.
+     */
+    public static final String SIGN_ISSUER_NAME_DN = "SIGN_ISSUER_NAME_DN";
+    /**
+     * Subject Name of the certificate used to sign the request.
+     */
+    public static final String SIGN_SUBJECT_NAME = "SIGN_SUBJECT_NAME";
+    /**
+     * Certificate serial number of the certificate used to sign the request.
+     */
+    public static final String SIGN_SERIAL_NO = "SIGN_SERIAL_NO";
+    /**
+     * The subject DN of the issuer of a requested certificate
+     */
+    public static final String ISSUER_NAME_DN = "ISSUER_NAME_DN";
+    
+    /**
+     * Algorithm used by requested certificate to hash issuer key and issuer name
+     */
+    public static final String DIGEST_ALGOR = "DIGEST_ALGOR";
+    
+    /**
+     * The number of certificates to check revocation status for
+     */
+    public static final String NUM_CERT_ID = "NUM_CERT_ID";
+
+    /**
+     * The requested certificate revocation status.
+     */
+    public static final String CERT_STATUS = "CERT_STATUS";
+    
+    public TransactionLogger(Integer logId, String sessionId, String clientIp) {
+        super( OcspConfiguration.getTransactionLog(), OcspConfiguration.getTransactionLogPattern(), OcspConfiguration.getTransactionLogOrder(), OcspConfiguration.getLogDateFormat(), OcspConfiguration.getLogTimeZone());
+        
+        paramPut(PatternLogger.LOG_ID, logId);
+        paramPut(PatternLogger.SESSION_ID, sessionId);
+        paramPut(PatternLogger.CLIENT_IP, clientIp);
+        
+        paramPut(PatternLogger.STATUS, "0");
+        paramPut(PatternLogger.CLIENT_IP, "0");
+        paramPut(REQ_NAME, "0");
+        paramPut(SIGN_ISSUER_NAME_DN, "0");
+        paramPut(SIGN_SUBJECT_NAME, "0");
+        paramPut(SIGN_SERIAL_NO, "0");
+        paramPut(NUM_CERT_ID, "0");
+        paramPut(ISSUER_NAME_DN, "0");
+        paramPut(PatternLogger.ISSUER_NAME_HASH, "0");
+        paramPut(PatternLogger.ISSUER_KEY, "0");
+        paramPut(DIGEST_ALGOR, "0");
+        paramPut(PatternLogger.SERIAL_NOHEX, "0");
+        paramPut(CERT_STATUS, "0");
+        paramPut(PatternLogger.PROCESS_TIME, "-1");
+    }
+    
+
+}
