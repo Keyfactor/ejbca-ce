@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -42,6 +43,7 @@ import java.util.Properties;
 import java.util.Vector;
 
 import javax.xml.namespace.QName;
+import javax.xml.ws.WebServiceException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -258,17 +260,24 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     		log.error("Keystore file + '"+TEST_ADMIN_FILE+"' does not exist.");
     		return;
     	}
-    	final String urlstr = "https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl";
-    	log.info("Contacting webservice at " + urlstr);
     	
         System.setProperty("javax.net.ssl.trustStore", TEST_ADMIN_FILE);
         System.setProperty("javax.net.ssl.trustStorePassword", PASSWORD);
         System.setProperty("javax.net.ssl.keyStore", TEST_ADMIN_FILE);
         System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
         
-    	QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
-    	EjbcaWSService service = new EjbcaWSService(new URL(urlstr), qname);
-    	this.ejbcaraws = service.getEjbcaWSPort();
+        try {
+            createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");
+        } catch (WebServiceException e) {
+            // We have the second URI (JBoss 7)
+            createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/EjbcaWSService/EjbcaWS?wsdl");
+        }
+    }
+    
+    private void createEjbcaWSPort(final String url) throws MalformedURLException {
+        QName qname = new QName("http://ws.protocol.core.ejbca.org/", "EjbcaWSService");
+        EjbcaWSService service = new EjbcaWSService(new URL(url), qname);
+        this.ejbcaraws = service.getEjbcaWSPort();        
     }
 
 
