@@ -47,6 +47,7 @@
     <li>Supports PKCS#11 HSMs and soft keys.</li>
     <li>Built in health check used by load balancers and for monitoring.</li>
     <li>Configurable for requiring signed requests, authorized signers, etc.</li>
+    <li>Can answer good or unknown to non-existing certificates, with different configuration based on request URI.</li>
     <li>Linear scalability for performance and high availability by adding multiple nodes.</li>
     <li>High performance, >500 request per second on a single server.</li>
     <li>On-line renewal of OCSP responder keys and certificates.</li>
