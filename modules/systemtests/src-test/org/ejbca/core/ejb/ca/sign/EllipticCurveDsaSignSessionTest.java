@@ -120,7 +120,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
             org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
             assertNotNull("ImplicitlyCA must have null spec", spec);
         } else {
-            assertTrue("Public key is not EC", false);
+            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
         }
         try {
             X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
@@ -169,7 +169,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
             org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
             assertNotNull("ImplicitlyCA must have null spec", spec);
         } else {
-            assertTrue("Public key is not EC", false);
+            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
         }
         try {
             X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
@@ -198,7 +198,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
             org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
             assertNotNull("ImplicitlyCA must have null spec", spec);
         } else {
-            assertTrue("Public key is not EC", false);
+            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
         }
         X509Certificate ecdsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_CA_NAME).getCertificateChain().toArray()[0];
         try {
@@ -246,7 +246,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
             org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
             assertNotNull("ImplicitlyCA must have null spec", spec);
         } else {
-            assertTrue("Public key is not EC", false);
+            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
         }
         try {
             X509Certificate ecdsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_CA_NAME).getCertificateChain().toArray()[0];
@@ -281,7 +281,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
                 org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
                 assertNotNull("ImplicitlyCA must have null spec", spec);
             } else {
-                fail("Public key is not EC");
+                fail("Public key is not EC: "+pk.getClass().getName());
             }
             X509Certificate ecdsaimplicitlycacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME)
                     .getCertificateChain().toArray()[0];
@@ -334,7 +334,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
                 org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
                 assertNotNull("ImplicitlyCA must have null spec", spec);
             } else {
-                assertTrue("Public key is not EC", false);
+                assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
             }
             X509Certificate ecdsaimplicitlycacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME)
                     .getCertificateChain().toArray()[0];
