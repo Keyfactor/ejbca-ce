@@ -9,6 +9,7 @@ import java.security.cert.X509Certificate;
 import java.util.Enumeration;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
 import org.cesecore.certificates.certificate.UniqueSernoHelperTestSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -163,22 +164,22 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
     public void test99cleanUpAdmins() throws Exception {
 		try {
 			this.certificateProfileSession.removeCertificateProfile(intAdmin, CERTIFICATE_PROFILE);
-		} catch (Throwable e) {} // NOPMD: do nothing
+		} catch (AuthorizationDeniedException e) {} // NOPMD: do nothing
 		try {
 			this.endEntityProfileSession.removeEndEntityProfile(intAdmin, END_ENTITY_PROFILE);
-        } catch (Throwable e) {} // NOPMD: do nothing
+        } catch (AuthorizationDeniedException e) {} // NOPMD: do nothing
 		try {
             this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        } catch (Throwable e) {} // NOPMD: do nothing
+        } catch (Exception e) {} // NOPMD: do nothing
 		try {
             this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER2, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        } catch (Throwable e) {} // NOPMD: do nothing
+        } catch (Exception e) {} // NOPMD: do nothing
 		try {
             this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER3, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
-        } catch (Throwable e) {} // NOPMD: do nothing
+        } catch (Exception e) {} // NOPMD: do nothing
 		try {
 	        super.cleanUpAdmins(this.wsadminRoleName);
-        } catch (Throwable e) {} // NOPMD: do nothing
+        } catch (Exception e) {} // NOPMD: do nothing
     }
 
     @Override
