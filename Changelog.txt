@@ -255,6 +255,22 @@ Task
     [ECA-2320] - Merge changes from CESECORE-197
     [ECA-2324] - Merge changes from CESECORE-269 to EJBCA
 
+EJBCA 4.0.10, 2012-03-14
+---
+New Feature
+    [ECA-2590] - Possibility to only publish revoked certificates to external VA DB
+    [ECA-2603] - "unknown is good" changed for some URLs used in the OCSP request.
+
+Bug
+    [ECA-2564] - CMP: Correct the CrmfKeyUpdateTest
+    [ECA-2594] - XSS issues
+
+Improvement
+    [ECA-2563] - CMP: clean up CMP tests
+    [ECA-2575] - GUI: Administrator groups page headers improvement
+    [ECA-2580] - GUI: Improve View CA table layout (rows: header, sections, footer)
+    [ECA-2585] - GUI: Change Rename button in all Object lists
+
 EJBCA 4.0.9, 2012-02-13
 ---
 ** Bug
