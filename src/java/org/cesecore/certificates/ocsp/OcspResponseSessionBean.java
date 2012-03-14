@@ -133,8 +133,6 @@ interface OcspResponseSessionLocal {
 
 }
 
-@Stateless
-@TransactionAttribute(TransactionAttributeType.SUPPORTS)
 public abstract class OcspResponseSessionBean implements OcspResponseSessionLocal {
 
     private static final Logger log = Logger.getLogger(OcspResponseSessionBean.class);

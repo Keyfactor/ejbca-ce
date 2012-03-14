@@ -75,7 +75,7 @@ import org.cesecore.util.log.SaferDailyRollingFileAppender;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "StandaloneOcspResponseGeneratorSessionRemote")
 @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-public final class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSessionBean implements StandaloneOcspResponseGeneratorSessionLocal,
+public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSessionBean implements StandaloneOcspResponseGeneratorSessionLocal,
         StandaloneOcspResponseGeneratorSessionRemote, SaferAppenderListener {
 
     private static final Logger log = Logger.getLogger(StandaloneOcspResponseGeneratorSessionBean.class);
