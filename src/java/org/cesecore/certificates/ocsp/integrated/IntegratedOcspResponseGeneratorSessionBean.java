@@ -59,7 +59,7 @@ import org.cesecore.util.log.SaferDailyRollingFileAppender;
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "IntegratedOcspResponseGeneratorSessionRemote")
 @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-public final class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSessionBean implements
+public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSessionBean implements
         IntegratedOcspResponseGeneratorSessionRemote, IntegratedOcspResponseGeneratorSessionLocal, SaferAppenderListener {
 
     private static final Logger log = Logger.getLogger(IntegratedOcspResponseGeneratorSessionBean.class);
