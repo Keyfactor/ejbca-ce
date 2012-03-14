@@ -72,12 +72,10 @@
 	<classpathentry kind="lib" path="lib/xmlsign/xalan-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/serializer-2.7.1.jar"/>
 	<classpathentry kind="lib" path="lib/libidn.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/ejb3-persistence.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/hibernate-core.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate-entitymanager-4.1.1.Final.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate-core-4.1.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/hibernate/dom4j-1.6.1.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations.jar"/>
-	<classpathentry kind="lib" path="lib/hibernate/hibernate-annotations.jar"/>
+	<classpathentry kind="lib" path="lib/hibernate/hibernate-commons-annotations-4.0.1.Final.jar"/>
 	<classpathentry kind="lib" path="lib/ext/junit-4.8.2.jar"/>
 	<classpathentry kind="lib" path="lib/ext/jaxb-NamespacePrefixMapper-interfaces-2.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/ext/easymock/easymock-3.0.jar"/>
