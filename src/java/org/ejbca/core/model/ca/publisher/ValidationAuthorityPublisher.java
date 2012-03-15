@@ -275,7 +275,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 	throws PublisherException {
 		if (log.isDebugEnabled()) {
 			final String fingerprint = CertTools.getFingerprintAsString(incert);
-			log.debug("Publishing certificate with fingerprint "+fingerprint+", status "+status+", type "+type+" to external OCSP");
+			log.debug("Publishing certificate with fingerprint "+fingerprint+", status "+status+", type "+type+" to external VA.");
 		}
 		final StoreCertPreparer prep = new StoreCertPreparer(incert, username, cafp, status, revocationDate, revocationReason, type, tag, certificateProfileId, lastUpdate);
 		final boolean doOnlyPublishRevoked = getOnlyPublishRevoked();
@@ -289,6 +289,9 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 					deleteCert(prep); // cert unrevoked, delete it from VA DB.
 					return true;
 				}
+		        if (log.isDebugEnabled()) {
+		            log.debug("Not publishing certificate with status "+status+", type "+type+" to external VA, we only publish revoked certificates.");
+		        }
 				return true; // do nothing if new cert.
 			}
 			if ( status==CertificateConstants.CERT_REVOKED) {
