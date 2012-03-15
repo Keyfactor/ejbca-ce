@@ -150,14 +150,19 @@ public abstract class PatternLogger {
     }
 
     /**
-     * @see IPatternLogger#paramPut(String, byte[])
+     * Hex-encodes the bytes.
+     * method that makes sure that a "" is inserted instead of null
+     * @param key
+     * @param value
      */
     public void paramPut(String key, byte[] value) {
         paramPut(key, new String(Hex.encode(value)));
     }
 
     /**
-     * @see IPatternLogger#paramPut(String, String)
+     * method that makes sure that a "" is inserted instead of null
+     * @param key
+     * @param value
      */
     public void paramPut(String key, String value) {
         // logger.debug("paramput: "+ key+ ";" +value +";" +valuepairs.toString());
@@ -172,7 +177,9 @@ public abstract class PatternLogger {
     }
 
     /**
-     * @see IPatternLogger#paramPut(String, Integer)
+     * method that makes sure that a "" is inserted instead of null
+     * @param key
+     * @param value
      */
     public void paramPut(String key, Integer value) {
         if (value == null) {
@@ -183,7 +190,7 @@ public abstract class PatternLogger {
     }
 
     /**
-     * @see IPatternLogger#writeln()
+     * Method used for creating a log row of all added values
      */
     public void writeln() {
         if (doLogging) {
@@ -192,7 +199,7 @@ public abstract class PatternLogger {
     }
 
     /**
-     * @see org.ejbca.util.IPatternLogger#flush()
+     * Writes all the rows created by writeln() to the Logger
      */
     public void flush() {
         if (doLogging) {
