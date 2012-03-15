@@ -46,14 +46,13 @@ new TWTR.Widget({
   </p>
   </note>
   <note>
-  Did you know that EJBCA includes a stand-alone <a href="docs/services-va.html">Validation Authority</a>? The Validation Authority contains both OCSP responder and CA certificate and CRL distribution. 
-  It is scalable with high-performance and can be used also with any other CA than EJBCA. 
+  EJBCA 5.0 is a CWA and Common Criteria certified version of EJBCA. EJBCA 5.0 is available exclusively from <a href="http://www.primekey.se/PKI+shop/">PrimeKey</a>. 
   </note>
   <note>
   Find latest news about ejbca at the <a href="http://blog.ejbca.org/">EJBCA blog</a>.
   </note>
   <note>
-  The cert-cvc library handles CVC certificates for EU EAC ePassport PKIs and the current release has full support for EU EAC ePassports using all algorithms.
+  The <a href="download.html">cert-cvc library</a> handles CVC certificates for <a href="cvccas.html">EU EAC ePassport PKI</a> and the current release has full support for EU EAC ePassports using all algorithms.
   </note>
   </section>
 

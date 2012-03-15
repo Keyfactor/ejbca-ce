@@ -323,7 +323,7 @@ EJBCA will not send back proper SCEP error messages in all cases of failure. The
 <subsubsection name="iPhone/iOS">
 <p>
 You can enroll certificates for the iOS directly with EJBCA using SCEP. There is a SCEP profile in the iPhone that you can use for this.
-<a href="http://www.primekey.se/">PrimeKey</a> has created a detailed howto if you need this type of support. It works according to the same principals as the examples below.
+<a href="http://www.primekey.se/">PrimeKey</a> has created a detailed howto that you can <a href="http://www.primekey.se/PKI+shop/">purchase easily</a>.
 </p>
 </subsubsection>
 <subsubsection name="OpenScep">
