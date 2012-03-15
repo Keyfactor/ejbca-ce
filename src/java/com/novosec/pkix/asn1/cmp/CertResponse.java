@@ -21,12 +21,12 @@ package com.novosec.pkix.asn1.cmp;
 
 import java.util.Enumeration;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 
@@ -43,7 +43,7 @@ import org.bouncycastle.asn1.DERSequence;
  *
  * </pre>
  */
-public class CertResponse implements DEREncodable
+public class CertResponse implements ASN1Encodable
 {
     DERInteger         certReqId;
     PKIStatusInfo      status;
@@ -133,7 +133,7 @@ public class CertResponse implements DEREncodable
       return rspInfo;
     }
 
-    public DERObject getDERObject()
+    public ASN1Primitive toASN1Primitive()
     {
       ASN1EncodableVector  v = new ASN1EncodableVector();
 

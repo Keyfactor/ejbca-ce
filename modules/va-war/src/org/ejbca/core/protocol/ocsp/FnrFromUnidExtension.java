@@ -13,10 +13,10 @@
 
 package org.ejbca.core.protocol.ocsp;
 
-import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 
 /** The ASN.1 extension with OID 2.16.578.1.16.3.2 used to request an FNR from a UNID 
  * and respond with the FNR. When requesting, the fnr passed in the extension deas not matter, use 1.
@@ -31,9 +31,9 @@ import org.bouncycastle.asn1.DERObjectIdentifier;
  * @version $Id$
  *
  */
-public class FnrFromUnidExtension extends ASN1Encodable {
+public class FnrFromUnidExtension extends ASN1Object {
 
-	public static final DERObjectIdentifier FnrFromUnidOid = new DERObjectIdentifier("2.16.578.1.16.3.2");
+	public static final ASN1ObjectIdentifier FnrFromUnidOid = new ASN1ObjectIdentifier("2.16.578.1.16.3.2");
 	
     private String fnr;
 
@@ -71,7 +71,7 @@ public class FnrFromUnidExtension extends ASN1Encodable {
         return fnr;
     }
 
-    public DERObject toASN1Object()
+    public ASN1Primitive toASN1Primitive()
     {
         return new DERIA5String(fnr);
     }

@@ -32,6 +32,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.jcajce.JcaX509CertSelectorConverter;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -254,7 +255,8 @@ public class AutoEnrollServletTest {
 		while (iter.hasNext())
 		{
 			SignerInformation signer = iter.next();
-			X509Certificate caCert = (X509Certificate) certStore.getCertificates(signer.getSID()).iterator().next();
+			JcaX509CertSelectorConverter conv = new JcaX509CertSelectorConverter();
+			X509Certificate caCert = (X509Certificate) certStore.getCertificates(conv.getCertSelector(signer.getSID())).iterator().next();
 			Iterator<? extends Certificate> iter2 = certStore.getCertificates(null).iterator();
 			if (iter2.hasNext()) {
 				X509Certificate cert = (X509Certificate)iter2.next();

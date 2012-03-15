@@ -16,7 +16,7 @@ package org.cesecore.certificates.ocsp.extension;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.ocsp.CertificateStatus;
 
@@ -54,7 +54,7 @@ public interface OCSPExtension {
      * @return Hashtable with X509Extensions <String oid, X509Extension ext> that will be added to responseExtensions by OCSP responder, or null if an
      *         error occurs
      */
-    public Map<DERObjectIdentifier, X509Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
+    public Map<ASN1ObjectIdentifier, X509Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
             X509Certificate cert, CertificateStatus status);
 
     /**

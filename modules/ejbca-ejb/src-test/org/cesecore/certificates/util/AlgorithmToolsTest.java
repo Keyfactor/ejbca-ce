@@ -167,11 +167,11 @@ public class AlgorithmToolsTest {
     	Certificate sha512rsa = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), "SHA512WithRSA", true);
     	Certificate sha1rsamgf = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), "SHA1WithRSAAndMGF1", true);
     	Certificate sha256rsamgf = CertTools.genSelfCert("CN=TEST", 10L, null, keyPair.getPrivate(), keyPair.getPublic(), "SHA256WithRSAAndMGF1", true);
-    	assertEquals("SHA1WithRSAEncryption", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha1rsa));
-    	assertEquals("MD5WithRSAEncryption", AlgorithmTools.getCertSignatureAlgorithmNameAsString(md5rsa));
-    	assertEquals("SHA256WithRSAEncryption", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha256rsa));
-    	assertEquals("SHA384WithRSAEncryption", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha384rsa));
-    	assertEquals("SHA512WithRSAEncryption", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha512rsa));
+    	assertEquals("SHA1WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha1rsa));
+    	assertEquals("MD5WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(md5rsa));
+    	assertEquals("SHA256WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha256rsa));
+    	assertEquals("SHA384WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha384rsa));
+    	assertEquals("SHA512WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha512rsa));
     	assertEquals("SHA1WithRSAAndMGF1", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha1rsamgf));
     	assertEquals("SHA256WithRSAAndMGF1", AlgorithmTools.getCertSignatureAlgorithmNameAsString(sha256rsamgf));
     	

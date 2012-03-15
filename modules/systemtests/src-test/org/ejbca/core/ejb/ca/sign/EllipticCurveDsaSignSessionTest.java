@@ -27,6 +27,7 @@ import java.security.interfaces.ECPublicKey;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -114,14 +115,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
         assertNotNull("Misslyckades skapa cert", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
-        if (pk instanceof JCEECPublicKey) {
-            JCEECPublicKey ecpk = (JCEECPublicKey) pk;
-            assertEquals(ecpk.getAlgorithm(), "EC");
-            org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-            assertNotNull("ImplicitlyCA must have null spec", spec);
-        } else {
-            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
-        }
+        checkECKey(pk);
         try {
             X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
             cert.verify(rsacacert.getPublicKey());
@@ -129,6 +123,22 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
             assertTrue("Verify failed: " + e.getMessage(), false);
         }
         log.trace("<test12SignSessionECDSAWithRSACA()");
+    }
+
+    private void checkECKey(PublicKey pk) {
+        if (pk instanceof JCEECPublicKey) {
+            JCEECPublicKey ecpk = (JCEECPublicKey) pk;
+            assertEquals(ecpk.getAlgorithm(), "EC");
+            org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+            assertNotNull("Only ImplicitlyCA curves can have null spec", spec);
+        } else if (pk instanceof BCECPublicKey) {
+            BCECPublicKey ecpk = (BCECPublicKey) pk;
+            assertEquals(ecpk.getAlgorithm(), "EC");
+            org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+            assertNotNull("Only ImplicitlyCA curves can have null spec", spec);
+        } else {
+            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
+        }        
     }
 
     /**
@@ -163,14 +173,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
-        if (pk instanceof JCEECPublicKey) {
-            JCEECPublicKey ecpk = (JCEECPublicKey) pk;
-            assertEquals(ecpk.getAlgorithm(), "EC");
-            org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-            assertNotNull("ImplicitlyCA must have null spec", spec);
-        } else {
-            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
-        }
+        checkECKey(pk);
         try {
             X509Certificate rsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, getTestCAName()).getCertificateChain().toArray()[0];
             cert.verify(rsacacert.getPublicKey());
@@ -192,14 +195,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
-        if (pk instanceof JCEECPublicKey) {
-            JCEECPublicKey ecpk = (JCEECPublicKey) pk;
-            assertEquals(ecpk.getAlgorithm(), "EC");
-            org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-            assertNotNull("ImplicitlyCA must have null spec", spec);
-        } else {
-            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
-        }
+        checkECKey(pk);
         X509Certificate ecdsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_CA_NAME).getCertificateChain().toArray()[0];
         try {
             cert.verify(ecdsacacert.getPublicKey());
@@ -240,14 +236,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
         assertNotNull("Failed to create certificate", cert);
         log.debug("Cert=" + cert.toString());
         PublicKey pk = cert.getPublicKey();
-        if (pk instanceof JCEECPublicKey) {
-            JCEECPublicKey ecpk = (JCEECPublicKey) pk;
-            assertEquals(ecpk.getAlgorithm(), "EC");
-            org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-            assertNotNull("ImplicitlyCA must have null spec", spec);
-        } else {
-            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
-        }
+        checkECKey(pk);
         try {
             X509Certificate ecdsacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_CA_NAME).getCertificateChain().toArray()[0];
             cert.verify(ecdsacacert.getPublicKey());
@@ -275,14 +264,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
             assertNotNull("Misslyckades skapa cert", cert);
             log.debug("Cert=" + cert.toString());
             PublicKey pk = cert.getPublicKey();
-            if (pk instanceof JCEECPublicKey) {
-                JCEECPublicKey ecpk = (JCEECPublicKey) pk;
-                assertEquals(ecpk.getAlgorithm(), "EC");
-                org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                assertNotNull("ImplicitlyCA must have null spec", spec);
-            } else {
-                fail("Public key is not EC: "+pk.getClass().getName());
-            }
+            checkECKey(pk);
             X509Certificate ecdsaimplicitlycacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME)
                     .getCertificateChain().toArray()[0];
             try {
@@ -328,14 +310,6 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
             assertNotNull("Failed to create certificate", cert);
             log.debug("Cert=" + cert.toString());
             PublicKey pk = cert.getPublicKey();
-            if (pk instanceof JCEECPublicKey) {
-                JCEECPublicKey ecpk = (JCEECPublicKey) pk;
-                assertEquals(ecpk.getAlgorithm(), "EC");
-                org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                assertNotNull("ImplicitlyCA must have null spec", spec);
-            } else {
-                assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
-            }
             X509Certificate ecdsaimplicitlycacacert = (X509Certificate) caSession.getCAInfo(internalAdmin, TEST_ECDSA_IMPLICIT_CA_NAME)
                     .getCertificateChain().toArray()[0];
             try {
@@ -389,6 +363,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
             String role = cvcert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole().name();
             assertEquals("IS", role);
             PublicKey pk = cvcert.getPublicKey();
+            // Special EC check here for the DV (EAC sPassport Document Verifier)
             if (pk instanceof ECPublicKey) {
                 ECPublicKey epk = (ECPublicKey) pk;
                 assertEquals(epk.getAlgorithm(), "ECDSA");

@@ -19,7 +19,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -55,7 +55,7 @@ public class Asn1Dump extends BaseCommand {
     		}
     		if (!iscert) {
         		ASN1InputStream ais = new ASN1InputStream(new FileInputStream(filename));
-        		DERObject obj = ais.readObject();
+        		ASN1Primitive obj = ais.readObject();
         		String dump = ASN1Dump.dumpAsString(obj);
         		getLogger().info(dump);    			
     		} else {

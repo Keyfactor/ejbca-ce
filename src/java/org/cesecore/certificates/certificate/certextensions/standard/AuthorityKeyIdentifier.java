@@ -18,11 +18,11 @@ import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -54,7 +54,7 @@ public class AuthorityKeyIdentifier extends StandardCertificateExtension {
     }
 
     @Override
-    public DEREncodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey,
+    public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey,
             final PublicKey caPublicKey) throws CertificateExtentionConfigurationException, CertificateExtensionException {
         org.bouncycastle.asn1.x509.AuthorityKeyIdentifier ret = null;
         // Default value is that we calculate it from scratch!
@@ -82,7 +82,7 @@ public class AuthorityKeyIdentifier extends StandardCertificateExtension {
                     final ASN1EncodableVector v = new ASN1EncodableVector();
                     v.add(new DERTaggedObject(false, 0, keyidentifier));
                     final ASN1Sequence seq = new DERSequence(v);
-                    ret = new org.bouncycastle.asn1.x509.AuthorityKeyIdentifier(seq);
+                    ret = org.bouncycastle.asn1.x509.AuthorityKeyIdentifier.getInstance(seq);
                     if (log.isDebugEnabled()) {
                     	log.debug("Using AuthorityKeyIdentifier from CA-certificates SubjectKeyIdentifier.");
                     }

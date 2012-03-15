@@ -33,8 +33,8 @@ import javax.xml.ws.soap.SOAPFaultException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Object;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
@@ -174,7 +174,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	private void checkExtension(byte[] values[], byte extension[], String sOID) throws IOException {
 		assertNotNull(getNoCertExtensionProperties(sOID), extension);
 		final byte octets[]; {
-			final ASN1Object asn1o = ASN1Object.fromByteArray(extension);
+			final ASN1Primitive asn1o = ASN1Primitive.fromByteArray(extension);
 			assertNotNull(asn1o);
 			log.info("The extension for the OID '"+sOID+"' of class '"+asn1o.getClass().getCanonicalName()+ "' is: "+asn1o);
 			assertTrue(asn1o instanceof ASN1OctetString);
@@ -185,14 +185,14 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 			}
 		}
 		final ASN1Sequence seq; {
-			final ASN1Object asn1o = ASN1Object.fromByteArray(octets);
+			final ASN1Primitive asn1o = ASN1Primitive.fromByteArray(octets);
 			log.info("The contents of the '"+sOID+"' can be decoded to a '"+asn1o.getClass().getCanonicalName()+ "' class.");
 			assertTrue(asn1o instanceof ASN1Sequence);
 			seq= (ASN1Sequence)asn1o;
 		}
 		assertEquals( values.length, seq.size() );
 		for ( int i=0; i<seq.size(); i++ ) {
-			final DERObject derO = seq.getObjectAt(i).getDERObject();
+			final ASN1Primitive derO = seq.getObjectAt(i).toASN1Primitive();
 			assertTrue(derO instanceof ASN1OctetString);
 			assertArrayEquals(values[i], ((ASN1OctetString)derO).getOctets());
 		}

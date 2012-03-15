@@ -13,13 +13,14 @@
 
 package org.ejbca.core.protocol.ocsp;
 
+import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Hashtable;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.http.HttpServletRequest;
 
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.ocsp.CertificateStatus;
 
@@ -43,8 +44,9 @@ public interface IOCSPExtension {
 	 * @param request HttpServletRequest that can be used to find out information about caller, TLS certificate etc.
 	 * @param cert X509Certificate the caller asked for in the OCSP request
 	 * @return Hashtable with X509Extensions <String oid, X509Extension ext> that will be added to responseExtensions by OCSP responder, or null if an error occurs
+     * @throws IOException  If ASN.1 (or other) parsing error occurs
 	 */
-	public Hashtable<DERObjectIdentifier, X509Extension> process(HttpServletRequest request, X509Certificate cert, CertificateStatus status);
+	public Hashtable<ASN1ObjectIdentifier, X509Extension> process(HttpServletRequest request, X509Certificate cert, CertificateStatus status) throws IOException;
 	
 	/** Returns the last error that occured during process(), when process returns null
 	 * 

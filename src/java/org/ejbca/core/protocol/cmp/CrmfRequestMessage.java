@@ -31,6 +31,7 @@ import java.util.Date;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERInteger;
@@ -153,7 +154,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 	}
 	public void setPKIMessage(final PKIMessage msg) {
 		try {
-			this.pkimsgbytes = msg.getDERObject().getEncoded();
+			this.pkimsgbytes = msg.toASN1Primitive().getEncoded();
 		} catch (IOException e) {
 			log.error("Error getting encoded bytes from PKIMessage: ", e);
 		}
@@ -411,7 +412,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
 			try {
 				final POPOSigningKey sk = pop.getSignature();
 				final POPOSigningKeyInput pski = sk.getPoposkInput();
-				Object protObject = pski;
+				ASN1Encodable protObject = pski;
 				// Use of POPOSigningKeyInput or not, as described in RFC4211, section 4.1.
 				if (pski == null) {
 					if (log.isDebugEnabled()) {

@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -94,10 +94,10 @@ public class OCSPUtil {
                 try {
                     ASN1Sequence seq = ASN1Sequence.getInstance(new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
                     @SuppressWarnings("unchecked")
-                    Enumeration<DERObjectIdentifier> en = seq.getObjects();
+                    Enumeration<ASN1ObjectIdentifier> en = seq.getObjects();
                     boolean supportsResponseType = false;
                     while (en.hasMoreElements()) {
-                        DERObjectIdentifier oid = en.nextElement();
+                        ASN1ObjectIdentifier oid = en.nextElement();
                         //m_log.debug("Found oid: "+oid.getId());
                         if (oid.equals(OCSPObjectIdentifiers.id_pkix_ocsp_basic)) {
                             // This is the response type we support, so we are happy! Break the loop.
@@ -132,7 +132,7 @@ public class OCSPUtil {
     	X509Extensions exts = serviceReq.getExtensions();
     	if (exts != null) {
     		@SuppressWarnings("unchecked")
-            Enumeration<DERObjectIdentifier> oids = exts.oids();
+            Enumeration<ASN1ObjectIdentifier> oids = exts.oids();
     		if (oids.hasMoreElements()) {
     	    	basicRes.setResponseExtensions(exts);    			
     		}
@@ -372,9 +372,9 @@ public class OCSPUtil {
      * @param req OCSPReq
      * @return a Hashtable, can be empty nut not null
      */
-    public static Hashtable<DERObjectIdentifier, X509Extension> getStandardResponseExtensions(OCSPReq req) {
+    public static Hashtable<ASN1ObjectIdentifier, X509Extension> getStandardResponseExtensions(OCSPReq req) {
         X509Extensions reqexts = req.getRequestExtensions();
-        Hashtable<DERObjectIdentifier, X509Extension> table = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> table = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         if (reqexts != null) {
         	// Table of extensions to include in the response
             X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);

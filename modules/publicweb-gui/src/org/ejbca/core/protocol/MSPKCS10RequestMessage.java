@@ -21,12 +21,12 @@ import java.util.Iterator;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
-import org.bouncycastle.asn1.DERString;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cms.Attribute;
@@ -91,7 +91,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
         CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
         AttributeTable attributes = new AttributeTable(info.getAttributes());
 
-        Attribute attr = attributes.get(new DERObjectIdentifier(szOID_REQUEST_CLIENT_INFO));
+        Attribute attr = attributes.get(new ASN1ObjectIdentifier(szOID_REQUEST_CLIENT_INFO));
         if (attr == null) {
                 return ret;                
         } else {
@@ -156,11 +156,11 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
         Enumeration<?> enumeration = seq.getObjects();
         while (enumeration.hasMoreElements()) {
         	DERSequence seq2 = (DERSequence) DERSequence.getInstance(enumeration.nextElement());
-        	DERObjectIdentifier oid = (DERObjectIdentifier) seq2.getObjectAt(0);
+        	ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) seq2.getObjectAt(0);
         	if (szOID_ENROLL_CERTTYPE_EXTENSION.equals(oid.getId())) {
         		try {
         			DEROctetString dos = (DEROctetString) seq2.getObjectAt(1);
-        			DERString derobj = (DERString) new ASN1InputStream(new ByteArrayInputStream(dos.getOctets())).readObject();
+        			ASN1String derobj = (ASN1String) new ASN1InputStream(new ByteArrayInputStream(dos.getOctets())).readObject();
         			return derobj.getString();
         		} catch (IOException e) {
         			log.error(e);
@@ -191,7 +191,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
             Enumeration<?> enumeration = seq.getObjects();
             while (enumeration.hasMoreElements()) {
             	DERSequence seq2 = (DERSequence) DERSequence.getInstance(enumeration.nextElement());
-            	DERObjectIdentifier oid = (DERObjectIdentifier) seq2.getObjectAt(0);
+            	ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) seq2.getObjectAt(0);
             	if ("2.5.29.17".equals(oid.getId())) {	//SubjectAN
             		try {
             			DEROctetString dos = (DEROctetString) seq2.getObjectAt(2);
@@ -204,7 +204,7 @@ public class MSPKCS10RequestMessage extends PKCS10RequestMessage {
                 				if (dto.getTagNo() == 0) {
                 					// Sequence of OIDs and tagged objects
                 					DERSequence ds = (DERSequence) dto.getObject();
-                					DERObjectIdentifier doid = (DERObjectIdentifier) ds.getObjectAt(0);
+                					ASN1ObjectIdentifier doid = (ASN1ObjectIdentifier) ds.getObjectAt(0);
                         			if (OID_GUID.equals((doid).getId())) {
                             			DEROctetString dos3 = (DEROctetString) ((DERTaggedObject)ds.getObjectAt(1)).getObject();
                             			ret[0] = dos3.toString().substring(1); // Removes the initial #-sign

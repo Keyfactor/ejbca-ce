@@ -42,17 +42,14 @@ import java.util.concurrent.TimeoutException;
 
 import javax.ejb.EJB;
 import javax.ejb.Local;
-import javax.ejb.Stateless;
-import javax.ejb.TransactionAttribute;
-import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.x509.CRLReason;
@@ -220,7 +217,7 @@ public abstract class OcspResponseSessionBean implements OcspResponseSessionLoca
                 long nextUpdate = OcspConfiguration.getUntilNextUpdate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
 
                 // Add standard response extensions
-                Hashtable<DERObjectIdentifier, X509Extension> responseExtensions = getStandardResponseExtensions(req);
+                Hashtable<ASN1ObjectIdentifier, X509Extension> responseExtensions = getStandardResponseExtensions(req);
 
                 // Look for extension OIDs
                 final Collection<String> extensionOids = OcspConfiguration.getExtensionOids();
@@ -335,7 +332,7 @@ public abstract class OcspResponseSessionBean implements OcspResponseSessionLoca
                         } else if (status.equals(CertificateStatus.REVOKED)) {
                             // Revocation info available for this cert, handle it
                             sStatus = "revoked";
-                            certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(status.revocationDate), new CRLReason(
+                            certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(status.revocationDate), CRLReason.lookup(
                                     status.revocationReason)));
                         } else {
                             sStatus = "good";
@@ -347,7 +344,7 @@ public abstract class OcspResponseSessionBean implements OcspResponseSessionLoca
                         responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
 
                     } else {
-                        certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(signerIssuerCertStatus.revocationDate), new CRLReason(
+                        certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(signerIssuerCertStatus.revocationDate), CRLReason.lookup(
                                 signerIssuerCertStatus.revocationReason)));
                         infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "revoked", certId.getSerialNumber().toString(16), subjectDn);
                         log.info(infoMsg);
@@ -355,7 +352,7 @@ public abstract class OcspResponseSessionBean implements OcspResponseSessionLoca
 
                     }
                     for (String oidstr : extensionOids) {
-                        DERObjectIdentifier oid = new DERObjectIdentifier(oidstr);
+                        ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(oidstr);
                         X509Extensions reqexts = req.getRequestExtensions();
                         if (reqexts != null) {
                             X509Extension ext = reqexts.getExtension(oid);
@@ -372,7 +369,7 @@ public abstract class OcspResponseSessionBean implements OcspResponseSessionLoca
                                             certId.getSerialNumber());
                                     if (cert != null) {
                                         // Call the OCSP extension
-                                        Map<DERObjectIdentifier, X509Extension> retext = extObj.process(requestCertificates, remoteAddress,
+                                        Map<ASN1ObjectIdentifier, X509Extension> retext = extObj.process(requestCertificates, remoteAddress,
                                                 remoteHost, cert, certStatus);
                                         if (retext != null) {
                                             // Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
@@ -657,10 +654,10 @@ public abstract class OcspResponseSessionBean implements OcspResponseSessionLoca
                 try {
                     ASN1Sequence seq = ASN1Sequence.getInstance(new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
                     @SuppressWarnings("unchecked")
-                    Enumeration<DERObjectIdentifier> en = seq.getObjects();
+                    Enumeration<ASN1ObjectIdentifier> en = seq.getObjects();
                     boolean supportsResponseType = false;
                     while (en.hasMoreElements()) {
-                        DERObjectIdentifier oid = en.nextElement();
+                        ASN1ObjectIdentifier oid = en.nextElement();
                         // log.debug("Found oid: "+oid.getId());
                         if (oid.equals(OCSPObjectIdentifiers.id_pkix_ocsp_basic)) {
                             // This is the response type we support, so we are happy! Break the loop.
@@ -801,9 +798,9 @@ public abstract class OcspResponseSessionBean implements OcspResponseSessionLoca
      * @param req OCSPReq
      * @return a HashMap, can be empty but not null
      */
-    private Hashtable<DERObjectIdentifier, X509Extension> getStandardResponseExtensions(OCSPReq req) {
+    private Hashtable<ASN1ObjectIdentifier, X509Extension> getStandardResponseExtensions(OCSPReq req) {
         X509Extensions reqexts = req.getRequestExtensions();
-        Hashtable<DERObjectIdentifier, X509Extension> result = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> result = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         if (reqexts != null) {
             // Table of extensions to include in the response
             X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);

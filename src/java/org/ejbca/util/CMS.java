@@ -150,7 +150,7 @@ public class CMS {
         }
         final SignerInformation signerInfo = (SignerInformation)it.next();
         final Attribute attribute = (Attribute)signerInfo.getSignedAttributes().getAll(CMSAttributes.signingTime).get(0);
-        final Date date = Time.getInstance(attribute.getAttrValues().getObjectAt(0).getDERObject()).getDate();
+        final Date date = Time.getInstance(attribute.getAttrValues().getObjectAt(0).toASN1Primitive()).getDate();
         final SignerId id = signerInfo.getSID();
         boolean result = false;
         try {

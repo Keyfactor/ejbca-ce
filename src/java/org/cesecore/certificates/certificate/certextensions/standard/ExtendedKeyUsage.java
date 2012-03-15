@@ -18,8 +18,8 @@ import java.util.Iterator;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -46,14 +46,14 @@ public class ExtendedKeyUsage extends StandardCertificateExtension {
 	}
     
     @Override
-	public DEREncodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		org.bouncycastle.asn1.x509.ExtendedKeyUsage ret = null;
         // Get extended key usage from certificate profile
 		final Collection<String> c = certProfile.getExtendedKeyUsageOids();
-		final Vector<DERObjectIdentifier> usage = new Vector<DERObjectIdentifier>();
+		final Vector<ASN1ObjectIdentifier> usage = new Vector<ASN1ObjectIdentifier>();
 		final Iterator<String> iter = c.iterator();
         while (iter.hasNext()) {
-            usage.add(new DERObjectIdentifier(iter.next()));
+            usage.add(new ASN1ObjectIdentifier(iter.next()));
         }
         // Don't add empty key usage extension
         if (!usage.isEmpty()) {

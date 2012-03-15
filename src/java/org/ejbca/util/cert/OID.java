@@ -14,7 +14,7 @@ package org.ejbca.util.cert;
 
 import java.util.StringTokenizer;
 
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 
 /**
  * Utilities for to be used on an Object Identifier (OID).
@@ -47,7 +47,7 @@ public class OID {
 			sOID+=token;
 		}
 		try {
-			new DERObjectIdentifier(sOID);
+			new ASN1ObjectIdentifier(sOID);
 		} catch ( IllegalArgumentException e ) {
 			return false;
 		}

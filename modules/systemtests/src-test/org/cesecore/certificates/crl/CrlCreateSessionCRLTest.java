@@ -369,7 +369,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        IssuingDistributionPoint cdp = new IssuingDistributionPoint((ASN1Sequence) aIn.readObject());
+        IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance((ASN1Sequence) aIn.readObject());
         DistributionPointName distpoint = cdp.getDistributionPoint();
 
         assertEquals("CRL distribution point is different", cdpURL,
@@ -406,7 +406,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER));
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        CRLDistPoint cdp = new CRLDistPoint((ASN1Sequence) aIn.readObject());
+        CRLDistPoint cdp = CRLDistPoint.getInstance((ASN1Sequence) aIn.readObject());
         DistributionPoint[] distpoints = cdp.getDistributionPoints();
 
         assertEquals("More CRL Freshest distributions points than expected", 1, distpoints.length);

@@ -45,12 +45,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -1137,7 +1137,7 @@ public class CertToolsTest {
             int tag = gns[i].getTagNo();
             if (tag == 4) {
                 found = true;
-                DEREncodable enc = gns[i].getName();
+                ASN1Encodable enc = gns[i].getName();
                 X509Name dir = (X509Name) enc;
                 String str = dir.toString();
                 log.debug("DirectoryName: " + str);
@@ -1157,14 +1157,14 @@ public class CertToolsTest {
             int tag = gns[i].getTagNo();
             if (tag == 2) {
                 dnscount++;
-                DEREncodable enc = gns[i].getName();
+                ASN1Encodable enc = gns[i].getName();
                 DERIA5String dir = (DERIA5String) enc;
                 String str = dir.getString();
                 log.info("DnsName: " + str);
             }
             if (tag == 1) {
                 rfc822count++;
-                DEREncodable enc = gns[i].getName();
+                ASN1Encodable enc = gns[i].getName();
                 DERIA5String dir = (DERIA5String) enc;
                 String str = dir.getString();
                 log.info("Rfc822Name: " + str);
@@ -1223,7 +1223,7 @@ public class CertToolsTest {
         boolean found = false;
         while (en.hasMoreElements()) {
             ASN1Sequence seq = ASN1Sequence.getInstance(en.nextElement());
-            DERObjectIdentifier oid = (DERObjectIdentifier) seq.getObjectAt(0);
+            ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) seq.getObjectAt(0);
             if (oid.equals(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)) {
                 // The object at position 1 is a SET of x509extensions
                 DERSet s = (DERSet) seq.getObjectAt(1);
@@ -1248,7 +1248,7 @@ public class CertToolsTest {
         found = false;
         while (en.hasMoreElements()) {
             ASN1Sequence seq = ASN1Sequence.getInstance(en.nextElement());
-            DERObjectIdentifier oid = (DERObjectIdentifier) seq.getObjectAt(0);
+            ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) seq.getObjectAt(0);
             if (oid.equals(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)) {
                 // The object at position 1 is a SET of x509extensions
                 DERSet s = (DERSet) seq.getObjectAt(1);
@@ -1656,7 +1656,7 @@ public class CertToolsTest {
     private DERSequence permanentIdentifier(String identifierValue, String assigner) {
         DERSequence result;
         ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
-        v.add(new DERObjectIdentifier(CertTools.PERMANENTIDENTIFIER_OBJECTID));
+        v.add(new ASN1ObjectIdentifier(CertTools.PERMANENTIDENTIFIER_OBJECTID));
 
         // First the PermanentIdentifier sequence
         ASN1EncodableVector piSeq = new ASN1EncodableVector();
@@ -1664,7 +1664,7 @@ public class CertToolsTest {
             piSeq.add(new DERUTF8String(identifierValue));
         }
         if (assigner != null) {
-            piSeq.add(new DERObjectIdentifier(assigner));
+            piSeq.add(new ASN1ObjectIdentifier(assigner));
         }
         v.add(new DERTaggedObject(true, 0, new DERSequence(piSeq)));
         result = new DERSequence(v);
@@ -1699,7 +1699,7 @@ public class CertToolsTest {
     @Test
     public void testGetGeneralNamesFromAltName4permanentIdentifier() throws Exception {
         // One permanentIdentifier
-        GeneralNames gn = CertTools.getGeneralNamesFromAltName("permanentIdentifier=def321/1.2.5, upn=upn@u.com");    
+        GeneralNames gn = CertTools.getGeneralNamesFromAltName("permanentIdentifier=def321/1.2.5, upn=upn@u.com");
         String[] result = new String[] { 
             CertTools.getGeneralNameString(0, gn.getNames()[0].getName()), 
             CertTools.getGeneralNameString(0, gn.getNames()[1].getName())

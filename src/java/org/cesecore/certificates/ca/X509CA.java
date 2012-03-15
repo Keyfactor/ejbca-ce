@@ -47,13 +47,13 @@ import java.util.List;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x509.AccessDescription;
@@ -448,16 +448,16 @@ public class X509CA extends CA implements Serializable {
     /**
      * @see CA#createRequest(Collection, String, Certificate, int)
      */
-    public byte[] createRequest(Collection<DEREncodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose)
+    public byte[] createRequest(Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose)
             throws CryptoTokenOfflineException {
         log.trace(">createRequest: " + signAlg + ", " + CertTools.getSubjectDN(cacert) + ", " + signatureKeyPurpose);
         ASN1Set attrset = new DERSet();
         if (attributes != null) {
             log.debug("Adding attributes in the request");
-            Iterator<DEREncodable> iter = attributes.iterator();
+            Iterator<ASN1Encodable> iter = attributes.iterator();
             ASN1EncodableVector vec = new ASN1EncodableVector();
             while (iter.hasNext()) {
-                DEREncodable o = (DEREncodable) iter.next();
+                ASN1Encodable o = (ASN1Encodable) iter.next();
                 vec.add(o);
             }
             attrset = new DERSet(vec);
@@ -710,7 +710,7 @@ public class X509CA extends CA implements Serializable {
             @SuppressWarnings("rawtypes")
             Enumeration en = extensions.oids();
             while (en != null && en.hasMoreElements()) {
-                DERObjectIdentifier oid = (DERObjectIdentifier) en.nextElement();
+                ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) en.nextElement();
                 X509Extension ext = extensions.getExtension(oid);
                 if (log.isDebugEnabled()) {
                     log.debug("Overriding extension with oid: " + oid);
@@ -752,12 +752,12 @@ public class X509CA extends CA implements Serializable {
             // We don't want to try to add standard extensions with the same oid if we have already added them
             // from the request, if AllowExtensionOverride is enabled.
             // Two extensions with the same oid is not allowed in the standard.
-            if (overridenexts.getExtension(new DERObjectIdentifier(oid)) == null) {
+            if (overridenexts.getExtension(new ASN1ObjectIdentifier(oid)) == null) {
                 CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
                 if (certExt != null) {
                     byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey);
                     if (value != null) {
-                        extgen.addExtension(new DERObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
+                        extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
                     }
                 }
             } else {
@@ -779,10 +779,10 @@ public class X509CA extends CA implements Serializable {
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
-                if (overridenexts.getExtension(new DERObjectIdentifier(certExt.getOID())) == null) {
+                if (overridenexts.getExtension(new ASN1ObjectIdentifier(certExt.getOID())) == null) {
                     byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey);
                     if (value != null) {
-                        extgen.addExtension(new DERObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
+                        extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
                     }
                 } else {
                     if (log.isDebugEnabled()) {
@@ -797,7 +797,7 @@ public class X509CA extends CA implements Serializable {
         @SuppressWarnings("rawtypes")
         Enumeration en = exts.oids();
         while (en.hasMoreElements()) {
-            DERObjectIdentifier oid = (DERObjectIdentifier) en.nextElement();
+            ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) en.nextElement();
             X509Extension ext = exts.getExtension(oid);
             certgen.addExtension(oid, ext.isCritical(), ext.getValue().getOctets());
         }
@@ -954,7 +954,7 @@ public class X509CA extends CA implements Serializable {
             }               
         }
         if(accessList.size() > 0) {
-            AuthorityInformationAccess authorityInformationAccess = new AuthorityInformationAccess(new DERSequence(accessList));
+            AuthorityInformationAccess authorityInformationAccess = AuthorityInformationAccess.getInstance(new DERSequence(accessList));
             // "This CRL extension MUST NOT be marked critical." according to rfc4325
             crlgen.addExtension(X509Extensions.AuthorityInfoAccess, false, authorityInformationAccess);
         }
@@ -1039,7 +1039,7 @@ public class X509CA extends CA implements Serializable {
             }
             ASN1EncodableVector vec = new ASN1EncodableVector();
             vec.add(gn);
-            GeneralNames gns = new GeneralNames(new DERSequence(vec));
+            GeneralNames gns = GeneralNames.getInstance(new DERSequence(vec));
             DistributionPointName dpn = new DistributionPointName(0, gns);
             result.add(new DistributionPoint(dpn, null, null));
         }

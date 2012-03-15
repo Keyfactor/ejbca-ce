@@ -1476,7 +1476,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         // POPO
         /*
          * PKMACValue myPKMACValue = new PKMACValue( new AlgorithmIdentifier(new
-         * DERObjectIdentifier("8.2.1.2.3.4"), new DERBitString(new byte[] { 8,
+         * ASN1ObjectIdentifier("8.2.1.2.3.4"), new DERBitString(new byte[] { 8,
          * 1, 1, 2 })), new DERBitString(new byte[] { 12, 29, 37, 43 }));
          * 
          * POPOPrivKey myPOPOPrivKey = new POPOPrivKey(new DERBitString(new
@@ -1484,7 +1484,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
          * 
          * POPOSigningKeyInput myPOPOSigningKeyInput = new POPOSigningKeyInput(
          * myPKMACValue, new SubjectPublicKeyInfo( new AlgorithmIdentifier(new
-         * DERObjectIdentifier("9.3.3.9.2.2"), new DERBitString(new byte[] { 2,
+         * ASN1ObjectIdentifier("9.3.3.9.2.2"), new DERBitString(new byte[] { 2,
          * 9, 7, 3 })), new byte[] { 7, 7, 7, 4, 5, 6, 7, 7, 7 }));
          */
         ProofOfPossession myProofOfPossession = null;
@@ -1510,7 +1510,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
 
         myCertReqMsg.setPop(myProofOfPossession);
         // myCertReqMsg.addRegInfo(new AttributeTypeAndValue(new
-        // DERObjectIdentifier("1.3.6.2.2.2.2.3.1"), new
+        // ASN1ObjectIdentifier("1.3.6.2.2.2.2.3.1"), new
         // DERInteger(1122334455)));
         AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.regCtrl_regToken, new DERUTF8String("foo123"));
         myCertReqMsg.addRegInfo(av);
@@ -1571,7 +1571,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         assertNotNull(cc);
         X509CertificateStructure struct = cc.getCertificate();
         assertNotNull(struct);
-        checkDN(userDN, struct.getSubject());
+        X509Name name = X509Name.getInstance(struct.getSubject().getEncoded());
+        checkDN(userDN, name);
         assertEquals(CertTools.stringToBCDNString(struct.getIssuer().toString()), CertTools.getSubjectDN(cacert));
         return (X509Certificate) CertTools.getCertfromByteArray(struct.getEncoded());
     }

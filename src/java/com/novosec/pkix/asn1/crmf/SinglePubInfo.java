@@ -19,12 +19,12 @@
 
 package com.novosec.pkix.asn1.crmf;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.GeneralName;
 
@@ -42,7 +42,7 @@ import org.bouncycastle.asn1.x509.GeneralName;
  *
  * </pre>
  */
-public class SinglePubInfo implements DEREncodable
+public class SinglePubInfo implements ASN1Encodable
 {
     DERInteger   pubMethod;
     GeneralName  pubLocation;
@@ -95,7 +95,7 @@ public class SinglePubInfo implements DEREncodable
       this.pubLocation = pubLocation;
     }
 
-    public DERObject getDERObject()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

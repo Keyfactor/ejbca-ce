@@ -23,8 +23,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -131,7 +131,7 @@ public class CertificateExtensionFactoryTest {
 		
 	}
 	
-	private DEREncodable getObject(byte[] valueEncoded) throws IOException {
+	private ASN1Encodable getObject(byte[] valueEncoded) throws IOException {
 		ASN1InputStream in = new ASN1InputStream(new ByteArrayInputStream(valueEncoded));
 		return in.readObject();
 	}

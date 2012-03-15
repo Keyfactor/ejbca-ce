@@ -18,8 +18,8 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.AccessDescription;
@@ -52,7 +52,7 @@ public class AuthorityInformationAccess extends StandardCertificateExtension {
 	}
     
     @Override
-	public DEREncodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		final ASN1EncodableVector accessList = new ASN1EncodableVector();
         GeneralName accessLocation;
         String url;
@@ -83,7 +83,7 @@ public class AuthorityInformationAccess extends StandardCertificateExtension {
         }
         org.bouncycastle.asn1.x509.AuthorityInformationAccess ret = null;
         if (accessList.size() > 0) {        	
-            ret = new org.bouncycastle.asn1.x509.AuthorityInformationAccess(new DERSequence(accessList));
+            ret = org.bouncycastle.asn1.x509.AuthorityInformationAccess.getInstance(new DERSequence(accessList));
         }
 		if (ret == null) {
 			log.error("AuthorityInformationAccess is used, but nor caIssuers not Ocsp url are defined!");

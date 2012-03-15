@@ -15,7 +15,7 @@ package org.ejbca.core.protocol.cmp.authentication;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
@@ -70,7 +70,7 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
                         log.trace("Found AttributeTypeAndValue (in CertReqMsg): "+av.getObjectId().getId());
                     }
                     if (StringUtils.equals(CRMFObjectIdentifiers.regCtrl_regToken.getId(), av.getObjectId().getId())) {
-                        final DEREncodable enc = av.getParameters();
+                        final ASN1Encodable enc = av.getParameters();
                         final DERUTF8String str = DERUTF8String.getInstance(enc);
                         pwd = str.getString();
                         if (log.isDebugEnabled()) {
@@ -93,7 +93,7 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
                             log.trace("Found AttributeTypeAndValue (in CertReq): "+av.getObjectId().getId());
                         }
                         if (StringUtils.equals(CRMFObjectIdentifiers.regCtrl_regToken.getId(), av.getObjectId().getId())) {
-                            final DEREncodable enc = av.getParameters();
+                            final ASN1Encodable enc = av.getParameters();
                             final DERUTF8String str = DERUTF8String.getInstance(enc);
                             pwd = str.getString();
                             if (log.isDebugEnabled()) {

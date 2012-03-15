@@ -25,7 +25,7 @@ import java.security.cert.Certificate;
 import java.util.Date;
 import java.util.Vector;
 
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
@@ -78,7 +78,7 @@ public class UnidFnrHandlerTest {
         final X509Name dn;
 
 		MyIRequestMessage(String serialNumber) {
-			final Vector<DERObjectIdentifier> oids = new Vector<DERObjectIdentifier>();
+			final Vector<ASN1ObjectIdentifier> oids = new Vector<ASN1ObjectIdentifier>();
 			final Vector<String> values = new Vector<String>();
 			oids.add(X509Name.SN);
 			values.add(serialNumber);

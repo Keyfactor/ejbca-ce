@@ -20,9 +20,9 @@ import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.DisplayText;
 import org.bouncycastle.asn1.x509.PolicyInformation;
@@ -56,7 +56,7 @@ public class CertificatePolicies extends StandardCertificateExtension {
 	}
     
     @Override
-	public DEREncodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		DERSequence ret = null;
     	// The UserNotice policy qualifier can have two different character encodings,
     	// the correct one (UTF8) or the wrong one (BMP) used by IE < 7.
@@ -67,13 +67,13 @@ public class CertificatePolicies extends StandardCertificateExtension {
     	}
     	// Iterate through policies and add oids and policy qualifiers if they exist
     	final List<CertificatePolicy> policies = certProfile.getCertificatePolicies();
-    	final Map<DERObjectIdentifier, ASN1EncodableVector> policiesMap = new HashMap<DERObjectIdentifier, ASN1EncodableVector>();
+    	final Map<ASN1ObjectIdentifier, ASN1EncodableVector> policiesMap = new HashMap<ASN1ObjectIdentifier, ASN1EncodableVector>();
     	// Each Policy OID can be entered several times, with different qualifiers, 
     	// because of this we make a map of oid and qualifiers, and we can add a new qualifier
     	// in each round of this for loop
     	for(final Iterator<CertificatePolicy> it = policies.iterator(); it.hasNext(); ) {
     		final CertificatePolicy policy = it.next();
-    		final DERObjectIdentifier oid = new DERObjectIdentifier(policy.getPolicyID());
+    		final ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(policy.getPolicyID());
     		final ASN1EncodableVector qualifiers;
     		if(policiesMap.containsKey(oid)) {
     			qualifiers = policiesMap.get(oid);
@@ -87,8 +87,8 @@ public class CertificatePolicies extends StandardCertificateExtension {
 			policiesMap.put(oid, qualifiers);
     	}
     	final ASN1EncodableVector seq = new ASN1EncodableVector();
-    	for(final Iterator<DERObjectIdentifier> it = policiesMap.keySet().iterator(); it.hasNext(); ) {
-    		final DERObjectIdentifier oid = it.next();
+    	for(final Iterator<ASN1ObjectIdentifier> it = policiesMap.keySet().iterator(); it.hasNext(); ) {
+    		final ASN1ObjectIdentifier oid = it.next();
     		final ASN1EncodableVector qualifiers = policiesMap.get(oid);
     		if(qualifiers.size() == 0) {
     			seq.add(new PolicyInformation(oid, null));

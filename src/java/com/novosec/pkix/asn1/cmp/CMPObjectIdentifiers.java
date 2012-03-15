@@ -19,7 +19,7 @@
 
 package com.novosec.pkix.asn1.cmp;
 
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 
 /**
  * ASN.1 defined Object Identifier.
@@ -36,18 +36,18 @@ public class CMPObjectIdentifiers
   static final String  _id_pkix     = "1.3.6.1.5.5.7";
   static final String  _id_it       = _id_pkix + ".4";
 
-  public static final DERObjectIdentifier it_CAProtEncCert        = new DERObjectIdentifier( _id_it + ".1" );
-  public static final DERObjectIdentifier it_SignKeyPairTypes     = new DERObjectIdentifier( _id_it + ".2" );
-  public static final DERObjectIdentifier it_EncKeyPairTypes      = new DERObjectIdentifier( _id_it + ".3" );
-  public static final DERObjectIdentifier it_PreferredSymmAlg     = new DERObjectIdentifier( _id_it + ".4" );
-  public static final DERObjectIdentifier it_CAKeyUpdateInfo      = new DERObjectIdentifier( _id_it + ".5" );
-  public static final DERObjectIdentifier it_CurrentCRL           = new DERObjectIdentifier( _id_it + ".6" );
+  public static final ASN1ObjectIdentifier it_CAProtEncCert        = new ASN1ObjectIdentifier( _id_it + ".1" );
+  public static final ASN1ObjectIdentifier it_SignKeyPairTypes     = new ASN1ObjectIdentifier( _id_it + ".2" );
+  public static final ASN1ObjectIdentifier it_EncKeyPairTypes      = new ASN1ObjectIdentifier( _id_it + ".3" );
+  public static final ASN1ObjectIdentifier it_PreferredSymmAlg     = new ASN1ObjectIdentifier( _id_it + ".4" );
+  public static final ASN1ObjectIdentifier it_CAKeyUpdateInfo      = new ASN1ObjectIdentifier( _id_it + ".5" );
+  public static final ASN1ObjectIdentifier it_CurrentCRL           = new ASN1ObjectIdentifier( _id_it + ".6" );
   
   // PasswordBasedMac ::= OBJECT IDENTIFIER --{1 2 840 113533 7 66 13}
-  public static final DERObjectIdentifier passwordBasedMac        = new DERObjectIdentifier( "1.2.840.113533.7.66.13" );
+  public static final ASN1ObjectIdentifier passwordBasedMac        = new ASN1ObjectIdentifier( "1.2.840.113533.7.66.13" );
   
   // DHBasedMac ::= OBJECT IDENTIFIER --{1 2 840 113533 7 66 30}
-  public static final DERObjectIdentifier dHBasedMac              = new DERObjectIdentifier( "1.2.840.113533.7.66.30" );
+  public static final ASN1ObjectIdentifier dHBasedMac              = new ASN1ObjectIdentifier( "1.2.840.113533.7.66.30" );
 
 }
 

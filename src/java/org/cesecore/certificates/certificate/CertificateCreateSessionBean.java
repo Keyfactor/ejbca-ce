@@ -38,8 +38,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
@@ -187,7 +187,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     final ByteArrayInputStream bIs = new ByteArrayInputStream(os.getOctets());
                     final ASN1InputStream dIs = new ASN1InputStream(bIs);
                     try {
-                        final DERObject dob = dIs.readObject();
+                        final ASN1Primitive dob = dIs.readObject();
                         final DERBitString bs = DERBitString.getInstance(dob);
                         keyusage = bs.intValue();
                     } catch (IOException e) {

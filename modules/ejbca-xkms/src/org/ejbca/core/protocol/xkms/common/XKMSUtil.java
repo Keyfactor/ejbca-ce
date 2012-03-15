@@ -347,8 +347,9 @@ public class XKMSUtil {
         	retval = new SecretKeySpec(finalKey,
         			sa.getJCEAlgorithmString());
         }
-		}catch(IllegalMonitorStateException e){
-			
+		} catch(IllegalMonitorStateException e){
+		    // TODO: remove this catch? It's needed?
+            log.error("IllegalMonitorStateException", e);			
 		} catch (ParserConfigurationException e) {
 			log.error("Error generating secret key", e);
 			throw new XMLEncryptionException(e.getMessage(),e);

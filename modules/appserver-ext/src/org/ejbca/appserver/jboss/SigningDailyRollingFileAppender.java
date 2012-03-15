@@ -330,7 +330,7 @@ class SignerThread implements Runnable { // NOPMD this is not run in the ejb app
 			if (infile != null) {
 				digestBytes = FileTools.readFiletoBuffer(infile);
 			}
-			MessageDigest dig = MessageDigest.getInstance(TSPAlgorithms.SHA1, "BC");
+			MessageDigest dig = MessageDigest.getInstance(TSPAlgorithms.SHA1.getId(), "BC");
 			dig.update(digestBytes);
 			byte[] digest = dig.digest();
 			TimeStampRequest timeStampRequest = timeStampRequestGenerator.generate(TSPAlgorithms.SHA1, digest, BigInteger.valueOf(nonce));

@@ -45,6 +45,7 @@ import javax.ejb.EJBException;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.jce.spec.ECParameterSpec;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -322,14 +323,7 @@ public class CAsTest extends CaTestCase {
             // Make BC cert instead to make sure the public key is BC provider type (to make our test below easier)
             X509Certificate bccert = (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());
             PublicKey pk = bccert.getPublicKey();
-            if (pk instanceof JCEECPublicKey) {
-                JCEECPublicKey ecpk = (JCEECPublicKey) pk;
-                assertEquals(ecpk.getAlgorithm(), "EC");
-                org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
-                assertNotNull("ImplicitlyCA must have null spec", spec);
-            } else {
-                assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
-            }
+            checkECKey(pk);
             ret = true;
         } catch (CAExistsException pee) {
             log.info("CA exists.");
@@ -337,6 +331,22 @@ public class CAsTest extends CaTestCase {
         }
 
         assertTrue("Creating ECDSA CA failed", ret);
+    }
+
+    private void checkECKey(PublicKey pk) {
+        if (pk instanceof JCEECPublicKey) {
+            JCEECPublicKey ecpk = (JCEECPublicKey) pk;
+            assertEquals(ecpk.getAlgorithm(), "EC");
+            org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+            assertNotNull("Only ImplicitlyCA curves can have null spec", spec);
+        } else if (pk instanceof BCECPublicKey) {
+            BCECPublicKey ecpk = (BCECPublicKey) pk;
+            assertEquals(ecpk.getAlgorithm(), "EC");
+            org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+            assertNotNull("Only ImplicitlyCA curves can have null spec", spec);
+        } else {
+            assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
+        }        
     }
 
     /**
@@ -365,11 +375,14 @@ public class CAsTest extends CaTestCase {
                 assertEquals(ecpk.getAlgorithm(), "EC");
                 ECParameterSpec spec = ecpk.getParameters();
                 assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in ejbca.properties", spec);
-
+            } else if (pk instanceof BCECPublicKey) {
+                BCECPublicKey ecpk = (BCECPublicKey) pk;
+                assertEquals(ecpk.getAlgorithm(), "EC");
+                org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+                assertNull("ImplicitlyCA must have null spec, because it should be explicitly set in ejbca.properties", spec);
             } else {
-                assertTrue("Public key is not EC", false);
+                assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
             }
-
             ret = true;
         } catch (CAExistsException pee) {
             log.info("CA exists.");

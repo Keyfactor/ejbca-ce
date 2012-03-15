@@ -36,14 +36,14 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Vector;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -109,7 +109,7 @@ public class CrmfRequestMessageTest {
 		ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
 		DEROutputStream         dOut = new DEROutputStream(bOut);
 		Vector<X509Extension> values = new Vector<X509Extension>();
-		Vector<DERObjectIdentifier> oids = new Vector<DERObjectIdentifier>();
+		Vector<ASN1ObjectIdentifier> oids = new Vector<ASN1ObjectIdentifier>();
 		int bcku = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment | X509KeyUsage.nonRepudiation;
 		X509KeyUsage ku = new X509KeyUsage(bcku);
 		bOut = new ByteArrayOutputStream();
@@ -153,7 +153,7 @@ public class CrmfRequestMessageTest {
     	// Check that we can parse a request from  Novosec (patched by EJBCA).
     	// Read an initialization request with RAVerifiedPOP and PBE protection to see that we can process it
     	ASN1InputStream in = new ASN1InputStream(novosecrapopir);
-    	DERObject derObject = in.readObject();
+    	ASN1Primitive derObject = in.readObject();
     	PKIMessage req = PKIMessage.getInstance(derObject);
     	//log.info(req.toString());
     	// Verify should be false if we do not allow RA verify POP here, since we don't have any normal POP
@@ -182,7 +182,7 @@ public class CrmfRequestMessageTest {
     	// Read an initialization request with a signature POP and signature protection to see that we can process it
     	{
     		ASN1InputStream in = new ASN1InputStream(novosecsigpopir);
-    		DERObject derObject = in.readObject();
+    		ASN1Primitive derObject = in.readObject();
     		PKIMessage req = PKIMessage.getInstance(derObject);
     		//log.info(req.toString());
     		// Verify should be ok if we do not allow RA verify POP here
@@ -198,7 +198,7 @@ public class CrmfRequestMessageTest {
     		String oid = algId.getObjectId().getId();
     		assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
     		// Check that this is an old message, created before ECA-2104, using null instead of DERNull as algorithm parameters.
-    		DEREncodable pp = algId.getParameters();
+    		ASN1Encodable pp = algId.getParameters();
     		assertNull(pp);
     		// Try to verify, it should work good even though the small bug in ECA-2104, since we don't use algorithm parameters for RSA-PKCS signatures
     		PublicKey pubKey = msg.getRequestPublicKey();
@@ -210,7 +210,7 @@ public class CrmfRequestMessageTest {
     	// Re-protect the message, now fixed by ECA-2104
     	{
     		ASN1InputStream in = new ASN1InputStream(novosecsigpopir);
-    		DERObject derObject = in.readObject();
+    		ASN1Primitive derObject = in.readObject();
     		PKIMessage myPKIMessage = PKIMessage.getInstance(derObject);
     		KeyPair keys = KeyTools.genKeys("512", "RSA");
     		X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), "SHA1WithRSA", false);
@@ -230,7 +230,7 @@ public class CrmfRequestMessageTest {
     		String oid = algId.getObjectId().getId();
     		assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
     		// Check that we have DERNull and not plain java null as algorithm parameters.
-    		DEREncodable pp = algId.getParameters();
+    		ASN1Encodable pp = algId.getParameters();
     		assertNotNull(pp);
     		assertEquals(DERNull.class.getName(), pp.getClass().getName());
     		// Try to verify, also verify at the same time that encoding decoding of the signature works
@@ -257,7 +257,7 @@ public class CrmfRequestMessageTest {
     	// Check that we can parse request from BouncyCastle version 1.46.
     	// Read an initialization request with RAVerifiedPOP with PBE protection to see that we can process it
     	ASN1InputStream in = new ASN1InputStream(message);
-    	DERObject derObject = in.readObject();
+    	ASN1Primitive derObject = in.readObject();
     	PKIMessage req = PKIMessage.getInstance(derObject);
     	//log.info(req.toString());
     	// Verify should be false if we do not allow RA verify POP here, since we don't have any normal POP
@@ -295,7 +295,7 @@ public class CrmfRequestMessageTest {
     	// Check that we can parse request from BouncyCastle version 1.46.    	
     	// Read an initialization request with a signature POP, and signature protection, to see that we can process it
     	ASN1InputStream in = new ASN1InputStream(message);
-    	DERObject derObject = in.readObject();
+    	ASN1Primitive derObject = in.readObject();
     	PKIMessage req = PKIMessage.getInstance(derObject);
     	//log.info(req.toString());
     	// Verify should be ok if we do not allow RA verify POP here
@@ -313,7 +313,7 @@ public class CrmfRequestMessageTest {
     	String oid = algId.getObjectId().getId();
     	assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
     	// Check that we have DERNull and not plain java null as algorithm parameters.
-    	DEREncodable pp = algId.getParameters();
+    	ASN1Encodable pp = algId.getParameters();
     	assertNotNull(pp);
     	assertEquals(DERNull.class.getName(), pp.getClass().getName());
     	// Try to verify the protection signature
@@ -324,7 +324,7 @@ public class CrmfRequestMessageTest {
     public void testHuaweiEnodeBClientRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
     	// Read an initialization request to see that we can process it
     	ASN1InputStream in = new ASN1InputStream(huaweiir);
-		DERObject derObject = in.readObject();
+		ASN1Primitive derObject = in.readObject();
 		PKIMessage req = PKIMessage.getInstance(derObject);
 		//log.info(req.toString());
     	CrmfRequestMessage msg = new CrmfRequestMessage(req, null, false, "CN");
@@ -342,7 +342,7 @@ public class CrmfRequestMessageTest {
 		String oid = algId.getObjectId().getId();
 		assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
 		// Check that we have DERNull and not plain java null as algorithm parameters.
-		DEREncodable pp = algId.getParameters();
+		ASN1Encodable pp = algId.getParameters();
 		assertNotNull(pp);
 		assertEquals(DERNull.class.getName(), pp.getClass().getName());
 		// Try to verify message protection

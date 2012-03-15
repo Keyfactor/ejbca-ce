@@ -35,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
@@ -43,7 +44,7 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.bouncycastle.cms.RecipientId;
+import org.bouncycastle.cms.KeyTransRecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.cesecore.certificates.ca.CA;
@@ -248,9 +249,9 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 			if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_DECRYPT) != 0) {
 				CMSEnvelopedData ed = new CMSEnvelopedData(resp);
 				RecipientInformationStore  recipients = ed.getRecipientInfos();
-				RecipientId id = new RecipientId();
-				id.setIssuer(getCMSCertificate().getIssuerX500Principal());
-				id.setSerialNumber(getCMSCertificate().getSerialNumber());
+				X500Name issuer = X500Name.getInstance(getCMSCertificate().getIssuerX500Principal().getEncoded());
+				
+				KeyTransRecipientId id = new KeyTransRecipientId(issuer, getCMSCertificate().getSerialNumber());
 				RecipientInformation recipient = recipients.get(id);
 				if (recipient != null) {
 					resp = recipient.getContent(this.privKey, "BC");

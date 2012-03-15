@@ -20,7 +20,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERPrintableString;
@@ -105,7 +105,7 @@ public class ScepRequestGenerator {
         // Extension request attribute is a set of X509Extensions
         // ASN1EncodableVector x509extensions = new ASN1EncodableVector();
         // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
-        final Vector<DERObjectIdentifier> oidvec = new Vector<DERObjectIdentifier>();
+        final Vector<ASN1ObjectIdentifier> oidvec = new Vector<ASN1ObjectIdentifier>();
         final Vector<X509Extension> valuevec = new Vector<X509Extension>();
         // Requested extensions attribute
         // AltNames
@@ -192,19 +192,19 @@ public class ScepRequestGenerator {
         CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
 
         // add authenticated attributes...status, transactionId, sender- and more...
-        Hashtable<DERObjectIdentifier, Attribute> attributes = new Hashtable<DERObjectIdentifier, Attribute>();
-        DERObjectIdentifier oid;
+        Hashtable<ASN1ObjectIdentifier, Attribute> attributes = new Hashtable<ASN1ObjectIdentifier, Attribute>();
+        ASN1ObjectIdentifier oid;
         Attribute attr;
         DERSet value;
         
         // Message type (certreq)
-        oid = new DERObjectIdentifier(ScepRequestMessage.id_messageType);
+        oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_messageType);
         value = new DERSet(new DERPrintableString(messageType));
         attr = new Attribute(oid, value);
         attributes.put(attr.getAttrType(), attr);
 
         // TransactionId
-        oid = new DERObjectIdentifier(ScepRequestMessage.id_transId);
+        oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_transId);
         value = new DERSet(new DERPrintableString(transactionId));
         attr = new Attribute(oid, value);
         attributes.put(attr.getAttrType(), attr);
@@ -214,7 +214,7 @@ public class ScepRequestGenerator {
         randomSource.nextBytes(nonce);
         senderNonce = new String(Base64.encode(nonce));
         if (nonce != null) {
-            oid = new DERObjectIdentifier(ScepRequestMessage.id_senderNonce);
+            oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_senderNonce);
             log.debug("Added senderNonce: " + senderNonce);
             value = new DERSet(new DEROctetString(nonce));
             attr = new Attribute(oid, value);

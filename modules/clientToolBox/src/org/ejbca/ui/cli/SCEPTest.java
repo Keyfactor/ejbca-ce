@@ -43,11 +43,11 @@ import java.util.Vector;
 import org.apache.commons.lang.StringUtils;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERPrintableString;
-import org.bouncycastle.asn1.DERString;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.x509.GeneralNames;
@@ -174,7 +174,7 @@ class SCEPTest extends ClientToolBox {
             // Extension request attribute is a set of X509Extensions
             // ASN1EncodableVector x509extensions = new ASN1EncodableVector();
             // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
-            final Vector<DERObjectIdentifier> oidvec = new Vector<DERObjectIdentifier>();
+            final Vector<ASN1ObjectIdentifier> oidvec = new Vector<ASN1ObjectIdentifier>();
             final Vector<X509Extension> valuevec = new Vector<X509Extension>();
             { // KeyUsage
                 final X509KeyUsage ku = new X509KeyUsage(bcKeyUsage);
@@ -381,7 +381,7 @@ class SCEPTest extends ClientToolBox {
             	SignerId sinfo = signerInfo.getSID();
             	// Check that the signer is the expected CA
             	String raCertIssuer = CertTools.stringToBCDNString(this.sessionData.certchain[0].getIssuerDN().getName());
-            	String sinfoIssuer = CertTools.stringToBCDNString(sinfo.getIssuerAsString());
+            	String sinfoIssuer = CertTools.stringToBCDNString(sinfo.getIssuer().toString());
             	if ( !StringUtils.equals(raCertIssuer, sinfoIssuer) ) {
             		StressTest.this.performanceTest.getLog().error("Issuers does not match: "+raCertIssuer+", "+sinfoIssuer);
             		return false;
@@ -396,7 +396,7 @@ class SCEPTest extends ClientToolBox {
             	// Get authenticated attributes
             	AttributeTable tab = signerInfo.getSignedAttributes();        
             	// --Fail info
-            	Attribute attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_failInfo));
+            	Attribute attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_failInfo));
             	// No failInfo on this success message
             	if(expectedResponseStatus == ResponseStatus.SUCCESS){
             		if ( attr != null ) {
@@ -406,7 +406,7 @@ class SCEPTest extends ClientToolBox {
             	}  
 
             	// --Message type
-            	attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_messageType));
+            	attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_messageType));
             	if ( attr == null ) {
             		StressTest.this.performanceTest.getLog().error("MessageType should not be null for responseStatus: "+expectedResponseStatus);
             		return false;
@@ -416,14 +416,14 @@ class SCEPTest extends ClientToolBox {
             		StressTest.this.performanceTest.getLog().error("MessageType.AttrValues should be 1: "+values.size());
             		return false;
             	}
-            	DERString str = DERPrintableString.getInstance((values.getObjectAt(0)));
+            	ASN1String str = DERPrintableString.getInstance((values.getObjectAt(0)));
             	String messageType = str.getString();
             	if ( !StringUtils.equals(messageType, "3") ) {
             		StressTest.this.performanceTest.getLog().error("MessageType should be 3: "+messageType);
             		return false;
             	}
             	// --Success status
-            	attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_pkiStatus));
+            	attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_pkiStatus));
             	if ( attr == null ) {
             		StressTest.this.performanceTest.getLog().error("PKIStatus should not be null");
             		return false;
@@ -440,7 +440,7 @@ class SCEPTest extends ClientToolBox {
             		return false;
             	}
             	// --SenderNonce
-            	attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_senderNonce));
+            	attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_senderNonce));
             	if ( attr == null ) {
             		StressTest.this.performanceTest.getLog().error("SenderNonce should not be null");
             		return false;
@@ -457,7 +457,7 @@ class SCEPTest extends ClientToolBox {
             		return false;
             	}
             	// --Recipient Nonce
-            	attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_recipientNonce));
+            	attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_recipientNonce));
             	if ( attr == null ) {
             		StressTest.this.performanceTest.getLog().error("RecipientNonce should not be null");
             		return false;
@@ -475,7 +475,7 @@ class SCEPTest extends ClientToolBox {
             		return false;
             	}
             	// --Transaction ID
-            	attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_transId));
+            	attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_transId));
             	if ( attr == null ) {
             		StressTest.this.performanceTest.getLog().error("TransId should not be null");
             		return false;
@@ -622,9 +622,9 @@ class SCEPTest extends ClientToolBox {
                 SignerInformation signerInfo = (SignerInformation)iter.next();
                 // Get authenticated attributes
                 AttributeTable tab = signerInfo.getSignedAttributes();        
-                Attribute attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_pkiStatus));
+                Attribute attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_pkiStatus));
                 ASN1Set values = attr.getAttrValues();
-                DERString str = DERPrintableString.getInstance((values.getObjectAt(0)));
+                ASN1String str = DERPrintableString.getInstance((values.getObjectAt(0)));
                 String responsestatus =  str.getString();
                 if (extectedResponseStatus.getStringValue().equals(responsestatus)) {
                 	return true;

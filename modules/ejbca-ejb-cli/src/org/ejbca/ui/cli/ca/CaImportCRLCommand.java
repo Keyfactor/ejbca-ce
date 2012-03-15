@@ -28,8 +28,8 @@ import javax.security.auth.x500.X500Principal;
 
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DEREnumerated;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.cesecore.certificates.ca.CAInfo;
@@ -220,7 +220,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
                 ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(bytes));
                 final ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
                 aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-                final DERObject obj = aIn.readObject();
+                final ASN1Primitive obj = aIn.readObject();
                 if (obj != null) {
                     try {
                     final DEREnumerated ext = (DEREnumerated)obj;

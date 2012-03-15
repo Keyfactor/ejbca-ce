@@ -31,7 +31,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSet;
@@ -270,8 +270,8 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             CMSSignedDataGenerator gen1 = new CMSSignedDataGenerator();
 
             // add authenticated attributes...status, transactionId, sender- and recipientNonce and more...
-            Hashtable<DERObjectIdentifier, Attribute> attributes = new Hashtable<DERObjectIdentifier, Attribute>();
-            DERObjectIdentifier oid;
+            Hashtable<ASN1ObjectIdentifier, Attribute> attributes = new Hashtable<ASN1ObjectIdentifier, Attribute>();
+            ASN1ObjectIdentifier oid;
             Attribute attr;
             DERSet value;
             
@@ -299,14 +299,14 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             */
 
             // Message type (certrep)
-            oid = new DERObjectIdentifier(ScepRequestMessage.id_messageType);
+            oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_messageType);
             value = new DERSet(new DERPrintableString("3"));
             attr = new Attribute(oid, value);
             attributes.put(attr.getAttrType(), attr);
 
             // TransactionId
             if (transactionId != null) {
-                oid = new DERObjectIdentifier(ScepRequestMessage.id_transId);
+                oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_transId);
                 log.debug("Added transactionId: " + transactionId);
                 value = new DERSet(new DERPrintableString(transactionId));
                 attr = new Attribute(oid, value);
@@ -314,13 +314,13 @@ public class ScepResponseMessage implements CertificateResponseMessage {
             }
 
             // status
-            oid = new DERObjectIdentifier(ScepRequestMessage.id_pkiStatus);
+            oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_pkiStatus);
             value = new DERSet(new DERPrintableString(status.getStringValue()));
             attr = new Attribute(oid, value);
             attributes.put(attr.getAttrType(), attr);
 
             if (status.equals(ResponseStatus.FAILURE)) {
-                oid = new DERObjectIdentifier(ScepRequestMessage.id_failInfo);
+                oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_failInfo);
                 log.debug("Added failInfo: " + failInfo.getValue());
                 value = new DERSet(new DERPrintableString(failInfo.getValue()));
                 attr = new Attribute(oid, value);
@@ -329,7 +329,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
 
             // senderNonce
             if (senderNonce != null) {
-                oid = new DERObjectIdentifier(ScepRequestMessage.id_senderNonce);
+                oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_senderNonce);
                 log.debug("Added senderNonce: " + senderNonce);
                 value = new DERSet(new DEROctetString(Base64.decode(senderNonce.getBytes())));
                 attr = new Attribute(oid, value);
@@ -338,7 +338,7 @@ public class ScepResponseMessage implements CertificateResponseMessage {
 
             // recipientNonce
             if (recipientNonce != null) {
-                oid = new DERObjectIdentifier(ScepRequestMessage.id_recipientNonce);
+                oid = new ASN1ObjectIdentifier(ScepRequestMessage.id_recipientNonce);
                 log.debug("Added recipientNonce: " + recipientNonce);
                 value = new DERSet(new DEROctetString(Base64.decode(recipientNonce.getBytes())));
                 attr = new Attribute(oid, value);

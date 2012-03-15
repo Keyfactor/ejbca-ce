@@ -22,6 +22,7 @@ import static org.junit.Assert.fail;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.List;
@@ -152,9 +153,8 @@ public class CaTokenSessionTest extends RoleUsingTestCase {
     	    // Not able to issue a new user certificate that the current CA certificate can not verify
     	    usercert1 = ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
     	    fail("Should throw");
-    	} catch (InvalidKeyException e) {
-            // NOPMD    	    
-    	}
+    	} catch (InvalidKeyException e) { // NOPMD: BC 1.46
+        } catch (SignatureException e) {} // NOPMD: BC 1.47
     }
 
     @Test

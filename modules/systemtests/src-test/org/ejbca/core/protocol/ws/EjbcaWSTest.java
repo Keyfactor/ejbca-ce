@@ -772,7 +772,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         tokenCertReqWS.setCAName(caName);
         tokenCertReqWS.setCertificateProfileName("WSTESTPROFILE");
         tokenCertReqWS.setValidityIdDays("1");
-        tokenCertReqWS.setPkcs10Data(basicpkcs10.getDEREncoded());
+        tokenCertReqWS.setPkcs10Data(basicpkcs10.getEncoded());
         tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST);
         requests.add(tokenCertReqWS);
         tokenCertReqWS = new TokenCertificateRequestWS();

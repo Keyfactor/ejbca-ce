@@ -596,9 +596,8 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             try {
                 resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
                 fail("Creating a cert from a request with invalid PoP (proof of possession) should not work");
-            } catch (IllegalKeyException e) {
-                // NOPMD: this is what we want
-            }
+            } catch (IllegalKeyException e) { // NOPMD: this is what we want
+            } catch (SignRequestSignatureException e) {} // NOPMD: or this depending on BC version etc
             
         } finally {
             internalCertStoreSession.removeCertificate(fp1);

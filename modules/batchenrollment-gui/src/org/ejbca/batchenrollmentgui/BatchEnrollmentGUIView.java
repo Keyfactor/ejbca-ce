@@ -94,6 +94,7 @@ import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.SignerInformation;
 import org.bouncycastle.cms.SignerInformationStore;
+import org.bouncycastle.cms.jcajce.JcaX509CertSelectorConverter;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.util.CertTools;
@@ -959,7 +960,8 @@ public class BatchEnrollmentGUIView extends FrameView {
                     
                     final Collection<? extends Certificate> signerCerts;
                     try {
-                        signerCerts = certs.getCertificates(si.getSID());
+                        JcaX509CertSelectorConverter conv = new JcaX509CertSelectorConverter();
+                        signerCerts = certs.getCertificates(conv.getCertSelector(si.getSID()));
 
                         if (LOG.isDebugEnabled()) {
                             LOG.debug("signerCerts: " + signerCerts);

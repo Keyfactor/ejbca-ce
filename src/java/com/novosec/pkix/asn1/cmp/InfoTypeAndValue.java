@@ -21,12 +21,12 @@ package com.novosec.pkix.asn1.cmp;
 
 import java.io.ByteArrayOutputStream;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 
@@ -39,10 +39,10 @@ import org.bouncycastle.asn1.DERSequence;
  *                            infoValue ANY DEFINED BY infoType OPTIONAL }
  * </pre>
  */
-public class InfoTypeAndValue implements DEREncodable
+public class InfoTypeAndValue implements ASN1Encodable
 {
-    private DERObjectIdentifier infoType;
-    private DEREncodable        infoValue;
+    private ASN1ObjectIdentifier infoType;
+    private ASN1Encodable        infoValue;
 	
     public static InfoTypeAndValue getInstance( ASN1TaggedObject obj, boolean explicit )
     {
@@ -65,7 +65,7 @@ public class InfoTypeAndValue implements DEREncodable
 
     public InfoTypeAndValue( ASN1Sequence seq )
     {
-      infoType = (DERObjectIdentifier)seq.getObjectAt(0);
+      infoType = (ASN1ObjectIdentifier)seq.getObjectAt(0);
 
       if (seq.size() == 2) {
         infoValue = seq.getObjectAt(1);
@@ -74,27 +74,27 @@ public class InfoTypeAndValue implements DEREncodable
       }
     }
 
-    public InfoTypeAndValue( DERObjectIdentifier infoType )
+    public InfoTypeAndValue( ASN1ObjectIdentifier infoType )
     {
       this.infoType = infoType;
     }
 
-    public DERObjectIdentifier getInfoType()
+    public ASN1ObjectIdentifier getInfoType()
     {
       return infoType;
     }
 
-    public DEREncodable getInfoValue()
+    public ASN1Encodable getInfoValue()
     {
       return infoValue;
     }
 
-    public void setInfoValue( DEREncodable infoValue )
+    public void setInfoValue( ASN1Encodable infoValue )
     {
       this.infoValue = infoValue;
     }
 
-    public DERObject getDERObject()
+    public ASN1Primitive toASN1Primitive()
     {
       ASN1EncodableVector  v = new ASN1EncodableVector();
 

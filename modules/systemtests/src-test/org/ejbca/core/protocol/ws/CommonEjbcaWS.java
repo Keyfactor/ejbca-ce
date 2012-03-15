@@ -51,7 +51,7 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
@@ -705,8 +705,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // Add a custom extension (dummy)
         ASN1EncodableVector attr = new ASN1EncodableVector();
         attr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-        Vector<DERObjectIdentifier> oidvec = new Vector<DERObjectIdentifier>();
-        oidvec.add(new DERObjectIdentifier("1.2.3.4"));
+        Vector<ASN1ObjectIdentifier> oidvec = new Vector<ASN1ObjectIdentifier>();
+        oidvec.add(new ASN1ObjectIdentifier("1.2.3.4"));
         Vector<X509Extension> valuevec = new Vector<X509Extension>();
         valuevec.add(new X509Extension(false, new DEROctetString("foo123".getBytes())));
         X509Extensions exts = new X509Extensions(oidvec, valuevec);
@@ -957,7 +957,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         myCertTemplate.setPublicKey(keyInfo);
         // If we did not pass any extensions as parameter, we will create some of our own, standard ones
         X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
-        extgen.addExtension(new DERObjectIdentifier(extensionOid), false, "foo123".getBytes());
+        extgen.addExtension(new ASN1ObjectIdentifier(extensionOid), false, "foo123".getBytes());
         myCertTemplate.setExtensions(extgen.generate());
         CertRequest myCertRequest = new CertRequest(new DERInteger(4), myCertTemplate);
         CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest);
@@ -1414,7 +1414,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         tokenCertReqWS.setCAName(getAdminCAName());
         tokenCertReqWS.setCertificateProfileName(WSTESTPROFILE);
         tokenCertReqWS.setValidityIdDays("1");
-        tokenCertReqWS.setPkcs10Data(basicpkcs10.getDEREncoded());
+        tokenCertReqWS.setPkcs10Data(basicpkcs10.getEncoded());
         tokenCertReqWS.setType(HardTokenConstants.REQUESTTYPE_PKCS10_REQUEST);
         requests.add(tokenCertReqWS);
         tokenCertReqWS = new TokenCertificateRequestWS();

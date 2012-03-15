@@ -23,12 +23,12 @@ import java.io.ByteArrayOutputStream;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -47,7 +47,7 @@ import org.bouncycastle.asn1.x509.X509CertificateStructure;
  *
  * </pre>
  */
-public class PKIMessage implements DEREncodable
+public class PKIMessage implements ASN1Encodable
 {
     PKIHeader      header;
     PKIBody        body;
@@ -84,8 +84,8 @@ public class PKIMessage implements DEREncodable
       body       = PKIBody.getInstance( (ASN1TaggedObject)e.nextElement() );
 */
 
-      DEREncodable derHeader = (DEREncodable)e.nextElement();
-      DEREncodable derBody   = (DEREncodable)e.nextElement();
+      ASN1Encodable derHeader = (ASN1Encodable)e.nextElement();
+      ASN1Encodable derBody   = (ASN1Encodable)e.nextElement();
       
       try
       {
@@ -162,7 +162,7 @@ public class PKIMessage implements DEREncodable
       return null;
     }
 
-    public DERObject getDERObject()
+    public ASN1Primitive toASN1Primitive()
     {
       ASN1EncodableVector  v = new ASN1EncodableVector();
 

@@ -21,12 +21,12 @@ package com.novosec.pkix.asn1.crmf;
 
 import java.util.Vector;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 
 /**
@@ -41,7 +41,7 @@ import org.bouncycastle.asn1.DERSequence;
  *
  * </pre>
  */
-public class PKIPublicationInfo implements DEREncodable
+public class PKIPublicationInfo implements ASN1Encodable
 {
     DERInteger   action;
     Vector<SinglePubInfo>       pubInfos = new Vector<SinglePubInfo>();
@@ -100,7 +100,7 @@ public class PKIPublicationInfo implements DEREncodable
       pubInfos.addElement( pubInfo );
     }
 
-    public DERObject getDERObject()
+    public ASN1Primitive toASN1Primitive()
     {
       ASN1EncodableVector  v = new ASN1EncodableVector();
 

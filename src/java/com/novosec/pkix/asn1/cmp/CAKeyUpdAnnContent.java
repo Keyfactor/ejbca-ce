@@ -19,11 +19,11 @@
 
 package com.novosec.pkix.asn1.cmp;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.X509CertificateStructure;
 
@@ -39,7 +39,7 @@ import org.bouncycastle.asn1.x509.X509CertificateStructure;
  *
  * </pre>
  */
-public class CAKeyUpdAnnContent implements DEREncodable
+public class CAKeyUpdAnnContent implements ASN1Encodable
 {
   X509CertificateStructure oldWithNew;
   X509CertificateStructure newWithOld;
@@ -96,7 +96,7 @@ public class CAKeyUpdAnnContent implements DEREncodable
     return newWithNew;
   }
 
-  public DERObject getDERObject()
+  public ASN1Primitive toASN1Primitive()
   {
     ASN1EncodableVector v = new ASN1EncodableVector();
 

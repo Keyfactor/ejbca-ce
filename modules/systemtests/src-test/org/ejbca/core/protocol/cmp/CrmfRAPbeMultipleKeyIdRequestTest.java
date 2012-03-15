@@ -33,7 +33,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.misc.NetscapeCertType;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -550,9 +550,9 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // OcspNoCheck
         extgen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck, false, new DERNull());
         // Netscape cert type
-        extgen.addExtension(new DERObjectIdentifier("2.16.840.1.113730.1.1"), false, new NetscapeCertType(NetscapeCertType.objectSigningCA));
+        extgen.addExtension(new ASN1ObjectIdentifier("2.16.840.1.113730.1.1"), false, new NetscapeCertType(NetscapeCertType.objectSigningCA));
         // My completely own
-        extgen.addExtension(new DERObjectIdentifier("1.1.1.1.1"), false, new DERIA5String("PrimeKey"));
+        extgen.addExtension(new ASN1ObjectIdentifier("1.1.1.1.1"), false, new DERIA5String("PrimeKey"));
 
         // Make the complete extension package
         X509Extensions exts = extgen.generate();
