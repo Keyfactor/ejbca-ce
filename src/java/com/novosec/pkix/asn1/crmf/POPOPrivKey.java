@@ -19,11 +19,11 @@
 
 package com.novosec.pkix.asn1.crmf;
 
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERTaggedObject;
 
 /**
@@ -44,12 +44,12 @@ import org.bouncycastle.asn1.DERTaggedObject;
  *
  * </pre>
  */
-public class POPOPrivKey implements DEREncodable
+public class POPOPrivKey implements ASN1Encodable
 {
-    DEREncodable  	obj;
+    ASN1Encodable  	obj;
     int           	tag;
 
-    public POPOPrivKey( DERObject obj, int tag )
+    public POPOPrivKey( ASN1Primitive obj, int tag )
     {
         this.obj = obj;
         this.tag = tag;
@@ -79,7 +79,7 @@ public class POPOPrivKey implements DEREncodable
       return (DERBitString)this.obj;
     }
 
-    public static POPOPrivKey getInstance( DERObject obj )
+    public static POPOPrivKey getInstance( ASN1Primitive obj )
     {
       return getInstance( (ASN1TaggedObject)obj, true );
     }
@@ -98,7 +98,7 @@ public class POPOPrivKey implements DEREncodable
         throw new IllegalArgumentException("unknown tag: " + tag);
     }
 
-    public DERObject getDERObject()
+    public ASN1Primitive toASN1Primitive()
     {
       return new DERTaggedObject(true, tag, obj);
     }

@@ -53,12 +53,13 @@ import javax.ejb.ObjectNotFoundException;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTags;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.CertificateID;
@@ -319,7 +320,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 			// And an OCSP request
 			OCSPReqGenerator gen = new OCSPReqGenerator();
 			gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-			Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+			Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
 			X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
 			exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
 			gen.setRequestExtensions(new X509Extensions(exts));
@@ -533,7 +534,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		OCSPReqGenerator gen = new OCSPReqGenerator();
 		gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
 
-		Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+		Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
 		X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
 		exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
 		gen.setRequestExtensions(new X509Extensions(exts));
@@ -853,7 +854,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		// And an OCSP request
 		OCSPReqGenerator gen = new OCSPReqGenerator();
 		gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-		Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+		Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
 		X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
 		exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
 		gen.setRequestExtensions(new X509Extensions(exts));
@@ -1042,6 +1043,15 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 				} else {
 					assertNotNull("secp256r1 must not have null spec", spec);
 				}
+			} else if (pk instanceof BCECPublicKey) {
+			    BCECPublicKey ecpk = (BCECPublicKey) pk;
+                assertEquals(ecpk.getAlgorithm(), "EC");
+                org.bouncycastle.jce.spec.ECParameterSpec spec = ecpk.getParameters();
+                if (StringUtils.equals(keySpec, "implicitlyCA")) {
+                    assertNull("ImplicitlyCA must have null spec", spec);
+                } else {
+                    assertNotNull("secp256r1 must not have null spec", spec);
+                }			    
 			} else {
 				assertTrue("Public key is not EC: "+pk.getClass().getName(), false);
 			}

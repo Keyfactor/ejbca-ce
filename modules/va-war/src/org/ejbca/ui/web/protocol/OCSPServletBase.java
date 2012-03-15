@@ -40,7 +40,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.x509.CRLReason;
@@ -756,7 +756,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 				}
 
 				// Add standard response extensions
-				Hashtable<DERObjectIdentifier, X509Extension> responseExtensions = OCSPUtil.getStandardResponseExtensions(req);
+				Hashtable<ASN1ObjectIdentifier, X509Extension> responseExtensions = OCSPUtil.getStandardResponseExtensions(req);
 				transactionLogger.paramPut(ITransactionLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
 				auditLogger.paramPut(IAuditLogger.STATUS, OCSPRespGenerator.SUCCESSFUL);
 				// Look over the status requests
@@ -857,7 +857,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 							// Revocation info available for this cert, handle it
 							sStatus ="revoked";
 							certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(status.revocationDate),
-																		   new CRLReason(status.revocationReason)));
+																		   CRLReason.lookup(status.revocationReason)));
 							transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_REVOKED); //1 = revoked
 						} else {
 							sStatus = "good";
@@ -870,7 +870,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 						transactionLogger.writeln();
 					} else {
 						certStatus = new RevokedStatus(new RevokedInfo(new DERGeneralizedTime(cacertStatus.revocationDate),
-								new CRLReason(cacertStatus.revocationReason)));
+								CRLReason.lookup(cacertStatus.revocationReason)));
 						infoMsg = intres.getLocalizedMessage("ocsp.infoaddedstatusinfo", "revoked", certId.getSerialNumber().toString(16), cacert.getSubjectDN().getName());
 						m_log.info(infoMsg);
 						responseList.add(new OCSPResponseItem(certId, certStatus, nextUpdate));
@@ -881,7 +881,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 					Iterator<String> iter = m_extensionOids.iterator();
 					while (iter.hasNext()) {
 						String oidstr = (String)iter.next();
-						DERObjectIdentifier oid = new DERObjectIdentifier(oidstr);
+						ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(oidstr);
 						X509Extensions reqexts = req.getRequestExtensions();
 						if (reqexts != null) {
 							X509Extension ext = reqexts.getExtension(oid);
@@ -897,7 +897,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 									cert = (X509Certificate)this.data.certificateStoreSession.findCertificateByIssuerAndSerno(cacert.getSubjectDN().getName(), certId.getSerialNumber());
 									if (cert != null) {
 										// Call the OCSP extension
-										Hashtable<DERObjectIdentifier, X509Extension> retext = extObj.process(request, cert, certStatus);
+										Hashtable<ASN1ObjectIdentifier, X509Extension> retext = extObj.process(request, cert, certStatus);
 										if (retext != null) {
 											// Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
 											responseExtensions.putAll(retext);

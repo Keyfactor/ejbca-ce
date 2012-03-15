@@ -20,8 +20,7 @@ import java.security.cert.X509CRL;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.CRLNumber;
 import org.bouncycastle.asn1.x509.X509Extensions;
 
@@ -45,11 +44,11 @@ public class CrlExtensions {
     public static BigInteger getCrlNumber(X509CRL crl) {
     	BigInteger ret = BigInteger.valueOf(0);
         try {
-			DERObject obj = CrlExtensions.getExtensionValue(crl, X509Extensions.CRLNumber.getId());
+			ASN1Primitive obj = CrlExtensions.getExtensionValue(crl, X509Extensions.CRLNumber.getId());
 			if (obj != null) {
-				DERInteger crlnum = CRLNumber.getInstance(obj);
+				CRLNumber crlnum = CRLNumber.getInstance(obj);
 				if (crlnum != null) {
-					ret = crlnum.getPositiveValue();
+					ret = crlnum.getCRLNumber();
 				}
 			}
 		} catch (IOException e) {
@@ -65,11 +64,11 @@ public class CrlExtensions {
     public static BigInteger getDeltaCRLIndicator(X509CRL crl) {
     	BigInteger ret = BigInteger.valueOf(-1);
         try {
-			DERObject obj = CrlExtensions.getExtensionValue(crl, X509Extensions.DeltaCRLIndicator.getId());
+			ASN1Primitive obj = CrlExtensions.getExtensionValue(crl, X509Extensions.DeltaCRLIndicator.getId());
 			if (obj != null) {
-	            DERInteger crlnum = CRLNumber.getInstance(obj);
+			    CRLNumber crlnum = CRLNumber.getInstance(obj);
 	            if (crlnum != null) {
-	                ret = crlnum.getPositiveValue();            	
+	                ret = crlnum.getCRLNumber();            	
 	            }				
 			}
 		} catch (IOException e) {
@@ -79,9 +78,9 @@ public class CrlExtensions {
     }
 
     /**
-     * Return an Extension DERObject from a CRL
+     * Return an Extension ASN1Primitive from a CRL
      */
-    protected static DERObject getExtensionValue(X509CRL crl, String oid)
+    protected static ASN1Primitive getExtensionValue(X509CRL crl, String oid)
       throws IOException {
     	if (crl == null) {
     		return null;

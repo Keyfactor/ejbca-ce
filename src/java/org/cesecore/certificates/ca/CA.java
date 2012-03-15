@@ -32,7 +32,7 @@ import java.util.LinkedHashMap;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -752,7 +752,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * Creates a certificate signature request CSR), that can be sent to an external Root CA. Request format can vary depending on the type of CA. For
      * X509 CAs PKCS#10 requests are created, for CVC CAs CVC requests are created.
      * 
-     * @param attributes PKCS10 attributes to be included in the request, a Collection of DEREncodable objects, ready to put in the request. Can be
+     * @param attributes PKCS10 attributes to be included in the request, a Collection of ASN1Encodable objects, ready to put in the request. Can be
      *            null.
      * @param signAlg the signature algorithm used by the CA
      * @param cacert the CAcertficate the request is targeted for, may be used or ignored by implementation depending on the request type created.
@@ -760,7 +760,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      *            be SecConst.CAKEYPURPOSE_CERTSIGN_NEXT.
      * @return byte array with binary encoded request
      */
-    public abstract byte[] createRequest(Collection<DEREncodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose)
+    public abstract byte[] createRequest(Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose)
             throws CryptoTokenOfflineException;
 
     /**

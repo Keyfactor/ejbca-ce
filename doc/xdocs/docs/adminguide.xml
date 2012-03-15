@@ -4614,13 +4614,13 @@ public class SomeAdvancedCertificateExtension extends CertificateExtension {
     private static String PROPERTY_SOMEPROPERTY = "someproperty";
 
 	/**
-	 * The main method that should return a DEREncodable
+	 * The main method that should return a ASN1Encodable
 	 * using the input data (optional) or defined properties (optional)
 	 * 
 	 * @see org.cesecore.certificates.certificate.certextensions.CertificateExtension#getValue(org.cesecore.certificates.endentity.EndEntityInformation, org.cesecore.certificates.ca.caadmin.CA, org.cesecore.certificates.certificateprofile.CertificateProfile)
 	 */
         @Override
-	public DEREncodable getValue(EndEntityInformation userData, CA ca,
+	public ASN1Primitive getValue(EndEntityInformation userData, CA ca,
 			CertificateProfile certProfile) {
 		
                 // Optionally get dynamic values for this extension

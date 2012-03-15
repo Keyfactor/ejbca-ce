@@ -47,7 +47,7 @@ import javax.persistence.PersistenceException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -173,7 +173,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
         exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -204,7 +204,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
         exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -250,7 +250,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
         exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -291,7 +291,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
         exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -333,7 +333,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
         exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -377,7 +377,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
         exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
         gen.setRequestExtensions(new X509Extensions(exts));

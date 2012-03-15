@@ -41,7 +41,7 @@ import java.util.Set;
 
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -270,7 +270,7 @@ public class WebAuthenticationProviderSessionBeanTest {
         }
         // CertificatePolicies extension if supplied policy ID, always non-critical
         if (policyId != null) {
-            PolicyInformation pi = new PolicyInformation(new DERObjectIdentifier(policyId));
+            PolicyInformation pi = new PolicyInformation(new ASN1ObjectIdentifier(policyId));
             DERSequence seq = new DERSequence(pi);
             certgen.addExtension(X509Extensions.CertificatePolicies.getId(), false, seq);
         }

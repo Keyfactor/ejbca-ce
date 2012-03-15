@@ -76,10 +76,11 @@ import org.bouncycastle.asn1.DERBMPString;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
+import org.bouncycastle.jcajce.provider.asymmetric.ec.EC5Util;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.interfaces.PKCS12BagAttributeCarrier;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
-import org.bouncycastle.jce.provider.asymmetric.ec.EC5Util;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECCurve;
@@ -287,6 +288,15 @@ public final class KeyTools {
             len = rsapub.getModulus().bitLength();
         } else if (pk instanceof JCEECPublicKey) {
             final JCEECPublicKey ecpriv = (JCEECPublicKey) pk;
+            final org.bouncycastle.jce.spec.ECParameterSpec spec = ecpriv.getParameters();
+            if (spec != null) {
+                len = spec.getN().bitLength();
+            } else {
+                // We support the key, but we don't know the key length
+                len = 0;
+            }
+        } else if (pk instanceof BCECPublicKey) {
+            final BCECPublicKey ecpriv = (BCECPublicKey) pk;
             final org.bouncycastle.jce.spec.ECParameterSpec spec = ecpriv.getParameters();
             if (spec != null) {
                 len = spec.getN().bitLength();

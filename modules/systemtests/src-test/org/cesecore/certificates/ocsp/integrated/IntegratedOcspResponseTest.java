@@ -30,7 +30,7 @@ import java.util.List;
 
 import javax.ejb.EJBException;
 
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
@@ -193,7 +193,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, caCertificate.getSerialNumber()));
-        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -221,7 +221,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -249,7 +249,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -285,7 +285,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -356,7 +356,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
             // An OCSP request
             OCSPReqGenerator gen = new OCSPReqGenerator();
             gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, ocspCertificate.getSerialNumber()));
-            Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+            Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
             X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
             exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
             gen.setRequestExtensions(new X509Extensions(exts));
@@ -387,16 +387,21 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
                 ocspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
                 assertTrue("Should throw OcspException", false);
             } catch (OcspFailureException e) {
-                // In JBoss this works, the client actually gets an OcspException
+                // In JBoss 5, 6 this works, the client actually gets an OcspException
                 assertEquals("Unable to find CA certificate and key to generate OCSP response.", e.getMessage());
             } catch (EJBException e) {
-                // In glassfish, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
+                // In glassfish and JBoss 7, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
                 Throwable e1 = e.getCausedByException();
-                Throwable e2 = e1.getCause();
-                Throwable e3 = e2.getCause();
-                assertTrue(e3 instanceof OcspFailureException);
-                OcspFailureException e4 = (OcspFailureException) e3;
-                assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());
+                // In JBoss 7 is is wrapped in only one layer
+                if (e1 instanceof OcspFailureException) {
+                    assertEquals("Unable to find CA certificate and key to generate OCSP response.", e1.getMessage());                
+                } else {
+                    Throwable e2 = e1.getCause();
+                    Throwable e3 = e2.getCause();
+                    assertTrue(e3 instanceof OcspFailureException);
+                    OcspFailureException e4 = (OcspFailureException) e3;
+                    assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());                    
+                }
             }
 
         } finally {
@@ -427,7 +432,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ocspCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -462,7 +467,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ocspCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -474,16 +479,21 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
             ocspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
             fail("Should throw OcspFailureException");
         } catch (OcspFailureException e) {
-            // In JBoss this works, the client actually gets an OcspException
+            // In JBoss 5, 6 this works, the client actually gets an OcspException
             assertEquals("Unable to find CA certificate and key to generate OCSP response.", e.getMessage());
         } catch (EJBException e) {
-            // In glassfish, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
+            // In glassfish and JBoss 7, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
             Throwable e1 = e.getCausedByException();
-            Throwable e2 = e1.getCause();
-            Throwable e3 = e2.getCause();
-            assertTrue(e3 instanceof OcspFailureException);
-            OcspFailureException e4 = (OcspFailureException) e3;
-            assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());
+            // In JBoss 7 is is wrapped in only one layer
+            if (e1 instanceof OcspFailureException) {
+                assertEquals("Unable to find CA certificate and key to generate OCSP response.", e1.getMessage());                
+            } else {
+                Throwable e2 = e1.getCause();
+                Throwable e3 = e2.getCause();
+                assertTrue(e3 instanceof OcspFailureException);
+                OcspFailureException e4 = (OcspFailureException) e3;
+                assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());
+            }
         }
 
     }

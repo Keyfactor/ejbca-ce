@@ -40,16 +40,16 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Vector;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DEREnumerated;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
@@ -133,7 +133,7 @@ public class X509CATest {
         assertEquals(CADN, dn);
         
         // Make a request with some pkcs11 attributes as well
-		Collection<DEREncodable> attributes = new ArrayList<DEREncodable>();
+		Collection<ASN1Encodable> attributes = new ArrayList<ASN1Encodable>();
 		// Add a subject alternative name
 		ASN1EncodableVector altnameattr = new ASN1EncodableVector();
 		altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
@@ -145,7 +145,7 @@ public class X509CATest {
 		} catch (IOException e) {
 			throw new IllegalArgumentException("error encoding value: " + e);
 		}
-		Vector<DERObjectIdentifier> oidvec = new Vector<DERObjectIdentifier>();
+		Vector<ASN1ObjectIdentifier> oidvec = new Vector<ASN1ObjectIdentifier>();
 		oidvec.add(X509Extensions.SubjectAlternativeName);
 		Vector<X509Extension> valuevec = new Vector<X509Extension>();
 		valuevec.add(new X509Extension(false, new DEROctetString(extOut.toByteArray())));
@@ -172,7 +172,7 @@ public class X509CATest {
         assertEquals("dNSName=foobar.bar.com", p10msg.getRequestAltNames());
 
         // Try to sign the request, will return null
-        byte[] signedReq = x509ca.signRequest(p10.getDEREncoded(), false, false);
+        byte[] signedReq = x509ca.signRequest(p10.getEncoded(), false, false);
         assertNull(signedReq);
         
         // Generate a client certificate and check that it was generated correctly
@@ -185,7 +185,7 @@ public class X509CATest {
         assertNotNull(usercert);
         assertEquals("CN=User", CertTools.getSubjectDN(usercert));
         assertEquals(CADN, CertTools.getIssuerDN(usercert));
-        assertEquals("SHA256WithRSAEncryption", AlgorithmTools.getCertSignatureAlgorithmNameAsString(usercert));
+        assertEquals("SHA256WITHRSA", AlgorithmTools.getCertSignatureAlgorithmNameAsString(usercert));
         assertEquals(new String(CertTools.getSubjectKeyId(cacert)), new String(CertTools.getAuthorityKeyId(usercert)));
         assertEquals("user@user.com", CertTools.getEMailAddress(usercert));
         assertEquals("rfc822name=user@user.com", CertTools.getSubjectAlternativeName(usercert));
@@ -237,8 +237,8 @@ public class X509CATest {
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(extval));
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        DERObject obj = aIn.readObject();
-        CRLReason reason = new CRLReason((DEREnumerated)obj);
+        ASN1Primitive obj = aIn.readObject();
+        CRLReason reason = CRLReason.getInstance((DEREnumerated)obj);
         assertEquals("CRLReason: certificateHold", reason.toString());
         //DEROctetString ostr = (DEROctetString)obj;
         
@@ -269,7 +269,7 @@ public class X509CATest {
         octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
         obj = aIn.readObject();
-        reason = new CRLReason((DEREnumerated)obj);
+        reason = CRLReason.getInstance((DEREnumerated)obj);
         assertEquals("CRLReason: certificateHold", reason.toString());
 	}
 	
@@ -300,7 +300,7 @@ public class X509CATest {
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        IssuingDistributionPoint cdp = new IssuingDistributionPoint((ASN1Sequence) aIn.readObject());
+        IssuingDistributionPoint cdp = IssuingDistributionPoint.getInstance((ASN1Sequence) aIn.readObject());
         DistributionPointName distpoint = cdp.getDistributionPoint();
 
         assertEquals("CRL distribution point is different", cdpURL, ((DERIA5String) ((GeneralNames) distpoint.getName()).getNames()[0].getName()).getString());
@@ -342,7 +342,7 @@ public class X509CATest {
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER));
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-        CRLDistPoint cdp = new CRLDistPoint((ASN1Sequence) aIn.readObject());
+        CRLDistPoint cdp = CRLDistPoint.getInstance((ASN1Sequence) aIn.readObject());
         DistributionPoint[] distpoints = cdp.getDistributionPoints();
 
         assertEquals("More CRL Freshest distributions points than expected", 1, distpoints.length);
@@ -490,9 +490,7 @@ public class X509CATest {
 	    try {
 	        usercert = x509ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
 	        fail("should not work to issue this certificate");
-	    } catch (InvalidKeyException e) {
-	        // NOPMD: this is what we want
-	    }
+	    } catch (SignatureException e) {} // NOPMD: BC 1.47
         try {
             Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
             x509ca.generateCRL(revcerts, 1);

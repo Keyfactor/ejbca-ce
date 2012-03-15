@@ -107,7 +107,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     }
     public void setPKIMessageBytes(final PKIMessage msg) {
         try {
-            this.pkimsgbytes = msg.getDERObject().getEncoded();
+            this.pkimsgbytes = msg.toASN1Primitive().getEncoded();
         } catch (IOException e) {
             log.error("Error getting encoded bytes from PKIMessage: ", e);
         }

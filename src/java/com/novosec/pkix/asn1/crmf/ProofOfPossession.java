@@ -19,10 +19,10 @@
 
 package com.novosec.pkix.asn1.crmf;
 
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
 
@@ -38,12 +38,12 @@ import org.bouncycastle.asn1.DERTaggedObject;
  *
  * </pre>
  */
-public class ProofOfPossession implements DEREncodable
+public class ProofOfPossession implements ASN1Encodable
 {
-    DEREncodable  	obj;
+    ASN1Encodable  	obj;
     int           	tag;
 
-    public ProofOfPossession( DEREncodable obj, int tag )
+    public ProofOfPossession( ASN1Encodable obj, int tag )
     {
         this.obj = obj;
         this.tag = tag;
@@ -86,7 +86,7 @@ public class ProofOfPossession implements DEREncodable
       return (POPOPrivKey)this.obj;
     }
 
-    public static ProofOfPossession getInstance( DERObject obj )
+    public static ProofOfPossession getInstance( ASN1Primitive obj )
     {
       return getInstance( (ASN1TaggedObject)obj, true );
     }
@@ -106,7 +106,7 @@ public class ProofOfPossession implements DEREncodable
         throw new IllegalArgumentException("unknown tag: " + tag);
     }
 
-    public DERObject getDERObject()
+    public ASN1Primitive toASN1Primitive()
     {
       return new DERTaggedObject(true, tag, obj);  //tag explicit since we are in a choice
     }

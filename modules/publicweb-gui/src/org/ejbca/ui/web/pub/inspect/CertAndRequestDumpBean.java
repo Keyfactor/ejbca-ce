@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.util.ASN1Dump;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
@@ -78,7 +78,7 @@ public class CertAndRequestDumpBean {
 				final PKCS10CertificationRequest pkcs10 = new PKCS10CertificationRequest(requestBytes);
 //				ret = pkcs10.toString();
 				final ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(pkcs10.getEncoded()));
-				final DERObject obj = ais.readObject();
+				final ASN1Primitive obj = ais.readObject();
 				ret = ASN1Dump.dumpAsString(obj);
 				type = "PKCS#10";
 			} catch (IOException e1) {
@@ -101,7 +101,7 @@ public class CertAndRequestDumpBean {
 				// Not a X.509 certificate either...try to simply decode asn.1
 				try {
 					final ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(bytes));
-					final DERObject obj = ais.readObject();
+					final ASN1Primitive obj = ais.readObject();
 					if (obj != null) {
 						ret = ASN1Dump.dumpAsString(obj);
 						type = "ASN.1";						

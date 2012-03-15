@@ -21,13 +21,13 @@ package com.novosec.pkix.asn1.crmf;
 
 import java.util.Enumeration;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
@@ -53,7 +53,7 @@ import org.bouncycastle.asn1.x509.X509Name;
  *
  * </pre>
  */
-public class CertTemplate implements DEREncodable
+public class CertTemplate implements ASN1Encodable
 {
     // name is not a choice type --> tag it implicit...no but it should be explicit?
 	// Change to explicit by PrimeKey Solutions AB, Tomas Gustavsson
@@ -220,7 +220,7 @@ public class CertTemplate implements DEREncodable
       this.extensions = extensions;
     }
 
-    public DERObject getDERObject()
+    public ASN1Primitive toASN1Primitive()
     {
         ASN1EncodableVector  v = new ASN1EncodableVector();
 

@@ -71,19 +71,19 @@ import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.NumberUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERGeneralString;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -246,7 +246,7 @@ public class CertTools {
             return null;
         }
 
-        Vector<DERObjectIdentifier> defaultOrdering = new Vector<DERObjectIdentifier>();
+        Vector<ASN1ObjectIdentifier> defaultOrdering = new Vector<ASN1ObjectIdentifier>();
         Vector<String> values = new Vector<String>();
         X509NameTokenizer x509NameTokenizer = new X509NameTokenizer(dn);
 
@@ -265,12 +265,12 @@ public class CertTools {
                 }
 
                 // -- First search the OID by name in declared OID's
-                DERObjectIdentifier oid = DnComponents.getOid(key);
+                ASN1ObjectIdentifier oid = DnComponents.getOid(key);
 
                 try {
                     // -- If isn't declared, we try to create it
                     if (oid == null) {
-                        oid = new DERObjectIdentifier(key);
+                        oid = new ASN1ObjectIdentifier(key);
                     }
                     defaultOrdering.add(oid);
                     values.add(getUnescapedPlus(val));
@@ -609,7 +609,7 @@ public class CertTools {
                         // This method will only return "unique" custom oids.
                         if (!parts.contains(oid)) {
                             // Check if it is a real oid, if it is not we will ignore it (IllegalArgumentException will be thrown)
-                            new DERObjectIdentifier(oid);
+                            new ASN1ObjectIdentifier(oid);
                             parts.add(oid);
                         }
                     }
@@ -1393,7 +1393,7 @@ public class CertTools {
 
         // CertificatePolicies extension if supplied policy ID, always non-critical
         if (policyId != null) {
-            PolicyInformation pi = new PolicyInformation(new DERObjectIdentifier(policyId));
+            PolicyInformation pi = new PolicyInformation(new ASN1ObjectIdentifier(policyId));
             DERSequence seq = new DERSequence(pi);
             certgen.addExtension(X509Extensions.CertificatePolicies.getId(), false, seq);
         }
@@ -1421,7 +1421,7 @@ public class CertTools {
                 return null;
             }
             DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(extvalue)).readObject());
-            AuthorityKeyIdentifier keyId = new AuthorityKeyIdentifier(
+            AuthorityKeyIdentifier keyId = AuthorityKeyIdentifier.getInstance(
                     (ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
             return keyId.getKeyIdentifier();
         }
@@ -1475,7 +1475,7 @@ public class CertTools {
             if (seq.size() < pos + 1) {
                 return null;
             }
-            PolicyInformation pol = new PolicyInformation((ASN1Sequence) seq.getObjectAt(pos));
+            PolicyInformation pol = PolicyInformation.getInstance((ASN1Sequence) seq.getObjectAt(pos));
             ret = pol.getPolicyIdentifier().getId();
         }
         return ret;
@@ -1520,10 +1520,15 @@ public class CertTools {
     private static String getUPNStringFromSequence(ASN1Sequence seq) {
         if (seq != null) {
             // First in sequence is the object identifier, that we must check
-            DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+            ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
             if (id.getId().equals(CertTools.UPN_OBJECTID)) {
-                ASN1TaggedObject obj = (ASN1TaggedObject) seq.getObjectAt(1);
-                DERUTF8String str = DERUTF8String.getInstance(obj.getObject());
+                ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
+                // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
+                ASN1Primitive obj = oobj.getObject();
+                if (obj instanceof ASN1TaggedObject) {
+                    obj = ASN1TaggedObject.getInstance(obj).getObject();
+                }
+                DERUTF8String str = DERUTF8String.getInstance(obj);
                 return str.getString();
             }
         }
@@ -1582,7 +1587,7 @@ public class CertTools {
     static String getPermanentIdentifierStringFromSequence(ASN1Sequence seq) {
         if (seq != null) {
             // First in sequence is the object identifier, that we must check
-            DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+            ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
             if (id.getId().equals(CertTools.PERMANENTIDENTIFIER_OBJECTID)) {
                 String identifierValue = null;
                 String assigner = null;
@@ -1590,8 +1595,8 @@ public class CertTools {
                 
                 // Get the PermanentIdentifier sequence
                 ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
-                // After encoding in a cert, it is tagged an extra time...
-                DERObject obj = oobj.getObject();
+                // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
+                ASN1Primitive obj = oobj.getObject();
                 if (obj instanceof ASN1TaggedObject) {
                     obj = ASN1TaggedObject.getInstance(obj).getObject();
                 }
@@ -1606,8 +1611,8 @@ public class CertTools {
                             element = e.nextElement();
                         }
                     }
-                    if (element instanceof DERObjectIdentifier) {
-                        assigner = ((DERObjectIdentifier) element).getId();
+                    if (element instanceof ASN1ObjectIdentifier) {
+                        assigner = ((ASN1ObjectIdentifier) element).getId();
                     }
                 }
                 
@@ -1667,10 +1672,15 @@ public class CertTools {
         String ret = null;
         if (seq != null) {
             // First in sequence is the object identifier, that we must check
-            DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+            ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
             if (id.getId().equals(CertTools.GUID_OBJECTID)) {
-                ASN1TaggedObject obj = (ASN1TaggedObject) seq.getObjectAt(1);
-                ASN1OctetString str = ASN1OctetString.getInstance(obj.getObject());
+                ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
+                // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
+                ASN1Primitive obj = oobj.getObject();
+                if (obj instanceof ASN1TaggedObject) {
+                    obj = ASN1TaggedObject.getInstance(obj).getObject();
+                }
+                ASN1OctetString str = ASN1OctetString.getInstance(obj);
                 ret = new String(Hex.encode(str.getOctets()));
             }
         }
@@ -1704,12 +1714,12 @@ public class CertTools {
         String ret = null;
         if (seq != null) {
             // First in sequence is the object identifier, that we must check
-            DERObjectIdentifier id = DERObjectIdentifier.getInstance(seq.getObjectAt(0));
+            ASN1ObjectIdentifier id = ASN1ObjectIdentifier.getInstance(seq.getObjectAt(0));
             if (id.getId().equals(CertTools.KRB5PRINCIPAL_OBJECTID)) {
                 // Get the KRB5PrincipalName sequence
                 ASN1TaggedObject oobj = (ASN1TaggedObject) seq.getObjectAt(1);
-                // After encoding in a cert, it is tagged an extra time...
-                DERObject obj = oobj.getObject();
+                // Due to bug in java cert.getSubjectAltName regarding OtherName, it can be tagged an extra time...
+                ASN1Primitive obj = oobj.getObject();
                 if (obj instanceof ASN1TaggedObject) {
                     obj = ASN1TaggedObject.getInstance(obj).getObject();
                 }
@@ -1728,7 +1738,7 @@ public class CertTools {
                 ASN1Sequence sseq = ASN1Sequence.getInstance(nobj.getObject());
                 Enumeration<ASN1Object> en = sseq.getObjects();
                 while (en.hasMoreElements()) {
-                    ASN1Object o = (ASN1Object) en.nextElement();
+                    ASN1Primitive o = (ASN1Primitive) en.nextElement();
                     DERGeneralString str = DERGeneralString.getInstance(o);
                     if (ret != null) {
                         ret += "/" + str.getString();
@@ -1782,7 +1792,7 @@ public class CertTools {
     }
 
     private static ASN1Sequence getAltnameSequence(byte[] value) {
-        DERObject oct = null;
+        ASN1Primitive oct = null;
         try {
             oct = (new ASN1InputStream(new ByteArrayInputStream(value)).readObject());
         } catch (IOException e) {
@@ -1804,7 +1814,7 @@ public class CertTools {
         ASN1OctetString octs = ext.getValue();
         if (octs != null) {
             ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
-            DERObject obj;
+            ASN1Primitive obj;
             try {
                 obj = aIn.readObject();
                 GeneralNames gan = GeneralNames.getInstance(obj);
@@ -1812,7 +1822,7 @@ public class CertTools {
                 for (int i = 0; i < gns.length; i++) {
                     GeneralName gn = gns[i];
                     int tag = gn.getTagNo();
-                    DEREncodable name = gn.getName();
+                    ASN1Encodable name = gn.getName();
                     String str = CertTools.getGeneralNameString(tag, name);
                     if (altName == null) {
                         altName = str;
@@ -2019,10 +2029,10 @@ public class CertTools {
             final Iterator<String> iter = upn.iterator();
             while (iter.hasNext()) {
                 final ASN1EncodableVector v = new ASN1EncodableVector();
-                v.add(new DERObjectIdentifier(CertTools.UPN_OBJECTID));
+                v.add(new ASN1ObjectIdentifier(CertTools.UPN_OBJECTID));
                 v.add(new DERTaggedObject(true, 0, new DERUTF8String(iter.next())));
                 // GeneralName gn = new GeneralName(new DERSequence(v), 0);
-                final DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
                 vec.add(gn);
             }
         }
@@ -2035,7 +2045,7 @@ public class CertTools {
                 final String[] values = getPermanentIdentifierValues(iter.next());
                 
                 final ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
-                v.add(new DERObjectIdentifier(CertTools.PERMANENTIDENTIFIER_OBJECTID));
+                v.add(new ASN1ObjectIdentifier(CertTools.PERMANENTIDENTIFIER_OBJECTID));
 
                 // First the PermanentIdentifier sequence
                 final ASN1EncodableVector piSeq = new ASN1EncodableVector();
@@ -2043,12 +2053,12 @@ public class CertTools {
                     piSeq.add(new DERUTF8String(values[0]));
                 }
                 if (values[1] != null) {
-                    piSeq.add(new DERObjectIdentifier(values[1]));
+                    piSeq.add(new ASN1ObjectIdentifier(values[1]));
                 }
                 v.add(new DERTaggedObject(true, 0, new DERSequence(piSeq)));
                 
                 // GeneralName gn = new GeneralName(new DERSequence(v), 0);
-                final DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
                 vec.add(gn);
             }
         }
@@ -2060,9 +2070,9 @@ public class CertTools {
                 final ASN1EncodableVector v = new ASN1EncodableVector();
                 byte[] guidbytes = Hex.decode(iter.next());
                 if (guidbytes != null) {
-                    v.add(new DERObjectIdentifier(CertTools.GUID_OBJECTID));
+                    v.add(new ASN1ObjectIdentifier(CertTools.GUID_OBJECTID));
                     v.add(new DERTaggedObject(true, 0, new DEROctetString(guidbytes)));
-                    final DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                    final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
                     vec.add(gn);
                 } else {
                     log.error("Cannot decode hexadecimal guid, ignoring: " + guid);
@@ -2109,7 +2119,7 @@ public class CertTools {
 
                 // Now we must construct the rather complex asn.1...
                 final ASN1EncodableVector v = new ASN1EncodableVector(); // this is the OtherName
-                v.add(new DERObjectIdentifier(CertTools.KRB5PRINCIPAL_OBJECTID));
+                v.add(new ASN1ObjectIdentifier(CertTools.KRB5PRINCIPAL_OBJECTID));
 
                 // First the Krb5PrincipalName sequence
                 final ASN1EncodableVector krb5p = new ASN1EncodableVector();
@@ -2130,7 +2140,7 @@ public class CertTools {
                 krb5p.add(new DERTaggedObject(true, 1, new DERSequence(principals)));
 
                 v.add(new DERTaggedObject(true, 0, new DERSequence(krb5p)));
-                final DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
                 vec.add(gn);
             }
         }
@@ -2146,9 +2156,9 @@ public class CertTools {
                     final Iterator<String> valiter = oidval.iterator();
                     while (valiter.hasNext()) {
                         final ASN1EncodableVector v = new ASN1EncodableVector();
-                        v.add(new DERObjectIdentifier(oid));
+                        v.add(new ASN1ObjectIdentifier(oid));
                         v.add(new DERTaggedObject(true, 0, new DERUTF8String((String) valiter.next())));
-                        final DERObject gn = new DERTaggedObject(false, 0, new DERSequence(v));
+                        final ASN1Primitive gn = new DERTaggedObject(false, 0, new DERSequence(v));
                         vec.add(gn);
                     }
                 }
@@ -2156,7 +2166,7 @@ public class CertTools {
         }
 
         if (vec.size() > 0) {
-            return new GeneralNames(new DERSequence(vec));
+            return GeneralNames.getInstance(new DERSequence(vec));
         }
         return null;
     }
@@ -2166,16 +2176,16 @@ public class CertTools {
      * Name, ediPartyName [5] EDIPartyName, uniformResourceIdentifier [6] IA5String, iPAddress [7] OCTET STRING, registeredID [8] OBJECT IDENTIFIER}
      * 
      * @param tag the no tag 0-8
-     * @param value the DEREncodable value as returned by GeneralName.getName()
+     * @param value the ASN1Encodable value as returned by GeneralName.getName()
      * @return String in form rfc822Name=<email> or uri=<uri> etc
      * @throws IOException
      * @see #getSubjectAlternativeName
      */
-    public static String getGeneralNameString(int tag, DEREncodable value) throws IOException {
+    public static String getGeneralNameString(int tag, ASN1Encodable value) throws IOException {
         String ret = null;
         switch (tag) {
         case 0:
-            ASN1Sequence seq = getAltnameSequence(value.getDERObject().getEncoded());
+            ASN1Sequence seq = getAltnameSequence(value.toASN1Primitive().getEncoded());
             String upn = getUPNStringFromSequence(seq);
             // OtherName can be something else besides UPN
             if (upn != null) {
@@ -2305,7 +2315,7 @@ public class CertTools {
         if (certificate instanceof X509Certificate) {
             X509Certificate x509cert = (X509Certificate) certificate;
             try {
-                DERObject obj = getExtensionValue(x509cert, X509Extensions.CRLDistributionPoints.getId());
+                ASN1Primitive obj = getExtensionValue(x509cert, X509Extensions.CRLDistributionPoints.getId());
                 if (obj == null) {
                     return null;
                 }
@@ -2338,18 +2348,23 @@ public class CertTools {
      */
     public static Collection<String> getAuthorityInformationAccess(CRL crl) {
         Collection<String> result = new ArrayList<String>();
-        if(crl instanceof X509CRL) {
+        if (crl instanceof X509CRL) {
             X509CRL x509crl = (X509CRL) crl;
-            DERObject derObject = getExtensionValue(x509crl,  X509Extensions.AuthorityInfoAccess.getId());
-            if(derObject != null) {
+            ASN1Primitive derObject = getExtensionValue(x509crl, X509Extensions.AuthorityInfoAccess.getId());
+            if (derObject != null) {
                 AuthorityInformationAccess authorityInformationAccess = AuthorityInformationAccess.getInstance(derObject);
                 AccessDescription[] accessDescriptions = authorityInformationAccess.getAccessDescriptions();
-                if((accessDescriptions != null) && (accessDescriptions.length >0)) {
-                    for(AccessDescription accessDescription : accessDescriptions) {
-                        if(accessDescription.getAccessMethod().equals(X509ObjectIdentifiers.id_ad_caIssuers)) {
+                if ((accessDescriptions != null) && (accessDescriptions.length >0)) {
+                    for (AccessDescription accessDescription : accessDescriptions) {
+                        if (accessDescription.getAccessMethod().equals(X509ObjectIdentifiers.id_ad_caIssuers)) {
                             GeneralName generalName = accessDescription.getAccessLocation();
-                            if(generalName.getTagNo() == GeneralName.uniformResourceIdentifier) { 
-                                DERIA5String deria5String = DERIA5String.getInstance(generalName.getDERObject());
+                            if (generalName.getTagNo() == GeneralName.uniformResourceIdentifier) {
+                                // Due to bug in java getting some ASN.1 objects, it can be tagged an extra time...
+                                ASN1Primitive obj = generalName.toASN1Primitive();
+                                if (obj instanceof ASN1TaggedObject) {
+                                    obj = ASN1TaggedObject.getInstance(obj).getObject();
+                                }
+                                final DERIA5String deria5String = DERIA5String.getInstance(obj);
                                 result.add(deria5String.getString());
                             }
                         }
@@ -2359,6 +2374,7 @@ public class CertTools {
         }
         return result;
     }
+
     
     /**
      * Returns OCSP URL that is inside AuthorityInformationAccess extension, or null.
@@ -2371,7 +2387,7 @@ public class CertTools {
         if (cert instanceof X509Certificate) {
             X509Certificate x509cert = (X509Certificate) cert;
             try {
-                DERObject obj = getExtensionValue(x509cert, X509Extensions.AuthorityInfoAccess.getId());
+                ASN1Primitive obj = getExtensionValue(x509cert, X509Extensions.AuthorityInfoAccess.getId());
                 if (obj == null) {
                     return null;
                 }
@@ -2382,7 +2398,12 @@ public class CertTools {
                         if (ad[i].getAccessMethod().equals(X509ObjectIdentifiers.ocspAccessMethod)) {
                             GeneralName gn = ad[i].getAccessLocation();
                             if (gn.getTagNo() == GeneralName.uniformResourceIdentifier) {
-                                DERIA5String str = DERIA5String.getInstance(gn.getDERObject());
+                                // After encoding in a cert, it is tagged an extra time...
+                                ASN1Primitive gnobj = gn.toASN1Primitive();
+                                if (gnobj instanceof ASN1TaggedObject) {
+                                    gnobj = ASN1TaggedObject.getInstance(gnobj).getObject();
+                                }
+                                final DERIA5String str = DERIA5String.getInstance(gnobj);
                                 ret = str.getString();
                                 break; // no need to go on any further, we got a value
                             }
@@ -2401,9 +2422,9 @@ public class CertTools {
      * 
      * @param cert An X509Certificate
      * @param oid An OID for an extension 
-     * @return an Extension DERObject from a certificate
+     * @return an Extension ASN1Primitive from a certificate
      */
-    protected static DERObject getExtensionValue(X509Certificate cert, String oid) {
+    protected static ASN1Primitive getExtensionValue(X509Certificate cert, String oid) {
         if (cert == null) {
             return null;
         }
@@ -2416,9 +2437,9 @@ public class CertTools {
      * 
      * @param crl an X509CRL
      * @param oid An OID for an extension 
-     * @return an Extension DERObject from a CRL
+     * @return an Extension ASN1Primitive from a CRL
      */
-    protected static DERObject getExtensionValue(X509CRL crl, String oid) {
+    protected static ASN1Primitive getExtensionValue(X509CRL crl, String oid) {
         if (crl == null || oid == null) {
             return null;
         }
@@ -2426,7 +2447,7 @@ public class CertTools {
         return getDerObjectFromByteArray(bytes);
     }
 
-    private static DERObject getDerObjectFromByteArray(byte[] bytes) {
+    private static ASN1Primitive getDerObjectFromByteArray(byte[] bytes) {
         if (bytes == null) {
             return null;
         }
@@ -2446,7 +2467,7 @@ public class CertTools {
      * @param names DER GeneralNames object, that is a sequence of DERTaggedObject
      * @return String with URI if tagNo is 6 (uniformResourceIdentifier), null otherwise
      */
-    private static String getStringFromGeneralNames(DERObject names) {
+    private static String getStringFromGeneralNames(ASN1Primitive names) {
         ASN1Sequence namesSequence = ASN1Sequence.getInstance((ASN1TaggedObject) names, false);
         if (namesSequence.size() == 0) {
             return null;
@@ -2736,15 +2757,15 @@ public class CertTools {
     } // BasicX509NameTokenizer
 
     /**
-     * Obtains a List with the DERObjectIdentifiers for dNObjects names, in the specified order
+     * Obtains a List with the ASN1ObjectIdentifiers for dNObjects names, in the specified order
      * 
      * @param ldaporder if true the returned order are as defined in LDAP RFC (CN=foo,O=bar,C=SE), otherwise the order is a defined in X.500
      *            (C=SE,O=bar,CN=foo).
-     * @return a List with DERObjectIdentifiers defining the known order we require
+     * @return a List with ASN1ObjectIdentifiers defining the known order we require
      * @see org.cesecore.certificates.util.DnComponents#getDnObjects(boolean)
      */
-    public static List<DERObjectIdentifier> getX509FieldOrder(boolean ldaporder) {
-        List<DERObjectIdentifier> fieldOrder = new ArrayList<DERObjectIdentifier>();
+    public static List<ASN1ObjectIdentifier> getX509FieldOrder(boolean ldaporder) {
+        List<ASN1ObjectIdentifier> fieldOrder = new ArrayList<ASN1ObjectIdentifier>();
         for (final String dNObject : DnComponents.getDnObjects(ldaporder)) {
             fieldOrder.add(DnComponents.getOid(dNObject));
         }
@@ -2765,16 +2786,16 @@ public class CertTools {
         // Guess order of the input name
         final boolean isLdapOrder = !isDNReversed(x509Name.toString());
         // -- New order for the X509 Fields
-        final List<DERObjectIdentifier> newOrdering = new ArrayList<DERObjectIdentifier>();
+        final List<ASN1ObjectIdentifier> newOrdering = new ArrayList<ASN1ObjectIdentifier>();
         final List<Object> newValues = new ArrayList<Object>();
         // -- Add ordered fields
         @SuppressWarnings("unchecked")
-        final Vector<DERObjectIdentifier> allOids = x509Name.getOIDs();
+        final Vector<ASN1ObjectIdentifier> allOids = x509Name.getOIDs();
         // If we think the DN is in LDAP order, first order it as a LDAP DN, if we don't think it's LDAP order
         // order it as a X.500 DN
-        final List<DERObjectIdentifier> ordering = getX509FieldOrder(isLdapOrder);
-        final HashSet<DERObjectIdentifier> hs = new HashSet<DERObjectIdentifier>(allOids.size() + ordering.size());
-        for (final DERObjectIdentifier oid : ordering) {
+        final List<ASN1ObjectIdentifier> ordering = getX509FieldOrder(isLdapOrder);
+        final HashSet<ASN1ObjectIdentifier> hs = new HashSet<ASN1ObjectIdentifier>(allOids.size() + ordering.size());
+        for (final ASN1ObjectIdentifier oid : ordering) {
             if (!hs.contains(oid)) {
                 hs.add(oid);
                 @SuppressWarnings("unchecked")
@@ -2787,7 +2808,7 @@ public class CertTools {
             }
         }
         // -- Add unexpected fields to the end
-        for (final DERObjectIdentifier oid : allOids) {
+        for (final ASN1ObjectIdentifier oid : allOids) {
             if (!hs.contains(oid)) {
                 hs.add(oid);
                 @SuppressWarnings("unchecked")
@@ -2812,7 +2833,7 @@ public class CertTools {
             Collections.reverse(newValues);
         }
         // -- Return X509Name with the ordered fields
-        return new X509Name(new Vector<DERObjectIdentifier>(newOrdering), new Vector<Object>(newValues), converter);
+        return new X509Name(new Vector<ASN1ObjectIdentifier>(newOrdering), new Vector<Object>(newValues), converter);
     } //
 
     /**
@@ -2997,7 +3018,7 @@ public class CertTools {
                 final Certificate c = getCertfromByteArray(cert.getEncoded());
                 ret = c.toString();
                 // ASN1InputStream ais = new ASN1InputStream(new ByteArrayInputStream(cert.getEncoded()));
-                // DERObject obj = ais.readObject();
+                // ASN1Primitive obj = ais.readObject();
                 // ret = ASN1Dump.dumpAsString(obj);
             } catch (CertificateException e) {
                 ret = e.getMessage();

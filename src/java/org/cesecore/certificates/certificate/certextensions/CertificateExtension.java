@@ -12,11 +12,12 @@
  *************************************************************************/ 
 package org.cesecore.certificates.certificate.certextensions;
 
+import java.io.IOException;
 import java.security.PublicKey;
 import java.util.Iterator;
 import java.util.Properties;
 
-import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -120,7 +121,7 @@ public abstract class CertificateExtension {
 	}
 	
 	/**
-	 * Method that should return the DEREncodable value used in the extension
+	 * Method that should return the ASN1Encodable value used in the extension
 	 * this is the method at all implementors must implement.
 	 * 
 	 * @param userData the userdata of the issued certificate.
@@ -128,14 +129,14 @@ public abstract class CertificateExtension {
 	 * @param certProfile the certificate profile
 	 * @param userPublicKey public key of the user, or null if not available
 	 * @param caPublicKey public key of the CA, or null if not available
-	 * @return a DEREncodable or null, if this extension should not be used, which was determined from the values somehow.
+	 * @return a ASN1Encodable or null, if this extension should not be used, which was determined from the values somehow.
 	 * @throws CertificateExtensionException if there was an error constructing the certificate extension
          * @deprecated Callers should use the getValueEncoded method as this 
          * method might not be supported by all implementations. Implementors 
          * can still implement this method if they prefer as it gets called 
          * from getValueEncoded.
 	 */
-	public abstract DEREncodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException;
+	public abstract ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException;
 
 	/**
 	 * Method that should return the byte[] value used in the extension. 
@@ -157,11 +158,15 @@ public abstract class CertificateExtension {
 	 */
 	public byte[] getValueEncoded(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		final byte[] result;
-		final DEREncodable value = getValue(userData, ca, certProfile, userPublicKey, caPublicKey);
+		final ASN1Encodable value = getValue(userData, ca, certProfile, userPublicKey, caPublicKey);
 		if (value == null) {
 			result = null;
 		} else {
-			result = value.getDERObject().getDEREncoded();
+		    try {
+		        result = value.toASN1Primitive().getEncoded();
+		    } catch (IOException ioe) {
+		        throw new CertificateExtensionException(ioe.getMessage(), ioe);
+		    }
 		}
 		return result;
 	}

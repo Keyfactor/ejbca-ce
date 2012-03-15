@@ -12,21 +12,22 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate.certextensions;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.util.Arrays;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERBoolean;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSequence;
@@ -94,7 +95,7 @@ public class BasicCertificateExtension extends CertificateExtension {
     /**
      * @deprecated use getValueEncoded instead.
      */
-    public DEREncodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey)
+    public ASN1Encodable getValue(EndEntityInformation userData, CA ca, CertificateProfile certProfile, PublicKey userPublicKey, PublicKey caPublicKey)
     throws CertificateExtensionException, CertificateExtentionConfigurationException {
         throw new UnsupportedOperationException("Use getValueEncoded instead");
     }
@@ -139,15 +140,19 @@ public class BasicCertificateExtension extends CertificateExtension {
                 result = parseRaw(values[0]);
             }
         } else {
-            if (values.length > 1) {
-                ASN1EncodableVector ev = new ASN1EncodableVector();
-                for (String value : values) {
-                    DEREncodable derval = parseValue(encoding, value);
-                    ev.add(derval);
+            try {
+                if (values.length > 1) {
+                    ASN1EncodableVector ev = new ASN1EncodableVector();
+                    for (String value : values) {
+                        ASN1Encodable derval = parseValue(encoding, value);
+                        ev.add(derval);
+                    }
+                    result = new DERSequence(ev).getEncoded();
+                } else {
+                    result = parseValue(encoding, values[0]).toASN1Primitive().getEncoded();
                 }
-                result = new DERSequence(ev).getDEREncoded();
-            } else {
-                result = parseValue(encoding, values[0]).getDERObject().getDEREncoded();
+            } catch (IOException ioe) {
+                throw new CertificateExtensionException(ioe.getMessage(), ioe);
             }
         }
         return result;
@@ -220,9 +225,9 @@ public class BasicCertificateExtension extends CertificateExtension {
         return result;
     } 
 
-    private DEREncodable parseValue(String encoding, String value) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+    private ASN1Encodable parseValue(String encoding, String value) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 
-        DEREncodable toret = null;
+        ASN1Encodable toret = null;
 
         if (!encoding.equalsIgnoreCase(ENCODING_DERNULL) && (value == null || value.trim().equals(""))) {
             throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.incorrectvalue", Integer.valueOf(getId()), getOID()));
@@ -255,8 +260,8 @@ public class BasicCertificateExtension extends CertificateExtension {
         return toret;
     }
 
-    private DEREncodable parseDERBitString(String value) throws CertificateExtentionConfigurationException {
-        DEREncodable retval = null;
+    private ASN1Encodable parseDERBitString(String value) throws CertificateExtentionConfigurationException {
+        ASN1Encodable retval = null;
         try {
             BigInteger bigInteger = new BigInteger(value, 2);
             int padBits = value.length() - 1 - value.lastIndexOf("1");
@@ -278,10 +283,10 @@ public class BasicCertificateExtension extends CertificateExtension {
         return retval;
     }
 
-    private DEREncodable parseDEROID(String value) throws CertificateExtentionConfigurationException {
-        DEREncodable retval = null;
+    private ASN1Encodable parseDEROID(String value) throws CertificateExtentionConfigurationException {
+        ASN1Encodable retval = null;
         try {
-            retval = new DERObjectIdentifier(value);
+            retval = new ASN1ObjectIdentifier(value);
         } catch (Exception e) {
             throw new CertificateExtentionConfigurationException(intres.getLocalizedMessage("certext.basic.illegalvalue", value,
                     Integer.valueOf(getId()), getOID()));
@@ -290,8 +295,8 @@ public class BasicCertificateExtension extends CertificateExtension {
         return retval;
     }
 
-    private DEREncodable parseDERInteger(String value) throws CertificateExtentionConfigurationException {
-        DEREncodable retval = null;
+    private ASN1Encodable parseDERInteger(String value) throws CertificateExtentionConfigurationException {
+        ASN1Encodable retval = null;
         try {
             BigInteger intValue = new BigInteger(value, 10);
             retval = new DERInteger(intValue);
@@ -303,8 +308,8 @@ public class BasicCertificateExtension extends CertificateExtension {
         return retval;
     }
 
-    private DEREncodable parseDEROctetString(String value) throws CertificateExtentionConfigurationException {
-        DEREncodable retval = null;
+    private ASN1Encodable parseDEROctetString(String value) throws CertificateExtentionConfigurationException {
+        ASN1Encodable retval = null;
         if (value.matches("^\\p{XDigit}*")) {
             byte[] bytes = Hex.decode(value);
             retval = new DEROctetString(bytes);
@@ -316,15 +321,15 @@ public class BasicCertificateExtension extends CertificateExtension {
     }
 
     /**
-     * Tries to read the hex-string as an DERObject. If it contains more than one DEREncodable object, return a DERSequence of the objects.
+     * Tries to read the hex-string as an DERObject. If it contains more than one ASN1Encodable object, return a DERSequence of the objects.
      */
-    private DEREncodable parseHexEncodedDERObject(String value) throws CertificateExtentionConfigurationException {
-        DEREncodable retval = null;
+    private ASN1Encodable parseHexEncodedDERObject(String value) throws CertificateExtentionConfigurationException {
+        ASN1Encodable retval = null;
         if (value.matches("^\\p{XDigit}*")) {
             byte[] bytes = Hex.decode(value);
             try {
                 ASN1InputStream ais = new ASN1InputStream(bytes);
-                DEREncodable firstObject = ais.readObject();
+                ASN1Encodable firstObject = ais.readObject();
                 if (ais.available() > 0) {
                     ASN1EncodableVector ev = new ASN1EncodableVector();
                     ev.add(firstObject);
@@ -346,8 +351,8 @@ public class BasicCertificateExtension extends CertificateExtension {
         return retval;
     }
 
-    private DEREncodable parseDERBoolean(String value) throws CertificateExtentionConfigurationException {
-        DEREncodable retval = null;
+    private ASN1Encodable parseDERBoolean(String value) throws CertificateExtentionConfigurationException {
+        ASN1Encodable retval = null;
         if (value.equalsIgnoreCase("TRUE")) {
             retval = DERBoolean.TRUE;
         }
@@ -364,7 +369,7 @@ public class BasicCertificateExtension extends CertificateExtension {
         return retval;
     }
 
-    private DEREncodable parseDERPrintableString(String value) throws CertificateExtentionConfigurationException {
+    private ASN1Encodable parseDERPrintableString(String value) throws CertificateExtentionConfigurationException {
         try {
             return new DERPrintableString(value, true);
         } catch (java.lang.IllegalArgumentException e) {
@@ -373,11 +378,11 @@ public class BasicCertificateExtension extends CertificateExtension {
         }
     }
 
-    private DEREncodable parseDERUTF8String(String value) {
+    private ASN1Encodable parseDERUTF8String(String value) {
         return new DERUTF8String(value);
     }
 
-    private DEREncodable parseDERIA5String(String value) throws CertificateExtentionConfigurationException {
+    private ASN1Encodable parseDERIA5String(String value) throws CertificateExtentionConfigurationException {
         try {
             return new DERIA5String(value, true);
         } catch (java.lang.IllegalArgumentException e) {

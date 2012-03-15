@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.X509Principal;
@@ -197,13 +197,13 @@ public class CmpRAUnidTest extends CmpTestCase {
     @Override
     protected void checkDN(String sExpected, X509Name actual) {
         final X509Name expected = new X509Name(sExpected);
-        final Vector<DERObjectIdentifier> expectedOIDs = expected.getOIDs();
+        final Vector<ASN1ObjectIdentifier> expectedOIDs = expected.getOIDs();
         final Vector<String> expectedValues = expected.getValues();
-        final Vector<DERObjectIdentifier> actualOIDs = actual.getOIDs();
+        final Vector<ASN1ObjectIdentifier> actualOIDs = actual.getOIDs();
         final Vector<String> actualValues = actual.getValues();
         assertEquals("Not the expected number of elements in the created certificate.", expectedOIDs.size(), actualOIDs.size());
         for (int i = 0; i < expectedOIDs.size(); i++) {
-            final DERObjectIdentifier oid = expectedOIDs.get(i);
+            final ASN1ObjectIdentifier oid = expectedOIDs.get(i);
             final int j = actualOIDs.indexOf(oid);
             if (!oid.equals(X509Name.SN)) {
                 log.debug("Check that " + oid.getId() + " is OK. Expected '" + expectedValues.get(i) + "'. Actual '" + actualValues.get(j) + "'.");

@@ -22,13 +22,14 @@ package com.novosec.pkix.asn1.cmp;
 import java.util.Enumeration;
 import java.util.Vector;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -57,7 +58,7 @@ import org.bouncycastle.asn1.x509.GeneralName;
  *
  * </pre>
  */
-public class PKIHeader implements DEREncodable
+public class PKIHeader implements ASN1Encodable
 {
     DERInteger           pvno;
     GeneralName          sender;
@@ -106,13 +107,13 @@ public class PKIHeader implements DEREncodable
 
         switch (tagObj.getTagNo())
         {
-          case 0: messageTime   = DERGeneralizedTime.getInstance(tagObj.getObject()); break;
-          case 1: protectionAlg = AlgorithmIdentifier.getInstance(tagObj.getObject()); break;
-          case 2: senderKID     = (DEROctetString)DEROctetString.getInstance(tagObj); break;
-          case 3: recipKID      = (DEROctetString)DEROctetString.getInstance(tagObj); break;
-          case 4: transactionID = (DEROctetString)DEROctetString.getInstance(tagObj); break;
-          case 5: senderNonce   = (DEROctetString)DEROctetString.getInstance(tagObj); break;
-          case 6: recipNonce    = (DEROctetString)DEROctetString.getInstance(tagObj); break;
+          case 0: messageTime   = DERGeneralizedTime.getInstance(tagObj, tagObj.isExplicit()); break;
+          case 1: protectionAlg = AlgorithmIdentifier.getInstance(tagObj, tagObj.isExplicit()); break;
+          case 2: senderKID     = (DEROctetString)DEROctetString.getInstance(tagObj, tagObj.isExplicit()); break;
+          case 3: recipKID      = (DEROctetString)DEROctetString.getInstance(tagObj, tagObj.isExplicit()); break;
+          case 4: transactionID = (DEROctetString)DEROctetString.getInstance(tagObj, tagObj.isExplicit()); break;
+          case 5: senderNonce   = (DEROctetString)DEROctetString.getInstance(tagObj, tagObj.isExplicit()); break;
+          case 6: recipNonce    = (DEROctetString)DEROctetString.getInstance(tagObj, tagObj.isExplicit()); break;
           case 7: freeText      = PKIFreeText.getInstance(tagObj.getObject()); break;
           case 8: 
             ASN1Sequence s = (ASN1Sequence)tagObj.getObject();
@@ -240,7 +241,7 @@ public class PKIHeader implements DEREncodable
       return null;
     }
 
-    public DERObject getDERObject()
+    public ASN1Primitive toASN1Primitive()
     {
       ASN1EncodableVector  v = new ASN1EncodableVector();
 

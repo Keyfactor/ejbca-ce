@@ -16,7 +16,7 @@
             <include name="log4j-1.2.16.jar"/>
             <include name="bcprov-*.jar"/>
             <include name="commons-lang-2.5.jar"/>
-            <include name="bcmail-*.jar"/>
+            <include name="bcpkix-*.jar"/>
             <include name="cert-cvc.jar"/>
             <include name="ldap.jar"/>
             <include name="commons-collections-3.2.jar"/>

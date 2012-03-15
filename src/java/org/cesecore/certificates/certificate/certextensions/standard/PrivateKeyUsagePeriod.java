@@ -17,8 +17,8 @@ import java.security.PublicKey;
 import java.util.Date;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
@@ -49,7 +49,7 @@ public class PrivateKeyUsagePeriod extends StandardCertificateExtension {
     }
 
     @Override
-    public DEREncodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
+    public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile,
             final PublicKey userPublicKey, final PublicKey caPublicKey) throws CertificateExtentionConfigurationException,
             CertificateExtensionException {
         // Construct the start and end dates of PrivateKeyUsagePeriod

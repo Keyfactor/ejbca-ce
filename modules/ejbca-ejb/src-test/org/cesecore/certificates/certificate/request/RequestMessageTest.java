@@ -29,7 +29,7 @@ import java.security.SignatureException;
 import java.util.Vector;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
@@ -85,7 +85,7 @@ public class RequestMessageTest {
 		 // An X509Extensions is a sequence of Extension which is a sequence of
 		 // {oid, X509Extension}
 		 // ASN1EncodableVector extvalue = new ASN1EncodableVector();
-		 Vector<DERObjectIdentifier> oidvec = new Vector<DERObjectIdentifier>();
+		 Vector<ASN1ObjectIdentifier> oidvec = new Vector<ASN1ObjectIdentifier>();
 		 oidvec.add(X509Extensions.SubjectAlternativeName);
 		 Vector<X509Extension> valuevec = new Vector<X509Extension>();
 		 valuevec.add(new X509Extension(false, new DEROctetString(extOut.toByteArray())));

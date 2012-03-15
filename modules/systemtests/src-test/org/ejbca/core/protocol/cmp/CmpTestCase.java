@@ -57,7 +57,7 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -177,7 +177,7 @@ public abstract class CmpTestCase extends CaTestCase {
             ByteArrayOutputStream bOut = new ByteArrayOutputStream();
             DEROutputStream dOut = new DEROutputStream(bOut);
             Vector<X509Extension> values = new Vector<X509Extension>();
-            Vector<DERObjectIdentifier> oids = new Vector<DERObjectIdentifier>();
+            Vector<ASN1ObjectIdentifier> oids = new Vector<ASN1ObjectIdentifier>();
             if (altNames != null) {
                 GeneralNames san = CertTools.getGeneralNamesFromAltName(altNames);
                 dOut.writeObject(san);
@@ -217,7 +217,7 @@ public abstract class CmpTestCase extends CaTestCase {
         // POPO
         /*
          * PKMACValue myPKMACValue = new PKMACValue( new AlgorithmIdentifier(new
-         * DERObjectIdentifier("8.2.1.2.3.4"), new DERBitString(new byte[] { 8,
+         * ASN1ObjectIdentifier("8.2.1.2.3.4"), new DERBitString(new byte[] { 8,
          * 1, 1, 2 })), new DERBitString(new byte[] { 12, 29, 37, 43 }));
          * 
          * POPOPrivKey myPOPOPrivKey = new POPOPrivKey(new DERBitString(new
@@ -225,7 +225,7 @@ public abstract class CmpTestCase extends CaTestCase {
          * 
          * POPOSigningKeyInput myPOPOSigningKeyInput = new POPOSigningKeyInput(
          * myPKMACValue, new SubjectPublicKeyInfo( new AlgorithmIdentifier(new
-         * DERObjectIdentifier("9.3.3.9.2.2"), new DERBitString(new byte[] { 2,
+         * ASN1ObjectIdentifier("9.3.3.9.2.2"), new DERBitString(new byte[] { 2,
          * 9, 7, 3 })), new byte[] { 7, 7, 7, 4, 5, 6, 7, 7, 7 }));
          */
         ProofOfPossession myProofOfPossession = null;
@@ -251,7 +251,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
         myCertReqMsg.setPop(myProofOfPossession);
         // myCertReqMsg.addRegInfo(new AttributeTypeAndValue(new
-        // DERObjectIdentifier("1.3.6.2.2.2.2.3.1"), new
+        // ASN1ObjectIdentifier("1.3.6.2.2.2.2.3.1"), new
         // DERInteger(1122334455)));
         AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.regCtrl_regToken, new DERUTF8String("foo123"));
         myCertReqMsg.addRegInfo(av);
@@ -291,9 +291,9 @@ public abstract class CmpTestCase extends CaTestCase {
         ReasonFlags reasonbits = new ReasonFlags(ReasonFlags.keyCompromise);
         myRevDetails.setRevocationReason(reasonbits);
         if (crlEntryExtension) {
-            CRLReason crlReason = new CRLReason(CRLReason.cessationOfOperation);
+            CRLReason crlReason = CRLReason.lookup(CRLReason.cessationOfOperation);
             X509Extension ext = new X509Extension(false, new DEROctetString(crlReason.getEncoded()));
-            Hashtable<DERObjectIdentifier, X509Extension> ht = new Hashtable<DERObjectIdentifier, X509Extension>();
+            Hashtable<ASN1ObjectIdentifier, X509Extension> ht = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
             ht.put(X509Extensions.ReasonCode, ext);
             myRevDetails.setCrlEntryDetails(new X509Extensions(ht));
         }
@@ -359,7 +359,7 @@ public abstract class CmpTestCase extends CaTestCase {
             objectId += ".7";
         }
         PBMParameter pp = new PBMParameter(derSalt, owfAlg, iteration, macAlg);
-        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new DERObjectIdentifier(objectId), pp);
+        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(objectId), pp);
         head.setProtectionAlg(pAlg);
         PKIBody body = msg.getBody();
         PKIMessage ret = new PKIMessage(head, body);
@@ -683,7 +683,8 @@ public abstract class CmpTestCase extends CaTestCase {
         assertNotNull(cc);
         X509CertificateStructure struct = cc.getCertificate();
         assertNotNull(struct);
-        checkDN(userDN, struct.getSubject());
+        X509Name name = X509Name.getInstance(struct.getSubject().getEncoded());
+        checkDN(userDN, name);
         assertEquals(CertTools.stringToBCDNString(struct.getIssuer().toString()), CertTools.getSubjectDN(cacert));
         return (X509Certificate) CertTools.getCertfromByteArray(struct.getEncoded());
     }

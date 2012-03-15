@@ -49,7 +49,7 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -166,7 +166,7 @@ class CMPTest extends ClientToolBox {
                 // SubjectAltName
                 // Some altNames
                 final Vector<X509Extension> values = new Vector<X509Extension>();
-                final Vector<DERObjectIdentifier> oids = new Vector<DERObjectIdentifier>();
+                final Vector<ASN1ObjectIdentifier> oids = new Vector<ASN1ObjectIdentifier>();
                 {
                     final GeneralNames san = CertTools.getGeneralNamesFromAltName("UPN=fooupn@bar.com,rfc822Name=rfc822Name@my.com");
                     final ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
@@ -268,7 +268,7 @@ class CMPTest extends ClientToolBox {
                     objectId += ".7";
                 }
                 final PBMParameter pp = new PBMParameter(derSalt, owfAlg, iteration, macAlg);
-                final AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new DERObjectIdentifier(objectId), pp);
+                final AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(objectId), pp);
                 head.setProtectionAlg(pAlg);
 
                 final PKIBody body = msg.getBody();

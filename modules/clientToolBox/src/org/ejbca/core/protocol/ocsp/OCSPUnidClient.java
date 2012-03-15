@@ -49,8 +49,8 @@ import javax.net.ssl.TrustManagerFactory;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
@@ -102,8 +102,9 @@ public class OCSPUnidClient {
 	 * @param _signKey signing key
 	 * @param getfnr true if FNR should be fetched
 	 * @throws NoSuchAlgorithmException
+	 * @throws IOException if ASN1 parsing error occurs
 	 */
-	private OCSPUnidClient(KeyStore keystore, String pwd, String ocspurl, Certificate[] certs, PrivateKey _signKey, boolean getfnr) throws NoSuchAlgorithmException {
+	private OCSPUnidClient(KeyStore keystore, String pwd, String ocspurl, Certificate[] certs, PrivateKey _signKey, boolean getfnr) throws NoSuchAlgorithmException, IOException {
 	    this.httpReqPath = ocspurl;
 	    this.passphrase = pwd;
 	    this.ks = keystore;
@@ -111,7 +112,7 @@ public class OCSPUnidClient {
 	    this.certChain = certs!=null ? Arrays.asList(certs).toArray(new X509Certificate[0]) : null;
         this.nonce = new byte[16];
 	    {
-	        final Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
+	        final Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
 	        final Random randomSource = new Random();
 	        randomSource.nextBytes(nonce);
 	        final X509Extension nonceext = new X509Extension(false, new DEROctetString(nonce));

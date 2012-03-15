@@ -12,6 +12,7 @@
  *************************************************************************/ 
 package org.cesecore.certificates.certificate.request;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -24,10 +25,10 @@ import java.util.Date;
 import java.util.Vector;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DEREncodable;
+import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERPrintableString;
-import org.bouncycastle.asn1.DERString;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
@@ -194,7 +195,7 @@ public class PKCS10RequestMessage implements RequestMessage {
             return null;
         }        
         Attribute attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
-        DEREncodable obj = null;
+        ASN1Encodable obj = null;
         if (attr == null) {
             // See if we have it embedded in an extension request instead
             attr = attributes.get(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
@@ -224,7 +225,7 @@ public class PKCS10RequestMessage implements RequestMessage {
         }
 
         if (obj != null) {
-            DERString str = null;
+            ASN1String str = null;
 
             try {
                 str = DERPrintableString.getInstance((obj));
@@ -364,7 +365,12 @@ public class PKCS10RequestMessage implements RequestMessage {
         // Get subject name from request
         CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
         if (info != null) {
-            ret = info.getSubject();
+            try {
+                X509Name name = X509Name.getInstance(info.getSubject().getEncoded());
+                ret = name;
+            } catch (IOException e) {
+                log.warn("Error encoding/decoding request name: ", e);
+            }
         }
         return ret;
     }

@@ -17,8 +17,8 @@ import java.util.ArrayList;
 import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
@@ -53,7 +53,7 @@ public class FreshestCrl extends StandardCertificateExtension {
 	}
     
     @Override
-	public DEREncodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
         String freshestcrldistpoint = certProfile.getFreshestCRLURI();
         final X509CA x509ca = (X509CA)ca;
         if(certProfile.getUseCADefinedFreshestCRL()){
@@ -72,7 +72,7 @@ public class FreshestCrl extends StandardCertificateExtension {
                 }
                 final ASN1EncodableVector vec = new ASN1EncodableVector();
                 vec.add(gn);
-                final GeneralNames gns = new GeneralNames(new DERSequence(vec));
+                final GeneralNames gns = GeneralNames.getInstance(new DERSequence(vec));
                 final DistributionPointName dpn = new DistributionPointName(0, gns);
                 distpoints.add(new DistributionPoint(dpn, null, null));
             }

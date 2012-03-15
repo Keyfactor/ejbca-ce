@@ -21,9 +21,10 @@ import java.util.Collection;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Object;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
@@ -64,7 +65,7 @@ public final class QCStatementExtension extends CertTools {
     	boolean ret = false;
         if (cert instanceof X509Certificate) {
         	final X509Certificate x509cert = (X509Certificate) cert;
-        	final DERObject obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
+        	final ASN1Primitive obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
 	        if (obj != null) {
 	            ret = true;
 	        }
@@ -81,14 +82,14 @@ public final class QCStatementExtension extends CertTools {
     	final ArrayList<String> ret = new ArrayList<String>();
         if (cert instanceof X509Certificate) {
         	final X509Certificate x509cert = (X509Certificate) cert;
-        	final DERObject obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
+        	final ASN1Primitive obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
             if (obj == null) {
                 return ret;
             }
             final ASN1Sequence seq = (ASN1Sequence)obj;
             for (int i = 0; i < seq.size(); i++) {
             	final QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
-            	final DERObjectIdentifier oid = qc.getStatementId();
+            	final ASN1ObjectIdentifier oid = qc.getStatementId();
                 if (oid != null) {
                     ret.add(oid.getId());
                 }        	
@@ -106,7 +107,7 @@ public final class QCStatementExtension extends CertTools {
     	String ret = null;
         if (cert instanceof X509Certificate) {
         	final X509Certificate x509cert = (X509Certificate) cert;
-        	final DERObject obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
+        	final ASN1Primitive obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
 	        if (obj == null) {
 	            return null;
 	        }
@@ -115,7 +116,7 @@ public final class QCStatementExtension extends CertTools {
 	        // Look through all the QCStatements and see if we have a stadard ETSI LimitValue
 	        for (int i = 0; i < seq.size(); i++) {
 	        	final QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
-	        	final DERObjectIdentifier oid = qc.getStatementId();
+	        	final ASN1ObjectIdentifier oid = qc.getStatementId();
 	        	if ((oid != null) && oid.equals(ETSIQCObjectIdentifiers.id_etsi_qcs_LimiteValue)) {
 	        		// We MAY have a MonetaryValue object here
 	        		final ASN1Encodable enc = qc.getStatementInfo();
@@ -157,7 +158,7 @@ public final class QCStatementExtension extends CertTools {
         String ret = null;
         if (cert instanceof X509Certificate) {
         	final X509Certificate x509cert = (X509Certificate) cert;
-        	final DERObject obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
+        	final ASN1Primitive obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
 	        if (obj == null) {
 	            return null;
 	        }
@@ -166,7 +167,7 @@ public final class QCStatementExtension extends CertTools {
 	        // Look through all the QCStatements and see if we have a standard RFC3739 pkixQCSyntax
 	        for (int i = 0; i < seq.size(); i++) {
 	        	final QCStatement qc = QCStatement.getInstance(seq.getObjectAt(i));
-	        	final DERObjectIdentifier oid = qc.getStatementId();
+	        	final ASN1ObjectIdentifier oid = qc.getStatementId();
 	        	if ((oid != null) && (oid.equals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1) || oid.equals(RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2))) {
 	        		// We MAY have a SemanticsInformation object here
 	        		final ASN1Encodable enc = qc.getStatementInfo();

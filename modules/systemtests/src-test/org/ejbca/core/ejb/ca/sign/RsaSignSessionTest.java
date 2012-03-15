@@ -37,7 +37,7 @@ import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
@@ -974,7 +974,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         } catch (IOException e) {
             throw new IllegalArgumentException("error encoding value: " + e);
         }
-        Vector<DERObjectIdentifier> oidvec = new Vector<DERObjectIdentifier>();
+        Vector<ASN1ObjectIdentifier> oidvec = new Vector<ASN1ObjectIdentifier>();
         oidvec.add(X509Extensions.SubjectAlternativeName);
         Vector<X509Extension> valuevec = new Vector<X509Extension>();
         valuevec.add(new X509Extension(false, new DEROctetString(extOut.toByteArray())));

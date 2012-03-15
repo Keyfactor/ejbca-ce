@@ -41,7 +41,7 @@ import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.ocsp.BasicOCSPResponse;
@@ -116,7 +116,7 @@ public class CmpMessageHelper {
 	throws NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, InvalidKeyException
 	{
 		// Select which signature algorithm we should use for the response, based on the digest algorithm.
-		DERObjectIdentifier oid = PKCSObjectIdentifiers.sha1WithRSAEncryption;
+		ASN1ObjectIdentifier oid = PKCSObjectIdentifiers.sha1WithRSAEncryption;
 		if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA256)) {
 			oid = PKCSObjectIdentifiers.sha256WithRSAEncryption;			
 		}
@@ -198,7 +198,7 @@ public class CmpMessageHelper {
 		//String objectId = "1.2.840.113533.7.66.13" = passwordBasedMac;
 		String objectId = CMPObjectIdentifiers.passwordBasedMac.getId();
 		PBMParameter pp = new PBMParameter(derSalt, owfAlg, iteration, macAlg);
-		AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new DERObjectIdentifier(objectId), pp);
+		AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(objectId), pp);
 		head.setProtectionAlg(pAlg);
 		PKIBody body = msg.getBody();
 		PKIMessage ret = new PKIMessage(head, body);

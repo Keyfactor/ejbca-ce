@@ -17,7 +17,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.cesecore.certificates.certificate.certextensions.standard.SeisCardNumber;
 import org.cesecore.util.CertTools;
@@ -54,7 +54,7 @@ public class SeisCardNumberExtension extends CertTools {
         String ret = null;
         if (certificate instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate) certificate;
-	        DERObject obj = CertTools.getExtensionValue(x509cert, SeisCardNumber.OID_CARDNUMBER);
+	        ASN1Primitive obj = CertTools.getExtensionValue(x509cert, SeisCardNumber.OID_CARDNUMBER);
 	        if (obj == null) {
 	            return null;
 	        }

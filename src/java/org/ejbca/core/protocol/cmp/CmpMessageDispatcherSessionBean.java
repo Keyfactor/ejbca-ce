@@ -23,8 +23,8 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObject;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.cmp.PKIMessages;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -111,8 +111,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
 	public ResponseMessage dispatch(AuthenticationToken admin, byte[] ba) throws IOException {
-		//DERObject derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
-	    DERObject derObject = getDERObject(ba);
+		//ASN1Primitive derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
+	    ASN1Primitive derObject = getDERObject(ba);
 		return dispatch(admin, derObject, false);
 	}
 
@@ -121,7 +121,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	 * @param message der encoded CMP message
 	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occurred
 	 */
-	private ResponseMessage dispatch(AuthenticationToken admin, DERObject derObject, boolean authenticated) {
+	private ResponseMessage dispatch(AuthenticationToken admin, ASN1Primitive derObject, boolean authenticated) {
 		final PKIMessage req;
 		try {
 			req = PKIMessage.getInstance(derObject);
@@ -189,14 +189,14 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                         log.debug("The NestedMessageContent was verifies successfully");
                     }
                     try {
-                        final DEREncodable nested = nestedMessage.getPKIMessage().getBody().getNested();
+                        final ASN1Encodable nested = nestedMessage.getPKIMessage().getBody().getNested();
                         PKIMessages nestedMessages = PKIMessages.getInstance(nested);
                         org.bouncycastle.asn1.cmp.PKIMessage[] pkiMessages = nestedMessages.toPKIMessageArray();
                         
-                        DERObject msgDerObject = getDERObject(pkiMessages[0].getDERObject().getDEREncoded());
+                        ASN1Primitive msgDerObject = getDERObject(pkiMessages[0].toASN1Primitive().getEncoded());
                         return dispatch(admin, msgDerObject, true);
                       
-                        //return dispatch(admin, pkiMessages[0].getDERObject().getDEREncoded());
+                        //return dispatch(admin, pkiMessages[0].toASN1Primitive().getEncoded());
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getLocalizedMessage();
                         log.error(errMsg);
@@ -236,8 +236,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 		}
 	}
 	
-	private DERObject getDERObject(byte[] ba) throws IOException {
-	       DERObject derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
+	private ASN1Primitive getDERObject(byte[] ba) throws IOException {
+	       ASN1Primitive derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
 	       return derObject;
 	}
 }

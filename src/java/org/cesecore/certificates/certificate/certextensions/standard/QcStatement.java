@@ -18,10 +18,10 @@ import java.util.Iterator;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.DEREncodable;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.GeneralNames;
@@ -58,24 +58,24 @@ public class QcStatement extends StandardCertificateExtension {
 	}
     
     @Override
-	public DEREncodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
+	public ASN1Encodable getValue(final EndEntityInformation subject, final CA ca, final CertificateProfile certProfile, final PublicKey userPublicKey, final PublicKey caPublicKey ) throws CertificateExtentionConfigurationException, CertificateExtensionException {
 		DERSequence ret = null;
 		final String names = certProfile.getQCStatementRAName();
 		final GeneralNames san = CertTools.getGeneralNamesFromAltName(names);
 		SemanticsInformation si = null;
 		if (san != null) {
 			if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
-				si = new SemanticsInformation(new DERObjectIdentifier(certProfile.getQCSemanticsId()), san.getNames());
+				si = new SemanticsInformation(new ASN1ObjectIdentifier(certProfile.getQCSemanticsId()), san.getNames());
 			} else {
 				si = new SemanticsInformation(san.getNames());                     
 			}
 		} else if (StringUtils.isNotEmpty(certProfile.getQCSemanticsId())) {
-			si = new SemanticsInformation(new DERObjectIdentifier(certProfile.getQCSemanticsId()));                 
+			si = new SemanticsInformation(new ASN1ObjectIdentifier(certProfile.getQCSemanticsId()));                 
 		}
 		final ArrayList<QCStatement> qcs = new ArrayList<QCStatement>();
 		QCStatement qc = null;
 		// First the standard rfc3739 QCStatement with an optional SematicsInformation
-		DERObjectIdentifier pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1;
+		ASN1ObjectIdentifier pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v1;
 		if (certProfile.getUsePkixQCSyntaxV2()) {
 			pkixQcSyntax = RFC3739QCObjectIdentifiers.id_qcs_pkixQCSyntax_v2;
 		}
@@ -125,7 +125,7 @@ public class QcStatement extends StandardCertificateExtension {
 		if (certProfile.getUseQCCustomString() && 
 				!StringUtils.isEmpty(certProfile.getQCCustomStringOid()) && !StringUtils.isEmpty(certProfile.getQCCustomStringText())) {
 			final DERUTF8String str = new DERUTF8String(certProfile.getQCCustomStringText());
-			final DERObjectIdentifier oid = new DERObjectIdentifier(certProfile.getQCCustomStringOid());
+			final ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(certProfile.getQCCustomStringOid());
 			qc = new QCStatement(oid, str);
 			qcs.add(qc);            		 
 		}

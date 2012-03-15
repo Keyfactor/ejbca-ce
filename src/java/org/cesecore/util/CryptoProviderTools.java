@@ -22,7 +22,7 @@ import javax.crypto.Cipher;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.jce.interfaces.ConfigurableProvider;
+import org.bouncycastle.jcajce.provider.config.ConfigurableProvider;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.util.encoders.Hex;

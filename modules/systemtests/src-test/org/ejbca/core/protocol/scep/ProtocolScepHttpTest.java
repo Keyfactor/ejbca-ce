@@ -56,9 +56,9 @@ import org.apache.commons.httpclient.NameValuePair;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Set;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1String;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERPrintableString;
-import org.bouncycastle.asn1.DERString;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.cms.CMSEnvelopedData;
@@ -532,33 +532,33 @@ public class ProtocolScepHttpTest extends CaTestCase {
         assertEquals(signerInfo.getDigestAlgOID(), digestOid);
         SignerId sinfo = signerInfo.getSID();
         // Check that the signer is the expected CA
-        assertEquals(CertTools.stringToBCDNString(cacert.getIssuerDN().getName()), CertTools.stringToBCDNString(sinfo.getIssuerAsString()));
+        assertEquals(CertTools.stringToBCDNString(cacert.getIssuerDN().getName()), CertTools.stringToBCDNString(sinfo.getIssuer().toString()));
         // Verify the signature
         boolean ret = signerInfo.verify(cacert.getPublicKey(), "BC");
         assertTrue(ret);
         // Get authenticated attributes
         AttributeTable tab = signerInfo.getSignedAttributes();
         // --Fail info
-        Attribute attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_failInfo));
+        Attribute attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_failInfo));
         // No failInfo on this success message
         assertNull(attr);
         // --Message type
-        attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_messageType));
+        attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_messageType));
         assertNotNull(attr);
         ASN1Set values = attr.getAttrValues();
         assertEquals(values.size(), 1);
-        DERString str = DERPrintableString.getInstance((values.getObjectAt(0)));
+        ASN1String str = DERPrintableString.getInstance((values.getObjectAt(0)));
         String messageType = str.getString();
         assertEquals("3", messageType);
         // --Success status
-        attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_pkiStatus));
+        attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_pkiStatus));
         assertNotNull(attr);
         values = attr.getAttrValues();
         assertEquals(values.size(), 1);
         str = DERPrintableString.getInstance((values.getObjectAt(0)));
         assertEquals(ResponseStatus.SUCCESS.getStringValue(), str.getString());
         // --SenderNonce
-        attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_senderNonce));
+        attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_senderNonce));
         assertNotNull(attr);
         values = attr.getAttrValues();
         assertEquals(values.size(), 1);
@@ -567,7 +567,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
         // chars
         assertTrue(octstr.getOctets().length == 16);
         // --Recipient Nonce
-        attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_recipientNonce));
+        attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_recipientNonce));
         assertNotNull(attr);
         values = attr.getAttrValues();
         assertEquals(values.size(), 1);
@@ -575,7 +575,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
         // recipient nonce should be the same as we sent away as sender nonce
         assertEquals(_senderNonce, new String(Base64.encode(octstr.getOctets())));
         // --Transaction ID
-        attr = tab.get(new DERObjectIdentifier(ScepRequestMessage.id_transId));
+        attr = tab.get(new ASN1ObjectIdentifier(ScepRequestMessage.id_transId));
         assertNotNull(attr);
         values = attr.getAttrValues();
         assertEquals(values.size(), 1);

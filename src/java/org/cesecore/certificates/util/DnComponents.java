@@ -26,7 +26,7 @@ import java.util.TreeSet;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.X509Name;
 
 /** Class holding information and utilities for handling different DN components, CN, O etc
@@ -53,7 +53,7 @@ public class DnComponents {
      * 
      * This map is used in CertTools so sort and order DN strings so they all look the same in the database.
      * */
-    private static HashMap<String, DERObjectIdentifier> oids = new HashMap<String, DERObjectIdentifier>();
+    private static HashMap<String, ASN1ObjectIdentifier> oids = new HashMap<String, ASN1ObjectIdentifier>();
     // Default values
     static {
         oids.put("c", X509Name.C);
@@ -186,7 +186,7 @@ public class DnComponents {
         DnComponents.load();
     }
     
-    public static DERObjectIdentifier getOid(String o) {
+    public static ASN1ObjectIdentifier getOid(String o) {
         return oids.get(o.toLowerCase());
     }
 
@@ -447,7 +447,7 @@ public class DnComponents {
     private static void loadOrdering() {
         // Read the file to an array of lines 
         String line;
-        LinkedHashMap<String, DERObjectIdentifier> map = new LinkedHashMap<String, DERObjectIdentifier>();
+        LinkedHashMap<String, ASN1ObjectIdentifier> map = new LinkedHashMap<String, ASN1ObjectIdentifier>();
         BufferedReader in = null;
         InputStreamReader inf = null;
         try
@@ -467,7 +467,7 @@ public class DnComponents {
                 		splits = StringUtils.split(line, '=');
                 		if ( (splits != null) && (splits.length > 1) ) {
                 			String name = splits[0].toLowerCase(); 
-                			DERObjectIdentifier oid = new DERObjectIdentifier(splits[1]);
+                			ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(splits[1]);
                 			map.put(name, oid);
                 		}
                 	}

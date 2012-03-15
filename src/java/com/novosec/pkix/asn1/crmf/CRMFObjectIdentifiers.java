@@ -19,7 +19,7 @@
 
 package com.novosec.pkix.asn1.crmf;
 
-import org.bouncycastle.asn1.DERObjectIdentifier;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 
 /**
  * ASN.1 defined Object Identifier.
@@ -40,14 +40,14 @@ public class CRMFObjectIdentifiers
   static final String  _id_regCtrl  = _id_pkip + ".1";
   static final String  _id_regInfo  = _id_pkip + ".2";
 
-  public static final DERObjectIdentifier regCtrl_regToken            = new DERObjectIdentifier( _id_regCtrl + ".1");
-  public static final DERObjectIdentifier regCtrl_authenticator       = new DERObjectIdentifier( _id_regCtrl + ".2");
-  public static final DERObjectIdentifier regCtrl_pkiPublicationInfo  = new DERObjectIdentifier( _id_regCtrl + ".3");
-  public static final DERObjectIdentifier regCtrl_pkiArchiveOptions   = new DERObjectIdentifier( _id_regCtrl + ".4");
-  public static final DERObjectIdentifier regCtrl_oldCertID           = new DERObjectIdentifier( _id_regCtrl + ".5");
-  public static final DERObjectIdentifier regCtrl_protocolEncrKey     = new DERObjectIdentifier( _id_regCtrl + ".6");
+  public static final ASN1ObjectIdentifier regCtrl_regToken            = new ASN1ObjectIdentifier( _id_regCtrl + ".1");
+  public static final ASN1ObjectIdentifier regCtrl_authenticator       = new ASN1ObjectIdentifier( _id_regCtrl + ".2");
+  public static final ASN1ObjectIdentifier regCtrl_pkiPublicationInfo  = new ASN1ObjectIdentifier( _id_regCtrl + ".3");
+  public static final ASN1ObjectIdentifier regCtrl_pkiArchiveOptions   = new ASN1ObjectIdentifier( _id_regCtrl + ".4");
+  public static final ASN1ObjectIdentifier regCtrl_oldCertID           = new ASN1ObjectIdentifier( _id_regCtrl + ".5");
+  public static final ASN1ObjectIdentifier regCtrl_protocolEncrKey     = new ASN1ObjectIdentifier( _id_regCtrl + ".6");
 
-  public static final DERObjectIdentifier regInfo_utf8Pairs           = new DERObjectIdentifier( _id_regInfo + ".1");
-  public static final DERObjectIdentifier regInfo_certReq             = new DERObjectIdentifier( _id_regInfo + ".2");
+  public static final ASN1ObjectIdentifier regInfo_utf8Pairs           = new ASN1ObjectIdentifier( _id_regInfo + ".1");
+  public static final ASN1ObjectIdentifier regInfo_certReq             = new ASN1ObjectIdentifier( _id_regInfo + ".2");
 }
 

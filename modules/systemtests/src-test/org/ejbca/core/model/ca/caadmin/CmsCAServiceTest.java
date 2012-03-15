@@ -26,8 +26,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 
-import javax.security.auth.x500.X500Principal;
-
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSProcessable;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedGenerator;
@@ -156,9 +155,9 @@ public class CmsCAServiceTest extends CaTestCase {
             assertEquals(CMSSignedGenerator.DIGEST_SHA1, si.getDigestAlgOID());
             SignerId sid = si.getSID();
             // log.info(sid.toString());
-            X500Principal issuer = sid.getIssuer();
+            X500Name issuer = sid.getIssuer();
             assertNotNull(issuer);
-            assertEquals("CN=TEST", issuer.getName());
+            assertEquals("CN=TEST", issuer.toString());
         }
         CertStore store = csd.getCertificatesAndCRLs("Collection", "BC");
         Collection<? extends Certificate> certs = store.getCertificates(null);

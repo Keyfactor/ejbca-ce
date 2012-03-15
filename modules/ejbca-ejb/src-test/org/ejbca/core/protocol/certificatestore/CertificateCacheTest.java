@@ -15,10 +15,11 @@ package org.ejbca.core.protocol.certificatestore;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -72,13 +73,10 @@ public class CertificateCacheTest {
 		assertNotNull(rootcert);
 		X509Certificate subcert = cache.findLatestBySubjectDN(HashID.getFromSubjectDN(testsubcert));
 		// This old subcert should not be possible to verify with the new root cert
-		boolean failed = false;
 		try {
 			subcert.verify(rootcert.getPublicKey());
-		} catch (InvalidKeyException e) {
-			failed = true;
-		}
-		assertTrue(failed);
+			fail("verification should have failed");
+		} catch (SignatureException e) {} // NOPMD: BC 1.47
 		// CVC certificate should not be part of OCSP certificate cache
 		cert = cache.findLatestBySubjectDN(HashID.getFromDN(CertTools.getSubjectDN(testcvccert)));
 		assertNull(cert);
@@ -93,13 +91,10 @@ public class CertificateCacheTest {
 		// But not with the new rootcert
 		cert = cache.findByOcspHash(new CertificateID(CertificateID.HASH_SHA1, testrootnewcert, BigInteger.valueOf(0)));
 		assertNotNull(cert);
-		failed = false;
 		try {
 			subcert.verify(cert.getPublicKey());
-		} catch (InvalidKeyException e) {
-			failed = true;
-		}
-		assertTrue(failed);
+            fail("verification should have failed");
+        } catch (SignatureException e) {} // NOPMD: BC 1.47
 		
 		// See that it will work when we add the new subcert, to verify with the new rootcert
 		X509Certificate testsubcertnew = (X509Certificate)CertTools.getCertfromByteArray(testsubnew);

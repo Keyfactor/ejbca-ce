@@ -21,11 +21,11 @@ package com.novosec.pkix.asn1.cmp;
 
 import java.util.Enumeration;
 
+import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1TaggedObject;
-import org.bouncycastle.asn1.DEREncodable;
-import org.bouncycastle.asn1.DERObject;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 
@@ -44,7 +44,7 @@ import com.novosec.pkix.asn1.crmf.PKIPublicationInfo;
  *
  * </pre>
  */
-public class CertifiedKeyPair implements DEREncodable
+public class CertifiedKeyPair implements ASN1Encodable
 {
     CertOrEncCert      certOrEncCert;
     EncryptedValue     privateKey;
@@ -73,7 +73,7 @@ public class CertifiedKeyPair implements DEREncodable
     {
       Enumeration<?> e = seq.getObjects();
 
-      certOrEncCert = CertOrEncCert.getInstance( (DERObject)e.nextElement() );
+      certOrEncCert = CertOrEncCert.getInstance( (ASN1Primitive)e.nextElement() );
       
       while (e.hasMoreElements())
       {
@@ -117,7 +117,7 @@ public class CertifiedKeyPair implements DEREncodable
       return publicationInfo;
     }
 
-    public DERObject getDERObject()
+    public ASN1Primitive toASN1Primitive()
     {
       ASN1EncodableVector  v = new ASN1EncodableVector();
 

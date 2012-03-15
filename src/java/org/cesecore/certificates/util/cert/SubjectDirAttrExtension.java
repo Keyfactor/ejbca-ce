@@ -22,14 +22,14 @@ import java.util.Date;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
+import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERObject;
-import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.asn1.DERString;
 import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -82,7 +82,7 @@ public class SubjectDirAttrExtension extends CertTools {
         String result = "";
         if (certificate instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate) certificate;
-	        DERObject obj = CertTools.getExtensionValue(x509cert, X509Extensions.SubjectDirectoryAttributes.getId());
+	        ASN1Primitive obj = CertTools.getExtensionValue(x509cert, X509Extensions.SubjectDirectoryAttributes.getId());
 	        if (obj == null) {
 	            return null;
 	        }
@@ -106,25 +106,25 @@ public class SubjectDirAttrExtension extends CertTools {
 	        	if (attr.getAttrType().getId().equals(id_pda_placeOfBirth)) {
 	        		ASN1Set set = attr.getAttrValues();
 	        		// same here only one placeOfBirth
-	        		String pb = ((DERString)set.getObjectAt(0)).getString();
+	        		String pb = ((ASN1String)set.getObjectAt(0)).getString();
 	        		result += prefix + "placeOfBirth="+pb;        			
 	        	}
 	        	if (attr.getAttrType().getId().equals(id_pda_gender)) {
 	        		ASN1Set set = attr.getAttrValues();
 	        		// same here only one gender
-	        		String g = ((DERString)set.getObjectAt(0)).getString();
+	        		String g = ((ASN1String)set.getObjectAt(0)).getString();
 	        		result += prefix + "gender="+g;        			
 	        	}
 	        	if (attr.getAttrType().getId().equals(id_pda_countryOfCitizenship)) {
 	        		ASN1Set set = attr.getAttrValues();
 	        		// same here only one citizenship
-	        		String g = ((DERString)set.getObjectAt(0)).getString();
+	        		String g = ((ASN1String)set.getObjectAt(0)).getString();
 	        		result += prefix + "countryOfCitizenship="+g;        			
 	        	}
 	        	if (attr.getAttrType().getId().equals(id_pda_countryOfResidence)) {
 	        		ASN1Set set = attr.getAttrValues();
 	        		// same here only one residence
-	        		String g = ((DERString)set.getObjectAt(0)).getString();
+	        		String g = ((ASN1String)set.getObjectAt(0)).getString();
 	        		result += prefix + "countryOfResidence="+g;        			
 	        	}
 	        }
@@ -148,30 +148,30 @@ public class SubjectDirAttrExtension extends CertTools {
         if (!StringUtils.isEmpty(value)) {
         	ASN1EncodableVector vec = new ASN1EncodableVector();
         	vec.add(new DERPrintableString(value));
-        	attr = new Attribute(new DERObjectIdentifier(id_pda_countryOfResidence),new DERSet(vec));
+        	attr = new Attribute(new ASN1ObjectIdentifier(id_pda_countryOfResidence),new DERSet(vec));
         	ret.add(attr);
         }
         value = CertTools.getPartFromDN(dirAttr, "countryOfCitizenship");
         if (!StringUtils.isEmpty(value)) {
         	ASN1EncodableVector vec = new ASN1EncodableVector();
         	vec.add(new DERPrintableString(value));
-        	attr = new Attribute(new DERObjectIdentifier(id_pda_countryOfCitizenship),new DERSet(vec));
+        	attr = new Attribute(new ASN1ObjectIdentifier(id_pda_countryOfCitizenship),new DERSet(vec));
         	ret.add(attr);
         }
         value = CertTools.getPartFromDN(dirAttr, "gender");
         if (!StringUtils.isEmpty(value)) {
         	ASN1EncodableVector vec = new ASN1EncodableVector();
         	vec.add(new DERPrintableString(value));
-        	attr = new Attribute(new DERObjectIdentifier(id_pda_gender),new DERSet(vec));
+        	attr = new Attribute(new ASN1ObjectIdentifier(id_pda_gender),new DERSet(vec));
         	ret.add(attr);
         }
         value = CertTools.getPartFromDN(dirAttr, "placeOfBirth");
         if (!StringUtils.isEmpty(value)) {
         	ASN1EncodableVector vec = new ASN1EncodableVector();
         	X509DefaultEntryConverter conv = new X509DefaultEntryConverter();
-        	DERObject obj = conv.getConvertedValue(new DERObjectIdentifier(id_pda_placeOfBirth), value);
+        	ASN1Primitive obj = conv.getConvertedValue(new ASN1ObjectIdentifier(id_pda_placeOfBirth), value);
         	vec.add(obj);
-        	attr = new Attribute(new DERObjectIdentifier(id_pda_placeOfBirth),new DERSet(vec));
+        	attr = new Attribute(new ASN1ObjectIdentifier(id_pda_placeOfBirth),new DERSet(vec));
         	ret.add(attr);
         }        
         // dateOfBirth that is a GeneralizedTime
@@ -182,7 +182,7 @@ public class SubjectDirAttrExtension extends CertTools {
                 value += "120000Z"; // standard format according to rfc3739
             	ASN1EncodableVector vec = new ASN1EncodableVector();
                 vec.add(new DERGeneralizedTime(value));
-                attr = new Attribute(new DERObjectIdentifier(id_pda_dateOfBirth),new DERSet(vec));
+                attr = new Attribute(new ASN1ObjectIdentifier(id_pda_dateOfBirth),new DERSet(vec));
                 ret.add(attr);                
             } else {
                 log.error("Wrong length of data for 'dateOfBirth', should be of format YYYYMMDD, skipping...");
