@@ -571,7 +571,9 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             final X509Name x509dn = new X509Name(dn);
             PKCS10CertificationRequest basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", x509dn, 
                     keyPair.getPublic(), null, keyPair.getPrivate());
+            assertTrue("Request must verify (POP)", basicpkcs10.verify());
             PKCS10RequestMessage req = new PKCS10RequestMessage(basicpkcs10);
+            assertTrue("Request must verify (POP)", req.verify());
             X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
             assertNotNull("Creating a cert should have worked", resp);
             X509Certificate cert = (X509Certificate)resp.getCertificate();
