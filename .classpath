@@ -64,9 +64,8 @@
 	<classpathentry kind="lib" path="lib/ext/commons-httpclient-3.1.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/QuickServer.jar"/>
 	<classpathentry kind="lib" path="lib/quickserver/commons-pool.jar"/>
-	<classpathentry kind="lib" path="lib/bcprov-jdk16-145.jar"/>
-	<classpathentry kind="lib" path="lib/bcmail-jdk16-145.jar"/>
-	<classpathentry kind="lib" path="lib/bctsp-jdk16-145.jar"/>
+	<classpathentry kind="lib" path="lib/bcprov-jdk15-147.jar"/>
+	<classpathentry kind="lib" path="lib/bcpkix-jdk15-147.jar"/>
 	<classpathentry kind="lib" path="lib/cert-cvc.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/xmlsec-1.4.3.jar"/>
 	<classpathentry kind="lib" path="lib/xmlsign/xalan-2.7.1.jar"/>
