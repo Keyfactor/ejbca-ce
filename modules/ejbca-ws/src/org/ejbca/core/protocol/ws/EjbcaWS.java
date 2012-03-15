@@ -196,10 +196,12 @@ import org.ejbca.util.query.Query;
  * Implementor of the IEjbcaWS interface.
  * Keep this class free of other helper methods, and implement them in the helper classes instead.
  * 
+ * The WebService name below is important because it determines the webservice URL on JBoss 7.1.
+ * 
  * @version $Id$
  */
 @Stateless
-@WebService(name="EjbcaWS", serviceName="EjbcaWSService", targetNamespace="http://ws.protocol.core.ejbca.org/", portName="EjbcaWSPort")	//portName="EjbcaWSPort" default 
+@WebService(name="ejbcaws", serviceName="", targetNamespace="http://ws.protocol.core.ejbca.org/", portName="EjbcaWSPort")	//portName="EjbcaWSPort" default 
 public class EjbcaWS implements IEjbcaWS {
 	@Resource
 	private WebServiceContext wsContext;	
