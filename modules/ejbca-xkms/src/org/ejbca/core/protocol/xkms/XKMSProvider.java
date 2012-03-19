@@ -179,78 +179,84 @@ public class XKMSProvider implements Provider<Source> {
     public Source invoke(Source request) {
 		Source response = null;
 		
-		MessageContext msgContext = wsContext.getMessageContext();		
-		HttpServletRequest httpreq = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
-		String remoteIP = httpreq.getRemoteAddr();
-		
-		Document requestDoc = null;
-		try{
-			DOMResult dom = new DOMResult();
-			// The setproperty was suggested by Dai Tokunaga to get it working with Glassfish v2. It's not needed for JBoss though.
-			//System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");  
-			Transformer trans = TransformerFactory.newInstance().newTransformer();
-			//System.setProperty("javax.xml.transform.TransformerFactory", "");  
-			trans.transform(request, dom);
-			requestDoc = (Document) dom.getNode();
-		} catch (TransformerConfigurationException e) {
-			log.error(intres.getLocalizedMessage("xkms.errorparsingdomreq"),e);
-		} catch (TransformerFactoryConfigurationError e) {
-			log.error(intres.getLocalizedMessage("xkms.errorparsingdomreq"),e);
-		} catch (TransformerException e) {
-			log.error(intres.getLocalizedMessage("xkms.errorparsingdomreq"),e);
-		}
-		
-		boolean respMecSign = false;
-		try {
-			//JAXBElement jAXBRequest = (JAXBElement) unmarshaller.unmarshal(request);
-			JAXBElement<RequestAbstractType> jAXBRequest = (JAXBElement<RequestAbstractType>) unmarshaller.unmarshal(requestDoc.cloneNode(true));
-			JAXBElement<? extends MessageAbstractType> jAXBResult = null;
-			if(jAXBRequest.getValue() instanceof RequestAbstractType){
-				respMecSign = ((RequestAbstractType)jAXBRequest.getValue()).getResponseMechanism().contains(XKMSConstants.RESPONSMEC_REQUESTSIGNATUREVALUE);
-			}				
-			if(jAXBRequest.getValue() instanceof ValidateRequestType ){
-				boolean requestVerifies = verifyRequest(requestDoc);
-				jAXBResult = validate(remoteIP, (ValidateRequestType) jAXBRequest.getValue(), requestVerifies);
-			}	
-			if(jAXBRequest.getValue() instanceof LocateRequestType ){
-				boolean requestVerifies = verifyRequest(requestDoc);
-				jAXBResult = locate(remoteIP, (LocateRequestType) jAXBRequest.getValue(), requestVerifies);
-			}	
-			if(jAXBRequest.getValue() instanceof RegisterRequestType ){
-				boolean requestVerifies = verifyRequest(requestDoc);
-				jAXBResult = register(remoteIP, (RegisterRequestType) jAXBRequest.getValue(), requestVerifies, requestDoc);
-			}	
-			if(jAXBRequest.getValue() instanceof ReissueRequestType ){
-				boolean requestVerifies = verifyRequest(requestDoc);
-				jAXBResult = reissue(remoteIP, (ReissueRequestType) jAXBRequest.getValue(), requestVerifies, requestDoc);
-			}
-			if(jAXBRequest.getValue() instanceof RecoverRequestType ){
-				boolean requestVerifies = verifyRequest(requestDoc);
-				jAXBResult = recover(remoteIP, (RecoverRequestType) jAXBRequest.getValue(), requestVerifies, requestDoc);
-			}
-			
-			if(jAXBRequest.getValue() instanceof RevokeRequestType ){
-				boolean requestVerifies = verifyRequest(requestDoc);
-				jAXBResult = revoke(remoteIP, (RevokeRequestType) jAXBRequest.getValue(), requestVerifies, requestDoc);
-			}
-			
-			
-			String responseId = ((MessageAbstractType) jAXBResult.getValue()).getId();			
-			
-			Document doc = dbf.newDocumentBuilder().newDocument();
-			marshaller.marshal( jAXBResult, doc );
-			doc = signResponseIfNeeded(doc, responseId, respMecSign, intAdmin);
+		if (request != null) {
+	        MessageContext msgContext = wsContext.getMessageContext();
+	        HttpServletRequest httpreq = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
+	        String remoteIP = httpreq.getRemoteAddr();
+	        
+	        Document requestDoc = null;
+	        try{
+	            DOMResult dom = new DOMResult();
+	            // The setproperty was suggested by Dai Tokunaga to get it working with Glassfish v2. It's not needed for JBoss though.
+	            //System.setProperty("javax.xml.transform.TransformerFactory", "com.sun.org.apache.xalan.internal.xsltc.trax.TransformerFactoryImpl");  
+	            Transformer trans = TransformerFactory.newInstance().newTransformer();
+	            //System.setProperty("javax.xml.transform.TransformerFactory", "");  
+	            trans.transform(request, dom);
+	            requestDoc = (Document) dom.getNode();
+	        } catch (TransformerConfigurationException e) {
+	            log.error(intres.getLocalizedMessage("xkms.errorparsingdomreq"),e);
+	        } catch (TransformerFactoryConfigurationError e) {
+	            log.error(intres.getLocalizedMessage("xkms.errorparsingdomreq"),e);
+	        } catch (TransformerException e) {
+	            log.error(intres.getLocalizedMessage("xkms.errorparsingdomreq"),e);
+	        }
+	        
+	        boolean respMecSign = false;
+	        try {
+	            //JAXBElement jAXBRequest = (JAXBElement) unmarshaller.unmarshal(request);
+	            if (requestDoc == null) {
+	                if (log.isDebugEnabled()) {
+	                    log.debug("Request doc is null, ignoring invalid request and returning null.");
+	                }
+	            } else {
+	                 JAXBElement<RequestAbstractType> jAXBRequest = (JAXBElement<RequestAbstractType>) unmarshaller.unmarshal(requestDoc.cloneNode(true));
+	                    JAXBElement<? extends MessageAbstractType> jAXBResult = null;
+	                    if(jAXBRequest.getValue() instanceof RequestAbstractType){
+	                        respMecSign = ((RequestAbstractType)jAXBRequest.getValue()).getResponseMechanism().contains(XKMSConstants.RESPONSMEC_REQUESTSIGNATUREVALUE);
+	                    }
+	                    if(jAXBRequest.getValue() instanceof ValidateRequestType ){
+	                        boolean requestVerifies = verifyRequest(requestDoc);
+	                        jAXBResult = validate(remoteIP, (ValidateRequestType) jAXBRequest.getValue(), requestVerifies);
+	                    } 
+	                    if(jAXBRequest.getValue() instanceof LocateRequestType ){
+	                        boolean requestVerifies = verifyRequest(requestDoc);
+	                        jAXBResult = locate(remoteIP, (LocateRequestType) jAXBRequest.getValue(), requestVerifies);
+	                    } 
+	                    if(jAXBRequest.getValue() instanceof RegisterRequestType ){
+	                        boolean requestVerifies = verifyRequest(requestDoc);
+	                        jAXBResult = register(remoteIP, (RegisterRequestType) jAXBRequest.getValue(), requestVerifies, requestDoc);
+	                    } 
+	                    if(jAXBRequest.getValue() instanceof ReissueRequestType ){
+	                        boolean requestVerifies = verifyRequest(requestDoc);
+	                        jAXBResult = reissue(remoteIP, (ReissueRequestType) jAXBRequest.getValue(), requestVerifies, requestDoc);
+	                    }
+	                    if(jAXBRequest.getValue() instanceof RecoverRequestType ){
+	                        boolean requestVerifies = verifyRequest(requestDoc);
+	                        jAXBResult = recover(remoteIP, (RecoverRequestType) jAXBRequest.getValue(), requestVerifies, requestDoc);
+	                    }
+	                    
+	                    if(jAXBRequest.getValue() instanceof RevokeRequestType ){
+	                        boolean requestVerifies = verifyRequest(requestDoc);
+	                        jAXBResult = revoke(remoteIP, (RevokeRequestType) jAXBRequest.getValue(), requestVerifies, requestDoc);
+	                    }
 
-		    		    
-		    response = new DOMSource(doc);
-			
-					
-		} catch (JAXBException e) {
-		   log.error(intres.getLocalizedMessage("xkms.errorunmarshallingreq"),e);		   
-		} catch (ParserConfigurationException e) {
-		   log.error(intres.getLocalizedMessage("xkms.errorparsingresp"),e);
+	                    String responseId = ((MessageAbstractType) jAXBResult.getValue()).getId();          
+	                    Document doc = dbf.newDocumentBuilder().newDocument();
+	                    marshaller.marshal( jAXBResult, doc );
+	                    doc = signResponseIfNeeded(doc, responseId, respMecSign, intAdmin);
+	          
+	                    response = new DOMSource(doc);
+	            }
+	        } catch (JAXBException e) {
+	           log.error(intres.getLocalizedMessage("xkms.errorunmarshallingreq"),e);
+	        } catch (ParserConfigurationException e) {
+	           log.error(intres.getLocalizedMessage("xkms.errorparsingresp"),e);
+	        }
+		} else {
+		    if (log.isDebugEnabled()) {
+                log.debug("Request is null, ignoring invalid request and returning null.");
+		    }
 		}
-		
 		return response;
 	}
 
