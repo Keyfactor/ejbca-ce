@@ -176,12 +176,7 @@ public class XKMSKRSSTest {
     
 	@BeforeClass
     public static void setupDatabaseAndInvoker() throws Exception {
-	    try {
-	        xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/xkms", null);
-	    } catch (WebServiceException e) {
-	        // We have the second URI (JBoss 7)
-	        xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/XKMSProvider", null);
-	    }
+	    xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/xkms", null);
 
         org.apache.xml.security.Init.init();
         try {

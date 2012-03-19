@@ -136,12 +136,7 @@ public class XKMSKISSTest {
     public static void beforeClass() {
         CryptoProviderTools.installBCProviderIfNotAvailable();
 
-        try {
-            xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/xkms", null);
-        } catch (WebServiceException e) {
-            // We have the second URI (JBoss 7)
-            xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/XKMSProvider", null);
-        }
+        xKMSInvoker = new XKMSInvoker("http://localhost:" + HTTPPORT + "/ejbca/xkms/xkms", null);
     }
     
     @Before

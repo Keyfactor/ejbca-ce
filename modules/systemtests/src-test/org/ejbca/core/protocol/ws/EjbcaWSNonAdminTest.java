@@ -34,7 +34,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.WebServiceException;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
@@ -154,12 +153,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             System.setProperty("javax.net.ssl.keyStore", TEST_NONADMIN_FILE);
             System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
 
-            try {
-                createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");
-            } catch (WebServiceException e) {
-                // We have the second URI (JBoss 7)
-                createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/EjbcaWSService/EjbcaWS?wsdl");
-            }
+            createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");
         } else {
             log.error("No file '"+TEST_NONADMIN_FILE+"' exists.");
         }
