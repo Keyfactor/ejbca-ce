@@ -4,4 +4,11 @@
        xmlns="http://www.jboss.com/xml/ns/javaee" 
        xsi:schemalocation="http://www.jboss.com/xml/ns/javaee http://www.jboss.org/j2ee/schema/jboss_webservices_1_0.xsd">
     <context-root>ejbca/ejbcaws</context-root>
+    
+    <port-component>
+	    <ejb-name>EjbcaWS</ejb-name>
+	    <port-component-name>ejbcaws</port-component-name>
+		<port-component-uri>ejbcaws</port-component-uri>
+	</port-component>
+    
 </webservices>

@@ -43,15 +43,14 @@ import java.util.Properties;
 import java.util.Vector;
 
 import javax.xml.namespace.QName;
-import javax.xml.ws.WebServiceException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
@@ -266,12 +265,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         System.setProperty("javax.net.ssl.keyStore", TEST_ADMIN_FILE);
         System.setProperty("javax.net.ssl.keyStorePassword", PASSWORD);
         
-        try {
-            createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");
-        } catch (WebServiceException e) {
-            // We have the second URI (JBoss 7)
-            createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/EjbcaWSService/EjbcaWS?wsdl");
-        }
+        createEjbcaWSPort("https://" + hostname + ":" + httpsPort + "/ejbca/ejbcaws/ejbcaws?wsdl");
     }
     
     private void createEjbcaWSPort(final String url) throws MalformedURLException {
