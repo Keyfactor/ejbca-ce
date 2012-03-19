@@ -18,7 +18,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
