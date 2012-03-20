@@ -14,11 +14,13 @@ package org.cesecore.certificates.ocsp.standalone;
 
 import javax.ejb.Local;
 
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
+
 /**  
  * @version $Id$
  *
  */
 @Local
-public interface StandaloneOcspResponseGeneratorSessionLocal extends StandAloneOcspResponseGeneratorSession {
+public interface StandaloneOcspResponseGeneratorSessionLocal extends StandAloneOcspResponseGeneratorSession, OcspResponseGeneratorSessionLocal {
 
 }

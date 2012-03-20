@@ -28,7 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Iterator;
-import java.util.regex.Pattern;
+import java.util.Map;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
@@ -39,8 +39,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.x509.CRLReason;
@@ -69,7 +69,9 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestExc
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
+import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.Base64;
@@ -86,7 +88,6 @@ import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.core.protocol.ocsp.AuditLogger;
 import org.ejbca.core.protocol.ocsp.IAuditLogger;
-import org.ejbca.core.protocol.ocsp.IOCSPExtension;
 import org.ejbca.core.protocol.ocsp.IOCSPLogger;
 import org.ejbca.core.protocol.ocsp.ITransactionLogger;
 import org.ejbca.core.protocol.ocsp.OCSPData;
@@ -98,6 +99,8 @@ import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.ejbca.util.DummyPatternLogger;
 import org.ejbca.util.HTMLTools;
 import org.ejbca.util.IPatternLogger;
+
+
 
 /** Base servlet for handling OCSP requests, subclass of both OCSPServlet and OCSPServletStandalone.
  * 
@@ -131,18 +134,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 	/** Marks if the CAs certificate chain should be included in the OCSP response or not 
 	 */
 	private final boolean m_includeChain = OcspConfiguration.getIncludeCertChain();
-	/** If true a certificate that does not exist in the database, but is issued by a CA the responder handles
-	 * will be treated as not revoked. Default (when value is true) is to treat is as "unknown".
-	 */
-	private static boolean nonExistingIsGood;
-	/**
-	 * If this regex is fulfilled the "good" will be return even if {@link #nonExistingIsGood} is false;
-	 */
-	private static Pattern nonExistingIsGoodOverideRegex;
-	/**
-	 * If this regex is fulfilled the "unknown" will be return even if {@link #nonExistingIsGood} is true;
-	 */
-	private static Pattern nonExistingIsBadOverideRegex;
+	
 	/** Controls which of the two possible types of responderId should be used. See RFC2560 for details.
 	 * Default is to use KeyId, the other possible type is X500name.
 	 */
@@ -152,7 +144,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 	 */
 	private final Collection<String> m_extensionOids = OcspConfiguration.getExtensionOids();
 	private final Collection<String> m_extensionClasses = OcspConfiguration.getExtensionClasses();
-	private HashMap<String, IOCSPExtension> m_extensionMap = null;
+	private HashMap<String, OCSPExtension> m_extensionMap = null;
 	private final boolean mDoAuditLog = OcspConfiguration.getAuditLog();
 	private final boolean mDoTransactionLog = OcspConfiguration.getTransactionLog();
 
@@ -178,18 +170,8 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 	/**
 	 * Call this to update the configuration.
 	 */
-	private static void reloadConfig() {
-		nonExistingIsGood = OcspConfiguration.getNonExistingIsGood();
-		{
-			final String value = OcspConfiguration.getNonExistingIsGoodOverideRegex();
-			nonExistingIsGoodOverideRegex = value!=null ? Pattern.compile( value ) : null;
-		}{
-			final String value = OcspConfiguration.getNonExistingIsBadOverideRegex();
-			nonExistingIsBadOverideRegex = value!=null ? Pattern.compile( value ) : null;
-		}
-	}
 	static {
-		reloadConfig();
+		OcspConfigurationCache.INSTANCE.reloadConfiguration();
 	}
 
 	synchronized void loadTrustDir() throws Exception {
@@ -269,7 +251,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 		if (m_log.isDebugEnabled()) {
 			m_log.debug("Responder Id type: '" + m_respIdType + "'");
 			m_log.debug("Include certificate chain: '" + m_includeChain + "'");
-			m_log.debug("Non existing certificates are good: '" + nonExistingIsGood + "'");
+			m_log.debug("Non existing certificates are good: '" + OcspConfigurationCache.INSTANCE.isNonExistingGood() + "'");
 			m_log.debug("Are we doing auditLogging?: '" + mDoAuditLog + "'");
 		}
 		// Set up Audit and Transaction Logging
@@ -321,13 +303,13 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 		}
 		Iterator<String> iter = m_extensionClasses.iterator();
 		Iterator<String> iter2 = m_extensionOids.iterator();
-		m_extensionMap = new HashMap<String, IOCSPExtension>();
+		m_extensionMap = new HashMap<String, OCSPExtension>();
 		while (iter.hasNext()) {
 			String clazz = (String)iter.next();
 			String oid = (String)iter2.next();
-			IOCSPExtension ext = null;
+			OCSPExtension ext = null;
 			try {
-				ext = (IOCSPExtension)Class.forName(clazz).newInstance();
+				ext = (OCSPExtension)Class.forName(clazz).newInstance();
 				ext.init(config);
 			} catch (Exception e) {
 				m_log.error("Can not create extension with class "+clazz, e);
@@ -470,13 +452,13 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 					}
 					ConfigurationHolder.updateConfiguration(aConfig[i].substring(0, separatorIx), aConfig[i].substring(separatorIx+1, aConfig[i].length()));
 				}
-				reloadConfig();
+				OcspConfigurationCache.INSTANCE.reloadConfiguration();
 				m_log.info( "Call from "+remote+" to update configuration" );
 				return;
 			}
 			if ( doRestoreConfig ) {
 				ConfigurationHolder.restoreConfiguration();
-				reloadConfig();
+				OcspConfigurationCache.INSTANCE.reloadConfiguration();
 				m_log.info( "Call from "+remote+" to restore configuration." );
 				return;
 			}
@@ -587,18 +569,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 		}
 		return ret;
 	}
-	private static boolean isRegexFulFilled( String target, Pattern pattern ) {
-		if ( pattern==null ) {
-			return false;
-		}
-		return pattern.matcher(target).matches();
-	}
-	private static boolean nonExistingIsGood( StringBuffer url) {
-		if ( nonExistingIsGood ) {
-			return !isRegexFulFilled( url.toString(), nonExistingIsBadOverideRegex);
-		}
-		return isRegexFulFilled( url.toString(), nonExistingIsGoodOverideRegex);		
-	}
+	
 	/** Performs service of the actual OCSP request, which is contained in reqBytes. 
 	 *  
 	 *  @param reqBytes the binary OCSP request bytes. This parameter must already have been checked for max or min size. 
@@ -844,7 +815,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 							// OR
 							// we don't actually handle requests for the CA issuing the certificate asked about
 							// then we return unknown
-							if ( !nonExistingIsGood(request.getRequestURL()) || this.data.m_caCertCache.findByOcspHash(certId)==null ) {
+							if ( !OcspConfigurationCache.INSTANCE.isNonExistingGood(request.getRequestURL()) || this.data.m_caCertCache.findByOcspHash(certId)==null ) {
 								sStatus = "unknown";
 								certStatus = new UnknownStatus();
 								transactionLogger.paramPut(ITransactionLogger.CERT_STATUS, OCSPUnidResponse.OCSP_UNKNOWN);
@@ -890,14 +861,16 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 								if (m_log.isDebugEnabled()) {
 									m_log.debug("Found OCSP extension oid: "+oidstr);
 								}
-								IOCSPExtension extObj = (IOCSPExtension)m_extensionMap.get(oidstr);
+								OCSPExtension extObj = (OCSPExtension)m_extensionMap.get(oidstr);
 								if (extObj != null) {
 									// Find the certificate from the certId
 									X509Certificate cert = null;
 									cert = (X509Certificate)this.data.certificateStoreSession.findCertificateByIssuerAndSerno(cacert.getSubjectDN().getName(), certId.getSerialNumber());
 									if (cert != null) {
-										// Call the OCSP extension
-										Hashtable<ASN1ObjectIdentifier, X509Extension> retext = extObj.process(request, cert, certStatus);
+										// Call the OCSP extension		
+									    X509Certificate[] requestCertificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+                                        String remoteHost = request.getRemoteHost();
+										Map<ASN1ObjectIdentifier, X509Extension> retext = extObj.process(requestCertificates, remoteAddress, remoteHost, cert, certStatus);
 										if (retext != null) {
 											// Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
 											responseExtensions.putAll(retext);
@@ -994,7 +967,6 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 				}
 			}
 			response.setContentType("application/ocsp-response");
-			//response.setHeader("Content-transfer-encoding", "binary");
 			response.setContentLength(respBytes.length);
 			addRfc5019CacheHeaders(request, response, ocspresp, maxAge);
 			response.getOutputStream().write(respBytes);
@@ -1019,7 +991,7 @@ public abstract class OCSPServletBase extends HttpServlet implements SaferAppend
 	 * the response contains a nextUpdate and no nonce is present.
 	 * @param maxAge is the margin to Expire when using max-age in milliseconds 
 	 */
-	private void addRfc5019CacheHeaders(HttpServletRequest request, HttpServletResponse response, OCSPResp ocspresp, long maxAge) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, OCSPException {
+    private void addRfc5019CacheHeaders(HttpServletRequest request, HttpServletResponse response, OCSPResp ocspresp, long maxAge) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, OCSPException {
 		if (maxAge <= 0) {
 			m_log.debug("Will not add RFC 5019 cache headers: RFC 5019 6.2: max-age should be 'later than thisUpdate but earlier than nextUpdate'.");
 			return;

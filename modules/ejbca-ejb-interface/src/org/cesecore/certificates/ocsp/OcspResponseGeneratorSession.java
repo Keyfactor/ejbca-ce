@@ -12,13 +12,15 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
+import java.io.IOException;
 import java.security.cert.X509Certificate;
 
+import org.bouncycastle.ocsp.OCSPException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.certificates.ocsp.logging.AuditLogger;
+import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 
 /**
  * This interface is used to generate OCSP responses.
@@ -34,19 +36,22 @@ public interface OcspResponseGeneratorSession {
      * This method delivers an OCSP response to a given request, as provided in the byte[] parameter.
      * 
      * @param authenticationToken An authentication token for the user performing the operation.
-     * @param request a byte array representing an encoded OCSPRequest.
+     * @param requestBytes a byte array representing an encoded OCSPRequest.
      * @param requestCertificates An array of Certificates from the original HttpServletRequest
-     * @param remoteAddress
-     * @param remoteHost
+     * @param remoteAddress Remote address, most likely extracted from the HttpServletRequest
+     * @param remoteHost Remote host, most likely extracted from the HttpServletRequest
+     * @param auditLogger The AuditLogger to use for this transaction
+     * @param transactionLogger The TransactionLogger to use for this transaction
      * 
-     * @return a signed and encoded OCSPResponse
-     * @throws AuthorizationDeniedException if authorization is denied for this operation.
+     * @return a signed and encoded OCSPResponse wrapped in an OcspResponseInformation object
      * @throws MalformedRequestException if the request byte array was invalid.
+     * @throws IOException 
+     * @throws OCSPException if OCSP response generation fails
      */
-    byte[] getOcspResponse(AuthenticationToken authenticationToken, byte[] request, X509Certificate[] requestCertificates, String remoteAddress,
-            String remoteHost) throws AuthorizationDeniedException, MalformedRequestException;
+    OcspResponseInformation getOcspResponse(byte[] requestBytes,
+            X509Certificate[] requestCertificates, String remoteAddress, String remoteHost, StringBuffer requestUrl, AuditLogger auditLogger,
+            TransactionLogger transactionLogger) throws MalformedRequestException, IOException, OCSPException;
 
-    void reloadTokenAndChainCache(AuthenticationToken authenticationToken) throws CADoesntExistsException, AuthorizationDeniedException,
-            IllegalCryptoTokenException;
+    
 
 }

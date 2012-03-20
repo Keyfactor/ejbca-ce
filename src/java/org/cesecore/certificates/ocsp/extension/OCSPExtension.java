@@ -13,8 +13,11 @@
 
 package org.cesecore.certificates.ocsp.extension;
 
+import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
+
+import javax.servlet.ServletConfig;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.X509Extension;
@@ -30,13 +33,11 @@ import org.bouncycastle.ocsp.CertificateStatus;
  */
 public interface OCSPExtension {
 
-    /**
-     * Called after construction
+    /** Called after construction
      * 
-     * @param config
-     *            ServletConfig that can be used to read init-params from web-xml
+     * @param config ServletConfig that can be used to read init-params from web-xml
      */
-    public void init();
+    public void init(ServletConfig config);
 
     /**
      * Called by OCSP responder when the configured extension is found in the request.
@@ -53,9 +54,10 @@ public interface OCSPExtension {
      *            CertificateStatus the status the certificate has according to the OCSP responder, null means the cert is good
      * @return Hashtable with X509Extensions <String oid, X509Extension ext> that will be added to responseExtensions by OCSP responder, or null if an
      *         error occurs
+     * @throws IOException 
      */
     public Map<ASN1ObjectIdentifier, X509Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
-            X509Certificate cert, CertificateStatus status);
+            X509Certificate cert, CertificateStatus status) throws IOException;
 
     /**
      * Returns the last error that occured during process(), when process returns null

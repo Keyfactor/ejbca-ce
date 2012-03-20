@@ -64,6 +64,8 @@ public class PatternLoggerTest {
     
     private class TestPatternLogger extends PatternLogger {
 
+        private static final long serialVersionUID = -8096112483409703781L;
+
         protected TestPatternLogger(String matchPattern, String matchString, String logDateFormat, String timeZone) {
             super(false, matchPattern, matchString, logDateFormat, timeZone);
             

@@ -22,6 +22,7 @@ import org.cesecore.config.OcspConfiguration;
  */
 public class TransactionLogger extends PatternLogger {
 
+    private static final long serialVersionUID = 1722398387512931482L;
     /**
      * The Common Name (CN) of the client making the request
      */

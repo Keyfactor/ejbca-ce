@@ -21,7 +21,8 @@ import org.cesecore.config.OcspConfiguration;
  * 
  */
 public class AuditLogger extends PatternLogger {
-
+    
+    private static final long serialVersionUID = 4474243795289459488L;
     /**
      * The byte[] ocsp-request that came with the http-request
      */

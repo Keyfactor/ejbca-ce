@@ -14,4 +14,5 @@ public interface StandAloneOcspResponseGeneratorSession extends OcspResponseGene
      * @param password Password the keystore.
      */
     void reloadTokenAndChainCache(AuthenticationToken authenticationToken, String password);
+    
 }

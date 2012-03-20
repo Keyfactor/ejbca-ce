@@ -52,7 +52,12 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.ocsp.OcspResponseInformation;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
+import org.cesecore.certificates.ocsp.logging.AuditLogger;
+import org.cesecore.certificates.ocsp.logging.GuidHolder;
+import org.cesecore.certificates.ocsp.logging.TransactionCounter;
+import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.roles.RoleData;
@@ -174,7 +179,8 @@ public class StandaloneOcspResponseGeneratorSessionTest extends CaCreatingTestCa
     }
 
     @Test
-    public void testStandAloneOcspResponseSanity() throws OCSPException, AuthorizationDeniedException, MalformedRequestException, IOException, NoSuchProviderException {
+    public void testStandAloneOcspResponseSanity() throws OCSPException, AuthorizationDeniedException, MalformedRequestException, IOException,
+            NoSuchProviderException {
 
         standaloneOcspResponseGeneratorSession.reloadTokenAndChainCache(roleMgmgToken, PASSWORD);
 
@@ -187,10 +193,16 @@ public class StandaloneOcspResponseGeneratorSessionTest extends CaCreatingTestCa
         gen.setRequestExtensions(new X509Extensions(exts));
 
         OCSPReq req = gen.generate();
-
-        byte[] responseBytes = standaloneOcspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
+        final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+        // Create the transaction logger for this transaction.
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        // Create the audit logger for this transaction.
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        OcspResponseInformation responseInformation = standaloneOcspResponseGeneratorSession.getOcspResponse(req.getEncoded(),
+                null, "", "", null, auditLogger, transactionLogger);
+        byte[] responseBytes = responseInformation.getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
-        
+
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(responseBytes));
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();

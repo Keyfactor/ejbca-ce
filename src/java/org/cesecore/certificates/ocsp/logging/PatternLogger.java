@@ -14,6 +14,7 @@
 package org.cesecore.certificates.ocsp.logging;
 
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,8 +38,9 @@ import org.bouncycastle.util.encoders.Hex;
  * 
  * @version $Id$
  */
-public abstract class PatternLogger {
+public abstract class PatternLogger implements Serializable {
 
+    private static final long serialVersionUID = 8486004615125959046L;
     public static final String LOG_TIME = "LOG_TIME";// The Date and time the request.
     public static final String LOG_ID = "LOG_ID"; // An integer identifying a log entry for a request
     public static final String SESSION_ID = "SESSION_ID"; // A random 32 bit number identifying a log entry for a request
@@ -80,9 +82,9 @@ public abstract class PatternLogger {
     public static final String PROCESS_TIME = "PROCESS_TIME";
 
     private final Map<String, String> valuepairs = new HashMap<String, String>();
-    private final StringWriter sw = new StringWriter();
-    private final PrintWriter pw = new PrintWriter(this.sw);
-    private final Matcher m;
+    private transient final StringWriter sw = new StringWriter();
+    private transient final PrintWriter pw = new PrintWriter(this.sw);
+    private transient final Matcher m;
     private final String orderString;
     private final String logDateFormat;
     private final String timeZone;
