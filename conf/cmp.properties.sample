@@ -116,12 +116,6 @@
 # Default: signature
 #cmp.responseprotection=signature
 
-# Shared secret between the CA and the RA used to authenticate valid RA messages.
-# Leave this commented out to be able to use a separate secret for each CA (see Edit Certificate Authorities configuration).
-#
-# Default: empty
-#cmp.ra.authenticationsecret=
-
 # Which generation scheme should be used, RANDOM, DN or USERNAME for base username. FIXED to have a fixed username.
 # Random will generate a 12 character long random username.
 # DN will take a part of the request DN, which part is defined by cmp.ra.namegenerationparameters, and use as the username.
