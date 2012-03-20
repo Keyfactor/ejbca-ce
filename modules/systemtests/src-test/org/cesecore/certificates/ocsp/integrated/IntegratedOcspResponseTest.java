@@ -30,7 +30,7 @@ import java.util.List;
 
 import javax.ejb.EJBException;
 
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
@@ -63,8 +63,13 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.ocsp.IntegratedOcspResponseGeneratorProxySessionRemote;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
+import org.cesecore.certificates.ocsp.logging.AuditLogger;
+import org.cesecore.certificates.ocsp.logging.GuidHolder;
+import org.cesecore.certificates.ocsp.logging.TransactionCounter;
+import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
@@ -95,6 +100,8 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     private IntegratedOcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(IntegratedOcspResponseGeneratorSessionRemote.class);
+    private IntegratedOcspResponseGeneratorProxySessionRemote integratedOcspResponseGeneratorProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(IntegratedOcspResponseGeneratorProxySessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
@@ -117,7 +124,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     @Before
     public void setUp() throws Exception {
-        
+
         // Set up base role that can edit roles
         setUpAuthTokenAndRole("OcspSessionTest");
 
@@ -189,18 +196,24 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
         testx509ca.getCAToken().getCryptoToken();
 
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(roleMgmgToken);
+        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, caCertificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
 
         OCSPReq req = gen.generate();
-
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
+        
+        final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+        // Create the transaction logger for this transaction.
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        // Create the audit logger for this transaction.
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(responseBytes));
@@ -216,19 +229,24 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     @Test
     public void testGetOcspResponseWithOcspCertificate() throws Exception {
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(roleMgmgToken);
+        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
 
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
 
         OCSPReq req = gen.generate();
-
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
+        final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+        // Create the transaction logger for this transaction.
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        // Create the audit logger for this transaction.
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(responseBytes));
@@ -244,12 +262,12 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     @Test
     public void testGetOcspResponseWithRevokedCertificate() throws Exception {
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(roleMgmgToken);
+        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
 
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -258,8 +276,13 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
         // Now revoke the ocspCertificate
         certificateStoreSession.setRevokeStatus(roleMgmgToken, ocspCertificate, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
-
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
+        final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+        // Create the transaction logger for this transaction.
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        // Create the audit logger for this transaction.
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(responseBytes));
@@ -280,12 +303,12 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     @Test
     public void testGetOcspResponseWithUnavailableCertificate() throws Exception {
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(roleMgmgToken);
+        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
 
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -294,9 +317,14 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
         // Now remove the certificate
         internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(roleMgmgToken);
-
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
+        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
+        final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+        // Create the transaction logger for this transaction.
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        // Create the audit logger for this transaction.
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"), auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(responseBytes));
@@ -309,10 +337,11 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
                 .getSerialNumber());
 
-        // Set that an unknown CA is "good", and redo the test.
+        // Set that an unknown CA is "good", and redo the test (cache is reloaded automatically)
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.nonexistingisgood", "true");
 
-        responseBytes = ocspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
+        responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"), auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
         response = new OCSPResp(new ByteArrayInputStream(responseBytes));
@@ -349,14 +378,14 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         // Set the validity time to a single second for testing purposes.
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.signtrustvalidtime", timeToWait.toString());
 
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(roleMgmgToken);
+        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
 
         try {
 
             // An OCSP request
             OCSPReqGenerator gen = new OCSPReqGenerator();
             gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, ocspCertificate.getSerialNumber()));
-            Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
+            Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
             X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
             exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
             gen.setRequestExtensions(new X509Extensions(exts));
@@ -364,16 +393,23 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
             OCSPReq req = gen.generate();
 
             byte[] responseBytes;
-
-            ocspResponseGeneratorSession.reloadTokenAndChainCache(roleMgmgToken);
-            responseBytes = ocspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
+            integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
+            final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+            // Create the transaction logger for this transaction.
+            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            // Create the audit logger for this transaction.
+            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            responseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
             assertNotNull("OCSP resonder replied null", responseBytes);
             // Initial assert that status is null, i.e. "good"
             assertNull("Test could not run because initial ocsp response failed.", ((BasicOCSPResp) (new OCSPResp(new ByteArrayInputStream(
                     responseBytes))).getResponseObject()).getResponses()[0].getCertStatus());
             // Erase the cert. It should still exist in the cache.
             caSession.removeCA(roleMgmgToken, testx509ca.getCAId());
-            responseBytes = ocspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
+            responseBytes = ocspResponseGeneratorSession
+                    .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+                    .getOcspResponse();
             // Initial assert that status is null, i.e. "good"
             assertNull("Test could not run because cache changed before the entire test could run.", ((BasicOCSPResp) (new OCSPResp(
                     new ByteArrayInputStream(responseBytes))).getResponseObject()).getResponses()[0].getCertStatus());
@@ -384,24 +420,20 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
             // Since the CA is gone, expect an exception here.
             try {
-                ocspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
+                ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger,
+                        transactionLogger);
                 assertTrue("Should throw OcspException", false);
             } catch (OcspFailureException e) {
-                // In JBoss 5, 6 this works, the client actually gets an OcspException
+                // In JBoss this works, the client actually gets an OcspException
                 assertEquals("Unable to find CA certificate and key to generate OCSP response.", e.getMessage());
             } catch (EJBException e) {
-                // In glassfish and JBoss 7, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
+                // In glassfish, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
                 Throwable e1 = e.getCausedByException();
-                // In JBoss 7 is is wrapped in only one layer
-                if (e1 instanceof OcspFailureException) {
-                    assertEquals("Unable to find CA certificate and key to generate OCSP response.", e1.getMessage());                
-                } else {
-                    Throwable e2 = e1.getCause();
-                    Throwable e3 = e2.getCause();
-                    assertTrue(e3 instanceof OcspFailureException);
-                    OcspFailureException e4 = (OcspFailureException) e3;
-                    assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());                    
-                }
+                Throwable e2 = e1.getCause();
+                Throwable e3 = e2.getCause();
+                assertTrue(e3 instanceof OcspFailureException);
+                OcspFailureException e4 = (OcspFailureException) e3;
+                assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());
             }
 
         } finally {
@@ -427,19 +459,24 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
     public void testGetOcspResponseWithCertificateFromUnknownCa() throws OCSPException, AuthorizationDeniedException, IOException,
             MalformedRequestException, CADoesntExistsException, IllegalCryptoTokenException, NoSuchProviderException {
 
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(roleMgmgToken);
+        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
 
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ocspCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
 
         OCSPReq req = gen.generate();
-
-        byte[] responseBytes = ocspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
+        final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+        // Create the transaction logger for this transaction.
+        TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        // Create the audit logger for this transaction.
+        AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+        byte[] responseBytes = ocspResponseGeneratorSession
+                .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
         OCSPResp response = new OCSPResp(new ByteArrayInputStream(responseBytes));
@@ -462,12 +499,12 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         // Restore the default value
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.defaultresponder", "CN=FancyPants");
 
-        ocspResponseGeneratorSession.reloadTokenAndChainCache(roleMgmgToken);
+        integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
 
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ocspCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
+        Hashtable<DERObjectIdentifier, X509Extension> exts = new Hashtable<DERObjectIdentifier, X509Extension>();
         X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
         exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
         gen.setRequestExtensions(new X509Extensions(exts));
@@ -476,27 +513,27 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
         // At first try, it should throw an exception because it can not find the default responder
         try {
-            ocspResponseGeneratorSession.getOcspResponse(roleMgmgToken, req.getEncoded(), null, "", "");
+            final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
+            // Create the transaction logger for this transaction.
+            TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            // Create the audit logger for this transaction.
+            AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
+            ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger,
+                    transactionLogger);
             fail("Should throw OcspFailureException");
         } catch (OcspFailureException e) {
-            // In JBoss 5, 6 this works, the client actually gets an OcspException
+            // In JBoss this works, the client actually gets an OcspException
             assertEquals("Unable to find CA certificate and key to generate OCSP response.", e.getMessage());
         } catch (EJBException e) {
-            // In glassfish and JBoss 7, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
+            // In glassfish, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
             Throwable e1 = e.getCausedByException();
-            // In JBoss 7 is is wrapped in only one layer
-            if (e1 instanceof OcspFailureException) {
-                assertEquals("Unable to find CA certificate and key to generate OCSP response.", e1.getMessage());                
-            } else {
-                Throwable e2 = e1.getCause();
-                Throwable e3 = e2.getCause();
-                assertTrue(e3 instanceof OcspFailureException);
-                OcspFailureException e4 = (OcspFailureException) e3;
-                assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());
-            }
+            Throwable e2 = e1.getCause();
+            Throwable e3 = e2.getCause();
+            assertTrue(e3 instanceof OcspFailureException);
+            OcspFailureException e4 = (OcspFailureException) e3;
+            assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());
         }
 
     }
-
 
 }

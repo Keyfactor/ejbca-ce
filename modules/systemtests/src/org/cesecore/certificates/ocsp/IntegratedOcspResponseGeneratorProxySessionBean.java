@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,25 +10,31 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.configuration;
+package org.cesecore.certificates.ocsp;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 
-import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
-import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.ocsp.integrated.IntegratedOcspResponseGeneratorSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 
 /**
  * @version $Id$
- * 
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CesecoreConfigurationProxySessionRemote")
-public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurationProxySessionRemote {
+@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "IntegratedOcspResponseGeneratorProxySessionRemote")
+@TransactionAttribute(TransactionAttributeType.SUPPORTS)
+public class IntegratedOcspResponseGeneratorProxySessionBean implements IntegratedOcspResponseGeneratorProxySessionRemote {
 
+    @EJB
+    private IntegratedOcspResponseGeneratorSessionLocal integratedOcspResponseGeneratorSession;
+    
     @Override
-    public void setConfigurationValue(String key, String value) {
-        ConfigurationHolder.updateConfiguration(key, value);
-        OcspConfigurationCache.INSTANCE.reloadConfiguration();
+    public void reloadTokenAndChainCache() throws AuthorizationDeniedException {
+        integratedOcspResponseGeneratorSession.reloadTokenAndChainCache();
     }
 
 }

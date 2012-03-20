@@ -133,7 +133,12 @@
 		<include name="org/cesecore/certificates/*Exception.java"/>
 		<include name="org/cesecore/certificates/ca/*.java"/>
 		<include name="org/cesecore/certificates/crl/*.java"/>
+		<include name="org/cesecore/certificates/ocsp/cache/OcspConfigurationCache.java"/>
 		<include name="org/cesecore/certificates/ocsp/exception/*Exception.java"/>
+		<include name="org/cesecore/certificates/ocsp/logging/AuditLogger.java"/>
+		<include name="org/cesecore/certificates/ocsp/logging/TransactionLogger.java"/>
+		<include name="org/cesecore/certificates/ocsp/logging/GuidHolder.java"/>
+		<include name="org/cesecore/certificates/ocsp/logging/TransactionCounter.java"/>
 		<include name="org/cesecore/certificates/certificateprofile/*.java"/>
 		<exclude name="org/cesecore/certificates/certificateprofile/*Cache.java"/>
 		<exclude name="org/cesecore/audit/AuditDevicesConfig.java"/>

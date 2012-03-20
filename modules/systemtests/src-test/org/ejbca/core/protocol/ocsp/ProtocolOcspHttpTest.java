@@ -267,6 +267,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
 		// Get user and ocspTestCert that we know...
 		loadUserCert(this.caid);
+		this.helper.reloadKeys();
 
 		this.helper.verifyStatusGood( this.caid, this.cacert, this.ocspTestCert.getSerialNumber());
 		log.trace("<test02OcspGood()");
@@ -285,6 +286,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		loadUserCert(this.caid);
 		// Now revoke the certificate and try again
 		this.revocationSession.revokeCertificate(admin, this.ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
+		this.helper.reloadKeys();
 		this.helper.verifyStatusRevoked( this.caid, this.cacert, this.ocspTestCert.getSerialNumber(), RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 		log.trace("<test03OcspRevoked()");
 	}
@@ -440,11 +442,12 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
 	@Test
 	public void test10MultipleRequests() throws Exception {
+	    this.helper.reloadKeys();
 		super.test10MultipleRequests();
 	}
 
 	@Test
-	public void test11MalformedRequest() throws Exception {
+	public void test11MalformedRequest() throws Exception {	    
 		super.test11MalformedRequest();
 	}
 
@@ -487,6 +490,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
 		// An OCSP request, ocspTestCert is already created in earlier tests
 		loadUserCert(this.caid);
+		this.helper.reloadKeys();
 		this.helper.verifyStatusGood( this.caid, this.cacert, this.ocspTestCert.getSerialNumber() );
 	}
 
@@ -529,7 +533,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
 		// Get user and ocspTestCert that we know...
 		loadUserCert(caid);
-
+		this.helper.reloadKeys();
 		// And an OCSP request
 		OCSPReqGenerator gen = new OCSPReqGenerator();
 		gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
@@ -778,6 +782,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 			map.put(OcspConfiguration.NONE_EXISTING_IS_GOOD_URI+'2', ".*"+good2+"$");
 			this.helper.alterConfig(map);
 		}
+	    this.helper.reloadKeys();
 		this.helper.verifyStatusGood( this.caid, this.cacert, new BigInteger("1") );
 		this.helper.setURLEnding(bad1);
 		this.helper.verifyStatusUnknown( this.caid, this.cacert, new BigInteger("1") );

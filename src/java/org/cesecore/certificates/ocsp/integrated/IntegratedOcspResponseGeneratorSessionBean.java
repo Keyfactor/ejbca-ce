@@ -104,7 +104,7 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
 
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void reloadTokenAndChainCache(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
+    public void reloadTokenAndChainCache() throws AuthorizationDeniedException {
     	// Cancel any waiting timers
     	cancelTimers();
     	try {
@@ -112,6 +112,7 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
     		for (Integer caId : caSession.getAvailableCAs()) {
     			CA ca = null;
     			try {
+    			    AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(INTERNAL_ADMIN_PRINCIPAL));
     				ca = caSession.getCA(authenticationToken, caId);
     			} catch (CADoesntExistsException e) {
     				// Should not be able to happen.
@@ -153,7 +154,7 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
     protected void initiateIfNecessary() {
         if (timerService.getTimers().size() == 0) {
             try {
-                reloadTokenAndChainCache(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(INTERNAL_ADMIN_PRINCIPAL)));
+                reloadTokenAndChainCache();
             } catch (AuthorizationDeniedException e) {
                 throw new Error("Could not reload token and chain cache using internal admin.", e);
             }
@@ -180,7 +181,7 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
     	}
         try {
         	// reloadTokenAndChainCache cancels old timers and adds a new timer
-            reloadTokenAndChainCache(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(INTERNAL_ADMIN_PRINCIPAL)));
+            reloadTokenAndChainCache();
         } catch (AuthorizationDeniedException e) {
             throw new Error("Could not authorize using internal admin.");
         }

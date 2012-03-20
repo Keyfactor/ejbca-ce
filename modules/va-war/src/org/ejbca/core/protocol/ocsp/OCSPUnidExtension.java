@@ -29,7 +29,6 @@ import java.util.Set;
 
 import javax.ejb.EJBException;
 import javax.servlet.ServletConfig;
-import javax.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -37,6 +36,7 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.ocsp.CertificateStatus;
+import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -51,7 +51,7 @@ import org.ejbca.util.JDBCUtil;
  * @version $Id$
  *
  */
-public class OCSPUnidExtension implements IOCSPExtension {
+public class OCSPUnidExtension implements OCSPExtension {
 
 	private static final Logger m_log = Logger.getLogger(OCSPUnidExtension.class);
     /** Internal localization of logs and errors */
@@ -150,12 +150,13 @@ public class OCSPUnidExtension implements IOCSPExtension {
 	}
 	
 	@Override
-	public Hashtable<ASN1ObjectIdentifier, X509Extension> process(HttpServletRequest request, X509Certificate cert, CertificateStatus status) throws IOException {
+	public Hashtable<ASN1ObjectIdentifier, X509Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
+            X509Certificate cert, CertificateStatus status) throws IOException {
         if (m_log.isTraceEnabled()) {
             m_log.trace(">process()");            
         }
         // Check authorization first
-        if (!checkAuthorization(request)) {
+        if (!checkAuthorization(requestCertificates, remoteAddress, remoteHost)) {
         	errCode = OCSPUnidExtension.ERROR_UNAUTHORIZED;
         	return null;
         }
@@ -176,7 +177,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
                 if (m_log.isDebugEnabled()) {
                     m_log.debug("Found serialNumber: "+sn);                    
                 }
-				String iMsg = intres.getLocalizedMessage("ocsp.receivedunidreq", request.getRemoteAddr(), request.getRemoteHost(), sn);
+				String iMsg = intres.getLocalizedMessage("ocsp.receivedunidreq", remoteAddress, remoteHost, sn);
                 m_log.info(iMsg);
         		try {
         			con = ServiceLocator.getInstance().getDataSource(dataSourceJndi).getConnection();
@@ -213,7 +214,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
         	return null;
         	
         }
-		String errMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", request.getRemoteAddr(), request.getRemoteHost(), fnr, sn);
+		String errMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", remoteAddress, remoteHost, fnr, sn);
         m_log.info(errMsg);
         FnrFromUnidExtension ext = new FnrFromUnidExtension(fnr);
         Hashtable<ASN1ObjectIdentifier, X509Extension> ret = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
@@ -229,20 +230,17 @@ public class OCSPUnidExtension implements IOCSPExtension {
 		return errCode;
 	}
 	
-	// 
-	// Private methods
-	//
-	boolean checkAuthorization(HttpServletRequest request) {
-        X509Certificate[] certs = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-        if (certs == null) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", request.getRemoteAddr(), request.getRemoteHost());
+	boolean checkAuthorization(X509Certificate[] certificates, String remoteAddress, String remoteHost) {
+        
+        if (certificates == null) {
+    		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", remoteAddress, remoteHost);
             m_log.error(errMsg);
             return false;
         }
         // The certificate of the entity is nr 0
-        X509Certificate cert = certs[0];
+        X509Certificate cert = certificates[0];
         if (cert == null) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", request.getRemoteAddr(), request.getRemoteHost());
+    		String errMsg = intres.getLocalizedMessage("ocsp.errornoclientauth", remoteAddress, remoteHost);
             m_log.error(errMsg);
             return false;
         }
@@ -260,7 +258,7 @@ public class OCSPUnidExtension implements IOCSPExtension {
             // If verify was successful we know if was good!
             return true;
         }
-		String errMsg = intres.getLocalizedMessage("ocsp.erroruntrustedclientauth", request.getRemoteAddr(), request.getRemoteHost());
+		String errMsg = intres.getLocalizedMessage("ocsp.erroruntrustedclientauth", remoteAddress, remoteHost);
         m_log.error(errMsg);
 		return false;
 	}

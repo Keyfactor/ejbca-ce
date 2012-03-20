@@ -131,7 +131,7 @@
         <javac destdir="${build-status.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">
         	<include name="org/ejbca/ui/web/protocol/OCSPServlet.java"/>
-			<include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" if="use.ocsp.extensionclass"/>
+        	<include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" if="use.ocsp.extensionclass"/>
         	<include name="org/ejbca/core/protocol/ocsp/FnrFromUnidExtension.java" if="use.ocsp.extensionclass"/>
 			<src path="${src.dir}"/>
         </javac>

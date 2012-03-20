@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,25 +10,18 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.configuration;
+package org.cesecore.certificates.ocsp;
 
-import javax.ejb.Stateless;
+import javax.ejb.Remote;
 
-import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
-import org.cesecore.config.ConfigurationHolder;
-import org.cesecore.jndi.JndiConstants;
+import org.cesecore.authorization.AuthorizationDeniedException;
 
 /**
  * @version $Id$
- * 
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CesecoreConfigurationProxySessionRemote")
-public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurationProxySessionRemote {
+@Remote
+public interface IntegratedOcspResponseGeneratorProxySessionRemote {
 
-    @Override
-    public void setConfigurationValue(String key, String value) {
-        ConfigurationHolder.updateConfiguration(key, value);
-        OcspConfigurationCache.INSTANCE.reloadConfiguration();
-    }
-
+    void reloadTokenAndChainCache() throws AuthorizationDeniedException;
 }

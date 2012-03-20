@@ -14,7 +14,7 @@ package org.cesecore.certificates.ocsp.integrated;
 
 import javax.ejb.Local;
 
-import org.cesecore.certificates.ocsp.OcspResponseGeneratorSession;
+import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 
 /**
  * Local interface for OcspResponseGeneratorSession
@@ -23,7 +23,7 @@ import org.cesecore.certificates.ocsp.OcspResponseGeneratorSession;
  * 
  */
 @Local
-public interface IntegratedOcspResponseGeneratorSessionLocal extends OcspResponseGeneratorSession {
+public interface IntegratedOcspResponseGeneratorSessionLocal extends OcspResponseGeneratorSessionLocal {
 
 
 }

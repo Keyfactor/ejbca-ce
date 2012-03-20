@@ -374,6 +374,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 	 */
 	protected void test15MultipleGetRequests() throws Exception { // NOPMD, this is not a test class itself
 		loadUserCert(this.caid);
+		this.helper.reloadKeys();
 		// An OCSP request, ocspTestCert is already created in earlier tests
 		OCSPReqGenerator gen = new OCSPReqGenerator();
 		gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));

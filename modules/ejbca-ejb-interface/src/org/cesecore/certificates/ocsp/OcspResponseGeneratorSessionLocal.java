@@ -10,25 +10,20 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.configuration;
 
-import javax.ejb.Stateless;
+package org.cesecore.certificates.ocsp;
 
-import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
-import org.cesecore.config.ConfigurationHolder;
-import org.cesecore.jndi.JndiConstants;
+import org.cesecore.authorization.AuthorizationDeniedException;
+
+
 
 /**
- * @version $Id$
  * 
+ * @version $Id$
+ *
  */
-@Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CesecoreConfigurationProxySessionRemote")
-public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurationProxySessionRemote {
 
-    @Override
-    public void setConfigurationValue(String key, String value) {
-        ConfigurationHolder.updateConfiguration(key, value);
-        OcspConfigurationCache.INSTANCE.reloadConfiguration();
-    }
+public interface OcspResponseGeneratorSessionLocal extends OcspResponseGeneratorSession {
 
+    void reloadTokenAndChainCache() throws AuthorizationDeniedException;
 }

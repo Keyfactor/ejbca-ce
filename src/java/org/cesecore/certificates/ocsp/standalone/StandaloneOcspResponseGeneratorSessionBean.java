@@ -45,9 +45,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseSessionBean;
@@ -79,8 +77,6 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
         StandaloneOcspResponseGeneratorSessionRemote, SaferAppenderListener {
 
     private static final Logger log = Logger.getLogger(StandaloneOcspResponseGeneratorSessionBean.class);
-
-    private static final String INTERNAL_ADMIN_PRINCIPAL = "StandAlone OCSP cache update";
 
     private static final InternalResources intres = InternalResources.getInstance();
 
@@ -139,7 +135,7 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void timeoutHandler(Timer timer) {
         try {
-            reloadTokenAndChainCache(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(INTERNAL_ADMIN_PRINCIPAL)));
+            reloadTokenAndChainCache();
         } catch (AuthorizationDeniedException e) {
             throw new Error("Could not authorize using internal admin.");
         }
@@ -173,7 +169,7 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
     }
 
     @Override
-    public void reloadTokenAndChainCache(AuthenticationToken authenticationToken) throws AuthorizationDeniedException {
+    public void reloadTokenAndChainCache() throws AuthorizationDeniedException {
         if (OcspConfiguration.getDoNotStorePasswordsInMemory()) {
             throw new Error("Call for reloading token and chain cache without password, yet passwords may not be stored in memory.");
         }
@@ -380,7 +376,7 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
          */
         if (timerService.getTimers().size() > 0 && !OcspConfiguration.getDoNotStorePasswordsInMemory()) {
             try {
-                reloadTokenAndChainCache(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(INTERNAL_ADMIN_PRINCIPAL)));
+                reloadTokenAndChainCache();
             } catch (AuthorizationDeniedException e) {
                 throw new Error("Could not reload token and chain cache using internal admin.", e);
             }
