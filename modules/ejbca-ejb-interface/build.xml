@@ -57,6 +57,8 @@
 			<include name="org/cesecore/audit/log/SecurityEventsLoggerSessionLocal.java"/>
 			<include name="org/cesecore/authorization/control/AccessControlSession.java"/>
 			<include name="org/cesecore/authorization/control/AccessControlSessionLocal.java"/>
+			<include name="org/cesecore/certificates/ocsp/OcspResponseGeneratorSessionLocal.java"/>
+			<include name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionLocal.java"/>
         	<include name="org/cesecore/jndi/JndiHelper.java" />
     	</javac>
     </target>
