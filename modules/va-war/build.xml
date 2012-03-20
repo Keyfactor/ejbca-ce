@@ -101,7 +101,7 @@
 		<mkdir dir="${build-status-va.dir}/WEB-INF/classes" />
 		<javac destdir="${build-status-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			classpathref="compile-va.classpath">
-			<include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java"/>
+			<include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java"/>			
 			<include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" if="use.ocsp.extensionclass"/>
 			<include name="org/ejbca/core/protocol/ocsp/FnrFromUnidExtension.java" if="use.ocsp.extensionclass"/>
 			<src path="${src.dir}"/>

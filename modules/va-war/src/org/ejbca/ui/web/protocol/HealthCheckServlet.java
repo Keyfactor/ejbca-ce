@@ -10,40 +10,32 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-
 package org.ejbca.ui.web.protocol;
 
-import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
-import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGeneratorSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.ui.web.pub.cluster.ValidationAuthorityHealthCheck;
 
-/** 
- * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
- * For a detailed description of OCSP refer to RFC2560.
+/**
+ * Currently a placeholder for the HealthCheck functionality which was extracted from OCSPStandAlone
+ * 
+ * TODO: Implement meeeeeeee!
+ * 
+ * @version $Id$
  *
- * @author Lars Silven PrimeKey
- * @version  $Id$
  */
-public class OCSPServletStandAlone extends BaseOcspServlet {
+public class HealthCheckServlet extends HttpServlet implements IHealtChecker {
 
-    private static final long serialVersionUID = -7093480682721604160L;
+    private static final long serialVersionUID = -3256717200117000894L;
 
     /** Special logger only used to log version number. ejbca.version.log can be directed to a special logger, or have a special log level 
      * in the log4j configuration. 
      */
-	private static final Logger m_versionLog = Logger.getLogger("org.ejbca.version.log");
-
-	 private static final Logger log = Logger.getLogger(OCSPServletStandAlone.class);
-	    
-	    @EJB
-	    private StandaloneOcspResponseGeneratorSessionLocal standaloneOcspResponseGeneratorSession;
-	
+    private static final Logger m_versionLog = Logger.getLogger("org.ejbca.version.log");
 
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletBase#init(javax.servlet.ServletConfig)
@@ -51,28 +43,16 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
     public void init(ServletConfig config) throws ServletException {
 
         // Log with warn priority so it will be visible in strict production configurations  
-	    m_versionLog.warn("Init, "+GlobalConfiguration.EJBCA_VERSION+" OCSP startup");
-    }
-    
-    /**
-     * Method used to log OCSP service shutdown.
-	 * @see javax.servlet.GenericServlet#destroy()
-	 */
-	public void destroy() {
-		super.destroy();
-        // Log with warn priority so it will be visible in strict production configurations  
-	    m_versionLog.warn("Destroy, "+GlobalConfiguration.EJBCA_VERSION+" OCSP shutdown");
-	}
+        m_versionLog.warn("Init, " + GlobalConfiguration.EJBCA_VERSION + " OCSP startup");
 
-
-    @Override
-    protected Logger getLogger() {
-        return log;
+        // session must be created before health check could be done
+        ValidationAuthorityHealthCheck.setHealtChecker(this);
     }
 
     @Override
-    protected OcspResponseGeneratorSessionLocal getOcspResponseGenerator() {
-
-        return standaloneOcspResponseGeneratorSession;
+    public String healthCheck(boolean doSignTest, boolean doValidityTest) {
+        // TODO Auto-generated method stub
+        return null;
     }
+
 }

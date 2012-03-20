@@ -48,10 +48,11 @@ import org.ejbca.ui.web.protocol.OCSPServletStandAlone;
 /** 
  * This instance is created when the OCSP Servlet session is initiated with {@link OCSPServletStandAlone#init()}. It will be only one instance of this class.
  * 
- * @author Lars Silven PrimeKey
+ * TODO: This class is scheduled for deletion. Kept until HealthCheckServlet has been implemented.
+ * 
  * @version  $Id$
  */
-class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAloneSession {
+class StandAloneSession implements P11SlotUser {
 
     /**
      * Log object.
@@ -270,7 +271,7 @@ class StandAloneSession implements P11SlotUser,  OCSPServletStandAlone.IStandAlo
     /* (non-Javadoc)
      * @see org.ejbca.ui.web.protocol.OCSPServletStandAlone.IStandAloneSession#loadPrivateKeys(org.ejbca.core.model.log.Admin, java.lang.String)
      */
-    @Override
+ 
     public void loadPrivateKeys(String password) throws Exception {
         if ( this.sessionData.doNotStorePasswordsInMemory ) {
             if ( password==null ) {
