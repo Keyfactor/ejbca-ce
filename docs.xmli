@@ -95,7 +95,7 @@
         </anakia>
         
         <copy todir="${site.dest}">
-        	<fileset dir="${docs.src}" includes="**/*.css,**/*.png,**/*.jpg,**/*.gif,**/*.pdf,**/*.ico"/>
+        	<fileset dir="${docs.src}" includes="**/*.css,**/*.png,**/*.jpg,**/*.gif,**/*.pdf"/>
         	<fileset dir="${docs.src}" includes="sensornet/**/*"/>
         </copy>
     </target>
@@ -115,7 +115,7 @@
         </anakia>
 
         <copy todir="${docs.dest}">
-        	<fileset dir="${docs.src}" includes="**/*.css,**/*.png,**/*.jpg,**/*.gif,**/*.pdf,**/*.ico"/>
+        	<fileset dir="${docs.src}" includes="**/*.css,**/*.png,**/*.jpg,**/*.gif,**/*.pdf"/>
         </copy>
         
         <echo message="WS=${ws.objects.dir}"/>
