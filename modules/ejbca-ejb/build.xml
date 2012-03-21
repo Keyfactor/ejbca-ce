@@ -535,6 +535,7 @@
 		<javac srcdir="${src.dir}" destdir="${build-va.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" classpathref="compile-va-ejb.classpath">
 			<include name="org/cesecore/certificates/certificate/CertificateStoreSessionBean.java" />
 			<include name="org/cesecore/certificates/crl/CrlStoreSessionBean.java" />
+			<include name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionBean.java" />
 			<include name="org/ejbca/cesecoreintegration/StandAloneVaMockSessionBean.java" />
 		</javac>
 	</target>
