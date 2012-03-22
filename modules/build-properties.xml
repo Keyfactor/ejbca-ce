@@ -177,9 +177,9 @@
 			<include name="client/jboss-ejb-api_3.1_spec.jar"/>
 			<include name="client/jboss-metadata-ejb.jar"/>
 
-			<!-- JBoss 7.1.0 -->
-			<include name="modules/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0.1.Final.jar"/>
-			<include name="modules/org/jboss/metadata/main/jboss-metadata-ejb-7.0.0.Final.jar"/>
+			<!-- JBoss 7.1.0 and EAP 6 -->
+			<include name="modules/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0.1*.jar"/>
+			<include name="modules/org/jboss/metadata/main/jboss-metadata-ejb-7.0.0.*.jar"/>
 
 			<!-- glassfish v2.1.1 -->
 			<include name="lib/javaee.jar"/>
@@ -218,10 +218,10 @@
 			<include name="client/jboss-logging*.jar"/>
 			<include name="client/jboss-metadata-ejb.jar"/>
 
-			<!-- JBoss 7.1.0 for javax.peristence, transaction, remote EJB, ...-->
-			<include name="bin/client/jboss-client-7.1.0.Final.jar"/>
-			<include name="modules/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
-			<include name="modules/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.0.Final.jar"/>
+			<!-- JBoss 7.1.0 and EAP 6 for javax.peristence, transaction, remote EJB, ...-->
+			<include name="bin/client/jboss-client*.jar"/>
+			<include name="modules/javax/persistence/api/main/hibernate-jpa-2.0-api-1.0.1.*.jar"/>
+			<include name="modules/javax/transaction/api/main/jboss-transaction-api_1.1_spec-1.0.0.*.jar"/>
 
 			<!-- glassfish v2.1.1 -->
 			<include name="lib/javaee.jar"/>
@@ -253,8 +253,8 @@
 			<include name="common/lib/servlet-api.jar"/>
 			<!-- JBoss 6.0.0 -->
 			<include name="common/lib/jboss-servlet-api_3.0_spec.jar"/>
-			<!-- JBoss 7.1.0 -->
-			<include name="modules/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.0.Final.jar"/>
+			<!-- JBoss 7.1.0 and EAP 6 -->
+			<include name="modules/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.0.*.jar"/>
 			<!-- Glassfish 2.1.1 -->
 			<include name="lib/javaee.jar"/>
 			<!-- WebLogic 10.3.3 -->
@@ -273,8 +273,8 @@
 		<include name="common/lib/el-api.jar"/>
 		<!-- JBoss 6.0.0 -->
 		<include name="server/default/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/*.jar"/>
-		<!-- JBoss 7.1.0 -->
-		<include name="modules/javax/faces/api/main/jboss-jsf-api_2.1_spec-2.0.0.Final.jar"/>
+		<!-- JBoss 7.1.0 and EAP 6 -->
+		<include name="modules/javax/faces/api/main/jboss-jsf-api_2.1_spec-2.0.0.*.jar"/>
 		<!-- Glassfish 2.1.1 -->
 		<include name="lib/jsf-impl.jar" />
 		<!-- Glassfish 3.1 -->
