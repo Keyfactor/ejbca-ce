@@ -13,7 +13,6 @@
 
 package org.cesecore.certificates.ocsp;
 
-import org.cesecore.authorization.AuthorizationDeniedException;
 
 
 
@@ -25,5 +24,5 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 
 public interface OcspResponseGeneratorSessionLocal extends OcspResponseGeneratorSession {
 
-    void reloadTokenAndChainCache() throws AuthorizationDeniedException;
+    void reloadTokenAndChainCache();
 }

@@ -91,13 +91,15 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     @Test
     public void test02OcspGood() throws Exception {
         log.trace(">test02OcspGood()");
-
+        @SuppressWarnings("unused")
+        String subjectDnCA = CertTools.getSubjectDN(unknowncacert);
         // And an OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         final X509Certificate ocspTestCert = getTestCert(false);
+        String subjectDn = CertTools.getSubjectDN(ocspTestCert);
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, getCaCert(ocspTestCert), ocspTestCert.getSerialNumber()));
         OCSPReq req = gen.generate();
-
+        helper.reloadKeys();
         // Send the request and receive a singleResponse
         SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
         assertEquals("No of SingResps should be 1.", 1, singleResps.length);

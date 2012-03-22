@@ -13,45 +13,55 @@
 
 package org.ejbca.ui.web.protocol;
 
+import java.io.IOException;
+
 import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
+import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGeneratorSessionLocal;
+import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.OcspConfiguration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.ui.web.pub.cluster.ValidationAuthorityHealthCheck;
+import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.util.HTMLTools;
 
 /** 
  * Servlet implementing server side of the Online Certificate Status Protocol (OCSP)
  * For a detailed description of OCSP refer to RFC2560.
  *
- * @author Lars Silven PrimeKey
  * @version  $Id$
  */
 public class OCSPServletStandAlone extends BaseOcspServlet {
 
     private static final long serialVersionUID = -7093480682721604160L;
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     /** Special logger only used to log version number. ejbca.version.log can be directed to a special logger, or have a special log level 
      * in the log4j configuration. 
      */
-	private static final Logger m_versionLog = Logger.getLogger("org.ejbca.version.log");
+    private static final Logger m_versionLog = Logger.getLogger("org.ejbca.version.log");
 
-	 private static final Logger log = Logger.getLogger(OCSPServletStandAlone.class);
-	    
-	    @EJB
-	    private StandaloneOcspResponseGeneratorSessionLocal standaloneOcspResponseGeneratorSession;
-	
+    private static final Logger log = Logger.getLogger(OCSPServletStandAlone.class);
 
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#init(javax.servlet.ServletConfig)
-     */
+    @EJB
+    private StandaloneOcspResponseGeneratorSessionLocal standaloneOcspResponseGeneratorSession;
+
+    @Override
     public void init(ServletConfig config) throws ServletException {
 
         // Log with warn priority so it will be visible in strict production configurations  
 	    m_versionLog.warn("Init, "+GlobalConfiguration.EJBCA_VERSION+" OCSP startup");
+	    if (!OcspConfiguration.getDoNotStorePasswordsInMemory()) {
+            standaloneOcspResponseGeneratorSession.reloadTokenAndChainCache();
+        } 
     }
     
     /**
@@ -71,8 +81,123 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
     }
 
     @Override
-    protected OcspResponseGeneratorSessionLocal getOcspResponseGenerator() {
+    public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        Logger log = getLogger();
+        try {
+            
+            if (log.isTraceEnabled()) {
+                log.trace(">doGet()");
+            }
+            // We have a command to force reloading of keys that can only be run from localhost
+            final boolean doReload = StringUtils.equals(request.getParameter("reloadkeys"), "true");
+            final String newConfig = request.getParameter("newConfig");
+            final boolean doNewConfig = newConfig != null && newConfig.length() > 0;
+            final boolean doRestoreConfig = request.getParameter("restoreConfig") != null;
+            final String remote;
+            if (doReload || doNewConfig || doRestoreConfig) {
+                remote = request.getRemoteAddr();
+                if (!StringUtils.equals(remote, "127.0.0.1")) {
+                    log.info("Got reloadkeys or updateConfig of restoreConfig command from unauthorized ip: " + remote);
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+            } else {
+                remote = null;
+            }
+            if (doReload) {
+                log.info(intres.getLocalizedMessage("ocsp.reloadkeys", remote));
+                // Reload CA certificates
+             
+                if (!OcspConfiguration.getDoNotStorePasswordsInMemory()) {
+                    standaloneOcspResponseGeneratorSession.reloadTokenAndChainCache();
+                }
 
+                return;
+            }
+            if (doNewConfig) {
+                final String aConfig[] = newConfig.split("\\|\\|");
+                for (int i = 0; i < aConfig.length; i++) {
+                    log.debug("Config change: " + aConfig[i]);
+                    final int separatorIx = aConfig[i].indexOf('=');
+                    if (separatorIx < 0) {
+                        ConfigurationHolder.updateConfiguration(aConfig[i], null);
+                        continue;
+                    }
+                    ConfigurationHolder.updateConfiguration(aConfig[i].substring(0, separatorIx),
+                            aConfig[i].substring(separatorIx + 1, aConfig[i].length()));
+                }
+                OcspConfigurationCache.INSTANCE.reloadConfiguration();
+                log.info("Call from " + remote + " to update configuration");
+                return;
+            }
+            if (doRestoreConfig) {
+                ConfigurationHolder.restoreConfiguration();
+                OcspConfigurationCache.INSTANCE.reloadConfiguration();
+                log.info("Call from " + remote + " to restore configuration.");
+                return;
+            }
+            processOcspRequest(request, response);
+        } finally {
+            if (log.isTraceEnabled()) {
+                log.trace("<doGet()");
+            }
+        }
+    } // doGet
+    
+    @Override
+    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        Logger log = getLogger();
+        if (log.isTraceEnabled()) {
+            log.trace(">doPost()");
+        }
+        try {
+            final String contentType = request.getHeader("Content-Type");
+            if (contentType != null && contentType.equalsIgnoreCase("application/ocsp-request")) {
+                processOcspRequest(request, response);
+                return;
+            }
+            if (contentType != null) {
+                final String sError = "Content-type is not application/ocsp-request. It is \'" + HTMLTools.htmlescape(contentType) + "\'.";
+                log.debug(sError);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, sError);
+                return;
+            }
+            final String password = request.getHeader("activate");
+            if (password == null) {
+                final String sError = "No \'Content-Type\' or \'activate\' property in request.";
+                log.debug(sError);
+                response.sendError(HttpServletResponse.SC_BAD_REQUEST, sError);
+                return;
+            }
+            final String remoteAddr = request.getRemoteAddr();
+            if (!remoteAddr.equals("127.0.0.1")) {
+                final String sError = "You have connected from \'" + remoteAddr + "\'. You may only connect from 127.0.0.1";
+                log.debug(sError);
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, sError);
+                return;
+            }
+            
+            try {
+                standaloneOcspResponseGeneratorSession.reloadTokenAndChainCache(password);
+            } catch (Exception e) {
+                log.error("Problem loading keys.", e);
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Problem. See ocsp responder server log.");
+            }
+            
+        } finally {
+            if (log.isTraceEnabled()) {
+                log.trace("<doPost()");
+            }
+        }
+    } //doPost
+
+    @Override
+    protected void reloadKeys() throws AuthorizationDeniedException {
+        standaloneOcspResponseGeneratorSession.reloadTokenAndChainCache();
+    }
+
+    @Override
+    protected OcspResponseGeneratorSessionLocal getOcspResponseGenerator() {
         return standaloneOcspResponseGeneratorSession;
     }
 }

@@ -45,7 +45,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.ocsp.CertificateID;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseSessionBean;
@@ -82,6 +81,9 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
 
     private static final String hardTokenClassName = OcspConfiguration.getHardTokenClassName();
     private static final String p11SharedLibrary = OcspConfiguration.getP11SharedLibrary();
+    
+    private static final String P12_SUFFIX = ".p12";
+    private static final String CERT_SUFFIX = ".cert";
 
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
@@ -134,11 +136,9 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
      */
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
     public void timeoutHandler(Timer timer) {
-        try {
-            reloadTokenAndChainCache();
-        } catch (AuthorizationDeniedException e) {
-            throw new Error("Could not authorize using internal admin.");
-        }
+
+        reloadTokenAndChainCache();
+
         Integer timerInfo = (Integer) timer.getInfo();
         addTimer(OcspConfiguration.getSignTrustValidTimeInSeconds(), timerInfo);
     }
@@ -169,7 +169,7 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
     }
 
     @Override
-    public void reloadTokenAndChainCache() throws AuthorizationDeniedException {
+    public void reloadTokenAndChainCache() {
         if (OcspConfiguration.getDoNotStorePasswordsInMemory()) {
             throw new Error("Call for reloading token and chain cache without password, yet passwords may not be stored in memory.");
         }
@@ -183,13 +183,13 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
     }
 
     @Override
-    public void reloadTokenAndChainCache(AuthenticationToken authenticationToken, String password) {
+    public void reloadTokenAndChainCache(String password) {
         loadPrivateKeys(password, password, password);
     }
 
     private void loadPrivateKeys(String p11Password, String p12StorePassword, String p12KeyPassword) {
         // Verify card key holder
-        if (CardKeyHolder.INSTANCE.getCardKeys() == null) {
+        if(CardKeyHolder.getInstance().getCardKeys() == null) {
             log.info(intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName));
         }
         Map<Integer, CryptoTokenAndChain> newCache = new ConcurrentHashMap<Integer, CryptoTokenAndChain>();
@@ -251,7 +251,7 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
 
         File p12Directory = new File(directoryName);
         if (!p12Directory.exists()) {
-            log.warn("Soft key direktory " + directoryName + " does not exist.");
+            log.warn("Soft key directory " + directoryName + " does not exist.");
         } else if (!p12Directory.isDirectory()) {
             log.warn("Soft key directory was not a directory.");
         } else if (p12Directory.listFiles().length == 0) {
@@ -260,25 +260,26 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
             }
         } else {
             for (File p12File : p12Directory.listFiles()) {
-                byte[] data = new byte[(int) p12File.length()];
-                try {
-                    FileInputStream fileInputStream = new FileInputStream(p12File);
+                if(p12File.getName().endsWith(P12_SUFFIX) || p12File.getName().endsWith(CERT_SUFFIX)) {
+                    byte[] data = new byte[(int) p12File.length()];
                     try {
-                        fileInputStream.read(data);
-                    } finally {
-                        fileInputStream.close();
+                        FileInputStream fileInputStream = new FileInputStream(p12File);
+                        try {
+                            fileInputStream.read(data);
+                        } finally {
+                            fileInputStream.close();
+                        }
+                        cryptoToken.init(p12Properties, data, 11);
+                        try {
+                            cryptoToken.activate(keyPassword.toCharArray());
+                            result.putAll(buildCacheFromCryptoToken(cryptoToken));
+                        } catch (CryptoTokenAuthenticationFailedException e) {
+                            log.error("Store password was incorrect for file " + p12File, e);
+                        }
+                    } catch (IOException e) {
+                        log.warn("Could not load file " + p12File);
                     }
-                    cryptoToken.init(p12Properties, data, 11);
-                    try {
-                        cryptoToken.activate(keyPassword.toCharArray());
-                        result.putAll(buildCacheFromCryptoToken(cryptoToken));
-                    } catch (CryptoTokenAuthenticationFailedException e) {
-                        throw new StandaloneOcspInitializationException("Store password was incorrect.", e);
-                    }
-                } catch (IOException e) {
-                    log.warn("Could not load file " + p12File);
                 }
-
             }
         }
         return result;
@@ -375,11 +376,7 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
          * The timer service is only started if we may store passwords in memory
          */
         if (timerService.getTimers().size() > 0 && !OcspConfiguration.getDoNotStorePasswordsInMemory()) {
-            try {
-                reloadTokenAndChainCache();
-            } catch (AuthorizationDeniedException e) {
-                throw new Error("Could not reload token and chain cache using internal admin.", e);
-            }
+            reloadTokenAndChainCache();
         }
     }
 
@@ -390,20 +387,29 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
 
 }
 
-enum CardKeyHolder {
-    INSTANCE;
-
+class CardKeyHolder {
+    private static final InternalResources intres = InternalResources.getInstance();
+    private static CardKeyHolder instance = null;
     private CardKeys cardKeys = null;
 
     private CardKeyHolder() {
         Logger log = Logger.getLogger(CardKeyHolder.class);
+        String hardTokenClassName = OcspConfiguration.getHardTokenClassName();
         try {
-            this.cardKeys = (CardKeys) StandaloneOcspResponseGeneratorSessionBean.class.getClassLoader()
-                    .loadClass(OcspConfiguration.getHardTokenClassName()).newInstance();
+            this.cardKeys = (CardKeys) StandaloneOcspResponseGeneratorSessionBean.class.getClassLoader().loadClass(hardTokenClassName).newInstance();
             this.cardKeys.autenticate(OcspConfiguration.getCardPassword());
+        } catch (ClassNotFoundException e) {
+            log.info(intres.getLocalizedMessage("ocsp.classnotfound", hardTokenClassName));
         } catch (Exception e) {
             log.info("Could not create CardKeyHolder", e);
         }
+    }
+
+    public static synchronized CardKeyHolder getInstance() {
+        if (instance == null) {
+            instance = new CardKeyHolder();
+        }
+        return instance;
     }
 
     public CardKeys getCardKeys() {

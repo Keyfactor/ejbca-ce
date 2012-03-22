@@ -104,7 +104,7 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
 
     @Override
     @TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-    public void reloadTokenAndChainCache() throws AuthorizationDeniedException {
+    public void reloadTokenAndChainCache() {
     	// Cancel any waiting timers
     	cancelTimers();
     	try {
@@ -117,6 +117,9 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
     			} catch (CADoesntExistsException e) {
     				// Should not be able to happen.
     				throw new Error("Could not find CA with id " + caId + " in spite of value just being collected from database.");
+    			} catch (AuthorizationDeniedException e) {
+    			    //Likewise
+    			    throw new Error("AlwaysAllowLocalAuthenticationToken was denied access.");
     			}
 
     			CertificateID certId = null;
@@ -153,11 +156,7 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
 
     protected void initiateIfNecessary() {
         if (timerService.getTimers().size() == 0) {
-            try {
-                reloadTokenAndChainCache();
-            } catch (AuthorizationDeniedException e) {
-                throw new Error("Could not reload token and chain cache using internal admin.", e);
-            }
+            reloadTokenAndChainCache(); 
         }
     }
 
@@ -179,12 +178,10 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
     	if (log.isTraceEnabled()) {
     		log.trace(">timeoutHandler: "+timer.getInfo().toString()+", "+timer.getNextTimeout().toString());
     	}
-        try {
-        	// reloadTokenAndChainCache cancels old timers and adds a new timer
-            reloadTokenAndChainCache();
-        } catch (AuthorizationDeniedException e) {
-            throw new Error("Could not authorize using internal admin.");
-        }
+
+        // reloadTokenAndChainCache cancels old timers and adds a new timer
+        reloadTokenAndChainCache();
+   
     	if (log.isTraceEnabled()) {
     		log.trace("<timeoutHandler");
     	}
