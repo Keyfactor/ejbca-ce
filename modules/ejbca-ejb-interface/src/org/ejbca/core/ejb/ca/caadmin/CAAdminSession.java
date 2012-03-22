@@ -239,7 +239,7 @@ public interface CAAdminSession {
      *            used to unlock the HSM keys.
      * @param catokenclasspath
      *            classpath to one of the HardToken classes, for example
-     *            org.ejbca.core.model.ca.catoken.PKCS11CAToken.
+     *            org.cesecore.keys.token.PKCS11CryptoToken.
      * @param catokenproperties
      *            the catoken properties, same as usually entered in the
      *            adminGUI for hard token CAs.
