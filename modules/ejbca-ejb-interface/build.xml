@@ -68,7 +68,9 @@
     <target name="compile-ejb3" depends="with.clover, ejbca-util, ejbca-entity">
         <mkdir dir="${ejb3.build.dir}" />
         <javac srcdir="${src.dir}" destdir="${ejb3.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-        	classpathref="compile.classpath"/>
+        	classpathref="compile.classpath">
+    		<exclude name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSession*.java"/>
+        </javac>
     </target>
 	
 </project>

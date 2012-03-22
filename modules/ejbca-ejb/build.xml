@@ -358,6 +358,7 @@
 		<exclude name="org/ejbca/core/ejb/ca/store/CertificateStoreOnlyDataSessionBean.java" />
 		<exclude name="org/cesecore/core/ejb/ca/crl/CrlStandAloneSessionBean.java" />
 		<exclude name="org/ejbca/cesecoreintegration/StandAloneVaMockSessionBean.java" />
+		<exclude name="org/cesecore/certificates/ocsp/standalone/**/*.java" />
 		<!-- Samples should never be included.. -->
 		<exclude name="org/ejbca/samples/**/*.java" />
 		<!-- Some common classes used by various components.. TODO: If possible, move to the only component using the class.. -->
