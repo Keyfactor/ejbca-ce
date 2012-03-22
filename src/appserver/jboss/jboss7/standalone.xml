@@ -118,7 +118,9 @@
                     <validation>
                         <validate-on-match>false</validate-on-match>
                         <background-validation>false</background-validation>
-                        <background-validation-millis>0</background-validation-millis>
+                        <!--
+                        <background-validation-millis>10000</background-validation-millis>
+                        -->
                     </validation>
                     <statement>
                         <prepared-statement-cache-size>0</prepared-statement-cache-size>
