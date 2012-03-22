@@ -182,7 +182,7 @@ public class StandaloneOcspResponseGeneratorSessionTest extends CaCreatingTestCa
     public void testStandAloneOcspResponseSanity() throws OCSPException, AuthorizationDeniedException, MalformedRequestException, IOException,
             NoSuchProviderException {
 
-        standaloneOcspResponseGeneratorSession.reloadTokenAndChainCache(roleMgmgToken, PASSWORD);
+        standaloneOcspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
 
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();

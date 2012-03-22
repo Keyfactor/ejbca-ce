@@ -494,7 +494,7 @@
 		<mkdir dir="${build.dir}/keys"/>
 		<copy file="${ejbca.home}/p12/ocspTestSigner.p12" todir="${build.dir}/keys" failonerror="false"/>
 		<echo>
-			Configure va.properties:
+			Configure ocsp.properties:
 			 ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 			 ocsp.keys.dir=${build.dir}/keys
 			 ocsp.keys.storePassword=foo123
