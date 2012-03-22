@@ -12,18 +12,25 @@
  *************************************************************************/
 package org.ejbca.ui.web.protocol;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
 import org.apache.log4j.Logger;
-import org.ejbca.config.GlobalConfiguration;
+import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGeneratorSessionLocal;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.pub.cluster.ValidationAuthorityHealthCheck;
 
 /**
  * Currently a placeholder for the HealthCheck functionality which was extracted from OCSPStandAlone
  * 
  * TODO: Implement meeeeeeee!
+ * 
+ * See ECA-2630
  * 
  * @version $Id$
  *
@@ -32,18 +39,15 @@ public class HealthCheckServlet extends HttpServlet implements IHealtChecker {
 
     private static final long serialVersionUID = -3256717200117000894L;
 
-    /** Special logger only used to log version number. ejbca.version.log can be directed to a special logger, or have a special log level 
-     * in the log4j configuration. 
-     */
-    private static final Logger m_versionLog = Logger.getLogger("org.ejbca.version.log");
+    private static final Logger log = Logger.getLogger(HealthCheckServlet.class);
+    /** Internal localization of logs and errors */
+    private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    /* (non-Javadoc)
-     * @see org.ejbca.ui.web.protocol.OCSPServletBase#init(javax.servlet.ServletConfig)
-     */
+    @EJB
+    private StandaloneOcspResponseGeneratorSessionLocal standaloneOcspResponseGeneratorSession;
+    
+    @Override
     public void init(ServletConfig config) throws ServletException {
-
-        // Log with warn priority so it will be visible in strict production configurations  
-        m_versionLog.warn("Init, " + GlobalConfiguration.EJBCA_VERSION + " OCSP startup");
 
         // session must be created before health check could be done
         ValidationAuthorityHealthCheck.setHealtChecker(this);
@@ -51,8 +55,18 @@ public class HealthCheckServlet extends HttpServlet implements IHealtChecker {
 
     @Override
     public String healthCheck(boolean doSignTest, boolean doValidityTest) {
-        // TODO Auto-generated method stub
-        return null;
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw);
+        try {
+            //TODO: Not implemented yet. See  ECA-2630
+        
+        } catch (Exception e) {
+            final String errMsg = intres.getLocalizedMessage("ocsp.errorloadsigningcerts");
+            log.error(errMsg, e);
+            pw.print(errMsg + ": "+e.getMessage());
+        }
+        pw.flush();
+        return sw.toString();
     }
 
 }
