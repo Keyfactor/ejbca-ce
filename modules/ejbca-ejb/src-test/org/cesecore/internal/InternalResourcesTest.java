@@ -21,7 +21,7 @@ import org.junit.Test;
  */
 public class InternalResourcesTest {
 
-	private static final String TEST_RESOURCE_LOCATION = "src/main/resources/intresources";
+    private static final String TEST_RESOURCE_LOCATION = "/intresources";
     // Classpath issues, use "src/intresources" when running from within eclipse
     //private static final String TEST_RESOURCE_LOCATION = "src/intresources";
 	
