@@ -584,8 +584,8 @@ public class PublisherSessionBean implements PublisherSessionLocal, PublisherSes
     private void authorizedToEditPublisher(AuthenticationToken admin, String name) throws AuthorizationDeniedException {
         // We need to check that admin also have rights to edit certificate profiles
         if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_EDITPUBLISHER)) {
-            final CharSequence msg = intres.getLocalizedMessageCs("store.editpublishernotauthorized", admin.toString(), name);
-            throw new AuthorizationDeniedException(msg.toString());
+            final String msg = intres.getLocalizedMessage("store.editpublishernotauthorized", admin.toString(), name);
+            throw new AuthorizationDeniedException(msg);
         }
     }
 
