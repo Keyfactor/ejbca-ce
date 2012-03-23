@@ -21,6 +21,7 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Properties;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 
@@ -161,10 +162,10 @@ public class InternalResources implements Serializable {
      *            and the resource file have "TEST = messages is {0}" will
      *            result in the string "message is hi".
      * 
-     * @return The message as a String.
+     * @return The message as a String, trimmed for whitespace
      */
     public String getLocalizedMessage(final String key, final Object... params) {
-        return getLocalizedMessageCs(key, params).toString();
+        return StringUtils.trim(getLocalizedMessageCs(key, params).toString());
     }
 
     /**
@@ -183,7 +184,7 @@ public class InternalResources implements Serializable {
      *            and the resource file have "TEST = messages is {0}" will
      *            result in the string "message is hi".
      * 
-     * @return The message as a CharSequence. 
+     * @return The message as a CharSequence, the return value is not trimmed for whitespace. 
      */
     public CharSequence getLocalizedMessageCs(final String key, final Object... params) {
         final StringBuilder sb = new StringBuilder();
@@ -201,8 +202,6 @@ public class InternalResources implements Serializable {
                 sb.append(key);
             }
         }
-        trim(sb);
-        // sb.trim()    no such method.. this was present in the old memory consuming version
         for (int i=0; i<params.length; i++) {
             replaceAll(sb, i, params[i]);
         }
@@ -224,22 +223,6 @@ public class InternalResources implements Serializable {
         return placeHolders;
     }
     
-    /** Remove whitespace chars from the beginning and the end of the buffer.*/
-    private void trim(final StringBuilder sb) {
-        for (int i=0; i<sb.length(); i++) {
-            if (sb.charAt(i) != ' ') {  // It would be nice to check for other chars too..
-                sb.delete(0, i);
-                break;
-            }
-        }
-        for (int i=sb.length()-1; i>=0; i--) {
-            if (sb.charAt(i) != ' ') {
-                sb.delete(i+1, sb.length());
-                break;
-            }
-        }
-    }
-
     /** Replace any "{placeHolderIndex}" String that is present in the StringBuilder with 'replacementObject'. */
     protected void replaceAll(final StringBuilder sb, final int placeHolderIndex, final Object replacementObject) {
         if (sb==null) {

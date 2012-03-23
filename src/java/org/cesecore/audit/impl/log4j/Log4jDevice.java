@@ -110,7 +110,8 @@ public class Log4jDevice implements AuditLogDevice {
 	public void log(final TrustedTime trustedTime, final EventType eventType, final EventStatus eventStatus, final ModuleType module, final ServiceType service,
 			final String authToken, final String customId, final String searchDetail1, final String searchDetail2, final Map<String, Object> additionalDetails, Properties properties)
 			throws AuditRecordStorageException {
-		final StringBuilder sb = new StringBuilder();
+	    // Log lines are usually between 117 and 1700 bytes. An initial length of 1024 will cover most of them, speeding things up.
+		final StringBuilder sb = new StringBuilder(1024);
 		if (trustedTime != null) {
 			sb.append(ValidityDate.formatAsISO8601(trustedTime.getTime(), ValidityDate.TIMEZONE_SERVER));
 		}
@@ -128,7 +129,7 @@ public class Log4jDevice implements AuditLogDevice {
 					sb.append(';');
 				}
 				sb.append(detail).append('=');
-				Object o = additionalDetails.get(detail);
+				final Object o = additionalDetails.get(detail);
 				if (o != null) {
 					sb.append(o.toString());
 				}
@@ -139,7 +140,7 @@ public class Log4jDevice implements AuditLogDevice {
 	}
 	
 	// TODO: Not perfect for parsing, since any of the appended values might contain a ';' char
-	private void appendIfNotNull(final StringBuilder sb, Object o) {
+	private void appendIfNotNull(final StringBuilder sb, final Object o) {
 		if (sb.length()!=0) {
 			sb.append(';');
 		}
