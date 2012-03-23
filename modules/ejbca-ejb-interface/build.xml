@@ -31,7 +31,8 @@
 	</path>
 
     <target name="build" description="Build this module" depends="compile-ejb3">
-  	 	<jar destfile="${mod.ejbca-ejb-interface.lib}" basedir="${ejb3.build.dir}"/> 
+  	 	<jar destfile="${mod.ejbca-ejb-interface.lib}" basedir="${ejb3.build.dir}" excludes="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSession*.class">
+  	 	</jar>
     </target>
 
     <target name="build-va" description="Build this module" depends="compile-va">
@@ -68,8 +69,8 @@
     <target name="compile-ejb3" depends="with.clover, ejbca-util, ejbca-entity">
         <mkdir dir="${ejb3.build.dir}" />
         <javac srcdir="${src.dir}" destdir="${ejb3.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
-        	classpathref="compile.classpath">
-    		<exclude name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSession*.java"/>
+        	classpathref="compile.classpath">	
+        	<exclude name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSession*.java"/>
         </javac>
     </target>
 	

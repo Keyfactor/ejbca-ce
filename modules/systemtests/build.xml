@@ -124,6 +124,7 @@
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
 			<exclude name="org/ejbca/core/protocol/xkms/**"/>
+			<exclude name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionTest.java"/>
 		</javac>
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
         	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
