@@ -31,12 +31,18 @@ import java.net.MalformedURLException;
 import java.net.Socket;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.util.ArrayList;
@@ -63,6 +69,7 @@ import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.CertificateID;
+import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
@@ -103,6 +110,7 @@ import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
+import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -114,6 +122,7 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheTstFactory;
+import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
 import org.junit.After;
@@ -131,9 +140,11 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
 	public static final String DEFAULT_SUPERADMIN_CN = "SuperAdmin";
 
-	static final Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
+	private static final Logger log = Logger.getLogger(ProtocolOcspHttpTest.class);
 
-	static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolOcspHttpTest"));
+	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+	
+	private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("ProtocolOcspHttpTest"));
 
 
 	private static byte[] ks3 = Base64.decode(("MIACAQMwgAYJKoZIhvcNAQcBoIAkgASCAyYwgDCABgkqhkiG9w0BBwGggCSABIID"
@@ -336,7 +347,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 			Collection<Certificate> cacerts = new ArrayList<Certificate>();
 			cacerts.add(cacert);
 			ICertificateCache certcache = CertificateCacheTstFactory.getInstance(cacerts);
-			X509Certificate signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
+			X509Certificate signer = checkRequestSignature("127.0.0.1", req, certcache);
 			assertNotNull(signer);
 			assertEquals(ocspTestCert.getSerialNumber().toString(16), signer.getSerialNumber().toString(16));
 
@@ -344,7 +355,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 			req = gen.generate();
 			boolean caught = false;
 			try {
-				signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
+				signer = checkRequestSignature("127.0.0.1", req, certcache);
 			} catch (SignRequestException e) {
 				caught = true;
 			}
@@ -363,7 +374,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 			// throw an SignRequestSignatureException
 			caught = false;
 			try {
-				signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
+				signer = checkRequestSignature("127.0.0.1", req, certcache);
 			} catch (SignRequestSignatureException e) {
 				caught = true;
 			}
@@ -382,7 +393,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 			// throw an SignRequestSignatureException
 			caught = false;
 			try {
-				signer = OCSPUtil.checkRequestSignature("127.0.0.1", req, certcache);
+				signer = checkRequestSignature("127.0.0.1", req, certcache);
 			} catch (SignRequestSignatureException e) {
 				caught = true;
 			}
@@ -1196,4 +1207,101 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		return keys;
 	}
 
+    /** Checks the signature on an OCSP request and checks that it is signed by an allowed CA.
+     * Does not check for revocation of the signer certificate
+     * 
+     * @param clientRemoteAddr The ip address or hostname of the remote client that sent the request, can be null.
+     * @param req The signed OCSPReq
+     * @param cacerts a CertificateCache of Certificates, the authorized CA-certificates. The signer certificate must be issued by one of these.
+     * @return X509Certificate which is the certificate that signed the OCSP request
+     * @throws SignRequestSignatureException if signature verification fail, or if the signing certificate is not authorized
+     * @throws SignRequestException if there is no signature on the OCSPReq
+     * @throws OCSPException if the request can not be parsed to retrieve certificates
+     * @throws NoSuchProviderException if the BC provider is not installed
+     * @throws CertificateException if the certificate can not be parsed
+     * @throws NoSuchAlgorithmException if the certificate contains an unsupported algorithm
+     * @throws InvalidKeyException if the certificate, or CA key is invalid
+     */
+    public static X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req, ICertificateCache cacerts)
+    throws SignRequestException, OCSPException,
+    NoSuchProviderException, CertificateException,
+    NoSuchAlgorithmException, InvalidKeyException,
+    SignRequestSignatureException {
+        
+        X509Certificate signercert = null;
+        
+        if (!req.isSigned()) {
+            String infoMsg = intres.getLocalizedMessage("ocsp.errorunsignedreq", clientRemoteAddr);
+            log.info(infoMsg);
+            throw new SignRequestException(infoMsg);
+        }
+        // Get all certificates embedded in the request (probably a certificate chain)
+        X509Certificate[] certs = req.getCerts("BC");
+        // Set, as a try, the signer to be the first certificate, so we have a name to log...
+        String signer = null;
+        if (certs.length > 0) {
+            signer = CertTools.getSubjectDN(certs[0]);
+        }
+        
+        // We must find a cert to verify the signature with...
+        boolean verifyOK = false;
+        for (int i = 0; i < certs.length; i++) {
+            if (req.verify(certs[i].getPublicKey(), "BC") == true) {
+                signercert = certs[i];
+                signer = CertTools.getSubjectDN(signercert);
+                Date now = new Date();
+                String signerissuer = CertTools.getIssuerDN(signercert);
+                String infoMsg = intres.getLocalizedMessage("ocsp.infosigner", signer);
+                log.info(infoMsg);
+                verifyOK = true;
+                // Also check that the signer certificate can be verified by one of the CA-certificates
+                // that we answer for
+                X509Certificate signerca = cacerts.findLatestBySubjectDN(HashID.getFromIssuerDN(certs[i]));
+                String subject = signer;
+                String issuer = signerissuer;
+                if (signerca != null) {
+                    try {
+                        signercert.verify(signerca.getPublicKey());
+                        if (log.isDebugEnabled()) {
+                            log.debug("Checking validity. Now: "+now+", signerNotAfter: "+signercert.getNotAfter());                  
+                        }
+                        CertTools.checkValidity(signercert, now);
+                        // Move the error message string to the CA cert
+                        subject = CertTools.getSubjectDN(signerca);
+                        issuer = CertTools.getIssuerDN(signerca);
+                        CertTools.checkValidity(signerca, now);
+                    } catch (SignatureException e) {
+                        infoMsg = intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", subject, issuer, e.getMessage());
+                        log.info(infoMsg);
+                        verifyOK = false;
+                    } catch (InvalidKeyException e) {
+                        infoMsg = intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", subject, issuer, e.getMessage());
+                        log.info(infoMsg);
+                        verifyOK = false;
+                    } catch (CertificateNotYetValidException e) {
+                        infoMsg = intres.getLocalizedMessage("ocsp.infosigner.certnotyetvalid", subject, issuer, e.getMessage());
+                        log.info(infoMsg);
+                        verifyOK = false;
+                    } catch (CertificateExpiredException e) {
+                        infoMsg = intres.getLocalizedMessage("ocsp.infosigner.certexpired", subject, issuer, e.getMessage());
+                        log.info(infoMsg);
+                        verifyOK = false;
+                    }                               
+                } else {
+                    infoMsg = intres.getLocalizedMessage("ocsp.infosigner.nocacert", signer, signerissuer);
+                    log.info(infoMsg);
+                    verifyOK = false;
+                }
+                break;
+            }
+        }
+        if (!verifyOK) {
+            String errMsg = intres.getLocalizedMessage("ocsp.errorinvalidsignature", signer);
+            log.info(errMsg);
+            throw new SignRequestSignatureException(errMsg);
+        }
+        
+        return signercert;
+    }
+	
 }
