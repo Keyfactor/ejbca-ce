@@ -16,6 +16,14 @@
         <servlet-class>org.ejbca.ui.web.protocol.OCSPServletStandAlone</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+    
+        <servlet>
+        <description><![CDATA[Answers OCSP Health check requests]]></description>
+        <display-name>StandAloneOcspHealthCheckServlet</display-name>
+        <servlet-name>OCSPHealthCheck</servlet-name>
+        <servlet-class>org.ejbca.ui.web.protocol.StandAloneOcspHealthCheckServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
 
     <servlet-mapping>
         <servlet-name>OCSP</servlet-name>

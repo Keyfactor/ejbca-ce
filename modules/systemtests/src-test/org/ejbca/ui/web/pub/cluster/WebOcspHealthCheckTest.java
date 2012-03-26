@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 import java.net.URL;
 
 import org.apache.log4j.Logger;
+import org.ejbca.core.protocol.ocsp.OcspJunitHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,10 +23,13 @@ import com.gargoylesoftware.htmlunit.WebResponse;
 public class WebOcspHealthCheckTest extends WebHealthTestAbstract {
     private static final Logger log = Logger.getLogger(WebOcspHealthCheckTest.class);
 
+    private OcspJunitHelper helper;
+    
     @Before
     public void setUp() throws Exception {
         httpPort = "8080"; 
         httpReqPath = "http://localhost:" + httpPort + "/ejbca/publicweb/vahealthcheck/vahealth";
+        helper = new OcspJunitHelper("http://127.0.0.1:8080/ejbca/", "publicweb/status/ocsp");
     }
 
     @After
@@ -37,9 +41,10 @@ public class WebOcspHealthCheckTest extends WebHealthTestAbstract {
      * times each
      */
     @Test
-    public void testEjbcaHealthHttp() throws Exception {
+    public void testEjbcaHealthHttp() throws Exception {      
         log.trace(">testEjbcaHealthHttp()");
         // Make a quick test first that it works at all before starting all threads
+        helper.reloadKeys();
         final WebClient webClient = new WebClient();
 		webClient.setTimeout(31*1000);
         WebConnection con = webClient.getWebConnection();

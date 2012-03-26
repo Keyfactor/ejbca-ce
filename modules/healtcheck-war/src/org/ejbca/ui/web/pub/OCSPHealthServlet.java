@@ -18,13 +18,11 @@ import org.ejbca.ui.web.pub.cluster.TextResponse;
 import org.ejbca.ui.web.pub.cluster.ValidationAuthorityHealthCheck;
 
 /**
- * @author mikek
- * 
+ * @version $Id$
  */
 public class OCSPHealthServlet extends AbstractHealthServlet {
 
-    private static final long serialVersionUID = 1L;
-
+    private static final long serialVersionUID = -5943655956890993863L;
     private IHealthCheck validationAuthorityHealthCheck;
     private TextResponse textResponse;
     
