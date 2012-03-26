@@ -279,11 +279,11 @@ public abstract class OcspResponseSessionBean implements OcspResponseGeneratorSe
                 transactionLogger.paramPut(TransactionLogger.CERT_STATUS, OCSPResponseItem.OCSP_GOOD); // it seems to be correct
 
                 // Check if the cacert (or the default responderid) is revoked
-                final CertificateStatus signerIssuerCertStatus = certificateStoreSession.getStatus(
-                        CertTools.getSubjectDN(signerTokenAndChain.getCaCertificate()),
-                        CertTools.getSerialNumber(signerTokenAndChain.getCaCertificate()));
+                X509Certificate caCertificate = signerTokenAndChain.getCaCertificate();
+                final CertificateStatus signerIssuerCertStatus = certificateStoreSession.getStatus(CertTools.getSubjectDN(caCertificate),
+                        CertTools.getSerialNumber(caCertificate));
 
-                String subjectDn = signerTokenAndChain.getCaCertificate().getSubjectDN().getName();
+                String subjectDn = caCertificate.getSubjectDN().getName();
                 if (!signerIssuerCertStatus.equals(CertificateStatus.REVOKED)) {
 
                     // Check if cert is revoked
