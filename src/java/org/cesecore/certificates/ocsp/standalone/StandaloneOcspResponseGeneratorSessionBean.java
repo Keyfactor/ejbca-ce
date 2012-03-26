@@ -384,6 +384,11 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
     protected TokenAndChainCache getTokenAndChainCache() {
         return cache;
     }
+    
+    @Override
+    public Collection<CryptoTokenAndChain> getCacheValues() {
+        return cache.values();
+    }
 
 }
 

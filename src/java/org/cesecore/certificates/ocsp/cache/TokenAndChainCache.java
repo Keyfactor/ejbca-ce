@@ -14,6 +14,7 @@ package org.cesecore.certificates.ocsp.cache;
 
 import java.math.BigInteger;
 import java.security.cert.X509Certificate;
+import java.util.Collection;
 import java.util.Map;
 
 import org.bouncycastle.ocsp.CertificateID;
@@ -70,6 +71,14 @@ public final class TokenAndChainCache {
             return null;
         } else {
             return cache.get(key);
+        }
+    }
+    
+    public Collection<CryptoTokenAndChain> values() {
+        if (cache == null) {
+            throw new CacheNotInitializedException("Token and chain cache has not been initialized, this is an implementation error.");
+        } else {
+            return cache.values();
         }
     }
 

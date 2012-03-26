@@ -12,9 +12,12 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp.standalone;
 
+import java.util.Collection;
+
 import javax.ejb.Local;
 
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
+import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
 
 /**  
  * @version $Id$
@@ -23,4 +26,10 @@ import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 @Local
 public interface StandaloneOcspResponseGeneratorSessionLocal extends StandAloneOcspResponseGeneratorSession, OcspResponseGeneratorSessionLocal {
 
+    /**
+     * 
+     * @return the contents of the token and chain cache.
+     */
+    Collection<CryptoTokenAndChain> getCacheValues();
+    
 }
