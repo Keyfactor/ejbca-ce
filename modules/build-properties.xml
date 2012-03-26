@@ -273,8 +273,8 @@
 		<include name="common/lib/el-api.jar"/>
 		<!-- JBoss 6.0.0 -->
 		<include name="server/default/deployers/jsf.deployer/Mojarra-2.0/jsf-libs/*.jar"/>
-		<!-- JBoss 7.1.0 and EAP 6 -->
-		<include name="modules/javax/faces/api/main/jboss-jsf-api_2.1_spec-2.0.0.*.jar"/>
+		<!-- JBoss 7.1.0, 7.1.1 and EAP 6 -->
+		<include name="modules/javax/faces/api/main/jboss-jsf-api_2.1_spec-2.0.*.jar"/>
 		<!-- Glassfish 2.1.1 -->
 		<include name="lib/jsf-impl.jar" />
 		<!-- Glassfish 3.1 -->
