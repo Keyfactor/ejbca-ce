@@ -13,15 +13,10 @@
 package org.ejbca.core.protocol.ocsp;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
@@ -29,15 +24,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Iterator;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -46,21 +40,14 @@ import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
 import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.RespID;
-import org.cesecore.certificates.ca.SignRequestException;
-import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.OcspConfiguration;
-import org.cesecore.util.CertTools;
-import org.cesecore.util.CryptoProviderTools;
-import org.cesecore.util.FileTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceRequest;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
-import org.ejbca.core.protocol.certificatestore.HashID;
-import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 
 /** Class with common methods used by both Internal and External OCSP responders
  * 
@@ -75,7 +62,7 @@ public class OCSPUtil {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
 
-    public static BasicOCSPRespGenerator createOCSPResponse(OCSPReq req, X509Certificate respondercert, int respIdType) throws OCSPException, NotSupportedException {
+    private static BasicOCSPRespGenerator createOCSPResponse(OCSPReq req, X509Certificate respondercert, int respIdType) throws OCSPException, NotSupportedException {
         if (null == req) {
             throw new IllegalArgumentException();
         }
@@ -116,11 +103,11 @@ public class OCSPUtil {
         return res;
     }
     
-    public static BasicOCSPResp generateBasicOCSPResp(OCSPCAServiceRequest serviceReq, String sigAlg, X509Certificate signerCert, PrivateKey signerKey, String provider, X509Certificate[] chain, int respIdType) 
+    private static BasicOCSPResp generateBasicOCSPResp(OCSPCAServiceRequest serviceReq, String sigAlg, X509Certificate signerCert, PrivateKey signerKey, String provider, X509Certificate[] chain, int respIdType) 
     throws NotSupportedException, OCSPException, NoSuchProviderException, IllegalArgumentException {
     	BasicOCSPResp returnval = null;
     	BasicOCSPRespGenerator basicRes = null;
-    	basicRes = OCSPUtil.createOCSPResponse(serviceReq.getOCSPrequest(), signerCert, respIdType);
+    	basicRes = createOCSPResponse(serviceReq.getOCSPrequest(), signerCert, respIdType);
     	ArrayList<OCSPResponseItem> responses = serviceReq.getResponseList();
     	if (responses != null) {
     		Iterator<OCSPResponseItem> iter = responses.iterator();
@@ -266,173 +253,5 @@ public class OCSPUtil {
         return sigAlg;
     }
 
-    /** Checks the signature on an OCSP request and checks that it is signed by an allowed CA.
-     * Does not check for revocation of the signer certificate
-     * 
-     * @param clientRemoteAddr The ip address or hostname of the remote client that sent the request, can be null.
-     * @param req The signed OCSPReq
-     * @param cacerts a CertificateCache of Certificates, the authorized CA-certificates. The signer certificate must be issued by one of these.
-     * @return X509Certificate which is the certificate that signed the OCSP request
-     * @throws SignRequestSignatureException if signature verification fail, or if the signing certificate is not authorized
-     * @throws SignRequestException if there is no signature on the OCSPReq
-     * @throws OCSPException if the request can not be parsed to retrieve certificates
-     * @throws NoSuchProviderException if the BC provider is not installed
-     * @throws CertificateException if the certificate can not be parsed
-     * @throws NoSuchAlgorithmException if the certificate contains an unsupported algorithm
-     * @throws InvalidKeyException if the certificate, or CA key is invalid
-     */
-    public static X509Certificate checkRequestSignature(String clientRemoteAddr, OCSPReq req, ICertificateCache cacerts)
-    throws SignRequestException, OCSPException,
-    NoSuchProviderException, CertificateException,
-    NoSuchAlgorithmException, InvalidKeyException,
-    SignRequestSignatureException {
-    	
-    	X509Certificate signercert = null;
-    	
-    	if (!req.isSigned()) {
-    		String infoMsg = intres.getLocalizedMessage("ocsp.errorunsignedreq", clientRemoteAddr);
-    		m_log.info(infoMsg);
-    		throw new SignRequestException(infoMsg);
-    	}
-    	// Get all certificates embedded in the request (probably a certificate chain)
-    	X509Certificate[] certs = req.getCerts("BC");
-    	// Set, as a try, the signer to be the first certificate, so we have a name to log...
-    	String signer = null;
-    	if (certs.length > 0) {
-    		signer = CertTools.getSubjectDN(certs[0]);
-    	}
-    	
-        // We must find a cert to verify the signature with...
-    	boolean verifyOK = false;
-    	for (int i = 0; i < certs.length; i++) {
-    		if (req.verify(certs[i].getPublicKey(), "BC") == true) {
-    			signercert = certs[i];
-        		signer = CertTools.getSubjectDN(signercert);
-        		Date now = new Date();
-    			String signerissuer = CertTools.getIssuerDN(signercert);
-    			String infoMsg = intres.getLocalizedMessage("ocsp.infosigner", signer);
-    			m_log.info(infoMsg);
-    			verifyOK = true;
-    			// Also check that the signer certificate can be verified by one of the CA-certificates
-    			// that we answer for
-    			X509Certificate signerca = cacerts.findLatestBySubjectDN(HashID.getFromIssuerDN(certs[i]));
-    			String subject = signer;
-    			String issuer = signerissuer;
-    			if (signerca != null) {
-    				try {
-    					signercert.verify(signerca.getPublicKey());
-    	        		if (m_log.isDebugEnabled()) {
-    	            		m_log.debug("Checking validity. Now: "+now+", signerNotAfter: "+signercert.getNotAfter());        			
-    	        		}
-    	        		CertTools.checkValidity(signercert, now);
-    	        		// Move the error message string to the CA cert
-    	    			subject = CertTools.getSubjectDN(signerca);
-    	    			issuer = CertTools.getIssuerDN(signerca);
-    	        		CertTools.checkValidity(signerca, now);
-    				} catch (SignatureException e) {
-    					infoMsg = intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", subject, issuer, e.getMessage());
-    					m_log.info(infoMsg);
-    					verifyOK = false;
-    				} catch (InvalidKeyException e) {
-    					infoMsg = intres.getLocalizedMessage("ocsp.infosigner.invalidcertsignature", subject, issuer, e.getMessage());
-    					m_log.info(infoMsg);
-    					verifyOK = false;
-    				} catch (CertificateNotYetValidException e) {
-    					infoMsg = intres.getLocalizedMessage("ocsp.infosigner.certnotyetvalid", subject, issuer, e.getMessage());
-    					m_log.info(infoMsg);
-    					verifyOK = false;
-    				} catch (CertificateExpiredException e) {
-    					infoMsg = intres.getLocalizedMessage("ocsp.infosigner.certexpired", subject, issuer, e.getMessage());
-    					m_log.info(infoMsg);
-    					verifyOK = false;
-    				}                            	
-    			} else {
-    				infoMsg = intres.getLocalizedMessage("ocsp.infosigner.nocacert", signer, signerissuer);
-    				m_log.info(infoMsg);
-    				verifyOK = false;
-    			}
-    			break;
-    		}
-    	}
-    	if (!verifyOK) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errorinvalidsignature", signer);
-    		m_log.info(errMsg);
-    		throw new SignRequestSignatureException(errMsg);
-    	}
-    	
-    	return signercert;
-    }
 
-    /** returns an HashTable of responseExtensions to be added to the BacisOCSPResponseGenerator with
-     * <code>
-     * X509Extensions exts = new X509Extensions(table);
-     * basicRes.setResponseExtensions(responseExtensions);
-     * </code>
-     * 
-     * @param req OCSPReq
-     * @return a Hashtable, can be empty nut not null
-     */
-    public static Hashtable<ASN1ObjectIdentifier, X509Extension> getStandardResponseExtensions(OCSPReq req) {
-        X509Extensions reqexts = req.getRequestExtensions();
-        Hashtable<ASN1ObjectIdentifier, X509Extension> table = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        if (reqexts != null) {
-        	// Table of extensions to include in the response
-            X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce);
-            if (null != ext) {
-                table.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-            }
-        }
-    	return table;
-    }
-    
-    public static Hashtable<String, X509Certificate> getCertificatesFromDirectory(String certificateDir) throws IOException {
-    	// read all files from trustDir, expect that they are PEM formatted certificates
-    	CryptoProviderTools.installBCProviderIfNotAvailable();
-    	File dir = new File(certificateDir);
-    	Hashtable<String, X509Certificate> trustedCerts  = new Hashtable<String, X509Certificate>();
-    	if (dir == null || dir.isDirectory() == false) {
-    		m_log.error(dir.getCanonicalPath()+ " is not a directory.");
-    		throw new IllegalArgumentException(dir.getCanonicalPath()+ " is not a directory.");                
-    	}
-    	File files[] = dir.listFiles();
-    	if (files == null || files.length == 0) {
-    		String errMsg = intres.getLocalizedMessage("ocsp.errornotrustfiles", dir.getCanonicalPath());
-    		m_log.error(errMsg);                
-    	}
-    	for ( int i=0; i<files.length; i++ ) {
-    		final String fileName = files[i].getCanonicalPath();
-    		// Read the file, don't stop completely if one file has errors in it
-    		try {
-    			byte[] bytes = FileTools.getBytesFromPEM(FileTools.readFiletoBuffer(fileName),
-    					CertTools.BEGIN_CERTIFICATE, CertTools.END_CERTIFICATE);
-    			X509Certificate  cert = (X509Certificate) CertTools.getCertfromByteArray(bytes);
-    			String key =  cert.getIssuerDN()+";"+cert.getSerialNumber().toString(16);
-    			trustedCerts.put(key,cert);
-    		} catch (CertificateException e) {
-    			String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
-    			m_log.error(errMsg, e);
-    		} catch (IOException e) {
-    			String errMsg = intres.getLocalizedMessage("ocsp.errorreadingfile", fileName, "trustDir", e.getMessage());
-    			m_log.error(errMsg, e);
-    		}
-    	}
-    	return trustedCerts;
-    }
-    
-    /**
-     * Checks to see if a certificate is in a list of certificate.
-     * Comparison is made on SerialNumber
-     * @param cert the certificate to look for
-     * @param trustedCerts the list (Hashtable) to look in
-     * @return true if cert is in trustedCerts, false otherwise
-     */
-    public static boolean checkCertInList(X509Certificate cert, Hashtable<String, X509Certificate> trustedCerts) {
-    	//String key = CertTools.getIssuerDN(cert)+";"+cert.getSerialNumber().toString(16);
-    	String key =  cert.getIssuerDN()+";"+cert.getSerialNumber().toString(16);
-    	Object found = trustedCerts.get(key);
-        if (found != null) {
-            return true;
-        }
-        return false;
-    }
 }
