@@ -427,13 +427,18 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
                 // In JBoss this works, the client actually gets an OcspException
                 assertEquals("Unable to find CA certificate and key to generate OCSP response.", e.getMessage());
             } catch (EJBException e) {
-                // In glassfish, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
+                // In glassfish and JBoss 7, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
                 Throwable e1 = e.getCausedByException();
-                Throwable e2 = e1.getCause();
-                Throwable e3 = e2.getCause();
-                assertTrue(e3 instanceof OcspFailureException);
-                OcspFailureException e4 = (OcspFailureException) e3;
-                assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());
+                // In JBoss 7 is is wrapped in only one layer
+                if (e1 instanceof OcspFailureException) {
+                    assertEquals("Unable to find CA certificate and key to generate OCSP response.", e1.getMessage());               
+                } else {
+                    Throwable e2 = e1.getCause();
+                    Throwable e3 = e2.getCause();
+                    assertTrue(e3 instanceof OcspFailureException);
+                    OcspFailureException e4 = (OcspFailureException) e3;
+                    assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());                   
+                }
             }
 
         } finally {
@@ -525,13 +530,18 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
             // In JBoss this works, the client actually gets an OcspException
             assertEquals("Unable to find CA certificate and key to generate OCSP response.", e.getMessage());
         } catch (EJBException e) {
-            // In glassfish, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
+            // In glassfish and JBoss 7, a RuntimeException causes an EJBException to be thrown, wrapping the OcspException in many layers...
             Throwable e1 = e.getCausedByException();
-            Throwable e2 = e1.getCause();
-            Throwable e3 = e2.getCause();
-            assertTrue(e3 instanceof OcspFailureException);
-            OcspFailureException e4 = (OcspFailureException) e3;
-            assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());
+            // In JBoss 7 is is wrapped in only one layer
+            if (e1 instanceof OcspFailureException) {
+                assertEquals("Unable to find CA certificate and key to generate OCSP response.", e1.getMessage());               
+            } else {
+                Throwable e2 = e1.getCause();
+                Throwable e3 = e2.getCause();
+                assertTrue(e3 instanceof OcspFailureException);
+                OcspFailureException e4 = (OcspFailureException) e3;
+                assertEquals("Unable to find CA certificate and key to generate OCSP response.", e4.getMessage());
+            }
         }
 
     }
