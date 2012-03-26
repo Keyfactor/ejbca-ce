@@ -134,6 +134,7 @@
 		<include name="org/cesecore/certificates/ca/*.java"/>
 		<include name="org/cesecore/certificates/crl/*.java"/>
 		<include name="org/cesecore/certificates/ocsp/OcspResponseInformation.java"/>
+		<include name="org/cesecore/certificates/ocsp/cache/CryptoTokenAndChain.java"/>
 		<include name="org/cesecore/certificates/ocsp/cache/OcspConfigurationCache.java"/>
 		<include name="org/cesecore/certificates/ocsp/exception/*Exception.java"/>
 		<include name="org/cesecore/certificates/ocsp/logging/AuditLogger.java"/>
