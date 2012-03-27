@@ -372,14 +372,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     }
                 }
                 final String msg = intres.getLocalizedMessage("ra.addedentity", username);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);
             } catch (PersistenceException e) {
                 // PersistenceException could also be caused by various database problems.
                 final String msg = intres.getLocalizedMessage("ra.errorentityexist", username);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 details.put("error", e.getMessage());
                 auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
@@ -388,7 +388,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             } catch (Exception e) {
                 final String msg = intres.getLocalizedMessage("ra.erroraddentity", username);
                 log.error(msg, e);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 details.put("error", e.getMessage());
                 auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
