@@ -127,23 +127,14 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     }
 
     @Override
-    public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData, final RequestMessage req,
-            final Class<? extends ResponseMessage> responseClass) throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException,
+    public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData, final CA ca, final RequestMessage req,
+            final Class responseClass) throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException,
             CADoesntExistsException, CertificateCreateException, CesecoreException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(IRequestMessage)");
+            log.trace(">createCertificate(IRequestMessage, CA)");
         }
         CertificateResponseMessage ret = null;
         try {
-            CA ca;
-            // First find the CA, this checks authorization and that the CA exists
-            if ((userData == null) || (userData.getCAId() == 0)) {
-                // If no CAid in the supplied userdata
-                ca = getCAFromRequest(admin, req);
-            } else {
-                ca = caSession.getCA(admin, userData.getCAId());
-            }
-
             final CAToken catoken = ca.getCAToken();
 
             // See if we need some key material to decrypt request
@@ -161,7 +152,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     // LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
                     throw new SignRequestSignatureException(msg);
                 }
-                // Get the public key
                 reqpk = req.getRequestPublicKey();
                 if (reqpk == null) {
                     final String msg = intres.getLocalizedMessage("createcert.nokeyinrequest");
@@ -202,11 +192,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             byte[] ki = req.getRequestKeyInfo();
             // CVC sequence is only 5 characters, don't fill with a lot of garbage here, it must be a readable string
             if ((ki != null) && (ki.length > 0) && (ki.length < 10) ) {
-            	final String str = new String(ki);
-            	// A cvc sequence must be ascii printable, otherwise it's some binary data
-            	if (StringUtils.isAsciiPrintable(str)) {
-                    sequence = new String(ki);            		
-            	}
+                final String str = new String(ki);
+                // A cvc sequence must be ascii printable, otherwise it's some binary data
+                if (StringUtils.isAsciiPrintable(str)) {
+                    sequence = new String(ki);                  
+                }
             }
             Certificate cert = createCertificate(admin, userData, ca, req.getRequestX509Name(), reqpk, keyusage, notBefore, notAfter, exts, sequence);
 
@@ -241,9 +231,32 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         }
 
         if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(IRequestMessage)");
+            log.trace("<createCertificate(IRequestMessage, CA)");
         }
         return ret;
+    }
+
+
+    @Override
+    public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData, final RequestMessage req,
+            final Class<? extends ResponseMessage> responseClass) throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException,
+            CADoesntExistsException, CertificateCreateException, CesecoreException {
+        if (log.isTraceEnabled()) {
+            log.trace(">createCertificate(IRequestMessage)");
+        }
+        final CA ca;
+        // First find the CA, this checks authorization and that the CA exists
+        if ((userData == null) || (userData.getCAId() == 0)) {
+            // If no CAid in the supplied userdata
+            ca = getCAFromRequest(admin, req);
+        } else {
+            ca = caSession.getCA(admin, userData.getCAId());
+        }
+
+        if (log.isTraceEnabled()) {
+            log.trace("<createCertificate(IRequestMessage)");
+        }
+        return createCertificate(admin, userData, ca, req, responseClass);
     }
 
     /**
