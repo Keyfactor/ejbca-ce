@@ -40,7 +40,7 @@ import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 
 /**
@@ -70,7 +70,7 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
     /** Certificate Store Session used to authenticate the request */
     private CertificateStoreSession certificateStoreSession;
 	
-	public ConfirmationMessageHandler(AuthenticationToken admin, CaSessionLocal caSession, EndEntityProfileSession endEntityProfileSession,
+	public ConfirmationMessageHandler(AuthenticationToken admin, CaSessionLocal caSession, EndEntityProfileSessionLocal endEntityProfileSession,
             CertificateProfileSession certificateProfileSession, CertificateStoreSession certStoreSession, AccessControlSession authSession,
             EndEntityAccessSession eeAccessSession, WebAuthenticationProviderSessionLocal authProvSession) {
 
@@ -141,10 +141,10 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
         int caId = CertTools.stringToBCDNString(msg.getHeader().getRecipient().getName().toString()).hashCode();
         CAInfo caInfo = null;
         try {
-            caInfo = caSession.getCAInfo(admin, caId);
+            // No need for access control here for internal verification/protection of message, access control is done when we want to use
+            // the CA to issue a cert
+            caInfo = caSession.getCAInfoInternal(caId, null, true);
         } catch (CADoesntExistsException e) {
-            LOG.error("Exception during CMP processing: ", e);          
-        } catch (AuthorizationDeniedException e) {
             LOG.error("Exception during CMP processing: ", e);          
         }
             

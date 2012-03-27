@@ -52,7 +52,7 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
@@ -90,7 +90,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
 	
 	public RevocationMessageHandler(final AuthenticationToken admin, final EndEntityManagementSession userAdminSession, final CaSessionLocal caSession, 
-	        final EndEntityProfileSession endEntityProfileSession, final CertificateProfileSession certificateProfileSession, final CertificateStoreSession certStoreSession,
+	        final EndEntityProfileSessionLocal endEntityProfileSession, final CertificateProfileSession certificateProfileSession, final CertificateStoreSession certStoreSession,
 	        final AccessControlSession authSession, final EndEntityAccessSession eeAccessSession, final WebAuthenticationProviderSessionLocal authProviderSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		//raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();

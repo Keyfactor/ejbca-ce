@@ -427,22 +427,27 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public CAInfo getCAInfoInternal(final int caid, final String name, boolean fromCache) throws CADoesntExistsException {
+        return getCAInternal(caid, name, fromCache).getCAInfo();
+    }
     /**
-	 * Internal method for getting CA, to avoid code duplication. Tries to find the CA even if the CAId is wrong due to CA certificate DN not being
-	 * the same as CA DN. Uses CACacheManager directly if configured to do so in ejbca.properties.
-	 * 
-	 * Note! No authorization checks performed in this internal method
-	 * 
-	 * @param caid
-	 *            numerical id of CA (subjectDN.hashCode()) that we search for, or -1 of a name is to ge used instead
-	 * @param name
-	 *            human readable name of CA, used instead of caid if caid == -1, can be null if caid != -1
-	 * @param fromCache if we should use the CA cache or return a new, decoupled, instance from the database, to be used when you need
-	 *             a completely distinct object, for edit, and not a shared cached instance.
-	 * @return CA value object, never null
-	 * @throws CADoesntExistsException
-	 *             if no CA was found
-	 */
+     * Internal method for getting CA, to avoid code duplication. Tries to find the CA even if the CAId is wrong due to CA certificate DN not being
+     * the same as CA DN. Uses CACacheManager directly if configured to do so in ejbca.properties.
+     * 
+     * Note! No authorization checks performed in this internal method
+     * 
+     * @param caid
+     *            numerical id of CA (subjectDN.hashCode()) that we search for, or -1 of a name is to ge used instead
+     * @param name
+     *            human readable name of CA, used instead of caid if caid == -1, can be null if caid != -1
+     * @param fromCache if we should use the CA cache or return a new, decoupled, instance from the database, to be used when you need
+     *             a completely distinct object, for edit, and not a shared cached instance.
+     * @return CA value object, never null
+     * @throws CADoesntExistsException
+     *             if no CA was found
+     */
 	private CA getCAInternal(final int caid, final String name, boolean fromCache) throws CADoesntExistsException {
 	    if (log.isTraceEnabled()) {
 	        log.trace(">getCAInternal: " + caid + ", " + name);

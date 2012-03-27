@@ -48,7 +48,7 @@ import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLoc
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ra.CertificateRequestSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
@@ -126,7 +126,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	 * @param userAdminSession
 	 */
 	public CrmfMessageHandler(final AuthenticationToken admin, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession, CertificateRequestSession certificateRequestSession,
-			EndEntityAccessSession endEntityAccessSession, EndEntityProfileSession endEntityProfileSession, SignSession signSession, CertificateStoreSession certStoreSession, 
+			EndEntityAccessSession endEntityAccessSession, EndEntityProfileSessionLocal endEntityProfileSession, SignSession signSession, CertificateStoreSession certStoreSession, 
 			AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		this.signSession = signSession;
@@ -462,7 +462,9 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
         if (caId == 0) {
             caInfo = null;
         } else {
-            caInfo = this.caSession.getCAInfo(this.admin, caId);   
+            // No need for access control here for internal verification of message, access control is done when we want to use
+            // the CA to issue a cert
+            caInfo = this.caSession.getCAInfoInternal(caId, null, true);   
         }
 		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, admin, caSession, endEntityAccessSession, certStoreSession, authorizationSession, 
 		                endEntityProfileSession, authenticationProviderSession);

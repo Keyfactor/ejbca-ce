@@ -2244,18 +2244,18 @@ public class EjbcaWS implements IEjbcaWS {
     /**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getAvailableCertificateProfiles()
 	 */
-	public NameAndId[] getAvailableCertificateProfiles(int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, userAdminSession, webAuthenticationSession);
-		AuthenticationToken admin = ejbhelper.getAdmin();
-		TreeMap<String,Integer> ret = new TreeMap<String,Integer>();
+	public NameAndId[] getAvailableCertificateProfiles(final int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
+	    final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, userAdminSession, webAuthenticationSession);
+	    final AuthenticationToken admin = ejbhelper.getAdmin();
+	    final TreeMap<String,Integer> ret = new TreeMap<String,Integer>();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try {
-			EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(entityProfileId);
+		    final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(entityProfileId);
 			if (profile != null) {				
-				String value = profile.getValue(EndEntityProfile.AVAILCERTPROFILES,0);
+			    final String value = profile.getValue(EndEntityProfile.AVAILCERTPROFILES,0);
 				if (value != null) {
-					String[] availablecertprofilesId = value.split(EndEntityProfile.SPLITCHAR);				
+				    final String[] availablecertprofilesId = value.split(EndEntityProfile.SPLITCHAR);				
 					for (String id : availablecertprofilesId) {
 						int i = Integer.parseInt(id);
 						ret.put(certificateProfileSession.getCertificateProfileName(i), i);
@@ -2274,17 +2274,17 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#getAvailableCAsInProfile()
 	 */
-	public NameAndId[] getAvailableCAsInProfile(int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
-		EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, userAdminSession, webAuthenticationSession);
-		AuthenticationToken admin = ejbhelper.getAdmin();
-		TreeMap<String,Integer> ret = new TreeMap<String,Integer>();
+	public NameAndId[] getAvailableCAsInProfile(final int entityProfileId) throws AuthorizationDeniedException, EjbcaException {
+	    final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, userAdminSession, webAuthenticationSession);
+	    final AuthenticationToken admin = ejbhelper.getAdmin();
+	    final TreeMap<String,Integer> ret = new TreeMap<String,Integer>();
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
 		try {
-			EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(entityProfileId);
+			final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfileNoClone(entityProfileId);
 			if (profile != null) {
-				Collection<String> cas = profile.getAvailableCAs(); // list of CA ids available in profile
-				HashMap<Integer,String> map = caSession.getCAIdToNameMap();
+			    final Collection<String> cas = profile.getAvailableCAs(); // list of CA ids available in profile
+			    final HashMap<Integer,String> map = caSession.getCAIdToNameMap();
 				for (String id : cas ) {
 					Integer i = Integer.valueOf(id);
 					String name = (String)map.get(i);

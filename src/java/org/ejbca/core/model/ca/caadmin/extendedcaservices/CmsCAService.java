@@ -247,12 +247,11 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 				resp = ed.getEncoded();
 			}
 			if ((serviceReq.getMode() & CmsCAServiceRequest.MODE_DECRYPT) != 0) {
-				CMSEnvelopedData ed = new CMSEnvelopedData(resp);
-				RecipientInformationStore  recipients = ed.getRecipientInfos();
-				X500Name issuer = X500Name.getInstance(getCMSCertificate().getIssuerX500Principal().getEncoded());
-				
-				KeyTransRecipientId id = new KeyTransRecipientId(issuer, getCMSCertificate().getSerialNumber());
-				RecipientInformation recipient = recipients.get(id);
+				final CMSEnvelopedData ed = new CMSEnvelopedData(resp);
+				final RecipientInformationStore  recipients = ed.getRecipientInfos();
+				final X500Name issuer = X500Name.getInstance(getCMSCertificate().getIssuerX500Principal().getEncoded());
+				final KeyTransRecipientId id = new KeyTransRecipientId(issuer, getCMSCertificate().getSerialNumber());
+				final RecipientInformation recipient = recipients.get(id);
 				if (recipient != null) {
 					resp = recipient.getContent(this.privKey, "BC");
 				}

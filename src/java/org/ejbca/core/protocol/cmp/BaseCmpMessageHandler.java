@@ -27,7 +27,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.internal.InternalResources;
 import org.ejbca.config.CmpConfiguration;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
+import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
@@ -57,13 +57,13 @@ public class BaseCmpMessageHandler {
 
 	protected AuthenticationToken admin;
 	protected CaSessionLocal caSession;
-	protected EndEntityProfileSession endEntityProfileSession;
+	protected EndEntityProfileSessionLocal endEntityProfileSession;
 	protected CertificateProfileSession certificateProfileSession;
 
 	protected BaseCmpMessageHandler() {
 	}
 
-	protected BaseCmpMessageHandler(final AuthenticationToken admin, CaSessionLocal caSession, EndEntityProfileSession endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
+	protected BaseCmpMessageHandler(final AuthenticationToken admin, CaSessionLocal caSession, EndEntityProfileSessionLocal endEntityProfileSession, CertificateProfileSession certificateProfileSession) {
 		this.admin = admin;
 		this.caSession = caSession;
 		this.endEntityProfileSession = endEntityProfileSession;
@@ -130,7 +130,7 @@ public class BaseCmpMessageHandler {
 				LOG.debug("Using default CA from End Entity Profile CA when adding users in RA mode.");
 			}
 			// get default CA id from end entity profile
-			final EndEntityProfile eeProfile = endEntityProfileSession.getEndEntityProfile(eeProfileId);
+			final EndEntityProfile eeProfile = endEntityProfileSession.getEndEntityProfileNoClone(eeProfileId);
 			ret = eeProfile.getDefaultCA();
 			if (ret == -1) {
 				LOG.error("No default CA id for end entity profile: "+eeProfileId);
@@ -145,7 +145,8 @@ public class BaseCmpMessageHandler {
 			}
 			if(keyId != null) {
 			    // Use keyId as CA name
-			    final CAInfo info = caSession.getCAInfo(admin, keyId);
+			    // No need to do access control here, just to get the CAId
+			    final CAInfo info = caSession.getCAInfoInternal(-1, keyId, true);
 			    if (LOG.isDebugEnabled()) {
 			        LOG.debug("Using CA: "+info.getName());
 			    }
@@ -154,7 +155,8 @@ public class BaseCmpMessageHandler {
 			    LOG.error("Expecting the CA name to be specified in the KeyID parameter, but the KeyID parameter is 'null'");
 			}
 		} else {
-			final CAInfo info = caSession.getCAInfo(admin, caName);
+            // No need to do access control here, just to get the CAId
+            final CAInfo info = caSession.getCAInfoInternal(-1, caName, true);
 			ret = info.getCAId();					
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Using fixed caName when adding users in RA mode: "+caName+"("+ret+")");
@@ -171,7 +173,7 @@ public class BaseCmpMessageHandler {
 		String certificateProfile = CmpConfiguration.getRACertificateProfile();
 		if (StringUtils.equals(certificateProfile, "ProfileDefault")) {
             // get default certificate profile id from end entity profile
-            final EndEntityProfile eeProfile = endEntityProfileSession.getEndEntityProfile(eeProfileId);
+            final EndEntityProfile eeProfile = endEntityProfileSession.getEndEntityProfileNoClone(eeProfileId);
             if (eeProfile == null) {
                 final String msg = INTRES.getLocalizedMessage("store.errorcertprofilenotexist", eeProfileId);
                 LOG.info(msg);

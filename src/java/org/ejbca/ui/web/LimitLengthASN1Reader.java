@@ -50,7 +50,7 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
 	 * @param input
 	 * @param contentLength the provided contentLength, we do not trust it but will use it if given
 	 */
-	public LimitLengthASN1Reader(InputStream input, int contentLength) {
+	public LimitLengthASN1Reader(final InputStream input, final int contentLength) {
 		super(input, MAX_REQUEST_SIZE);
 		this.baos = new ByteArrayOutputStream();
 		this.contentLength = contentLength;
@@ -71,9 +71,9 @@ public class LimitLengthASN1Reader extends ASN1InputStream {
 	 * @throws IOException
 	 * @throws MalformedRequestException if the number of bytes read is less than length, i.e. asn.1 length tag was invalid
 	 */
-	private byte[] readTopASN1(int length) throws IOException, MalformedRequestException {
+	private byte[] readTopASN1(final int length) throws IOException, MalformedRequestException {
         // This small code snippet is inspired/copied from apache IO utils by Tomas Gustavsson...
-        byte[] buf = new byte[length]; // buf of length length, normal optimal case is only one read operation below
+        final byte[] buf = new byte[length]; // buf of length length, normal optimal case is only one read operation below
         int n = 0;
         int bytesRead = 0;
         // We must always read until it returns -1, make sure we read maximum length bytes
