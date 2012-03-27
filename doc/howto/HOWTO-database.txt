@@ -108,50 +108,56 @@ MySQL specifics
 ---------------
 EJBCA have been tested with MySQL 5.x.
 
-It is recommended not to use MyISAM, since it only supports table locks and not row-locking.
-Configure the default storage engine in my.cnf with:
+It is NOT recommended to use the MyISAM storage engine, since it only supports
+table locks and not row-locking.
+
+It is recommended to configure my.cnf with at least the following:
  [mysqld]
- default-storage-engine=INNODB
-You can also alter existing tables with "alter table <table name> type=InnoDB;".
+ default-storage-engine = INNODB
+ transaction_isolation = REPEATABLE-READ
+ sync_binlog = 1
+ innodb_file_per_table = 1
+ innodb_file_format = Barracuda
+ innodb_flush_log_at_trx_commit = 1
+ character-set-server = utf8
+ default-collation = utf8_unicode_ci
+ default-character-set = utf8
 
-JDBC driver: mysql-connector-java-5.x.x.jar.
-(use the latest mysql connector you can get for your mysql version)
-
-Download JDBC driver for mySQL from http://www.mysql.com/
+The JDBC driver (e.g. mysql-connector-java-5.x.x.jar) can be downloaded from
+http://www.mysql.com/ or installed using your Linux repositories.
 
 Sometimes there can be problems with MySQL related to case sensitivity of database tables.
 
-To use UTF-8 encoding in the database, which may be necessary to get your national characters to
-work, you may have to use the following option to the mysql connect string:
- jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8
+To use UTF-8 encoding use the following option to the MySQL connect string:
+  jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8
 
-There are also lots of settings that you can do in my.cnf:'
- [mysqld]
- character-set-server=utf8
- default-collation=utf8_unicode_ci
- default-character-set=utf8
-maybe you need them all, maybe you don't need any of them...try you way forward (starting with nothing) and
-try to add stuff if it doesn't work.
+Additionally you might want to specify a socket timeout for fail-over setups:
+  jdbc:mysql://127.0.0.1:3306/ejbca?characterEncoding=UTF-8&socketTimeout=300000
 
-The SQL command to show tables in MySQL is:
- show tables;
+Basic database, user, table and index creation:
+  $ mysql -u root -p 
+  mysql> CREATE DATABASE ejbca CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+  mysql> GRANT ALL PRIVILEGES ON ejbca.* TO 'ejbca'@'<host>' IDENTIFIED BY '<password>';
+  mysql> exit
+  $ mysql -u root -p ejbca < doc/sql-scripts/create-tables-ejbca5-mysql.sql
+  $ mysql -u root -p ejbca < doc/sql-scripts/create-index-ejbca5.sql
+  $ mysql -u root -p ejbca < doc/sql-scripts/optimize-ejbca5-mysql.sql
 
-Typically database and user creation: 'mysqladmin create ejbca' will create the database. 
-Start 'mysql -u root mysql' and create the user with "grant all on ejbca.* to ejbca@'<host>' identified by '<pwd>';".
+List your tables, indexes and partitions:
+  $ mysql -u root -p ejbca 
+  mysql> SHOW TABLES;
+  mysql> SELECT * FROM information_schema.tables WHERE TABLE_SCHEMA='ejbca';
+  mysql> SELECT * FROM information_schema.statistics WHERE TABLE_SCHEMA='ejbca';
+  mysql> SELECT * FROM information_schema.partitions WHERE TABLE_SCHEMA='ejbca';
+  mysql> exit
 
-To limit the table rights to LogEntryData:
-Configure and run $EJBCA_HOME/doc/howto/mysql-privileges.sh to generate an .sql file with the new database privileges.
-After the .sql file is generated you have to run:
-#mysql -u ejbca -p ejbca < <path to the generated .sql file>
-#mysql -u root -p
-mysql> flush privileges;
-Restart jboss
-
-If you use JDBC-driver 3.1.x you may have to add "?useServerPrepStmts=false" to the database connect url in 
-conf/database.properties, i.e.:
-#database.url=jdbc:mysql://127.0.0.1:3306/ejbca?useServerPrepStmts=false
-You will need this if you get errors with "Incorrect arguments to mysql_stmt_execute" when doing install of EJBCA.
-This problem seems to affect the combination of MySQL 4.x with Connector/J 3.1.x.
+To limit the table rights to AuditRecordData configure and run doc/howto/mysql-privileges.sh
+to generate an .sql file with the new database privileges. Then run:
+  $ mysql -u root -p ejbca < <path to the generated .sql file>
+  $ mysql -u root -p
+  mysql> FLUSH PRIVILEGES;
+  mysql> exit
+Restart you application server after this.
 
 
 PostgreSQL specifics

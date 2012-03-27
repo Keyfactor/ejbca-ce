@@ -1,35 +1,25 @@
-drop index auditrecorddata_idx1 on AuditRecordData;
-drop index crldata_idx1 on CRLData;
-drop index crldata_idx2 on CRLData;
-drop index certificatedata_idx1 on CertificateData;
-drop index certificatedata_idx2 on CertificateData;
-drop index certificatedata_idx3 on CertificateData;
-drop index certificatedata_idx4 on CertificateData;
-drop index certificatedata_idx5 on CertificateData;
-drop index certificatedata_idx6 on CertificateData;
-drop index certificatedata_idx7 on CertificateData;
-drop index certificatedata_idx8 on CertificateData;
-drop index certificatedata_idx9 on CertificateData;
-drop index certificatedata_idx10 on CertificateData;
-drop index userdata_idx1 on UserData;
-drop index userdata_idx2 on UserData;
-drop index userdata_idx3 on UserData;
-drop index userdata_idx4 on UserData;
-drop index userdata_idx5 on UserData;
-drop index userdata_idx6 on UserData;
-drop index userdata_idx7 on UserData;
-drop index userdata_idx8 on UserData;
-drop index userdata_idx9 on UserData;
-drop index historydata_idx1 on CertReqHistoryData;
-drop index historydata_idx2 on CertReqHistoryData;
-drop index cadata_idx1 on CAData;
-drop index accessrules_idx1 on AccessRulesData;
-drop index adminentity_idx1 on AdminEntityData;
-drop index publisherqueue_idx1 on PublisherQueueData;
-drop index publisherqueue_idx2 on PublisherQueueData;
-drop index publisherqueue_idx3 on PublisherQueueData;
--- Pre EJBCA 5 indexes
-drop index logentry_idx1 on LogEntryData;
-drop index logentry_idx2 on LogEntryData;
-drop index logentry_idx3 on LogEntryData;
-drop index logentry_idx4 on LogEntryData;
+-- version: $Id$
+
+ALTER TABLE AuditRecordData DROP INDEX auditrecorddata_idx2;
+ALTER TABLE AuditRecordData DROP INDEX auditrecorddata_idx3;
+ALTER TABLE CRLData DROP INDEX crldata_idx3;
+
+ALTER TABLE CertificateData DROP INDEX certificatedata_idx2;
+ALTER TABLE CertificateData DROP INDEX certificatedata_idx4;
+ALTER TABLE CertificateData DROP INDEX certificatedata_idx5;
+ALTER TABLE CertificateData DROP INDEX certificatedata_idx11;
+ALTER TABLE CertificateData DROP INDEX certificatedata_idx12;
+-- Only added when MySQL partition pruning is used:
+-- ALTER TABLE CertificateData DROP INDEX certificatedata_idx13;
+-- ALTER TABLE CertificateData DROP INDEX certificatedata_idx14;
+
+ALTER TABLE CertReqHistoryData DROP INDEX historydata_idx1;
+ALTER TABLE CertReqHistoryData DROP INDEX historydata_idx1;
+
+ALTER TABLE CertReqHistoryData ADD INDEX historydata_idx1 (username);
+ALTER TABLE CertReqHistoryData ADD INDEX historydata_idx3 (serialNumber);
+
+ALTER TABLE UserData DROP INDEX userdata_idx10;
+ALTER TABLE UserData DROP INDEX userdata_idx11;
+
+ALTER TABLE PublisherQueueData DROP INDEX publisherqueue_idx3;
