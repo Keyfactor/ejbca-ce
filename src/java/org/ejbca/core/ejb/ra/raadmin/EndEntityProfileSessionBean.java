@@ -254,7 +254,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @Override
     public EndEntityProfile getEndEntityProfileNoClone(final String profilename) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace(">getEndEntityProfile(" + profilename + ")");
+            LOG.trace(">getEndEntityProfileNoClone(" + profilename + ")");
         }
         EndEntityProfile returnval = null;
         if (profilename.equals(EMPTY_ENDENTITYPROFILENAME)) {
@@ -266,7 +266,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             }
         }
         if (LOG.isTraceEnabled()) {
-            LOG.trace("<getEndEntityProfile(" + profilename + "): " + (returnval == null ? "null" : "not null"));
+            LOG.trace("<getEndEntityProfileNoClone(" + profilename + "): " + (returnval == null ? "null" : "not null"));
         }
         return returnval;
     }
@@ -311,7 +311,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     @Override
     public EndEntityProfile getEndEntityProfile(final int id) {
         if (LOG.isTraceEnabled()) {
-            LOG.trace(">getEndEntityProfile(" + id + ")");
+            LOG.trace(">getEndEntityProfileNoClone(" + id + ")");
         }
         EndEntityProfile returnval = getEndEntityProfileNoClone(id);
         try {
@@ -323,7 +323,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
             throw new RuntimeException(e);
         }
         if (LOG.isTraceEnabled()) {
-            LOG.trace("<getEndEntityProfile(id): " + (returnval == null ? "null" : "not null"));
+            LOG.trace("<getEndEntityProfileNoClone(id): " + (returnval == null ? "null" : "not null"));
         }
         return returnval;
     }
