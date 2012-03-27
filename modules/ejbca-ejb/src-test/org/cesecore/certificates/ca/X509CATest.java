@@ -223,7 +223,7 @@ public class X509CATest {
         assertEquals(-1, deltanum.intValue());
         // Revoke some cert
         Date revDate = new Date();
-        revcerts.add(new RevokedCertInfo(CertTools.getFingerprintAsString(usercert), CertTools.getSerialNumber(usercert), revDate, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CertTools.getNotAfter(usercert)));
+        revcerts.add(new RevokedCertInfo(CertTools.getFingerprintAsString(usercert).getBytes(), CertTools.getSerialNumber(usercert).toByteArray(), revDate.getTime(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CertTools.getNotAfter(usercert).getTime()));
         xcrl = (X509CRL)x509ca.generateCRL(revcerts, 2);
         set = xcrl.getRevokedCertificates();
         assertEquals(1, set.size());
@@ -254,7 +254,7 @@ public class X509CATest {
         assertEquals(3, num.intValue());
         deltanum = CrlExtensions.getDeltaCRLIndicator(xcrl);
         assertEquals(2, deltanum.intValue());
-        revcerts.add(new RevokedCertInfo(CertTools.getFingerprintAsString(usercert), CertTools.getSerialNumber(usercert), revDate, RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CertTools.getNotAfter(usercert)));
+        revcerts.add(new RevokedCertInfo(CertTools.getFingerprintAsString(usercert).getBytes(), CertTools.getSerialNumber(usercert).toByteArray(), revDate.getTime(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CertTools.getNotAfter(usercert).getTime()));
         xcrl = (X509CRL)x509ca.generateDeltaCRL(revcerts, 4, 3);
         deltanum = CrlExtensions.getDeltaCRLIndicator(xcrl);
         assertEquals(3, deltanum.intValue());
