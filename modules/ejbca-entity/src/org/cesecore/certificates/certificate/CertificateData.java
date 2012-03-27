@@ -907,13 +907,13 @@ public class CertificateData extends ProtectedData implements Serializable {
         @SuppressWarnings("unchecked")
         final List<Object[]> incompleteCertificateDatas = query.getResultList();
         final List<RevokedCertInfo> revokedCertInfos = new ArrayList<RevokedCertInfo>();
-        for (Object[] current : incompleteCertificateDatas) {
+        for (final Object[] current : incompleteCertificateDatas) {
             // The order of the results are defined by the SqlResultSetMapping annotation
-            String fingerprint = (String) current[0];
-            BigInteger serialNumber = new BigInteger((String) current[1]);
-            Date expireDate = new Date(ValueExtractor.extractLongValue(current[2]));
-            Date revocationDate = new Date(ValueExtractor.extractLongValue(current[3]));
-            int revocationReason = ValueExtractor.extractIntValue(current[4]);
+            final byte[] fingerprint = ((String) current[0]).getBytes();
+            final byte[] serialNumber = new BigInteger((String) current[1]).toByteArray();
+            final long expireDate = ValueExtractor.extractLongValue(current[2]);
+            final long revocationDate = ValueExtractor.extractLongValue(current[3]);
+            final int revocationReason = ValueExtractor.extractIntValue(current[4]);
             revokedCertInfos.add(new RevokedCertInfo(fingerprint, serialNumber, revocationDate, revocationReason, expireDate));
         }
         return revokedCertInfos;
