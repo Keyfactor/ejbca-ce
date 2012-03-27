@@ -624,21 +624,17 @@ public class X509CA extends CA implements Serializable {
         {
             // Serialnumber is either random bits, where random generator is initialized by the serno generator.
             // Or a custom serial number defined in the end entity object
+            final BigInteger serno;
             final ExtendedInformation ei = subject.getExtendedinformation();
-            BigInteger customSN = ei != null ? ei.certificateSerialNumber() : null;
-            if (customSN != null) {
-                if (!certProfile.getAllowCertSerialNumberOverride()) {
-                    final String msg = intres.getLocalizedMessage("createcert.certprof_not_allowing_cert_sn_override_using_normal",
-                            customSN.toString(16));
+            if (certProfile.getAllowCertSerialNumberOverride()) {
+                serno = (ei != null ? ei.certificateSerialNumber() : SernoGeneratorRandom.instance().getSerno());
+            } else {
+                serno = SernoGeneratorRandom.instance().getSerno();
+                if ((ei != null) && (ei.certificateSerialNumber() != null)) {
+                    final String msg = intres.getLocalizedMessage("createcert.certprof_not_allowing_cert_sn_override_using_normal", ei.certificateSerialNumber().toString(16));
                     log.info(msg);
-                    customSN = null;
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Using custom serial number: " + customSN.toString(16));
-                    }
                 }
             }
-            final BigInteger serno = customSN != null ? customSN : SernoGeneratorRandom.instance().getSerno();
             certgen.setSerialNumber(serno);
         }
         certgen.setNotBefore(val.getNotBefore());
@@ -655,23 +651,27 @@ public class X509CA extends CA implements Serializable {
             dn = CertTools.insertCNPostfix(dn, certProfile.getCNPostfix());
         }
 
-        X509NameEntryConverter converter = null;
+        final X509NameEntryConverter converter;
         if (getUsePrintableStringSubjectDN()) {
             converter = new PrintableStringEntryConverter();
         } else {
             converter = new X509DefaultEntryConverter();
         }
         // Will we use LDAP DN order (CN first) or X500 DN order (CN last) for the subject DN
-        boolean ldapdnorder = true;
+        final boolean ldapdnorder;
         if ((getUseLdapDNOrder() == false) || (certProfile.getUseLdapDnOrder() == false)) {
             ldapdnorder = false;
+        } else {
+            ldapdnorder = true;
         }
-        X509Name subjectDNName = CertTools.stringToBcX509Name(dn, converter, ldapdnorder);
+        final X509Name subjectDNName;
         if (certProfile.getAllowDNOverride() && (requestX509Name != null)) {
             subjectDNName = requestX509Name;
             if (log.isDebugEnabled()) {
                 log.debug("Using X509Name from request instead of user's registered.");
             }
+        } else {
+            subjectDNName = CertTools.stringToBcX509Name(dn, converter, ldapdnorder);
         }
         // Make sure the DN does not contain dangerous characters
         if (StringTools.hasStripChars(subjectDNName.toString())) {
@@ -710,7 +710,7 @@ public class X509CA extends CA implements Serializable {
 
         // Extensions we will add to the certificate, later when we have filled the structure with
         // everything we want.
-        X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
+        final X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
 
         // First we check if there is general extension override, and add all extensions from
         // the request in that case
@@ -824,7 +824,7 @@ public class X509CA extends CA implements Serializable {
         // Verify using the CA certificate before returning
         // If we can not verify the issued certificate using the CA certificate we don't want to issue this cert
         // because something is wrong...
-        PublicKey verifyKey;
+        final PublicKey verifyKey;
         // We must use the configured public key if this is a rootCA, because then we can renew our own certificate, after changing
         // the keys. In this case the _new_ key will not match the current CA certificate.
         if ((cacert != null) && (!isRootCA)) {
