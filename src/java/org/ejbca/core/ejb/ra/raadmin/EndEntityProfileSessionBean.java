@@ -234,14 +234,36 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfile(" + profilename + ")");
         }
+        
+        EndEntityProfile returnval = getEndEntityProfileNoClone(profilename);
+        try {
+            if (returnval != null) {
+                returnval = (EndEntityProfile)returnval.clone();
+            }
+        } catch (CloneNotSupportedException e) {
+            LOG.error("Should never happen: ", e);
+            throw new RuntimeException(e);
+        }
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("<getEndEntityProfile(" + profilename + "): " + (returnval == null ? "null" : "not null"));
+        }
+        return returnval;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public EndEntityProfile getEndEntityProfileNoClone(final String profilename) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(">getEndEntityProfile(" + profilename + ")");
+        }
         EndEntityProfile returnval = null;
         if (profilename.equals(EMPTY_ENDENTITYPROFILENAME)) {
             returnval = new EndEntityProfile(true);
         } else {
-        	final Integer id = profileCache.getNameIdMapCache(entityManager).get(profilename);
-        	if (id != null) {
-        		returnval = getEndEntityProfile(id);
-        	}
+            final Integer id = profileCache.getNameIdMapCache(entityManager).get(profilename);
+            if (id != null) {
+                returnval = getEndEntityProfileNoClone(id);
+            }
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getEndEntityProfile(" + profilename + "): " + (returnval == null ? "null" : "not null"));
@@ -291,20 +313,33 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfile(" + id + ")");
         }
+        EndEntityProfile returnval = getEndEntityProfileNoClone(id);
+        try {
+            if (returnval != null) {
+                returnval = (EndEntityProfile)returnval.clone();
+            }
+        } catch (CloneNotSupportedException e) {
+            LOG.error("Should never happen: ", e);
+            throw new RuntimeException(e);
+        }
+        if (LOG.isTraceEnabled()) {
+            LOG.trace("<getEndEntityProfile(id): " + (returnval == null ? "null" : "not null"));
+        }
+        return returnval;
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public EndEntityProfile getEndEntityProfileNoClone(final int id) {
+        if (LOG.isTraceEnabled()) {
+            LOG.trace(">getEndEntityProfile(" + id + ")");
+        }
         EndEntityProfile returnval = null;
         if (id == SecConst.EMPTY_ENDENTITYPROFILE) {
             returnval = new EndEntityProfile(true);
         } else {
-    		// We need to clone the profile, otherwise the cache contents will be modifyable from the outside
-        	final EndEntityProfile eep = profileCache.getProfileCache(entityManager).get(Integer.valueOf(id));
-    		try {
-    			if (eep != null) {
-    				returnval = (EndEntityProfile)eep.clone();
-    			}
-    		} catch (CloneNotSupportedException e) {
-    			LOG.error("Should never happen: ", e);
-    			throw new RuntimeException(e);
-    		}
+            // We need to clone the profile, otherwise the cache contents will be modifyable from the outside
+            returnval = profileCache.getProfileCache(entityManager).get(Integer.valueOf(id));
         }
         if (LOG.isTraceEnabled()) {
             LOG.trace("<getEndEntityProfile(id): " + (returnval == null ? "null" : "not null"));

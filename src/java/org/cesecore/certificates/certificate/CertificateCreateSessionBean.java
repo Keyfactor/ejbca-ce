@@ -379,7 +379,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             String cafingerprint = null;
             String serialNo = "unknown";
             final long updateTime = new Date().getTime();
-            String tag = null;
             final boolean useCustomSN;
             {
                 final ExtendedInformation ei = data.getExtendedinformation();
@@ -412,6 +411,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     break; // We have our cert and we don't need to store it.. Move on..
                 }
                 try {
+                    // Tag is reserved for future use, currently only null
+                    final String tag = null;
                     // Authorization was already checked by since this is a private method, the CA parameter should
                     // not be possible to get without authorization
                     certificateStoreSession.storeCertificateNoAuth(admin, cert, data.getUsername(), cafingerprint, CertificateConstants.CERT_ACTIVE,

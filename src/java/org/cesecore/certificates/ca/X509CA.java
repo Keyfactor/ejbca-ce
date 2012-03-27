@@ -499,16 +499,16 @@ public class X509CA extends CA implements Serializable {
      * 
      * @see CA#signRequest(Collection, String)
      */
-    public byte[] signRequest(byte[] request, boolean usepreviouskey, boolean createlinkcert) throws CryptoTokenOfflineException {
+    public byte[] signRequest(final byte[] request, final boolean usepreviouskey, final boolean createlinkcert) throws CryptoTokenOfflineException {
         byte[] ret = null;
         try {
-            CAToken catoken = getCAToken();
+            final CAToken catoken = getCAToken();
             byte[] binbytes = request;
             X509Certificate cert = null;
             try {
                 // We don't know if this is a PEM or binary certificate so we first try to
                 // decode it as a PEM certificate, and if it's not we try it as a binary certificate
-                Collection<Certificate> col = CertTools.getCertsFromPEM(new ByteArrayInputStream(request));
+                final Collection<Certificate> col = CertTools.getCertsFromPEM(new ByteArrayInputStream(request));
                 cert = (X509Certificate) col.iterator().next();
                 if (cert != null) {
                     binbytes = cert.getEncoded();
@@ -518,36 +518,44 @@ public class X509CA extends CA implements Serializable {
             }
             cert = (X509Certificate) CertTools.getCertfromByteArray(binbytes);
             // Check if the input was a CA certificate, which is the same CA as this. If all is true we should create a NewWithOld link-certificate
-            X509Certificate cacert = (X509Certificate) getCACertificate();
+            final X509Certificate cacert = (X509Certificate) getCACertificate();
             if (CertTools.getSubjectDN(cert).equals(CertTools.getSubjectDN(cacert))) {
-                PublicKey currentCaPublicKey = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+                final PublicKey currentCaPublicKey = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
                 cert.verify(currentCaPublicKey); // Throws SignatureException if verify fails
                 if (createlinkcert && usepreviouskey) {
-                    log.debug("We will create a link certificate.");
-                    X509CAInfo info = (X509CAInfo) getCAInfo();
-                    EndEntityInformation cadata = new EndEntityInformation("nobody", info.getSubjectDN(), info.getSubjectDN().hashCode(), info.getSubjectAltName(), null,
+                    if (log.isDebugEnabled()) {
+                        log.debug("We will create a link certificate.");
+                    }
+                    final X509CAInfo info = (X509CAInfo) getCAInfo();
+                    final EndEntityInformation cadata = new EndEntityInformation("nobody", info.getSubjectDN(), info.getSubjectDN().hashCode(), info.getSubjectAltName(), null,
                             0, new EndEntityType(EndEntityTypes.INVALID), 0, info.getCertificateProfileId(), null, null, 0, 0, null);
 
-                    CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+                    final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
                     if ((info.getPolicies() != null) && (info.getPolicies().size() > 0)) {
                         certProfile.setUseCertificatePolicies(true);
                         certProfile.setCertificatePolicies(info.getPolicies());
                     }
-                    PublicKey previousCaPublicKey = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
-                    PrivateKey previousCaPrivateKey = catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
-                    String provider = catoken.getCryptoToken().getSignProviderName();
-                    String sequence = catoken.getKeySequence(); // get from CAtoken to make sure it is fresh
-                    Certificate retcert = generateCertificate(cadata, null, cert.getPublicKey(), -1, cert.getNotBefore(), cert.getNotAfter(),
+                    final PublicKey previousCaPublicKey = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
+                    final PrivateKey previousCaPrivateKey = catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
+                    final String provider = catoken.getCryptoToken().getSignProviderName();
+                    final String sequence = catoken.getKeySequence(); // get from CAtoken to make sure it is fresh
+                    final Certificate retcert = generateCertificate(cadata, null, cert.getPublicKey(), -1, cert.getNotBefore(), cert.getNotAfter(),
                             certProfile, null, sequence, previousCaPublicKey, previousCaPrivateKey, provider);
-                    log.debug("Signed an X509Certificate: '" + cadata.getDN() + "'.");
-                    String msg = intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), cadata.getDN());
+                    if (log.isDebugEnabled()) {
+                        log.debug("Signed an X509Certificate: '" + cadata.getDN() + "'.");
+                    }
+                    final String msg = intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), cadata.getDN());
                     log.info(msg);
                     ret = retcert.getEncoded();
                 } else {
-                    log.debug("Not signing any certificate, useprevious=" + usepreviouskey + ", createlinkcert=" + createlinkcert);
+                    if (log.isDebugEnabled()) {
+                        log.debug("Not signing any certificate, useprevious=" + usepreviouskey + ", createlinkcert=" + createlinkcert);
+                    }
                 }
             } else {
-                log.debug("Not signing any certificate, certSubjectDN != cacertSubjectDN.");
+                if (log.isDebugEnabled()) {
+                    log.debug("Not signing any certificate, certSubjectDN != cacertSubjectDN.");
+                }
             }
 
         } catch (IllegalCryptoTokenException e) {
@@ -565,14 +573,14 @@ public class X509CA extends CA implements Serializable {
     }
 
     @Override
-    public Certificate generateCertificate(EndEntityInformation subject, X509Name requestX509Name, PublicKey publicKey, int keyusage, Date notBefore,
-            Date notAfter, CertificateProfile certProfile, X509Extensions extensions, String sequence) throws Exception {
+    public Certificate generateCertificate(final EndEntityInformation subject, final X509Name requestX509Name, final PublicKey publicKey, final int keyusage, final Date notBefore,
+            final Date notAfter, final CertificateProfile certProfile, final X509Extensions extensions, final String sequence) throws Exception {
         // Before we start, check if the CA is off-line, we don't have to waste time
         // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline
-        CAToken catoken = getCAToken();
-        PublicKey caPublicKey = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-        PrivateKey caPrivateKey = catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-        String provider = catoken.getCryptoToken().getSignProviderName();
+        final CAToken catoken = getCAToken();
+        final PublicKey caPublicKey = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        final PrivateKey caPrivateKey = catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        final String provider = catoken.getCryptoToken().getSignProviderName();
         return generateCertificate(subject, requestX509Name, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence,
                 caPublicKey, caPrivateKey, provider);
     }
@@ -580,9 +588,9 @@ public class X509CA extends CA implements Serializable {
     /**
      * sequence is ignored by X509CA
      */
-    private Certificate generateCertificate(EndEntityInformation subject, X509Name requestX509Name, PublicKey publicKey, int keyusage, Date notBefore,
-            Date notAfter, CertificateProfile certProfile, X509Extensions extensions, String sequence, PublicKey caPublicKey,
-            PrivateKey caPrivateKey, String provider) throws Exception {
+    private Certificate generateCertificate(final EndEntityInformation subject, final X509Name requestX509Name, final PublicKey publicKey, final int keyusage, final Date notBefore,
+            final Date notAfter, final CertificateProfile certProfile, final X509Extensions extensions, final String sequence, final PublicKey caPublicKey,
+            final PrivateKey caPrivateKey, final String provider) throws Exception {
 
         // We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
         // We have to allow expired as well though, so we can renew expired CAs
@@ -606,7 +614,6 @@ public class X509CA extends CA implements Serializable {
             throw new InvalidAlgorithmException(msg);        	
         }
         final X509Certificate cacert = (X509Certificate) getCACertificate();
-        String dn = subject.getCertificateDN();
         // Check if this is a root CA we are creating
         final boolean isRootCA = certProfile.getType() == CertificateConstants.CERTTYPE_ROOTCA;
 
@@ -639,6 +646,7 @@ public class X509CA extends CA implements Serializable {
         certgen.setSignatureAlgorithm(sigAlg);
 
         // Make DNs
+        String dn = subject.getCertificateDN();
         if (certProfile.getUseSubjectDNSubSet()) {
             dn = certProfile.createSubjectDNSubSet(dn);
         }
@@ -708,10 +716,10 @@ public class X509CA extends CA implements Serializable {
         // the request in that case
         if (certProfile.getAllowExtensionOverride() && extensions != null) {
             @SuppressWarnings("rawtypes")
-            Enumeration en = extensions.oids();
+            final Enumeration en = extensions.oids();
             while (en != null && en.hasMoreElements()) {
-                ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) en.nextElement();
-                X509Extension ext = extensions.getExtension(oid);
+                final ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) en.nextElement();
+                final X509Extension ext = extensions.getExtension(oid);
                 if (log.isDebugEnabled()) {
                     log.debug("Overriding extension with oid: " + oid);
                 }
@@ -726,7 +734,7 @@ public class X509CA extends CA implements Serializable {
                 log.debug("AllowKeyUsageOverride=true. Using KeyUsage from parameter: " + keyusage);
             }
             if ((certProfile.getUseKeyUsage() == true) && (keyusage >= 0)) {
-                X509KeyUsage ku = new X509KeyUsage(keyusage);
+                final X509KeyUsage ku = new X509KeyUsage(keyusage);
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
@@ -743,19 +751,19 @@ public class X509CA extends CA implements Serializable {
         // Third, check for standard Certificate Extensions that should be added.
         // Standard certificate extensions are defined in CertificateProfile and CertificateExtensionFactory
         // and implemented in package org.ejbca.core.model.certextensions.standard
-        CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
-        List<String> usedStdCertExt = certProfile.getUsedStandardCertificateExtensions();
-        Iterator<String> certStdExtIter = usedStdCertExt.iterator();
+        final CertificateExtensionFactory fact = CertificateExtensionFactory.getInstance();
+        final List<String> usedStdCertExt = certProfile.getUsedStandardCertificateExtensions();
+        final Iterator<String> certStdExtIter = usedStdCertExt.iterator();
         overridenexts = extgen.generate();
         while (certStdExtIter.hasNext()) {
-            String oid = certStdExtIter.next();
+            final String oid = certStdExtIter.next();
             // We don't want to try to add standard extensions with the same oid if we have already added them
             // from the request, if AllowExtensionOverride is enabled.
             // Two extensions with the same oid is not allowed in the standard.
             if (overridenexts.getExtension(new ASN1ObjectIdentifier(oid)) == null) {
-                CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
+                final CertificateExtension certExt = fact.getStandardCertificateExtension(oid, certProfile);
                 if (certExt != null) {
-                    byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey);
+                    final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey);
                     if (value != null) {
                         extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
                     }
@@ -769,18 +777,17 @@ public class X509CA extends CA implements Serializable {
 
         // Fourth, check for custom Certificate Extensions that should be added.
         // Custom certificate extensions is defined in certextensions.properties
-        fact = CertificateExtensionFactory.getInstance();
-        List<Integer> usedCertExt = certProfile.getUsedCertificateExtensions();
-        Iterator<Integer> certExtIter = usedCertExt.iterator();
+        final List<Integer> usedCertExt = certProfile.getUsedCertificateExtensions();
+        final Iterator<Integer> certExtIter = usedCertExt.iterator();
         while (certExtIter.hasNext()) {
-            Integer id = certExtIter.next();
-            CertificateExtension certExt = fact.getCertificateExtensions(id);
+            final Integer id = certExtIter.next();
+            final CertificateExtension certExt = fact.getCertificateExtensions(id);
             if (certExt != null) {
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
                 if (overridenexts.getExtension(new ASN1ObjectIdentifier(certExt.getOID())) == null) {
-                    byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey);
+                    final byte[] value = certExt.getValueEncoded(subject, this, certProfile, publicKey, caPublicKey);
                     if (value != null) {
                         extgen.addExtension(new ASN1ObjectIdentifier(certExt.getOID()), certExt.isCriticalFlag(), value);
                     }
@@ -793,12 +800,12 @@ public class X509CA extends CA implements Serializable {
         }
 
         // Finally add extensions to certificate generator
-        X509Extensions exts = extgen.generate();
+        final X509Extensions exts = extgen.generate();
         @SuppressWarnings("rawtypes")
-        Enumeration en = exts.oids();
+        final Enumeration en = exts.oids();
         while (en.hasMoreElements()) {
-            ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) en.nextElement();
-            X509Extension ext = exts.getExtension(oid);
+            final ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) en.nextElement();
+            final X509Extension ext = exts.getExtension(oid);
             certgen.addExtension(oid, ext.isCritical(), ext.getValue().getOctets());
         }
 
@@ -806,11 +813,10 @@ public class X509CA extends CA implements Serializable {
         // End of extensions
         //
 
-        X509Certificate cert;
         if (log.isTraceEnabled()) {
             log.trace(">certgen.generate");
         }
-        cert = certgen.generate(caPrivateKey, provider);
+        final X509Certificate cert = certgen.generate(caPrivateKey, provider);
         if (log.isTraceEnabled()) {
             log.trace("<certgen.generate");
         }

@@ -40,4 +40,31 @@ public interface EndEntityProfileSessionLocal extends EndEntityProfileSession {
      * @throws AuthorizationDeniedException if admin is not authorized to one of the available CAs in the profile
      */
     void authorizedToProfileCas(AuthenticationToken admin, EndEntityProfile profile) throws AuthorizationDeniedException;
+    
+    /** WARNING: This method must only be used when doing read_only operation on the profile. Otherwise
+     * any changes to the profile will affect the profile in the cache and thus affect all other threads.
+     * 
+     * Use the normal getEndEntityProfile for all edit operations, followed by a changeEndEntityProfile if you want to persist your changes and make 
+     * them visible for other threads.
+     * 
+     * This method exists only for speed purposes since a clone() done by the proper getEndEntityProfile method is slightly expensive.
+     * 
+     * Finds a end entity profile by id.
+     * @return EndEntityProfile (shared in cache) or null if it does not exist
+     */
+    EndEntityProfile getEndEntityProfileNoClone(int id);
+
+    /** WARNING: This method must only be used when doing read_only operation on the profile. Otherwise
+     * any changes to the profile will affect the profile in the cache and thus affect all other threads.
+     * 
+     * Use the normal getEndEntityProfile for all edit operations, followed by a changeEndEntityProfile if you want to persist your changes and make 
+     * them visible for other threads.
+     * 
+     * This method exists only for speed purposes since a clone() done by the proper getEndEntityProfile method is slightly expensive.
+     * 
+     * Finds an EndEntityProfile by name.
+     * @return EndEntityProfile (shared in cache) or null if it does not exist
+     */
+    EndEntityProfile getEndEntityProfileNoClone(java.lang.String profilename);
+
 }

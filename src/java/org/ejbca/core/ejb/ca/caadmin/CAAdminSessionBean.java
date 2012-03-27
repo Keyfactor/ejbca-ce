@@ -2395,16 +2395,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @Override
     public int getNumOfApprovalRequired(int action, int caid, int certProfileId) {
         int retval = 0;
-        AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CAAdminSessionBean.getNumOfApprovalRequired"));
         CAInfo cainfo = null;
         try {
-            cainfo = caSession.getCAInfo(admin, caid);
+        	// No need to do access control here on the CA, we are just internally retrieving a value
+        	// to be used to see if approvals are needed.
+            cainfo = caSession.getCAInfoInternal(caid, null, true);
         } catch (CADoesntExistsException e) {
             // NOPMD ignore cainfo is null
-        } catch (AuthorizationDeniedException e) {
-            // Should never happen
-            log.error("AlwaysAllowLocalAuthenticationToken was not allowed access: ", e);
-            throw new EJBException(e);
         }
         if (cainfo != null) {
             if (cainfo.isApprovalRequired(action)) {

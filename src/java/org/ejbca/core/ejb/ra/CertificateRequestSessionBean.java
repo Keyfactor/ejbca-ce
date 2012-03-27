@@ -216,7 +216,8 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         }
         // First we need to fetch the CA configuration to see if we save UserData, if not, we still run addUserFromWS to
         // get all the proper authentication checks for CA and end entity profile.
-        boolean useUserStorage = caSession.getCAInfo(admin, caid).isUseUserStorage();
+        // No need to to access control here just to fetch this flag, access control for the CA is done in EndEntityManagementSession
+        boolean useUserStorage = caSession.getCAInfoInternal(caid, null, true).isUseUserStorage();
         // Add or edit user
         try {
             String username = userdata.getUsername();
@@ -302,7 +303,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
                 log.debug("loadkeys: " + loadkeys);
             }
             int endEntityProfileId = userdata.getEndEntityProfileId();
-            EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
+            EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
             boolean reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
             if (log.isDebugEnabled()) {
                 log.debug("reusecertificate: " + reusecertificate);

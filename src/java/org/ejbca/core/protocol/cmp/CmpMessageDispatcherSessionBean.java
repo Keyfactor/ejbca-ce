@@ -110,9 +110,9 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	 * @throws IOException 
 	 */
 	@TransactionAttribute(TransactionAttributeType.REQUIRED)
-	public ResponseMessage dispatch(AuthenticationToken admin, byte[] ba) throws IOException {
+	public ResponseMessage dispatch(final AuthenticationToken admin, final byte[] ba) throws IOException {
 		//ASN1Primitive derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
-	    ASN1Primitive derObject = getDERObject(ba);
+	    final ASN1Primitive derObject = getDERObject(ba);
 		return dispatch(admin, derObject, false);
 	}
 
@@ -121,7 +121,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	 * @param message der encoded CMP message
 	 * @return IResponseMessage containing the CMP response message or null if there is no message to send back or some internal error has occurred
 	 */
-	private ResponseMessage dispatch(AuthenticationToken admin, ASN1Primitive derObject, boolean authenticated) {
+	private ResponseMessage dispatch(final AuthenticationToken admin, final ASN1Primitive derObject, final boolean authenticated) {
 		final PKIMessage req;
 		try {
 			req = PKIMessage.getInstance(derObject);
@@ -135,11 +135,10 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			return CmpMessageHelper.createUnprotectedErrorMessage(null, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, eMsg);
 		}
 		try {
-			PKIHeader header = req.getHeader();
-			PKIBody body = req.getBody();
-			
-			int tagno = body.getTagNo();
+			final PKIBody body = req.getBody();
+			final int tagno = body.getTagNo();
 			if (log.isDebugEnabled()) {
+	            final PKIHeader header = req.getHeader();
 				log.debug("Received CMP message with pvno="+header.getPvno()+", sender="+header.getSender().toString()+", recipient="+header.getRecipient().toString());
 				log.debug("The CMP message is already authenticated: " + authenticated);
 				log.debug("Body is of type: "+tagno);
@@ -190,13 +189,10 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                     }
                     try {
                         final ASN1Encodable nested = nestedMessage.getPKIMessage().getBody().getNested();
-                        PKIMessages nestedMessages = PKIMessages.getInstance(nested);
-                        org.bouncycastle.asn1.cmp.PKIMessage[] pkiMessages = nestedMessages.toPKIMessageArray();
-                        
-                        ASN1Primitive msgDerObject = getDERObject(pkiMessages[0].toASN1Primitive().getEncoded());
+                        final PKIMessages nestedMessages = PKIMessages.getInstance(nested);
+                        final org.bouncycastle.asn1.cmp.PKIMessage[] pkiMessages = nestedMessages.toPKIMessageArray();
+                        final ASN1Primitive msgDerObject = getDERObject(pkiMessages[0].toASN1Primitive().getEncoded());
                         return dispatch(admin, msgDerObject, true);
-                      
-                        //return dispatch(admin, pkiMessages[0].toASN1Primitive().getEncoded());
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getLocalizedMessage();
                         log.error(errMsg);
@@ -237,7 +233,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	}
 	
 	private ASN1Primitive getDERObject(byte[] ba) throws IOException {
-	       ASN1Primitive derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
+	       final ASN1Primitive derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
 	       return derObject;
 	}
 }
