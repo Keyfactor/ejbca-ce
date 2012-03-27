@@ -47,12 +47,11 @@ public class RevokedCertInfo implements Serializable {
     public static final int REVOCATION_REASON_PRIVILEGESWITHDRAWN  = 9;
     public static final int REVOCATION_REASON_AACOMPROMISE         = 10;
     
-
-    private BigInteger  userCertificate;
-    private Date        revocationDate;
-    private Date        expireDate;
+    private byte[]      userCertificate;
+    private long        revocationDate;
+    private long        expireDate;
     private int         reason;
-    private String 		fingerprint;
+    private byte[] 		fingerprint;
 
     /**
      * A default constructor is needed to instantiate
@@ -61,8 +60,8 @@ public class RevokedCertInfo implements Serializable {
     public RevokedCertInfo() {
     	fingerprint = null;
     	userCertificate = null;
-    	revocationDate = null;
-    	expireDate = null;
+    	revocationDate = 0;
+    	expireDate = 0;
     	reason = REVOCATION_REASON_UNSPECIFIED;
     }
 
@@ -72,10 +71,9 @@ public class RevokedCertInfo implements Serializable {
      * @param reason {@link RevokedCertInfo#REVOCATION_REASON_UNSPECIFIED}
      *
      **/
-    public RevokedCertInfo(final String fingerprint, final BigInteger serno, final Date revdate, final int reason, final Date expdate)
-    {
-    	this.fingerprint = fingerprint;
-        this.userCertificate = serno;
+    public RevokedCertInfo(final byte[] fingerprint, final byte[] sernoBigIntegerArray, final long revdate, final int reason, final long expdate) {
+        this.fingerprint = fingerprint;
+        this.userCertificate = sernoBigIntegerArray;
         this.revocationDate = revdate;
         this.reason = reason;
         this.expireDate = expdate;
@@ -85,56 +83,56 @@ public class RevokedCertInfo implements Serializable {
      * Certificate fingerprint
      **/
     public String getCertificateFingerprint() {
-        return this.fingerprint;
+        return fingerprint == null ? null : new String(fingerprint);
     }
 
     /**
      * Certificate fingerprint
      **/
     public void setCertificateFingerprint(final String fp) {
-        this.fingerprint = fp;
+        this.fingerprint = fp == null ? null : fp.getBytes();
     }
     
     /**
      * Certificate serial number
      **/
     public BigInteger getUserCertificate() {
-        return this.userCertificate;
+        return userCertificate == null ? null : new BigInteger(userCertificate);
     }
 
     /**
      * Certificate serial number
      **/
     public void setUserCertificate(final BigInteger serno) {
-        this.userCertificate = serno;
+        this.userCertificate = serno==null ? null : serno.toByteArray();
     }
 
     /**
      * Date when the certificate was revoked.
      **/
     public Date getRevocationDate() {
-        return this.revocationDate;
+        return revocationDate == 0 ? null : new Date(revocationDate);
     }
 
     /**
      * Date when the certificate was revoked.
      **/
     public void setRevocationDate(final Date date) {
-        this.revocationDate = date;
+        this.revocationDate = date == null ? 0 : date.getTime();
     }
 
     /**
      * Date when the certificate expires.
      **/
     public Date getExpireDate() {
-        return this.expireDate;
+        return expireDate == 0 ? null : new Date(expireDate);
     }
 
     /**
      * Date when the certificate expires.
      **/
     public void setExpireDate(final Date date) {
-        this.expireDate = date;
+        this.expireDate = date==null ? 0 : date.getTime();
     }
 
     /**
@@ -168,7 +166,7 @@ public class RevokedCertInfo implements Serializable {
     }
 
     public String toString() {
-        return this.userCertificate == null ? "null" : this.userCertificate.toString();
+        return this.userCertificate == null ? "null" : new BigInteger(userCertificate).toString();
     }
     
     /**
