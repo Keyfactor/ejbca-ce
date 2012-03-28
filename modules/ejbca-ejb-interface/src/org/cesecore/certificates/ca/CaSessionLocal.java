@@ -154,4 +154,21 @@ public interface CaSessionLocal extends CaSession {
      */
     public CAInfo getCAInfoInternal(final int caid, final String name, boolean fromCache) throws CADoesntExistsException;
 
+    /**
+     * Internal (local only) method for getting CAInfo, to avoid access control logging for internal operations.
+     * Uses CACacheManager directly if configured to do so in ejbca.properties.
+     * 
+     * Note! No authorization checks performed in this internal method
+     * 
+     * @param caid
+     *            numerical id of CA (subjectDN.hashCode()) that we search for, or -1 of a name is to ge used instead
+     * @param doSignTest
+     *            true if a test signature should be performed, false if only the status from token info is checked.
+     *            Should normally be set to false.
+     * @return CA value object, never null
+     * @throws CADoesntExistsException
+     *             if no CA was found
+     */
+    public CAInfo getCAInfoInternal(final int caid, final boolean doSignTest) throws CADoesntExistsException;
+
 }
