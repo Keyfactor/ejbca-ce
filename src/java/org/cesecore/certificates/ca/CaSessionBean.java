@@ -315,14 +315,20 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @Override
     public CAInfo getCAInfo(final AuthenticationToken admin, final int caid) throws CADoesntExistsException, AuthorizationDeniedException {
     	// Authorization is handled by getCA
-        return getCAInfoOrThrowException(admin, caid, false);
+        return getCA(admin, caid).getCAInfo();
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public CAInfo getCAInfo(final AuthenticationToken admin, final int caid, boolean doSignTest) throws CADoesntExistsException, AuthorizationDeniedException {
     	// Authorization is handled by getCA
-        return getCAInfoOrThrowException(admin, caid, doSignTest);
+        return getCAInfoOrThrowException(getCA(admin, caid), doSignTest);
+    }
+
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public CAInfo getCAInfoInternal(final int caid, boolean doSignTest) throws CADoesntExistsException {
+        return getCAInfoOrThrowException(getCAInternal(caid, null, true), doSignTest);
     }
 
     @Override
@@ -514,15 +520,11 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	 *            to false.
 	 * @return CAInfo value object, never null
 	 * @throws CADoesntExistsException if CA with caid does not exist
-	 * @throws AuthorizationDeniedException if admin not authorized to CA 
 	 */
-	private CAInfo getCAInfoOrThrowException(final AuthenticationToken admin, final int caid, final boolean doSignTest) throws CADoesntExistsException, AuthorizationDeniedException {
-		CAInfo cainfo = null;
-    	// Authorization is handled by getCA
-		CA ca = getCA(admin, caid);       
-		cainfo = ca.getCAInfo();
-		int status = cainfo.getStatus();
-		boolean includeInHealthCheck = cainfo.getIncludeInHealthCheck();
+	private CAInfo getCAInfoOrThrowException(final CA ca, final boolean doSignTest) throws CADoesntExistsException {
+		final CAInfo cainfo = ca.getCAInfo();
+		final int status = cainfo.getStatus();
+		final boolean includeInHealthCheck = cainfo.getIncludeInHealthCheck();
 		int tokenstatus = CryptoToken.STATUS_OFFLINE;
 		if (doSignTest && status == CAConstants.CA_ACTIVE && includeInHealthCheck) {
 			// Only do a real test signature if the CA is supposed to be
@@ -537,7 +539,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	    		tokenstatus = catoken.getTokenStatus();
 			} catch (IllegalCryptoTokenException e) {
 				// this looks bad
-				log.error("Illegal crypto token for CA "+ca.getName()+", "+caid+": ", e);
+				log.error("Illegal crypto token for CA "+ca.getName()+", "+ca.getCAId()+": ", e);
 			}
 		} else {
 			if (log.isTraceEnabled()) {

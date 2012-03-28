@@ -67,9 +67,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CA;
@@ -2537,33 +2535,28 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public String healthCheck() {
-        String returnval = "";
-        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CAAdminSession healthCheck"));
-        boolean caTokenSignTest = EjbcaConfiguration.getHealthCheckCaTokenSignTest();
+        final StringBuilder sb = new StringBuilder();
+        final boolean caTokenSignTest = EjbcaConfiguration.getHealthCheckCaTokenSignTest();
         if (log.isDebugEnabled()) {
             log.debug("CaTokenSignTest: " + caTokenSignTest);
         }
-        Iterator<Integer> iter = caSession.getAvailableCAs().iterator();
-        while (iter.hasNext()) {
-            int caid = iter.next().intValue();
+        for (final Integer caid : caSession.getAvailableCAs()) {
             try {
-                CAInfo cainfo = caSession.getCAInfo(admin, caid, caTokenSignTest);
+                final CAInfo cainfo = caSession.getCAInfoInternal(caid.intValue(), caTokenSignTest);
                 if ((cainfo.getStatus() == CAConstants.CA_ACTIVE) && cainfo.getIncludeInHealthCheck()) {
-                    int tokenstatus = cainfo.getCATokenInfo().getTokenStatus();
+                    final int tokenstatus = cainfo.getCATokenInfo().getTokenStatus();
                     if (tokenstatus == CryptoToken.STATUS_OFFLINE) {
-                        returnval += "\nCA: Error CA Token is disconnected, CA Name : " + cainfo.getName();
+                        sb.append("\nCA: Error CA Token is disconnected, CA Name : ").append(cainfo.getName());
                         log.error("Error CA Token is disconnected, CA Name : " + cainfo.getName());
                     }
                 }
             } catch (CADoesntExistsException e) {
                 if (log.isDebugEnabled()) {
-                    log.debug("CA with id '" + caid + "' does not exist.");
+                    log.debug("CA with id '" + caid.toString() + "' does not exist.");
                 }
-            } catch (AuthorizationDeniedException e) {
-                log.debug("Not authorized to CA? We should be authorized to all?", e);
             }
         }
-        return returnval;
+        return sb.toString();
     }
 
     @Override
