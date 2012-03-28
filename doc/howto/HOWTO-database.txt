@@ -102,7 +102,7 @@ Check your database documentation for more info (I know it is boring).
 Hardening
 ---------
 When using logging you probably do not want an attacker to be able to remove log posts, therefore you should limit the
-table rights on LogEntryData.
+table rights on AuditRecordData.
 
 MySQL specifics
 ---------------
@@ -335,7 +335,7 @@ HardTokenProfileData
 HardTokenPropertyData
 KeyRecoveryData
 LogConfigurationData
-LogEntryData
+AuditRecordData
 PublisherData
 ServiceData
 UserData
