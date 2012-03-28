@@ -21,7 +21,6 @@ import java.io.Serializable;
 import java.util.Locale;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.config.CesecoreConfiguration;
 
@@ -31,11 +30,6 @@ import org.cesecore.config.CesecoreConfiguration;
  * 
  * If fetched the resource files from the src/intresources directory and is
  * included in the file cesecore-ejb.jar
- * 
- * Based on EJBCA version: 
- *      InternalResources.java 11076 2011-01-07 07:54:16Z anatom
- * CESeCore version:
- *      InternalResources.java 1203 2011-10-07 16:11:57Z johane
  * 
  * @version $Id$
  */
@@ -162,10 +156,10 @@ public class InternalResources implements Serializable {
      *            and the resource file have "TEST = messages is {0}" will
      *            result in the string "message is hi".
      * 
-     * @return The message as a String, trimmed for whitespace
+     * @return The message as a String, not trimmed for whitespace
      */
     public String getLocalizedMessage(final String key, final Object... params) {
-        return StringUtils.trim(getLocalizedMessageCs(key, params).toString());
+        return getLocalizedMessageCs(key, params).toString();
     }
 
     /**
