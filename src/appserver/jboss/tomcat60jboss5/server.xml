@@ -17,9 +17,11 @@
     -->
 
     <Connector port="@httpserver.pubhttp@" address="@httpsserver.bindaddress.pubhttp@"
-         maxThreads="250" maxHttpHeaderSize="8192"
+         maxThreads="250" acceptCount="100" minSpareThreads="20"
+         strategy="ms" threadPriority="java.lang.Thread#MAX_PRIORITY"
+         maxHttpHeaderSize="8192"
          emptySessionPath="true" protocol="HTTP/1.1"
-         enableLookups="false" redirectPort="@httpserver.privhttps@" acceptCount="100"
+         enableLookups="false" redirectPort="@httpserver.privhttps@"
          connectionTimeout="20000" disableUploadTimeout="true"
          URIEncoding="@web.contentencoding@"/>
 
@@ -30,7 +32,9 @@
     <!-- A HTTPS Connector without client cert on port 8442 -->
 @definitions_away_begin@
     <Connector port="@httpserver.pubhttps@" address="@httpsserver.bindaddress.pubhttps@"
-         maxThreads="150" strategy="ms" maxHttpHeaderSize="8192"
+         maxThreads="150" acceptCount="100" minSpareThreads="20"
+         strategy="ms" threadPriority="java.lang.Thread#MAX_PRIORITY"
+         maxHttpHeaderSize="8192"
          emptySessionPath="true" protocol="HTTP/1.1" SSLEnabled="true"
          scheme="https" secure="true" clientAuth="false"
          keystoreFile="${jboss.server.home.dir}/@keystore.file@"
@@ -41,7 +45,9 @@
     <!-- HTTPS Connector requiring client cert on port 8443 -->
 @definitions_away_begin@
     <Connector port="@httpserver.privhttps@" address="@httpsserver.bindaddress.privhttps@"
-         maxThreads="150" strategy="ms" maxHttpHeaderSize="8192"
+         maxThreads="150" acceptCount="100" minSpareThreads="20"
+         strategy="ms" threadPriority="java.lang.Thread#MAX_PRIORITY"
+         maxHttpHeaderSize="8192"
          emptySessionPath="true" protocol="HTTP/1.1" SSLEnabled="true"
          scheme="https" secure="true" clientAuth="true"
          keystoreFile="${jboss.server.home.dir}/@keystore.file@"
