@@ -111,6 +111,7 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
     }
     
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isAuthorized(final AuthenticationToken authenticationToken, final String resource) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
@@ -119,6 +120,7 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
     }
     
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isAuthorizedNoLogging(final AuthenticationToken authenticationToken, final String resource) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
@@ -127,6 +129,7 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void forceCacheExpire() {
         if (log.isTraceEnabled()) {
             log.trace("forceCacheExpire");
