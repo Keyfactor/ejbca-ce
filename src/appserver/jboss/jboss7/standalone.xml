@@ -288,10 +288,10 @@
         <subsystem xmlns="urn:jboss:domain:web:1.1" native="false" default-virtual-server="default-host">
             <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http" redirect-port="@httpserver.privhttps@"/>
             <connector name="httpspub" protocol="HTTP/1.1" scheme="https" socket-binding="httpspub" redirect-port="@httpserver.privhttps@" secure="true">
-                <ssl password="@httpsserver.password@" certificate-key-file="${jboss.server.home.dir}/@keystore.file@" protocol="SSLv3,TLSv1"/>
+                <ssl password="@httpsserver.password@" certificate-key-file="${jboss.server.home.dir}/@keystore.file@" />
             </connector>
             <connector name="httpspriv" protocol="HTTP/1.1" scheme="https" socket-binding="httpspriv" redirect-port="@httpserver.privhttps@" secure="true">
-                <ssl password="@httpsserver.password@" certificate-key-file="${jboss.server.home.dir}/@keystore.file@" protocol="SSLv3,TLSv1" verify-client="true" ca-certificate-file="${jboss.server.home.dir}/@keystore.file@"/>
+                <ssl password="@httpsserver.password@" certificate-key-file="${jboss.server.home.dir}/@keystore.file@" verify-client="true" ca-certificate-file="${jboss.server.home.dir}/@keystore.file@"/>
             </connector>
             <virtual-server name="default-host" enable-welcome-root="true">
                 <alias name="localhost"/>
