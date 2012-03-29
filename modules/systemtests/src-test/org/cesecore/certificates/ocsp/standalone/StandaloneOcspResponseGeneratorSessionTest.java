@@ -20,14 +20,13 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URL;
 import java.security.KeyStore;
 import java.security.NoSuchProviderException;
+import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Hashtable;
-import java.util.List;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
@@ -41,16 +40,11 @@ import org.bouncycastle.ocsp.OCSPReq;
 import org.bouncycastle.ocsp.OCSPReqGenerator;
 import org.bouncycastle.ocsp.OCSPResp;
 import org.bouncycastle.ocsp.SingleResp;
-import org.cesecore.CaCreatingTestCase;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.control.StandardRules;
-import org.cesecore.authorization.rules.AccessRuleData;
-import org.cesecore.authorization.rules.AccessRuleState;
-import org.cesecore.certificates.ca.CA;
-import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
-import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.OcspResponseInformation;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
@@ -58,17 +52,12 @@ import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
-import org.cesecore.config.OcspConfiguration;
-import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
-import org.cesecore.roles.RoleData;
-import org.cesecore.roles.access.RoleAccessSessionRemote;
-import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -77,31 +66,24 @@ import org.junit.Test;
  * @version $Id$
  * 
  */
-@Ignore
-public class StandaloneOcspResponseGeneratorSessionTest extends CaCreatingTestCase {
+public class StandaloneOcspResponseGeneratorSessionTest {
 
     private static final String SIGNATURE_PROVIDER = "BC";
-    private static final String P12_DIR = "p12";
-    private static final String P12_FILENAME = "ocsp.p12";
+   // private static final String P12_DIR = "p12";
+    private static final String P12_FILENAME = "ocspTestSigner.p12";
     private static final String PASSWORD = "foo123";
-    private static final String OCSP_ALIAS = "OCSP Signer";
+    private static final String OCSP_ALIAS = "ocspTestSigner";// "OCSP Signer";
     private static final String CA_DN = "CN=AdminCA1,O=EJBCA Sample,C=SE";
 
     private StandaloneOcspResponseGeneratorSessionRemote standaloneOcspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(StandaloneOcspResponseGeneratorSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(InternalCertificateStoreSessionRemote.class);
-    private CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
-    private CA x509Ca;
     private X509Certificate caCertificate;
     private X509Certificate p12Certificate;
 
+    private AuthenticationToken authenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(StandaloneOcspResponseGeneratorSessionTest.class.getSimpleName()));
+    
     @BeforeClass
     public static void setUpCryptoProvider() throws Exception {
         CryptoProviderTools.installBCProvider();
@@ -109,81 +91,37 @@ public class StandaloneOcspResponseGeneratorSessionTest extends CaCreatingTestCa
 
     @Before
     public void setUp() throws Exception {
-        final URL url = StandaloneOcspResponseGeneratorSessionTest.class.getResource(P12_DIR);
+       // final URL url = StandaloneOcspResponseGeneratorSessionTest.class.getResource(P12_DIR);
         String curDir = System.getProperty("user.dir");
         System.out.println(curDir);
-        File p12dir = new File(url.getFile());
-        // Assert that p12 directory is sane.
 
-        assertTrue(p12dir.exists());
-        assertTrue(p12dir.isDirectory());
-        assertTrue(p12dir.listFiles().length > 0);
-        cesecoreConfigurationProxySession.setConfigurationValue(OcspConfiguration.OCSP_KEYS_DIR, p12dir.getAbsolutePath());
-
-        // Set up base role that can edit roles
-        setUpAuthTokenAndRole("OcspSessionTest");
-
-        // Now we have a role that can edit roles, we can edit this role to include more privileges
-        RoleData role = roleAccessSession.findRole("OcspSessionTest");
-
-        // Add rules to the role
-        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAADD.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAEDIT.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAREMOVE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
-
-        x509Ca = createX509Ca(CA_DN);
-        // Remove any lingering testca before starting the tests
-        caSession.removeCA(roleMgmgToken, x509Ca.getCAId());
-        caSession.addCA(roleMgmgToken, x509Ca);
-
-        caCertificate = (X509Certificate) x509Ca.getCACertificate();
+        caCertificate = (X509Certificate) new ArrayList<Certificate>(certificateStoreSession.findCertificatesBySubject(CA_DN)).get(0); 
 
         // Store a root certificate in the database.
         if (certificateStoreSession.findCertificatesBySubject(CA_DN).isEmpty()) {
-            certificateStoreSession.storeCertificate(roleMgmgToken, caCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
+            certificateStoreSession.storeCertificate(authenticationToken, caCertificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
                     CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
         }
 
-        /* Just to make things easy, dig out the OCSP signer certificate from the pre-manufactured p12 keystore and store it. 
-         * It should have the same issuer DN as the ca created above.
-         */
-        File p12File = new File(p12dir, P12_FILENAME);
+         //Just to make things easy, dig out the OCSP signer certificate from the pre-manufactured p12 keystore and store it. 
+         //It should have the same issuer DN as the ca created above.
+        String softKeyDirectory = "/Users/mikek/Documents/workspace/ejbca/modules/systemtests/build/keys"; //OcspConfiguration.getSoftKeyDirectoryName()
+        File p12File = new File(softKeyDirectory, P12_FILENAME);
         KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
         keyStore.load(new FileInputStream(p12File), PASSWORD.toCharArray());
-
+      
         p12Certificate = (X509Certificate) keyStore.getCertificate(OCSP_ALIAS);
-
-        certificateStoreSession.storeCertificate(roleMgmgToken, p12Certificate, "foo", "1234", CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_OCSPSIGNER, "footag", new Date().getTime());
-
-        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.defaultresponder", CA_DN);
     }
 
     @After
-    public void tearDown() throws Exception {
-        try {
-            caSession.removeCA(roleMgmgToken, x509Ca.getCAId());
-        } finally {
-            // Be sure to to this, even if the above fails
-            tearDownRemoveRole();
-            internalCertificateStoreSession.removeCertificate(caCertificate.getSerialNumber());
-            internalCertificateStoreSession.removeCertificate(p12Certificate.getSerialNumber());
-        }
+    public void tearDown() throws Exception { 
 
-        // Restore the default value
-        cesecoreConfigurationProxySession.setConfigurationValue("ocsp.defaultresponder", OcspConfiguration.getDefaultResponderId());
     }
 
     @Test
     public void testStandAloneOcspResponseSanity() throws OCSPException, AuthorizationDeniedException, MalformedRequestException, IOException,
             NoSuchProviderException {
-
         standaloneOcspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
-
         // An OCSP request
         OCSPReqGenerator gen = new OCSPReqGenerator();
         gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, p12Certificate.getSerialNumber()));
