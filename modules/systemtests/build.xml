@@ -145,7 +145,6 @@
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
 			<exclude name="org/ejbca/core/protocol/xkms/**"/>
-			<exclude name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionTest.java"/>
 		</javac>
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
         	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
@@ -300,6 +299,7 @@
 					<exclude name="org/ejbca/core/ejb/ra/AddLotsofCertsPerUserTest.class" />
 					<exclude name="org/ejbca/core/ejb/ra/AddLotsofUsersTest.class" />
 					<!-- Tests that require special configuration to work -->
+					<exclude name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionTest.class" />
 					<exclude name="org/ejbca/ui/web/pub/AutoEnrollServletTest.class" />
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeMultipleKeyIdRequestTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolLookupServerHttpTest.class" />
@@ -545,16 +545,16 @@
 		<junit printsummary="yes" haltonfailure="no" >
 			<classpath>
 				<path location="${build.test.dir}" />
-				<path refid="systemtests.classpath" />
+				<path refid="systemtests-va.classpath" />
 				<pathelement path="${clover.jar}"/>
 			</classpath>
 			<jvmarg line="${tests.jvmargs}"/>
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build.test.dir}">
-					<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpStandaloneTest.class" />
-					<include name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.class" />
 					<include name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionTest.class" />
+					<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpStandaloneTest.class" />
+					<include name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.class" />					
 				</fileset>
 			</batchtest>
 		</junit>
