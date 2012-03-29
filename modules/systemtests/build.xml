@@ -9,6 +9,7 @@
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build.test.dir" location="${this.dir}/build/test"/>
 	<property name="build.src.dir" location="${this.dir}/build/src"/>
+	<property name="build.src.va.dir" location="${this.dir}/build/src_va"/>
 	<property name="build.interface.dir" location="${this.dir}/build/interface"/>
 	<property name="systemtests.dist.dir" location="${ejbca.home}/modules/dist"/>
 	<property name="src.dir" location="${this.dir}/src"/>
@@ -16,6 +17,7 @@
 	<property name="src.interface.dir" location="${this.dir}/src-interface"/>
 	<property name="reports.base.dir" location="${this.dir}/build/reports/"/>
 	<property name="test-ejb.jar" location="${systemtests.dist.dir}/systemtests-ejb.jar"/>
+	<property name="test-va.jar" location="${systemtests.dist.dir}/va-systemtests.jar"/>
 	<property name="test-interface.jar" location="${systemtests.dist.dir}/systemtests-interfaces.jar" />
 
 	<!-- Include endorsed jars from Glassfish -->
@@ -59,6 +61,11 @@
 		<path refid="systemtests.classpath.nojee"/>
 		<path refid="lib.jee.classpath"/>
 		<path refid="lib.hibernate.compatibility.classpath"/>
+	</path>
+	
+	<path id="systemtests-va.classpath">
+		<path refid="systemtests.classpath.nojee"/>
+		<pathelement location="${mod.va-ejb-interface.lib}"/>
 	</path>
 
 	<path id="interfaces.classpath">
@@ -110,6 +117,14 @@
 			        	encoding="iso8859-1" classpathref="compile-ejb.classpath" target="${java.target.version}">
 		</javac>
 	</target>
+	
+	<target name="systemtest-compile-src-va" depends="ejbca-properties">
+		<mkdir dir="${build.src.va.dir}" />
+		<javac srcdir="${src.dir}" destdir="${build.src.va.dir}" debug="on" includeantruntime="no"
+					        	encoding="iso8859-1" classpathref="compile-ejb.classpath" target="${java.target.version}">
+			<include name="org/cesecore/mock/authentication/tokens/TestAlwaysAllowLocalAuthenticationToken.java"/>
+		</javac>
+	</target>
 
 	<target name="build-libs" depends="check-inproduction" unless="in-production-mode">
 		<mkdir dir="${dist.dir}" />
@@ -118,16 +133,22 @@
 		<jar destfile="${test-interface.jar}" basedir="${build.interface.dir}"/>
 		<jar destfile="${test-ejb.jar}" basedir="${build.src.dir}"/>
 	</target>
+	
+	<target name="build-libs-va" depends="check-inproduction" unless="in-production-mode">
+		<mkdir dir="${dist.dir}" />
+		<antcall target="systemtest-compile-src-va"/>
+		<jar destfile="${test-va.jar}" basedir="${build.src.va.dir}"/>
+	</target>
 
 	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
 		<mkdir dir="${build.test.dir}" />
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
+        	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
 			<exclude name="org/ejbca/core/protocol/xkms/**"/>
 			<exclude name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionTest.java"/>
 		</javac>
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
-        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
+        	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
 			<include name="org/ejbca/core/protocol/xkms/**" if="xkms.enabled.true"/>
 			<classpath path="${build.test.dir}"/>
 		</javac>
@@ -533,6 +554,7 @@
 				<fileset dir="${build.test.dir}">
 					<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpStandaloneTest.class" />
 					<include name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.class" />
+					<include name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionTest.class" />
 				</fileset>
 			</batchtest>
 		</junit>

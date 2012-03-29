@@ -555,6 +555,7 @@
                 <include name="certstore.war" />
                 <include name="crlstore.war" />
                 <include name="va-ejb.jar" />
+            	<include name="va-systemtests.jar"/>
             </fileset>
         	<zipfileset prefix="lib" dir="${ejbca.home}/modules/dist">
                 <include name="ejbca-properties.jar" />
@@ -562,6 +563,7 @@
                 <include name="va-entity.jar" />
                 <include name="va-common.jar" />
                 <include name="log4jconfig.jar" />
+                <include name="va-systemtests.jar"/>
         	</zipfileset>
         	<zipfileset prefix="lib" dir="${dist.dir}" includes="ejbca-util.jar"/>
 	</ear>
