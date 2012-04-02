@@ -23,10 +23,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.SignatureException;
-import java.security.cert.CRL;
 import java.security.cert.CertStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
@@ -43,13 +41,13 @@ import java.util.Vector;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DEREnumerated;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
@@ -64,6 +62,7 @@ import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -211,9 +210,9 @@ public class X509CATest {
         
         // Create a CRL
         Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
-        CRL crl = x509ca.generateCRL(revcerts, 1);
+        X509CRLHolder crl = x509ca.generateCRL(revcerts, 1);
         assertNotNull(crl);
-        X509CRL xcrl = (X509CRL)crl;
+        X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertEquals(CADN, CertTools.getIssuerDN(xcrl));
         Set<?> set = xcrl.getRevokedCertificates();
         assertNull(set);
@@ -224,7 +223,9 @@ public class X509CATest {
         // Revoke some cert
         Date revDate = new Date();
         revcerts.add(new RevokedCertInfo(CertTools.getFingerprintAsString(usercert).getBytes(), CertTools.getSerialNumber(usercert).toByteArray(), revDate.getTime(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CertTools.getNotAfter(usercert).getTime()));
-        xcrl = (X509CRL)x509ca.generateCRL(revcerts, 2);
+        crl = x509ca.generateCRL(revcerts, 2);
+        assertNotNull(crl);
+        xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         set = xcrl.getRevokedCertificates();
         assertEquals(1, set.size());
         num = CrlExtensions.getCrlNumber(xcrl);
@@ -246,7 +247,7 @@ public class X509CATest {
         revcerts = new ArrayList<RevokedCertInfo>();
         crl = x509ca.generateDeltaCRL(revcerts, 3, 2);
         assertNotNull(crl);
-        xcrl = (X509CRL)crl;
+        xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertEquals(CADN, CertTools.getIssuerDN(xcrl));
         set = xcrl.getRevokedCertificates();
         assertNull(set);
@@ -255,7 +256,9 @@ public class X509CATest {
         deltanum = CrlExtensions.getDeltaCRLIndicator(xcrl);
         assertEquals(2, deltanum.intValue());
         revcerts.add(new RevokedCertInfo(CertTools.getFingerprintAsString(usercert).getBytes(), CertTools.getSerialNumber(usercert).toByteArray(), revDate.getTime(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, CertTools.getNotAfter(usercert).getTime()));
-        xcrl = (X509CRL)x509ca.generateDeltaCRL(revcerts, 4, 3);
+        crl = x509ca.generateDeltaCRL(revcerts, 4, 3);
+        assertNotNull(crl);
+        xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         deltanum = CrlExtensions.getDeltaCRLIndicator(xcrl);
         assertEquals(3, deltanum.intValue());
         set = xcrl.getRevokedCertificates();
@@ -290,9 +293,9 @@ public class X509CATest {
         ca.updateCA(cainfo);
         
         Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
-        CRL crl = ca.generateCRL(revcerts, 1);
+        X509CRLHolder crl = ca.generateCRL(revcerts, 1);
         assertNotNull(crl);
-        X509CRL xcrl = (X509CRL)crl;
+        X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
 
         byte[] cdpDER = xcrl.getExtensionValue(X509Extensions.IssuingDistributionPoint.getId());
         assertNotNull("CRL has no distribution points", cdpDER);
@@ -309,7 +312,8 @@ public class X509CATest {
         cainfo.setDefaultCRLDistPoint(null);
         ca.updateCA(cainfo);
         crl = ca.generateCRL(revcerts, 1);
-        xcrl = (X509CRL)crl;
+        assertNotNull(crl);
+        xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertNull("CRL has distribution points", xcrl.getExtensionValue(X509Extensions.CRLDistributionPoints.getId()));
     }
 
@@ -332,9 +336,9 @@ public class X509CATest {
         ca.updateCA(cainfo);
 
         Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
-        CRL crl = ca.generateCRL(revcerts, 1);
+        X509CRLHolder crl = ca.generateCRL(revcerts, 1);
         assertNotNull(crl);
-        X509CRL xcrl = (X509CRL)crl;
+        X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
 
         byte[] cFreshestDpDER = xcrl.getExtensionValue(X509Extensions.FreshestCRL.getId());
         assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
@@ -356,7 +360,7 @@ public class X509CATest {
 
         crl = ca.generateCRL(revcerts, 1);
         assertNotNull(crl);
-        xcrl = (X509CRL)crl;
+        xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
         assertNull("CRL has freshest crl extension", xcrl.getExtensionValue(X509Extensions.FreshestCRL.getId()));
     }
 
@@ -508,7 +512,7 @@ public class X509CATest {
         usercert = x509ca.generateCertificate(user, keypair.getPublic(), 0, null, 10L, cp, "00000");
         assertNotNull(usercert);
         Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
-        CRL crl = x509ca.generateCRL(revcerts, 1);
+        X509CRLHolder crl = x509ca.generateCRL(revcerts, 1);
         assertNotNull(crl);
 	}
 	
@@ -527,8 +531,10 @@ public class X509CATest {
 	    authorityInformationAccess.add("http://example.com/3");
 	    testCa.setAuthorityInformationAccess(authorityInformationAccess);
 	    Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
-	    CRL testCrl = testCa.generateCRL(revcerts, 0);	    
-	    Collection<String> result = CertTools.getAuthorityInformationAccess(testCrl);
+	    X509CRLHolder testCrl = testCa.generateCRL(revcerts, 0);	    
+        assertNotNull(testCrl);
+        X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
+	    Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
 	    assertEquals("Number of URLs do not match", authorityInformationAccess.size(), result.size());
 	    for(String url : authorityInformationAccess) {
 	        if(!result.contains(url)) {
@@ -546,8 +552,10 @@ public class X509CATest {
     public void testAuthorityInformationAccessCrlExtensionWithEmptyList() throws Exception{
         X509CA testCa = createTestCA("CN=foo");    
         Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
-        CRL testCrl = testCa.generateCRL(revcerts, 0);    
-        Collection<String> result = CertTools.getAuthorityInformationAccess(testCrl);
+        X509CRLHolder testCrl = testCa.generateCRL(revcerts, 0);
+        assertNotNull(testCrl);
+        X509CRL xcrl = CertTools.getCRLfromByteArray(testCrl.getEncoded());
+        Collection<String> result = CertTools.getAuthorityInformationAccess(xcrl);
         assertEquals("A list was returned without any values present.", 0, result.size());        
     }
 	

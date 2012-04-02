@@ -19,7 +19,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.security.KeyPair;
-import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
 
+import org.bouncycastle.cert.X509CRLHolder;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
@@ -109,7 +109,7 @@ public class CVCCATest {
         
         // Create a CRL, does not exist for CVC CAs so will return null
         Collection<RevokedCertInfo> revcerts = new ArrayList<RevokedCertInfo>();
-        CRL crl = cvcca.generateCRL(revcerts, 1);
+        X509CRLHolder crl = cvcca.generateCRL(revcerts, 1);
         assertNull(crl);
 	}
 	

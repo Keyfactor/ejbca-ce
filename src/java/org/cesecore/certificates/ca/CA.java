@@ -35,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -742,9 +743,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     public abstract Certificate generateCertificate(EndEntityInformation subject, X509Name requestX509Name, PublicKey publicKey, int keyusage,
             Date notBefore, Date notAfter, CertificateProfile certProfile, X509Extensions extensions, String sequence) throws Exception;
 
-    public abstract CRL generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) throws Exception;
+    public abstract X509CRLHolder generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) throws Exception;
 
-    public abstract CRL generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws Exception;
+    public abstract X509CRLHolder generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws Exception;
 
     public abstract byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException;
 

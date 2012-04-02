@@ -27,13 +27,11 @@ import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.security.cert.CRL;
 import java.security.cert.CRLException;
 import java.security.cert.CertStore;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CollectionCertStoreParameters;
-import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,18 +42,21 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.ejb.EJBException;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AccessDescription;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
@@ -73,6 +74,9 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509NameEntryConverter;
+import org.bouncycastle.cert.CertException;
+import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cert.X509v2CRLBuilder;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSProcessable;
@@ -84,8 +88,12 @@ import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.Hex;
-import org.bouncycastle.x509.X509V2CRLGenerator;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -118,8 +126,6 @@ import org.cesecore.util.StringTools;
 
 /**
  * X509CA is a implementation of a CA and holds data specific for Certificate and CRL generation according to the X509 standard.
- * 
- * Based on EJBCA version: X509CA.java 11112 2011-01-09 16:17:33Z anatom
  * 
  * @version $Id$
  */
@@ -393,8 +399,8 @@ public class X509CA extends CA implements Serializable {
         // First verify that we signed this certificate
         try {
             if (cert != null) {
-                PublicKey verifyKey;
-                X509Certificate cacert = (X509Certificate)getCACertificate ();
+                final PublicKey verifyKey;
+                final X509Certificate cacert = (X509Certificate)getCACertificate();
                 if (cacert != null) {
                     verifyKey = cacert.getPublicKey();
                 } else {
@@ -865,12 +871,12 @@ public class X509CA extends CA implements Serializable {
         return cert;
     }
 
-    public CRL generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) throws CryptoTokenOfflineException, IllegalCryptoTokenException,
+    public X509CRLHolder generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) throws CryptoTokenOfflineException, IllegalCryptoTokenException,
             IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
         return generateCRL(certs, getCRLPeriod(), crlnumber, false, 0);
     }
 
-    public CRL generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws CryptoTokenOfflineException,
+    public X509CRLHolder generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws CryptoTokenOfflineException,
             IllegalCryptoTokenException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException,
             NoSuchAlgorithmException {
         return generateCRL(certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber);
@@ -899,7 +905,7 @@ public class X509CA extends CA implements Serializable {
      * @throws CRLException
      * @throws NoSuchAlgorithmException
      */
-    private CRL generateCRL(Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber)
+    private X509CRLHolder generateCRL(Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber)
             throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException, SignatureException, NoSuchProviderException,
             InvalidKeyException, CRLException, NoSuchAlgorithmException {
         final String sigAlg = getCAInfo().getCATokenInfo().getSignatureAlgorithm();
@@ -907,20 +913,14 @@ public class X509CA extends CA implements Serializable {
         if (log.isDebugEnabled()) {
             log.debug("generateCRL(" + certs.size() + ", " + crlPeriod + ", " + crlnumber + ", " + isDeltaCRL + ", " + basecrlnumber);
         }
-        Date thisUpdate = new Date();
-        Date nextUpdate = new Date();
 
-        nextUpdate.setTime(nextUpdate.getTime() + crlPeriod);
-        X509V2CRLGenerator crlgen = new X509V2CRLGenerator();
-        crlgen.setThisUpdate(thisUpdate);
-        crlgen.setNextUpdate(nextUpdate);
-        crlgen.setSignatureAlgorithm(sigAlg);
         // Make DNs
-        X509Certificate cacert = (X509Certificate) getCACertificate();
+        final X509Certificate cacert = (X509Certificate) getCACertificate();
+        final X500Name issuer;
         if (cacert == null) {
             // This is an initial root CA, since no CA-certificate exists
             // (I don't think we can ever get here!!!)
-            X509NameEntryConverter converter = null;
+            final X509NameEntryConverter converter;
             if (getUsePrintableStringSubjectDN()) {
                 converter = new PrintableStringEntryConverter();
             } else {
@@ -928,16 +928,27 @@ public class X509CA extends CA implements Serializable {
             }
 
             X509Name caname = CertTools.stringToBcX509Name(getSubjectDN(), converter, getUseLdapDNOrder());
-            crlgen.setIssuerDN(caname);
+            issuer = X500Name.getInstance(caname.getEncoded());
         } else {
-            crlgen.setIssuerDN(cacert.getSubjectX500Principal());
+            issuer = X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded());
         }
+        final Date thisUpdate = new Date();
+        final Date nextUpdate = new Date();
+        nextUpdate.setTime(nextUpdate.getTime() + crlPeriod);
+        final X509v2CRLBuilder crlgen = new X509v2CRLBuilder(issuer, thisUpdate);
+        crlgen.setNextUpdate(nextUpdate);
         if (certs != null) {
-            Iterator<RevokedCertInfo> it = certs.iterator();
+            if (log.isDebugEnabled()) {
+                log.debug("Adding "+certs.size()+" revoked certificates to CRL. Free memory="+Runtime.getRuntime().freeMemory());
+            }          
+            final Iterator<RevokedCertInfo> it = certs.iterator();
             while (it.hasNext()) {
-                RevokedCertInfo certinfo = (RevokedCertInfo) it.next();
+                final RevokedCertInfo certinfo = (RevokedCertInfo) it.next();
                 crlgen.addCRLEntry(certinfo.getUserCertificate(), certinfo.getRevocationDate(), certinfo.getReason());
             }
+            if (log.isDebugEnabled()) {
+                log.debug("Finished adding "+certs.size()+" revoked certificates to CRL. Free memory="+Runtime.getRuntime().freeMemory());
+            }          
         }
 
              
@@ -946,7 +957,7 @@ public class X509CA extends CA implements Serializable {
             SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(getCAToken()
                     .getPublicKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN).getEncoded())).readObject());
             AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
-            crlgen.addExtension(X509Extensions.AuthorityKeyIdentifier.getId(), getAuthorityKeyIdentifierCritical(), aki);
+            crlgen.addExtension(X509Extensions.AuthorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
         }
         
         // Authority Information Access  
@@ -968,13 +979,13 @@ public class X509CA extends CA implements Serializable {
         // CRLNumber extension
         if (getUseCRLNumber() == true) {
             CRLNumber crlnum = new CRLNumber(BigInteger.valueOf(crlnumber));
-            crlgen.addExtension(X509Extensions.CRLNumber.getId(), this.getCRLNumberCritical(), crlnum);
+            crlgen.addExtension(X509Extensions.CRLNumber, this.getCRLNumberCritical(), crlnum);
         }
 
         if (isDeltaCRL) {
             // DeltaCRLIndicator extension
             CRLNumber basecrlnum = new CRLNumber(BigInteger.valueOf(basecrlnumber));
-            crlgen.addExtension(X509Extensions.DeltaCRLIndicator.getId(), true, basecrlnum);
+            crlgen.addExtension(X509Extensions.DeltaCRLIndicator, true, basecrlnum);
         }
         // CRL Distribution point URI and Freshest CRL DP
         if (getUseCrlDistributionPointOnCrl()) {
@@ -988,7 +999,7 @@ public class X509CA extends CA implements Serializable {
                 // According to the RFC, IDP must be a critical extension.
                 // Nonetheless, at the moment, Mozilla is not able to correctly
                 // handle the IDP extension and discards the CRL if it is critical.
-                crlgen.addExtension(X509Extensions.IssuingDistributionPoint.getId(), getCrlDistributionPointOnCrlCritical(), idp);
+                crlgen.addExtension(X509Extensions.IssuingDistributionPoint, getCrlDistributionPointOnCrlCritical(), idp);
             }
 
             if (!isDeltaCRL) {
@@ -1002,24 +1013,57 @@ public class X509CA extends CA implements Serializable {
                     // CRL must not be marked as critical. Therefore it is
                     // hardcoded as not critical and is independent of
                     // getCrlDistributionPointOnCrlCritical().
-                    crlgen.addExtension(X509Extensions.FreshestCRL.getId(), false, ext);
+                    crlgen.addExtension(X509Extensions.FreshestCRL, false, ext);
                 }
 
             }
         }
 
-        X509CRL crl;
-        crl = crlgen.generate(getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN), getCAToken().getCryptoToken().getSignProviderName());
+        final X509CRLHolder crl;
+        if (log.isDebugEnabled()) {
+            log.debug("Signing CRL. Free memory="+Runtime.getRuntime().freeMemory());
+        }
+        try {
+            final ContentSigner signer = new JcaContentSignerBuilder(sigAlg).setProvider(getCAToken().getCryptoToken().getSignProviderName()).build(getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN));
+            //ContentSigner signer = buildContentSigner(sigAlg, getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN), getCAToken().getProvider());
+            crl = crlgen.build(signer);
+        } catch (OperatorCreationException e) {
+            // Very fatal error
+            throw new EJBException("Can not create Jca content signer: ", e);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Finished signing CRL. Free memory="+Runtime.getRuntime().freeMemory());
+        }          
+        
         // Verify using the CA certificate before returning
         // If we can not verify the issued CRL using the CA certificate we don't want to issue this CRL
         // because something is wrong...
-        PublicKey verifyKey;
+        final PublicKey verifyKey;
         if (cacert != null) {
             verifyKey = cacert.getPublicKey();
+            if (log.isTraceEnabled()) {
+                log.trace("Got the verify key from the CA certificate.");
+            }
         } else {
             verifyKey = getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
+            if (log.isTraceEnabled()) {
+                log.trace("Got the verify key from the CA token.");
+            }
         }
-        crl.verify(verifyKey);
+        try {
+            final ContentVerifierProvider verifier = new JcaContentVerifierProviderBuilder().build(verifyKey);
+            if (!crl.isSignatureValid(verifier)) {
+                throw new SignatureException("Error verifying CRL to be returned.");
+            }
+        } catch (OperatorCreationException e) {
+            // Very fatal error
+            throw new EJBException("Can not create Jca content signer: ", e);
+        } catch (CertException e) {
+            throw new SignatureException(e.getMessage(), e);
+        }
+        if (log.isDebugEnabled()) {
+            log.debug("Returning CRL. Free memory="+Runtime.getRuntime().freeMemory());
+        }          
         return crl;
     }
 

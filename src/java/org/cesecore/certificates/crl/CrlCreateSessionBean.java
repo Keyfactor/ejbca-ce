@@ -35,6 +35,7 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.X509CRLHolder;
 import org.cesecore.CesecoreException;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.EventTypes;
@@ -68,7 +69,6 @@ import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 /**
  * Business class for CRL actions, i.e. running CRLs. CRUD operations can be found in CrlSession.
  * 
- * Based on EJBCA version CrlCreateSessionBean.java 11386 2011-02-22 19:03:22Z jeklund
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "CrlCreateSessionRemote")
@@ -429,9 +429,12 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     		if ( caCertSubjectDN!=null && cainfo.getStatus()==CAConstants.CA_ACTIVE )  {
     			long crlperiod = cainfo.getCRLPeriod();
     			// Find all revoked certificates for a complete CRL
+    			if (log.isDebugEnabled()) {
+    			    log.debug("Listing revoked certificates. Free memory="+Runtime.getRuntime().freeMemory());
+    			}          
     			Collection<RevokedCertInfo> revcerts = certificateStoreSession.listRevokedCertInfo(caCertSubjectDN, -1);
     			if (log.isDebugEnabled()) {
-    				log.debug("Found "+revcerts.size()+" revoked certificates.");
+    			    log.debug("Found "+revcerts.size()+" revoked certificates. Free memory="+Runtime.getRuntime().freeMemory());
     			}
     			// Go through them and create a CRL, at the same time archive expired certificates
     			//
@@ -454,6 +457,9 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     				// so the revoked certs are included in ONE CRL at least. See RFC5280 section 3.3.
     				if ( data.getExpireDate().before(check) ) {
     					// Certificate has expired, set status to archived in the database
+    				    if (log.isDebugEnabled()) {
+    				        log.debug("Archiving certificate with fp="+data.getCertificateFingerprint()+". Free memory="+Runtime.getRuntime().freeMemory());
+    				    }           
     					certificateStoreSession.setStatus(archiveAdmin, data.getCertificateFingerprint(), CertificateConstants.CERT_ARCHIVED);
     				} else {
     					Date revDate = data.getRevocationDate();
@@ -607,7 +613,7 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
     			throw new CryptoTokenOfflineException(msg);
     		}
-    		final X509CRL crl;
+    		final X509CRLHolder crl;
     		final String certSubjectDN = CertTools.getSubjectDN(ca.getCACertificate());
     		int fullnumber = crlSession.getLastCRLNumber(certSubjectDN, false);
     		int deltanumber = crlSession.getLastCRLNumber(certSubjectDN, true);
@@ -619,18 +625,22 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     			if (nextCrlNumber == basecrlnumber) {
     				nextCrlNumber++;
     			}
-    			crl = (X509CRL) ca.generateDeltaCRL(certs, nextCrlNumber, basecrlnumber);       
+    			crl = ca.generateDeltaCRL(certs, nextCrlNumber, basecrlnumber);       
     		} else {
-    			crl = (X509CRL) ca.generateCRL(certs, nextCrlNumber);
+    			crl = ca.generateCRL(certs, nextCrlNumber);
     		}
     		if (crl != null) {
     			// Store CRL in the database, this can still fail so the whole thing is rolled back
     			String cafp = CertTools.getFingerprintAsString(ca.getCACertificate());
+    			if (log.isDebugEnabled()) {
+    			    log.debug("Encoding CRL to byte array. Free memory="+Runtime.getRuntime().freeMemory());
+    			}          
     			byte[] tmpcrlBytes = crl.getEncoded();                    
     			if (log.isDebugEnabled()) {
+    			    log.debug("Finished encoding CRL to byte array. Free memory="+Runtime.getRuntime().freeMemory());
     				log.debug("Storing CRL in certificate store.");
     			}
-    			crlSession.storeCRL(admin, tmpcrlBytes, cafp, nextCrlNumber, crl.getIssuerDN().getName(), crl.getThisUpdate(), crl.getNextUpdate(), (deltaCRL ? 1 : -1));
+    			crlSession.storeCRL(admin, tmpcrlBytes, cafp, nextCrlNumber, crl.getIssuer().toString(), crl.toASN1Structure().getThisUpdate().getDate(), crl.toASN1Structure().getNextUpdate().getDate(), (deltaCRL ? 1 : -1));
     			// TODO: publishing below is something that is NOT included in CESeCore.
     			// It is an add-one for EJBCA put here because we did not want to refactor all references to CrlCreateSessionBean in the last minute.
     			// Hard and error-prone to do that.
