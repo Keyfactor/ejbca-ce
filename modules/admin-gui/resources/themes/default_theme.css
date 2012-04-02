@@ -439,6 +439,12 @@ div#publishqueuestatus {
 	height: 16px;
 	margin-top: .1em;
 }
+table.results tbody tr td {
+	vertical-align: middle;
+}
+table.results tbody tr td a {
+	white-space: nowrap;
+}
 
 /* Page: CA > CA Activation */
 div#activation {
