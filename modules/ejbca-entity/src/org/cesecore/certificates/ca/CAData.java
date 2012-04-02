@@ -63,6 +63,8 @@ public class CAData extends ProtectedData implements Serializable {
 	private String data;
 	private int rowVersion = 0;		// not null, we need a default
 	private String rowProtection;
+	// Not a mapped variable, used to determine if CAData has changed
+    private boolean databaseUpdateRequired = false;
 
 	/**
 	 * Entity Bean holding data of a CA.
@@ -151,9 +153,6 @@ public class CAData extends ProtectedData implements Serializable {
 	 */
 	@Transient
 	public CA getCA() throws UnsupportedEncodingException, IllegalCryptoTokenException {
-    	// Because get methods are marked as read-only above, this method will actually not be able to upgrade
-    	// use upgradeCA above for that.
-		// TODO: Mark as read only?
     	return readAndUpgradeCAInternal();
 	}
 
@@ -166,13 +165,20 @@ public class CAData extends ProtectedData implements Serializable {
 	 */
 	@Transient
 	public CA getCAFromDatabase() throws UnsupportedEncodingException, IllegalCryptoTokenException {
-    	// Because get methods are marked as read-only above, this method will actually not be able to upgrade
-    	// use upgradeCA above for that.
-		// TODO: Mark as read only?
     	return readAndUpgradeCAFromDatabase();
 	}
 
-    public void upgradeCA() throws java.io.UnsupportedEncodingException, IllegalCryptoTokenException {
+    @Transient
+    public boolean isDatabaseUpgradeRequired() {
+        return databaseUpdateRequired;
+    }
+
+    @Transient
+    public void setDatabaseUpgradeRequired(final boolean databaseUpdateRequired) {
+        this.databaseUpdateRequired = databaseUpdateRequired;
+    }
+
+    public void upgradeCA() throws UnsupportedEncodingException, IllegalCryptoTokenException {
     	readAndUpgradeCAInternal();
     }
 
@@ -183,7 +189,7 @@ public class CAData extends ProtectedData implements Serializable {
      * @throws java.io.UnsupportedEncodingException
      * @throws IllegalKeyStoreException
      */
-    private final CA readAndUpgradeCAInternal() throws java.io.UnsupportedEncodingException, IllegalCryptoTokenException {
+    private final CA readAndUpgradeCAInternal() throws UnsupportedEncodingException, IllegalCryptoTokenException {
         CA ca = null;
         // First check if we already have a cached instance of the CA
         ca = CACacheManager.instance().getAndUpdateCA(getCaId().intValue(), getStatus(), getExpireTime(), getName(), getSubjectDN());
@@ -266,6 +272,7 @@ public class CAData extends ProtectedData implements Serializable {
         }
         setData(data);
         setUpdateTime(System.currentTimeMillis());
+        setDatabaseUpgradeRequired(true);
         // We have to update status as well, because it is kept in it's own database column, but only do that if it was actually provided in the request
         if (ca.getStatus() > 0) {
             setStatus(ca.getStatus());        	

@@ -171,4 +171,11 @@ public interface CaSessionLocal extends CaSession {
      */
     public CAInfo getCAInfoInternal(final int caid, final boolean doSignTest) throws CADoesntExistsException;
 
+    /**
+     * Internal (local only) method for updating a CAData object within a transaction.
+     * 1. Start a new transaction, unless we are not already in one.
+     * 2. Merges the CAData changes, unless the entity is already managed.
+     * @param cadata The CAData object to merge.
+     */
+    public void updateCaData(final Object cadata);
 }
