@@ -28,7 +28,6 @@ import java.util.Hashtable;
 import java.util.Set;
 
 import javax.ejb.EJBException;
-import javax.servlet.ServletConfig;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -73,11 +72,8 @@ public class OCSPUnidExtension implements OCSPExtension {
     private Certificate cacert = null;
     private int errCode = OCSPUnidExtension.ERROR_NO_ERROR;
     
-	/** Called after construction
-	 * 
-	 * @param config ServletConfig that can be used to read init-params from web-xml
-	 */
-	public void init(ServletConfig config) {
+	@Override
+	public void init() {
 		// DataSource
 		dataSourceJndi = OcspConfiguration.getUnidDataSource();
         if (StringUtils.isEmpty(dataSourceJndi)) {

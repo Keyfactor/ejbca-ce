@@ -17,8 +17,6 @@ import java.io.IOException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 
-import javax.servlet.ServletConfig;
-
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.ocsp.CertificateStatus;
@@ -35,9 +33,8 @@ public interface OCSPExtension {
 
     /** Called after construction
      * 
-     * @param config ServletConfig that can be used to read init-params from web-xml
      */
-    public void init(ServletConfig config);
+    public void init();
 
     /**
      * Called by OCSP responder when the configured extension is found in the request.
