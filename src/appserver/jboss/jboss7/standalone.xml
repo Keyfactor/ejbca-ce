@@ -83,10 +83,10 @@
                 <level name="ERROR"/>
             </logger>
             <logger category="org.ejbca">
-                <level name="TRACE"/>
+                <level name="DEBUG"/>
             </logger>
             <logger category="org.cesecore">
-                <level name="TRACE"/>
+                <level name="DEBUG"/>
             </logger>
             <root-logger>
                 <level name="INFO"/>
@@ -111,6 +111,12 @@
                     <connection-url><![CDATA[${database.url}]]></connection-url>
                     <driver-class>${database.driver}</driver-class>
                     <driver>mysql-connector-java-5.1.18-bin.jar</driver>
+                    <transaction-isolation>TRANSACTION_READ_COMMITTED</transaction-isolation>
+                    <pool>
+				        <min-pool-size>10</min-pool-size>
+				        <max-pool-size>100</max-pool-size>
+        				<prefill>true</prefill>
+      				</pool>
                     <security>
                         <user-name>${database.username}</user-name>
                         <password>${database.password}</password>
@@ -123,8 +129,8 @@
                         -->
                     </validation>
                     <statement>
-                        <prepared-statement-cache-size>0</prepared-statement-cache-size>
-                        <share-prepared-statements>false</share-prepared-statements>
+                        <prepared-statement-cache-size>50</prepared-statement-cache-size>
+                        <share-prepared-statements>true</share-prepared-statements>
                     </statement>
                 </datasource>
                 <drivers>
