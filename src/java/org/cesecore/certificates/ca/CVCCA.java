@@ -21,7 +21,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.security.cert.CRL;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,6 +35,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.cert.X509CRLHolder;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -68,8 +68,6 @@ import org.ejbca.cvc.exception.ParseException;
 /**
  * CVCCA is a implementation of a CA and holds data specific for Certificate and CRL generation 
  * according to the CVC (Card Verifiable Certificate) standard used in EU EAC electronic passports.  
- *
- * Probably based on EJBCA's org.ejbca.core.model.ca.caadmin.CVCCA r11112
  *
  * @version $Id$
  */
@@ -466,13 +464,13 @@ public class CVCCA extends CA implements Serializable {
 	}
 
 
-    public CRL generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) {
+    public X509CRLHolder generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;
     }
 
-    public CRL generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) {
+    public X509CRLHolder generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;
