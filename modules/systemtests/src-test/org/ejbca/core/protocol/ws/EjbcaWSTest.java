@@ -510,7 +510,6 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     @Test
     public void test36EjbcaWsHelperTimeFormatConversion() throws CADoesntExistsException, ClassCastException, EjbcaException, AuthorizationDeniedException {
     	log.trace(">test36EjbcaWsHelperTimeFormatConversion()");
-    	final EjbcaWSHelper ejbcaWsHelper = new EjbcaWSHelper(null, null, caAdminSessionRemote, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSessionRemote, userAdminSession, null);
 		final Date nowWithOutSeconds = new Date((new Date().getTime()/60000)*60000);	// To avoid false negatives.. we will loose precision when we convert back and forth..
     	final String oldTimeFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US).format(nowWithOutSeconds);
     	final String newTimeFormatStorage = FastDateFormat.getInstance("yyyy-MM-dd HH:mm", TimeZone.getTimeZone("UTC")).format(nowWithOutSeconds);
@@ -524,35 +523,35 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs = new org.ejbca.core.protocol.ws.objects.UserDataVOWS("username", "password", false, "CN=User U", "CA1", null, null, 10, "P12", "EMPTY", "ENDUSER", null);
     	userDataVoWs.setStartTime(oldTimeFormat);
     	userDataVoWs.setEndTime(oldTimeFormat);
-    	final EndEntityInformation userDataVo1 = ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+    	final EndEntityInformation userDataVo1 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
     	assertEquals("CUSTOM_STARTTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, userDataVo1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
     	assertEquals("CUSTOM_ENDTIME in old format was not correctly handled (VOWS to VO).", newTimeFormatStorage, userDataVo1.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
     	// Convert from UserDataVOWS with standard DateFormat to UserDataVO
     	userDataVoWs.setStartTime(newTimeFormatRequest);
     	userDataVoWs.setEndTime(newTimeFormatRequest);
-    	final EndEntityInformation userDataVo2 = ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+    	final EndEntityInformation userDataVo2 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
     	assertEquals("ExtendedInformation.CUSTOM_STARTTIME in new format was not correctly handled.", newTimeFormatStorage, userDataVo2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
     	assertEquals("ExtendedInformation.CUSTOM_ENDTIME in new format was not correctly handled.", newTimeFormatStorage, userDataVo2.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
     	// Convert from UserDataVOWS with relative date format to UserDataVO
     	userDataVoWs.setStartTime(relativeTimeFormat);
     	userDataVoWs.setEndTime(relativeTimeFormat);
-    	final EndEntityInformation userDataVo3 = ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+        final EndEntityInformation userDataVo3 = EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
     	assertEquals("ExtendedInformation.CUSTOM_STARTTIME in relative format was not correctly handled.", relativeTimeFormat, userDataVo3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_STARTTIME));
     	assertEquals("ExtendedInformation.CUSTOM_ENDTIME in relative format was not correctly handled.", relativeTimeFormat, userDataVo3.getExtendedinformation().getCustomData(ExtendedInformation.CUSTOM_ENDTIME));
     	// Convert from UserDataVO with standard DateFormat to UserDataVOWS
-    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs1 = ejbcaWsHelper.convertUserDataVO(intAdmin, userDataVo1);
+    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs1 = EjbcaWSHelper.convertUserDataVO(userDataVo1, "CA1", "EEPROFILE", "CERTPROFILE", "HARDTOKENISSUER", "P12");
     	// We expect that the server will respond using UTC
     	assertEquals("CUSTOM_STARTTIME in new format was not correctly handled (VO to VOWS).", newTimeFormatResponse, userDataVoWs1.getStartTime());
     	assertEquals("CUSTOM_ENDTIME in new format was not correctly handled (VO to VOWS).", newTimeFormatResponse, userDataVoWs1.getEndTime());
     	// Convert from UserDataVO with relative date format to UserDataVOWS
-    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs3 = ejbcaWsHelper.convertUserDataVO(intAdmin, userDataVo3);
+    	final org.ejbca.core.protocol.ws.objects.UserDataVOWS userDataVoWs3 = EjbcaWSHelper.convertUserDataVO(userDataVo3, "CA1", "EEPROFILE", "CERTPROFILE", "HARDTOKENISSUER", "P12");
     	assertEquals("CUSTOM_STARTTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getStartTime());
     	assertEquals("CUSTOM_ENDTIME in relative format was not correctly handled (VO to VOWS).", relativeTimeFormat, userDataVoWs3.getEndTime());
     	// Try some invalid start time date format
     	userDataVoWs.setStartTime("12:32 2011-02-28");	// Invalid
     	userDataVoWs.setEndTime("2011-02-28 12:32:00+00:00");	// Valid
     	try {
-        	ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+            EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
         	fail("Conversion of illegal time format did not generate exception.");
     	} catch (EjbcaException e) {
     		assertEquals("Unexpected error code in exception.", ErrorCode.FIELD_VALUE_NOT_VALID, e.getErrorCode());
@@ -561,7 +560,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     	userDataVoWs.setStartTime("2011-02-28 12:32:00+00:00");	// Valid
     	userDataVoWs.setEndTime("12:32 2011-02-28");	// Invalid
     	try {
-        	ejbcaWsHelper.convertUserDataVOWS(intAdmin, userDataVoWs);
+            EjbcaWSHelper.convertUserDataVOWS(userDataVoWs, 1, 2, 3, 4, 5);
         	fail("Conversion of illegal time format did not generate exception.");
     	} catch (EjbcaException e) {
     		assertEquals("Unexpected error code in exception.", ErrorCode.FIELD_VALUE_NOT_VALID, e.getErrorCode());

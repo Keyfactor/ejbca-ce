@@ -54,7 +54,7 @@ import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
@@ -110,7 +110,7 @@ public class EjbcaWSHelper {
     private WebServiceContext wsContext;
     private AccessControlSessionLocal authorizationSession;
     private CAAdminSession caAdminSession;
-    private CaSession caSession;
+    private CaSessionLocal caSession;
     private CertificateStoreSession certificateStoreSession;
     private CertificateProfileSession certificateProfileSession;
     private HardTokenSession hardTokenSession;
@@ -119,7 +119,7 @@ public class EjbcaWSHelper {
     private EndEntityManagementSession userAdminSession;
     private WebAuthenticationProviderSessionLocal authenticationSession;
 
-    protected EjbcaWSHelper(WebServiceContext wsContext, AccessControlSessionLocal authorizationSession, CAAdminSession caAdminSession, CaSession caSession,
+    protected EjbcaWSHelper(WebServiceContext wsContext, AccessControlSessionLocal authorizationSession, CAAdminSession caAdminSession, CaSessionLocal caSession,
             CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
             EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, EndEntityManagementSession userAdminSession, WebAuthenticationProviderSessionLocal authenticationSession) {
     	this.wsContext = wsContext;
@@ -166,15 +166,15 @@ public class EjbcaWSHelper {
 	protected AuthenticationToken getAdmin(boolean allowNonAdmins) throws AuthorizationDeniedException, EjbcaException {
 		AuthenticationToken admin = null;
 		try {
-			MessageContext msgContext = wsContext.getMessageContext();
-			HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
-			X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+			final MessageContext msgContext = wsContext.getMessageContext();
+			final HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
+			final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
 
 			if ((certificates == null) || (certificates[0] == null)) {
 				throw new AuthorizationDeniedException("Error no client certificate recieved used for authentication.");
 			}
 
-			X509Certificate cert = certificates[0];
+			final X509Certificate cert = certificates[0];
             final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
             credentials.add(certificates[0]);
             AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
@@ -290,9 +290,90 @@ public class EjbcaWSHelper {
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e);
 		}		
 	}
-	
-	protected EndEntityInformation convertUserDataVOWS(AuthenticationToken admin, UserDataVOWS userdata) throws CADoesntExistsException, EjbcaException, ClassCastException, AuthorizationDeniedException {
-		final CAInfo cainfo = caSession.getCAInfo(admin,userdata.getCaName());
+
+	protected static EndEntityInformation convertUserDataVOWS(final UserDataVOWS userdata, final int caid, final int endentityprofileid, final int certificateprofileid, final int hardtokenissuerid, final int tokenid) throws CADoesntExistsException, EjbcaException, ClassCastException, AuthorizationDeniedException {
+        final ExtendedInformation ei = new ExtendedInformation();
+        boolean useEI = false;
+
+        if(userdata.getStartTime() != null) {
+            String customStartTime = userdata.getStartTime();
+            try {
+                if (customStartTime.length()>0 && !customStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+                    if (!customStartTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}$")) {
+                        // We use the old absolute time format, so we need to upgrade and log deprecation info
+                        final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
+                        final String newCustomStartTime = ValidityDate.formatAsISO8601(oldDateFormat.parse(customStartTime), ValidityDate.TIMEZONE_UTC);
+                        log.info("WS client sent userdata with startTime using US Locale date format. yyyy-MM-dd HH:mm:ssZZ should be used for absolute time and any fetched UserDataVOWS will use this format.");
+                        if (log.isDebugEnabled()) {
+                            log.debug(" Changed startTime \"" + customStartTime + "\" to \"" + newCustomStartTime + "\" in UserDataVOWS.");
+                        }
+                        customStartTime = newCustomStartTime;
+                    }
+                    customStartTime = ValidityDate.getImpliedUTCFromISO8601(customStartTime);
+                }
+                ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, customStartTime);
+                useEI = true;
+            } catch (ParseException e) {
+                log.info("WS client supplied invalid startTime in userData. startTime for this request was ignored. Supplied SubjectDN was \"" + userdata.getSubjectDN() + "\"");
+                throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in StartTime.");
+            }
+        }
+        if(userdata.getEndTime() != null) {
+            String customEndTime = userdata.getEndTime();
+            try {
+                if (customEndTime.length()>0 && !customEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$")){
+                    if (!customEndTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}$")) {
+                        // We use the old absolute time format, so we need to upgrade and log deprecation info
+                        final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
+                        final String newCustomStartTime = ValidityDate.formatAsISO8601(oldDateFormat.parse(customEndTime), ValidityDate.TIMEZONE_UTC);
+                        log.info("WS client sent userdata with endTime using US Locale date format. yyyy-MM-dd HH:mm:ssZZ should be used for absolute time and any fetched UserDataVOWS will use this format.");
+                        if (log.isDebugEnabled()) {
+                            log.debug(" Changed endTime \"" + customEndTime + "\" to \"" + newCustomStartTime + "\" in UserDataVOWS.");
+                        }
+                        customEndTime = newCustomStartTime;
+                    }
+                    customEndTime = ValidityDate.getImpliedUTCFromISO8601(customEndTime);
+                }
+                ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, customEndTime);
+                useEI = true;
+            } catch (ParseException e) {
+                log.info("WS client supplied invalid endTime in userData. endTime for this request was ignored. Supplied SubjectDN was \"" + userdata.getSubjectDN() + "\"");
+                throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in EndTime.");
+            }
+        }
+        if ( userdata.getCertificateSerialNumber()!=null) {
+            ei.setCertificateSerialNumber(userdata.getCertificateSerialNumber());
+            useEI = true;
+        }
+
+        useEI = EjbcaWSHelper.setExtendedInformationFromUserDataVOWS(userdata, ei) || useEI;
+
+        final EndEntityInformation userdatavo = new EndEntityInformation(userdata.getUsername(),
+                userdata.getSubjectDN(),
+                caid,
+                userdata.getSubjectAltName(),
+                userdata.getEmail(),
+                userdata.getStatus(),
+                userdata.getType(),
+                endentityprofileid,
+                certificateprofileid,
+                null,
+                null,
+                tokenid,
+                hardtokenissuerid,
+                useEI ? ei : null);
+        
+        userdatavo.setPassword(userdata.getPassword());
+        userdatavo.setCardNumber(userdata.getCardNumber());
+        
+        return userdatavo;
+	}
+
+	       
+	protected EndEntityInformation convertUserDataVOWS(final AuthenticationToken admin, final UserDataVOWS userdata) throws CADoesntExistsException, EjbcaException, ClassCastException, AuthorizationDeniedException {
+        // No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when 
+        // trying to add/edit the user
+		final CAInfo cainfo = caSession.getCAInfoInternal(-1,userdata.getCaName(), true);
 		final int caid = cainfo.getCAId();
 		if (caid == 0) {
 			throw new CADoesntExistsException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
@@ -327,85 +408,11 @@ public class EjbcaWSHelper {
                 "Error Token Type  " + userdata.getTokenType() + " does not exist.");
 		}
 
-		final ExtendedInformation ei = new ExtendedInformation();
-		boolean useEI = false;
-
-		if(userdata.getStartTime() != null) {
-			String customStartTime = userdata.getStartTime();
-			try {
-				if (customStartTime.length()>0 && !customStartTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
-					if (!customStartTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}$")) {
-						// We use the old absolute time format, so we need to upgrade and log deprecation info
-						final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
-						final String newCustomStartTime = ValidityDate.formatAsISO8601(oldDateFormat.parse(customStartTime), ValidityDate.TIMEZONE_UTC);
-						log.info("WS client sent userdata with startTime using US Locale date format. yyyy-MM-dd HH:mm:ssZZ should be used for absolute time and any fetched UserDataVOWS will use this format.");
-						if (log.isDebugEnabled()) {
-							log.debug(" Changed startTime \"" + customStartTime + "\" to \"" + newCustomStartTime + "\" in UserDataVOWS.");
-						}
-						customStartTime = newCustomStartTime;
-					}
-					customStartTime = ValidityDate.getImpliedUTCFromISO8601(customStartTime);
-				}
-				ei.setCustomData(ExtendedInformation.CUSTOM_STARTTIME, customStartTime);
-				useEI = true;
-			} catch (ParseException e) {
-				log.info("WS client supplied invalid startTime in userData. startTime for this request was ignored. Supplied SubjectDN was \"" + userdata.getSubjectDN() + "\"");
-				throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in StartTime.");
-			}
-		}
-        if(userdata.getEndTime() != null) {
-			String customEndTime = userdata.getEndTime();
-			try {
-				if (customEndTime.length()>0 && !customEndTime.matches("^\\d+:\\d?\\d:\\d?\\d$")){
-					if (!customEndTime.matches("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.\\d{2}:\\d{2}$")) {
-						// We use the old absolute time format, so we need to upgrade and log deprecation info
-						final DateFormat oldDateFormat = DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, Locale.US);
-						final String newCustomStartTime = ValidityDate.formatAsISO8601(oldDateFormat.parse(customEndTime), ValidityDate.TIMEZONE_UTC);
-						log.info("WS client sent userdata with endTime using US Locale date format. yyyy-MM-dd HH:mm:ssZZ should be used for absolute time and any fetched UserDataVOWS will use this format.");
-						if (log.isDebugEnabled()) {
-							log.debug(" Changed endTime \"" + customEndTime + "\" to \"" + newCustomStartTime + "\" in UserDataVOWS.");
-						}
-						customEndTime = newCustomStartTime;
-					}
-					customEndTime = ValidityDate.getImpliedUTCFromISO8601(customEndTime);
-				}
-	            ei.setCustomData(ExtendedInformation.CUSTOM_ENDTIME, customEndTime);
-	            useEI = true;
-			} catch (ParseException e) {
-				log.info("WS client supplied invalid endTime in userData. endTime for this request was ignored. Supplied SubjectDN was \"" + userdata.getSubjectDN() + "\"");
-				throw new EjbcaException(ErrorCode.FIELD_VALUE_NOT_VALID, "Invalid date format in EndTime.");
-			}
-        }
-        if ( userdata.getCertificateSerialNumber()!=null) {
-            ei.setCertificateSerialNumber(userdata.getCertificateSerialNumber());
-            useEI = true;
-        }
-
-        useEI = setExtendedInformationFromUserDataVOWS(userdata, ei) || useEI;
-
-        final EndEntityInformation userdatavo = new EndEntityInformation(userdata.getUsername(),
-        		userdata.getSubjectDN(),
-				caid,
-				userdata.getSubjectAltName(),
-				userdata.getEmail(),
-				userdata.getStatus(),
-				userdata.getType(),
-				endentityprofileid,
-				certificateprofileid,
-				null,
-				null,
-				tokenid,
-				hardtokenissuerid,
-				useEI ? ei : null);
-		
-		userdatavo.setPassword(userdata.getPassword());
-		userdatavo.setCardNumber(userdata.getCardNumber());
-		
-		return userdatavo;
+		return convertUserDataVOWS(userdata, caid, endentityprofileid, certificateprofileid, hardtokenissuerid, tokenid);
 	}
 
 
-	private boolean setExtendedInformationFromUserDataVOWS( UserDataVOWS userdata, ExtendedInformation ei ) {
+	private static boolean setExtendedInformationFromUserDataVOWS( UserDataVOWS userdata, ExtendedInformation ei ) {
 		// Set generic Custom ExtendedInformation from potential data in UserDataVOWS
 		final List<ExtendedInformationWS> userei = userdata.getExtendedInformation();
 		if ( userei==null ) {
@@ -437,103 +444,109 @@ public class EjbcaWSHelper {
 		return useEI;
 	}
 
-	protected UserDataVOWS convertUserDataVO(AuthenticationToken admin, EndEntityInformation userdata) throws EjbcaException, ClassCastException, CADoesntExistsException, AuthorizationDeniedException {
-	    UserDataVOWS dataWS = new UserDataVOWS();
-		String username = userdata.getUsername();
-		String caname = caSession.getCAInfo(admin,userdata.getCAId()).getName();
+	protected static UserDataVOWS convertUserDataVO(final EndEntityInformation userdata, final String caname, final String endentityprofilename, 
+	        final String certificateprofilename, final String hardtokenissuername, final String tokenname) throws EjbcaException, ClassCastException, CADoesntExistsException, AuthorizationDeniedException {
+        final UserDataVOWS dataWS = new UserDataVOWS();
+        dataWS.setUsername(userdata.getUsername());
+        dataWS.setCaName(caname);
+        dataWS.setEndEntityProfileName(endentityprofilename);
+        dataWS.setCertificateProfileName(certificateprofilename);
+        dataWS.setHardTokenIssuerName(hardtokenissuername);
+        dataWS.setTokenType(tokenname);
 
-		dataWS.setUsername(username);
+        dataWS.setPassword(null);
+        dataWS.setClearPwd(false);
+        dataWS.setSubjectDN(userdata.getDN());
+        dataWS.setSubjectAltName(userdata.getSubjectAltName());
+        dataWS.setEmail(userdata.getEmail());
+        dataWS.setStatus(userdata.getStatus());
+        dataWS.setCardNumber(userdata.getCardNumber());
 
-		if(caname == null){
-			String message = "Error CA id " + userdata.getCAId() + " does not exist. User: "+username;
+        final ExtendedInformation ei = userdata.getExtendedinformation();
+        if(ei != null) {
+            String startTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
+            if (startTime!=null && startTime.length()>0 && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+                try {
+                    // Always respond with the time formatted in a neutral time zone
+                    startTime = ValidityDate.getISO8601FromImpliedUTC(startTime, ValidityDate.TIMEZONE_UTC);
+                } catch (ParseException e) {
+                    log.info("Failed to convert " + ExtendedInformation.CUSTOM_STARTTIME + " to ISO8601 format.");
+                }
+            }
+            dataWS.setStartTime(startTime);
+            String endTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
+            if (endTime!=null && endTime.length()>0 && !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
+                try {
+                    // Always respond with the time formatted in a neutral time zone
+                    endTime = ValidityDate.getISO8601FromImpliedUTC(endTime, ValidityDate.TIMEZONE_UTC);
+                } catch (ParseException e) {
+                    log.info("Failed to convert " + ExtendedInformation.CUSTOM_ENDTIME + " to ISO8601 format.");
+                }
+            }
+            dataWS.setEndTime(endTime);
+            // Fill custom data in extended information
+            @SuppressWarnings("unchecked")
+            final HashMap<String, ?> data = (HashMap<String,?>)ei.getData();
+            if (data != null) {
+                final List<ExtendedInformationWS> extendedInfo = new ArrayList<ExtendedInformationWS> ();
+                final Set<String> set = data.keySet();
+                for (Iterator<String> iterator = set.iterator(); iterator.hasNext();) {
+                    final String key = iterator.next();
+                    final String value = ei.getMapData(key);
+                    if (value != null) {
+                        extendedInfo.add(new ExtendedInformationWS (key, value));               
+                    }
+                }
+                dataWS.setExtendedInformation(extendedInfo);
+            }
+        }
+
+        return dataWS;
+	}
+	protected UserDataVOWS convertUserDataVO(final AuthenticationToken admin, final EndEntityInformation userdata) throws EjbcaException, ClassCastException, CADoesntExistsException, AuthorizationDeniedException {
+        final String username = userdata.getUsername();
+		// No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when 
+		// trying to add/edit the user
+		final String caname = caSession.getCAInfoInternal(userdata.getCAId(), null, true).getName();
+		if (caname == null) {
+			final String message = "Error CA id " + userdata.getCAId() + " does not exist. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.CA_NOT_EXISTS, message);
-		}
-		dataWS.setCaName(caname);
-		
-		String endentityprofilename = endEntityProfileSession.getEndEntityProfileName(userdata.getEndEntityProfileId());
+		}		
+
+		final String endentityprofilename = endEntityProfileSession.getEndEntityProfileName(userdata.getEndEntityProfileId());
 		if(endentityprofilename == null){
-			String message = "Error End Entity profile id " + userdata.getEndEntityProfileId() + " does not exist. User: "+username;
+			final String message = "Error End Entity profile id " + userdata.getEndEntityProfileId() + " does not exist. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, message);
 		}
-        dataWS.setEndEntityProfileName(endentityprofilename);
 
-		String certificateprofilename = certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId());
+        final String certificateprofilename = certificateProfileSession.getCertificateProfileName(userdata.getCertificateProfileId());
 		if(certificateprofilename == null){
-			String message = "Error Certificate profile id " + userdata.getCertificateProfileId() + " does not exist. User: "+username;
+		    final String message = "Error Certificate profile id " + userdata.getCertificateProfileId() + " does not exist. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.CERT_PROFILE_NOT_EXISTS, message);
 		}
-	    dataWS.setCertificateProfileName(certificateprofilename);
 		
-		String hardtokenissuername = null;
+		final String hardtokenissuername;
 		if(userdata.getHardTokenIssuerId() != 0){
 		   hardtokenissuername = hardTokenSession.getHardTokenIssuerAlias(admin,userdata.getHardTokenIssuerId());
 		   if(hardtokenissuername == null){
-			   String message = "Error Hard Token Issuer id " + userdata.getHardTokenIssuerId() + " does not exist. User: "+username;
+		       final String message = "Error Hard Token Issuer id " + userdata.getHardTokenIssuerId() + " does not exist. User: "+username;
 			   log.error(message);
 			   throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS, message);
 		   }
-		   dataWS.setHardTokenIssuerName(hardtokenissuername);
+		} else {
+		    hardtokenissuername = null;
 		}
 		
-		String tokenname = getTokenName(admin,userdata.getTokenType());
+		final String tokenname = getTokenName(admin,userdata.getTokenType());
 		if(tokenname == null){
-			String message = "Error Token Type id " + userdata.getTokenType() + " does not exist. User: "+username;
+		    final String message = "Error Token Type id " + userdata.getTokenType() + " does not exist. User: "+username;
 			log.error(message);
 			throw new EjbcaException(ErrorCode.UNKOWN_TOKEN_TYPE, message);
 		}
-		dataWS.setTokenType(tokenname);
-
-		dataWS.setPassword(null);
-		dataWS.setClearPwd(false);
-		dataWS.setSubjectDN(userdata.getDN());
-		dataWS.setSubjectAltName(userdata.getSubjectAltName());
-		dataWS.setEmail(userdata.getEmail());
-		dataWS.setStatus(userdata.getStatus());
-		dataWS.setCardNumber(userdata.getCardNumber());
-
-		ExtendedInformation ei = userdata.getExtendedinformation();
-		if(ei != null) {
-			String startTime = ei.getCustomData(ExtendedInformation.CUSTOM_STARTTIME);
-			if (startTime!=null && startTime.length()>0 && !startTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
-				try {
-					// Always respond with the time formatted in a neutral time zone
-					startTime = ValidityDate.getISO8601FromImpliedUTC(startTime, ValidityDate.TIMEZONE_UTC);
-				} catch (ParseException e) {
-					log.info("Failed to convert " + ExtendedInformation.CUSTOM_STARTTIME + " to ISO8601 format.");
-				}
-			}
-		    dataWS.setStartTime(startTime);
-		    String endTime = ei.getCustomData(ExtendedInformation.CUSTOM_ENDTIME);
-			if (endTime!=null && endTime.length()>0 && !endTime.matches("^\\d+:\\d?\\d:\\d?\\d$")) {
-				try {
-					// Always respond with the time formatted in a neutral time zone
-					endTime = ValidityDate.getISO8601FromImpliedUTC(endTime, ValidityDate.TIMEZONE_UTC);
-				} catch (ParseException e) {
-					log.info("Failed to convert " + ExtendedInformation.CUSTOM_ENDTIME + " to ISO8601 format.");
-				}
-			}
-            dataWS.setEndTime(endTime);
-    		// Fill custom data in extended information
-    		@SuppressWarnings("unchecked")
-            HashMap<String, ?> data = (HashMap<String,?>)ei.getData();
-    		if (data != null) {
-    			List<ExtendedInformationWS> extendedInfo = new ArrayList<ExtendedInformationWS> ();
-    			Set<String> set = data.keySet();
-    			for (Iterator<String> iterator = set.iterator(); iterator.hasNext();) {
-    				String key = iterator.next();
-    				String value = ei.getMapData(key);
-    				if (value != null) {
-    					extendedInfo.add(new ExtendedInformationWS (key, value));				
-    				}
-    			}
-    			dataWS.setExtendedInformation(extendedInfo);
-    		}
-		}
-
-		return dataWS;
+		return convertUserDataVO(userdata, caname, endentityprofilename, certificateprofilename, hardtokenissuername, tokenname);
 	}
 
 	XMLGregorianCalendar dateToXMKGregorianCalendar (Date date) throws DatatypeConfigurationException {
