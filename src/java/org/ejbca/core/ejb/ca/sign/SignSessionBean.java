@@ -32,6 +32,8 @@ import javax.ejb.ObjectNotFoundException;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x509.X509Extensions;
@@ -76,6 +78,7 @@ import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
+import org.ejbca.core.ejb.ra.UserData;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthLoginException;
@@ -91,6 +94,9 @@ import org.ejbca.core.model.ca.AuthStatusException;
 public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     private static final Logger log = Logger.getLogger(SignSessionBean.class);
+
+    @PersistenceContext(unitName="ejbca")
+    private EntityManager entityManager;
 
     @EJB
     private CaSessionLocal caSession;
@@ -185,7 +191,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk) throws EjbcaException,
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk) throws EjbcaException,
             ObjectNotFoundException, AuthorizationDeniedException, CesecoreException {
         // Default key usage is defined in certificate profiles
         return createCertificate(admin, username, password, pk, -1, null, null, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
@@ -193,37 +199,29 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore,
-            Date notAfter) throws ObjectNotFoundException, AuthorizationDeniedException, EjbcaException, CesecoreException {
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk, final int keyusage, final Date notBefore,
+            final Date notAfter) throws ObjectNotFoundException, AuthorizationDeniedException, EjbcaException, CesecoreException {
         return createCertificate(admin, username, password, pk, keyusage, notBefore, notAfter, CertificateProfileConstants.CERTPROFILE_NO_PROFILE,
                 SecConst.CAID_USEUSERDEFINED);
     }
 
     @Override
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, Certificate incert) throws CesecoreException,
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final Certificate incert) throws CesecoreException,
             ObjectNotFoundException, AuthorizationDeniedException, EjbcaException {
-        if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(cert)");
-        }
-        X509Certificate cert = (X509Certificate) incert;
         try {
             // Convert the certificate to a BC certificate. SUN does not handle verifying RSASha256WithMGF1 for example 
-            Certificate bccert = CertTools.getCertfromByteArray(incert.getEncoded());
-            bccert.verify(cert.getPublicKey());
+            final Certificate bccert = CertTools.getCertfromByteArray(incert.getEncoded());
+            bccert.verify(incert.getPublicKey());
         } catch (Exception e) {
             log.debug("Exception verify POPO: ", e);
-            String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
+            final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
             throw new SignRequestSignatureException(msg);
         }
-        Certificate ret = createCertificate(admin, username, password, cert.getPublicKey(), CertTools.sunKeyUsageToBC(cert.getKeyUsage()), null, null);
-        if (log.isTraceEnabled()) {
-            log.trace("<createCertificate(cert)");
-        }
-        return ret;
+        return createCertificate(admin, username, password, incert.getPublicKey(), CertTools.sunKeyUsageToBC(((X509Certificate)incert).getKeyUsage()), null, null);
     }
 
     @Override
-    public ResponseMessage createCertificate(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass, EndEntityInformation suppliedUserData)
+    public ResponseMessage createCertificate(final AuthenticationToken admin, final RequestMessage req, Class<? extends ResponseMessage> responseClass, final EndEntityInformation suppliedUserData)
             throws EjbcaException, CesecoreException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(IRequestMessage)");
@@ -305,8 +303,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public Certificate createCertificate(AuthenticationToken admin, String username, String password, PublicKey pk, int keyusage, Date notBefore,
-            Date notAfter, int certificateprofileid, int caid) throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException,
+    public Certificate createCertificate(final AuthenticationToken admin, final String username, final String password, final PublicKey pk, final int keyusage, final Date notBefore,
+            final Date notAfter, final int certificateprofileid, final int caid) throws ObjectNotFoundException, CADoesntExistsException, AuthorizationDeniedException,
             EjbcaException, CesecoreException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(pk, ku, date)");
@@ -333,12 +331,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.debug("User type=" + data.getType());
         }
         // Get CA object and make sure it's active
-        CA ca = caSession.getCA(admin, data.getCAId());
+        final CA ca = caSession.getCA(admin, data.getCAId());
         if (ca.getStatus() != CAConstants.CA_ACTIVE) {
             String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
             throw new EJBException(msg);
         }
-        Certificate cert;
+        final Certificate cert;
         try {
             // Now finally after all these checks, get the certificate, we don't have any sequence number or extensions available here
             cert = createCertificate(admin, data, null, ca, pk, keyusage, notBefore, notAfter, null, null);
@@ -561,20 +559,24 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return ca;
     }
 
-    private CA getCAFromUsername(AuthenticationToken admin, RequestMessage req) throws ObjectNotFoundException, AuthStatusException,
+    private CA getCAFromUsername(final AuthenticationToken admin, final RequestMessage req) throws ObjectNotFoundException, AuthStatusException,
             AuthLoginException, CADoesntExistsException, AuthorizationDeniedException {
         // See if we can get username and password directly from request
-        String username = req.getUsername();
-        String password = req.getPassword();
-        EndEntityInformation data = authUser(admin, username, password);
-        CA ca = caSession.getCA(admin, data.getCAId());
+        final String username = req.getUsername();
+        final String password = req.getPassword();
+        // Find the user with username username, or throw ObjectNotFoundException
+        final UserData data = UserData.findByUsername(entityManager, username);
+        if (data == null) {
+            throw new ObjectNotFoundException("Could not find username " + username);
+        }
+        final CA ca = caSession.getCA(admin, data.getCaId());
         if (log.isDebugEnabled()) {
             log.debug("Using CA (from username) with id: " + ca.getCAId() + " and DN: " + ca.getSubjectDN());
         }
         return ca;
     }
 
-    private EndEntityInformation authUser(AuthenticationToken admin, String username, String password) throws ObjectNotFoundException,
+    private EndEntityInformation authUser(final AuthenticationToken admin, final String username, final String password) throws ObjectNotFoundException,
             AuthStatusException, AuthLoginException {
         // Authorize user and get DN
         return endEntityAuthenticationSession.authenticateUser(admin, username, password);
@@ -582,7 +584,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
 
     /** Finishes user, i.e. set status to generated, if it should do so.
      * The authentication session is responsible for determining if this should be done or not */
-    private void finishUser(CA ca, EndEntityInformation data) {
+    private void finishUser(final CA ca, final EndEntityInformation data) {
         if (data == null) {
             return;
         }
@@ -593,7 +595,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         try {
             endEntityAuthenticationSession.finishUser(data);
         } catch (ObjectNotFoundException e) {
-            String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
+            final String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
             log.info(msg);
         }
     }
@@ -602,14 +604,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * Clean the custom certificate serial number of user from database
      * @param data of user
      */
-    private void cleanUserCertDataSN(EndEntityInformation data) {
+    private void cleanUserCertDataSN(final EndEntityInformation data) {
         if (data == null || data.getExtendedinformation() == null || data.getExtendedinformation().certificateSerialNumber() == null) {
             return;
         }
         try {
             userAdminSession.cleanUserCertDataSN(data);
         } catch (ObjectNotFoundException e) {
-            String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
+            final String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
             log.info(msg);
         }
     }
@@ -622,14 +624,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws IllegalKeyException 
      * @see org.cesecore.certificates.certificate.CertificateCreateSessionLocal#createCertificate(AuthenticationToken, EndEntityInformation, CA, X509Name, PublicKey, int, Date, Date, X509Extensions, String)
      */
-    private Certificate createCertificate(AuthenticationToken admin, EndEntityInformation data, X509Name requestX509Name, CA ca, PublicKey pk,
-            int keyusage, Date notBefore, Date notAfter, X509Extensions extensions, String sequence) throws IllegalKeyException,
+    private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final X509Name requestX509Name, final CA ca, final PublicKey pk,
+            final int keyusage, final Date notBefore, final Date notAfter, final X509Extensions extensions, final String sequence) throws IllegalKeyException,
             CertificateCreateException, AuthorizationDeniedException, CesecoreException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(pk, ku, notAfter)");
         }
 
-        Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, requestX509Name, pk, keyusage, notBefore, notAfter,
+        final Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, requestX509Name, pk, keyusage, notBefore, notAfter,
                 extensions, sequence);
 
         postCreateCertificate(admin, data, ca, cert);
@@ -663,7 +665,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
          * similarly to what we do in CertificateCreateSession. 
          */
         final int certProfileId = endEntity.getCertificateProfileId();
-        CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
+        final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
         final Collection<Integer> publishers = certProfile.getPublisherList();
         if (!publishers.isEmpty()) {
             final String username = endEntity.getUsername();
@@ -672,10 +674,10 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             final String tag = null; // TODO: this should not be hard coded here, but as of now (2012-02-14) tag is not used, but only there for the future.
             final long updateTime = System.currentTimeMillis();
 
-            int revreason = RevokedCertInfo.NOT_REVOKED;
             final long revocationDate = System.currentTimeMillis(); // This might not be in the millisecond exact, but it's rounded to seconds anyhow
             final int certstatus = CertificateConstants.CERT_ACTIVE;
             final ExtendedInformation ei = endEntity.getExtendedinformation();
+            int revreason = RevokedCertInfo.NOT_REVOKED;
             if (ei != null) {
                 revreason = ei.getIssuanceRevocationReason();
             }

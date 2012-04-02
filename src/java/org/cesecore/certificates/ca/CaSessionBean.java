@@ -393,7 +393,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         final Collection<Integer> availableCaIds = getAvailableCAs();
         final ArrayList<Integer> returnval = new ArrayList<Integer>();
         for (Integer caid : availableCaIds) {
-            if (authorizedToCA(admin, caid)) {
+            if (authorizedToCANoLogging(admin, caid)) {
                 returnval.add(caid);
             }
         }
@@ -666,6 +666,15 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             }
         }
         return cadata;
+    }
+
+    private boolean authorizedToCANoLogging(final AuthenticationToken admin, final int caid) {
+        final boolean ret = accessSession.isAuthorizedNoLogging(admin, StandardRules.CAACCESS.resource() + caid);
+        if (log.isDebugEnabled() && !ret) {
+            final String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
+            log.debug(msg);
+        }
+        return ret;
     }
 
     private boolean authorizedToCA(final AuthenticationToken admin, final int caid) {
