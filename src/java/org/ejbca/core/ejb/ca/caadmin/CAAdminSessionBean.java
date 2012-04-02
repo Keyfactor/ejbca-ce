@@ -2391,24 +2391,21 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public int getNumOfApprovalRequired(int action, int caid, int certProfileId) {
+    public int getNumOfApprovalRequired(final int action, final int caid, final int certProfileId) {
         int retval = 0;
-        CAInfo cainfo = null;
         try {
-        	// No need to do access control here on the CA, we are just internally retrieving a value
-        	// to be used to see if approvals are needed.
-            cainfo = caSession.getCAInfoInternal(caid, null, true);
-        } catch (CADoesntExistsException e) {
-            // NOPMD ignore cainfo is null
-        }
-        if (cainfo != null) {
+            // No need to do access control here on the CA, we are just internally retrieving a value
+            // to be used to see if approvals are needed.
+            final CAInfo cainfo = caSession.getCAInfoInternal(caid, null, true);
             if (cainfo.isApprovalRequired(action)) {
                 retval = cainfo.getNumOfReqApprovals();
             }
-            CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certProfileId);
+            final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certProfileId);
             if (certprofile != null && certprofile.isApprovalRequired(action)) {
                 retval = Math.max(retval, certprofile.getNumOfReqApprovals());
             }
+        } catch (CADoesntExistsException e) {
+            // NOPMD ignore cainfo is null
         }
         return retval;
     }

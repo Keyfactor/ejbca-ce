@@ -74,7 +74,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             log.trace(">authenticateUser(" + username + ", hiddenpwd)");
     	}
         try {
-            // Find the user with username username, or throw FinderException
+            // Find the user with username username, or throw ObjectNotFoundException
             final UserData data = UserData.findByUsername(entityManager, username);
             if (data == null) {
             	throw new ObjectNotFoundException("Could not find username " + username);
