@@ -64,21 +64,21 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
 
     @Override
     public AuthenticationToken authenticate(AuthenticationSubject subject) {
-        X509Certificate[] certificateArray = subject.getCredentials().toArray(new X509Certificate[0]);
-        if (certificateArray.length != 1) {
+        final Set<X509Certificate> certs = (Set<X509Certificate>)subject.getCredentials();
+        if (certs.size() != 1) {
             if (LOG.isDebugEnabled()) {
-                LOG.debug("certificateArray contains "+certificateArray.length+" certificates, instead of 1 that is required.");
+                LOG.debug("certificateArray contains "+certs.size()+" certificates, instead of 1 that is required.");
             }
             return null;
         } else {
-            X509Certificate certificate = certificateArray[0];
+            final X509Certificate certificate = certs.iterator().next();
             // Check Validity
             try {
                 certificate.checkValidity();
             } catch (Exception e) {
-                String msg = intres.getLocalizedMessage("authentication.certexpired", CertTools.getSubjectDN(certificate), CertTools.getNotAfter(certificate).toString());
+                final String msg = intres.getLocalizedMessage("authentication.certexpired", CertTools.getSubjectDN(certificate), CertTools.getNotAfter(certificate).toString());
             	LOG.info(msg);
-                Map<String, Object> details = new LinkedHashMap<String, Object>();
+                final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, LogConstants.NO_AUTHENTICATION_TOKEN, null, null, null, details);
             	return null;
@@ -89,9 +89,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
                 // The certificate is present in the database.
                 if (certificateInfo.getStatus() != CertificateConstants.CERT_ACTIVE) {
                     // The certificate is revoked, archived or similar
-                    String msg = intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
+                    final String msg = intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
                     LOG.info(msg);
-                    Map<String, Object> details = new LinkedHashMap<String, Object>();
+                    final Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
                     securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, LogConstants.NO_AUTHENTICATION_TOKEN, null, null, null, details);
                     return null;
@@ -99,9 +99,9 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             } else {
                 // The certificate is not present in the database.
                 if (WebConfiguration.getRequireAdminCertificateInDatabase()) {
-                    String msg =  intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
+                    final String msg =  intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
                     LOG.info(msg);
-                    Map<String, Object> details = new LinkedHashMap<String, Object>();
+                    final Map<String, Object> details = new LinkedHashMap<String, Object>();
                     details.put("msg", msg);
                     securityEventsLoggerSession.log(EventTypes.AUTHENTICATION, EventStatus.FAILURE, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA, LogConstants.NO_AUTHENTICATION_TOKEN, null, null, null, details);
                     return null;

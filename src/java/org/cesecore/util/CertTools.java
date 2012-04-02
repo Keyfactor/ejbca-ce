@@ -222,8 +222,8 @@ public class CertTools {
      * 
      * @return X509Name or null if input is null
      */
-    public static X509Name stringToBcX509Name(String dn) {
-        X509NameEntryConverter converter = new X509DefaultEntryConverter();
+    public static X509Name stringToBcX509Name(final String dn) {
+        final X509NameEntryConverter converter = new X509DefaultEntryConverter();
         return stringToBcX509Name(dn, converter, true);
     }
 
@@ -240,23 +240,23 @@ public class CertTools {
      *            order is the reverse
      * @return X509Name or null if input is null
      */
-    public static X509Name stringToBcX509Name(String dn, X509NameEntryConverter converter, boolean ldaporder) {
+    public static X509Name stringToBcX509Name(final String dn, final X509NameEntryConverter converter, final boolean ldaporder) {
 
         if (dn == null) {
             return null;
         }
 
-        Vector<ASN1ObjectIdentifier> defaultOrdering = new Vector<ASN1ObjectIdentifier>();
-        Vector<String> values = new Vector<String>();
-        X509NameTokenizer x509NameTokenizer = new X509NameTokenizer(dn);
+        final Vector<ASN1ObjectIdentifier> defaultOrdering = new Vector<ASN1ObjectIdentifier>();
+        final Vector<String> values = new Vector<String>();
+        final X509NameTokenizer x509NameTokenizer = new X509NameTokenizer(dn);
 
         while (x509NameTokenizer.hasMoreTokens()) {
             // This is a pair key=val (CN=xx)
-            String pair = x509NameTokenizer.nextToken(); // Will escape '+' and initial '#' chars
-            int index = pair.indexOf('=');
+            final String pair = x509NameTokenizer.nextToken(); // Will escape '+' and initial '#' chars
+            final int index = pair.indexOf('=');
 
             if (index != -1) {
-                String key = pair.substring(0, index).toLowerCase().trim();
+                final String key = pair.substring(0, index).toLowerCase().trim();
                 String val = pair.substring(index + 1);
                 if (val != null) {
                     // String whitespace from the beginning of the value, to handle the case
@@ -264,10 +264,9 @@ public class CertTools {
                     val = StringUtils.stripStart(val, null);
                 }
 
-                // -- First search the OID by name in declared OID's
-                ASN1ObjectIdentifier oid = DnComponents.getOid(key);
-
                 try {
+                    // -- First search the OID by name in declared OID's
+                    ASN1ObjectIdentifier oid = DnComponents.getOid(key);
                     // -- If isn't declared, we try to create it
                     if (oid == null) {
                         oid = new ASN1ObjectIdentifier(key);
@@ -284,10 +283,10 @@ public class CertTools {
             }
         }
 
-        X509Name x509Name = new X509Name(defaultOrdering, values, converter);
+        final X509Name x509Name = new X509Name(defaultOrdering, values, converter);
 
         // -- Reorder fields
-        X509Name orderedX509Name = getOrderedX509Name(x509Name, ldaporder, converter);
+        final X509Name orderedX509Name = getOrderedX509Name(x509Name, ldaporder, converter);
 
         // log.trace("<stringToBcX509Name");
         return orderedX509Name;
@@ -316,13 +315,13 @@ public class CertTools {
      * (version 1.45) currently does not support multi-valued RelativeDistinguishedName, and automatically escapes it instead. We want to detect
      * unescaped '+' chars and warn that this might not be supported in the future if support for multi-valued RDNs is implemented.
      */
-    private static void detectUnescapedPlus(String dn) {
+    private static void detectUnescapedPlus(final String dn) {
         if (dn == null) {
             return;
         }
-        StringBuilder buf = new StringBuilder(dn);
+        final StringBuilder buf = new StringBuilder(dn);
         int index = 0;
-        int end = buf.length();
+        final int end = buf.length();
         while (index < end) {
             if (buf.charAt(index) == '+') {
                 // Found an unescaped '+' character.
@@ -350,7 +349,7 @@ public class CertTools {
             dn = reverseDN(dn);
         }
         String ret = null;
-        X509Name name = stringToBcX509Name(dn);
+        final X509Name name = stringToBcX509Name(dn);
         if (name != null) {
             ret = name.toString();
         }
@@ -654,7 +653,7 @@ public class CertTools {
      * 
      * @return String containing the DN.
      */
-    private static String getDN(Certificate cert, int which) {
+    private static String getDN(final Certificate cert, final int which) {
         String ret = null;
         if (cert == null) {
             return null;
@@ -662,8 +661,8 @@ public class CertTools {
         if (cert instanceof X509Certificate) {
             // cert.getType=X.509
             try {
-                CertificateFactory cf = CertTools.getCertificateFactory();
-                X509Certificate x509cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
+                final CertificateFactory cf = CertTools.getCertificateFactory();
+                final X509Certificate x509cert = (X509Certificate) cf.generateCertificate(new ByteArrayInputStream(cert.getEncoded()));
                 String dn = null;
                 if (which == 1) {
                     dn = x509cert.getSubjectDN().toString();
@@ -677,7 +676,7 @@ public class CertTools {
                 return null;
             }
         } else if (StringUtils.equals(cert.getType(), "CVC")) {
-            CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cert;
+            final CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cert;
             try {
                 ReferenceField rf = null;
                 if (which == 1) {
@@ -1137,7 +1136,7 @@ public class CertTools {
             prov = "BC";
         }
         try {
-            CertificateFactory cf = CertTools.getCertificateFactory(prov);
+            final CertificateFactory cf = CertTools.getCertificateFactory(prov);
             ret = cf.generateCertificate(new ByteArrayInputStream(cert));
         } catch (CertificateException e) {
             log.debug("CertificateException trying to read X509Certificate.");
@@ -1145,7 +1144,7 @@ public class CertTools {
         if (ret == null) {
             // We could not create an X509Certificate, see if it is a CVC certificate instead
             try {
-                CVCertificate parsedObject = CertificateParser.parseCertificate(cert);
+                final CVCertificate parsedObject = CertificateParser.parseCertificate(cert);
                 ret = new CardVerifiableCertificate(parsedObject);
             } catch (ParseException e) {
                 log.debug("ParseException trying to read CVCCertificate.");
