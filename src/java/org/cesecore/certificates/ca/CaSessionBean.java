@@ -26,8 +26,10 @@ import java.util.Map;
 import java.util.Properties;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import javax.ejb.EJB;
 import javax.ejb.EJBException;
+import javax.ejb.SessionContext;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -77,19 +79,23 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
-
+    @Resource
+    private SessionContext sessionContext;
     @EJB
     private AccessControlSessionLocal accessSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
+    private CaSessionLocal caSession;
 
     @PostConstruct
     public void postConstruct() {
     	// Install BouncyCastle provider if not available
     	CryptoProviderTools.installBCProviderIfNotAvailable();
+    	caSession = sessionContext.getBusinessObject(CaSessionLocal.class);
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void flushCACache() {
         CACacheHelper.setLastCACacheUpdateTime(-1);
         CACacheManager.instance().removeAll();
@@ -422,11 +428,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public HashMap<Integer, String> getCAIdToNameMap() {
-        HashMap<Integer, String> returnval = new HashMap<Integer, String>();
-        Collection<CAData> result = CAData.findAll(entityManager);
-        Iterator<CAData> iter = result.iterator();
-        while (iter.hasNext()) {
-            CAData cadata = iter.next();
+        final HashMap<Integer, String> returnval = new HashMap<Integer, String>();
+        for (final CAData cadata : CAData.findAll(entityManager)) {
             returnval.put(cadata.getCaId(), cadata.getName());
         }
         return returnval;
@@ -495,7 +498,15 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	    }
 	    // Check if CA has expired, cadata (CA in database) will only be updated
 	    // if aggressive caching is not enabled
-	    checkCAExpireAndUpdateCA(ca, cadata);
+	    cadata = checkCAExpireAndUpdateCA(ca, cadata);
+	    // If we have read CAData from the database we might have upgraded it.
+	    // Since the business methods for getting the CA doesn't require a transaction we
+	    // cannot be sure that setters on the CAData object has updated the database.
+        if (cadata!=null && cadata.isDatabaseUpgradeRequired()) {
+            // Start a new transaction, unless we are not already in one.
+            // Merge the CAData changes, unless the entity is already managed.
+            caSession.updateCaData(cadata);
+        }
 	    if (log.isTraceEnabled()) {
 	        log.trace("<getCAInternal: " + caid + ", " + name);
 	    }
@@ -554,7 +565,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
 	/**
      * Checks if the CA certificate has expired (or is not yet valid) and sets CA status to expired if it has (and status is not already expired).
-     * Logs an info message that the CA certificate has expired, or is not yet valid.
+     * Logs an info message first time that the CA certificate has expired, or every time when not yet valid.
      * 
      * Note! No authorization checks performed in this internal method
      * 
@@ -562,7 +573,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
      * @param cadata
      *            can be null, in which case we will try to find it in the database *if* the CA data needs to be updated
      */
-    private void checkCAExpireAndUpdateCA(final CA ca, CAData cadata) {
+    private CAData checkCAExpireAndUpdateCA(final CA ca, CAData cadata) {
         // Check that CA hasn't expired.
         try {
             CertTools.checkValidity(ca.getCACertificate(), new Date());
@@ -590,17 +601,34 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
                 if (cadata != null) {
                     cadata.setStatus(CAConstants.CA_EXPIRED);
                     cadata.setUpdateTime(new Date().getTime());
+                    cadata.setDatabaseUpgradeRequired(true);
                 }
+                String msg = intres.getLocalizedMessage("caadmin.caexpired", ca.getSubjectDN());
+                msg += " " + cee.getMessage();
+                log.info(msg);
             }
-            String msg = intres.getLocalizedMessage("caadmin.caexpired", ca.getSubjectDN());
-            msg += " " + cee.getMessage();
-            log.info(msg);
         } catch (CertificateNotYetValidException e) {
             // Signers Certificate is not yet valid.
             String msg = intres.getLocalizedMessage("caadmin.canotyetvalid", ca.getSubjectDN());
             msg += " " + e.getMessage();
             log.warn(msg);
         }
+        return cadata;
+    }
+    
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public void updateCaData(final Object cadataObject) {
+        if (!(cadataObject instanceof CAData)) {
+            throw new RuntimeException("Only merge of " + CAData.class.getName() + " is supported.");
+        }
+        final CAData cadata = (CAData)cadataObject;
+        if (!entityManager.contains(cadata)) {
+            entityManager.merge(cadata);
+        } else {
+            log.debug("CAData was already part of the current persistence context. Assuming that changes are merged.");
+        }
+        cadata.setDatabaseUpgradeRequired(false);
     }
 
     /**

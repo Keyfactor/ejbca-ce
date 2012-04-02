@@ -67,7 +67,9 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CA;
@@ -206,11 +208,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     @Override
     public void initializeAndUpgradeCAs() {
-        Collection<CAData> result = CAData.findAll(entityManager);
-        Iterator<CAData> iter = result.iterator();
-        while (iter.hasNext()) {
-            CAData cadata = iter.next();
-            String caname = cadata.getName();
+        for (final CAData cadata : CAData.findAll(entityManager)) {
+            final String caname = cadata.getName();
             try {
                 cadata.upgradeCA();
                 log.info("Initialized CA: " + caname + ", with expire time: " + new Date(cadata.getExpireTime()));
@@ -408,10 +407,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         if (cainfo.getSignedBy() > CAInfo.SPECIALCAIDBORDER || cainfo.getSignedBy() < 0) {
             // Create CA signed by other internal CA.
             try {
-                CAData signcadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(cainfo.getSignedBy()));
-                CA signca = signcadata.getCA();
+                final CA signca = caSession.getCAForEdit(admin, Integer.valueOf(cainfo.getSignedBy()));
                 // Check that the signer is valid
-                checkSignerValidity(admin, signcadata);
+                assertSignerValidity(admin, signca);
                 // Create CA certificate
                 Certificate cacertificate = null;
 
@@ -1118,11 +1116,10 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // get signing CA
         if (cainfo.getSignedBy() > CAInfo.SPECIALCAIDBORDER || cainfo.getSignedBy() < 0) {
             try {
-                CAData signcadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(cainfo.getSignedBy()));
-                CA signca = signcadata.getCA();
+                final CA signca = caSession.getCAForEdit(admin, Integer.valueOf(cainfo.getSignedBy()));
                 try {
                     // Check that the signer is valid
-                    checkSignerValidity(admin, signcadata);
+                    assertSignerValidity(admin, signca);
 
                     // Get public key from request
                     PublicKey publickey = requestmessage.getRequestPublicKey();
@@ -1421,10 +1418,9 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     // Resign with CA above.
                     if (ca.getSignedBy() > CAInfo.SPECIALCAIDBORDER || ca.getSignedBy() < 0) {
                         // Create CA signed by other internal CA.
-                        CAData signcadata = CAData.findByIdOrThrow(entityManager, Integer.valueOf(ca.getSignedBy()));
-                        CA signca = signcadata.getCA();
+                        final CA signca = caSession.getCAForEdit(admin, Integer.valueOf(ca.getSignedBy()));
                         // Check that the signer is valid
-                        checkSignerValidity(admin, signcadata);
+                        assertSignerValidity(admin, signca);
                         // Create cacertificate
                         String subjectAltName = null;
                         if (ca instanceof X509CA) {
@@ -2124,12 +2120,12 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public byte[] exportCAKeyStore(AuthenticationToken admin, String caname, String keystorepass, String privkeypass,
             String privateSignatureKeyAlias, String privateEncryptionKeyAlias) throws Exception {
         log.trace(">exportCAKeyStore");
         try {
-            CAData cadata = CAData.findByNameOrThrow(entityManager, caname);
-            CA thisCa = cadata.getCA();
+            final CA thisCa = caSession.getCAForEdit(admin, caname);
             // Make sure we are not trying to export a hard or invalid token
             CAToken thisCAToken = thisCa.getCAToken();
             if (!(thisCAToken.getCryptoToken() instanceof SoftCryptoToken)) {
@@ -2218,27 +2214,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public Collection<Certificate> getAllCACertificates() {
-        ArrayList<Certificate> returnval = new ArrayList<Certificate>();
-
-        try {
-            Collection<Integer> caids = caSession.getAvailableCAs();
-            Iterator<Integer> iter = caids.iterator();
-            while (iter.hasNext()) {
-                Integer caid = iter.next();
-                CAData cadata = CAData.findById(entityManager, Integer.valueOf(caid));
-                if (cadata == null) {
-                    log.error("Can't find CA: " + caid);
-                }
-                CA ca = cadata.getCA();
+        final ArrayList<Certificate> returnval = new ArrayList<Certificate>();
+        for (final Integer caid : caSession.getAvailableCAs()) {
+            try {
+                final CAInfo caInfo = caSession.getCAInfoInternal(caid.intValue(), null, true);
                 if (log.isDebugEnabled()) {
-                    log.debug("Getting certificate chain for CA: " + ca.getName() + ", " + ca.getCAId());
+                    log.debug("Getting certificate chain for CA: " + caInfo.getName() + ", " + caInfo.getCAId());
                 }
-                returnval.add(ca.getCACertificate());
+                final Certificate caCertificate = caInfo.getCertificateChain().iterator().next();
+                returnval.add(caCertificate);
+            } catch (CADoesntExistsException e) {
+                log.error("\"Available\" CA does not exist! caid=" + caid);
             }
-        } catch (UnsupportedEncodingException uee) {
-            throw new EJBException(uee);
-        } catch (IllegalCryptoTokenException e) {
-            throw new EJBException(e);
         }
         return returnval;
     }
@@ -2337,60 +2324,59 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
 
     /** Method used to check if certificate profile id exists in any CA. */
     @Override
-    public boolean existsCertificateProfileInCAs(int certificateprofileid) {
-        boolean returnval = false;
-        try {
-            Collection<CAData> result = CAData.findAll(entityManager);
-            Iterator<CAData> iter = result.iterator();
-            while (iter.hasNext()) {
-                CAData cadata = iter.next();
-                returnval = returnval || (cadata.getCA().getCertificateProfileId() == certificateprofileid);
-            }
-        } catch (java.io.UnsupportedEncodingException e) {
-        } catch (IllegalCryptoTokenException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("CA has illegal crypto token: ", e);
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public boolean existsCertificateProfileInCAs(final int certificateprofileid) {
+        for (final Integer caid : caSession.getAvailableCAs()) {
+            try {
+                final CAInfo caInfo = caSession.getCAInfoInternal(caid.intValue(), null, true);
+                if (caInfo.getCertificateProfileId() == certificateprofileid) {
+                    return true;
+                }
+            } catch (CADoesntExistsException e) {
+                log.error("\"Available\" CA is no longer available. caid=" + caid.toString());
             }
         }
-        return returnval;
+        return false;
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public byte[] encryptWithCA(int caid, byte[] data) throws Exception {
-        CAData caData = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-        return caData.getCA().encryptData(data, CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+        // TODO: Should we really allow encrypt/decrypt without authorization checks using the remote interface??
+        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CAAdminSession.encryptWithCA"));
+        return caSession.getCAForEdit(admin, caid).encryptData(data, CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public byte[] decryptWithCA(int caid, byte[] data) throws Exception {
-        CAData caData = CAData.findByIdOrThrow(entityManager, Integer.valueOf(caid));
-        return caData.getCA().decryptData(data, CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+        // TODO: Should we really allow encrypt/decrypt without authorization checks using the remote interface??
+        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CAAdminSession.decryptWithCA"));
+        return caSession.getCAForEdit(admin, caid).decryptData(data, CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean exitsPublisherInCAs(AuthenticationToken admin, int publisherid) {
-        boolean returnval = false;
         try {
-            Collection<CAData> result = CAData.findAll(entityManager);
-            Iterator<CAData> iter = result.iterator();
-            while (iter.hasNext()) {
-                CAData cadata = iter.next();
-                Iterator<Integer> pubiter = cadata.getCA().getCRLPublishers().iterator();
-                while (pubiter.hasNext()) {
-                    Integer pubInt = pubiter.next();
-                    returnval = returnval || (pubInt.intValue() == publisherid);
+            for (final Integer caid : caSession.getAvailableCAs(admin)) {
+                for (final Integer pubInt : caSession.getCA(admin, caid).getCRLPublishers()) {
+                    if (pubInt.intValue() == publisherid) {
+                        // We have found a match. No point in looking for more..
+                        return true;
+                    }
                 }
             }
-        } catch (java.io.UnsupportedEncodingException e) {
-        } catch (IllegalCryptoTokenException e) {
-            if (log.isDebugEnabled()) {
-                log.debug("CA has illegal crypto token: ", e);
-            }
+        } catch (CADoesntExistsException e) {
+            throw new RuntimeException("Available CA is no longer available!");
+        } catch (AuthorizationDeniedException e) {
+            throw new RuntimeException("No longer authorized to authorized CA!");
         }
-        return returnval;
+        return false;
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public int getNumOfApprovalRequired(final int action, final int caid, final int certProfileId) {
         int retval = 0;
         try {
@@ -2507,16 +2493,15 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
-    public Collection<Integer> getAuthorizedPublisherIds(AuthenticationToken admin) {
-        HashSet<Integer> returnval = new HashSet<Integer>();
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public Collection<Integer> getAuthorizedPublisherIds(final AuthenticationToken admin) {
+        final HashSet<Integer> returnval = new HashSet<Integer>();
         try {
             // If superadmin return all available publishers
             returnval.addAll(publisherSession.getAllPublisherIds());
         } catch (AuthorizationDeniedException e1) {
             // If regular CA-admin return publishers he is authorized to
-            Iterator<Integer> authorizedcas = caSession.getAvailableCAs(admin).iterator();
-            while (authorizedcas.hasNext()) {
-                int caid = authorizedcas.next().intValue();
+            for (final Integer caid : caSession.getAvailableCAs(admin)) {
                 try {
                     returnval.addAll(caSession.getCAInfo(admin, caid).getCRLPublishers());
                 } catch (CADoesntExistsException e) {
@@ -2557,6 +2542,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public ExtendedCAServiceResponse extendedService(AuthenticationToken admin, int caid, ExtendedCAServiceRequest request)
             throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException,
             CADoesntExistsException, AuthorizationDeniedException {
@@ -2610,26 +2596,25 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      * @throws EJBException embedding a CertificateExpiredException or a CertificateNotYetValidException if the certificate has expired or is not yet
      *             valid
      */
-    private void checkSignerValidity(AuthenticationToken admin, CAData signcadata) throws UnsupportedEncodingException, IllegalCryptoTokenException {
+    private void assertSignerValidity(AuthenticationToken admin, CA signca) {
         // Check validity of signers certificate
-        Certificate signcert = (Certificate) signcadata.getCA().getCACertificate();
+        final Certificate signcert = (Certificate) signca.getCACertificate();
         try {
             CertTools.checkValidity(signcert, new Date());
         } catch (CertificateExpiredException ce) {
             // Signers Certificate has expired.
-            signcadata.setStatus(CAConstants.CA_EXPIRED);
-            String msg = intres.getLocalizedMessage("signsession.caexpired", signcadata.getSubjectDN());
+            String msg = intres.getLocalizedMessage("signsession.caexpired", signca.getSubjectDN());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.CA_VALIDITY, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-                    String.valueOf(signcadata.getCaId()), null, null, details);
+                    String.valueOf(signca.getCAId()), null, null, details);
             throw new EJBException(ce);
         } catch (CertificateNotYetValidException cve) {
-            String msg = intres.getLocalizedMessage("signsession.canotyetvalid", signcadata.getSubjectDN());
+            String msg = intres.getLocalizedMessage("signsession.canotyetvalid", signca.getSubjectDN());
             Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.CA_VALIDITY, EventStatus.FAILURE, ModuleTypes.CA, ServiceTypes.CORE, admin.toString(),
-                    String.valueOf(signcadata.getCaId()), null, null, details);
+                    String.valueOf(signca.getCAId()), null, null, details);
             throw new EJBException(cve);
         }
     }
@@ -2692,6 +2677,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public void flushCACache() {
         // Just forward the call, because in CaSession it is only in the local interface and we
         // want to be able to use it from CLI
