@@ -374,24 +374,6 @@ public interface CAAdminSession {
     public boolean existsCertificateProfileInCAs(int certificateprofileid);
 
     /**
-     * Encrypts data with a CA key.
-     * 
-     * @param caid identifies the CA
-     * @param data is the data to process
-     * @return processed data
-     */
-    public byte[] encryptWithCA(int caid, byte[] data) throws Exception;
-
-    /**
-     * Decrypts data with a CA key.
-     * 
-     * @param caid identifies the CA
-     * @param data is the data to process
-     * @return processed data
-     */
-    public byte[] decryptWithCA(int caid, byte[] data) throws Exception;
-
-    /**
      * Method used to check if publishers id exists in any CAs CRLPublishers
      * Collection.
      */

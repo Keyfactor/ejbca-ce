@@ -67,9 +67,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CA;
@@ -2337,22 +2335,6 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             }
         }
         return false;
-    }
-
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public byte[] encryptWithCA(int caid, byte[] data) throws Exception {
-        // TODO: Should we really allow encrypt/decrypt without authorization checks using the remote interface??
-        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CAAdminSession.encryptWithCA"));
-        return caSession.getCAForEdit(admin, caid).encryptData(data, CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
-    }
-
-    @Override
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public byte[] decryptWithCA(int caid, byte[] data) throws Exception {
-        // TODO: Should we really allow encrypt/decrypt without authorization checks using the remote interface??
-        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CAAdminSession.decryptWithCA"));
-        return caSession.getCAForEdit(admin, caid).decryptData(data, CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
     }
 
     @Override
