@@ -352,33 +352,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             final Certificate cacert = ca.getCACertificate();
             final String caSubjectDN = CertTools.getSubjectDN(cacert);
-            if (ca.isDoEnforceUniqueDistinguishedName()) {
-                if (ca.isUseCertificateStorage()) {
-            		final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(caSubjectDN, data.getCertificateDN());
-                    if (users.size() > 0 && !users.contains(data.getUsername())) {
-                        final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'" + data.getUsername() + "'",
-                                listUsers(users));
-                        log.info(msg);
-                        throw new CesecoreException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
-                    }
-                } else {
-                    log.warn("CA configured to enforce unique SubjectDN, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
-                }
-            }
-            if (ca.isDoEnforceUniquePublicKeys()) {
-                if (ca.isUseCertificateStorage()) {
-                    final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectKeyId(caSubjectDN, KeyTools
-                            .createSubjectKeyId(pk).getKeyIdentifier());
-                    if (users.size() > 0 && !users.contains(data.getUsername())) {
-                        final String msg = intres.getLocalizedMessage("createcert.key_exists_for_another_user", "'" + data.getUsername() + "'",
-                                listUsers(users));
-                        log.info(msg);
-                        throw new CesecoreException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
-                    }
-                } else {
-                    log.warn("CA configured to enforce unique entity keys, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
-                }
-            }
+            assertSubjectEnforcements(ca, caSubjectDN, data, pk);
             // Retrieve the certificate profile this user should have, checking for authorization to the profile
             final int certProfileId = data.getCertificateProfileId();
             final CertificateProfile certProfile = getCertificateProfile(certProfileId, ca.getCAId());
@@ -522,6 +496,61 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         }
     }
 
+    /**
+     * Happy path optimization that performs enforcement checks as a single database round trip.
+     * However, if any of the checks fail we will end up with additional queries to find out what went wrong.
+     */
+    private void assertSubjectEnforcements(final CA ca, final String issuerDN, final EndEntityInformation endEntityInformation, final PublicKey publicKey) throws CesecoreException {
+        boolean enforceUniqueDistinguishedName = false;
+        if (ca.isDoEnforceUniqueDistinguishedName()) {
+            if (ca.isUseCertificateStorage()) {
+                enforceUniqueDistinguishedName = true;
+            } else {
+                log.warn("CA configured to enforce unique SubjectDN, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
+            }
+        }
+        boolean enforceUniquePublicKeys = false;
+        if (ca.isDoEnforceUniquePublicKeys()) {
+            if (ca.isUseCertificateStorage()) {
+                enforceUniquePublicKeys = true;
+            } else {
+                log.warn("CA configured to enforce unique entity keys, but not to store issued certificates. Check will be ignored. Please verify your configuration.");
+            }
+        }
+        final String username = endEntityInformation.getUsername();
+        String subjectDN = null;
+        if (enforceUniqueDistinguishedName) {
+            subjectDN = endEntityInformation.getCertificateDN();
+        }
+        byte[] subjectKeyId = null;
+        if (enforceUniquePublicKeys) {
+            subjectKeyId = KeyTools.createSubjectKeyId(publicKey).getKeyIdentifier();
+        }
+        boolean multipleCheckOk = false;
+        if (enforceUniqueDistinguishedName && enforceUniquePublicKeys) {
+            multipleCheckOk = certificateStoreSession.isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(issuerDN, subjectKeyId, subjectDN, username);
+        }
+        // If one of the checks failed, we need to investigate further what went wrong
+        if (!multipleCheckOk && enforceUniqueDistinguishedName) {
+            final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectDN(issuerDN, subjectDN);
+            if (users.size() > 0 && !users.contains(username)) {
+                final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'" + username + "'",
+                        listUsers(users));
+                log.info(msg);
+                throw new CesecoreException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
+            }
+        }
+        if (!multipleCheckOk && enforceUniquePublicKeys) {
+            final Set<String> users = certificateStoreSession.findUsernamesByIssuerDNAndSubjectKeyId(issuerDN, subjectKeyId);
+            if (users.size() > 0 && !users.contains(username)) {
+                final String msg = intres.getLocalizedMessage("createcert.key_exists_for_another_user", "'" + username + "'",
+                        listUsers(users));
+                log.info(msg);
+                throw new CesecoreException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
+            }
+        }
+    }
+    
     private CertificateProfile getCertificateProfile(final int certProfileId, final int caid)
             throws AuthorizationDeniedException {
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);

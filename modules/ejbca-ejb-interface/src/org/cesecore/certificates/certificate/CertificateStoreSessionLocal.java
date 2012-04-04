@@ -75,5 +75,13 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
      */
     List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
     
-
+    /**
+     * Query if we have a clear cut case where no username or the provided username is the only user of the subjectDN and subjectKeyId.
+     * @param issuerDN The CA's subject
+     * @param subjectDN The entity's subject
+     * @param subjectKeyId The entity's subjectKeyId
+     * @param username the entity's username
+     * @return true if there is no other end entity under this issuer with the same subjectKeyId or subjectDN
+     */
+    boolean isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(String issuerDN, byte[] subjectKeyId, String subjectDN, String username);
 }

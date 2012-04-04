@@ -251,6 +251,30 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public boolean isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(final String issuerDN, final byte subjectKeyId[], final String subjectDN, final String username) {
+        if (log.isTraceEnabled()) {
+            log.trace(">isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(), issuer='" + issuerDN + "'");
+        }
+        // First make a DN in our well-known format
+        final String transformedIssuerDN = CertTools.stringToBCDNString(StringTools.strip(issuerDN));
+        final String sSubjectKeyId = new String(Base64.encode(subjectKeyId, false));
+        final String transformedSubjectDN = CertTools.stringToBCDNString(StringTools.strip(subjectDN));
+        if (log.isDebugEnabled()) {
+            log.debug("Looking for user with a certificate with issuer DN(transformed) '" + transformedIssuerDN + "' and SubjectKeyId '"
+                    + sSubjectKeyId + "' OR subject DN(transformed) '."+ transformedSubjectDN + "'.");
+        }
+        try {
+            final Set<String> usernames = CertificateData.findUsernamesBySubjectKeyIdOrDnAndIssuer(entityManager, transformedIssuerDN, sSubjectKeyId, transformedSubjectDN);
+            return usernames.size()==0 || (usernames.size()==1 && usernames.contains(username));
+        } finally {
+            if (log.isTraceEnabled()) {
+                log.trace("<isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(), issuer='" + issuerDN + "'");
+            }
+        }
+    }
+
+    @Override
     public Collection<Certificate> findCertificatesBySubject(String subjectDN) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesBySubject(), dn='" + subjectDN + "'");
