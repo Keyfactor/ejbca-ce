@@ -538,7 +538,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             if (users.size() > 0 && !users.contains(username)) {
                 final String msg = intres.getLocalizedMessage("createcert.subjectdn_exists_for_another_user", "'" + username + "'",
                         listUsers(users));
-                log.info(msg);
                 throw new CesecoreException(ErrorCode.CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
             }
         }
@@ -547,7 +546,6 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             if (users.size() > 0 && !users.contains(username)) {
                 final String msg = intres.getLocalizedMessage("createcert.key_exists_for_another_user", "'" + username + "'",
                         listUsers(users));
-                log.info(msg);
                 throw new CesecoreException(ErrorCode.CERTIFICATE_FOR_THIS_KEY_ALLREADY_EXISTS_FOR_ANOTHER_USER, msg);
             }
         }
