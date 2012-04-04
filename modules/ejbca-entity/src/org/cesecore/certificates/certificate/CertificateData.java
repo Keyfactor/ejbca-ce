@@ -817,6 +817,16 @@ public class CertificateData extends ProtectedData implements Serializable {
         return new HashSet<String>(query.getResultList());
     }
 
+    /** @return return the query results as a List. */
+    @SuppressWarnings("unchecked")
+    public static Set<String> findUsernamesBySubjectKeyIdOrDnAndIssuer(EntityManager entityManager, String issuerDN, String subjectKeyId, String subjectDN) {
+        final Query query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE (a.subjectKeyId=:subjectKeyId OR a.subjectDN=:subjectDN) AND a.issuerDN=:issuerDN");
+        query.setParameter("issuerDN", issuerDN);
+        query.setParameter("subjectKeyId", subjectKeyId);
+        query.setParameter("subjectDN", subjectDN);
+        return new HashSet<String>(query.getResultList());
+    }
+
     /** @return return the query results as a List<String>. */
     @SuppressWarnings("unchecked")
     public static List<String> findFingerprintsByIssuerDN(EntityManager entityManager, String issuerDN) {
