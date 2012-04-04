@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -410,10 +411,10 @@ public class EjbcaWebBean implements Serializable {
      * @return true if is authorized to resource, throws AuthorizationDeniedException if not authorized, never returns false.
      * @throws AuthorizationDeniedException is not authorized to resource
      */
-    public boolean isAuthorized(String resource) throws AuthorizationDeniedException {
+    public boolean isAuthorized(String... resources) throws AuthorizationDeniedException {
         if (certificates != null) {
-            if (!authorizationSession.isAuthorized(administrator, resource)) {
-                throw new AuthorizationDeniedException("Not authorized to " + resource);
+            if (!authorizationSession.isAuthorized(administrator, resources)) {
+                throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
             }
         } else {
             throw new AuthorizationDeniedException("Client certificate required.");
@@ -430,10 +431,10 @@ public class EjbcaWebBean implements Serializable {
      * @return true if is authorized to resource, throws AuthorizationDeniedException if not authorized, never returns false.
      * @throws AuthorizationDeniedException is not authorized to resource
      */
-    public boolean isAuthorizedNoLog(String resource) throws AuthorizationDeniedException {
+    public boolean isAuthorizedNoLog(String... resources) throws AuthorizationDeniedException {
         if (certificates != null) {
-            if (!authorizationSession.isAuthorizedNoLogging(administrator, resource)) {
-                throw new AuthorizationDeniedException("Not authorized to " + resource);
+            if (!authorizationSession.isAuthorizedNoLogging(administrator, resources)) {
+                throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
             }
         } else {
             throw new AuthorizationDeniedException("Client certificate required");

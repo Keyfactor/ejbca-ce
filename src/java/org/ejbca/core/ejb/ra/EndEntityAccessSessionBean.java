@@ -213,8 +213,8 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
                 log.info("Admin " + admin.toString() + " was not authorized to resource /super_administrator");
             }
         } else {
-            returnval = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights)
-                    && authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
+            returnval = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights,
+                    AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
         }
         return returnval;
     }

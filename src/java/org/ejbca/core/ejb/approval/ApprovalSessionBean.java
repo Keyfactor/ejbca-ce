@@ -253,15 +253,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                     throw new AuthorizationDeniedException(msg);
                 }
             } else {
-                if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY)) {
-                    final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource",
-                            AccessRulesConstants.REGULAR_APPROVEENDENTITY, null);
-                    throw new AuthorizationDeniedException(msg);
-                }
-                if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid()
-                        + AccessRulesConstants.APPROVAL_RIGHTS)) {
+                if (!authorizationSession.isAuthorized(admin, AccessRulesConstants.REGULAR_APPROVEENDENTITY,
+                        AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid() + AccessRulesConstants.APPROVAL_RIGHTS)) {
                     final String msg = intres
                             .getLocalizedMessage("authorization.notuathorizedtoresource",
+                                    AccessRulesConstants.REGULAR_APPROVEENDENTITY + ", " +
                                     AccessRulesConstants.ENDENTITYPROFILEPREFIX + retval.getEndentityprofileid()
                                             + AccessRulesConstants.APPROVAL_RIGHTS, null);
                     throw new AuthorizationDeniedException(msg);

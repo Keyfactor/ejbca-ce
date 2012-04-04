@@ -481,18 +481,19 @@ public class CertificateProfileSessionBean implements CertificateProfileSessionL
     }
 
     private void authorizedToEditProfile(AuthenticationToken admin, CertificateProfile profile, int id) throws AuthorizationDeniedException {
+        final Collection<Integer> ids = profile.getAvailableCAs();
+        final String[] rules = new String[ids.size()+1];
         // We need to check that admin also have rights to edit certificate profiles
-        if (!accessSession.isAuthorized(admin, StandardRules.EDITCERTIFICATEPROFILE.resource())) {
+        rules[0] = StandardRules.EDITCERTIFICATEPROFILE.resource();
+        int i=1;
+        // Check that admin is authorized to all CAids
+        for (Integer caid : ids) {
+            rules[i++] = StandardRules.CAACCESS.resource() + caid;
+        }
+        // Perform authorization check
+        if (!accessSession.isAuthorized(admin, rules)) {
             final String msg = INTRES.getLocalizedMessage("store.editcertprofilenotauthorized", admin.toString(), id);
             throw new AuthorizationDeniedException(msg);
-        }
-        // Check that admin is authorized to all CAids
-        Collection<Integer> ids = profile.getAvailableCAs();
-        for (Integer caid : ids) {
-            if (!accessSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
-                final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
-                throw new AuthorizationDeniedException(msg);
-            }
         }
     }
 }

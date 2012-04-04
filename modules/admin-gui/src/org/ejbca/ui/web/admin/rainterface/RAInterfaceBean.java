@@ -790,12 +790,11 @@ public class RAInterfaceBean implements Serializable {
     public boolean endEntityAuthorization(AuthenticationToken admin, int profileid, String rights, boolean log) {
     	boolean returnval = false;
     	if (log) {
-    		returnval = authorizationsession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights)
-    		&& authorizationsession.isAuthorized(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
+    		returnval = authorizationsession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid) + rights,
+    		        AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
     	} else {
     		returnval = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + Integer.toString(profileid)
-    				+ rights)
-    				&& authorizationsession.isAuthorized(admin, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
+    				+ rights, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
     	}
     	return returnval;
     }    

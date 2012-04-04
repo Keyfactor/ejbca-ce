@@ -72,8 +72,8 @@ public class AuthorizationDataHandler implements Serializable {
      * @return true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
-    public boolean isAuthorized(AuthenticationToken admin, String resource) {
-        return authorizationsession.isAuthorized(admin, resource);
+    public boolean isAuthorized(AuthenticationToken admin, String... resources) {
+        return authorizationsession.isAuthorized(admin, resources);
     }
 
     /**
@@ -84,8 +84,8 @@ public class AuthorizationDataHandler implements Serializable {
      * @return true if authorizes
      * @throws AuthorizationDeniedException when authorization is denied.
      */
-    public boolean isAuthorizedNoLog(AuthenticationToken admin, String resource) {
-        return authorizationsession.isAuthorizedNoLogging(admin, resource);
+    public boolean isAuthorizedNoLog(AuthenticationToken admin, String... resources) {
+        return authorizationsession.isAuthorizedNoLogging(admin, resources);
     }
 
     /**
