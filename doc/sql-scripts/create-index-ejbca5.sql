@@ -24,7 +24,7 @@ ALTER TABLE CertificateData ADD INDEX certificatedata_idx11 (subjectKeyId);
 DELETE FROM CertificateData WHERE fingerprint='caba75f68c833c3c2d33f3f5052b7d5a76e80383';
 DELETE FROM CertificateData WHERE fingerprint='05a219d835622653192c30eeeee8f01f918b30fb';
 ALTER TABLE CertificateData ADD UNIQUE INDEX certificatedata_idx12 (serialNumber, issuerDN);
---ALTER TABLE CertificateData ADD INDEX certificatedata_idx12 (serialNumber, issuerDN);
+-- ALTER TABLE CertificateData ADD INDEX certificatedata_idx12 (serialNumber, issuerDN);
 
 ALTER TABLE CertReqHistoryData ADD INDEX historydata_idx1 (username);
 ALTER TABLE CertReqHistoryData ADD INDEX historydata_idx3 (serialNumber);
