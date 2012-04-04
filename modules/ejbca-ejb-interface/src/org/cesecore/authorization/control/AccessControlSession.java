@@ -29,19 +29,19 @@ public interface AccessControlSession {
     /**
      * Checks if the current user is authorized for the given resource.
      * 
-     * @param resource String identifier of the resource in question.
+     * @param resources String identifier(s) of the resource(s) in question.
      * @return True if user is authorized, false if not.
      */
-    boolean isAuthorized(AuthenticationToken authenticationToken, String resource);
+    boolean isAuthorized(AuthenticationToken authenticationToken, String... resources);
 
     /**
      * Checks if the current user is authorized for the given resource.
      * Will not create any audit log. 
      * 
-     * @param resource String identifier of the resource in question.
+     * @param resources String identifier(s) of the resource(s) in question.
      * @return True if user is authorized, false if not. 
      */
-    boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String resource);
+    boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String... resources);
 
     /**
      * Helper method to clear the local access control rule cache. Normally the cache expires after configured time, but when modifying access rules

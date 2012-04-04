@@ -129,6 +129,11 @@ public class AccessControlSessionBeanTest extends RoleUsingTestCase {
             assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/decline/notused"));
             assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/decline/unexistent"));
       
+            assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
+            assertTrue(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/accept", "/acceptRecursive/notused", "/acceptRecursive/unexistent"));
+            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/decline", "/acceptRecursive/accept"));
+            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/accept", "/acceptRecursive/decline"));
+            assertFalse(accessControlSession.isAuthorized(roleMgmgToken, "/acceptRecursive/accept", "/acceptRecursive/decline", "/acceptRecursive/unexistent"));
         } finally {
             roleManagementSession.remove(roleMgmgToken, roleName);
         }
