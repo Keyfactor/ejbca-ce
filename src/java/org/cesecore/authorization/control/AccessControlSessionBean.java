@@ -75,27 +75,39 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
      */
     private static volatile AccessTreeCache accessTreeCache;
 
-    private boolean isAuthorized(final AuthenticationToken authenticationToken, final String resource, final boolean doLogging) {
+    private boolean isAuthorized(final AuthenticationToken authenticationToken, final boolean doLogging, final String... resources) {
         try {
-            if (accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource)) {
-                if (doLogging) {
-                    try {
-                        final TrustedTime tt = trustedTimeWatcherSession.getTrustedTime(false);
-                        final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                        details.put("resource", resource);
-                        securityEventsLoggerSession.log(tt, EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL,
-                                ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
-                    } catch (TrustedTimeProviderException e) {
-                        log.error("Error getting trusted time for audit log: ", e);
+            Map<String, Object> details = null;
+            if (doLogging) {
+                details = new LinkedHashMap<String, Object>();
+            }
+            for (int i=0; i<resources.length; i++) {
+                final String resource = resources[i];
+                if (accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource)) {
+                    if (doLogging) {
+                        details.put("resource"+i, resource);
                     }
-                }
-                return true;
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Authorization failed for " + authenticationToken.toString() + " of type "
+                } else {
+                    // At least log failed authorization attempts as INFO, even though CC does not require any sec audit 
+                    log.info("Authorization failed for " + authenticationToken.toString() + " of type "
                             + authenticationToken.getClass().getSimpleName() + " for resource " + resource);
+                    // We failed one of the checks, so there is no point in continuing..
+                    // If we failed an authorization check, there is no need to log successful ones before this point since
+                    // the requester has not yet been (and never will be) notified of the successful outcomes.
+                    return false;
                 }
             }
+            if (doLogging) {
+                TrustedTime tt = null;
+                try {
+                    tt = trustedTimeWatcherSession.getTrustedTime(false);
+                } catch (TrustedTimeProviderException e) {
+                    log.error("Error getting trusted time for audit log: ", e);
+                }
+                securityEventsLoggerSession.log(tt, EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS, ModuleTypes.ACCESSCONTROL,
+                        ServiceTypes.CORE, authenticationToken.toString(), null, null, null, details);
+            }
+            return true;
         } catch (AuthenticationFailedException e) {
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             String msg = intres.getLocalizedMessage("authentication.failed", e.getMessage());
@@ -112,20 +124,20 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
     
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean isAuthorized(final AuthenticationToken authenticationToken, final String resource) {
+    public boolean isAuthorized(final AuthenticationToken authenticationToken, final String... resources) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
         }
-        return isAuthorized(authenticationToken, resource, true);
+        return isAuthorized(authenticationToken, true, resources);
     }
     
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public boolean isAuthorizedNoLogging(final AuthenticationToken authenticationToken, final String resource) {
+    public boolean isAuthorizedNoLogging(final AuthenticationToken authenticationToken, final String... resources) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
         }
-        return isAuthorized(authenticationToken, resource, false);
+        return isAuthorized(authenticationToken, false, resources);
     }
 
     @Override
