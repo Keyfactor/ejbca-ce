@@ -47,12 +47,12 @@ public class StandAloneVaMockSessionBean implements AccessControlSessionLocal, S
 	}
 
 	@Override
-	public boolean isAuthorized(AuthenticationToken authenticationToken, String resource) {
+	public boolean isAuthorized(AuthenticationToken authenticationToken, String... resource) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String resource) {
+	public boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, String... resource) {
 		throw new UnsupportedOperationException();
 	}
 
