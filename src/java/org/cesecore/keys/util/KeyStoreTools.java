@@ -33,7 +33,6 @@ import java.security.Security;
 import java.security.SignatureException;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.spec.AlgorithmParameterSpec;
@@ -43,15 +42,20 @@ import java.util.Date;
 import java.util.Enumeration;
 
 import javax.crypto.KeyGenerator;
-import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.ECKeyUtil;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.Base64;
@@ -138,25 +142,27 @@ public class KeyStoreTools {
     private X509Certificate getSelfCertificate (String myname,
                                                 long validity,
                                                 String sigAlg,
-                                                KeyPair keyPair) throws CertificateEncodingException, InvalidKeyException, IllegalStateException, NoSuchProviderException, NoSuchAlgorithmException, SignatureException {
+                                                KeyPair keyPair) throws InvalidKeyException, IllegalStateException, NoSuchProviderException, NoSuchAlgorithmException, SignatureException, CertificateException, IOException {
         final long currentTime = new Date().getTime();
         final Date firstDate = new Date(currentTime-24*60*60*1000);
         final Date lastDate = new Date(currentTime + validity * 1000);
-        X509V3CertificateGenerator cg = new X509V3CertificateGenerator();
-        // Add all mandatory attributes
-        cg.setSerialNumber(BigInteger.valueOf(firstDate.getTime()));
-        log.debug("keystore signing algorithm "+sigAlg);
-        cg.setSignatureAlgorithm(sigAlg);
-        cg.setSubjectDN(new X500Principal(myname));
+        final X500Name issuer = new X500Name(myname);
+        final BigInteger serno = BigInteger.valueOf(firstDate.getTime());
         final PublicKey publicKey = keyPair.getPublic();
         if ( publicKey==null ) {
             throw new InvalidKeyException("Public key is null");
         }
-        cg.setPublicKey(publicKey);
-        cg.setNotBefore(firstDate);
-        cg.setNotAfter(lastDate);
-        cg.setIssuerDN(new X500Principal(myname));
-        return cg.generate(keyPair.getPrivate(), this.providerName);
+        
+        try {
+            final X509v3CertificateBuilder cg = new JcaX509v3CertificateBuilder(issuer, serno, firstDate, lastDate, issuer, publicKey);
+            log.debug("Keystore signing algorithm "+sigAlg);
+            final ContentSigner signer = new JcaContentSignerBuilder(sigAlg).setProvider(this.providerName).build(keyPair.getPrivate());
+            final X509CertificateHolder cert = cg.build(signer);
+            return (X509Certificate)CertTools.getCertfromByteArray(cert.getEncoded());
+        } catch (OperatorCreationException e) {
+            log.error("Error creating content signer: ", e);
+            throw new CertificateException(e);
+        }
     }
 
     private void generateEC( final String name,
