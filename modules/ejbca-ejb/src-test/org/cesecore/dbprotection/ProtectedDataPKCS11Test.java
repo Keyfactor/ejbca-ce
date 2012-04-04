@@ -22,6 +22,7 @@ import java.util.Properties;
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.PKCS11CryptoTokenTest;
+import org.cesecore.util.CryptoProviderTools;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -41,6 +42,7 @@ public class ProtectedDataPKCS11Test extends ProtectedData {
 	
     @Before
     public void setUp() {
+        CryptoProviderTools.installBCProvider();
         ConfigurationHolder.instance().clear();
     }
 
