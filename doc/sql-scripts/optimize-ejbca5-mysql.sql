@@ -28,8 +28,8 @@ ALTER TABLE CertificateData DROP INDEX certificatedata_idx5;
 -- If we created certificatedata_idx12 with the UNIQUE keyword we need to rebuild it.
 -- Note: This partitioning will only gurantee uniqueness of "serialNumber, issuerDN" and
 -- "fingerprint" within each "type".
---ALTER TABLE CertificateData DROP INDEX certificatedata_idx12;
---ALTER TABLE CertificateData ADD UNIQUE INDEX certificatedata_idx12 (serialNumber, issuerDN, type);
+ALTER TABLE CertificateData DROP INDEX certificatedata_idx12;
+ALTER TABLE CertificateData ADD UNIQUE INDEX certificatedata_idx12 (serialNumber, issuerDN, type);
 ALTER TABLE CertificateData REMOVE PARTITIONING;
 ALTER TABLE CertificateData DROP PRIMARY KEY;
 ALTER TABLE CertificateData ADD UNIQUE INDEX certificatedata_idx13 (fingerprint, type);
