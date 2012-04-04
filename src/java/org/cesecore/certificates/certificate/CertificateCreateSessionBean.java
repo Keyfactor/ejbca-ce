@@ -57,6 +57,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.catoken.CAToken;
@@ -398,6 +399,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     break; // We have our cert and we don't need to store it.. Move on..
                 }
                 try {
+                    assertSerialNumberForIssuerOk(ca, caSubjectDN, new BigInteger(serialNo, 16));
                     // Tag is reserved for future use, currently only null
                     final String tag = null;
                     // Authorization was already checked by since this is a private method, the CA parameter should
@@ -550,7 +552,18 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
         }
     }
-    
+
+    /** When no unique index is present in the database, we still try to enforce X.509 serial number per CA uniqueness. */
+    private void assertSerialNumberForIssuerOk(final CA ca, final String issuerDN, final BigInteger serialNumber) throws CesecoreException {
+        if (ca.getCAType()==CAInfo.CATYPE_X509 && !certificateCreateSession.isUniqueCertificateSerialNumberIndex()) {
+            if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serialNumber)!=null) {
+                final String msg = intres.getLocalizedMessage("createcert.cert_serial_number_allready_in_database", serialNumber.toString());
+                log.info(msg);
+                throw new CesecoreException(msg);
+            }
+        }
+    }
+
     private CertificateProfile getCertificateProfile(final int certProfileId, final int caid)
             throws AuthorizationDeniedException {
         final CertificateProfile certProfile = certificateProfileSession.getCertificateProfile(certProfileId);
