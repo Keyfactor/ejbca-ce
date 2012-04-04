@@ -242,13 +242,8 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	 */
 	private void canEditCA(AuthenticationToken admin, final String name, final String subjectDN, final CA orgca)
 			throws CADoesntExistsException, AuthorizationDeniedException {
-		// First check if we are authorized to edit CA
-        if (!accessSession.isAuthorized(admin, StandardRules.CAEDIT.resource())) {
-            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), Integer.valueOf(orgca.getCAId()));
-            throw new AuthorizationDeniedException(msg);
-        }
-    	// Check authorization to specific CA
-        if (!authorizedToCA(admin, orgca.getCAId())) {
+        // Check if we are authorized to edit CA and authorization to specific CA
+        if (!accessSession.isAuthorized(admin, StandardRules.CAEDIT.resource(), StandardRules.CAACCESS.resource() + orgca.getCAId())) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoeditca", admin.toString(), Integer.valueOf(orgca.getCAId()));
             throw new AuthorizationDeniedException(msg);
         }
@@ -367,7 +362,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 
         CAData cadata = CAData.findByNameOrThrow(entityManager, oldname);
         // Check authorization, to rename we need remove (for the old name) and add for the new name)
-        if (!accessSession.isAuthorized(admin, StandardRules.CAREMOVE.resource()) || !accessSession.isAuthorized(admin, StandardRules.CAADD.resource())) {
+        if (!accessSession.isAuthorized(admin, StandardRules.CAREMOVE.resource(), StandardRules.CAADD.resource())) {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtorenameca", admin.toString(), cadata.getCaId());
             throw new AuthorizationDeniedException(msg);
         }

@@ -209,10 +209,8 @@ public class EjbcaWSHelper {
 	 */
 	protected boolean isAdmin() {
 		boolean retval = false;
-		AuthenticationToken admin;
 		try {
-			admin = getAdmin(false);
-			if ((admin != null) && (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR))) {
+			if (getAdmin(false) != null) {
 				retval = true;
 			}
 		} catch (AuthorizationDeniedException e) {
