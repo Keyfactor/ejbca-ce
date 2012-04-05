@@ -515,7 +515,7 @@ public class RequestHelper {
         out.setContentLength(bytes.length);
 
         // Write the certificate
-        ServletOutputStream os = out.getOutputStream();
+        final ServletOutputStream os = out.getOutputStream();
         os.write(bytes);
         out.flushBuffer();
         if (log.isDebugEnabled()) {

@@ -23,11 +23,15 @@ public class ServletUtils {
      */
     public static void removeCacheHeaders(HttpServletResponse res) {
         if (res.containsHeader("Pragma")) {
-            log.debug("Removing Pragma header to avoid caching issues in IE");
+            if (log.isDebugEnabled()) {
+                log.debug("Removing Pragma header to avoid caching issues in IE");
+            }
             res.setHeader("Pragma","null");
         }
         if (res.containsHeader("Cache-Control")) {
-            log.debug("Removing Cache-Control header to avoid caching issues in IE");
+            if (log.isDebugEnabled()) {
+                log.debug("Removing Cache-Control header to avoid caching issues in IE");
+            }
             res.setHeader("Cache-Control","null");
         }
     }
@@ -38,11 +42,15 @@ public class ServletUtils {
      */
     public static void addCacheHeaders(HttpServletResponse res) {
         if (!res.containsHeader("Pragma")) {
-            log.debug("Adding Pragma header");
+            if (log.isDebugEnabled()) {
+                log.debug("Adding Pragma header");
+            }
             res.setHeader("Pragma","no-cache");
         }
         if (!res.containsHeader("Cache-Control")) {
-            log.debug("Adding Cache-Control header");
+            if (log.isDebugEnabled()) {
+                log.debug("Adding Cache-Control header");
+            }
             res.setHeader("Cache-Control","no-cache");
         }
     }

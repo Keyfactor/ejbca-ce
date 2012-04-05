@@ -14,7 +14,6 @@ package org.ejbca.core.protocol.cmp;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalEjbcaResources;
@@ -50,9 +49,9 @@ public class GeneralCmpMessage extends BaseCmpMessage {
      */
     static final long serialVersionUID = 1000L;
 
-	public GeneralCmpMessage(PKIMessage msg) {
-		PKIBody body = msg.getBody();
-		int tag = body.getTagNo();
+	public GeneralCmpMessage(final PKIMessage msg) {
+		final PKIBody body = msg.getBody();
+		final int tag = body.getTagNo();
 		if (tag == 19) {
 			// this is a PKIConfirmContent
 			if (log.isDebugEnabled()) {
@@ -66,12 +65,12 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			if (log.isDebugEnabled()) {
 				log.debug("Received a Cert Confirm message");
 			}
-			CertConfirmContent obj = body.getCertConf();
-			PKIStatusInfo status = obj.getPKIStatus();
+			final CertConfirmContent obj = body.getCertConf();
+			final PKIStatusInfo status = obj.getPKIStatus();
 			if (status != null) {
-				int st = status.getStatus().getValue().intValue();
+				final int st = status.getStatus().getValue().intValue();
 				if (st != 0) {
-					String errMsg = intres.getLocalizedMessage("cmp.errorcertconfirmstatus", Integer.valueOf(st));
+					final String errMsg = intres.getLocalizedMessage("cmp.errorcertconfirmstatus", Integer.valueOf(st));
 					log.error(errMsg);
 					// TODO: if it is rejected, we should revoke the cert?
 				}
@@ -82,31 +81,29 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			if (log.isDebugEnabled()) {
 				log.debug("Received a RevReqContent");
 			}
-			RevReqContent rr = body.getRr();
-			RevDetails rd = rr.getRevDetails(0);
-			CertTemplate ct = rd.getCertDetails();
-			DERInteger serno = ct.getSerialNumber();
-			X509Name issuer = ct.getIssuer();
+			final RevReqContent rr = body.getRr();
+			final RevDetails rd = rr.getRevDetails(0);
+			final CertTemplate ct = rd.getCertDetails();
+			final DERInteger serno = ct.getSerialNumber();
+			final X509Name issuer = ct.getIssuer();
 			if ( (serno != null) && (issuer != null) ) {
-				String errMsg = intres.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
+				final String errMsg = intres.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
 				log.info(errMsg);
 			} else {
-				String errMsg = intres.getLocalizedMessage("cmp.receivedrevreqnoissuer");
+				final String errMsg = intres.getLocalizedMessage("cmp.receivedrevreqnoissuer");
 				log.info(errMsg);
 			}
 		}
 		setMessage(msg);
-		PKIHeader header = msg.getHeader();
-		DEROctetString os = header.getTransactionID();
-		if (os != null) {
-			byte[] val = os.getOctets();
+		final PKIHeader header = msg.getHeader();
+		if (header.getTransactionID() != null) {
+		    final byte[] val = header.getTransactionID().getOctets();
 			if (val != null) {
 				setTransactionId(new String(Base64.encode(val)));							
 			}
 		}
-		os = header.getSenderNonce();
-		if (os != null) {
-			byte[] val = os.getOctets();
+		if (header.getSenderNonce() != null) {
+		    final byte[] val = header.getSenderNonce().getOctets();
 			if (val != null) {
 				setSenderNonce(new String(Base64.encode(val)));							
 			}
