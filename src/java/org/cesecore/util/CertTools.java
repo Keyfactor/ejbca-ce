@@ -925,33 +925,28 @@ public class CertTools {
         return ret;
     }
 
-    private static final Map<String, CertificateFactory> certificateFactoryCache = new HashMap<String, CertificateFactory>();
-    
     /** Returns a CertificateFactory that can be used to create certificates from byte arrays and such.
-     * Uses a CertificateFactory cache in order to not have to create new objects all the time
      * @param provider Security provider that should be used to create certificates, default BC is null is passed.
      * @return CertificateFactory
      */
     public static CertificateFactory getCertificateFactory(final String provider) {
-        String prov = provider;
+        final String prov;
         if (provider == null) {
             prov = "BC";
+        } else {
+             prov = provider;
         }
-        CertificateFactory ret = certificateFactoryCache.get(prov);
-        if (ret == null) {
-            if (StringUtils.equals(prov, "BC")) {
-                CryptoProviderTools.installBCProviderIfNotAvailable();
-            }
-            try {
-                ret = CertificateFactory.getInstance("X.509", prov);
-                certificateFactoryCache.put(prov, ret);
-            } catch (NoSuchProviderException nspe) {
-                log.error("NoSuchProvider: ", nspe);
-            } catch (CertificateException ce) {
-                log.error("CertificateException: ", ce);
-            }            
+        if ("BC".equals(prov)) {
+            CryptoProviderTools.installBCProviderIfNotAvailable();
         }
-        return ret;
+        try {
+            return CertificateFactory.getInstance("X.509", prov);
+        } catch (NoSuchProviderException nspe) {
+            log.error("NoSuchProvider: ", nspe);
+        } catch (CertificateException ce) {
+            log.error("CertificateException: ", ce);
+        }
+        return null;
     }
 
     public static CertificateFactory getCertificateFactory() {
