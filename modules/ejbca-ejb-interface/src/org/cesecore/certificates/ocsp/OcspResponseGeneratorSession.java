@@ -16,8 +16,6 @@ import java.io.IOException;
 import java.security.cert.X509Certificate;
 
 import org.bouncycastle.ocsp.OCSPException;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;

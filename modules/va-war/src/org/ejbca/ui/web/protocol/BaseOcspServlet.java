@@ -32,19 +32,16 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseInformation;
-import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.PatternLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
-import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
-import org.ejbca.util.HTMLTools;
 
 /**
  * @version $Id$
