@@ -86,8 +86,6 @@ public abstract class PatternLogger implements Serializable {
     private transient final PrintWriter pw = new PrintWriter(this.sw);
     private transient final Matcher m;
     private final String orderString;
-    private final String logDateFormat;
-    private final String timeZone;
     private final Date startTime;
     private Date startProcessTime = null;
     private boolean doLogging;
@@ -109,14 +107,12 @@ public abstract class PatternLogger implements Serializable {
         this.doLogging = doLogging;
         this.m = Pattern.compile(matchPattern).matcher(matchString);
         this.orderString = matchString;
-        this.logDateFormat = logDateFormat;
-        this.timeZone = timeZone;
         this.startTime = new Date();
         final FastDateFormat dateformat;
-        if (this.timeZone == null) {
-                dateformat = FastDateFormat.getInstance(this.logDateFormat);
+        if (timeZone == null) {
+                dateformat = FastDateFormat.getInstance(logDateFormat);
         } else {
-                dateformat = FastDateFormat.getInstance(this.logDateFormat, TimeZone.getTimeZone(this.timeZone));
+                dateformat = FastDateFormat.getInstance(logDateFormat, TimeZone.getTimeZone(timeZone));
         }
         paramPut(LOG_TIME, dateformat.format(new Date()));
         this.paramPut(REPLY_TIME, REPLY_TIME);
