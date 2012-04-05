@@ -65,6 +65,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import org.apache.commons.lang.CharUtils;
@@ -630,7 +631,7 @@ public class CertTools {
      * 
      * @return String containing the subjects DN.
      */
-    public static String getSubjectDN(Certificate cert) {
+    public static String getSubjectDN(final Certificate cert) {
         return getDN(cert, 1);
     }
 
@@ -641,7 +642,7 @@ public class CertTools {
      * 
      * @return String containing the issuers DN.
      */
-    public static String getIssuerDN(Certificate cert) {
+    public static String getIssuerDN(final Certificate cert) {
         return getDN(cert, 2);
     }
 
@@ -924,22 +925,33 @@ public class CertTools {
         return ret;
     }
 
-    public static CertificateFactory getCertificateFactory(String provider) {
+    private static final Map<String, CertificateFactory> certificateFactoryCache = new HashMap<String, CertificateFactory>();
+    
+    /** Returns a CertificateFactory that can be used to create certificates from byte arrays and such.
+     * Uses a CertificateFactory cache in order to not have to create new objects all the time
+     * @param provider Security provider that should be used to create certificates, default BC is null is passed.
+     * @return CertificateFactory
+     */
+    public static CertificateFactory getCertificateFactory(final String provider) {
         String prov = provider;
         if (provider == null) {
             prov = "BC";
         }
-        if (StringUtils.equals(prov, "BC")) {
-            CryptoProviderTools.installBCProviderIfNotAvailable();
+        CertificateFactory ret = certificateFactoryCache.get(prov);
+        if (ret == null) {
+            if (StringUtils.equals(prov, "BC")) {
+                CryptoProviderTools.installBCProviderIfNotAvailable();
+            }
+            try {
+                ret = CertificateFactory.getInstance("X.509", prov);
+                certificateFactoryCache.put(prov, ret);
+            } catch (NoSuchProviderException nspe) {
+                log.error("NoSuchProvider: ", nspe);
+            } catch (CertificateException ce) {
+                log.error("CertificateException: ", ce);
+            }            
         }
-        try {
-            return CertificateFactory.getInstance("X.509", prov);
-        } catch (NoSuchProviderException nspe) {
-            log.error("NoSuchProvider: ", nspe);
-        } catch (CertificateException ce) {
-            log.error("CertificateException: ", ce);
-        }
-        return null;
+        return ret;
     }
 
     public static CertificateFactory getCertificateFactory() {
