@@ -52,17 +52,17 @@ public class CmpPbeVerifyer {
 	private byte[] salt = null;
 	private String lastUsedRaSecret = null;
 	
-	public CmpPbeVerifyer(PKIMessage msg) {
-		PKIHeader head = msg.getHeader();
+	public CmpPbeVerifyer(final PKIMessage msg) {
+		final PKIHeader head = msg.getHeader();
 		protectedBytes = msg.getProtectedBytes();
 		protection = msg.getProtection();
 		pAlg = head.getProtectionAlg();
-		PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
+		final PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
 		iterationCount = pp.getIterationCount().getPositiveValue().intValue();
-		AlgorithmIdentifier owfAlg = pp.getOwf();
+		final AlgorithmIdentifier owfAlg = pp.getOwf();
 		// Normal OWF alg is 1.3.14.3.2.26 - SHA1
 		owfOid = owfAlg.getObjectId().getId();
-		AlgorithmIdentifier macAlg = pp.getMac();
+		final AlgorithmIdentifier macAlg = pp.getMac();
 		// Normal mac alg is 1.3.6.1.5.5.8.1.2 - HMAC/SHA1
 		macOid = macAlg.getObjectId().getId();
 		if (LOG.isDebugEnabled()) {
