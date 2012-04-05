@@ -47,6 +47,7 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.KeyTransRecipientId;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
@@ -253,7 +254,12 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 				final KeyTransRecipientId id = new KeyTransRecipientId(issuer, getCMSCertificate().getSerialNumber());
 				final RecipientInformation recipient = recipients.get(id);
 				if (recipient != null) {
-					resp = recipient.getContent(this.privKey, "BC");
+	                JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(this.privKey);
+	                // Provider for decrypting the symmetric key 
+	                rec.setProvider("BC");
+	                // We canuse a different provider for decrypting the content, for example of we used a PKCS#11 provider above we could use the BC provider below
+	                //rec.setContentProvider("BC"); 
+	                resp = recipient.getContent(rec);
 				}
 			}
 			returnval = new CmsCAServiceResponse(resp);
