@@ -233,12 +233,14 @@ public class EjbcaWebBean implements Serializable {
         }
 
         try {
-            // Why would we ever need to URL decode this??
-            final List<String> resourcesDecoded = new ArrayList<String>();
-            for (final String resource : resources) {
-                resourcesDecoded.add(URLDecoder.decode(resource, "UTF-8"));
+            if (resources.length > 0) {
+                final List<String> resourcesDecoded = new ArrayList<String>();
+                for (final String resource : resources) {
+                    // Why would we ever need to URL decode this??
+                    resourcesDecoded.add(URLDecoder.decode(resource, "UTF-8"));
+                }
+                isAuthorized(resourcesDecoded.toArray(new String[0]));
             }
-            isAuthorized(resourcesDecoded.toArray(new String[0]));
         } catch (AuthorizationDeniedException e) {
             throw new AuthorizationDeniedException("You are not authorized to view this page.");
         } catch (EJBException e) {

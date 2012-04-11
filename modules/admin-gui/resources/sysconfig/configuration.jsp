@@ -68,7 +68,7 @@
   // Initialize environment.
   final String THIS_FILENAME                          =  "configuration.jsp";
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION); 
   GlobalConfiguration gc = globalconfiguration;
   AdminPreference dup = ejbcawebbean.getDefaultAdminPreference();
 

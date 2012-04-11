@@ -4,7 +4,7 @@
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%	// Initialize environment
-	GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/administrator"); 
+    GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request);
 %>
 
 <div id="footer">

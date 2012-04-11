@@ -267,8 +267,7 @@ public class CAInterfaceBean implements Serializable {
       
     public void createCRL(String issuerdn) throws CryptoTokenOfflineException, CAOfflineException  {      
         try {
-            CAInfo cainfo = caSession.getCAInfo(administrator, issuerdn.hashCode());
-            crlCreateSession.forceCRL(administrator, cainfo.getCAId());
+            crlCreateSession.forceCRL(administrator, issuerdn.hashCode());
         } catch (CADoesntExistsException e) {
             throw new RuntimeException(e);
         } catch (AuthorizationDeniedException e) {
@@ -278,8 +277,7 @@ public class CAInterfaceBean implements Serializable {
 
     public void createDeltaCRL(String issuerdn) throws CryptoTokenOfflineException, CAOfflineException {      
         try {
-            CAInfo cainfo = caSession.getCAInfo(administrator, issuerdn.hashCode());
-            crlCreateSession.forceDeltaCRL(administrator, cainfo.getCAId());
+            crlCreateSession.forceDeltaCRL(administrator, issuerdn.hashCode());
         } catch (CADoesntExistsException e) {
             throw new RuntimeException(e);
         } catch (AuthorizationDeniedException e) {

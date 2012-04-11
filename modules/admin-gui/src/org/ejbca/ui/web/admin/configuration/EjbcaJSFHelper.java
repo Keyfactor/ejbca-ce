@@ -91,15 +91,6 @@ public class EjbcaJSFHelper {
  		}
      }
      
-     /**
-      * Only superadmins are authorized to services pages
-     * @throws AuthorizationDeniedException 
-      *
-      */
-     public void authorizedToServicesPages() throws AuthorizationDeniedException{
-		getEjbcaWebBean().isAuthorizedNoLog(AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
-     }
-     
      public int getEntriesPerPage(){
     	 return getEjbcaWebBean().getEntriesPerPage();
      }

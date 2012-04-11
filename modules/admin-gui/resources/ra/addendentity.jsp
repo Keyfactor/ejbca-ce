@@ -6,7 +6,7 @@
                  javax.ejb.CreateException, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation, org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, 
                  org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData,   org.ejbca.core.model.SecConst, org.cesecore.util.StringTools, org.cesecore.certificates.util.DnComponents,
                  org.apache.commons.lang.time.DateUtils, org.cesecore.certificates.endentity.ExtendedInformation, org.cesecore.certificates.crl.RevokedCertInfo, org.cesecore.ErrorCode, org.ejbca.util.query.*, java.math.BigInteger,
-                 org.cesecore.authorization.AuthorizationDeniedException" %>
+                 org.cesecore.authorization.AuthorizationDeniedException, org.ejbca.core.model.authorization.AccessRulesConstants" %>
 <html> 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -94,7 +94,7 @@
 %><%
   // Initialize environment.
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionality/create_end_entity"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_CREATEENDENTITY); 
                                             rabean.initialize(request, ejbcawebbean);
                                             if(globalconfiguration.getIssueHardwareTokens())
                                               tokenbean.initialize(request, ejbcawebbean);

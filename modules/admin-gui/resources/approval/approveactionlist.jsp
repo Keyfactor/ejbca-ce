@@ -2,14 +2,16 @@
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="http://myfaces.apache.org/tomahawk" prefix="t" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp" import="org.ejbca.config.GlobalConfiguration,org.ejbca.ui.web.RequestHelper,
-                                           org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper" %>
+<%@page pageEncoding="ISO-8859-1" errorPage="/errorpage.jsp" import="
+org.ejbca.config.GlobalConfiguration,org.ejbca.ui.web.RequestHelper,
+org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper,
+org.ejbca.core.model.authorization.AccessRulesConstants
+"%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%   // Initialize environment
- GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
+ GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR); 
  EjbcaJSFHelper helpbean = EjbcaJSFHelper.getBean();
  helpbean.setEjbcaWebBean(ejbcawebbean);
  helpbean.authorizedToApprovalPages();

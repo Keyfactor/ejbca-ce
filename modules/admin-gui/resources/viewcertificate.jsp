@@ -5,7 +5,7 @@
 <%@page errorPage="/errorpage.jsp"  import="java.math.BigInteger, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, org.cesecore.certificates.certificateprofile.CertificateProfile,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.CertificateView, org.ejbca.ui.web.RevokedInfoView,org.ejbca.core.model.SecConst,
                  org.cesecore.authorization.AuthorizationDeniedException, org.cesecore.util.CertTools, org.cesecore.certificates.certificate.CertificateConstants,
-                 org.cesecore.authorization.control.StandardRules" %>
+                 org.cesecore.authorization.control.StandardRules, org.ejbca.core.model.authorization.AccessRulesConstants" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -47,7 +47,7 @@
 
 %><%
   // Initialize environment.
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ca_functionality/view_certificate"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.REGULAR_VIEWCERTIFICATE); 
                                             rabean.initialize(request, ejbcawebbean);
                                             cabean.initialize(request, ejbcawebbean); 
 
@@ -107,8 +107,7 @@
      caid = Integer.parseInt(request.getParameter(CACERT_PARAMETER));
      if(request.getParameter(BUTTON_VIEW_NEWER) == null && request.getParameter(BUTTON_VIEW_OLDER) == null){
        try{  
-         ejbcawebbean.isAuthorizedNoLog("/ca_functionality/basic_functions");
-         ejbcawebbean.isAuthorized(StandardRules.CAACCESS.resource() + caid);
+         ejbcawebbean.isAuthorized(AccessRulesConstants.REGULAR_CABASICFUNCTIONS, StandardRules.CAACCESS.resource() + caid);
          rabean.loadCACertificates(cabean.getCACertificates(caid)); 
          numberofcertificates = rabean.getNumberOfCertificates();
          if(numberofcertificates > 0)

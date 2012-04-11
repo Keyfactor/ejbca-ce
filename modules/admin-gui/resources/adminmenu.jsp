@@ -10,7 +10,7 @@
 <%
  	// A jsp page that generates the menu after the users access rights 
     // Initialize environment.
-    GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
+    GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR); 
    
     final String THIS_FILENAME            =   globalconfiguration.getMenuFilename();
 
@@ -59,7 +59,7 @@
     final String LOGOUT_LINK                =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "logout";
 
 
-    final String MAIN_RESOURCE                          = "/administrator";
+    final String MAIN_RESOURCE                          = AccessRulesConstants.ROLE_ADMINISTRATOR;
     final String CABASICFUNCTIONS_RESOURCE              = "/ca_functionality/basic_functions";
     final String ACTIVATECA_RESOURCE                    = "/ca_functionality/basic_functions/activate_ca";
     final String EDITCAS_RESOURCE                       = "/super_administrator";

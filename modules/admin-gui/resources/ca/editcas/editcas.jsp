@@ -7,7 +7,7 @@
                org.cesecore.certificates.certificate.request.PKCS10RequestMessage, org.cesecore.certificates.certificate.request.RequestMessage, org.cesecore.certificates.certificate.request.RequestMessageUtils, org.cesecore.certificates.certificate.request.CVCRequestMessage, org.cesecore.certificates.ca.CAExistsException, org.cesecore.certificates.ca.CADoesntExistsException, org.cesecore.keys.token.CryptoTokenOfflineException, org.cesecore.keys.token.CryptoTokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo, org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo, org.cesecore.certificates.ca.internal.CATokenCacheManager, org.cesecore.keys.token.AvailableCryptoToken, org.cesecore.certificates.ca.catoken.CATokenConstants,
                org.cesecore.certificates.util.DNFieldExtractor,org.cesecore.certificates.util.DnComponents,org.cesecore.keys.token.CryptoToken,org.cesecore.keys.token.BaseCryptoToken, org.cesecore.keys.token.NullCryptoToken, org.cesecore.keys.token.SoftCryptoToken, org.cesecore.keys.token.PKCS11CryptoToken, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificateprofile.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException,
-               org.cesecore.util.SimpleTime, org.cesecore.util.YearMonthDayTime, org.ejbca.util.CombineTime, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.cesecore.util.StringTools, org.cesecore.certificates.util.AlgorithmConstants, org.cesecore.certificates.util.AlgorithmTools" %>
+               org.cesecore.util.SimpleTime, org.cesecore.util.YearMonthDayTime, org.ejbca.util.CombineTime, org.cesecore.util.ValidityDate, org.ejbca.ui.web.ParameterError, org.cesecore.util.StringTools, org.cesecore.certificates.util.AlgorithmConstants, org.cesecore.certificates.util.AlgorithmTools, org.ejbca.core.model.authorization.AccessRulesConstants" %>
 
 
 
@@ -205,7 +205,7 @@
   String errormessage = null;
   
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/super_administrator"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.ROLE_SUPERADMINISTRATOR); 
                                             cabean.initialize(request, ejbcawebbean); 
 
   CADataHandler cadatahandler     = cabean.getCADataHandler(); 

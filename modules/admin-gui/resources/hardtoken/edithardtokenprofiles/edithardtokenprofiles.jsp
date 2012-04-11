@@ -18,7 +18,7 @@
   String includefile = "hardtokenprofilespage.jspf"; 
 
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES); 
                                             hardtokenbean.initialize(request, ejbcawebbean); 
                                             edithardtokenprofile.initialize(ejbcawebbean, hardtokenbean);
   String THIS_FILENAME            =  globalconfiguration.getHardTokenPath()  + "/edithardtokenprofiles/edithardtokenprofiles.jsp";
