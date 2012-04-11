@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -185,7 +186,7 @@ public class EjbcaWebBean implements Serializable {
     }
 
     /* Sets the current user and returns the global configuration */
-    public GlobalConfiguration initialize(HttpServletRequest request, String resource) throws Exception {
+    public GlobalConfiguration initialize(HttpServletRequest request, String... resources) throws Exception {
 
         certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
         if (certificates == null || certificates.length == 0) {
@@ -232,7 +233,12 @@ public class EjbcaWebBean implements Serializable {
         }
 
         try {
-            isAuthorized(URLDecoder.decode(resource, "UTF-8"));
+            // Why would we ever need to URL decode this??
+            final List<String> resourcesDecoded = new ArrayList<String>();
+            for (final String resource : resources) {
+                resourcesDecoded.add(URLDecoder.decode(resource, "UTF-8"));
+            }
+            isAuthorized(resourcesDecoded.toArray(new String[0]));
         } catch (AuthorizationDeniedException e) {
             throw new AuthorizationDeniedException("You are not authorized to view this page.");
         } catch (EJBException e) {
