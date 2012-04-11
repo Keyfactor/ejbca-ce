@@ -1,19 +1,22 @@
-<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
-<%@ page pageEncoding="ISO-8859-1"%>
-<% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="errorpage.jsp" import="org.ejbca.config.GlobalConfiguration,org.ejbca.ui.web.RequestHelper"%>
+<%@taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c"%>
+<%@page pageEncoding="ISO-8859-1" errorPage="errorpage.jsp"%>
+<%@page import="org.ejbca.config.GlobalConfiguration"%>
+<%@page import="org.ejbca.config.WebConfiguration"%>
+<%@page import="org.ejbca.core.model.authorization.AccessRulesConstants"%>
+<%@page import="org.ejbca.ui.web.RequestHelper"%>
+<% response.setContentType("text/html; charset="+WebConfiguration.getWebContentEncoding()); %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
 <%   // Initialize environment
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/administrator"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR); 
 %>
 <head>
   <title><c:out value="<%= globalconfiguration.getEjbcaTitle() %>" /></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="shortcut icon" href="<%=ejbcawebbean.getImagefileInfix("favicon.png")%>" type="image/png" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
-  <meta http-equiv="Content-Type" content="text/html; charset=<%= org.ejbca.config.WebConfiguration.getWebContentEncoding() %>" />
+  <meta http-equiv="Content-Type" content="text/html; charset=<%= WebConfiguration.getWebContentEncoding() %>" />
 </head>
 
 <frameset rows="100,*" cols="*" frameborder="NO" border="0" framespacing="0"> 

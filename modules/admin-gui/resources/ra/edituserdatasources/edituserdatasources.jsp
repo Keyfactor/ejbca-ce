@@ -17,7 +17,7 @@
   String includefile = "userdatasourcespage.jspf"; 
 
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITUSERDATASOURCES); 
                                             rabean.initialize(request, ejbcawebbean); 
                                             userdatasourcehelper.initialize(request,ejbcawebbean, rabean);
   String THIS_FILENAME            =  globalconfiguration.getRaPath()  + "/edituserdatasources/edituserdatasources.jsp";

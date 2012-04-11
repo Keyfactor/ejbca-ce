@@ -18,10 +18,15 @@
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ page pageEncoding="UTF-8"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp" import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration" %>
+<%@page errorPage="/errorpage.jsp" import="
+org.ejbca.ui.web.admin.configuration.EjbcaWebBean,
+org.ejbca.config.GlobalConfiguration,
+org.ejbca.core.model.authorization.AccessRulesConstants,
+org.cesecore.authorization.control.AuditLogRules
+"%>
 
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
-<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/secureaudit/auditor/select"); %>
+<% GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AuditLogRules.VIEW.resource()); %>
 <html>
 <f:view>
 <head>

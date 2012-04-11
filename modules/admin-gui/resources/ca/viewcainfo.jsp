@@ -4,7 +4,7 @@
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, 
                  org.ejbca.ui.web.admin.cainterface.CAInfoView, org.cesecore.util.CertTools, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.cesecore.certificates.ca.CAConstants,
                  org.cesecore.authorization.AuthorizationDeniedException,
-                 java.security.cert.X509Certificate" %>
+                 java.security.cert.X509Certificate, org.ejbca.core.model.authorization.AccessRulesConstants" %>
 
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -13,7 +13,7 @@
 
 <%
   // Initialize environment.
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ca_functionality/basic_functions"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_CABASICFUNCTIONS); 
                                             cabean.initialize(request, ejbcawebbean);
   String THIS_FILENAME                    = globalconfiguration.getCaPath()  + "/viewcainfo.jsp";
 

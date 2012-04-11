@@ -19,13 +19,12 @@
   final static String BUTTON_CREATEDELTACRL = "buttoncreatedeltacrl";
 %>
 <%   // Initialize environment
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.REGULAR_CABASICFUNCTIONS); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_CABASICFUNCTIONS); 
                                             cabean.initialize(request, ejbcawebbean); 
 
   final String THIS_FILENAME                = globalconfiguration.getCaPath() 
                                                   + "/cafunctions.jsp";
 
-  final String CREATECRL_LINK               = "/ca_functionality/create_crl";  
   final String GETCRL_LINK                  = globalconfiguration.getCaPath() 
                                                   + "/getcrl/getcrl.jsp";
   final String GETCRL_PAGE                  =    "getcrl.jsp"; 
@@ -36,7 +35,7 @@
   final String DOWNLOADCRL_LINK             = globalconfiguration.getCaPath() + "/getcrl/getcrl";
   boolean createcrlrights = false;
   try{
-     createcrlrights =ejbcawebbean.isAuthorized(CREATECRL_LINK);
+     createcrlrights = ejbcawebbean.isAuthorizedNoLog(StandardRules.CREATECRL.resource());
   }catch(AuthorizationDeniedException e){}
 
   RequestHelper.setDefaultCharacterEncoding(request);
@@ -46,17 +45,11 @@
     for(int i = 0; i < numberofcas; i++){       
        String casubjectdn = request.getParameter(HIDDEN_CASUBJECTDN+i);
        if( request.getParameter(BUTTON_CREATECRL+i) != null ){      
-         // Check if user id authorized to create new crl.
-         ejbcawebbean.isAuthorized(CREATECRL_LINK);
-         ejbcawebbean.isAuthorized(StandardRules.CAACCESS.resource() + casubjectdn.hashCode());
-         // Create new crl
+         // Create new crl (with authorization checks)
          cabean.createCRL(casubjectdn);
       }         
       if( request.getParameter(BUTTON_CREATEDELTACRL+i) != null ){      
-           // Check if user id authorized to create new delta crl.
-           ejbcawebbean.isAuthorized(CREATECRL_LINK);
-           ejbcawebbean.isAuthorized(StandardRules.CAACCESS.resource() + casubjectdn.hashCode());
-           // Create new delta crl
+           // Create new delta crl (with authorization checks)
            cabean.createDeltaCRL(casubjectdn);
       }
     }
@@ -259,7 +252,6 @@ function getPasswordAndSubmit(formname) {
     number++;
   }  %>
    
-
 
 <% // Include Footer 
    String footurl =  globalconfiguration.getFootBanner(); %>

@@ -3,7 +3,7 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="java.util.Iterator, org.ejbca.ui.web.admin.configuration.EjbcaWebBean, org.ejbca.config.GlobalConfiguration, 
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.hardtokeninterface.HardTokenView,org.ejbca.core.model.SecConst,org.cesecore.authorization.AuthorizationDeniedException,
-                 org.ejbca.ui.web.RevokedInfoView" %>
+                 org.ejbca.ui.web.RevokedInfoView, org.ejbca.core.model.authorization.AccessRulesConstants" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -30,7 +30,7 @@
 
 %><%
   // Initialize environment.
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, "/ra_functionality/view_hardtoken"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWHARDTOKENS); 
                                             rabean.initialize(request, ejbcawebbean); 
                                             tokenbean.initialize(request, ejbcawebbean);
   String THIS_FILENAME                    = globalconfiguration.getHardTokenPath() + "/viewtoken.jsp";

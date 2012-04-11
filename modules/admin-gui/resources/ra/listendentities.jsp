@@ -4,7 +4,7 @@
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.cesecore.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.UserView, org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.RevokedInfoView,org.ejbca.core.model.SecConst,
                  org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.UserDataConstants,org.ejbca.core.model.ra.raadmin.AdminPreference, org.cesecore.certificates.util.DNFieldExtractor,
-                 javax.ejb.CreateException, org.ejbca.util.query.*, java.util.*" %>
+                 javax.ejb.CreateException, org.ejbca.util.query.*, java.util.*, org.ejbca.core.model.authorization.AccessRulesConstants" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:useBean id="rabean" scope="session" class="org.ejbca.ui.web.admin.rainterface.RAInterfaceBean" />
@@ -127,7 +127,7 @@
   static final int ALL_STATUS                   = -1;
 %><%
   // Initialize environment.
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request,"/ra_functionality/view_end_entity"); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_VIEWENDENTITY); 
                                             rabean.initialize(request, ejbcawebbean);
   final String VIEWCERT_LINK            = ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "viewcertificate.jsp";
   
