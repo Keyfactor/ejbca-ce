@@ -115,7 +115,7 @@ public class RequestInstance {
 		try {
 			setParameters(request);
 
-			String username = getParameter("user");
+            final String username = StringUtils.strip(getParameter("user"));
 			String password = getParameter("password");
 			String keylengthstring = getParameter("keylength");
 			String keyalgstring = getParameter("keyalg");
