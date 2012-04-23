@@ -9,7 +9,7 @@
   <section name="News and Info">
 
 <div class="frame note" id="twitter" style="border:0;">
-  <script charset="utf-8" src="http://widgets.twimg.com/j/2/widget.js">
+  <script charset="utf-8" src="https://widgets.twimg.com/j/2/widget.js">
   </script>
 <script>
 new TWTR.Widget({
