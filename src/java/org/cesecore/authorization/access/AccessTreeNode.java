@@ -58,9 +58,6 @@ import org.cesecore.roles.RoleData;
  * 
  * Probably based on EJBCA's AccessTreeNode r11153 (updated 2011-01-12).
  * 
- * Based on cesecore version:
- *      AccessTreeNode.java 937 2011-07-14 15:57:25Z mikek
- * 
  * @version $Id$
  * 
  */
@@ -69,7 +66,7 @@ public class AccessTreeNode {
     private static final Logger log = Logger.getLogger(AccessTreeNode.class);
 
     private String resource;
-    private Collection< AbstractMap.SimpleEntry<RoleData, AccessRuleData>> roleRulePairs;
+    private Collection<AbstractMap.SimpleEntry<RoleData, AccessRuleData>> roleRulePairs;
     private HashMap<String, AccessTreeNode> leafs;
 
     /**
@@ -77,7 +74,7 @@ public class AccessTreeNode {
      */
     public AccessTreeNode(String resource) {
         this.resource = resource;
-        this.roleRulePairs = new ArrayList< AbstractMap.SimpleEntry<RoleData, AccessRuleData>>();
+        this.roleRulePairs = new ArrayList<AbstractMap.SimpleEntry<RoleData, AccessRuleData>>();
         this.leafs = new HashMap<String, AccessTreeNode>();
     }
 
@@ -93,7 +90,7 @@ public class AccessTreeNode {
      * @return True if role is authorized to resource.
      * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
-    public boolean isAuthorized(AuthenticationToken authenticationToken, String resourcePath) throws AuthenticationFailedException {
+    public boolean isAuthorized(final AuthenticationToken authenticationToken, final String resourcePath) throws AuthenticationFailedException {
         return isAuthorizedRecursive(authenticationToken, resourcePath, AccessTreeState.STATE_UNKNOWN); 
 
     }
@@ -110,21 +107,21 @@ public class AccessTreeNode {
      * @return True of role is authorized to resource.
      * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
-    private boolean isAuthorizedRecursive(AuthenticationToken authenticationToken, String resourcePath, AccessTreeState legacyState) throws AuthenticationFailedException {
-    	if (log.isTraceEnabled()) {
-    		log.trace(">isAuthorizedRecursive("+authenticationToken.toString()+", "+resourcePath+", "+legacyState+"). Resource="+resource);
-    	}
+    private boolean isAuthorizedRecursive(final AuthenticationToken authenticationToken, final String resourcePath, AccessTreeState legacyState) throws AuthenticationFailedException {
+        if (log.isTraceEnabled()) {
+            log.trace(">isAuthorizedRecursive("+authenticationToken.toString()+", "+resourcePath+", "+legacyState+"). Resource="+resource);
+        }
         boolean returnval = false;
 
         AccessTreeState internalstate = findPreferredRule(authenticationToken);
         if (log.isTraceEnabled()) {
-        	log.trace("preferredRule: "+internalstate);
+            log.trace("preferredRule: "+internalstate);
         }
         if (resourcePath.equals(resource)) {
             if (legacyState == AccessTreeState.STATE_DECLINE) {
-            	if (log.isTraceEnabled()) {
-            		log.trace("Rejecting because legaceState is AccessTreeState.STATE_DECLINE");
-            	}
+                if (log.isTraceEnabled()) {
+                    log.trace("Rejecting because legaceState is AccessTreeState.STATE_DECLINE");
+                }
                 returnval = false;
             } else if (legacyState == AccessTreeState.STATE_ACCEPT_RECURSIVE) {
                 // If this resource have state accept recursive state is given
@@ -150,7 +147,7 @@ public class AccessTreeNode {
                 nextname = nextsubresource;
             }
 
-            AccessTreeNode next = (AccessTreeNode) leafs.get(nextname);
+            final AccessTreeNode next = (AccessTreeNode) leafs.get(nextname);
             if (next == null) { // resource path doesn't exist
                 // If internal state isn't decline is accept recursive.
                 if (internalstate == AccessTreeState.STATE_ACCEPT_RECURSIVE) {
@@ -159,10 +156,10 @@ public class AccessTreeNode {
                     // If state accept recursive is given and internal state isn't decline .
                     returnval = true;
                 } else {
-                	if (log.isTraceEnabled()) {
+                    if (log.isTraceEnabled()) {
                         log.trace("Not accepting because state is not STATE_ACCEPT_RECURSIVE. Internalstate=" + internalstate + ", legacyState="
                                 + legacyState);
-                	}                	
+                    }
                 }
             } else { // resource path exists.
                      // If internalstate is accept recursive or decline.
@@ -172,9 +169,9 @@ public class AccessTreeNode {
                 returnval = next.isAuthorizedRecursive(authenticationToken, nextsubresource, legacyState);
             }
         }
-    	if (log.isTraceEnabled()) {
-    		log.trace("<isAuthorizedRecursive("+authenticationToken.toString()+", "+resourcePath+", "+legacyState+"): "+returnval);
-    	}
+        if (log.isTraceEnabled()) {
+            log.trace("<isAuthorizedRecursive("+authenticationToken.toString()+", "+resourcePath+", "+legacyState+"): "+returnval);
+        }
         return returnval;
     }
 
@@ -193,7 +190,7 @@ public class AccessTreeNode {
     public void addAccessRule(String resource, AccessRuleData accessRule, RoleData role) {
 
         if (resource.equals(this.resource)) {
-            roleRulePairs.add(new  AbstractMap.SimpleEntry<RoleData, AccessRuleData>(role, accessRule));
+            roleRulePairs.add(new AbstractMap.SimpleEntry<RoleData, AccessRuleData>(role, accessRule));
         } else {
             String nextsubresource = resource.substring(this.resource.length());
             if ((nextsubresource.toCharArray()[0]) == '/') {
@@ -222,40 +219,41 @@ public class AccessTreeNode {
      * Important if the UserAspect matches more than one rule.
      * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
-    private AccessTreeState findPreferredRule(AuthenticationToken authenticationToken) throws AuthenticationFailedException {
+    private AccessTreeState findPreferredRule(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
         AccessTreeState state = AccessTreeState.STATE_UNKNOWN;
         AccessMatchValue statePriority = authenticationToken.getDefaultMatchValue();
-        Collection<AccessUserAspectData> accessUsers;
         if (log.isTraceEnabled()) {
-        	log.trace("AccessTreeNode " + resource + " has " + roleRulePairs.size() + " roleRulePairs");
+            log.trace("AccessTreeNode " + resource + " has " + roleRulePairs.size() + " roleRulePairs");
         }
-        for ( AbstractMap.SimpleEntry<RoleData, AccessRuleData> roleRulePair : roleRulePairs) {
-            accessUsers = roleRulePair.getKey().getAccessUsers().values();
+        for (AbstractMap.SimpleEntry<RoleData, AccessRuleData> roleRulePair : roleRulePairs) {
+            final Collection<AccessUserAspectData> accessUsers = roleRulePair.getKey().getAccessUsers().values();
             if (log.isTraceEnabled()) {
                 log.trace("roleRulePair for accessRuleName " + roleRulePair.getValue().getAccessRuleName() + " has " + accessUsers.size()
                         + " accessUsers");
             }
             for (AccessUserAspect accessUser : accessUsers) {
-                //If aspect is of the correct token type
+                // If aspect is of the correct token type
                 if (authenticationToken.matchTokenType(accessUser.getTokenType())) {
                     // And the two principals match (done inside to save on cycles)
                     if (authenticationToken.matches(accessUser)) {
-                        AccessTreeState thisUserState = roleRulePair.getValue().getTreeState();
-                        AccessMatchValue thisUserStatePriority = authenticationToken.getMatchValueFromDatabaseValue(accessUser.getMatchWith());
+                        final AccessTreeState thisUserState = roleRulePair.getValue().getTreeState();
+                        final AccessMatchValue thisUserStatePriority = authenticationToken.getMatchValueFromDatabaseValue(accessUser.getMatchWith());
                         if (log.isTraceEnabled()) {
                             AccessTreeState logState = thisUserState;
                             if (logState == null) {
-                                log.info("logState is null for authenticationToken "+authenticationToken.toString());
+                                log.info("logState is null for authenticationToken " + authenticationToken.toString());
                                 logState = AccessTreeState.STATE_UNKNOWN;
                             }
                             AccessMatchValue logMatchValue = thisUserStatePriority;
                             if (logMatchValue == null) {
-                                log.info("logMatchValue is null for authenticationToken "+authenticationToken.toString());
+                                log.info("logMatchValue is null for authenticationToken " + authenticationToken.toString());
                                 logMatchValue = authenticationToken.getDefaultMatchValue();
                             }
-                            log.trace("accessUser " + logMatchValue.name() + " " + accessUser.getMatchTypeAsType().name() + " "
-                                    + accessUser.getMatchValue() + " matched authenticationToken. thisUserState=" + logState.name()
-                                    + " thisUserStatePriority=" + thisUserStatePriority);
+                            if (log.isTraceEnabled()) {
+                                log.trace("accessUser " + logMatchValue.name() + " " + accessUser.getMatchTypeAsType().name() + " "
+                                        + accessUser.getMatchValue() + " matched authenticationToken. thisUserState=" + logState.name()
+                                        + " thisUserStatePriority=" + thisUserStatePriority);
+                            }
                         }
                         // If rule has higher priority, its state is to be used.
                         if (statePriority.getNumericValue() < thisUserStatePriority.getNumericValue()) {
