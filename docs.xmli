@@ -95,8 +95,8 @@
         </anakia>
         
         <copy todir="${site.dest}">
-        	<fileset dir="${docs.src}" includes="**/*.css,**/*.png,**/*.jpg,**/*.gif,**/*.pdf"/>
-        	<fileset dir="${docs.src}" includes="sensornet/**/*"/>
+        	<fileset dir="${site.src}" includes="**/*.css,**/*.png,**/*.jpg,**/*.gif,**/*.pdf"/>
+        	<fileset dir="${site.src}" includes="sensornet/**/*"/>
         </copy>
     </target>
     <target name="doc" if="AnakiaTask.present" depends="prepare-error, doc-build-tool, doc-external-deps, site" description="Build EJBCA site and docs">
