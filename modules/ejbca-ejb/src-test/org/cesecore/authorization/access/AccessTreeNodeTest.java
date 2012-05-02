@@ -23,7 +23,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.user.AccessMatchType;
@@ -226,6 +228,150 @@ public class AccessTreeNodeTest {
         EasyMock.replay(authenticationToken);
         assertFalse(rootNode.isAuthorized(authenticationToken, resourcePath));
         EasyMock.verify(authenticationToken);
+    }
+
+    
+    /**
+     * Tests that decline works. 
+     * @throws AuthenticationFailedException 
+     */
+    @Test
+    public void testIsAuthorizedDenied() throws AuthenticationFailedException {
+        AccessRuleData acceptRecursive = EasyMock.createMock(AccessRuleData.class);
+        EasyMock.expect(acceptRecursive.getAccessRuleName()).andReturn("/").anyTimes(); // Required if we run the test in trace mode
+        EasyMock.expect(acceptRecursive.getTreeState()).andReturn(AccessTreeState.STATE_ACCEPT_RECURSIVE).times(2);
+        AccessRuleData denied = EasyMock.createMock(AccessRuleData.class);
+        EasyMock.expect(denied.getAccessRuleName()).andReturn("/parent").anyTimes();   // Required if we run the test in trace mode
+        EasyMock.expect(denied.getTreeState()).andReturn(AccessTreeState.STATE_DECLINE).times(2);
+
+        AccessUserAspectData accessUser = EasyMock.createMock(AccessUserAspectData.class);
+        EasyMock.expect(accessUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue()).anyTimes();  // Required if we run the test in trace mode
+        EasyMock.expect(accessUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASE).anyTimes();  // Required if we run the test in trace mode
+        EasyMock.expect(accessUser.getMatchValue()).andReturn("SE").anyTimes(); // Required if we run the test in trace mode
+        EasyMock.expect(accessUser.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE).anyTimes(); // Required if we run the test in trace mode
+
+        AuthenticationToken authenticationToken = EasyMock.createMock(AuthenticationToken.class);
+        EasyMock.expect(authenticationToken.getDefaultMatchValue()).andReturn(X500PrincipalAccessMatchValue.NONE).times(4);
+        EasyMock.expect(authenticationToken.matches(accessUser)).andReturn(true).times(4);
+        EasyMock.expect(authenticationToken.matchTokenType(X509CertificateAuthenticationToken.TOKEN_TYPE)).andReturn(true).times(4);
+        EasyMock.expect(authenticationToken.getMatchValueFromDatabaseValue(X500PrincipalAccessMatchValue.WITH_COUNTRY.getNumericValue())).andReturn(X500PrincipalAccessMatchValue.WITH_COUNTRY).anyTimes();
+
+        Map<Integer, AccessUserAspectData> accessUsers = new HashMap<Integer, AccessUserAspectData>();
+        final Integer accessUserPrimaryKey = 0;
+        accessUsers.put(accessUserPrimaryKey, accessUser);
+
+        RoleData role = EasyMock.createMock(RoleData.class);
+        EasyMock.expect(role.getAccessUsers()).andReturn(accessUsers).times(4);
+
+        EasyMock.replay(authenticationToken, role, acceptRecursive, denied, accessUser);
+
+        rootNode.addAccessRule("/", acceptRecursive, role);
+        rootNode.addAccessRule("/parent", denied, role);
+
+        // In spite of an accept recursive, we should get denied for /parent
+        assertFalse(rootNode.isAuthorized(authenticationToken, "/parent"));
+        // Same for child
+        assertFalse(rootNode.isAuthorized(authenticationToken, "/parent/child"));
+
+        EasyMock.verify(authenticationToken, role, acceptRecursive, denied, accessUser);
+    }
+    
+    /**
+     * Test for AllwaysAllowLocalAuthenticationToken, that should always be authorized.
+     * @throws AuthenticationFailedException 
+     */
+    @Test
+    public void testAlwaysAllowLocalAuthenticationTokenSanity() throws AuthenticationFailedException {
+        final String resourcePath = "/parent/child";
+
+        // Allow rule in role
+        AccessRuleData unknownRule = EasyMock.createMock(AccessRuleData.class);
+        EasyMock.expect(unknownRule.getAccessRuleName()).andReturn("/").anyTimes();  // Required if we run the test in trace mode
+        EasyMock.expect(unknownRule.getTreeState()).andReturn(AccessTreeState.STATE_UNKNOWN).anyTimes();
+        AccessUserAspectData upnUser = EasyMock.createMock(AccessUserAspectData.class);
+        EasyMock.expect(upnUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_UPN.getNumericValue()).anyTimes(); // Required if we run the test in trace mode
+        EasyMock.expect(upnUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASE).anyTimes(); // Required if we run the test in trace mode
+        EasyMock.expect(upnUser.getMatchValue()).andReturn("userid").anyTimes();    // Required if we run the test in trace mode
+        EasyMock.expect(upnUser.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE).anyTimes();
+        Map<Integer, AccessUserAspectData> upnUsers = new HashMap<Integer, AccessUserAspectData>();
+        final Integer upnPrimaryKey = 1;
+        upnUsers.put(upnPrimaryKey, upnUser);
+        RoleData role = EasyMock.createMock(RoleData.class);
+        EasyMock.expect(role.getAccessUsers()).andReturn(upnUsers).anyTimes();
+
+        // Deny rule in role
+        AccessRuleData denyRule = EasyMock.createMock(AccessRuleData.class);
+        EasyMock.expect(denyRule.getAccessRuleName()).andReturn(resourcePath).anyTimes();  // Required if we run the test in trace mode
+        EasyMock.expect(denyRule.getTreeState()).andReturn(AccessTreeState.STATE_DECLINE).anyTimes();
+        AccessUserAspectData upnUser1 = EasyMock.createMock(AccessUserAspectData.class);
+        EasyMock.expect(upnUser1.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_UPN.getNumericValue()).anyTimes(); // Required if we run the test in trace mode
+        EasyMock.expect(upnUser1.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASE).anyTimes(); // Required if we run the test in trace mode
+        EasyMock.expect(upnUser1.getMatchValue()).andReturn("userid1").anyTimes();    // Required if we run the test in trace mode
+        EasyMock.expect(upnUser1.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE).anyTimes();
+        Map<Integer, AccessUserAspectData> upnUsers1 = new HashMap<Integer, AccessUserAspectData>();
+        upnUsers1.put(upnPrimaryKey, upnUser1);
+        RoleData role1 = EasyMock.createMock(RoleData.class);
+        EasyMock.expect(role1.getAccessUsers()).andReturn(upnUsers1).anyTimes();
+
+        // Authentication token, always allow
+        AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(""));
+        EasyMock.replay(unknownRule, denyRule, upnUser, upnUser1, role, role1);
+
+        rootNode.addAccessRule("/", unknownRule, role);
+
+        assertTrue(rootNode.isAuthorized(authenticationToken, resourcePath));// ));
+        EasyMock.verify(role, unknownRule, denyRule, upnUser, upnUser1, role, role1);
+    }
+    
+    /**
+     * Test for AllwaysAllowLocalAuthenticationToken, that should always be authorized.
+     * 
+     * Adds a denial in the middle, which should be ignored.
+     * 
+     * @throws AuthenticationFailedException 
+     */
+    @Test
+    public void testAlwaysAllowLocalAuthenticationTokenwithDeniedPath() throws AuthenticationFailedException {
+        final String resourcePath = "/parent/child";
+
+        // Allow rule in role
+        AccessRuleData acceptRule = EasyMock.createMock(AccessRuleData.class);
+        EasyMock.expect(acceptRule.getAccessRuleName()).andReturn("/").anyTimes();  // Required if we run the test in trace mode
+        EasyMock.expect(acceptRule.getTreeState()).andReturn(AccessTreeState.STATE_ACCEPT_RECURSIVE).anyTimes();
+        AccessUserAspectData upnUser = EasyMock.createMock(AccessUserAspectData.class);
+        EasyMock.expect(upnUser.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_UPN.getNumericValue()).anyTimes(); // Required if we run the test in trace mode
+        EasyMock.expect(upnUser.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASE).anyTimes(); // Required if we run the test in trace mode
+        EasyMock.expect(upnUser.getMatchValue()).andReturn("userid").anyTimes();    // Required if we run the test in trace mode
+        EasyMock.expect(upnUser.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE).anyTimes();
+        Map<Integer, AccessUserAspectData> upnUsers = new HashMap<Integer, AccessUserAspectData>();
+        final Integer upnPrimaryKey = 1;
+        upnUsers.put(upnPrimaryKey, upnUser);
+        RoleData role = EasyMock.createMock(RoleData.class);
+        EasyMock.expect(role.getAccessUsers()).andReturn(upnUsers).anyTimes();
+
+        // Deny rule in role
+        AccessRuleData denyRule = EasyMock.createMock(AccessRuleData.class);
+        EasyMock.expect(denyRule.getAccessRuleName()).andReturn(resourcePath).anyTimes();  // Required if we run the test in trace mode
+        EasyMock.expect(denyRule.getTreeState()).andReturn(AccessTreeState.STATE_DECLINE).anyTimes();
+        AccessUserAspectData upnUser1 = EasyMock.createMock(AccessUserAspectData.class);
+        EasyMock.expect(upnUser1.getMatchWith()).andReturn(X500PrincipalAccessMatchValue.WITH_UPN.getNumericValue()).anyTimes(); // Required if we run the test in trace mode
+        EasyMock.expect(upnUser1.getMatchTypeAsType()).andReturn(AccessMatchType.TYPE_EQUALCASE).anyTimes(); // Required if we run the test in trace mode
+        EasyMock.expect(upnUser1.getMatchValue()).andReturn("userid1").anyTimes();    // Required if we run the test in trace mode
+        EasyMock.expect(upnUser1.getTokenType()).andReturn(X509CertificateAuthenticationToken.TOKEN_TYPE).anyTimes();
+        Map<Integer, AccessUserAspectData> upnUsers1 = new HashMap<Integer, AccessUserAspectData>();
+        upnUsers1.put(upnPrimaryKey, upnUser1);
+        RoleData role1 = EasyMock.createMock(RoleData.class);
+        EasyMock.expect(role1.getAccessUsers()).andReturn(upnUsers1).anyTimes();
+
+        // Authentication token, always allow
+        AuthenticationToken authenticationToken = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(""));
+        EasyMock.replay(acceptRule, denyRule, upnUser, upnUser1, role, role1);
+        rootNode.addAccessRule("/", acceptRule, role);
+
+        // Now add a new role with a simple decline rule, The AlwaysAllowToken should still accept this
+        rootNode.addAccessRule(resourcePath, denyRule, role1);
+        assertTrue(rootNode.isAuthorized(authenticationToken, resourcePath));
+        EasyMock.verify(role, acceptRule, denyRule, upnUser, upnUser1, role, role1);
     }
 
     /**

@@ -149,7 +149,7 @@ public class AccessTreeNode {
 
             final AccessTreeNode next = (AccessTreeNode) leafs.get(nextname);
             if (next == null) { // resource path doesn't exist
-                // If internal state isn't decline is accept recursive.
+                // If internal state is accept recursive.
                 if (internalstate == AccessTreeState.STATE_ACCEPT_RECURSIVE) {
                     returnval = true;
                 } else if (legacyState == AccessTreeState.STATE_ACCEPT_RECURSIVE && internalstate != AccessTreeState.STATE_DECLINE) {
@@ -220,7 +220,7 @@ public class AccessTreeNode {
      * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
     private AccessTreeState findPreferredRule(final AuthenticationToken authenticationToken) throws AuthenticationFailedException {
-        AccessTreeState state = AccessTreeState.STATE_UNKNOWN;
+        AccessTreeState state = null; 
         AccessMatchValue statePriority = authenticationToken.getDefaultMatchValue();
         if (log.isTraceEnabled()) {
             log.trace("AccessTreeNode " + resource + " has " + roleRulePairs.size() + " roleRulePairs");
@@ -236,6 +236,15 @@ public class AccessTreeNode {
                 if (authenticationToken.matchTokenType(accessUser.getTokenType())) {
                     // And the two principals match (done inside to save on cycles)
                     if (authenticationToken.matches(accessUser)) {
+                        /*
+                         * The below line is a hack in order to allow supertokens. By setting state = null at the top of this
+                         * method, any authentication token that doesn't match will get STATE_UNKNOWN in this method's last line. 
+                         * 
+                         * Should we match token type and access user, we have a special state where we can let an authentication token
+                         * be a super token by setting the return of getDefaultMatchValue() to Integer.MaxInt, hence trumping any other 
+                         * matches done by this method. This eliminates the need for any reflective code for supertokens. 
+                         */
+                        state = AccessTreeState.STATE_ACCEPT_RECURSIVE;
                         final AccessTreeState thisUserState = roleRulePair.getValue().getTreeState();
                         final AccessMatchValue thisUserStatePriority = authenticationToken.getMatchValueFromDatabaseValue(accessUser.getMatchWith());
                         if (log.isTraceEnabled()) {
@@ -272,6 +281,10 @@ public class AccessTreeNode {
                                 + accessUser.getMatchValue() + " did not match authenticationToken.");
                     }
                 }
+            }
+            //If now matches were made, return AccessTreeState.STATE_UNKNOWN
+            if(state == null) {
+                state = AccessTreeState.STATE_UNKNOWN;
             }
         }
         return state;
