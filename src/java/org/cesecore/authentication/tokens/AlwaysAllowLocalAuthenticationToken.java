@@ -75,7 +75,7 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
 
     @Override
     public AccessMatchValue getDefaultMatchValue() {
-        return InternalMatchValue.INSTANCE;
+        return DefaultInternalMatchValue.INSTANCE;
     }
 
     @Override
@@ -91,6 +91,23 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
         @Override
         public int getNumericValue() {         
             return 0;
+        }
+
+        @Override
+        public String getTokenType() {           
+            return TOKEN_TYPE;
+        }
+        
+    }
+    
+    private static enum DefaultInternalMatchValue implements AccessMatchValue {
+        INSTANCE;
+
+        private static final String TOKEN_TYPE = "AlwaysAllowAuthenticationToken";
+        
+        @Override
+        public int getNumericValue() {         
+            return Integer.MAX_VALUE;
         }
 
         @Override
