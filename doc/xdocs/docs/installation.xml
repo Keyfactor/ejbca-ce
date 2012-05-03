@@ -430,6 +430,16 @@ improve performance.
 See documentation in src/appserver/tomcat60jboss5, and the JBoss documentation for installing the native connector.
 </p> 
 </subsubsection>
+<subsubsection name="JBoss 7 and Oracle JDK BC issues">
+<p>
+When using Oracle JDK and JBoss 7 (Windows platform) you need to install BC jars as a module in JBoss 7.
+See <a href="https://issues.jboss.org/browse/JBAS-7882">JBAS-7882</a>. 
+</p>
+<p>
+How to install modules are described in <a href="https://docs.jboss.org/author/display/MODULES/Defining+a+module">docs.jboss.org/author/display/MODULES/Defining+a+module</a>
+</p>
+<p>This will probably not be needed in JDK 8, but we'll see.</p>
+</subsubsection>
 </subsection>
 
 <subsection name="Glassfish">
