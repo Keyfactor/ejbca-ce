@@ -248,14 +248,18 @@ public class AccessTreeNode {
                         final AccessTreeState thisUserState = roleRulePair.getValue().getTreeState();
                         final AccessMatchValue thisUserStatePriority = authenticationToken.getMatchValueFromDatabaseValue(accessUser.getMatchWith());
                         if (log.isTraceEnabled()) {
+                            /*
+                             * Note that this entire block is only for trace logging and does not affect 
+                             * the surrounding code in any way.
+                             */
                             AccessTreeState logState = thisUserState;
                             if (logState == null) {
-                                log.info("logState is null for authenticationToken " + authenticationToken.toString());
+                                log.trace("logState is null for authenticationToken " + authenticationToken.toString());
                                 logState = AccessTreeState.STATE_UNKNOWN;
                             }
                             AccessMatchValue logMatchValue = thisUserStatePriority;
                             if (logMatchValue == null) {
-                                log.info("logMatchValue is null for authenticationToken " + authenticationToken.toString());
+                                log.trace("logMatchValue is null for authenticationToken " + authenticationToken.toString());
                                 logMatchValue = authenticationToken.getDefaultMatchValue();
                             }
                             log.trace("accessUser " + logMatchValue.name() + " " + accessUser.getMatchTypeAsType().name() + " "
