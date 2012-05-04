@@ -114,7 +114,6 @@ public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken
         @Override
         public String getTokenType() {           
             return TOKEN_TYPE;
-        }
-        
+        }    
     }
 }

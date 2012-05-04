@@ -225,7 +225,7 @@ public class AccessTreeNode {
         if (log.isTraceEnabled()) {
             log.trace("AccessTreeNode " + resource + " has " + roleRulePairs.size() + " roleRulePairs");
         }
-        for (AbstractMap.SimpleEntry<RoleData, AccessRuleData> roleRulePair : roleRulePairs) {
+        SEARCH_ALL_ROLE_RULE_PAIRS: for (AbstractMap.SimpleEntry<RoleData, AccessRuleData> roleRulePair : roleRulePairs) {
             final Collection<AccessUserAspectData> accessUsers = roleRulePair.getKey().getAccessUsers().values();
             if (log.isTraceEnabled()) {
                 log.trace("roleRulePair for accessRuleName " + roleRulePair.getValue().getAccessRuleName() + " has " + accessUsers.size()
@@ -276,16 +276,20 @@ public class AccessTreeNode {
                                 }
                             }
                         }
+                        if(statePriority.getNumericValue() == Integer.MAX_VALUE) {            
+                            break SEARCH_ALL_ROLE_RULE_PAIRS;
+                        }
+                        
                     } else if (log.isTraceEnabled()) {
                         log.trace("accessUser " + authenticationToken.getMatchValueFromDatabaseValue(accessUser.getMatchWith()).name() + " " + accessUser.getMatchTypeAsType().name() + " "
                                 + accessUser.getMatchValue() + " did not match authenticationToken.");
                     }
                 }
             }
-            //If now matches were made, return AccessTreeState.STATE_UNKNOWN
-            if(state == null) {
-                state = AccessTreeState.STATE_UNKNOWN;
-            }
+        }
+        //If no matches were made, return AccessTreeState.STATE_UNKNOWN
+        if (state == null) {
+            state = AccessTreeState.STATE_UNKNOWN;
         }
         return state;
     }
