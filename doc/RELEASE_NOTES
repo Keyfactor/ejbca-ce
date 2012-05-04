@@ -3,6 +3,16 @@ EJBCA 5.1.0
 
 - The term 'Admin Group' has been mostly purged and replaced with 'Role'.
 
+EJBCA 5.0.5
+-----------
+This is a maintenance release with a few bug fixes and new features. In all, X issues have been resolved.
+
+* Noteworthy changes:
+- Index recommendations have changed.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE
+
 EJBCA 5.0.4
 -----------
 This is a maintenance release with a few bug fixes and new features. In all, 20 issues have been resolved.
