@@ -258,11 +258,9 @@ public class AccessTreeNode {
                                 log.info("logMatchValue is null for authenticationToken " + authenticationToken.toString());
                                 logMatchValue = authenticationToken.getDefaultMatchValue();
                             }
-                            if (log.isTraceEnabled()) {
-                                log.trace("accessUser " + logMatchValue.name() + " " + accessUser.getMatchTypeAsType().name() + " "
-                                        + accessUser.getMatchValue() + " matched authenticationToken. thisUserState=" + logState.name()
-                                        + " thisUserStatePriority=" + thisUserStatePriority);
-                            }
+                            log.trace("accessUser " + logMatchValue.name() + " " + accessUser.getMatchTypeAsType().name() + " "
+                                    + accessUser.getMatchValue() + " matched authenticationToken. thisUserState=" + logState.name()
+                                    + " thisUserStatePriority=" + thisUserStatePriority);
                         }
                         // If rule has higher priority, its state is to be used.
                         if (statePriority.getNumericValue() < thisUserStatePriority.getNumericValue()) {
