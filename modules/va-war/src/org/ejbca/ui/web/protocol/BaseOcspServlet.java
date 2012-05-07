@@ -42,6 +42,7 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.ui.web.LimitLengthASN1Reader;
+import org.ejbca.util.IPatternLogger;
 
 /**
  * @version $Id$
@@ -102,6 +103,16 @@ public abstract class BaseOcspServlet extends HttpServlet {
                 transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
                 transactionLogger.writeln();
                 auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
+            } catch (Throwable e) { // NOPMD, we really want to catch everything here to return internal error on unexpected errors
+                transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+                auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
+                final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
+                log.info(errMsg, e);
+                // RFC 2560: responseBytes are not set on error.
+                ocspResponseInformation = new OcspResponseInformation(responseGenerator.generate(OCSPRespGenerator.INTERNAL_ERROR, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
+                transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
+                transactionLogger.writeln();
+                auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
             }
             byte[] ocspResponseBytes = ocspResponseInformation.getOcspResponse();    
             response.setContentType("application/ocsp-response");
