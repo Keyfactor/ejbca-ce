@@ -31,8 +31,6 @@ import org.cesecore.util.ValueExtractor;
 /**
  * Implementation of AccessRuleManagementSession class
  * 
- * Based on cesecore version: AccessRuleManagementSessionBean.java 854 2011-05-24 12:57:17Z johane
- * 
  * @version $Id$
  * 
  */
@@ -72,7 +70,9 @@ public class AccessRuleManagementSessionBean implements AccessRuleManagementSess
     public AccessRuleData setState(final AccessRuleData rule, final AccessRuleState state, boolean isRecursive) {
         rule.setState(state.getDatabaseValue());
         rule.setRecursive(isRecursive);
-        AccessRuleData result = entityManager.merge(rule);
+        AccessRuleData result = find(rule.getPrimaryKey());
+        result.setInternalState(state);
+        result.setRecursive(isRecursive);
         return result;
     }
 
