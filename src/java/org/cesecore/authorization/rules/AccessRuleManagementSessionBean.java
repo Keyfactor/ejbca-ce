@@ -68,8 +68,6 @@ public class AccessRuleManagementSessionBean implements AccessRuleManagementSess
     @Override
     @TransactionAttribute(TransactionAttributeType.MANDATORY)
     public AccessRuleData setState(final AccessRuleData rule, final AccessRuleState state, boolean isRecursive) {
-        rule.setState(state.getDatabaseValue());
-        rule.setRecursive(isRecursive);
         AccessRuleData result = find(rule.getPrimaryKey());
         result.setInternalState(state);
         result.setRecursive(isRecursive);
