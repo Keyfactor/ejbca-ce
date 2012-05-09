@@ -47,10 +47,12 @@ public class RevokedCertInfo implements Serializable {
     public static final int REVOCATION_REASON_PRIVILEGESWITHDRAWN  = 9;
     public static final int REVOCATION_REASON_AACOMPROMISE         = 10;
     
+    /** BigInteger (serialNumber) in byte format, BigInteger.toByteArray() */
     private byte[]      userCertificate;
     private long        revocationDate;
     private long        expireDate;
     private int         reason;
+    /** Fingerprint in byte format, String.getBytes() */    
     private byte[] 		fingerprint;
 
     /**
