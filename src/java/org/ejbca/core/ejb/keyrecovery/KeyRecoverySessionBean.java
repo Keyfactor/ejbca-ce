@@ -103,7 +103,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
 	 */
     private boolean authorizedToKeyRecover(AuthenticationToken admin, int profileid) {
         boolean returnval = false;
-        if (authorizationSession.isAuthorizedNoLogging(admin, "/super_administrator")) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
             returnval = true;
         }
         if (!returnval) {
