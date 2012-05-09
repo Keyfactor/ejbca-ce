@@ -497,7 +497,7 @@ public class RequestHelper {
      *
      * @throws Exception on error
      */
-    public static void sendBinaryBytes(byte[] bytes, HttpServletResponse out, String contentType, String filename)
+    public static void sendBinaryBytes(final byte[] bytes, final HttpServletResponse out, final String contentType, final String filename)
         throws Exception {
         if ( (bytes == null) || (bytes.length == 0) ) {
             log.error("0 length can not be sent to client!");

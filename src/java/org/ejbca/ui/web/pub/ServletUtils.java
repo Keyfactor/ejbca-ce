@@ -12,7 +12,7 @@ import org.apache.log4j.Logger;
  */
 public class ServletUtils {
 
-    private static Logger log = Logger.getLogger(ServletUtils.class);
+    private static final Logger log = Logger.getLogger(ServletUtils.class);
 
     /** Helper methods that removes no-cache headers from a response. No-cache headers 
      * makes IE refuse to save a file that is sent (for example a certificate). 
@@ -21,7 +21,7 @@ public class ServletUtils {
      * 
      * @param res HttpServletResponse parameter as taken from the doGet, doPost methods in a Servlet.
      */
-    public static void removeCacheHeaders(HttpServletResponse res) {
+    public static void removeCacheHeaders(final HttpServletResponse res) {
         if (res.containsHeader("Pragma")) {
             if (log.isDebugEnabled()) {
                 log.debug("Removing Pragma header to avoid caching issues in IE");
@@ -40,7 +40,7 @@ public class ServletUtils {
      * 
      * @param res HttpServletResponse parameter as taken from the doGet, doPost methods in a Servlet.
      */
-    public static void addCacheHeaders(HttpServletResponse res) {
+    public static void addCacheHeaders(final HttpServletResponse res) {
         if (!res.containsHeader("Pragma")) {
             if (log.isDebugEnabled()) {
                 log.debug("Adding Pragma header");
