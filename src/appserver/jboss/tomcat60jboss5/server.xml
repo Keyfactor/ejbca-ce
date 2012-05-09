@@ -2,7 +2,10 @@
 
    <!-- Optional listener which ensures correct init and shutdown of APR,
         and provides information if it is not installed -->
+   <!-- If you want to use a native APR SSL Coyote HTTP/1.1 Connector, 
+     you have to enable the AprLifecycleListener below. 
    <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+   -->
    <!--Initialize Jasper prior to webapps are loaded. Documentation at /docs/jasper-howto.html -->
    <Listener className="org.apache.catalina.core.JasperListener" />
 
