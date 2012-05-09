@@ -332,6 +332,12 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return getCAInfoOrThrowException(getCAInternal(caid, null, true), doSignTest);
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public CAInfo getCAInfoInternal(final int caid, final String name, boolean fromCache) throws CADoesntExistsException {
+        return getCAInternal(caid, name, fromCache).getCAInfo();
+    }
+
     @Override
     public void removeCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
         // check authorization
@@ -431,11 +437,6 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     }
 
 
-    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    @Override
-    public CAInfo getCAInfoInternal(final int caid, final String name, boolean fromCache) throws CADoesntExistsException {
-        return getCAInternal(caid, name, fromCache).getCAInfo();
-    }
     /**
      * Internal method for getting CA, to avoid code duplication. Tries to find the CA even if the CAId is wrong due to CA certificate DN not being
      * the same as CA DN. Uses CACacheManager directly if configured to do so in ejbca.properties.
