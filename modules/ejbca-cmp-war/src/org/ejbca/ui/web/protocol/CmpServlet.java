@@ -58,7 +58,7 @@ public class CmpServlet extends HttpServlet {
      * @throws IOException input/output error
      * @throws ServletException if the post could not be handled
      */
-    public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+    public void doPost(final HttpServletRequest request, final HttpServletResponse response) throws IOException, ServletException {
         if (log.isTraceEnabled()) {
             log.trace(">doPost()");
         }
@@ -69,8 +69,8 @@ public class CmpServlet extends HttpServlet {
         try {
             final ServletInputStream sin = request.getInputStream();
             // This small code snippet is inspired/copied by apache IO utils to Tomas Gustavsson...
-            ByteArrayOutputStream output = new ByteArrayOutputStream();
-            byte[] buf = new byte[1024];
+            final ByteArrayOutputStream output = new ByteArrayOutputStream();
+            final byte[] buf = new byte[1024];
             int n = 0;
             int bytesRead = 0;
             while (-1 != (n = sin.read(buf))) {
@@ -83,7 +83,7 @@ public class CmpServlet extends HttpServlet {
             service(output.toByteArray(), request.getRemoteAddr(), response);
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            log.error(intres.getLocalizedMessage("cmp.errornoasn1"), e);
+            log.info(intres.getLocalizedMessage("cmp.errornoasn1"), e);
         }
         if (log.isTraceEnabled()) {
             log.trace("<doPost()");
@@ -99,7 +99,7 @@ public class CmpServlet extends HttpServlet {
      * @throws IOException input/output error
      * @throws ServletException if the post could not be handled
      */
-    public void doGet(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException, ServletException {
+    public void doGet(final HttpServletRequest request, final HttpServletResponse response) throws java.io.IOException, ServletException {
         if (log.isTraceEnabled()) {
             log.trace(">doGet()");
         }
@@ -110,19 +110,18 @@ public class CmpServlet extends HttpServlet {
         }
     }
 
-    private void service(byte[] ba, String remoteAddr, HttpServletResponse response) throws IOException {
+    private void service(final byte[] ba, final String remoteAddr, final HttpServletResponse response) throws IOException {
         try {
-            // We must use an administrator with rights to create users
-			final AuthenticationToken administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpServlet: "+remoteAddr));
-            //final Admin administrator = new Admin(Admin.TYPE_RA_USER, remoteAddr);
             log.info(intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr));
-            long startTime = System.currentTimeMillis();
+            final long startTime = System.currentTimeMillis();
             final ResponseMessage resp;
             try {
-                resp = cmpMessageDispatcherLocal.dispatch(administrator, ba);
+                // We must use an administrator with rights to create users
+                final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CmpServlet: "+remoteAddr));
+                resp = cmpMessageDispatcherLocal.dispatch(admin, ba);
             } catch (IOException e) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-                log.error(intres.getLocalizedMessage("cmp.errornoasn1"), e);
+                log.info(intres.getLocalizedMessage("cmp.errornoasn1"), e);
                 return;
             }
             if (resp == null) { // If resp is null, it means that the dispatcher failed to process the message.
@@ -134,7 +133,7 @@ public class CmpServlet extends HttpServlet {
             ServletUtils.addCacheHeaders(response);
             // Send back CMP response
             RequestHelper.sendBinaryBytes(resp.getResponseMessage(), response, "application/pkixcmp", null);
-            long endTime = System.currentTimeMillis();
+            final long endTime = System.currentTimeMillis();
             log.info(intres.getLocalizedMessage("cmp.sentresponsemsg", remoteAddr, Long.valueOf(endTime - startTime)));
         } catch (Exception e) {
             log.error("Error in CmpServlet:", e);
