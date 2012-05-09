@@ -123,7 +123,7 @@ public abstract class BaseCmpMessage implements Serializable {
 	public void setProtectionType(String protectionType) {
 		this.protectionType = protectionType;
 	}
-	public void setPbeParameters(String keyId, String key, String digestAlg, String macAlg, int iterationCount) {
+	public void setPbeParameters(final String keyId, final String key, final String digestAlg, final String macAlg, final int iterationCount) {
 		this.pbeKeyId = keyId;
 		this.pbeKey = key;
 		this.pbeDigestAlg = digestAlg;

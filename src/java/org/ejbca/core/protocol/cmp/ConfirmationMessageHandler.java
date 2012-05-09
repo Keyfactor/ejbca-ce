@@ -128,17 +128,15 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
 		return resp;
 	}
 	
-	private void setPbeParameters(CmpConfirmResponseMessage cresp, BaseCmpMessage msg, boolean authenticated) {
-	    
-        String keyId = getSenderKeyId(msg.getHeader());
-
+	private void setPbeParameters(final CmpConfirmResponseMessage cresp, final BaseCmpMessage msg, final boolean authenticated) {
+        final String keyId = getSenderKeyId(msg.getHeader());
 	    
         String owfAlg = null;
         String macAlg = null;
         int iterationCount = 1024;
         String cmpRaAuthSecret = null;
         
-        int caId = CertTools.stringToBCDNString(msg.getHeader().getRecipient().getName().toString()).hashCode();
+        final int caId = CertTools.stringToBCDNString(msg.getHeader().getRecipient().getName().toString()).hashCode();
         CAInfo caInfo = null;
         try {
             // No need for access control here for internal verification/protection of message, access control is done when we want to use
@@ -156,7 +154,6 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             owfAlg = hmac.getCmpPbeVerifyer().getOwfOid();
             macAlg = hmac.getCmpPbeVerifyer().getMacOid();
             iterationCount = hmac.getCmpPbeVerifyer().getIterationCount();
-            
             if(LOG.isDebugEnabled()) {
                 LOG.debug("The CertConf message was verified successfully");
             }
