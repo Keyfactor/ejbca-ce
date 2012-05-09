@@ -73,23 +73,13 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
     }    
     
       /** Method to get a reference to a end entity profile.*/ 
-    public EndEntityProfile getEndEntityProfile(int id) throws AuthorizationDeniedException{  
+    public EndEntityProfile getEndEntityProfile(int id) {  
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(id); 
-        // We don't need to make any funky checks which CAs an admin is authorized to here. 
-        // The web page will only display the CAs the admin is authorized to in the GUI, and when adding/editing 
-        // an end entity the session beans will ensure that no admin can add/edit end entities without access to the proper 
-        // profiles rules and CAs.
-        //endEntityProfileSession.authorizedToProfileCas(administrator, profile);
         return profile;
     }      
           
-    public EndEntityProfile getEndEntityProfile(String profilename) throws AuthorizationDeniedException{
+    public EndEntityProfile getEndEntityProfile(String profilename) {
         final EndEntityProfile profile = endEntityProfileSession.getEndEntityProfile(profilename);
-        // We don't need to make any funky checks which CAs an admin is authorized to here. 
-        // The web page will only display the CAs the admin is authorized to in the GUI, and when adding/editing 
-        // an end entity the session beans will ensure that no admin can add/edit end entities without access to the proper 
-        // profiles rules and CAs.
-        //endEntityProfileSession.authorizedToProfileCas(administrator, profile);
         return profile;
     }
    
