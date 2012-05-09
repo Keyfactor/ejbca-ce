@@ -129,7 +129,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
     @Override
     public CertificateResponseMessage createCertificate(final AuthenticationToken admin, final EndEntityInformation userData, final CA ca, final RequestMessage req,
-            final Class responseClass) throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException,
+            final Class<? extends ResponseMessage> responseClass) throws AuthorizationDeniedException, CustomCertSerialNumberException, IllegalKeyException,
             CADoesntExistsException, CertificateCreateException, CesecoreException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(IRequestMessage, CA)");
