@@ -30,6 +30,7 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.cvc.CVCAuthenticatedRequest;
 import org.ejbca.cvc.CVCObject;
 import org.ejbca.cvc.CVCertificate;
@@ -109,7 +110,7 @@ public class CACertReqServlet extends HttpServlet {
 
 
         try{
-          ejbcawebbean.initialize(req, "/super_administrator");          
+          ejbcawebbean.initialize(req, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);          
         } catch(Exception e){
            throw new java.io.IOException("Authorization Denied");
         }

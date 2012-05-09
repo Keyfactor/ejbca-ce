@@ -28,6 +28,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 
 /**
  * A class that looks up the which CA:s and certificate profiles the administrator is authorized to view.
@@ -123,7 +124,7 @@ public class CAAuthorization implements Serializable {
             // check if administrator
             boolean superadministrator = false;
 
-            superadministrator = authorizationsession.isAuthorizedNoLogging(admin, "/super_administrator");
+            superadministrator = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
 
             allprofilenames = new TreeMap<String, Integer>();
         Iterator<Integer> iter= null;  

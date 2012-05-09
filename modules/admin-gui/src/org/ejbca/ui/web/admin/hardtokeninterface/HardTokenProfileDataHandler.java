@@ -188,7 +188,7 @@ public class HardTokenProfileDataHandler implements Serializable {
      */    
     private boolean authorizedToProfile(HardTokenProfile profile, boolean editcheck) {
         boolean returnval = false;
-        if (authorizationsession.isAuthorizedNoLogging(administrator, "/super_administrator")) {
+        if (authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
             returnval = true; // yes authorized to everything
         } else {
             if (editcheck && authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENPROFILES)) {      
