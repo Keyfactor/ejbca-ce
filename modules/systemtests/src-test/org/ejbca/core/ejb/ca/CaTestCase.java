@@ -117,14 +117,12 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
-    private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    private AccessControlSessionRemote accessControlSession;
+    private CaSessionRemote caSession;
+    private GlobalConfigurationSessionRemote globalConfigurationSession;
+    private RoleManagementSessionRemote roleManagementSession;
+    private RoleAccessSessionRemote roleAccessSession;
+    private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider;
 
     private String roleName;
 
@@ -135,6 +133,17 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public abstract String getRoleName();
 
     protected void setUp() throws Exception { // NOPMD: this is a base class
+
+        // Lazy loading of EJBs
+        accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
+        caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
+        globalConfigurationSession = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(GlobalConfigurationSessionRemote.class);
+        roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+        roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+        simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE
+                .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+
         roleName = getRoleName();
         super.setUpAuthTokenAndRole(getRoleName());
         removeTestCA(); // We cant be sure this CA was not left over from
