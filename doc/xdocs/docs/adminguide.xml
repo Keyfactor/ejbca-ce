@@ -1099,7 +1099,7 @@ java program.
 </p>
 </subsection>
 
-<subsection name="Adobe Acrobat Reader">
+<subsection name="Adobe Reader">
 <p>
 A good example of using OCSP is to check digitally signed PDF documents using Adobe Reader.
 </p>
@@ -1114,6 +1114,10 @@ This works the same using both internal and external OCSP responders.
 <p>
 Certificates that have an 'OCSP service locator' will be verified against the OCSP responder. 
 You can configure this in the certificate profile used to issue certificates.
+</p>
+<p>
+If you sign PDF documents with embedded OCSP responses those responses must include a nextUpdate field, and the timestamp must be within the thisUpdate and nextUpdate 
+period of the OCSP response. 
 </p>
 </subsection>
 
