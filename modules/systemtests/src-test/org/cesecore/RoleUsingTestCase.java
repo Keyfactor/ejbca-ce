@@ -43,10 +43,10 @@ import org.cesecore.util.EjbRemoteHelper;
  */
 public abstract class RoleUsingTestCase {
 
-    private RoleInitializationSessionRemote roleInitSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private SimpleAuthenticationProviderSessionRemote authenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    private RoleAccessSessionRemote roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+    private RoleInitializationSessionRemote roleInitSession;
+    private SimpleAuthenticationProviderSessionRemote authenticationProvider;
+    private RoleManagementSessionRemote roleManagementSession;
+    private RoleAccessSessionRemote roleAccessSessionRemote;
 
     private static final AuthenticationToken alwaysAllowAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RoleUsingTestCase"));
 
@@ -54,6 +54,12 @@ public abstract class RoleUsingTestCase {
     protected AuthenticationToken roleMgmgToken;
 
     public void setUpAuthTokenAndRole(String roleName) throws RoleExistsException, RoleNotFoundException {
+        // Lazy loading of EJBs
+        roleInitSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleInitializationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        authenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+        roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+        roleAccessSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
+
         this.roleName = roleName;       
         String commonname = this.getClass().getCanonicalName();
         roleMgmgToken = createAuthenticationToken("C=SE,O=Test,CN=" + commonname);
@@ -77,4 +83,5 @@ public abstract class RoleUsingTestCase {
         principals.add(p);
         return authenticationProvider.authenticate(subject);
     }
+    
 }
