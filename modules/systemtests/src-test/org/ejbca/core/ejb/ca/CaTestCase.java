@@ -137,7 +137,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         caAdmin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
         final X509Certificate certificate = caAdmin.getCertificate();
 
-        RoleManagementSessionRemote roleManagementSession = getRoleManagementSession();
+        final RoleManagementSessionRemote roleManagementSession = getRoleManagementSession();
         RoleData role = CaTestCase.getRoleAccessSession().findRole(roleName);
         if (role == null) {
             log.error("Role should not be null here.");
@@ -273,9 +273,9 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
 
-        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
-        CaSessionRemote caSession = getCaSession();
-        CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+        final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        final CaSessionRemote caSession = getCaSession();
+        final CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
 
         // Search for requested CA
         try {
@@ -444,8 +444,8 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws CADoesntExistsException
      */
     public static void removeTestCA(String caName) throws AuthorizationDeniedException {
-    	CaSessionRemote caSession = getCaSession();
-        CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    	final CaSessionRemote caSession = CaTestCase.getCaSession();
+        final CaTestSessionRemote caTestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaTestSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
         try {
             CA ca = caTestSession.getCA(internalAdmin, caName);
@@ -1075,7 +1075,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
                 true // useCertificateStorage
         );
         
-        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        final CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
         caAdminSession.createCA(internalAdmin, cvccainfo);
 
     }
@@ -1087,7 +1087,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
      * @throws CADoesntExistsException 
      */
     private static void removeOldCa(String caName) throws AuthorizationDeniedException {
-        CaSessionRemote caSession = CaTestCase.getCaSession();
+        final CaSessionRemote caSession = CaTestCase.getCaSession();
         try {
             CAInfo info = caSession.getCAInfo(internalAdmin, caName);
             caSession.removeCA(internalAdmin, info.getCAId());
