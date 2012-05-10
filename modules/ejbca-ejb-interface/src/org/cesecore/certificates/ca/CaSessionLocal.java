@@ -178,4 +178,22 @@ public interface CaSessionLocal extends CaSession {
      * @param cadata The CAData object to merge.
      */
     public void updateCaData(final Object cadata);
+
+    /**
+     * Internal (local only) method to get the CA object without logging the authorization check.
+     * (the auth check is performed though)
+     * 
+     * NOTE: This method will return a shared CA object from a cache. Not suitable for reading a CA object that you 
+     * plan to edit. Use this when you need to use the CA, since it's faster. User getCAForEdit if you want to edit the 
+     * CA object and does not want your changes to be overwritten by another thread.
+     *
+     * @see #getCAForEdit(AuthenticationToken, String)
+     * 
+     * @param admin AuthenticationToken of admin
+     * @param caid identifies the CA
+     * @return the CA object
+     * @throws CADoesntExistsException if no CA was found
+     * @throws AuthorizationDeniedException if not authorized to get CA
+     */
+    CA getCANoLog(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException;
 }

@@ -325,10 +325,10 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             log.trace(">createCertificate(EndEntityInformation, CA, X509Name, pk, ku, notBefore, notAfter, extesions, sequence)");
         }
         
-        // Since CA is passed as an argument to this method, there is no need to check authorization on that.
-        
-        // We need to check that admin have rights to create certificates
-        if (!accessSession.isAuthorized(admin, StandardRules.CREATECERT.resource())) {
+        // Even though CA is passed as an argument to this method, we do check authorization on that.
+        // To make sure we properly log authorization checks needed to issue a cert.
+        // We need to check that admin have rights to create certificates, and have access to the CA
+        if (!accessSession.isAuthorized(admin, StandardRules.CREATECERT.resource(), StandardRules.CAACCESS.resource() + ca.getCAId())) {
             final String msg = intres.getLocalizedMessage("createcert.notauthorized", admin.toString(), ca.getCAId());
             throw new AuthorizationDeniedException(msg);
         }

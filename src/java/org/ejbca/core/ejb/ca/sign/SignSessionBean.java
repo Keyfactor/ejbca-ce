@@ -330,10 +330,11 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         if (log.isDebugEnabled()) {
             log.debug("User type=" + data.getType());
         }
-        // Get CA object and make sure it's active
-        final CA ca = caSession.getCA(admin, data.getCAId());
+        // Get CA object and make sure it is active
+        // Do not log access control to the CA here, that is logged later on when we use the CA to issue a certificate (if we get that far).
+        final CA ca = caSession.getCANoLog(admin, data.getCAId());
         if (ca.getStatus() != CAConstants.CA_ACTIVE) {
-            String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
+            final String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
             throw new EJBException(msg);
         }
         final Certificate cert;
@@ -631,6 +632,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace(">createCertificate(pk, ku, notAfter)");
         }
 
+        // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
         final Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, requestX509Name, pk, keyusage, notBefore, notAfter,
                 extensions, sequence);
 
