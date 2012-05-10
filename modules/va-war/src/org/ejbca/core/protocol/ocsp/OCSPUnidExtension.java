@@ -33,8 +33,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.ocsp.CertificateStatus;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.CertTools;
@@ -146,7 +146,7 @@ public class OCSPUnidExtension implements OCSPExtension {
 	}
 	
 	@Override
-	public Hashtable<ASN1ObjectIdentifier, X509Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
+	public Hashtable<ASN1ObjectIdentifier, Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
             X509Certificate cert, CertificateStatus status) throws IOException {
         if (m_log.isTraceEnabled()) {
             m_log.trace(">process()");            
@@ -213,8 +213,8 @@ public class OCSPUnidExtension implements OCSPExtension {
 		String errMsg = intres.getLocalizedMessage("ocsp.returnedunidresponse", remoteAddress, remoteHost, fnr, sn);
         m_log.info(errMsg);
         FnrFromUnidExtension ext = new FnrFromUnidExtension(fnr);
-        Hashtable<ASN1ObjectIdentifier, X509Extension> ret = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        ret.put(FnrFromUnidExtension.FnrFromUnidOid, new X509Extension(false, new DEROctetString(ext)));
+        Hashtable<ASN1ObjectIdentifier, Extension> ret = new Hashtable<ASN1ObjectIdentifier, Extension>();
+        ret.put(FnrFromUnidExtension.FnrFromUnidOid, new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString(ext)));
 		return ret;
 	}
 	

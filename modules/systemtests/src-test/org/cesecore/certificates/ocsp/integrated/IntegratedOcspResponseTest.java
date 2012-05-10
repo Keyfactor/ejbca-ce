@@ -18,32 +18,32 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.security.KeyPair;
 import java.security.NoSuchProviderException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.List;
 
 import javax.ejb.EJBException;
 
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPException;
-import org.bouncycastle.ocsp.OCSPReq;
-import org.bouncycastle.ocsp.OCSPReqGenerator;
-import org.bouncycastle.ocsp.OCSPResp;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.ocsp.RevokedStatus;
-import org.bouncycastle.ocsp.SingleResp;
 import org.bouncycastle.ocsp.UnknownStatus;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.CaCreatingTestCase;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -64,6 +64,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.IntegratedOcspResponseGeneratorProxySessionRemote;
+import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
@@ -198,14 +199,12 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
         integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
         // An OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, caCertificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-
-        OCSPReq req = gen.generate();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, caCertificate.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        OCSPReq req = gen.build();
         
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
@@ -216,10 +215,10 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
                 .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(responseBytes));
+        OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.verify(caCertificate.getPublicKey(), SIGNATURE_PROVIDER));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
         SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
         assertEquals("Response cert did not match up with request cert", caCertificate.getSerialNumber(), singleResponses[0].getCertID()
@@ -232,14 +231,13 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
 
         // An OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
 
-        OCSPReq req = gen.generate();
+        OCSPReq req = gen.build();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
@@ -249,10 +247,10 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
                 .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(responseBytes));
+        OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.verify(caCertificate.getPublicKey(), SIGNATURE_PROVIDER));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
         SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
         assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
@@ -265,14 +263,13 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
 
         // An OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
 
-        OCSPReq req = gen.generate();
+        OCSPReq req = gen.build();
 
         // Now revoke the ocspCertificate
         certificateStoreSession.setRevokeStatus(roleMgmgToken, ocspCertificate, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED, null);
@@ -285,10 +282,10 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
                 .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(responseBytes));
+        OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.verify(caCertificate.getPublicKey(), SIGNATURE_PROVIDER));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
         SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
         assertEquals("Response cert did not match up with request cert", ocspCertificate.getSerialNumber(), singleResponses[0].getCertID()
@@ -306,14 +303,13 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
 
         // An OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
 
-        OCSPReq req = gen.generate();
+        OCSPReq req = gen.build();
 
         // Now remove the certificate
         internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
@@ -327,10 +323,10 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
                 .getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"), auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(responseBytes));
+        OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.verify(caCertificate.getPublicKey(), SIGNATURE_PROVIDER));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
         SingleResp[] singleResponses = basicOcspResponse.getResponses();
 
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
@@ -344,10 +340,10 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
                 .getOcspResponse(req.getEncoded(), null, "", "", new StringBuffer("http://foo.com"), auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
-        response = new OCSPResp(new ByteArrayInputStream(responseBytes));
+        response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.verify(caCertificate.getPublicKey(), SIGNATURE_PROVIDER));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
         singleResponses = basicOcspResponse.getResponses();
 
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
@@ -370,10 +366,11 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
      * @throws InterruptedException
      * @throws IllegalCryptoTokenException
      * @throws CADoesntExistsException
+     * @throws CertificateEncodingException 
      */
     @Test
     public void testCacheUpdates() throws OCSPException, AuthorizationDeniedException, MalformedRequestException, IOException, InterruptedException,
-            CADoesntExistsException, IllegalCryptoTokenException {
+            CADoesntExistsException, IllegalCryptoTokenException, CertificateEncodingException {
         final Integer timeToWait = 2;
         // Set the validity time to a single second for testing purposes.
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.signtrustvalidtime", timeToWait.toString());
@@ -383,14 +380,13 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         try {
 
             // An OCSP request
-            OCSPReqGenerator gen = new OCSPReqGenerator();
-            gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, ocspCertificate.getSerialNumber()));
-            Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-            X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-            exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-            gen.setRequestExtensions(new X509Extensions(exts));
+            OCSPReqBuilder gen = new OCSPReqBuilder();
+            gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, ocspCertificate.getSerialNumber()));
+            Extension[] extensions = new Extension[0];
+            extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+            gen.setRequestExtensions(new Extensions(extensions));
 
-            OCSPReq req = gen.generate();
+            OCSPReq req = gen.build();
 
             byte[] responseBytes;
             integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
@@ -399,20 +395,19 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
             TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
             // Create the audit logger for this transaction.
             AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
-            responseBytes = ocspResponseGeneratorSession
-                    .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
+            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+                    .getOcspResponse();
             assertNotNull("OCSP resonder replied null", responseBytes);
             // Initial assert that status is null, i.e. "good"
-            assertNull("Test could not run because initial ocsp response failed.", ((BasicOCSPResp) (new OCSPResp(new ByteArrayInputStream(
-                    responseBytes))).getResponseObject()).getResponses()[0].getCertStatus());
+            assertNull("Test could not run because initial ocsp response failed.",
+                    ((BasicOCSPResp) (new OCSPResp(responseBytes)).getResponseObject()).getResponses()[0].getCertStatus());
             // Erase the cert. It should still exist in the cache.
             caSession.removeCA(roleMgmgToken, testx509ca.getCAId());
-            responseBytes = ocspResponseGeneratorSession
-                    .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
+            responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
                     .getOcspResponse();
             // Initial assert that status is null, i.e. "good"
-            assertNull("Test could not run because cache changed before the entire test could run.", ((BasicOCSPResp) (new OCSPResp(
-                    new ByteArrayInputStream(responseBytes))).getResponseObject()).getResponses()[0].getCertStatus());
+            assertNull("Test could not run because cache changed before the entire test could run.",
+                    ((BasicOCSPResp) (new OCSPResp(responseBytes)).getResponseObject()).getResponses()[0].getCertStatus());
 
             // Now sleep and try again, Glassfish has a default "minimum-delivery-interval-in-millis" of 7 seconds, so we have
             // to wait that long, make it 8 seconds. We have set the timer to 2 seconds above.
@@ -459,22 +454,23 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
      * @throws CADoesntExistsException
      * @throws IllegalCryptoTokenException
      * @throws NoSuchProviderException
+     * @throws CertificateEncodingException 
+     * @throws OperatorCreationException 
      */
     @Test
     public void testGetOcspResponseWithCertificateFromUnknownCa() throws OCSPException, AuthorizationDeniedException, IOException,
-            MalformedRequestException, CADoesntExistsException, IllegalCryptoTokenException, NoSuchProviderException {
+            MalformedRequestException, CADoesntExistsException, IllegalCryptoTokenException, NoSuchProviderException, CertificateEncodingException, OperatorCreationException {
 
         integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
 
         // An OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ocspCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), ocspCertificate, ocspCertificate.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
 
-        OCSPReq req = gen.generate();
+        OCSPReq req = gen.build();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
@@ -484,10 +480,10 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
                 .getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger).getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(responseBytes));
+        OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.verify(caCertificate.getPublicKey(), SIGNATURE_PROVIDER));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
         SingleResp[] singleResponses = basicOcspResponse.getResponses();
 
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
@@ -500,21 +496,20 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     @Test
     public void testGetOcspResponseWithIncorrectDefaultResponder() throws OCSPException, AuthorizationDeniedException, IOException,
-            MalformedRequestException, CADoesntExistsException, IllegalCryptoTokenException {
+            MalformedRequestException, CADoesntExistsException, IllegalCryptoTokenException, CertificateEncodingException {
         // Restore the default value
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.defaultresponder", "CN=FancyPants");
 
         integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
 
         // An OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, ocspCertificate, ocspCertificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), ocspCertificate, ocspCertificate.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
 
-        OCSPReq req = gen.generate();
+        OCSPReq req = gen.build();
 
         // At first try, it should throw an exception because it can not find the default responder
         try {

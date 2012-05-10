@@ -17,7 +17,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.security.SecureRandom;
 
-import org.bouncycastle.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.OCSPException;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ocsp.cache.TokenAndChainCache;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;

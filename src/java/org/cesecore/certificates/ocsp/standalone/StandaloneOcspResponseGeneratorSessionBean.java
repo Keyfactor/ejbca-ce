@@ -19,6 +19,7 @@ import java.math.BigInteger;
 import java.security.KeyStoreException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -42,13 +43,15 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseSessionBean;
 import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
+import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.cache.TokenAndChainCache;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.certificates.ocsp.standalone.exception.StandaloneOcspInitializationException;
@@ -201,7 +204,7 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
             newCache.putAll(loadFromP12(OcspConfiguration.getSoftKeyDirectoryName(), p12StorePassword, p12KeyPassword));
             X509Certificate latestCertificate = certificateStoreSession.findLatestX509CertificateBySubject(OcspConfiguration.getDefaultResponderId());
             // We only need issuerNameHash and issuerKeyHash from certId
-            cache.updateCache(newCache, new CertificateID(CertificateID.HASH_SHA1, latestCertificate, new BigInteger("1")));
+            cache.updateCache(newCache, new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), latestCertificate, new BigInteger("1")));
         } catch (Exception e) {
             throw new StandaloneOcspInitializationException("Could not load private keys", e);
         }
@@ -321,8 +324,10 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
                     try {
                         // The issuing CA's certificate must by definition be in spot 1 in the chain.
         				// We only need issuerNameHash and issuerKeyHash from certId
-                        certId = new CertificateID(CertificateID.HASH_SHA1, certificateChain.get(1), new BigInteger("1"));
+                        certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), certificateChain.get(1), new BigInteger("1"));
                     } catch (OCSPException e) {
+                        throw new OcspFailureException(e);
+                    } catch(CertificateEncodingException e) {
                         throw new OcspFailureException(e);
                     }
                     result.put(TokenAndChainCache.keyFromCertificateID(certId),

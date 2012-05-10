@@ -16,8 +16,8 @@ package org.cesecore.certificates.ocsp;
 import java.io.Serializable;
 import java.util.Date;
 
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.CertificateStatus;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.CertificateStatus;
 
 /**
  * Class used to encapsulate the data that goes into a OCSP response

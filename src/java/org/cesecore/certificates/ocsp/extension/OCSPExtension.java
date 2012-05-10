@@ -18,8 +18,8 @@ import java.security.cert.X509Certificate;
 import java.util.Map;
 
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.ocsp.CertificateStatus;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.cert.ocsp.CertificateStatus;
 
 /**
  * Interface that must be implemented by OCSP extensions that are added to the OCSPServlet
@@ -53,7 +53,7 @@ public interface OCSPExtension {
      *         error occurs
      * @throws IOException 
      */
-    public Map<ASN1ObjectIdentifier, X509Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
+    public Map<ASN1ObjectIdentifier, Extension> process(X509Certificate[] requestCertificates, String remoteAddress, String remoteHost,
             X509Certificate cert, CertificateStatus status) throws IOException;
 
     /**
