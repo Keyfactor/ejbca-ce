@@ -75,9 +75,9 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
 
     /**
      * Creates the certificate.
-     * Does NOT check any authorization on user or CA since it is passed as a parameter so obviously the user has access to it.
-     * Does check authorization on certificate profile.
+     * Does check that admin is authorized to CA, even though it is passed as a parameter.
      * Does check that admin has CREATE_CERTIFICATE right.
+     * Does check authorization on certificate profile, i.e. that the CA is among available CAs in the certificate profile.
      * 
      * 
      * @param admin administrator performing this task

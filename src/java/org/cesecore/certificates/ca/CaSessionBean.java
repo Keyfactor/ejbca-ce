@@ -278,6 +278,16 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
         return ca;
     }
 
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    @Override
+    public CA getCANoLog(final AuthenticationToken admin, final int caid) throws CADoesntExistsException, AuthorizationDeniedException {
+        if (!authorizedToCANoLogging(admin, caid)) {
+            String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), Integer.valueOf(caid));
+            throw new AuthorizationDeniedException(msg);
+        }
+        return getCAInternal(caid, null, false);
+    }
+
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public CA getCAForEdit(final AuthenticationToken admin, final int caid) throws CADoesntExistsException, AuthorizationDeniedException {
