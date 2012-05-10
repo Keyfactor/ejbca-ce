@@ -4951,7 +4951,7 @@ If an error is detected one or several of the following error messages is report
 <li>"Error when testing the connection with publisher: PublisherName" - This is reported when a test connection to one of the publishers failed.</li>
 </ul>
 <note>To be fully Common Criteria compliant, a different key for signature tests than certificate signing should be used in the CA's HSM token
-configuration. (The "testKey" alias should point to a key with no other uses.) 
+configuration (the "testKey" alias should point to a key with no other uses). 
 </note>
 </section>
 
