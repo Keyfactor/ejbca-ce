@@ -51,7 +51,6 @@ import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceResponse;
 
 /** Class with common methods used by both Internal and External OCSP responders
  * 
- * @author tomas
  * @version $Id$
  *
  */

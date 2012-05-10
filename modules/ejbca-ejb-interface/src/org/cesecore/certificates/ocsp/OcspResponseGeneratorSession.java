@@ -15,7 +15,7 @@ package org.cesecore.certificates.ocsp;
 import java.io.IOException;
 import java.security.cert.X509Certificate;
 
-import org.bouncycastle.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.OCSPException;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;

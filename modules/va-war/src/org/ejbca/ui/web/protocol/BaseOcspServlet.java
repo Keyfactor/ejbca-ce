@@ -26,8 +26,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.ocsp.OCSPException;
-import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
@@ -82,7 +82,7 @@ public abstract class BaseOcspServlet extends HttpServlet {
         // Create the audit logger for this transaction.
         AuditLogger auditLogger = new AuditLogger("", localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), remoteAddress);
         try {     
-            OCSPRespGenerator responseGenerator = new OCSPRespGenerator();
+            OCSPRespBuilder responseGenerator = new OCSPRespBuilder();
             OcspResponseInformation ocspResponseInformation = null;
             
             try {
@@ -99,20 +99,20 @@ public abstract class BaseOcspServlet extends HttpServlet {
                     log.debug(errMsg, e);
                 }
                 // RFC 2560: responseBytes are not set on error.
-                ocspResponseInformation = new OcspResponseInformation(responseGenerator.generate(OCSPRespGenerator.MALFORMED_REQUEST, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
-                transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
+                ocspResponseInformation = new OcspResponseInformation(responseGenerator.build(OCSPRespBuilder.MALFORMED_REQUEST, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
+                transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
                 transactionLogger.writeln();
-                auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.MALFORMED_REQUEST);
+                auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.MALFORMED_REQUEST);
             } catch (Throwable e) { // NOPMD, we really want to catch everything here to return internal error on unexpected errors
                 transactionLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
                 auditLogger.paramPut(IPatternLogger.PROCESS_TIME, IPatternLogger.PROCESS_TIME);
                 final String errMsg = intres.getLocalizedMessage("ocsp.errorprocessreq", e.getMessage());
                 log.info(errMsg, e);
                 // RFC 2560: responseBytes are not set on error.
-                ocspResponseInformation = new OcspResponseInformation(responseGenerator.generate(OCSPRespGenerator.INTERNAL_ERROR, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
-                transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
+                ocspResponseInformation = new OcspResponseInformation(responseGenerator.build(OCSPRespBuilder.INTERNAL_ERROR, null), OcspConfiguration.getMaxAge(CertificateProfileConstants.CERTPROFILE_NO_PROFILE));
+                transactionLogger.paramPut(TransactionLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
                 transactionLogger.writeln();
-                auditLogger.paramPut(AuditLogger.STATUS, OCSPRespGenerator.INTERNAL_ERROR);
+                auditLogger.paramPut(AuditLogger.STATUS, OCSPRespBuilder.INTERNAL_ERROR);
             }
             byte[] ocspResponseBytes = ocspResponseInformation.getOcspResponse();    
             response.setContentType("application/ocsp-response");

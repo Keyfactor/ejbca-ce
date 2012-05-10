@@ -20,10 +20,10 @@ import java.security.NoSuchProviderException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.OCSPException;
-import org.bouncycastle.ocsp.OCSPResp;
-import org.bouncycastle.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 
@@ -66,8 +66,8 @@ public class OcspResponseInformation implements Serializable {
             } else if (singleRespones[0].getNextUpdate() == null) {
                 log.debug("Will not add RFC 5019 cache headers: nextUpdate isn't set.");
                 addCacheHeaders = false;
-            } else if (singleRespones[0].getSingleExtensions() != null
-                    && singleRespones[0].getSingleExtensions().getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce) == null) {
+            } else if (singleRespones[0].hasExtensions()
+                    && singleRespones[0].getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce) == null) {
                 log.debug("Will not add RFC 5019 cache headers: response contains a nonce.");
                 addCacheHeaders = false;
             } else {

@@ -13,6 +13,7 @@
 package org.cesecore.certificates.ocsp.integrated;
 
 import java.math.BigInteger;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Map;
@@ -30,8 +31,9 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -43,6 +45,7 @@ import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.ocsp.OcspResponseSessionBean;
 import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
+import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.cache.TokenAndChainCache;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.config.OcspConfiguration;
@@ -124,9 +127,11 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
 
     			CertificateID certId = null;
     			try {
-    				certId = new CertificateID(CertificateID.HASH_SHA1, (X509Certificate) ca.getCACertificate(), new BigInteger("1"));
+    				certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate) ca.getCACertificate(), new BigInteger("1"));
     			} catch (OCSPException e) {
     				throw new OcspFailureException(e);
+    			} catch(CertificateEncodingException e) {
+    			    throw new OcspFailureException(e);
     			}
 
     			try {
@@ -143,10 +148,12 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
     				log.warn("Could not find default responder in database.");
     				cache.updateCache(newCache, null);
     			} else {
-    				cache.updateCache(newCache, new CertificateID(CertificateID.HASH_SHA1, latestCertificate, new BigInteger("1")));
+    				cache.updateCache(newCache, new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), latestCertificate, new BigInteger("1")));
     			}
     		} catch (OCSPException e) {
     			throw new OcspFailureException(e);
+    		} catch(CertificateEncodingException e) {
+    		    throw new OcspFailureException(e);
     		}
     	} finally {
     		// Schedule a new timer

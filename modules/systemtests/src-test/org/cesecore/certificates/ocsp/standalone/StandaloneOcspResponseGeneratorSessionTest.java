@@ -16,30 +16,30 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyStore;
 import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Hashtable;
 
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPException;
-import org.bouncycastle.ocsp.OCSPReq;
-import org.bouncycastle.ocsp.OCSPReqGenerator;
-import org.bouncycastle.ocsp.OCSPResp;
-import org.bouncycastle.ocsp.SingleResp;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -47,6 +47,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.ocsp.OcspResponseInformation;
+import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
@@ -68,8 +69,6 @@ import org.junit.Test;
  */
 public class StandaloneOcspResponseGeneratorSessionTest {
 
-    private static final String SIGNATURE_PROVIDER = "BC";
-   // private static final String P12_DIR = "p12";
     private static final String P12_FILENAME = "ocspTestSigner.p12";
     private static final String PASSWORD = "foo123";
     private static final String OCSP_ALIAS = "ocspTestSigner";// "OCSP Signer";
@@ -120,17 +119,16 @@ public class StandaloneOcspResponseGeneratorSessionTest {
 
     @Test
     public void testStandAloneOcspResponseSanity() throws OCSPException, AuthorizationDeniedException, MalformedRequestException, IOException,
-            NoSuchProviderException {
+            NoSuchProviderException, CertificateEncodingException, OperatorCreationException {
         standaloneOcspResponseGeneratorSession.reloadTokenAndChainCache(PASSWORD);
         // An OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, caCertificate, p12Certificate.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), caCertificate, p12Certificate.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
 
-        OCSPReq req = gen.generate();
+        OCSPReq req = gen.build();
         final int localTransactionId = TransactionCounter.INSTANCE.getTransactionNumber();
         // Create the transaction logger for this transaction.
         TransactionLogger transactionLogger = new TransactionLogger(localTransactionId, GuidHolder.INSTANCE.getGlobalUid(), "");
@@ -141,10 +139,10 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         byte[] responseBytes = responseInformation.getOcspResponse();
         assertNotNull("OCSP resonder replied null", responseBytes);
 
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(responseBytes));
+        OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.verify(p12Certificate.getPublicKey(), SIGNATURE_PROVIDER));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
         SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
         assertEquals("Response cert did not match up with request cert", p12Certificate.getSerialNumber(), singleResponses[0].getCertID()

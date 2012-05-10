@@ -13,12 +13,16 @@
 package org.cesecore.certificates.ocsp.cache;
 
 import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Map;
 
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.cesecore.certificates.ocsp.exception.CacheNotInitializedException;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 
@@ -52,8 +56,12 @@ public final class TokenAndChainCache {
         } else {
             CertificateID certId = null;
             try {
-                certId = new CertificateID(CertificateID.HASH_SHA1, certificate, new BigInteger("1"));
+                certId = new JcaCertificateID(new SHA1DigestCalculator(MessageDigest.getInstance("SHA1")),  certificate, new BigInteger("1"));
             } catch (OCSPException e) {
+                throw new OcspFailureException(e);
+            } catch (CertificateEncodingException e) {
+                throw new OcspFailureException(e);
+            } catch (NoSuchAlgorithmException e) {
                 throw new OcspFailureException(e);
             }
             return get(keyFromCertificateID(certId));
