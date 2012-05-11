@@ -484,7 +484,7 @@ public abstract class OcspResponseSessionBean implements OcspResponseGeneratorSe
     /**
      * This method exists solely to avoid code duplication when error handling in getOcspResponse.
      * 
-     * @param responseGenerator A OCSPRespGenerator for generating a response with state INTERNAL_ERROR.
+     * @param responseGenerator A OCSPRespBuilder for generating a response with state INTERNAL_ERROR.
      * @param transactionLogger The TransactionLogger for this call.
      * @param auditLogger The AuditLogger for this call.
      * @param e The thrown exception.

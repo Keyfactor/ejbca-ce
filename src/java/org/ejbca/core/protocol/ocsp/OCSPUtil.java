@@ -18,6 +18,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
@@ -34,16 +35,23 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
-import org.bouncycastle.ocsp.OCSPException;
-import org.bouncycastle.ocsp.OCSPReq;
-import org.bouncycastle.ocsp.RespID;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.BasicOCSPRespBuilder;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.RespID;
+import org.bouncycastle.cert.ocsp.jcajce.JcaRespID;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.NotSupportedException;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.config.OcspConfiguration;
@@ -63,22 +71,20 @@ public class OCSPUtil {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
 
-    private static BasicOCSPRespGenerator createOCSPResponse(OCSPReq req, X509Certificate respondercert, int respIdType) throws OCSPException, NotSupportedException {
+    private static BasicOCSPRespBuilder createOCSPResponse(OCSPReq req, X509Certificate respondercert, int respIdType) throws OCSPException, NotSupportedException {
         if (null == req) {
             throw new IllegalArgumentException();
         }
-        BasicOCSPRespGenerator res = null;
+        BasicOCSPRespBuilder res = null;
         if (respIdType == OcspConfiguration.RESPONDERIDTYPE_NAME) {
-        	res = new BasicOCSPRespGenerator(new RespID(respondercert.getSubjectX500Principal()));
+        	res = new BasicOCSPRespBuilder(new JcaRespID(respondercert.getSubjectX500Principal()));
         } else {
-        	res = new BasicOCSPRespGenerator(respondercert.getPublicKey());
+        	res = new BasicOCSPRespBuilder(new JcaRespID(respondercert.getPublicKey(), SHA1DigestCalculator.buildSha1Instance()));
         }
-        X509Extensions reqexts = req.getRequestExtensions();
-        if (reqexts != null) {
-        	X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_response);
+        if (req.hasExtensions()) {
+        	Extension ext = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_response);
             if (null != ext) {
-                //m_log.debug("Found extension AcceptableResponses");
-                ASN1OctetString oct = ext.getValue();
+                ASN1OctetString oct = ext.getExtnValue();
                 try {
                     ASN1Sequence seq = ASN1Sequence.getInstance(new ASN1InputStream(new ByteArrayInputStream(oct.getOctets())).readObject());
                     @SuppressWarnings("unchecked")
@@ -86,7 +92,6 @@ public class OCSPUtil {
                     boolean supportsResponseType = false;
                     while (en.hasMoreElements()) {
                         ASN1ObjectIdentifier oid = en.nextElement();
-                        //m_log.debug("Found oid: "+oid.getId());
                         if (oid.equals(OCSPObjectIdentifiers.id_pkix_ocsp_basic)) {
                             // This is the response type we support, so we are happy! Break the loop.
                             supportsResponseType = true;
@@ -104,10 +109,10 @@ public class OCSPUtil {
         return res;
     }
     
-    private static BasicOCSPResp generateBasicOCSPResp(OCSPCAServiceRequest serviceReq, String sigAlg, X509Certificate signerCert, PrivateKey signerKey, String provider, X509Certificate[] chain, int respIdType) 
-    throws NotSupportedException, OCSPException, NoSuchProviderException, IllegalArgumentException {
+    private static BasicOCSPResp generateBasicOCSPResp(OCSPCAServiceRequest serviceReq, String sigAlg, X509Certificate signerCert, PrivateKey signerKey, String provider, X509CertificateHolder[] chain, int respIdType) 
+    throws NotSupportedException, OCSPException, NoSuchProviderException, IllegalArgumentException, OperatorCreationException {
     	BasicOCSPResp returnval = null;
-    	BasicOCSPRespGenerator basicRes = null;
+    	BasicOCSPRespBuilder basicRes = null;
     	basicRes = createOCSPResponse(serviceReq.getOCSPrequest(), signerCert, respIdType);
     	ArrayList<OCSPResponseItem> responses = serviceReq.getResponseList();
     	if (responses != null) {
@@ -117,28 +122,27 @@ public class OCSPUtil {
             	basicRes.addResponse(item.getCertID(), item.getCertStatus(), item.getThisUpdate(), item.getNextUpdate(), null);    			
     		}
     	}
-    	X509Extensions exts = serviceReq.getExtensions();
+    	Extensions exts = serviceReq.getExtensions();
     	if (exts != null) {
-    		@SuppressWarnings("unchecked")
-            Enumeration<ASN1ObjectIdentifier> oids = exts.oids();
-    		if (oids.hasMoreElements()) {
+    		ASN1ObjectIdentifier[] oids = exts.getExtensionOIDs();
+    		if (oids.length > 0) {
     	    	basicRes.setResponseExtensions(exts);    			
     		}
     	}
 
-    	returnval = basicRes.generate(sigAlg, signerKey, chain, new Date(), provider );
+    	returnval = basicRes.build(new JcaContentSignerBuilder(sigAlg).build(signerKey), chain, new Date());
     	if (m_log.isDebugEnabled()) {
     		m_log.debug("Signing OCSP response with OCSP signer cert: " + signerCert.getSubjectDN().getName());
     		RespID respId = null;
     		if (respIdType == OcspConfiguration.RESPONDERIDTYPE_NAME) {
-				respId = new RespID(signerCert.getSubjectX500Principal());    			
+				respId = new JcaRespID(signerCert.getSubjectX500Principal());    			
     		} else {
-				respId = new RespID(signerCert.getPublicKey());    			
+				respId = new JcaRespID(signerCert.getPublicKey(), SHA1DigestCalculator.buildSha1Instance());    			
     		}
     		if (!returnval.getResponderId().equals(respId)) {
     			m_log.error("Response responderId does not match signer certificate responderId!");
     		}
-    		boolean verify = returnval.verify(signerCert.getPublicKey(), "BC");
+    		boolean verify = returnval.isSignatureValid(new JcaContentVerifierProviderBuilder().build(signerCert.getPublicKey()));
     		if (verify) {
         		m_log.debug("The OCSP response is verifying.");
     		} else {
@@ -186,6 +190,7 @@ public class OCSPUtil {
 		            new Date(signerCert.getNotAfter().getTime()-warnBeforeExpirationTime));
     	return true;
     }
+    
     /**
      * Method generates an ExtendedCAServiceResponse which is a OCSPCAServiceResponse wrapping the BasicOCSPRespfor usage 
      * internally in EJBCA.
@@ -195,24 +200,46 @@ public class OCSPUtil {
      * @param providerName Provider for the private key, can be on HSM
      * @param certChain Certificate chain for signing the OCSP response
      * @return OCSPCAServiceResponse
+     * @throws CertificateEncodingException 
      * @throws IllegalExtendedCAServiceRequestException
      * @throws ExtendedCAServiceRequestException
+     * @throws CertificateException 
+     * @throws OperatorCreationException 
      */
-    public static OCSPCAServiceResponse createOCSPCAServiceResponse(OCSPCAServiceRequest ocspServiceReq, PrivateKey privKey, String providerName, X509Certificate[] certChain)
-    throws IllegalExtendedCAServiceRequestException, ExtendedCAServiceRequestException {
-    	final X509Certificate signerCert = certChain[0];
+    public static OCSPCAServiceResponse createOCSPCAServiceResponse(OCSPCAServiceRequest ocspServiceReq, PrivateKey privKey, String providerName, X509Certificate[] certChain) throws CertificateEncodingException, CertificateException, OperatorCreationException, IllegalExtendedCAServiceRequestException, ExtendedCAServiceRequestException {
+        return createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName, convertCertificateChainToCertificateHolderChain(certChain));
+    }
+    
+    /**
+     * Method generates an ExtendedCAServiceResponse which is a OCSPCAServiceResponse wrapping the BasicOCSPRespfor usage 
+     * internally in EJBCA.
+     *  
+     * @param ocspServiceReq OCSPCAServiceRequest
+     * @param privKey PrivateKey used to sign the OCSP response
+     * @param providerName Provider for the private key, can be on HSM
+     * @param certChain X509CertificateHolder chain for signing the OCSP response
+     * @return OCSPCAServiceResponse
+     * @throws IllegalExtendedCAServiceRequestException
+     * @throws ExtendedCAServiceRequestException
+     * @throws CertificateException 
+     * @throws OperatorCreationException 
+     */
+    public static OCSPCAServiceResponse createOCSPCAServiceResponse(OCSPCAServiceRequest ocspServiceReq, PrivateKey privKey, String providerName, X509CertificateHolder[] certChain)
+    throws IllegalExtendedCAServiceRequestException, ExtendedCAServiceRequestException, CertificateException, OperatorCreationException {
+        JcaX509CertificateConverter converter = new JcaX509CertificateConverter();
+    	final X509Certificate signerCert = converter.getCertificate(certChain[0]);
     	final String sigAlgs = ocspServiceReq.getSigAlg();
     	final PublicKey pk = signerCert.getPublicKey();
     	final String sigAlg = OCSPUtil.getSigningAlgFromAlgSelection(sigAlgs, pk);
     	m_log.debug("Signing algorithm: "+sigAlg);
     	final boolean includeChain = ocspServiceReq.includeChain();
     	m_log.debug("Include chain: "+includeChain);
-    	final X509Certificate[] chain;
+    	final X509CertificateHolder[] chain;
     	if (includeChain) {
     		chain = certChain;
     	} else {
-    		chain = new X509Certificate[1];
-    		chain[0] = signerCert;
+    		chain = new X509CertificateHolder[1];
+    		chain[0] = certChain[0];
     	}
     	try {
     		final int respIdType = ocspServiceReq.getRespIdType();

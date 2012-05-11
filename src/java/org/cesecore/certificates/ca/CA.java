@@ -22,6 +22,8 @@ import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.CRL;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -37,6 +39,7 @@ import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
@@ -838,9 +841,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     /**
      * Method used to perform the service.
+     * @throws OperatorCreationException 
+     * @throws CertificateException 
+     * @throws CertificateEncodingException 
      */
     public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
-            IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException {
+            IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CertificateEncodingException, CertificateException, OperatorCreationException {
         ExtendedCAService service = getExtendedCAService(request.getServiceType());
         if (service == null) {
         	final String msg = "Extended CA service is null for service request: "+request.getClass().getName();

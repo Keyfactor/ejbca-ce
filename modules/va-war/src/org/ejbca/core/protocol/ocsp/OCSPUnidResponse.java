@@ -148,7 +148,7 @@ public class OCSPUnidResponse {
 	
 	/** Returns the OCSP response status
 	 * 
-	 * @return the response code of the OCSP message, OCSPRespGenerator.XX for example OCSPRespGenerator.SIG_REQUIRED
+	 * @return the response code of the OCSP message, OCSPRespBuilder.XX for example OCSPRespBuilder.SIG_REQUIRED
 	 */
 	public int getResponseStatus() {
         if (resp == null) {

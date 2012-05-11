@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.bouncycastle.ocsp.OCSPRespGenerator;
+import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
@@ -299,11 +299,11 @@ public class Ocsp extends ClientToolBox {
             } else {
             	System.out.print("OCSP response status is: "+response.getResponseStatus()+" (");
             	switch (response.getResponseStatus()) {
-            		case OCSPRespGenerator.MALFORMED_REQUEST: System.out.println("malformed request)"); break;
-            		case OCSPRespGenerator.INTERNAL_ERROR: System.out.println("internal error"); break;
-            		case OCSPRespGenerator.TRY_LATER: System.out.println("try later)"); break;
-            		case OCSPRespGenerator.SIG_REQUIRED: System.out.println("signature required)"); break;
-            		case OCSPRespGenerator.UNAUTHORIZED: System.out.println("unauthorized)"); break;
+            		case OCSPRespBuilder.MALFORMED_REQUEST: System.out.println("malformed request)"); break;
+            		case OCSPRespBuilder.INTERNAL_ERROR: System.out.println("internal error"); break;
+            		case OCSPRespBuilder.TRY_LATER: System.out.println("try later)"); break;
+            		case OCSPRespBuilder.SIG_REQUIRED: System.out.println("signature required)"); break;
+            		case OCSPRespBuilder.UNAUTHORIZED: System.out.println("unauthorized)"); break;
             	}
             }
         } catch (Exception e) {

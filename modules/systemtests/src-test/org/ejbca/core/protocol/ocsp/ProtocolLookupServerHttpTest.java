@@ -32,7 +32,6 @@ import java.security.KeyStore;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Enumeration;
-import java.util.Hashtable;
 
 import javax.ejb.EJBException;
 import javax.net.ssl.HostnameVerifier;
@@ -47,24 +46,28 @@ import javax.persistence.PersistenceException;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPException;
-import org.bouncycastle.ocsp.OCSPReq;
-import org.bouncycastle.ocsp.OCSPReqGenerator;
-import org.bouncycastle.ocsp.OCSPResp;
-import org.bouncycastle.ocsp.RevokedStatus;
-import org.bouncycastle.ocsp.SingleResp;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.RevokedStatus;
+import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
@@ -171,13 +174,13 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
-        exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        OCSPReq req = gen.generate();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        
+        OCSPReq req = gen.build();
 
         // Send the request and receive a BasicResponse
         BasicOCSPResp brep = sendOCSPPost(req.getEncoded(), true);
@@ -202,13 +205,12 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         revocationSession.revokeCertificate(admin, ocspTestCert, null, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, null);
 
         // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
-        exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        OCSPReq req = gen.generate();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        OCSPReq req = gen.build();
 
         // Send the request and receive a BasicResponse
         BasicOCSPResp brep = sendOCSPPost(req.getEncoded(), true);
@@ -248,13 +250,12 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
-        exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        OCSPReq req = gen.generate();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        OCSPReq req = gen.build();
 
         // Send the request and receive a BasicResponse
         BasicOCSPResp brep = sendOCSPPost(req.getEncoded(), true);
@@ -289,13 +290,12 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
-        exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        OCSPReq req = gen.generate();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        OCSPReq req = gen.build();
 
         // Send the request and receive a BasicResponse
         BasicOCSPResp brep = sendOCSPPost(req.getEncoded(), true);
@@ -331,13 +331,12 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
-        exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        OCSPReq req = gen.generate();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        OCSPReq req = gen.build();
 
         // Send the request and receive a BasicResponse
         BasicOCSPResp brep = sendOCSPPost(req.getEncoded(), false);
@@ -375,13 +374,12 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         assertNotNull("Misslyckades skapa cert", ocspTestCert);
 
         // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("123456789")));
-        exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        OCSPReq req = gen.generate();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        OCSPReq req = gen.build();
 
         // Send the request and receive a BasicResponse
         BasicOCSPResp brep = sendOCSPPost(req.getEncoded(), true);
@@ -400,10 +398,10 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     // Private helper methods
     //
 
-    private BasicOCSPResp sendOCSPPost(byte[] ocspPackage, boolean trust) throws IOException, OCSPException, GeneralSecurityException {
+    private BasicOCSPResp sendOCSPPost(byte[] ocspPackage, boolean trust) throws IOException, OCSPException, GeneralSecurityException,
+            OperatorCreationException {
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceOcsp);
-        // HttpURLConnection con = (HttpURLConnection)url.openConnection();
         HttpURLConnection con = (HttpURLConnection) getUrlConnection(url, trust);
         // we are going to do a POST
         con.setDoOutput(true);
@@ -427,17 +425,17 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         baos.flush();
         in.close();
         byte[] respBytes = baos.toByteArray();
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
+        OCSPResp response = new OCSPResp(respBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        X509Certificate[] chain = brep.getCerts("BC");
-        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+        X509CertificateHolder[] chain = brep.getCerts();
+        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
         assertTrue("Response failed to verify.", verify);
         return brep;
     }
 
     private String getFnr(BasicOCSPResp brep) throws IOException {
-        byte[] fnrrep = brep.getExtensionValue(FnrFromUnidExtension.FnrFromUnidOid.getId());
+        byte[] fnrrep = brep.getExtension(FnrFromUnidExtension.FnrFromUnidOid).getExtnValue().getEncoded();
         if (fnrrep == null) {
             return null;
         }

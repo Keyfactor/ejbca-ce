@@ -44,7 +44,6 @@ import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
-import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -214,7 +213,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 		// This does not mean that we only should allow 100 in the future, just
 		// that we if so need to find
 		// another way make the Servlet return
-		// OCSPRespGenerator.MALFORMED_REQUEST
+		// OCSPRespBuilder.MALFORMED_REQUEST
 		for (int i = 0; i < 101; i++) {
 			gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
 		}
@@ -246,7 +245,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 		byte[] bytes = req.getEncoded();
 		// Switch the first byte, now it's a really corrupted request
 		bytes[0] = 0x44;
-		SingleResp[] singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespGenerator.MALFORMED_REQUEST, 200); // error
+		SingleResp[] singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespBuilder.MALFORMED_REQUEST, 200); // error
 		// code
 		// 1
 		// means
@@ -260,7 +259,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 		// bytes = Arrays.copyOf(orgbytes, orgbytes.length-1); only works in
 		// Java 6
 		bytes = ArrayUtils.remove(orgbytes, orgbytes.length - 1);
-		singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespGenerator.MALFORMED_REQUEST, 200); // error
+		singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespBuilder.MALFORMED_REQUEST, 200); // error
 		// code
 		// 1
 		// means
@@ -273,7 +272,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 		// more than 1 million bytes
 		// bytes = Arrays.copyOf(orgbytes, 1000010); only works in Java 6
 		bytes = ArrayUtils.addAll(orgbytes, new byte[1000010]);
-		singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespGenerator.MALFORMED_REQUEST, 200); // //
+		singleResps = helper.sendOCSPPost(bytes, "123456789", OCSPRespBuilder.MALFORMED_REQUEST, 200); // //
 		// error
 		// code
 		// 1
@@ -332,7 +331,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 		loadUserCert(this.caid);
 		gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
 		OCSPReq req = gen.build();
-		SingleResp[] singleResps = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespGenerator.SUCCESSFUL, 200);
+		SingleResp[] singleResps = helper.sendOCSPGet(req.getEncoded(), null, OCSPRespBuilder.SUCCESSFUL, 200);
 		assertNotNull("SingleResps should not be null.", singleResps);
 		CertificateID certId = singleResps[0].getCertID();
 		assertEquals("Serno in response does not match serno in request.", certId.getSerialNumber(), ocspTestCert.getSerialNumber());
@@ -347,21 +346,21 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 		// An array of zeros cannot be right..
 		// A GET request larger than 2048 works on JBoss but not on Glassfish,
 		// GF only gives "unexpected end of file", i.e. it closes the connection
-		helper.sendOCSPGet(new byte[2048], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
+		helper.sendOCSPGet(new byte[2048], null, OCSPRespBuilder.MALFORMED_REQUEST, 200);
 		// Send an empty GET request: .../ocsp/{nothing}
-		helper.sendOCSPGet(new byte[0], null, OCSPRespGenerator.MALFORMED_REQUEST, 200);
+		helper.sendOCSPGet(new byte[0], null, OCSPRespBuilder.MALFORMED_REQUEST, 200);
 		// Test too large requests
 		/*
 		 * try { // When we use an URL of length ~ 8100 chars on JBoss we get a
 		 * "Connection reset", // JBoss 5 considers this a bad request (400) //
 		 * so we cannot test the real Malformed response we want here
 		 * helper.sendOCSPGet(new byte[6020], null,
-		 * OCSPRespGenerator.MALFORMED_REQUEST, 200); } catch (IOException e) {
+		 * OCSPRespBuilder.MALFORMED_REQUEST, 200); } catch (IOException e) {
 		 * log.info(e.getMessage()); } try { // When we use an URL of length ~ >
 		 * 500000 chars on JBoss we get a "Error writing to server", // so we
 		 * cannot test the real Malformed response we want here caused by to
 		 * large requests helper.sendOCSPGet(new byte[1000001], null,
-		 * OCSPRespGenerator.MALFORMED_REQUEST, 200); } catch (IOException e) {
+		 * OCSPRespBuilder.MALFORMED_REQUEST, 200); } catch (IOException e) {
 		 * log.info(e.getMessage()); }
 		 */
 	}

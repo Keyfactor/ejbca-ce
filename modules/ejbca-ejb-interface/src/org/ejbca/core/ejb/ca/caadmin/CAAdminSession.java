@@ -14,11 +14,14 @@ package org.ejbca.core.ejb.ca.caadmin;
 
 import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.util.Collection;
 import java.util.Date;
 
 import javax.ejb.EJBException;
 
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -439,12 +442,15 @@ public interface CAAdminSession {
      * @throws ExtendedCAServiceNotActiveException
      *                                 thrown when the service for the given CA isn't activated
      * @throws CADoesntExistsException The given caid does not exist.
+     * @throws OperatorCreationException 
+     * @throws CertificateException 
+     * @throws CertificateEncodingException 
      */
     public ExtendedCAServiceResponse extendedService(AuthenticationToken admin, int caid,
             ExtendedCAServiceRequest request)
             throws ExtendedCAServiceRequestException,
             IllegalExtendedCAServiceRequestException,
-            ExtendedCAServiceNotActiveException, CADoesntExistsException, AuthorizationDeniedException;
+            ExtendedCAServiceNotActiveException, CADoesntExistsException, AuthorizationDeniedException, CertificateEncodingException, CertificateException, OperatorCreationException;
 
     /**
      * Makes sure that no CAs are cached to ensure that we read from database
