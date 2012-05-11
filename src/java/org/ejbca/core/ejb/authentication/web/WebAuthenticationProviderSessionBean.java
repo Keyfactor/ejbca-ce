@@ -62,6 +62,16 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLoggerSession;
 
+    /**
+     * Performs client certificate authentication for a subject. This requires:
+     * - An AuthenticationSubject containing a Set<X509Certificate>, where there should be only one certificate 
+     *   being the administrators client certificate.
+     * If the admin certificate is required to be in the database (properties configuration option) it is
+     * verified that the certificate is present in the database and that it is not revoked.
+     * 
+     * @param subject an AuthenticationSubject containing a Set<X509Certificate> of credentials, the set must contain one certificate which is the admin client certificate.
+     * @return an AuthenticationToken if the subject was authenticated, null otherwise.
+     */
     @Override
     public AuthenticationToken authenticate(AuthenticationSubject subject) {
         final Set<X509Certificate> certs = (Set<X509Certificate>)subject.getCredentials();
