@@ -20,8 +20,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.ocsp.OCSPReq;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.config.OcspConfiguration;
 import org.ejbca.core.protocol.ocsp.OCSPResponseItem;
@@ -39,7 +39,7 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
 	
     private OCSPReq req = null;
     private ArrayList<OCSPResponseItem> responseList = null;
-    private X509Extensions exts = null;
+    private Extensions exts = null;
     private String sigAlg = "SHA1WithRSA";
     private boolean includeChain = true;
     private String privKeyProvider = "BC"; // Default for OCSP responder not using the CAs private key
@@ -50,7 +50,7 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
     private List<Certificate> certificateChain = null;
     
     /** Constructor for OCSPCAServiceRequest */                   
-    public OCSPCAServiceRequest(OCSPReq req, ArrayList<OCSPResponseItem> responseList, X509Extensions exts, String sigAlg, boolean includeChain) {
+    public OCSPCAServiceRequest(OCSPReq req, ArrayList<OCSPResponseItem> responseList, Extensions exts, String sigAlg, boolean includeChain) {
         this.req = req;
         this.responseList = responseList;
         this.exts = exts;
@@ -60,7 +60,7 @@ public class OCSPCAServiceRequest extends ExtendedCAServiceRequest implements Se
     public OCSPReq getOCSPrequest() {
         return req;
     }  
-    public X509Extensions getExtensions() {
+    public Extensions getExtensions() {
     	return exts;
     }
     public ArrayList<OCSPResponseItem> getResponseList() {

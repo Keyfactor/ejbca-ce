@@ -14,37 +14,37 @@
 package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
-import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.bouncycastle.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 
 /**
- * Class used when delevering OCSP service response from a CA.  
+ * Class used when delivering OCSP service response from a CA.  
  *
  * @version $Id$
  */
 public class OCSPCAServiceResponse extends ExtendedCAServiceResponse implements Serializable {    
              
     private static final long serialVersionUID = 6902833915867802344L;
-    private List<X509Certificate> ocspcertificatechain = null;
+    private List<X509CertificateHolder> ocspcertificatechain = null;
     private BasicOCSPResp basicResp = null;
     
         
-    public OCSPCAServiceResponse(BasicOCSPResp basicResp, List<X509Certificate> ocspsigningcertificatechain) {
+    public OCSPCAServiceResponse(BasicOCSPResp basicResp, List<X509CertificateHolder> ocspsigningcertificatechain) {
         this.basicResp = basicResp;
         this.ocspcertificatechain = ocspsigningcertificatechain;
     }    
            
-    public X509Certificate getOCSPSigningCertificate() { return (X509Certificate) this.ocspcertificatechain.get(0); }
-	public Collection<X509Certificate> getOCSPSigningCertificateChain() { 
+    public X509CertificateHolder getOCSPSigningCertificate() { return  this.ocspcertificatechain.get(0); }
+	public Collection<X509CertificateHolder> getOCSPSigningCertificateChain() { 
         if (ocspcertificatechain != null) {
             return this.ocspcertificatechain;
         }
-        return new ArrayList<X509Certificate>();
+        return new ArrayList<X509CertificateHolder>();
     }
     public BasicOCSPResp getBasicOCSPResp() { return this.basicResp; }
         

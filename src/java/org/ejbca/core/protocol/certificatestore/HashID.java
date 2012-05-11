@@ -14,11 +14,14 @@ package org.ejbca.core.protocol.certificatestore;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.jce.X509Principal;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.keys.util.KeyTools;
@@ -85,6 +88,15 @@ public class HashID {
 	public static HashID getFromIssuerDN(X509Certificate cert) {
 		return getFromDN( cert.getIssuerX500Principal() );
 	}
+	
+	/**
+     * @param cert The issuer DN of the certificate should be the identifier.
+     * @return the ID
+	 * @throws CertificateException 
+     */
+	public static HashID getFromIssuerDN(X509CertificateHolder certificateHolder) throws CertificateException {
+        return getFromIssuerDN(new JcaX509CertificateConverter().getCertificate(certificateHolder));
+    }
 	/**
 	 * @param sDN A string representation of a DN to be as ID.
 	 * @return the ID.

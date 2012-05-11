@@ -30,7 +30,6 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -201,14 +200,6 @@ public class OCSPUnidClient {
         }
         final OCSPReqBuilder gen = new OCSPReqBuilder();
         final CertificateID certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate)cacert, serialNr);
-//        System.out.println("Generating CertificateId:\n"
-//                + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
-//                + " CA certificate\n"
-//                + "      CA SubjectDN: '" + cacert.getSubjectDN().getName() + "'\n"
-//                + "      SerialNumber: '" + cacert.getSerialNumber().toString(16) + "'\n"
-//                + " CA certificate hashes\n"
-//                + "      Name hash : '" + new String(Hex.encode(certId.getIssuerNameHash())) + "'\n"
-//                + "      Key hash  : '" + new String(Hex.encode(certId.getIssuerKeyHash())) + "'\n");
         gen.addRequest(certId);
         if (!useGet) {
             // Add a nonce to the request
@@ -242,8 +233,6 @@ public class OCSPUnidClient {
     	final HttpURLConnection con;
     	if (useGet) {
         	String b64 = new String(Base64.encode(ocspPackage, false));
-        	//String urls = URLEncoder.encode(b64, "UTF-8");
-        	//URL url = new URL(httpReqPath + '/' + urls);
         	URL url = new URL(httpReqPath + '/' + b64);
             con = (HttpURLConnection)url.openConnection();
     	} else {
@@ -310,7 +299,7 @@ public class OCSPUnidClient {
     	}
 
 		final RespID id = brep.getResponderId();
-		final DERTaggedObject to = (DERTaggedObject)id.toASN1Object().toASN1Object();
+		final DERTaggedObject to = (DERTaggedObject)id.toASN1Object().toASN1Primitive();
 		final RespID respId;
         final X509CertificateHolder[] chain = brep.getCerts();
         JcaX509CertificateConverter converter = new JcaX509CertificateConverter();

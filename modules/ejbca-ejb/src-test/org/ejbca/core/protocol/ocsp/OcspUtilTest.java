@@ -25,20 +25,23 @@ import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.ArrayList;
-import java.util.Hashtable;
 
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPReq;
-import org.bouncycastle.ocsp.OCSPReqGenerator;
-import org.bouncycastle.ocsp.RespID;
-import org.bouncycastle.ocsp.SingleResp;
-import org.bouncycastle.ocsp.UnknownStatus;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
+import org.bouncycastle.cert.ocsp.RespID;
+import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.UnknownStatus;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.cert.ocsp.jcajce.JcaRespID;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -53,7 +56,6 @@ import org.junit.Test;
 
 /**
  * 
- * @author tomas
  * @version $Id$
  *
  */
@@ -83,13 +85,12 @@ public class OcspUtilTest {
 		// Everything looks OK, lets get started with the real tests.
 		
 		// An OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, racert.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        OCSPReq req = gen.generate();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, racert.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));
+        OCSPReq req = gen.build();
 
         // A response to create
 		ArrayList<OCSPResponseItem> responseList = new ArrayList<OCSPResponseItem>();
@@ -100,13 +101,14 @@ public class OcspUtilTest {
 		OCSPCAServiceRequest ocspServiceReq = new OCSPCAServiceRequest(req, responseList, null, "SHA1WithRSA;SHA1WithDSA;SHA1WithECDSA", true);
 		ocspServiceReq.setRespIdType(OcspConfiguration.RESPONDERIDTYPE_KEYHASH);
 
-		OCSPCAServiceResponse response = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName, certChain);
-		BasicOCSPResp basicResp = response.getBasicOCSPResp();
-		X509Certificate[] respCerts = basicResp.getCerts("BC");
+        OCSPCAServiceResponse response = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName,
+                OCSPUtil.convertCertificateChainToCertificateHolderChain(certChain));
+        BasicOCSPResp basicResp = response.getBasicOCSPResp();
+        X509CertificateHolder[] respCerts = basicResp.getCerts();
 		assertEquals(3, respCerts.length); // Certificate chain included
 		RespID respId = basicResp.getResponderId();
-		RespID testKeyHash = new RespID(racert.getPublicKey());
-		RespID testName = new RespID(racert.getSubjectX500Principal());
+		RespID testKeyHash = new JcaRespID(racert.getPublicKey(), SHA1DigestCalculator.buildSha1Instance());
+		RespID testName = new JcaRespID(racert.getSubjectX500Principal());
 		assertEquals(respId, testKeyHash);
 		assertFalse(respId.equals(testName));
 
@@ -115,14 +117,14 @@ public class OcspUtilTest {
 		ocspServiceReq.setRespIdType(OcspConfiguration.RESPONDERIDTYPE_NAME);
 		response = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName, certChain);
 		basicResp = response.getBasicOCSPResp();
-		respCerts = basicResp.getCerts("BC");
+		respCerts = basicResp.getCerts();
 		assertEquals(1, respCerts.length); // Certificate chain included
 		respId = basicResp.getResponderId();
 		assertFalse(respId.equals(testKeyHash));
 		assertEquals(respId, testName);
 
 		// Third do some verification
-		basicResp.verify(racert.getPublicKey(), "BC");
+		basicResp.isSignatureValid(new JcaContentVerifierProviderBuilder().build(racert.getPublicKey()));
 		SingleResp[] responses = basicResp.getResponses();
 		assertEquals(1, responses.length);
 		SingleResp resp = responses[0];

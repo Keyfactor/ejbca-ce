@@ -15,11 +15,14 @@ package org.ejbca.core.model.ca.caadmin.extendedcaservices;
 
 import java.io.Serializable;
 import java.security.PrivateKey;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
@@ -96,32 +99,34 @@ public class OCSPCAService extends ExtendedCAService implements Serializable {
     }
 
     @Override
-	public ExtendedCAServiceResponse extendedService(final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
+    public ExtendedCAServiceResponse extendedService(final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
+            IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CertificateEncodingException, CertificateException,
+            OperatorCreationException {
         log.trace(">extendedService");
         if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
-			String msg = intres.getLocalizedMessage("caservice.notactive", "OCSP");
-			log.error(msg);
-			throw new ExtendedCAServiceNotActiveException(msg);                            
+            String msg = intres.getLocalizedMessage("caservice.notactive", "OCSP");
+            log.error(msg);
+            throw new ExtendedCAServiceNotActiveException(msg);
         }
         if (!(request instanceof OCSPCAServiceRequest)) {
-            throw new IllegalExtendedCAServiceRequestException();            
+            throw new IllegalExtendedCAServiceRequestException();
         }
 
-        final OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest)request;
+        final OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest) request;
         try {
-        	final PrivateKey privKey = getCa().getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-        	final String providerName = getCa().getCAToken().getCryptoToken().getSignProviderName();
-        	final X509Certificate[] signerChain = (X509Certificate[])getCa().getCertificateChain().toArray(new X509Certificate[0]);
-        	final ExtendedCAServiceResponse returnval = OCSPUtil.createOCSPCAServiceResponse(
-        			ocspServiceReq, privKey, providerName, signerChain);
-            log.trace("<extendedService");		  		
-        	return returnval;
+            final PrivateKey privKey = getCa().getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+            final String providerName = getCa().getCAToken().getCryptoToken().getSignProviderName();
+            final X509Certificate[] signerChain = (X509Certificate[]) getCa().getCertificateChain().toArray(new X509Certificate[0]);
+            final ExtendedCAServiceResponse returnval = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName,
+                    OCSPUtil.convertCertificateChainToCertificateHolderChain(signerChain));
+            log.trace("<extendedService");
+            return returnval;
         } catch (CryptoTokenOfflineException e) {
-			throw new ExtendedCAServiceNotActiveException(e);
-		} catch (IllegalCryptoTokenException e) {
-			throw new ExtendedCAServiceNotActiveException(e);
-		}
-	}
+            throw new ExtendedCAServiceNotActiveException(e);
+        } catch (IllegalCryptoTokenException e) {
+            throw new ExtendedCAServiceNotActiveException(e);
+        }
+    }
 
     @Override
 	public float getLatestVersion() {		

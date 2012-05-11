@@ -18,7 +18,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -32,6 +31,7 @@ import java.security.KeyStore;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Random;
@@ -40,13 +40,20 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPException;
-import org.bouncycastle.ocsp.OCSPReq;
-import org.bouncycastle.ocsp.OCSPReqGenerator;
-import org.bouncycastle.ocsp.OCSPResp;
-import org.bouncycastle.ocsp.SingleResp;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -82,7 +89,7 @@ public class ProtocolOcspHttpPerfTest {
     private static Boolean dosigning = true;
     private static String signerp12 = "/home/tomas/dev/ocsp-perftest/tomas_test.p12";
     private static String signingAlg = "SHA1WithRSA";
-    private static X509Certificate[] certChain;
+    private static X509CertificateHolder[] certChain;
     private static PrivateKey privKey;
     private static String alias = "Tomas Test";
     private static String ksPwd = "foo123";
@@ -148,10 +155,10 @@ public class ProtocolOcspHttpPerfTest {
         ks.load(fis, ksPwd.toCharArray());
     	privKey = (PrivateKey)ks.getKey(alias, ksPwd.toCharArray());
     	Certificate[] chain = ks.getCertificateChain(alias);
-    	certChain = new X509Certificate[chain.length];
+    	certChain = new X509CertificateHolder[chain.length];
     	for (int i=0; i<chain.length;i++) {
-    		certChain[i] = (X509Certificate)chain[i];
-    		log.info("Cert["+i+"] subject: "+certChain[i].getSubjectDN().getName());
+    		certChain[i] = new JcaX509CertificateHolder((X509Certificate)chain[i]);
+    		log.info("Cert["+i+"] subject: "+certChain[i].getSubject());
     	}
     	
     }
@@ -177,15 +184,15 @@ public class ProtocolOcspHttpPerfTest {
         log.trace(">test02OcspGood()");
 
         // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
         final Certificate ocspTestCert = getTestCert();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, (X509Certificate)cacert, CertTools.getSerialNumber(ocspTestCert)));
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate)cacert, CertTools.getSerialNumber(ocspTestCert)));
         OCSPReq req = null;
         if (dosigning) {
-            gen.setRequestorName(certChain[0].getSubjectX500Principal());
-            req = gen.generate(signingAlg, privKey, certChain, "BC");        	
+            gen.setRequestorName(certChain[0].getSubject());
+            req = gen.build(new JcaContentSignerBuilder(signingAlg).build(privKey), certChain);        	
         } else {
-        	req = gen.generate();
+        	req = gen.build();
         }
 
         // Send the request and receive a singleResponse
@@ -257,16 +264,15 @@ public class ProtocolOcspHttpPerfTest {
 				long before = System.currentTimeMillis();
 				for (int i = 0; i<10000;i++) {
 			        // And an OCSP request
-			        OCSPReqGenerator gen = new OCSPReqGenerator();
-			        //final X509Certificate ocspTestCert = getTestCert();
+			        OCSPReqBuilder gen = new OCSPReqBuilder();
 			        BigInteger serno = getSerno();
-			        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, (X509Certificate)cacert, serno));
+			        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate)cacert, serno));
 			        OCSPReq req = null;
 			        if (dosigning) {
-			            gen.setRequestorName(certChain[0].getSubjectX500Principal());
-			            req = gen.generate(signingAlg, privKey, certChain, "BC");        	
+			            gen.setRequestorName(certChain[0].getSubject());
+			            req = gen.build(new JcaContentSignerBuilder(signingAlg).build(privKey), certChain);        	
 			        } else {
-			        	req = gen.generate();
+			        	req = gen.build();
 			        }
 
 			        // Send the request and receive a singleResponse
@@ -295,9 +301,10 @@ public class ProtocolOcspHttpPerfTest {
     	return tomastest;
     }
 
-    private SingleResp sendOCSPPost(byte[] ocspPackage, String nonce) throws IOException, OCSPException, NoSuchProviderException {
+    private SingleResp sendOCSPPost(byte[] ocspPackage, String nonce) throws IOException, OCSPException, NoSuchProviderException,
+            OperatorCreationException, CertificateException {
         // POST the OCSP request
-        URL url = new URL(httpReqPath + '/' + resourceOcsp);
+     URL url = new URL(httpReqPath + '/' + resourceOcsp);
         HttpURLConnection con = (HttpURLConnection)url.openConnection();
         // we are going to do a POST
         con.setDoOutput(true);
@@ -321,15 +328,15 @@ public class ProtocolOcspHttpPerfTest {
         baos.flush();
         in.close();
         byte[] respBytes = baos.toByteArray();
-        OCSPResp response = new OCSPResp(new ByteArrayInputStream(respBytes));
+        OCSPResp response = new OCSPResp(respBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        X509Certificate[] chain = brep.getCerts("BC");
-        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+        X509CertificateHolder[] chain = brep.getCerts();
+        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
         assertTrue("Response failed to verify.", verify);
         // Check nonce (if we sent one)
         if (nonce != null) {
-        	byte[] noncerep = brep.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nonce.getId());
+        	byte[] noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
         	assertNotNull(noncerep);
         	ASN1InputStream ain = new ASN1InputStream(noncerep);
         	ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
