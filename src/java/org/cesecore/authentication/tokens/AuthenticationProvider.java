@@ -33,8 +33,7 @@ public interface AuthenticationProvider extends Serializable {
      * whoever implements this API. The returned AuthenticationToken should only contain those principals and credentials which were actually used in
      * the authentication process.
      * 
-     * @param principals A set of principals.
-     * @param credentials A set of credentials.
+     * @param subject an AuthenticationSubject containing a set if principals and/or a set of credentials, the contents required depends in the implementation of this method.
      * @return an AuthenticationToken if the subject was authenticated, null otherwise.
      */
     AuthenticationToken authenticate(AuthenticationSubject subject);
