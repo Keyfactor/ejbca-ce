@@ -180,7 +180,7 @@ public class InternalResources implements Serializable {
      * 
      * @return The message as a CharSequence, the return value is not trimmed for whitespace. 
      */
-    protected CharSequence getLocalizedMessageCs(final String key, final Object... params) {
+    public CharSequence getLocalizedMessageCs(final String key, final Object... params) {
         final StringBuilder sb = new StringBuilder();
         return getLocalizedMessageInternal(sb, key, params);
     }

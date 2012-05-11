@@ -83,7 +83,7 @@ public class CmpServlet extends HttpServlet {
             service(output.toByteArray(), request.getRemoteAddr(), response);
         } catch (Exception e) {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-            log.info(intres.getLocalizedMessage("cmp.errornoasn1"), e);
+            log.info(intres.getLocalizedMessageCs("cmp.errornoasn1"), e);
         }
         if (log.isTraceEnabled()) {
             log.trace("<doPost()");
@@ -112,7 +112,7 @@ public class CmpServlet extends HttpServlet {
 
     private void service(final byte[] ba, final String remoteAddr, final HttpServletResponse response) throws IOException {
         try {
-            log.info(intres.getLocalizedMessage("cmp.receivedmsg", remoteAddr));
+            log.info(intres.getLocalizedMessageCs("cmp.receivedmsg", remoteAddr));
             final long startTime = System.currentTimeMillis();
             final ResponseMessage resp;
             try {
@@ -121,7 +121,7 @@ public class CmpServlet extends HttpServlet {
                 resp = cmpMessageDispatcherLocal.dispatch(admin, ba);
             } catch (IOException e) {
                 response.sendError(HttpServletResponse.SC_BAD_REQUEST, e.getMessage());
-                log.info(intres.getLocalizedMessage("cmp.errornoasn1"), e);
+                log.info(intres.getLocalizedMessageCs("cmp.errornoasn1"), e);
                 return;
             }
             if (resp == null) { // If resp is null, it means that the dispatcher failed to process the message.
@@ -134,7 +134,7 @@ public class CmpServlet extends HttpServlet {
             // Send back CMP response
             RequestHelper.sendBinaryBytes(resp.getResponseMessage(), response, "application/pkixcmp", null);
             final long endTime = System.currentTimeMillis();
-            log.info(intres.getLocalizedMessage("cmp.sentresponsemsg", remoteAddr, Long.valueOf(endTime - startTime)));
+            log.info(intres.getLocalizedMessageCs("cmp.sentresponsemsg", remoteAddr, Long.valueOf(endTime - startTime)));
         } catch (Exception e) {
             log.error("Error in CmpServlet:", e);
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e.getMessage());

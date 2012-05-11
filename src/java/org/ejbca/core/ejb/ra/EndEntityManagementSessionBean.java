@@ -370,22 +370,20 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         log.debug("Type ("+type+") does not contain SecConst.USER_PRINT, no print job created.");
                     }
                 }
-                final String msg = intres.getLocalizedMessage("ra.addedentity", username);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
+                details.put("msg", intres.getLocalizedMessageCs("ra.addedentity", username));
                 auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.SUCCESS, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);
             } catch (PersistenceException e) {
                 // PersistenceException could also be caused by various database problems.
-                final String msg = intres.getLocalizedMessage("ra.errorentityexist", username);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
+                details.put("msg", intres.getLocalizedMessageCs("ra.errorentityexist", username));
                 details.put("error", e.getMessage());
                 auditSession.log(EjbcaEventTypes.RA_ADDENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);
                 throw e;
             } catch (Exception e) {
-                final String msg = intres.getLocalizedMessage("ra.erroraddentity", username);
+                final CharSequence msg = intres.getLocalizedMessageCs("ra.erroraddentity", username);
                 log.error(msg, e);
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
@@ -555,9 +553,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                             type.contains(EndEntityTypes.SENDNOTIFICATION), userDataVO.getTokenType(), userDataVO.getHardTokenIssuerId(), caid, ei);
                 }
             } catch (UserDoesntFullfillEndEntityProfile e) {
-                final String msg = intres.getLocalizedMessage("ra.errorfullfillprofile", Integer.valueOf(endEntityProfileId), dn, e.getMessage());
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
+                details.put("msg", intres.getLocalizedMessageCs("ra.errorfullfillprofile", Integer.valueOf(endEntityProfileId), dn, e.getMessage()));
                 auditSession.log(EjbcaEventTypes.RA_EDITENDENTITY, EventStatus.FAILURE, EjbcaModuleTypes.RA, ServiceTypes.CORE, admin.toString(),
                         String.valueOf(caid), null, username, details);
                 throw e;

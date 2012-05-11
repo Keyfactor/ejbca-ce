@@ -96,9 +96,8 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                 // Resets the remaining login attempts as this was a successful login
                 userAdminSession.resetRemainingLoginAttempts(username);
             	// Log formal message that authentication was successful
-                final String msg = intres.getLocalizedMessage("authentication.authok", username);            	
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
+                details.put("msg", intres.getLocalizedMessageCs("authentication.authok", username));
                 auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.SUCCESS, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), null, username, details);
             	if (log.isTraceEnabled()) {
                     log.trace("<authenticateUser("+username+", hiddenpwd)");
@@ -123,23 +122,22 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     }
 
     @Override
-	public void finishUser(EndEntityInformation data) throws ObjectNotFoundException {
+	public void finishUser(final EndEntityInformation data) throws ObjectNotFoundException {
 		if (log.isTraceEnabled()) {
 			log.trace(">finishUser(" + data.getUsername() + ", hiddenpwd)");
 		}
 		try {
 			
 			// See if we are allowed for make more requests than this one. If not user status changed by decRequestCounter
-			int counter = userAdminSession.decRequestCounter(data.getUsername());
+			final int counter = userAdminSession.decRequestCounter(data.getUsername());
 			if (counter <= 0) {
-				String msg = intres.getLocalizedMessage("authentication.statuschanged", data.getUsername());
-				log.info(msg);
+				log.info(intres.getLocalizedMessageCs("authentication.statuschanged", data.getUsername()));
 			} 
 			if (log.isTraceEnabled()) {
 				log.trace("<finishUser("+data.getUsername()+", hiddenpwd)");
 			}
 		} catch (FinderException e) {
-			String msg = intres.getLocalizedMessage("authentication.usernotfound", data.getUsername());
+			final CharSequence msg = intres.getLocalizedMessageCs("authentication.usernotfound", data.getUsername());
 			log.info(msg);
 			throw new ObjectNotFoundException(e.getMessage());
 		} catch (ApprovalException e) {
