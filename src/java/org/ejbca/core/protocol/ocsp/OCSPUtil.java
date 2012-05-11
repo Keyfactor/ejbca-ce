@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateExpiredException;
 import java.security.cert.CertificateNotYetValidException;
 import java.security.cert.X509Certificate;
@@ -35,6 +36,7 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.bouncycastle.ocsp.BasicOCSPRespGenerator;
 import org.bouncycastle.ocsp.OCSPException;
@@ -252,5 +254,19 @@ public class OCSPUtil {
         return sigAlg;
     }
 
+    /**
+     * Converts a X509Certificate chain into a JcaX509CertificateHolder chain.
+     * 
+     * @param certificateChain input chain to be converted
+     * @return the result
+     * @throws CertificateEncodingException if there is a problem extracting the certificate information.
+     */
+    public static final JcaX509CertificateHolder[] convertCertificateChainToCertificateHolderChain(X509Certificate[] certificateChain) throws CertificateEncodingException {
+        final JcaX509CertificateHolder[] certificateHolderChain = new JcaX509CertificateHolder[certificateChain.length];
+        for (int i = 0; i < certificateChain.length; ++i) {
+            certificateHolderChain[i] = new JcaX509CertificateHolder(certificateChain[i]);
+        }
+        return certificateHolderChain;
+    }
 
 }

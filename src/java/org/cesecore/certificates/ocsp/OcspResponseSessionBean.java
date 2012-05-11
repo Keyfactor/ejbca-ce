@@ -56,7 +56,6 @@ import org.bouncycastle.asn1.ocsp.RevokedInfo;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x509.X509Extension;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
@@ -72,7 +71,6 @@ import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaBasicOCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.jcajce.JcaRespID;
-import org.bouncycastle.ocsp.OCSPRespGenerator;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.Hex;
@@ -622,9 +620,6 @@ public abstract class OcspResponseSessionBean implements OcspResponseGeneratorSe
         } else {
             res = new JcaBasicOCSPRespBuilder(respondercert.getPublicKey(), SHA1DigestCalculator.buildSha1Instance());
         }
-        @SuppressWarnings("unchecked")
-        List<ASN1ObjectIdentifier> extensoinOids = req.getExtensionOIDs();
-        //X509Extensions reqexts = req.getRequestExtensions();
         if (req.hasExtensions()) {
             Extension ext = req.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_response);
             //X509Extension ext = reqexts.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_response);

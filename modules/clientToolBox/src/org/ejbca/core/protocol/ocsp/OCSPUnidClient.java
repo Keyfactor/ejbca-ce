@@ -30,10 +30,12 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.Hashtable;
+import java.util.List;
 import java.util.Random;
 
 import javax.net.ssl.HostnameVerifier;
@@ -46,23 +48,32 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPException;
-import org.bouncycastle.ocsp.OCSPReq;
-import org.bouncycastle.ocsp.OCSPReqGenerator;
-import org.bouncycastle.ocsp.OCSPResp;
-import org.bouncycastle.ocsp.RespID;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.RespID;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.cert.ocsp.jcajce.JcaRespID;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -78,7 +89,6 @@ import org.cesecore.util.CryptoProviderTools;
  * 2.There was no Unid Fnr mapping available
  * 3.There was no Unid in the certificate (serialNumber DN component)
  *
- * @author Tomas Gustavsson, PrimeKey Solutions AB
  * @version $Id$
  *
  */
@@ -90,7 +100,7 @@ public class OCSPUnidClient {
     final private String passphrase;
     final private PrivateKey signKey;
     final private X509Certificate[] certChain;
-    final private X509Extensions extensions;
+    final private Extensions extensions;
     final private byte nonce[];
     private static final Logger m_log = Logger.getLogger(OCSPUnidClient.class);
 	
@@ -112,19 +122,17 @@ public class OCSPUnidClient {
 	    this.certChain = certs!=null ? Arrays.asList(certs).toArray(new X509Certificate[0]) : null;
         this.nonce = new byte[16];
 	    {
-	        final Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
+	        List<Extension> extensionList = new ArrayList<Extension>();
 	        final Random randomSource = new Random();
-	        randomSource.nextBytes(nonce);
-	        final X509Extension nonceext = new X509Extension(false, new DEROctetString(nonce));
-	        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, nonceext);
+            randomSource.nextBytes(nonce);
+	       extensionList.add(new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(nonce)));
 	        // Don't bother adding Unid extension if we are not using client authentication
 	        if ( getfnr ) {
-	            X509Extension ext = new X509Extension(false, new DEROctetString(new FnrFromUnidExtension("1")));
-	            exts.put(FnrFromUnidExtension.FnrFromUnidOid, ext);
+	            extensionList.add(new Extension(FnrFromUnidExtension.FnrFromUnidOid, false, new DEROctetString(new FnrFromUnidExtension("1"))));
 	        }
-	        extensions = new X509Extensions(exts);
+	        extensions = new Extensions(extensionList.toArray(new Extension[extensionList.size()]));    
 	    }
-	    CryptoProviderTools.installBCProvider();
+	    CryptoProviderTools.installBCProviderIfNotAvailable();
 	}
 	
 	/**
@@ -166,8 +174,10 @@ public class OCSPUnidClient {
 	 * @throws OCSPException
 	 * @throws IOException
 	 * @throws GeneralSecurityException
+	 * @throws OperatorCreationException 
+	 * @throws IllegalArgumentException 
 	 */
-	public OCSPUnidResponse lookup(Certificate cert, Certificate cacert, boolean useGet) throws OCSPException, IOException, GeneralSecurityException {
+	public OCSPUnidResponse lookup(Certificate cert, Certificate cacert, boolean useGet) throws OCSPException, IOException, GeneralSecurityException, IllegalArgumentException, OperatorCreationException {
         return lookup( CertTools.getSerialNumber(cert), cacert, useGet);
     }
     /**
@@ -179,16 +189,18 @@ public class OCSPUnidClient {
      * @throws IllegalArgumentException 
      * @throws IOException
      * @throws GeneralSecurityException
+     * @throws OperatorCreationException if Signer couldn't be created
      */
-    public OCSPUnidResponse lookup(BigInteger serialNr, Certificate cacert, boolean useGet) throws OCSPException, IOException, GeneralSecurityException {
+    public OCSPUnidResponse lookup(BigInteger serialNr, Certificate cacert, boolean useGet) throws OCSPException, IOException,
+            IllegalArgumentException, OperatorCreationException, GeneralSecurityException {
         if (this.httpReqPath == null) {
             // If we didn't pass a url to the constructor and the cert does not have the URL, we will fail...
             OCSPUnidResponse ret = new OCSPUnidResponse();
             ret.setErrorCode(OCSPUnidResponse.ERROR_NO_OCSP_URI);
             return ret;
         }
-        final OCSPReqGenerator gen = new OCSPReqGenerator();
-        final CertificateID certId = new CertificateID(CertificateID.HASH_SHA1, (X509Certificate)cacert, serialNr);
+        final OCSPReqBuilder gen = new OCSPReqBuilder();
+        final CertificateID certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate)cacert, serialNr);
 //        System.out.println("Generating CertificateId:\n"
 //                + " Hash algorithm : '" + certId.getHashAlgOID() + "'\n"
 //                + " CA certificate\n"
@@ -205,10 +217,11 @@ public class OCSPUnidClient {
         final OCSPReq req;
         if ( this.signKey!=null ) {
             final X509Certificate localCertChain[] = this.certChain!=null ? this.certChain : new X509Certificate[] {(X509Certificate)cacert};
-            gen.setRequestorName(localCertChain[0].getSubjectX500Principal());
-            req = gen.generate("SHA1withRSA", this.signKey, localCertChain, "BC");
+            final JcaX509CertificateHolder[] certificateHolderChain = OCSPUtil.convertCertificateChainToCertificateHolderChain(localCertChain);
+            gen.setRequestorName(certificateHolderChain[0].getSubject());
+            req = gen.build(new JcaContentSignerBuilder("SHA1withRSA").build(this.signKey), certificateHolderChain);
         } else {
-            req = gen.generate();
+            req = gen.build();
         }
         // write request if directory exists.
         File  ocspReqDir = new File(requestDirectory);
@@ -225,7 +238,7 @@ public class OCSPUnidClient {
     // Private helper methods
     //
     
-    private OCSPUnidResponse sendOCSPRequest(byte[] ocspPackage, Certificate cacert, boolean useGet) throws IOException, OCSPException, GeneralSecurityException {
+    private OCSPUnidResponse sendOCSPRequest(byte[] ocspPackage, Certificate cacert, boolean useGet) throws IOException, OCSPException, GeneralSecurityException, OperatorCreationException {
     	final HttpURLConnection con;
     	if (useGet) {
         	String b64 = new String(Base64.encode(ocspPackage, false));
@@ -266,7 +279,7 @@ public class OCSPUnidClient {
             final InputStream in = con.getInputStream();
             if ( in!=null ) {
                 try {
-                    response = new OCSPResp(in);
+                    response = new OCSPResp(IOUtils.toByteArray(in));
                 } finally {
                     in.close();
                 }
@@ -285,7 +298,7 @@ public class OCSPUnidClient {
             return ret;
         }
         // Compare nonces to see if the server sent the same nonce as we sent
-    	final byte[] noncerep = brep.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nonce.getId());
+    	final byte[] noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
     	if (noncerep != null) {
         	ASN1InputStream ain = new ASN1InputStream(noncerep);
         	ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
@@ -299,28 +312,29 @@ public class OCSPUnidClient {
 		final RespID id = brep.getResponderId();
 		final DERTaggedObject to = (DERTaggedObject)id.toASN1Object().toASN1Object();
 		final RespID respId;
-        final X509Certificate[] chain = brep.getCerts("BC");
-        final PublicKey signerPub = chain[0].getPublicKey();
+        final X509CertificateHolder[] chain = brep.getCerts();
+        JcaX509CertificateConverter converter = new JcaX509CertificateConverter();
+        X509Certificate signerCertificate = converter.getCertificate(chain[0]);
+        final PublicKey signerPub = signerCertificate.getPublicKey();
 		if (to.getTagNo() == 1) {
 			// This is Name
-			respId = new RespID(chain[0].getSubjectX500Principal());
+			respId = new JcaRespID(signerCertificate.getSubjectX500Principal());
 		} else {
 			// This is KeyHash
-			respId = new RespID(signerPub);
+			respId = new JcaRespID(signerPub, SHA1DigestCalculator.buildSha1Instance());
 		}
 		if (!id.equals(respId)) {
 			// Response responderId does not match signer certificate responderId!
 			ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNERID);
 		}
-        if (!brep.verify(signerPub, "BC")) {
+        if (!brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(signerPub))) {
         	ret.setErrorCode(OCSPUnidResponse.ERROR_INVALID_SIGNATURE);
         	return ret;
         }
         // Verify the certificate chain.
         for (int i=0; i<chain.length; i++) {
-//            final X509Certificate cert1 = (X509Certificate)java.security.cert.CertificateFactory.getInstance("X509").generateCertificate(new ByteArrayInputStream(chain[i].getEncoded()));
-            final X509Certificate cert1 = chain[i];
-            final X509Certificate cert2 = chain[Math.min(i+1, chain.length-1)];
+            final X509Certificate cert1 = converter.getCertificate(chain[i]);
+            final X509Certificate cert2 = converter.getCertificate(chain[Math.min(i+1, chain.length-1)]);
             try {
                 cert1.verify(cert2.getPublicKey());          
             } catch (GeneralSecurityException e) {
@@ -344,7 +358,7 @@ public class OCSPUnidClient {
     }
 
     private String getFnr(BasicOCSPResp brep) throws IOException {
-        byte[] fnrrep = brep.getExtensionValue(FnrFromUnidExtension.FnrFromUnidOid.getId());
+        byte[] fnrrep = brep.getExtension(FnrFromUnidExtension.FnrFromUnidOid).getExtnValue().getEncoded();
         if (fnrrep == null) {
             return null;            
         }

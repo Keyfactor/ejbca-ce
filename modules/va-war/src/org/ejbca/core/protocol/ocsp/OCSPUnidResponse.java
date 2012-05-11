@@ -15,16 +15,15 @@ package org.ejbca.core.protocol.ocsp;
 
 import java.util.Date;
 
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.OCSPException;
-import org.bouncycastle.ocsp.OCSPResp;
-import org.bouncycastle.ocsp.RevokedStatus;
-import org.bouncycastle.ocsp.SingleResp;
-import org.bouncycastle.ocsp.UnknownStatus;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.RevokedStatus;
+import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.UnknownStatus;
 
 /** Class holding data returned by the OCSPUnidExtension
  * 
- * @author tomas
  * @version $Id$
  *
  */

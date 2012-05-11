@@ -23,7 +23,6 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
-import java.util.Hashtable;
 
 import javax.ejb.EJBException;
 import javax.persistence.PersistenceException;
@@ -31,21 +30,25 @@ import javax.persistence.PersistenceException;
 import junit.framework.TestSuite;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.ocsp.OCSPResponseStatus;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPReq;
-import org.bouncycastle.ocsp.OCSPReqGenerator;
-import org.bouncycastle.ocsp.SingleResp;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
+import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -164,17 +167,16 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         assertNotNull("Failed to create a certificate", ocspTestCert);
 
         // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
-        X509Extension ext = new X509Extension(false, new DEROctetString("123456789".getBytes()));
-        exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-        gen.setRequestExtensions(new X509Extensions(exts));
-        X509Certificate chain[] = new X509Certificate[2];
-        chain[0] = ocspTestCert;
-        chain[1] = cacert;
-        gen.setRequestorName(ocspTestCert.getSubjectX500Principal());
-        OCSPReq req = gen.generate("SHA1WithRSA", keys.getPrivate(), chain, "BC");
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        Extension[] extensions = new Extension[0];
+        extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
+        gen.setRequestExtensions(new Extensions(extensions));      
+        X509CertificateHolder chain[] = new JcaX509CertificateHolder[2];
+        chain[0] = new JcaX509CertificateHolder(ocspTestCert);
+        chain[1] = new JcaX509CertificateHolder(cacert);
+        gen.setRequestorName(chain[0].getSubject());
+        OCSPReq req = gen.build(new JcaContentSignerBuilder("SHA1withRSA").build(keys.getPrivate()), chain);
         //OCSPReq req = gen.generate();
 
         // Send the request and receive a singleResponse
@@ -188,7 +190,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         assertEquals("Status is not null (good)", status, null);
         
         // Try with an unsigned request, we should get a status code 5 back from the server (signature required)
-        req = gen.generate();
+        req = gen.build();
         // Send the request and receive a singleResponse, this response should have error code SIGNATURE_REQUIRED
         singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.SIG_REQUIRED, 200);
         assertNull(singleResps);
@@ -198,10 +200,10 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         ByteArrayInputStream fis = new ByteArrayInputStream(ks3);
         store.load(fis, "foo123".toCharArray());
         Certificate[] certs = KeyTools.getCertChain(store, "privateKey");
-        chain[0] = (X509Certificate)certs[0];
-        chain[1] = (X509Certificate)certs[1];
+        chain[0] = new JcaX509CertificateHolder((X509Certificate)certs[0]);
+        chain[1] = new JcaX509CertificateHolder((X509Certificate)certs[1]);
         PrivateKey pk = (PrivateKey)store.getKey("privateKey", "foo123".toCharArray());
-        req = gen.generate("SHA1WithRSA", pk, chain, "BC");
+        req = gen.build(new JcaContentSignerBuilder("SHA1withRSA").build(pk), chain);
         // Send the request and receive a singleResponse, this response should have error code UNAUTHORIZED (6)
         singleResps = helper.sendOCSPPost(req.getEncoded(), "123456789", OCSPResponseStatus.UNAUTHORIZED, 200);
         assertNull(singleResps);
