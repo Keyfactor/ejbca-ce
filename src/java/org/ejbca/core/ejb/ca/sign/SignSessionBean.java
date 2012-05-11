@@ -360,18 +360,18 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public CertificateResponseMessage createRequestFailedResponse(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass,
-            FailInfo failInfo, String failText) throws AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException,
+    public CertificateResponseMessage createRequestFailedResponse(final AuthenticationToken admin, final RequestMessage req, final Class<? extends ResponseMessage> responseClass,
+            final FailInfo failInfo, final String failText) throws AuthLoginException, AuthStatusException, IllegalKeyException, CADoesntExistsException,
             SignRequestSignatureException, SignRequestException, CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">createRequestFailedResponse(IRequestMessage)");
         }
         CertificateResponseMessage ret = null;
-        CA ca = getCAFromRequest(admin, req, true);
+        final CA ca = getCAFromRequest(admin, req, true);
         try {
-            CAToken catoken = ca.getCAToken();
             decryptAndVerify(req, ca);
             //Create the response message with all nonces and checks etc
+            final CAToken catoken = ca.getCAToken();
             ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken
                     .getCryptoToken().getSignProviderName());
             ret.setStatus(ResponseStatus.FAILURE);
@@ -400,14 +400,14 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public RequestMessage decryptAndVerifyRequest(AuthenticationToken admin, RequestMessage req) throws AuthStatusException, AuthLoginException,
+    public RequestMessage decryptAndVerifyRequest(final AuthenticationToken admin, final RequestMessage req) throws AuthStatusException, AuthLoginException,
             IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, CryptoTokenOfflineException,
             AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">decryptAndVerifyRequest(IRequestMessage)");
         }
         // Get CA that will receive request
-        CA ca = getCAFromRequest(admin, req, true);
+        final CA ca = getCAFromRequest(admin, req, true);
         try {
             // See if we need some key material to decrypt request
             decryptAndVerify(req, ca);
@@ -441,9 +441,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws SignRequestSignatureException
      * @throws IllegalCryptoTokenException 
      */
-    private void decryptAndVerify(RequestMessage req, final CA ca) throws CryptoTokenOfflineException, InvalidKeyException, NoSuchAlgorithmException,
+    private void decryptAndVerify(final RequestMessage req, final CA ca) throws CryptoTokenOfflineException, InvalidKeyException, NoSuchAlgorithmException,
             NoSuchProviderException, SignRequestSignatureException, IllegalCryptoTokenException {
-        CAToken catoken = ca.getCAToken();
+        final CAToken catoken = ca.getCAToken();
         if (req.requireKeyInfo()) {
             // You go figure...scep encrypts message with the public CA-cert
             req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken()
@@ -457,7 +457,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     }
 
     @Override
-    public ResponseMessage getCRL(AuthenticationToken admin, RequestMessage req, Class<? extends ResponseMessage> responseClass) throws AuthStatusException, AuthLoginException,
+    public ResponseMessage getCRL(final AuthenticationToken admin, final RequestMessage req, final Class<? extends ResponseMessage> responseClass) throws AuthStatusException, AuthLoginException,
             IllegalKeyException, CADoesntExistsException, SignRequestException, SignRequestSignatureException, UnsupportedEncodingException,
             CryptoTokenOfflineException, AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
@@ -465,9 +465,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         ResponseMessage ret = null;
         // Get CA that will receive request
-        CA ca = getCAFromRequest(admin, req, true);
+        final CA ca = getCAFromRequest(admin, req, true);
         try {
-            CAToken catoken = ca.getCAToken();
+            final CAToken catoken = ca.getCAToken();
             if (ca.getStatus() != CAConstants.CA_ACTIVE) {
                 String msg = intres.getLocalizedMessage("createcert.canotactive", ca.getSubjectDN());
                 throw new EJBException(msg);
@@ -574,7 +574,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             AuthLoginException, CADoesntExistsException, AuthorizationDeniedException {
         // See if we can get username and password directly from request
         final String username = req.getUsername();
-        final String password = req.getPassword();
         // Find the user with username username, or throw ObjectNotFoundException
         final UserData data = UserData.findByUsername(entityManager, username);
         if (data == null) {
