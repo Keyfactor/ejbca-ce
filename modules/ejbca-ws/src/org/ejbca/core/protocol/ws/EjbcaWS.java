@@ -259,7 +259,7 @@ public class EjbcaWS implements IEjbcaWS {
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
-    private void logAdminName(AuthenticationToken admin, IPatternLogger logger) {
+    private void logAdminName(final AuthenticationToken admin, final IPatternLogger logger) {
         final X509Certificate cert = ((X509CertificateAuthenticationToken)admin).getCertificate();
         logger.paramPut(TransactionTags.ADMIN_DN.toString(), cert.getSubjectDN().toString());
         logger.paramPut(TransactionTags.ADMIN_ISSUER_DN.toString(), cert.getIssuerDN().toString());
@@ -880,7 +880,7 @@ public class EjbcaWS implements IEjbcaWS {
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#pkcs10Request(java.lang.String, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
 	 */
-	public CertificateResponse pkcs10Request(String username, String password, String pkcs10, String hardTokenSN, String responseType)
+	public CertificateResponse pkcs10Request(final String username, final String password, final String pkcs10, final String hardTokenSN, final String responseType)
 	throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, CesecoreException {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
 	    try {
@@ -2318,7 +2318,7 @@ public class EjbcaWS implements IEjbcaWS {
 	 * @throws IllegalQueryException 
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#certificateRequest(org.ejbca.core.protocol.ws.objects.UserDataVOWS, String, int, String, String)
 	 */
-	public CertificateResponse certificateRequest(UserDataVOWS userdata, String requestData, int requestType, String hardTokenSN, String responseType)
+	public CertificateResponse certificateRequest(final UserDataVOWS userdata, final String requestData, final int requestType, final String hardTokenSN, final String responseType)
 	throws AuthorizationDeniedException, NotFoundException, UserDoesntFullfillEndEntityProfile,
 	ApprovalException, WaitingForApprovalException, EjbcaException {
 	    final IPatternLogger logger = TransactionLogger.getPatternLogger();
