@@ -285,7 +285,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             String msg = intres.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), Integer.valueOf(caid));
             throw new AuthorizationDeniedException(msg);
         }
-        return getCAInternal(caid, null, false);
+        return getCAInternal(caid, null, true);
     }
 
     @Override
