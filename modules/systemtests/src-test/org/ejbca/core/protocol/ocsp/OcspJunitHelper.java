@@ -28,27 +28,36 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Hashtable;
 import java.util.Map;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPException;
-import org.bouncycastle.ocsp.OCSPReq;
-import org.bouncycastle.ocsp.OCSPReqGenerator;
-import org.bouncycastle.ocsp.OCSPResp;
-import org.bouncycastle.ocsp.RevokedStatus;
-import org.bouncycastle.ocsp.SingleResp;
-import org.bouncycastle.ocsp.UnknownStatus;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPException;
+import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.RevokedStatus;
+import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.UnknownStatus;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.util.Base64;
 
 /**
@@ -84,8 +93,10 @@ public class OcspJunitHelper {
 	 * @throws IOException
 	 * @throws OCSPException
 	 * @throws NoSuchProviderException
+	 * @throws CertificateException on parsing errors.
+	 * @throws OperatorCreationException 
 	 */
-	protected SingleResp[] sendOCSPPost(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException {
+	protected SingleResp[] sendOCSPPost(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException, OperatorCreationException, CertificateException {
 		// POST the OCSP request
 		URL url = new URL(this.sBaseURL + this.urlEnding);
 		HttpURLConnection con = (HttpURLConnection)url.openConnection();
@@ -105,19 +116,19 @@ public class OcspJunitHelper {
 		// Some appserver (Weblogic) responds with "application/ocsp-response; charset=UTF-8"
 		assertNotNull("No Content-Type in reply.", con.getContentType());
 		assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-		OCSPResp response = new OCSPResp(con.getInputStream());
+		OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
 		assertEquals("Response status not the expected.", respCode, response.getStatus());
 		if (respCode != 0) {
 			assertNull("According to RFC 2560, responseBytes are not set on error.", response.getResponseObject());
 			return null; // it messes up testing of invalid signatures... but is needed for the unsuccessful responses
 		}
 		BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-		X509Certificate[] chain = brep.getCerts("BC");
-		boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+		X509CertificateHolder[] chain = brep.getCerts();
+		boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
 		assertTrue("Response failed to verify.", verify);
 		// Check nonce (if we sent one)
 		if (nonce != null) {
-			byte[] noncerep = brep.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nonce.getId());
+			byte[] noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
 			assertNotNull(noncerep);
 			ASN1InputStream ain = new ASN1InputStream(noncerep);
 			ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
@@ -138,8 +149,10 @@ public class OcspJunitHelper {
 	 * @throws OCSPException
 	 * @throws NoSuchProviderException
 	 * @throws NoSuchAlgorithmException
+	 * @throws CertificateException on parsing errors.
+	 * @throws OperatorCreationException 
 	 */
-	protected SingleResp[] sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException {
+	protected SingleResp[] sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException, OperatorCreationException, CertificateException {
 		// GET the OCSP request
 		String b64 = new String(Base64.encode(ocspPackage, false));
 		//String urls = URLEncoder.encode(b64, "UTF-8");	// JBoss/Tomcat will not accept escaped '/'-characters by default
@@ -155,7 +168,7 @@ public class OcspJunitHelper {
 		// Some appserver (Weblogic) responds with "application/ocsp-response; charset=UTF-8"
 		assertNotNull(con.getContentType());
 		assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-		OCSPResp response = new OCSPResp(con.getInputStream());
+		OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
 		assertNotNull("Response should not be null.", response);
 		assertEquals("Response status not the expected.", respCode, response.getStatus());
 		if (respCode != 0) {
@@ -163,12 +176,12 @@ public class OcspJunitHelper {
 			return null; // it messes up testing of invalid signatures... but is needed for the unsuccessful responses
 		}
 		BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-		X509Certificate[] chain = brep.getCerts("BC");
-		boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+		X509CertificateHolder[] chain = brep.getCerts();
+		boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
 		assertTrue("Response failed to verify.", verify);
 		// Check nonce (if we sent one)
 		if (nonce != null) {
-			byte[] noncerep = brep.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nonce.getId());
+			byte[] noncerep = brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce).getExtnValue().getEncoded();
 			assertNotNull(noncerep);
 			ASN1InputStream ain = new ASN1InputStream(noncerep);
 			ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
@@ -192,8 +205,10 @@ public class OcspJunitHelper {
 	 * @throws NoSuchProviderException
 	 * @throws IOException
 	 * @throws OCSPException
+	 * @throws CertificateException 
+	 * @throws OperatorCreationException 
 	 */
-	public void verifyStatusUnknown(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException {
+	public void verifyStatusUnknown(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
 		verifyStatus(caid, cacert, certSerial, Status.Unknown, Integer.MIN_VALUE);
 	}
 	/**
@@ -204,8 +219,10 @@ public class OcspJunitHelper {
 	 * @throws NoSuchProviderException
 	 * @throws IOException
 	 * @throws OCSPException
+	 * @throws CertificateException 
+	 * @throws OperatorCreationException 
 	 */
-	public void verifyStatusGood(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException {
+	public void verifyStatusGood(int caid, X509Certificate cacert, BigInteger certSerial) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
 		verifyStatus(caid, cacert, certSerial, Status.Good, Integer.MIN_VALUE);
 	}
 
@@ -218,23 +235,25 @@ public class OcspJunitHelper {
 	 * @throws NoSuchProviderException
 	 * @throws IOException
 	 * @throws OCSPException
+	 * @throws CertificateException 
+	 * @throws OperatorCreationException 
 	 */
-	public void verifyStatusRevoked(int caid, X509Certificate cacert, BigInteger certSerial, int expectedReason) throws NoSuchProviderException, IOException, OCSPException {
+	public void verifyStatusRevoked(int caid, X509Certificate cacert, BigInteger certSerial, int expectedReason) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
 		verifyStatus(caid, cacert, certSerial, Status.Revoked, expectedReason);
 	}
 
 	private void verifyStatus(int caid, X509Certificate cacert, BigInteger certSerial, Status expectedStatus, 
-			int expectedReason) throws NoSuchProviderException, IOException, OCSPException {
+			int expectedReason) throws NoSuchProviderException, IOException, OCSPException, OperatorCreationException, CertificateException {
 		// And an OCSP request
-		final OCSPReqGenerator gen = new OCSPReqGenerator();
-		gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, certSerial));
+		final OCSPReqBuilder gen = new OCSPReqBuilder();
+		gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, certSerial));
 		log.debug("ocspTestCert.getSerialNumber() = " + certSerial);
-		final Hashtable<ASN1ObjectIdentifier, X509Extension> exts = new Hashtable<ASN1ObjectIdentifier, X509Extension>();
 		final String sNonce = "123456789";
-		final X509Extension ext = new X509Extension(false, new DEROctetString(sNonce.getBytes()));
-		exts.put(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, ext);
-		gen.setRequestExtensions(new X509Extensions(exts));
-		final OCSPReq req = gen.generate();
+		Extension[] extensions = new Extension[0];
+		extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(sNonce.getBytes()));
+		gen.setRequestExtensions(new Extensions(extensions));
+		
+		final OCSPReq req = gen.build();
 
 		// Send the request and receive a singleResponse
 		final SingleResp[] singleResps = sendOCSPPost(req.getEncoded(), sNonce, 0, 200);

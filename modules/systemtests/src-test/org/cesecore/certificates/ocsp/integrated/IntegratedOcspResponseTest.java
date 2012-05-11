@@ -96,7 +96,6 @@ import org.junit.Test;
  */
 public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
-    private static final String SIGNATURE_PROVIDER = "BC";
     private static final String DN = "C=SE,O=Test,CN=TEST";
 
     private IntegratedOcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE

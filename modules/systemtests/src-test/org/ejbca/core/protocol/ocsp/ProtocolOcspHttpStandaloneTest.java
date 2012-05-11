@@ -32,17 +32,23 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.ocsp.BasicOCSPResp;
-import org.bouncycastle.ocsp.CertificateID;
-import org.bouncycastle.ocsp.OCSPReq;
-import org.bouncycastle.ocsp.OCSPReqGenerator;
-import org.bouncycastle.ocsp.OCSPResp;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.ocsp.BasicOCSPResp;
+import org.bouncycastle.cert.ocsp.CertificateID;
+import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
+import org.bouncycastle.cert.ocsp.RevokedStatus;
+import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.ocsp.OCSPRespGenerator;
-import org.bouncycastle.ocsp.RevokedStatus;
-import org.bouncycastle.ocsp.SingleResp;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.Hex;
+import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.junit.Before;
@@ -94,11 +100,10 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         @SuppressWarnings("unused")
         String subjectDnCA = CertTools.getSubjectDN(unknowncacert);
         // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
         final X509Certificate ocspTestCert = getTestCert(false);
-        String subjectDn = CertTools.getSubjectDN(ocspTestCert);
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, getCaCert(ocspTestCert), ocspTestCert.getSerialNumber()));
-        OCSPReq req = gen.generate();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), getCaCert(ocspTestCert), ocspTestCert.getSerialNumber()));
+        OCSPReq req = gen.build();
         helper.reloadKeys();
         // Send the request and receive a singleResponse
         SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
@@ -123,9 +128,9 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         log.trace(">test03OcspRevoked()");
         final X509Certificate ocspTestCert = getTestCert(true);
         // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, getCaCert(ocspTestCert), ocspTestCert.getSerialNumber()));
-        OCSPReq req = gen.generate();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), getCaCert(ocspTestCert), ocspTestCert.getSerialNumber()));
+        OCSPReq req = gen.build();
 
         // Send the request and receive a singleResponse
         SingleResp[] singleResps = helper.sendOCSPPost(req.getEncoded(), null, 0, 200);
@@ -192,9 +197,9 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
                 200, con.getResponseCode());
         assertNotNull(con.getContentType());
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-        OCSPResp response = new OCSPResp(con.getInputStream());
+        OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
         assertNotNull("Response should not be null.", response);
-        assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
+        assertTrue("Should not be concidered malformed.", OCSPRespBuilder.MALFORMED_REQUEST != response.getStatus());
         final String dubbleSlashEncReq = httpReqPath
                 + '/'
                 + resourceOcsp
@@ -206,9 +211,9 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         assertEquals("Response code did not match. ", 200, con.getResponseCode());
         assertNotNull(con.getContentType());
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-        response = new OCSPResp(con.getInputStream());
+        response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
         assertNotNull("Response should not be null.", response);
-        assertTrue("Should not be concidered malformed.", OCSPRespGenerator.MALFORMED_REQUEST != response.getStatus());
+        assertTrue("Should not be concidered malformed.", OCSPRespBuilder.MALFORMED_REQUEST != response.getStatus());
     }
 
     @Test
@@ -229,9 +234,9 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     public void test17VerifyHttpGetHeaders() throws Exception {
         loadUserCert(caid);
         // An OCSP request, ocspTestCert is already created in earlier tests
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        OCSPReq req = gen.generate();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        OCSPReq req = gen.build();
         String reqString = new String(Base64.encode(req.getEncoded(), false));
         URL url = new URL(httpReqPath + '/' + resourceOcsp + '/' + URLEncoder.encode(reqString, "UTF-8"));
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -240,8 +245,8 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         // "application/ocsp-response; charset=UTF-8"
         assertNotNull(con.getContentType());
         assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-        OCSPResp response = new OCSPResp(con.getInputStream());
-        assertEquals("Response status not the expected.", OCSPRespGenerator.SUCCESSFUL, response.getStatus());
+        OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
+        assertEquals("Response status not the expected.", OCSPRespBuilder.SUCCESSFUL, response.getStatus());
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
         // Just output the headers to stdout so we can visually inspect them if
         // something goes wrong
@@ -278,10 +283,10 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         // assertTrue("Response cannot be produced after it was sent.",
         // brep.getProducedAt().getTime() <= date); This might not hold on JBoss
         // AS due to the caching of the Date-header
-        X509Certificate[] chain = brep.getCerts("BC");
-        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+        X509CertificateHolder[] chain = brep.getCerts();
+        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
         assertTrue("Response failed to verify.", verify);
-        assertNull("No nonce should be present.", brep.getExtensionValue(OCSPObjectIdentifiers.id_pkix_ocsp_nonce.getId()));
+        assertNull("No nonce should be present.", brep.getExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce));
         SingleResp[] singleResps = brep.getResponses();
         assertNotNull("SingleResps should not be null.", singleResps);
         assertTrue("Expected a single SingleResp in the repsonse.", singleResps.length == 1);
@@ -302,9 +307,9 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
     public void test18NextUpdateThisUpdate() throws Exception {
         loadUserCert(caid);
         // And an OCSP request
-        OCSPReqGenerator gen = new OCSPReqGenerator();
-        gen.addRequest(new CertificateID(CertificateID.HASH_SHA1, cacert, ocspTestCert.getSerialNumber()));
-        OCSPReq req = gen.generate();
+        OCSPReqBuilder gen = new OCSPReqBuilder();
+        gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
+        OCSPReq req = gen.build();
         // POST the request and receive a singleResponse
         URL url = new URL(httpReqPath + '/' + resourceOcsp);
         HttpURLConnection con = (HttpURLConnection) url.openConnection();
@@ -318,12 +323,12 @@ public class ProtocolOcspHttpStandaloneTest extends ProtocolOcspTestBase {
         // Some appserver (Weblogic) responds with
         // "application/ocsp-response; charset=UTF-8"
         assertNotNull(con.getContentType());
-        assertTrue(con.getContentType().startsWith("application/ocsp-response"));
-        OCSPResp response = new OCSPResp(con.getInputStream());
+        assertTrue(con.getContentType().startsWith("application/ocsp-response")); 
+        OCSPResp response = new OCSPResp(IOUtils.toByteArray(con.getInputStream()));
         assertEquals("Response status not the expected.", 0, response.getStatus());
         BasicOCSPResp brep = (BasicOCSPResp) response.getResponseObject();
-        X509Certificate[] chain = brep.getCerts("BC");
-        boolean verify = brep.verify(chain[0].getPublicKey(), "BC");
+        X509CertificateHolder[] chain = brep.getCerts();
+        boolean verify = brep.isSignatureValid(new JcaContentVerifierProviderBuilder().build(chain[0]));
         assertTrue("Response failed to verify.", verify);
         SingleResp[] singleResps = brep.getResponses();
         assertEquals("No of SingResps should be 1.", 1, singleResps.length);
