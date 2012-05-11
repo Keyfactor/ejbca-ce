@@ -154,17 +154,16 @@ public class EjbcaWSHelper {
 	
 	/**
 	 * Gets an AuthenticationToken object for a WS-API administrator authenticated with client certificate SSL.
-	 * Also, optionally (if allowNonAdmin == false), checks that the admin, if it exists in EJCBA, have access to /administrator, i.e. really is an administrator.
-	 * Does not check any other authorization though, other than that it is an administrator.
-	 * Also checks that the admin certificate is not revoked.
+     * - Checks (through authenticationSession.authenticate) that the certificate is valid
+     * - If (WebConfiguration.getRequireAdminCertificateInDatabase) checks (through authenticationSession.authenticate) that the admin certificate is not revoked.
+	 * - If (allowNonAdmin == false), checks that the admin have access to /administrator, i.e. really is an administrator with the certificate mapped in an admin role. 
+	 *   Does not check any other authorization though, other than that it is an administrator.
 	 * 
 	 * @param allowNonAdmins true if we should verify that it is a real administrator, false only extracts the certificate and checks that it is not revoked.
-	 * @param wsContext web service context that contains the SSL information
 	 * @return AuthenticationToken object based on the SSL client certificate
 	 * @throws AuthorizationDeniedException if no client certificate or allowNonAdmins == false and the cert does not belong to an admin
 	 */
-	protected AuthenticationToken getAdmin(boolean allowNonAdmins) throws AuthorizationDeniedException, EjbcaException {
-		AuthenticationToken admin = null;
+	protected AuthenticationToken getAdmin(final boolean allowNonAdmins) throws AuthorizationDeniedException, EjbcaException {
 		try {
 			final MessageContext msgContext = wsContext.getMessageContext();
 			final HttpServletRequest request = (HttpServletRequest) msgContext.get(MessageContext.SERVLET_REQUEST);
@@ -177,13 +176,9 @@ public class EjbcaWSHelper {
 			final X509Certificate cert = certificates[0];
             final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
             credentials.add(certificates[0]);
-            AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
-            admin = authenticationSession.authenticate(subject);
+            final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
+            final AuthenticationToken admin = authenticationSession.authenticate(subject);
             if ((admin != null) && (!allowNonAdmins)) {
-                if(!userAdminSession.checkIfCertificateBelongToUser(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert))) {
-                    throw new RuntimeException("Certificate with serialNumber " + CertTools.getSerialNumberAsString(cert) + " and issuerDN '"+CertTools.getIssuerDN(cert)+"' did not belong to any user.");
-                }
-		
 				if(!authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ADMINISTRATOR)) {
 		            final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ADMINISTRATOR, null);
 			        throw new AuthorizationDeniedException(msg);
@@ -192,12 +187,11 @@ public class EjbcaWSHelper {
                 final String msg = intres.getLocalizedMessage("authentication.failed", "No admin authenticated for certificate with serialNumber " +CertTools.getSerialNumber(cert)+" and issuerDN '"+CertTools.getIssuerDN(cert)+"'.");
                 throw new AuthorizationDeniedException(msg);
             }
+            return admin;
 		} catch (EJBException e) {
 			log.error("EJBCA WebService error: ",e);
 			throw new EjbcaException(ErrorCode.INTERNAL_ERROR, e.getMessage());
 		}
-
-		return admin;
 	}
 	
 	/**
