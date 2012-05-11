@@ -2283,16 +2283,16 @@ public class CertTools {
      * @throws CertificateNotYetValidException - if the certificate is not yet valid with respect to the date supplied.
      * @see java.security.cert.X509Certificate#checkValidity(Date)
      */
-    public static void checkValidity(Certificate cert, Date date) throws CertificateExpiredException, CertificateNotYetValidException {
+    public static void checkValidity(final Certificate cert, final Date date) throws CertificateExpiredException, CertificateNotYetValidException {
         if (cert != null) {
             if (cert instanceof X509Certificate) {
-                X509Certificate xcert = (X509Certificate) cert;
+                final X509Certificate xcert = (X509Certificate) cert;
                 xcert.checkValidity(date);
             } else if (StringUtils.equals(cert.getType(), "CVC")) {
-                CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cert;
+                final CardVerifiableCertificate cvccert = (CardVerifiableCertificate) cert;
                 try {
-                    Date start = cvccert.getCVCertificate().getCertificateBody().getValidFrom();
-                    Date end = cvccert.getCVCertificate().getCertificateBody().getValidTo();
+                    final Date start = cvccert.getCVCertificate().getCertificateBody().getValidFrom();
+                    final Date end = cvccert.getCVCertificate().getCertificateBody().getValidTo();
                     if (start.after(date)) {
                         String msg = "Certificate startDate '" + start + "' is after check date '" + date + "'";
                         if (log.isTraceEnabled()) {
@@ -2301,7 +2301,7 @@ public class CertTools {
                         throw new CertificateNotYetValidException(msg);
                     }
                     if (end.before(date)) {
-                        String msg = "Certificate endDate '" + end + "' is before check date '" + date + "'";
+                        final String msg = "Certificate endDate '" + end + "' is before check date '" + date + "'";
                         if (log.isTraceEnabled()) {
                             log.trace(msg);
                         }
