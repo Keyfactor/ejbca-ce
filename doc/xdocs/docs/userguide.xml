@@ -901,6 +901,7 @@ When selecting to use Certificate Validity Start or End time you will get the po
 added. You can also specify a default value for the end entity profile. Different formats of specifying the validity time is provided as examples 
 in the end entity profile page.   
 </p>
+<p>This function requires the 'Allow validity override' function in the Certificate Profile.</p>
 </subsubsection>
 <subsubsection name="Revocation reason to set after certificate issuance">
 <p>Using this option you can define that when adding a new user, the revocation state of an issued certificate can be set immediately to something else than 'Active'.
