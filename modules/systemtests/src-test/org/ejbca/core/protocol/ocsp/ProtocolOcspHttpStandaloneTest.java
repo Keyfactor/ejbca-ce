@@ -47,7 +47,7 @@ import org.bouncycastle.cert.ocsp.SingleResp;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.util.encoders.Hex;
-import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.junit.Before;

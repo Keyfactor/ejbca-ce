@@ -53,7 +53,7 @@ import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
-import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.util.Base64;
 
 /**
