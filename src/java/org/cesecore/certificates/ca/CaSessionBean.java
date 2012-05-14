@@ -43,7 +43,9 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -91,6 +93,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
     public void postConstruct() {
     	// Install BouncyCastle provider if not available
     	CryptoProviderTools.installBCProviderIfNotAvailable();
+    	// It is not possible to @EJB-inject our self on all application servers so we need to do a lookup
     	caSession = sessionContext.getBusinessObject(CaSessionLocal.class);
     }
 
@@ -480,13 +483,13 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	            }
 	        }
 	    }
-	    CAData cadata = null;
+	    boolean isDatabaseUpdateRequired = false;
 	    if (ca == null) {
 	        if (log.isDebugEnabled()) {
 	            log.debug("CA not found in cache (or cache time expired), we have to get it: " + caid + ", " + name);
 	        }
 	        try {
-	            cadata = getCADataBean(caid, name);
+	            final CAData cadata = getCADataBean(caid, name);
 	            // this method checks CA data row timestamp to see if CA was
 	            // updated by any other cluster nodes
 	            // also fills the CACacheManager cache if the CA is not in there
@@ -496,22 +499,27 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
 	            } else {
 	            	ca = cadata.getCAFromDatabase();
 	            }
+	            isDatabaseUpdateRequired = cadata.isDatabaseUpgradeRequired();
 	        } catch (UnsupportedEncodingException uee) {
 	            throw new EJBException(uee);
 	        } catch (IllegalCryptoTokenException e) {
 	            throw new EJBException(e);
 	        }
 	    }
-	    // Check if CA has expired, cadata (CA in database) will only be updated
-	    // if aggressive caching is not enabled
-	    cadata = checkCAExpireAndUpdateCA(ca, cadata);
+	    // Check if CA has expired
+	    final boolean expired = checkCAExpireAndUpdateCA(ca);
 	    // If we have read CAData from the database we might have upgraded it.
 	    // Since the business methods for getting the CA doesn't require a transaction we
 	    // cannot be sure that setters on the CAData object has updated the database.
-        if (cadata!=null && cadata.isDatabaseUpgradeRequired()) {
-            // Start a new transaction, unless we are not already in one.
-            // Merge the CAData changes, unless the entity is already managed.
-            caSession.updateCaData(cadata);
+        if (isDatabaseUpdateRequired || expired) {
+            // Merge any changes to the CA object
+            try {
+                caSession.editCA(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal CA Upgrade/Expire")), ca, true);
+            } catch (IllegalCryptoTokenException e) {
+                throw new EJBException(e);
+            } catch (AuthorizationDeniedException e) {
+                throw new EJBException(e);
+            }
         }
 	    if (log.isTraceEnabled()) {
 	        log.trace("<getCAInternal: " + caid + ", " + name);
@@ -575,11 +583,11 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
      * 
      * Note! No authorization checks performed in this internal method
      * 
-     * @param ca
-     * @param cadata
-     *            can be null, in which case we will try to find it in the database *if* the CA data needs to be updated
+     * @param ca the CA to check
+     * @return the true if the CA just expired
      */
-    private CAData checkCAExpireAndUpdateCA(final CA ca, CAData cadata) {
+    private boolean checkCAExpireAndUpdateCA(final CA ca) {
+        boolean expired = false;
         // Check that CA hasn't expired.
         try {
             CertTools.checkValidity(ca.getCACertificate(), new Date());
@@ -588,30 +596,11 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             // status in the database is correctly EXPIRED for this CA
             // Don't set external CAs to expired though, because they should always be treated as external CAs
             if ( (ca.getStatus() != CAConstants.CA_EXPIRED) && (ca.getStatus() != CAConstants.CA_EXTERNAL) ) {
-                ca.setStatus(CAConstants.CA_EXPIRED); // update the value object
-                // Also try to update the database with new "expired" status
-                if (cadata == null) {
-                    try {
-                        if (log.isDebugEnabled()) {
-                            log.debug("Getting CADataBean from database to set EXPIRED status: " + ca.getCAId() + ", " + ca.getName());
-                        }
-                        cadata = getCADataBean(ca.getCAId(), ca.getName());
-                    } catch (UnsupportedEncodingException e) {
-                        // NOPMD: don't update in database if we can't find it
-                    } catch (IllegalCryptoTokenException e) {
-                        // NOPMD: don't update in database if we can't find it
-                    } catch (CADoesntExistsException e) {
-                        // NOPMD: don't update in database if we can't find it
-                    }
-                }
-                if (cadata != null) {
-                    cadata.setStatus(CAConstants.CA_EXPIRED);
-                    cadata.setUpdateTime(new Date().getTime());
-                    cadata.setDatabaseUpgradeRequired(true);
-                }
+                ca.setStatus(CAConstants.CA_EXPIRED);
                 String msg = intres.getLocalizedMessage("caadmin.caexpired", ca.getSubjectDN());
                 msg += " " + cee.getMessage();
                 log.info(msg);
+                expired = true;
             }
         } catch (CertificateNotYetValidException e) {
             // Signers Certificate is not yet valid.
@@ -619,22 +608,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             msg += " " + e.getMessage();
             log.warn(msg);
         }
-        return cadata;
-    }
-    
-    @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
-    public void updateCaData(final Object cadataObject) {
-        if (!(cadataObject instanceof CAData)) {
-            throw new RuntimeException("Only merge of " + CAData.class.getName() + " is supported.");
-        }
-        final CAData cadata = (CAData)cadataObject;
-        if (!entityManager.contains(cadata)) {
-            entityManager.merge(cadata);
-        } else {
-            log.debug("CAData was already part of the current persistence context. Assuming that changes are merged.");
-        }
-        cadata.setDatabaseUpgradeRequired(false);
+        return expired;
     }
 
     /**
