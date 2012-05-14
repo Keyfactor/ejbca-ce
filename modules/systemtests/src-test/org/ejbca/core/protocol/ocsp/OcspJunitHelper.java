@@ -245,7 +245,7 @@ public class OcspJunitHelper {
 		gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, certSerial));
 		log.debug("ocspTestCert.getSerialNumber() = " + certSerial);
 		final String sNonce = "123456789";
-		Extension[] extensions = new Extension[0];
+		Extension[] extensions = new Extension[1];
 		extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString(sNonce.getBytes()));
 		gen.setRequestExtensions(new Extensions(extensions));
 		
