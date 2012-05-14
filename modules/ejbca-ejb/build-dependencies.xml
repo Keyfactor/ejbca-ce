@@ -554,7 +554,7 @@
 					<include name="org/cesecore/certificates/util/cert/SubjectDirAttrExtension.java"/>
 					<!-- OCSPCAService dependencies that maybe shouldn't be here.. -->
 					<include name="org/cesecore/config/OcspConfiguration.java"/>
-					<include name="org/cesecore/certificates/ocsp/cache/SHA1DigestCalculator.java"/>
+					<include name="org/cesecore/certificates/ocsp/SHA1DigestCalculator.java"/>
 					<include name="org/cesecore/certificates/ocsp/exception/NotSupportedException.java"/>
 					<include name="org/cesecore/certificates/ocsp/exception/OcspFailureException.java"/>
 					<include name="org/ejbca/core/protocol/ocsp/OCSPUtil.java"/>
@@ -1016,7 +1016,7 @@
 					<!-- Upgrade of extended CA services in EJBCA 5.0 -->
 					<include name="org/cesecore/config/*Configuration.java"/>
 					<include name="org/cesecore/certificates/ocsp/exception/*Exception.java"/>
-					<include name="org/cesecore/certificates/ocsp/cache/SHA1DigestCalculator.java"/>
+					<include name="org/cesecore/certificates/ocsp/SHA1DigestCalculator.java"/>
 					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/*CAService*.java"/>
 					<include name="org/ejbca/core/protocol/ocsp/OCSPUtil.java"/>
 					<include name="org/ejbca/core/protocol/ocsp/OCSPResponseItem.java"/>

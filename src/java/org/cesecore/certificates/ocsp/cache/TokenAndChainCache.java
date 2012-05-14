@@ -23,6 +23,7 @@ import java.util.Map;
 import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.CacheNotInitializedException;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 

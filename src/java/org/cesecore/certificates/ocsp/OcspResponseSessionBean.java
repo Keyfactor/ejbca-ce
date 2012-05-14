@@ -83,7 +83,6 @@ import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
 import org.cesecore.certificates.ocsp.cache.DirectoryCache;
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.certificates.ocsp.cache.OcspExtensionsCache;
-import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.cache.TokenAndChainCache;
 import org.cesecore.certificates.ocsp.exception.CryptoProviderException;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;

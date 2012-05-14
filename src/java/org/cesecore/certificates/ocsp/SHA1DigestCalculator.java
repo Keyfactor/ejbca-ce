@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp.cache;
+package org.cesecore.certificates.ocsp;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;

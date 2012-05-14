@@ -72,7 +72,7 @@ import org.bouncycastle.cert.ocsp.jcajce.JcaRespID;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
-import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;

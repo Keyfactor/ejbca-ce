@@ -66,7 +66,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.IntegratedOcspResponseGeneratorProxySessionRemote;
-import org.cesecore.certificates.ocsp.cache.SHA1DigestCalculator;
+import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.MalformedRequestException;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.certificates.ocsp.logging.AuditLogger;
