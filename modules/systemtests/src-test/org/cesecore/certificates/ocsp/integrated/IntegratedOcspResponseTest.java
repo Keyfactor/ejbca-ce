@@ -38,13 +38,15 @@ import org.bouncycastle.cert.ocsp.OCSPException;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPReqBuilder;
 import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.SingleResp;
+import org.bouncycastle.cert.ocsp.UnknownStatus;
 import org.bouncycastle.cert.ocsp.jcajce.JcaCertificateID;
-import org.bouncycastle.ocsp.RevokedStatus;
-import org.bouncycastle.ocsp.UnknownStatus;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.cesecore.CaCreatingTestCase;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
@@ -76,6 +78,7 @@ import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
@@ -116,6 +119,8 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     private X509Certificate caCertificate;
     private X509Certificate ocspCertificate;
+    
+    private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal Admin"));
 
     @BeforeClass
     public static void setUpCryptoProvider() throws Exception {
@@ -138,7 +143,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAREMOVE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+        roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
 
         testx509ca = createX509Ca("CN=TEST,O=Test,C=SE");
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESS.resource() + testx509ca.getCAId(), AccessRuleState.RULE_ACCEPT,
