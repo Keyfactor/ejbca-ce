@@ -581,6 +581,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
      * Checks if the CA certificate has expired (or is not yet valid) and sets CA status to expired if it has (and status is not already expired).
      * Logs an info message first time that the CA certificate has expired, or every time when not yet valid.
      * 
+     * Note! Does not update the CA in the database.
      * Note! No authorization checks performed in this internal method
      * 
      * @param ca the CA to check
