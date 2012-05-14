@@ -169,7 +169,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         // And an OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
         gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
-        Extension[] extensions = new Extension[0];
+        Extension[] extensions = new Extension[1];
         extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
         gen.setRequestExtensions(new Extensions(extensions));      
         X509CertificateHolder chain[] = new JcaX509CertificateHolder[2];

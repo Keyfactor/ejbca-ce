@@ -17,8 +17,8 @@ import java.io.OutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-import org.bouncycastle.asn1.oiw.OIWObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.cert.ocsp.RespID;
 import org.bouncycastle.operator.DigestCalculator;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 
@@ -35,7 +35,7 @@ public class SHA1DigestCalculator implements DigestCalculator {
     }
 
     public AlgorithmIdentifier getAlgorithmIdentifier() {
-        return new AlgorithmIdentifier(OIWObjectIdentifiers.idSHA1);
+        return RespID.HASH_SHA1;
     }
 
     public OutputStream getOutputStream() {

@@ -173,7 +173,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 		// Get user and ocspTestCert that we know...
 		loadUserCert(this.caid);
 		gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
-		Extension[] extensions = new Extension[0];
+		Extension[] extensions = new Extension[1];
 		extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
 		gen.setRequestExtensions(new Extensions(extensions));
 		
@@ -217,7 +217,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 		for (int i = 0; i < 101; i++) {
 			gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
 		}
-		Extension[] extensions = new Extension[0];
+		Extension[] extensions = new Extension[1];
 		extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
 		gen.setRequestExtensions(new Extensions(extensions));
 		OCSPReq req = gen.build();
@@ -232,7 +232,7 @@ public abstract class ProtocolOcspTestBase extends CaTestCase {
 		// An OCSP request, ocspTestCert is already created in earlier tests
 		OCSPReqBuilder gen = new OCSPReqBuilder();
 		gen.addRequest(new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), cacert, ocspTestCert.getSerialNumber()));
-		Extension[] extensions = new Extension[0];
+		Extension[] extensions = new Extension[1];
 		extensions[0] = new Extension(OCSPObjectIdentifiers.id_pkix_ocsp_nonce, false, new DEROctetString("123456789".getBytes()));
 		gen.setRequestExtensions(new Extensions(extensions));
 		OCSPReq req = gen.build();
