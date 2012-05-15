@@ -50,6 +50,6 @@ securityeventsaudit.exporter.1=org.cesecore.audit.impl.AuditExporterXml
 #cluster.nodeid=
 
 # When upgrading a 100% up-time cluster, all nodes should be deployed with db.keepjbossserialization=true.
-# Once all nodes are running > 4.0, set to true to increase efficiency and portability.
+# Once all nodes are running > 4.0, set to false to increase efficiency and portability.
 # Default: false
 #db.keepjbossserialization=true
