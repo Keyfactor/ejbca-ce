@@ -18,7 +18,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -206,12 +205,12 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             if (args.length == 12 && usehardtokens) {
                 // Use certificate type, end entity profile and hardtokenissuer.
-                hardtokenissuerid = ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenIssuerId(getAdmin(cliUserName, cliPassword), args[11]);
+                hardtokenissuerid = ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenIssuerId(args[11]);
                 usehardtokenissuer = true;
                 getLogger().info("Using hard token issuer: " + args[11] + ", with id: " + hardtokenissuerid);
             }
 
-            int tokenid = getTokenId(getAdmin(cliUserName, cliPassword), tokenname, usehardtokens, ejb.getRemoteSession(HardTokenSessionRemote.class));
+            int tokenid = getTokenId(tokenname, usehardtokens, ejb.getRemoteSession(HardTokenSessionRemote.class));
             if (tokenid == 0) {
                 getLogger().error("Invalid token id.");
                 error = true;
@@ -298,7 +297,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
     /**
      * Returns the tokenid type of the user, returns 0 if invalid tokenname.
      */
-    private int getTokenId(AuthenticationToken administrator, String tokenname, boolean usehardtokens, HardTokenSessionRemote hardtokensession) {
+    private int getTokenId(String tokenname, boolean usehardtokens, HardTokenSessionRemote hardtokensession) {
         int returnval = 0;
         // First check for soft token type
         for (int i = 0; i < softtokennames.length; i++) {
@@ -308,7 +307,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             }
         }
         if (returnval == 0 && usehardtokens) {
-            returnval = hardtokensession.getHardTokenProfileId(administrator, tokenname);
+            returnval = hardtokensession.getHardTokenProfileId(tokenname);
         }
         return returnval;
     }

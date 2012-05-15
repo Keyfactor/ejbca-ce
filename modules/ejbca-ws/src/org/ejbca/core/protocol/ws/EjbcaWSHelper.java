@@ -385,7 +385,7 @@ public class EjbcaWSHelper {
 		
 		final int hardtokenissuerid;
 		if(userdata.getHardTokenIssuerName() != null){
-         hardtokenissuerid = hardTokenSession.getHardTokenIssuerId(admin,userdata.getHardTokenIssuerName());
+         hardtokenissuerid = hardTokenSession.getHardTokenIssuerId(userdata.getHardTokenIssuerName());
 		   if(hardtokenissuerid == 0){
 			  throw new EjbcaException(ErrorCode.HARD_TOKEN_ISSUER_NOT_EXISTS,
                   "Error Hard Token Issuer " + userdata.getHardTokenIssuerName() + " does not exist.");
@@ -495,7 +495,7 @@ public class EjbcaWSHelper {
 
         return dataWS;
 	}
-	protected UserDataVOWS convertUserDataVO(final AuthenticationToken admin, final EndEntityInformation userdata) throws EjbcaException, ClassCastException, CADoesntExistsException, AuthorizationDeniedException {
+	protected UserDataVOWS convertUserDataVO(final EndEntityInformation userdata) throws EjbcaException, ClassCastException, CADoesntExistsException, AuthorizationDeniedException {
         final String username = userdata.getUsername();
 		// No need to check CA authorization here, we are only converting the user input. The actual authorization check in CA is done when 
 		// trying to add/edit the user
@@ -522,7 +522,7 @@ public class EjbcaWSHelper {
 		
 		final String hardtokenissuername;
 		if(userdata.getHardTokenIssuerId() != 0){
-		   hardtokenissuername = hardTokenSession.getHardTokenIssuerAlias(admin,userdata.getHardTokenIssuerId());
+		   hardtokenissuername = hardTokenSession.getHardTokenIssuerAlias(userdata.getHardTokenIssuerId());
 		   if(hardtokenissuername == null){
 		       final String message = "Error Hard Token Issuer id " + userdata.getHardTokenIssuerId() + " does not exist. User: "+username;
 			   log.error(message);
@@ -532,7 +532,7 @@ public class EjbcaWSHelper {
 		    hardtokenissuername = null;
 		}
 		
-		final String tokenname = getTokenName(admin,userdata.getTokenType());
+		final String tokenname = getTokenName(userdata.getTokenType());
 		if(tokenname == null){
 		    final String message = "Error Token Type id " + userdata.getTokenType() + " does not exist. User: "+username;
 			log.error(message);
@@ -728,13 +728,13 @@ public class EjbcaWSHelper {
       	}        	
       }
       if (returnval == 0) {
-           returnval = hardTokenSession.getHardTokenProfileId(admin , tokenname);
+           returnval = hardTokenSession.getHardTokenProfileId(tokenname);
       }
 
       return returnval;
 	}
 	
-	private String getTokenName(AuthenticationToken admin, int tokenid) {
+	private String getTokenName(int tokenid) {
       String returnval = null;
       
       // First check for soft token type
@@ -745,7 +745,7 @@ public class EjbcaWSHelper {
       	}        	
       }
       if (returnval == null) {
-           returnval = hardTokenSession.getHardTokenProfileName(admin , tokenid);
+           returnval = hardTokenSession.getHardTokenProfileName(tokenid);
       }
 
       return returnval;

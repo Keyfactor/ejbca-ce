@@ -86,7 +86,7 @@ public class HardTokenAuthorization implements Serializable {
 	  if(hardtokenprofiles==null){            
 		hardtokenprofiles = new TreeMap<String, Integer>();                	
 		for(Integer id :  hardtokensession.getAuthorizedHardTokenProfileIds(admin)){		       
-		  String name = hardtokensession.getHardTokenProfileName(admin,id.intValue());
+		  String name = hardtokensession.getHardTokenProfileName(id.intValue());
 		  hardtokenprofiles.put(name, id);		    
 		}        
 	  }      

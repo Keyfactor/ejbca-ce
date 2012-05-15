@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.ejbca.core.model.approval;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.model.SecConst;
 
@@ -24,7 +23,7 @@ import org.ejbca.core.model.SecConst;
  */
 public class ApprovalRequestHelper { 
 
-    public static ApprovalDataText getTokenName(HardTokenSession hardTokenSession, AuthenticationToken admin, int tokenid) {
+    public static ApprovalDataText getTokenName(HardTokenSession hardTokenSession, int tokenid) {
         ApprovalDataText retval;
         if (tokenid <= SecConst.TOKEN_SOFT) {
             int tokenindex = 0;
@@ -36,7 +35,7 @@ public class ApprovalRequestHelper {
             retval = new ApprovalDataText("TOKEN", SecConst.TOKENTEXTS[tokenindex], true, true);
 
         } else {
-            String name = hardTokenSession.getHardTokenProfileName(admin, tokenid);
+            String name = hardTokenSession.getHardTokenProfileName(tokenid);
             retval = new ApprovalDataText("TOKEN", name, true, false);
         }
         return retval;

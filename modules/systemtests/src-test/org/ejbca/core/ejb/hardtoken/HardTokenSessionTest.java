@@ -151,7 +151,7 @@ public class HardTokenSessionTest extends CaTestCase {
                     CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     null, new Date().getTime());
         }
-        String tokensn = hardTokenSessionRemote.findHardTokenByCertificateSNIssuerDN(internalAdmin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
+        String tokensn = hardTokenSessionRemote.findHardTokenByCertificateSNIssuerDN(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert));
 
         assertTrue("Couldn't find right hardtokensn", tokensn.equals("1234"));
 
@@ -205,8 +205,8 @@ public class HardTokenSessionTest extends CaTestCase {
             e.printStackTrace();        
         }
         
-        assertFalse("Removing hard token with tokensn 1234 failed.", hardTokenSessionRemote.existsHardToken(internalAdmin, "1234"));
-        assertFalse("Removing hard token with tokensn 2345 failed.", hardTokenSessionRemote.existsHardToken(internalAdmin, "2345"));
+        assertFalse("Removing hard token with tokensn 1234 failed.", hardTokenSessionRemote.existsHardToken("1234"));
+        assertFalse("Removing hard token with tokensn 2345 failed.", hardTokenSessionRemote.existsHardToken("2345"));
     }
     
     @Test
@@ -220,16 +220,16 @@ public class HardTokenSessionTest extends CaTestCase {
             certs.add(CertTools.getCertfromByteArray(testcert));
             hardTokenSessionRemote.addHardToken(internalAdmin, "12344321", "TESTUSERSQL", "CN=TESTSQL", SecConst.TOKEN_SWEDISHEID, token, certs, null);
             // One search that must return result
-            Collection<String> tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber(internalAdmin, "12344321");
+            Collection<String> tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber("12344321");
             assertEquals("Search query should have returned one result, the database does not contain any records like 12344321.", 1, tokens.size());
             // Another search that should return the same
-            tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber(internalAdmin, "12344"); // Like query should work on partial serno
+            tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber("12344"); // Like query should work on partial serno
             assertEquals("Search query should have returned one result, the database does not contain any records like 12344.", 1, tokens.size());
             // One search that should not return anything
-            tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber(internalAdmin, "SQL12345678");
+            tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber("SQL12345678");
             assertEquals("Search query should have returned no results, the database contains a hard token with serno like SQL12345678.", 0, tokens.size());
             // Now try the SQL injection, should return nothing
-            tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber(internalAdmin, "x' or (1=1) or tokenSN LIKE 'x");
+            tokens = hardTokenSessionRemote.matchHardTokenByTokenSerialNumber("x' or (1=1) or tokenSN LIKE 'x");
             assertEquals("Search query should have returned no results, vulnerable to sql injection?", 0, tokens.size());
         } finally {
             try {

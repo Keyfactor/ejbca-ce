@@ -78,7 +78,7 @@ public class HardTokenIssuerTest {
         issuer.setDescription("TEST");
         ret = hardTokenSession.addHardTokenIssuer(internalAdmin, "TEST", 3, issuer);
         assertTrue("Creating Hard Token Issuer failed", ret);
-        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST");
+        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData("TEST");
         assertEquals("TEST", data.getHardTokenIssuer().getDescription());
         log.trace("<test01AddHardTokenIssuer()");
     }
@@ -89,9 +89,9 @@ public class HardTokenIssuerTest {
         boolean ret = false;
         ret = hardTokenSession.renameHardTokenIssuer(internalAdmin, "TEST", "TEST2", 4);
         assertTrue("Renaming Hard Token Issuer failed", ret);
-        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST2");
+        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData("TEST2");
         assertEquals("TEST", data.getHardTokenIssuer().getDescription());
-        data = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST");
+        data = hardTokenSession.getHardTokenIssuerData("TEST");
         assertNull(data);
         log.trace("<test02RenameHardTokenIssuer()");
     }
@@ -112,9 +112,9 @@ public class HardTokenIssuerTest {
         boolean ret = false;
         ret = hardTokenSession.cloneHardTokenIssuer(internalAdmin, "TEST2", "TEST", 4);
         assertTrue("Cloning hard token issuer failed", ret);
-        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST2");
+        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData("TEST2");
         assertEquals("TEST", data.getHardTokenIssuer().getDescription());
-        data = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST");
+        data = hardTokenSession.getHardTokenIssuerData("TEST");
         assertEquals("TEST", data.getHardTokenIssuer().getDescription());
 
         log.trace("<test03CloneHardTokenIssuer()");
@@ -125,12 +125,12 @@ public class HardTokenIssuerTest {
     public void test04EditHardTokenIssuer() throws Exception {
         log.trace(">test04EditHardTokenIssuer()");
         boolean ret = false;
-        HardTokenIssuerData issuerdata = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST");
+        HardTokenIssuerData issuerdata = hardTokenSession.getHardTokenIssuerData("TEST");
         assertTrue("Retrieving HardTokenIssuer failed", issuerdata.getHardTokenIssuer().getDescription().equals("TEST"));
         issuerdata.getHardTokenIssuer().setDescription("TEST2");
         ret = hardTokenSession.changeHardTokenIssuer(internalAdmin, "TEST", issuerdata.getHardTokenIssuer());
         assertTrue("Editing HardTokenIssuer failed", ret);
-        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData(internalAdmin, "TEST");
+        HardTokenIssuerData data = hardTokenSession.getHardTokenIssuerData("TEST");
         assertEquals("TEST2", data.getHardTokenIssuer().getDescription());
         log.trace("<test04EditHardTokenIssuer()");
     }

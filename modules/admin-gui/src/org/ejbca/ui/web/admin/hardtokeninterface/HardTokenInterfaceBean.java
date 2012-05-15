@@ -139,19 +139,19 @@ public class HardTokenInterfaceBean implements Serializable {
 
     /** Returns the alias from id. */
     public String getHardTokenIssuerAlias(int id) {
-        return hardtokensession.getHardTokenIssuerAlias(admin, id);
+        return hardtokensession.getHardTokenIssuerAlias(id);
     }
 
     public int getHardTokenIssuerId(String alias) {
-        return hardtokensession.getHardTokenIssuerId(admin, alias);
+        return hardtokensession.getHardTokenIssuerId(alias);
     }
 
     public HardTokenIssuerData getHardTokenIssuerData(String alias) {
-        return hardtokensession.getHardTokenIssuerData(admin, alias);
+        return hardtokensession.getHardTokenIssuerData(alias);
     }
 
     public HardTokenIssuerData getHardTokenIssuerData(int id) {
-        return hardtokensession.getHardTokenIssuerData(admin, id);
+        return hardtokensession.getHardTokenIssuerData(id);
     }
 
     public void addHardTokenIssuer(String alias, int roleId) throws HardTokenIssuerExistsException, AuthorizationDeniedException {
@@ -181,9 +181,9 @@ public class HardTokenInterfaceBean implements Serializable {
     public boolean removeHardTokenIssuer(String alias) throws AuthorizationDeniedException {
         boolean issuerused = false;
         if (informationmemory.authorizedToHardTokenIssuer(alias)) {
-            int issuerid = hardtokensession.getHardTokenIssuerId(admin, alias);
+            int issuerid = hardtokensession.getHardTokenIssuerId(alias);
             // Check if any users or authorization rule use the profile.
-            issuerused = hardtokenbatchsession.checkForHardTokenIssuerId(admin, issuerid);
+            issuerused = hardtokenbatchsession.checkForHardTokenIssuerId(issuerid);
             if (!issuerused) {
                 hardtokensession.removeHardTokenIssuer(admin, alias);
                 informationmemory.hardTokenDataEdited();
@@ -218,7 +218,7 @@ public class HardTokenInterfaceBean implements Serializable {
     public boolean isTokenKeyRecoverable(String tokensn, String username, RAInterfaceBean rabean) throws Exception {
         boolean retval = false;
         X509Certificate keyRecCert = null;
-        Iterator<Certificate> iter = hardtokensession.findCertificatesInHardToken(admin, tokensn).iterator();
+        Iterator<Certificate> iter = hardtokensession.findCertificatesInHardToken(tokensn).iterator();
         while (iter.hasNext()) {
             X509Certificate cert = (X509Certificate) iter.next();
             if (keyrecoverysession.existsKeys(admin, cert)) {
@@ -232,7 +232,7 @@ public class HardTokenInterfaceBean implements Serializable {
     }
 
     public void markTokenForKeyRecovery(String tokensn, String username, RAInterfaceBean rabean) throws Exception {
-        Iterator<Certificate> iter = hardtokensession.findCertificatesInHardToken(admin, tokensn).iterator();
+        Iterator<Certificate> iter = hardtokensession.findCertificatesInHardToken(tokensn).iterator();
         while (iter.hasNext()) {
             X509Certificate cert = (X509Certificate) iter.next();
             if (keyrecoverysession.existsKeys(admin, cert)) {

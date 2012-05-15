@@ -280,6 +280,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         if (log.isTraceEnabled()) {
             log.trace("<renameHardTokenProfile()");
         }
+        
     }
 
     @Override
@@ -327,7 +328,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HardTokenProfile getHardTokenProfile(AuthenticationToken admin, String name) {
+    public HardTokenProfile getHardTokenProfile(String name) {
         HardTokenProfile returnval = null;
         HardTokenProfileData htpd = HardTokenProfileData.findByName(entityManager, name);
         if (htpd != null) {
@@ -337,7 +338,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HardTokenProfile getHardTokenProfile(AuthenticationToken admin, int id) {
+    public HardTokenProfile getHardTokenProfile(int id) {
         HardTokenProfile returnval = null;
         HardTokenProfileData htpd = HardTokenProfileData.findByPK(entityManager, Integer.valueOf(id));
         if (htpd != null) {
@@ -347,7 +348,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public int getHardTokenProfileUpdateCount(AuthenticationToken admin, int hardtokenprofileid) {
+    public int getHardTokenProfileUpdateCount(int hardtokenprofileid) {
         int returnval = 0;
         HardTokenProfileData htpd = HardTokenProfileData.findByPK(entityManager, Integer.valueOf(hardtokenprofileid));
         if (htpd != null) {
@@ -357,7 +358,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public int getHardTokenProfileId(AuthenticationToken admin, String name) {
+    public int getHardTokenProfileId(String name) {
         int returnval = 0;
         HardTokenProfileData htpd = HardTokenProfileData.findByName(entityManager, name);
         if (htpd != null) {
@@ -367,7 +368,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public String getHardTokenProfileName(AuthenticationToken admin, int id) {
+    public String getHardTokenProfileName(int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenProfileName(id: " + id + ")");
         }
@@ -637,7 +638,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HardTokenIssuerData getHardTokenIssuerData(AuthenticationToken admin, String alias) {
+    public HardTokenIssuerData getHardTokenIssuerData(String alias) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerData(alias: " + alias + ")");
         }
@@ -651,7 +652,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HardTokenIssuerData getHardTokenIssuerData(AuthenticationToken admin, int id) {
+    public HardTokenIssuerData getHardTokenIssuerData(int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerData(id: " + id + ")");
         }
@@ -673,7 +674,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public int getHardTokenIssuerId(AuthenticationToken admin, String alias) {
+    public int getHardTokenIssuerId(String alias) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerId(alias: " + alias + ")");
         }
@@ -687,7 +688,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public String getHardTokenIssuerAlias(AuthenticationToken admin, int id) {
+    public String getHardTokenIssuerAlias(int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getHardTokenIssuerAlias(id: " + id + ")");
         }
@@ -706,12 +707,12 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
      * getIs? srsly? and then toss an exception? orly?
      */
     @Override
-    public void getIsHardTokenProfileAvailableToIssuer(AuthenticationToken admin, int issuerid, EndEntityInformation userdata) throws UnavailableTokenException {
+    public void getIsHardTokenProfileAvailableToIssuer(int issuerid, EndEntityInformation userdata) throws UnavailableTokenException {
         if (log.isTraceEnabled()) {
             log.trace(">getIsTokenTypeAvailableToIssuer(issuerid: " + issuerid + ", tokentype: " + userdata.getTokenType() + ")");
         }
         boolean returnval = false;
-        ArrayList<Integer> availabletokentypes = getHardTokenIssuerData(admin, issuerid).getHardTokenIssuer().getAvailableHardTokenProfiles();
+        ArrayList<Integer> availabletokentypes = getHardTokenIssuerData(issuerid).getHardTokenIssuer().getAvailableHardTokenProfiles();
         for (int i = 0; i < availabletokentypes.size(); i++) {
             if (availabletokentypes.get(i).intValue() == userdata.getTokenType()) {
                 returnval = true;
@@ -818,7 +819,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public boolean existsHardToken(AuthenticationToken admin, String tokensn) {
+    public boolean existsHardToken(String tokensn) {
         if (log.isTraceEnabled()) {
             log.trace(">existsHardToken(tokensn : " + tokensn + ")");
         }
@@ -926,7 +927,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public Collection<String> matchHardTokenByTokenSerialNumber(AuthenticationToken admin, String searchpattern) {
+    public Collection<String> matchHardTokenByTokenSerialNumber(String searchpattern) {
         log.trace(">findHardTokenByTokenSerialNumber()");
         return org.ejbca.core.ejb.hardtoken.HardTokenData.findUsernamesByHardTokenSerialNumber(entityManager, searchpattern, EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT);
     }
@@ -1019,7 +1020,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public Collection<Certificate> findCertificatesInHardToken(AuthenticationToken admin, String tokensn) {
+    public Collection<Certificate> findCertificatesInHardToken(String tokensn) {
         if (log.isTraceEnabled()) {
             log.trace("<findCertificatesInHardToken(username :" + tokensn + ")");
         }
@@ -1041,7 +1042,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public String findHardTokenByCertificateSNIssuerDN(AuthenticationToken admin, BigInteger certificatesn, String issuerdn) {
+    public String findHardTokenByCertificateSNIssuerDN(BigInteger certificatesn, String issuerdn) {
         if (log.isTraceEnabled()) {
             log.trace("<findHardTokenByCertificateSNIssuerDN(certificatesn :" + certificatesn + ", issuerdn :" + issuerdn + ")");
         }
@@ -1086,7 +1087,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public boolean existsCertificateProfileInHardTokenProfiles(AuthenticationToken admin, int id) {
+    public boolean existsCertificateProfileInHardTokenProfiles(int id) {
         HardTokenProfile profile = null;
         Collection<Integer> certprofiles = null;
         boolean exists = false;
@@ -1105,7 +1106,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public boolean existsHardTokenProfileInHardTokenIssuer(AuthenticationToken admin, int id) {
+    public boolean existsHardTokenProfileInHardTokenIssuer(int id) {
         HardTokenIssuer issuer = null;
         Collection<Integer> hardtokenissuers = null;
         boolean exists = false;
