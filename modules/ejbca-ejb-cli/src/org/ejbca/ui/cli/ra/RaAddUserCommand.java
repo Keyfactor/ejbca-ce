@@ -85,7 +85,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 hardtokenissueraliases = (String[]) ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenIssuerAliases(getAdmin(cliUserName, cliPassword)).toArray(new String[0]);
 
                 authorizedhardtokenprofiles = ejb.getRemoteSession(HardTokenSessionRemote.class).getAuthorizedHardTokenProfileIds(getAdmin(cliUserName, cliPassword));
-                hardtokenprofileidtonamemap = ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenProfileIdToNameMap(getAdmin(cliUserName, cliPassword));
+                hardtokenprofileidtonamemap = ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenProfileIdToNameMap();
             }
 
             String types = "Type (mask): INVALID=0; END-USER=1; SENDNOTIFICATION=256; PRINTUSERDATA=512";

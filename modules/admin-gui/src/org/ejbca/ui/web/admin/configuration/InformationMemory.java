@@ -374,22 +374,8 @@ public class InformationMemory implements Serializable {
     /**
      * @see org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization.java
      */
-    public boolean authorizedToHardTokenProfiles(String name) {
-        return hardtokenauthorization.authorizedToHardTokenProfile(name);
-    }
-
-    /**
-     * @see org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization.java
-     */
     public TreeMap<String, HardTokenIssuerData> getHardTokenIssuers() {
         return hardtokenauthorization.getHardTokenIssuers();
-    }
-
-    /**
-     * @see org.ejbca.ui.web.admin.hardtokeninterface.HardTokenAuthorization.java
-     */
-    public boolean authorizedToHardTokenIssuer(String alias) {
-        return hardtokenauthorization.authorizedToHardTokenIssuer(alias);
     }
 
     /**
