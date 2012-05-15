@@ -93,21 +93,6 @@ public class HardTokenAuthorization implements Serializable {
 	  return hardtokenprofiles;  
 	}
     
-    
-    /**
-     * Checks if administrator is authorized to edit the specified hard token
-     * issuer.
-     * 
-     * @param alias
-     *            of hard token issuer
-     * @return true if administrator is authorized to edit ahrd token issuer.
-     */
-
-    public boolean authorizedToHardTokenIssuer(String alias) {
-        return authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS)
-                && this.getHardTokenIssuers().keySet().contains(alias);
-    }
-
     /**
      * Checks if administrator is authorized to edit the specified hard token
      * profile.
@@ -128,7 +113,7 @@ public class HardTokenAuthorization implements Serializable {
      */
     public HashMap<Integer, String>  getHardTokenProfileIdToNameMap() {
         if (hardtokenprofilesnamemap == null) {
-            hardtokenprofilesnamemap = this.hardtokensession.getHardTokenProfileIdToNameMap(admin);
+            hardtokenprofilesnamemap = this.hardtokensession.getHardTokenProfileIdToNameMap();
         }
 
         return hardtokenprofilesnamemap;

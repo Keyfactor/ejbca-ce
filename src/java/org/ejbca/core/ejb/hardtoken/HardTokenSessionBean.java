@@ -316,7 +316,7 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public HashMap<Integer, String> getHardTokenProfileIdToNameMap(AuthenticationToken admin) {
+    public HashMap<Integer, String> getHardTokenProfileIdToNameMap() {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
         Collection<HardTokenProfileData> result = HardTokenProfileData.findAll(entityManager);
         Iterator<HardTokenProfileData> i = result.iterator();
@@ -540,6 +540,12 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
         return returnvalue;
     }
 
+    @Override
+    public boolean isAuthorizedToEditHardTokenIssuer(AuthenticationToken token, String alias) {
+        TreeMap<String, HardTokenIssuerData>  authorizedIssuers = getHardTokenIssuers(token);
+        return authorizationSession.isAuthorizedNoLogging(token, AccessRulesConstants.HARDTOKEN_EDITHARDTOKENISSUERS) && authorizedIssuers.containsKey(alias);
+    }
+    
     @Override
     public boolean isAuthorizedToHardTokenIssuer(AuthenticationToken admin, String alias) {
         if (log.isTraceEnabled()) {

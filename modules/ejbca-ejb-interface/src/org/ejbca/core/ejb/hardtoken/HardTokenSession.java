@@ -86,7 +86,7 @@ public interface HardTokenSession {
     Collection<Integer> getAuthorizedHardTokenProfileIds(AuthenticationToken admin);
 
     /** @return a mapping of profile id (Integer) to profile name (String). */
-    HashMap<Integer, String> getHardTokenProfileIdToNameMap(AuthenticationToken admin);
+    HashMap<Integer, String> getHardTokenProfileIdToNameMap();
 
     /** Retrieves a named hard token profile. */
     HardTokenProfile getHardTokenProfile(String name);
@@ -141,6 +141,16 @@ public interface HardTokenSession {
      */
     boolean renameHardTokenIssuer(AuthenticationToken admin, String oldalias, String newalias, int roleId) throws AuthorizationDeniedException;
 
+    /**
+     * Checks if the provided token is authorized to the issuer identified by the alias, 
+     * and if she is authorized to edit hard token issuers.
+     * 
+     * @param token An AuthenticationToken
+     * @param alias The alias of the hard token being checked against
+     * @return true if the token is authorized to edit the issuer identified by the alias.
+     */
+    boolean isAuthorizedToEditHardTokenIssuer(AuthenticationToken token, String alias);
+    
     /**
      * Method to check if an administrator is authorized to issue hard tokens
      * for the given alias.

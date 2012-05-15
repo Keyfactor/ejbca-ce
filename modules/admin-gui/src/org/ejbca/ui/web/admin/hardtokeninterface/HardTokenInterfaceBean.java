@@ -168,7 +168,7 @@ public class HardTokenInterfaceBean implements Serializable {
 
     public void changeHardTokenIssuer(String alias, HardTokenIssuer hardtokenissuer) throws HardTokenIssuerDoesntExistsException,
             AuthorizationDeniedException {
-        if (informationmemory.authorizedToHardTokenIssuer(alias)) {
+        if (hardtokensession.isAuthorizedToEditHardTokenIssuer(admin, alias)) {
             if (!hardtokensession.changeHardTokenIssuer(admin, alias, hardtokenissuer)) {
                 throw new HardTokenIssuerDoesntExistsException();
             }
@@ -180,7 +180,7 @@ public class HardTokenInterfaceBean implements Serializable {
      * @throws AuthorizationDeniedException */
     public boolean removeHardTokenIssuer(String alias) throws AuthorizationDeniedException {
         boolean issuerused = false;
-        if (informationmemory.authorizedToHardTokenIssuer(alias)) {
+        if (hardtokensession.isAuthorizedToEditHardTokenIssuer(admin, alias)) {
             int issuerid = hardtokensession.getHardTokenIssuerId(alias);
             // Check if any users or authorization rule use the profile.
             issuerused = hardtokenbatchsession.checkForHardTokenIssuerId(issuerid);
@@ -194,7 +194,7 @@ public class HardTokenInterfaceBean implements Serializable {
 
     public void renameHardTokenIssuer(String oldalias, String newalias, int newRoleId) throws HardTokenIssuerExistsException,
             AuthorizationDeniedException {
-        if (informationmemory.authorizedToHardTokenIssuer(oldalias)) {
+        if (hardtokensession.isAuthorizedToEditHardTokenIssuer(admin, oldalias)) {
             if (!hardtokensession.renameHardTokenIssuer(admin, oldalias, newalias, newRoleId)) {
                 throw new HardTokenIssuerExistsException();
             }
@@ -204,7 +204,7 @@ public class HardTokenInterfaceBean implements Serializable {
 
     public void cloneHardTokenIssuer(String oldalias, String newalias, int newRoleId) throws HardTokenIssuerExistsException,
             AuthorizationDeniedException {
-        if (informationmemory.authorizedToHardTokenIssuer(oldalias)) {
+        if (hardtokensession.isAuthorizedToEditHardTokenIssuer(admin, oldalias)) {
             if (!hardtokensession.cloneHardTokenIssuer(admin, oldalias, newalias, newRoleId)) {
                 throw new HardTokenIssuerExistsException();
             }
