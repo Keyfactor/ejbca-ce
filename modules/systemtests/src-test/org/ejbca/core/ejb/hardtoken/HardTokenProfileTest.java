@@ -94,13 +94,13 @@ public class HardTokenProfileTest {
 
         final Collection<Integer> authorizedHardTokenIds = this.hardTokenSession.getAuthorizedHardTokenProfileIds(internalAdmin);
 
-        final SwedishEIDProfile swedishProfile = (SwedishEIDProfile) this.hardTokenSession.getHardTokenProfile(internalAdmin, "SWETEST");
-        final EnhancedEIDProfile enhancedProfile = (EnhancedEIDProfile) this.hardTokenSession.getHardTokenProfile(internalAdmin, "ENHTEST");
-        final TurkishEIDProfile turkishProfile = (TurkishEIDProfile) this.hardTokenSession.getHardTokenProfile(internalAdmin, "TURTEST");
+        final SwedishEIDProfile swedishProfile = (SwedishEIDProfile) this.hardTokenSession.getHardTokenProfile("SWETEST");
+        final EnhancedEIDProfile enhancedProfile = (EnhancedEIDProfile) this.hardTokenSession.getHardTokenProfile("ENHTEST");
+        final TurkishEIDProfile turkishProfile = (TurkishEIDProfile) this.hardTokenSession.getHardTokenProfile("TURTEST");
 
         final String svgdata2 = swedishProfile.getPINEnvelopeData();
 
-        assertTrue(  "Profile not authorized", authorizedHardTokenIds.contains(Integer.valueOf(this.hardTokenSession.getHardTokenProfileId(internalAdmin, "SWETEST")) )  );
+        assertTrue(  "Profile not authorized", authorizedHardTokenIds.contains(Integer.valueOf(this.hardTokenSession.getHardTokenProfileId("SWETEST")) )  );
         assertTrue("Saving certificate profile failed", swedishProfile.getCertificateProfileId(SwedishEIDProfile.CERTUSAGE_SIGN)==CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
         assertTrue("Saving SVG Data failed", svgdata.equals(svgdata2));
         assertTrue("Saving Hard Token Profile failed", enhancedProfile.getIsKeyRecoverable(EnhancedEIDProfile.CERTUSAGE_ENC));
@@ -143,7 +143,7 @@ public class HardTokenProfileTest {
     public void test04EditHardTokenProfile() throws Exception {
         log.trace(">test04EditHardTokenProfile()");
         boolean ret = false;
-        HardTokenProfile profile = hardTokenSession.getHardTokenProfile(internalAdmin, "ENHTEST");
+        HardTokenProfile profile = hardTokenSession.getHardTokenProfile("ENHTEST");
         profile.setHardTokenSNPrefix("11111");
         hardTokenSession.changeHardTokenProfile(internalAdmin, "ENHTEST", profile);
         ret = true;

@@ -110,7 +110,7 @@ public class HardTokenProfileDataHandler implements Serializable {
       if(useradminsession.checkForHardTokenProfileId(profileid)) {
         return true;
       }
-	  if(hardtokensession.existsHardTokenProfileInHardTokenIssuer(administrator, profileid)) {
+	  if(hardtokensession.existsHardTokenProfileInHardTokenIssuer(profileid)) {
 		return true;  
 	  }
       if(authorizedToProfileName(name, true)){    
@@ -150,19 +150,19 @@ public class HardTokenProfileDataHandler implements Serializable {
       if(!authorizedToProfileId(id, false)) {
         throw new AuthorizationDeniedException("Not authorized to hard token profile");            
       }
-      return hardtokensession.getHardTokenProfile(administrator, id); 
+      return hardtokensession.getHardTokenProfile(id); 
     }      
           
     public HardTokenProfile getHardTokenProfile(String profilename) throws AuthorizationDeniedException{
      if(!authorizedToProfileName(profilename, false)) {
         throw new AuthorizationDeniedException("Not authorized to hard token profile");            
      }
-      return hardtokensession.getHardTokenProfile(administrator, profilename);
+      return hardtokensession.getHardTokenProfile(profilename);
     }
    
       
     public int getHardTokenProfileId(String profilename){
-      return hardtokensession.getHardTokenProfileId(administrator, profilename);  
+      return hardtokensession.getHardTokenProfileId(profilename);  
     }
     
     
@@ -170,7 +170,7 @@ public class HardTokenProfileDataHandler implements Serializable {
      * Help function that checks if administrator is authorized to edit profile with given name.
      */
     private boolean authorizedToProfileName(String profilename, boolean editcheck){
-		HardTokenProfile profile = hardtokensession.getHardTokenProfile(administrator, profilename);
+		HardTokenProfile profile = hardtokensession.getHardTokenProfile(profilename);
 		return authorizedToProfile(profile, editcheck);
     }
      
@@ -179,7 +179,7 @@ public class HardTokenProfileDataHandler implements Serializable {
      * Help function that checks if administrator is authorized to edit profile with given name.
      */
     private boolean authorizedToProfileId(int profileid, boolean editcheck){
-      HardTokenProfile profile = hardtokensession.getHardTokenProfile(administrator, profileid);
+      HardTokenProfile profile = hardtokensession.getHardTokenProfile(profileid);
       return authorizedToProfile(profile, editcheck);
     }
     

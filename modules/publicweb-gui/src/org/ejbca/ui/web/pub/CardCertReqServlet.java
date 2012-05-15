@@ -196,7 +196,7 @@ public class CardCertReqServlet extends HttpServlet {
             if ( authReq!=null && signReq!=null ) {
                 final int authCertProfile;
                 final int signCertProfile;
-                final HardTokenProfile hardTokenProfile = hardTokenSession.getHardTokenProfile(administrator, data.getTokenType());
+                final HardTokenProfile hardTokenProfile = hardTokenSession.getHardTokenProfile(data.getTokenType());
                 {
                     CertProfileID certProfileID = new CertProfileID(data, administrator, hardTokenProfile);
                     authCertProfile = certProfileID.getProfileID("authCertProfile", SwedishEIDProfile.CERTUSAGE_AUTHENC);

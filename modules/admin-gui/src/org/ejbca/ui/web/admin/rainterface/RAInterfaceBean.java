@@ -357,7 +357,7 @@ public class RAInterfaceBean implements Serializable {
     public UserView[] filterByTokenSN(String tokensn, int index,int size) {
     	UserView[] returnval = null;
     	ArrayList<EndEntityInformation> userlist = new ArrayList<EndEntityInformation>();
-    	Collection<String> usernames = hardtokensession.matchHardTokenByTokenSerialNumber(administrator, tokensn);
+    	Collection<String> usernames = hardtokensession.matchHardTokenByTokenSerialNumber(tokensn);
     	Iterator<String> iter = usernames.iterator();
     	while (iter.hasNext()) {
     		EndEntityInformation user = null;
@@ -559,8 +559,8 @@ public class RAInterfaceBean implements Serializable {
         loadCertificateView(certs, username);
     }
 
-    public void loadTokenCertificates(String tokensn, String username) throws AuthorizationDeniedException {
-        Collection<Certificate> certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
+    public void loadTokenCertificates(String tokensn, String username) {
+        Collection<Certificate> certs = hardtokensession.findCertificatesInHardToken(tokensn);
         loadCertificateView(certs, username);
     }
     
@@ -598,7 +598,7 @@ public class RAInterfaceBean implements Serializable {
        ApprovalException lastAppException = null;
        WaitingForApprovalException lastWaitException = null;
        AlreadyRevokedException lastRevokedException = null;
-       Collection<Certificate> certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
+       Collection<Certificate> certs = hardtokensession.findCertificatesInHardToken(tokensn);
        Iterator<Certificate> i = certs.iterator();
        // Extract and revoke collection
        while ( i.hasNext() ) {
@@ -630,8 +630,8 @@ public class RAInterfaceBean implements Serializable {
        return success;
     }
 
-    public boolean isAllTokenCertificatesRevoked(String tokensn, String username) throws AuthorizationDeniedException {
-    	Collection<Certificate> certs = hardtokensession.findCertificatesInHardToken(administrator, tokensn);
+    public boolean isAllTokenCertificatesRevoked(String tokensn, String username) {
+    	Collection<Certificate> certs = hardtokensession.findCertificatesInHardToken(tokensn);
     	boolean allrevoked = true;
     	if(!certs.isEmpty()){
     		Iterator<Certificate> j = certs.iterator();

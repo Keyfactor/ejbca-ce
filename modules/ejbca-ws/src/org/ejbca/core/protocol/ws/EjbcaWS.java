@@ -326,7 +326,7 @@ public class EjbcaWS implements IEjbcaWS {
         	if (result.size() > 0) {
         		retval = new ArrayList<UserDataVOWS>(result.size());
         		for (final EndEntityInformation userdata : result) {
-        			retval.add(ejbhelper.convertUserDataVO(admin,userdata));
+        			retval.add(ejbhelper.convertUserDataVO(userdata));
         		}
         	}
         } catch (CesecoreException e) {
@@ -1218,7 +1218,7 @@ public class EjbcaWS implements IEjbcaWS {
 		boolean success = false;
 		try{
             logAdminName(admin,logger);
-			Collection<java.security.cert.Certificate> certs = hardTokenSession.findCertificatesInHardToken(admin,hardTokenSN);
+			Collection<java.security.cert.Certificate> certs = hardTokenSession.findCertificatesInHardToken(hardTokenSN);
 			Iterator<java.security.cert.Certificate> iter = certs.iterator();
 			while(iter.hasNext()){
 				X509Certificate next = (X509Certificate) iter.next();
@@ -1360,7 +1360,7 @@ public class EjbcaWS implements IEjbcaWS {
 			    final Iterator<UserDataSourceVO> iter = userDataSourceSession.fetch(admin, userDataSourceIds, searchString).iterator();
 			    while(iter.hasNext()){
 			        UserDataSourceVO next = iter.next();
-			        retval.add(new UserDataSourceVOWS(ejbhelper.convertUserDataVO(admin, next.getUserDataVO()),next.getIsFieldModifyableSet()));
+			        retval.add(new UserDataSourceVOWS(ejbhelper.convertUserDataVO(next.getUserDataVO()),next.getIsFieldModifyableSet()));
 			    }
 			}
         } catch (CADoesntExistsException e) {	// EJBException, ClassCastException, ...
@@ -1497,11 +1497,11 @@ public class EjbcaWS implements IEjbcaWS {
 		    admin = new AlwaysAllowLocalAuthenticationToken(p);
 		}
 
-			hardTokenExists = hardTokenSession.existsHardToken(admin, hardTokenDataWS.getHardTokenSN());
+			hardTokenExists = hardTokenSession.existsHardToken(hardTokenDataWS.getHardTokenSN());
 			if(hardTokenExists){
 				if(overwriteExistingSN){
 					// fetch all old certificates and revoke them.
-					Collection<java.security.cert.Certificate> currentCertificates = hardTokenSession.findCertificatesInHardToken(admin, hardTokenDataWS.getHardTokenSN());
+					Collection<java.security.cert.Certificate> currentCertificates = hardTokenSession.findCertificatesInHardToken(hardTokenDataWS.getHardTokenSN());
 					HardTokenData currentHardToken = hardTokenSession.getHardToken(admin, hardTokenDataWS.getHardTokenSN(), false);
 					Iterator<java.security.cert.Certificate> iter = currentCertificates.iterator();
 					while(iter.hasNext()){
@@ -1533,7 +1533,7 @@ public class EjbcaWS implements IEjbcaWS {
 						  if(hardTokenDataWS.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD) && toRevoke.getLabel() != null && !toRevoke.getLabel().equals(HardTokenConstants.LABEL_TEMPORARYCARD)){
 
 								// Token have extended key usage MS Logon, don't revoke it
-								Iterator<java.security.cert.Certificate> revokeCerts = hardTokenSession.findCertificatesInHardToken(admin, toRevoke.getHardTokenSN()).iterator();
+								Iterator<java.security.cert.Certificate> revokeCerts = hardTokenSession.findCertificatesInHardToken(toRevoke.getHardTokenSN()).iterator();
 
 								while(revokeCerts.hasNext()){
 									X509Certificate next = (X509Certificate) revokeCerts.next();							 
@@ -1739,7 +1739,7 @@ public class EjbcaWS implements IEjbcaWS {
         try {
             final AuthenticationToken admin = ejbhelper.getAdmin();
             logAdminName(admin,logger);
-			return hardTokenSession.existsHardToken(admin, hardTokenSN);
+			return hardTokenSession.existsHardToken(hardTokenSN);
 		} catch (AuthorizationDeniedException e) {
             throw EjbcaWSHelper.getEjbcaException(e, logger, ErrorCode.NOT_AUTHORIZED, Level.ERROR);
         } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
@@ -1858,7 +1858,7 @@ public class EjbcaWS implements IEjbcaWS {
                 throw new WaitingForApprovalException("The approval for id " + ar.generateApprovalId() + " have not yet been approved", ar.generateApprovalId());
             }
 
-            Collection<java.security.cert.Certificate> certs = hardTokenSession.findCertificatesInHardToken(admin, hardTokenSN);
+            Collection<java.security.cert.Certificate> certs = hardTokenSession.findCertificatesInHardToken(hardTokenSN);
 
             if(onlyValidCertificates){
                 certs = ejbhelper.returnOnlyValidCertificates(admin, certs);
@@ -1928,7 +1928,7 @@ public class EjbcaWS implements IEjbcaWS {
                 	final String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", StandardRules.CAACCESS.resource() + caid, null);
                 	throw new AuthorizationDeniedException(msg);
 				}
-				Collection<java.security.cert.Certificate> certs = hardTokenSession.findCertificatesInHardToken(admin, next.getTokenSN());
+				Collection<java.security.cert.Certificate> certs = hardTokenSession.findCertificatesInHardToken(next.getTokenSN());
 				if(onlyValidCertificates){
 					certs = ejbhelper.returnOnlyValidCertificates(admin, certs);
 				}
