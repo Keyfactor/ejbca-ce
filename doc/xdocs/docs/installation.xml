@@ -58,7 +58,124 @@ See EJBCA_HOME/doc/RELEASE_NOTES and UPGRADE for information about upgrading fro
 earlier version of EJBCA.
 </p></section>
 
-<section name="Quick start guide">
+<section name="Ubuntu quick start">
+<p>This section provides a fast way to get installed and running for a test using Ubuntu Linux. 
+To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Quick start guide</strong> above.
+</p><p>
+This quick start guide assumes EJBCA 4.0.10 and JBoss 5.1.0.GA, but other version should also be possible to use by just replacing the versions.
+We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
+</p>
+<ol>
+<li>Install Ubuntu 12.04 server x64, default config, only OpenSSH server selected (or other Ubuntu of your choice, for example Ubuntu Desktop).
+<ul>
+<li>Add user with username 'user' during install. The path /home/user means the user's home directory below.</li>
+</ul>
+</li>
+<li>Open a new terminal "ejbca".</li>
+<li>Install needed software from Ubuntu repositories.
+<ul>
+<li>sudo apt-get install openjdk-6-jdk ant ant-optional unzip ntp</li>
+</ul>
+</li>
+<li>Install software not in Ubuntu repositories, JBoss 5.1.0.GA-jdk6 and EJBCA 4.0.10.<br/>
+<ul>
+<li>wget http://sourceforge.net/projects/jboss/files/JBoss/JBoss-5.1.0.GA/jboss-5.1.0.GA-jdk6.zip</li>
+<li>wget http://sourceforge.net/projects/ejbca/files/ejbca4/ejbca_4_0_10/ejbca_4_0_10.zip</li>
+<li>unzip jboss-5.1.0.GA-jdk6.zip</li>
+<li>unzip ejbca_4_0_10.zip</li>
+</ul>
+</li>
+<li>Configure EJBCA so it can find the application server (JBoss).
+<ul>
+<li>echo "appserver.home=/home/user/jboss-5.1.0.GA" >> ejbca_4_0_10/conf/ejbca.properties</li>
+</ul>
+</li>
+<li>Build and deploy EJBCA to JBoss.
+<ul>
+<li>cd ejbca_4_0_10</li>
+<li>ant bootstrap (just press enter if questions show up)</li>
+</ul>
+</li>
+<li>Open new terminal "jboss" and start JBoss.<br/>
+<ul>
+<li>jboss-5.1.0.GA/bin/run.sh</li>
+</ul>
+</li>
+<li>Go back to terminal "ejbca" and run install to create initial administrator CA.<br/>
+<ul>
+<li>ant install (choose all default values)</li>
+<li>ant deploy</li>
+</ul>
+</li>
+<li>Go back to terminal "jboss" and restart JBoss.<br/>
+<ul>
+<li>ctrl-c</li>
+<li>jboss-5.1.0.GA/bin/run.sh</li>
+</ul>
+</li>
+<li>Copy /home/user/ejbca_4_0_10/p12/superadmin.p12 to admin desktop machine and import in web browser.</li>
+<li>Open URL https://server:8443/ejbca, where 'server' is the servers name/ip.</li>
+</ol>
+<p>Done!</p>
+<p>After installation <strong>do not</strong> forget to <strong>secure</strong> your installation as described in <a href="security.html#Securing JBoss">securing JBoss</a>.</p>
+</section>
+
+<section name="RedHat Enterprise Linux quick start">
+<p>This section provides a fast way to get installed and running for a test using RedHat Enterprise Linux. 
+To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Quick start guide</strong> above.
+</p><p>
+This quick start guide makes the same assumptions and uses the same procedures as the Ubuntu quick start guide.
+RHEL by defualt only installs with a 'root' account. Therefore we start by creating a user account with username "user". In your environment simply replace user with the username you are using.
+</p>
+<ol>
+<li>Install RHEL 6.2 x86_64, default config, 'Basic Server'.</li>
+<ul>
+<li>Don't forget to 'Configure Network' at the screen where you set the server hostname.</li>
+<li>Make sure the hostname you set is present in /etc/hosts, or in DNS (or use the default localhost). If not JBoss will not start.</li>
+<li>Log in as root.</li>
+<li>Test that hostname is reachable.</li>
+<ul>
+<li>ping hostname (where hostname is the name you set during installation)</li>
+</ul>
+<li>Add user with username 'user'. The path /home/user means the user's home directory below.</li>
+<ul>
+<li>adduser user</li>
+<li>passwd user</li>
+</ul>
+<li>Enable EJBCA ports in the firewall.</li>
+<ul>
+<li>system-config-firewall-tui</li>
+<li>Add port 8080, protocol tcp</li>
+<li>Add port 8442, protocol tcp</li>
+<li>Add port 8443, protocol tcp</li>
+</ul>
+</ul>
+<li>Install needed software from RedHat repositories, still logged in as root (assumes RHEL 6.2 DVD in cdrom).</li>
+<ul>
+<li>vi /etc/yum.repos.d/install_dvd.repo</li>
+</ul>
+<pre>
+[INSTALL_DVD] 
+name=Installation DVD 
+baseurl=file:///media/Server 
+enabled=1 
+gpgcheck=0 
+</pre>
+<ul>
+<li>mount /dev/cdrom /media/</li>
+<li>yum install ant ant-nodeps</li>
+<li>umount /media/</li>
+</ul>
+<li>Log out from root account and log in as 'user' in a new terminal 'ejbca'.</li>
+<li>After this follow the same steps, 4-11 as in the 'Ubuntu quick start' above.</li>
+</ol>
+
+
+<p>Done!</p>
+<p>After installation <strong>do not</strong> forget to <strong>secure</strong> your installation as described in <a href="security.html#Securing JBoss">securing JBoss</a>.</p>
+</section>
+
+<section name="Installation guide">
 <p>
 If you want to get started really quick, and is using Ubuntu Linux, you can follow the <a href="#Ubuntu%20quick%20start">Ubuntu quick start</a> guide below.
 This guide describes how to install on the most well supported application server JBoss AS. EJBCA can however also run on Glassfish and Weblogic, but your
@@ -271,70 +388,15 @@ You must stop and start JBoss after doing this.
 
 </section>
 
-<section name="Ubuntu quick start">
-<p>This section provides a fast way to get installed and running for a test using Ubuntu Linux. 
-To get more information a about configuration options etc (there are plenty), you should follow the regular <strong>Quick start guide</strong> above.
-</p><p>
-This quick start guide assumes EJBCA 4.0.3 and JBoss 5.1.0.GA, but other version should also be possible to use by just replacing the versions.
-We also assume installation is made in a user account with username "user". In your environment simply replace user with the username you are using.
-</p>
-<ol>
-<li>Install Ubuntu 10.10 server x64, default config, only OpenSSH server selected (or other Ubuntu of your choice, for example Ubuntu Desktop).</li>
-<li>Open a new terminal "ejbca".</li>
-<li>Copy jboss-5.1.0.GA-jdk6.zip and ejbca_4_0_9.zip to machine user account.</li>
-<li>Install needed software from Ubuntu repositories.<br/>
-<source>
-sudo apt-get install openjdk-6-jdk ant ant-optional unzip ntp
-</source>
-</li>
-<li>Install software not in Ubuntu repositories.<br/>
-<source>
-unzip jboss-5.1.0.GA-jdk6.zip<br/>
-unzip ejbca_4_0_9.zip
-</source>
-</li>
-<li>Configure EJBCA so it can find the application server (JBoss).<br/>
-<source>
-echo "appserver.home=/home/user/jboss-5.1.0.GA" >> ejbca_4_0_9/conf/ejbca.properties
-</source>
-</li>
-<li>Build and deploy EJBCA to JBoss.<br/>
-<source>
-cd ejbca_4_0_9<br/>
-ant bootstrap
-</source>
-</li>
-<li>Open new terminal "jboss" and start JBoss.<br/>
-<source>
-jboss-5.1.0.GA/bin/run.sh
-</source>
-</li>
-<li>Go back to terminal "ejbca" and run install to create initial administrator CA.<br/>
-<source>
-ant install<br/>
-(choose all default values)<br/>
-ant deploy
-</source>
-</li>
-<li>Go back to terminal "jboss" and restart JBoss.<br/>
-<source>
-ctrl-c<br/>
-jboss-5.1.0.GA/bin/run.sh
-</source>
-</li>
-<li>Import /home/user/ejbca_4_0_9/p12/superadmin.p12 in web browser.</li>
-<li>Go to http://localhost:8443/ejbca</li>
-</ol>
-<p>Done!</p>
-</section>
 
 <section name="Application servers">
 <p>
-EJBCA should run on any on any JEE5 compliant application server in theory. In reality it doesn't.
+EJBCA should run on any on any JEE5 compliant application server in theory. In reality it doesn't, because dofferent application servers have different tweaks for the standard.
+It is not enough to pass JEE validation in order to run onn all application servers.
 <ol>
 <li>JBoss 5.1.0.GA / JBoss EAP 5.1: Works well. Community and professional support available.</li>
 <li>Glassfish 2.1.1: Works. Community and professional support available.</li>
-<li>WebLogic 10.3.4: Works. Unsupported.</li>
+<li>WebLogic 10.3.4: Works somewhat, sometimes. Unsupported.</li>
 <li>WebSphere 7.0.0.13: Does not work.</li>
 <li>Geronimo: Not supported yet.</li>
 <li>JoNaS: Not supported yet.</li>
