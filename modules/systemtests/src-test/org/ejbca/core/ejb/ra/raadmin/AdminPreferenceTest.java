@@ -16,10 +16,15 @@ package org.ejbca.core.ejb.ra.raadmin;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -36,17 +41,15 @@ import org.junit.Test;
  */
 public class AdminPreferenceTest extends CaTestCase {
     private static Logger log = Logger.getLogger(AdminPreferenceTest.class);
-    /**
-     * UserAdminSession handle, not static since different object should go to different session
-     * beans concurrently
-     */
 
-    private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper
-            .INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class);
+    private static final AuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AdminPreferenceTest"));
 
-    TestX509CertificateAuthenticationToken internalAdmin;
+    private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class);
 
-    private AdminPreferenceSessionRemote raAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AdminPreferenceSessionRemote.class);
+    private TestX509CertificateAuthenticationToken authenticatedToken;
+
+    private AdminPreferenceSessionRemote adminPreferenceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AdminPreferenceSessionRemote.class);
 
     private String user;
 
@@ -57,9 +60,9 @@ public class AdminPreferenceTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         super.setUp();
-        internalAdmin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
-        .authenticate(new AuthenticationSubject(null, null));
-        user = CertTools.getFingerprintAsString(internalAdmin.getCertificate());
+        authenticatedToken = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
+                .authenticate(new AuthenticationSubject(null, null));
+        user = CertTools.getFingerprintAsString(authenticatedToken.getCertificate());
     }
 
     @After
@@ -79,9 +82,9 @@ public class AdminPreferenceTest extends CaTestCase {
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
-        boolean ret = this.raAdminSession.addAdminPreference(internalAdmin, pref);
+        boolean ret = this.adminPreferenceSession.addAdminPreference(authenticatedToken, pref);
         assertTrue("Adminpref for " + user + " should not exist", ret);
-        ret = this.raAdminSession.addAdminPreference(internalAdmin, pref);
+        ret = this.adminPreferenceSession.addAdminPreference(authenticatedToken, pref);
         assertFalse("Adminpref for " + user + " should exist", ret);
         log.trace("<test01AddAdminPreference()");
     }
@@ -98,16 +101,43 @@ public class AdminPreferenceTest extends CaTestCase {
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
-        raAdminSession.addAdminPreference(internalAdmin, pref);
-        pref = this.raAdminSession.getAdminPreference(user);
+        adminPreferenceSession.addAdminPreference(authenticatedToken, pref);
+        pref = this.adminPreferenceSession.getAdminPreference(user);
         assertTrue("Error Retreiving Administrator Preference.", pref.getPreferedLanguage() == 1);
         assertTrue("Error Retreiving Administrator Preference.", pref.getTheme().equals("TEST"));
         pref.setPreferedLanguage(2);
-        boolean ret = this.raAdminSession.changeAdminPreference(internalAdmin, pref);
+        boolean ret = this.adminPreferenceSession.changeAdminPreference(authenticatedToken, pref);
         assertTrue("Adminpref for " + user + " should exist", ret);
-        pref = this.raAdminSession.getAdminPreference(user);
+        pref = this.adminPreferenceSession.getAdminPreference(user);
         assertEquals(pref.getPreferedLanguage(), 2);
         log.trace("<test02ModifyAdminPreference()");
+    }
+
+    @Test
+    public void testSaveDefaultAdminPreferenceAuthorization() {
+        boolean caught = false;
+        try {
+            adminPreferenceSession.saveDefaultAdminPreference(authenticatedToken, null);
+            fail("Authorization should have thrown exception");
+        } catch (AuthorizationDeniedException e) {
+            caught = true;
+        }
+        assertTrue("Authorization should have thrown exception", caught);
+    }
+
+    @Test
+    public void testSaveDefaultAdminPreference() throws AuthorizationDeniedException {
+        final AdminPreference defaultAdminPreference = adminPreferenceSession.getDefaultAdminPreference();
+        try {
+            int language = defaultAdminPreference.getPreferedLanguage() + 1;
+            AdminPreference newDefaultPreference = new AdminPreference();
+            newDefaultPreference.setPreferedLanguage(language);
+            adminPreferenceSession.saveDefaultAdminPreference(internalToken, newDefaultPreference);
+            assertEquals(newDefaultPreference.getPreferedLanguage(), adminPreferenceSession.getDefaultAdminPreference().getPreferedLanguage());
+        } finally {
+            adminPreferenceSession.saveDefaultAdminPreference(internalToken, defaultAdminPreference);
+        }
+
     }
 
 }

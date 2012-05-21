@@ -13,8 +13,11 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
+import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -78,8 +81,11 @@ public class AdminPreferenceDataHandler implements java.io.Serializable {
 		return raadminsession.getDefaultAdminPreference();  
 	}
 
-	/** Saves the default administrator preference. */
-	public void saveDefaultAdminPreference(AdminPreference adminpreference) {
-		raadminsession.saveDefaultAdminPreference(administrator, adminpreference);  
-	}
+    /** Saves the default administrator preference. 
+     * @param adminpreference The {@link AdminPreference} to save as default.
+     * @throws AuthorizationDeniedException if the local {@link AuthenticationToken} wasn't authorized to {@link AccessRulesConstants}.ROLE_ROOT
+     */
+    public void saveDefaultAdminPreference(AdminPreference adminpreference) throws AuthorizationDeniedException {
+        raadminsession.saveDefaultAdminPreference(administrator, adminpreference);
+    }
 }
