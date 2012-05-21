@@ -13,8 +13,8 @@
 
 package org.ejbca.ui.web.admin.configuration;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSession;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
 
@@ -22,18 +22,17 @@ import org.ejbca.core.model.util.EjbLocalHelper;
  * A class handling the storage of a admins preferences. Currently all admin preferences are
  * saved to a database.
  *
- * @author  Philip Vendil
  * @version $Id$
  */
 public class AdminPreferenceDataHandler implements java.io.Serializable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 
-	private AdminPreferenceSession raadminsession;
-	private AuthenticationToken administrator;
+	private AdminPreferenceSessionLocal raadminsession;
+	private X509CertificateAuthenticationToken administrator;
 
 	/** Creates a new instance of AdminPreferences */
-	public AdminPreferenceDataHandler(AuthenticationToken administrator) {
+	public AdminPreferenceDataHandler(X509CertificateAuthenticationToken administrator) {
 		raadminsession = new EjbLocalHelper().getRaAdminSession();
 		this.administrator = administrator;
 	}
@@ -42,7 +41,7 @@ public class AdminPreferenceDataHandler implements java.io.Serializable {
 	public AdminPreference getAdminPreference(String certificatefingerprint) {
 		AdminPreference returnvalue=null;
 		try {
-			returnvalue = raadminsession.getAdminPreference(administrator, certificatefingerprint);
+			returnvalue = raadminsession.getAdminPreference(certificatefingerprint);
 		} catch(Exception e) {
 		}
 		return returnvalue;
@@ -50,33 +49,33 @@ public class AdminPreferenceDataHandler implements java.io.Serializable {
 
 	/** Adds a admin preference to the database */
 	public void addAdminPreference(String certificatefingerprint, AdminPreference adminpreference) throws AdminExistsException {
-		if (!raadminsession.addAdminPreference(administrator, certificatefingerprint, adminpreference)) {
+		if (!raadminsession.addAdminPreference(administrator, adminpreference)) {
 			throw new AdminExistsException("Admin already exists in the database.");
 		}
 	}
 
 	/** Changes the admin preference for the given admin. */
 	public void changeAdminPreference(String certificatefingerprint, AdminPreference adminpreference) throws AdminDoesntExistException {
-		if (!raadminsession.changeAdminPreference(administrator, certificatefingerprint, adminpreference)) {
+		if (!raadminsession.changeAdminPreference(administrator, adminpreference)) {
 			throw new AdminDoesntExistException("Admin does not exist in the database.");
 		}
 	}
 
 	/** Changes the admin preference for the given admin, without performing any logging. */
 	public void changeAdminPreferenceNoLog(String certificatefingerprint, AdminPreference adminpreference) throws AdminDoesntExistException {
-		if (!raadminsession.changeAdminPreferenceNoLog(administrator, certificatefingerprint, adminpreference)) {
+		if (!raadminsession.changeAdminPreferenceNoLog(administrator, adminpreference)) {
 			throw new AdminDoesntExistException("Admin does not exist in the database.");
 		}
 	}    
 
 	/** Checks if admin preference exists in database. */
 	public boolean existsAdminPreference(String certificatefingerprint) {
-		return raadminsession.existsAdminPreference(administrator, certificatefingerprint);
+		return raadminsession.existsAdminPreference(certificatefingerprint);
 	}
 
 	/** Returns the default administrator preference. */
 	public AdminPreference getDefaultAdminPreference() {
-		return raadminsession.getDefaultAdminPreference(administrator);  
+		return raadminsession.getDefaultAdminPreference();  
 	}
 
 	/** Saves the default administrator preference. */

@@ -18,9 +18,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AuthenticationSubject;
+import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
@@ -40,19 +41,25 @@ public class AdminPreferenceTest extends CaTestCase {
      * beans concurrently
      */
 
-    AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AdminPreferenceTest"));
-    
+    private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper
+            .INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class);
+
+    TestX509CertificateAuthenticationToken internalAdmin;
+
     private AdminPreferenceSessionRemote raAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AdminPreferenceSessionRemote.class);
-    
-    private static final String user = genRandomUserName();
+
+    private String user;
 
     public String getRoleName() {
-        return "AdminPreferenceTest"; 
+        return "AdminPreferenceTest";
     }
 
     @Before
     public void setUp() throws Exception {
         super.setUp();
+        internalAdmin = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider
+        .authenticate(new AuthenticationSubject(null, null));
+        user = CertTools.getFingerprintAsString(internalAdmin.getCertificate());
     }
 
     @After
@@ -67,14 +74,14 @@ public class AdminPreferenceTest extends CaTestCase {
      *             error
      */
     @Test
-    public void test01AddAdminPreference() throws Exception {
+    public void testAddAdminPreference() throws Exception {
         log.trace(">test01AddAdminPreference()");
         AdminPreference pref = new AdminPreference();
         pref.setPreferedLanguage(1);
         pref.setTheme("TEST");
-        boolean ret = this.raAdminSession.addAdminPreference(internalAdmin, user, pref);
+        boolean ret = this.raAdminSession.addAdminPreference(internalAdmin, pref);
         assertTrue("Adminpref for " + user + " should not exist", ret);
-        ret = this.raAdminSession.addAdminPreference(internalAdmin, user, pref);
+        ret = this.raAdminSession.addAdminPreference(internalAdmin, pref);
         assertFalse("Adminpref for " + user + " should exist", ret);
         log.trace("<test01AddAdminPreference()");
     }
@@ -86,19 +93,20 @@ public class AdminPreferenceTest extends CaTestCase {
      *             error
      */
     @Test
-    public void test02ModifyAdminPreference() throws Exception {
+    public void testModifyAdminPreference() throws Exception {
         log.trace(">test02ModifyAdminPreference()");
-        AdminPreference pref = this.raAdminSession.getAdminPreference(internalAdmin, user);
+        AdminPreference pref = new AdminPreference();
+        pref.setPreferedLanguage(1);
+        pref.setTheme("TEST");
+        raAdminSession.addAdminPreference(internalAdmin, pref);
+        pref = this.raAdminSession.getAdminPreference(user);
         assertTrue("Error Retreiving Administrator Preference.", pref.getPreferedLanguage() == 1);
         assertTrue("Error Retreiving Administrator Preference.", pref.getTheme().equals("TEST"));
         pref.setPreferedLanguage(2);
-        boolean ret = this.raAdminSession.changeAdminPreference(internalAdmin, user, pref);
+        boolean ret = this.raAdminSession.changeAdminPreference(internalAdmin, pref);
         assertTrue("Adminpref for " + user + " should exist", ret);
-        pref = this.raAdminSession.getAdminPreference(internalAdmin, user);
+        pref = this.raAdminSession.getAdminPreference(user);
         assertEquals(pref.getPreferedLanguage(), 2);
-        String newuser = genRandomUserName();
-        ret = this.raAdminSession.changeAdminPreference(internalAdmin, newuser, pref);
-        assertFalse("Adminpref for " + newuser + " should not exist", ret);
         log.trace("<test02ModifyAdminPreference()");
     }
 

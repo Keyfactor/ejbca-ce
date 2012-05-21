@@ -13,12 +13,12 @@
 package org.cesecore.mock.authentication.tokens;
 
 import java.math.BigInteger;
-import java.security.Principal;
 import java.security.cert.X509Certificate;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
+import javax.security.auth.x500.X500Principal;
+
 import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.user.AccessUserAspect;
@@ -33,7 +33,7 @@ import org.cesecore.util.CertTools;
  * @version $Id$
  */
 
-public class TestX509CertificateAuthenticationToken extends AuthenticationToken {
+public class TestX509CertificateAuthenticationToken extends X509CertificateAuthenticationToken {
 
     public static final String TOKEN_TYPE = X509CertificateAuthenticationToken.TOKEN_TYPE;
     
@@ -43,7 +43,7 @@ public class TestX509CertificateAuthenticationToken extends AuthenticationToken 
 
     private final X509Certificate certificate;
 
-    public TestX509CertificateAuthenticationToken(Set<? extends Principal> principals, Set<?> credentials) {
+    public TestX509CertificateAuthenticationToken(Set<X500Principal> principals, Set<X509Certificate> credentials) {
         super(principals, credentials);
 
         /*
