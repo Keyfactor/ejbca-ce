@@ -29,12 +29,15 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
+import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.model.InternalEjbcaResources;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
 /**
@@ -55,6 +58,8 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
+    @EJB
+    private AccessControlSessionLocal accessControlSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
 
@@ -158,10 +163,21 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     }
 
     @Override
-    public void saveDefaultAdminPreference(final AuthenticationToken admin, final  AdminPreference defaultadminpreference) {
+    public void saveDefaultAdminPreference(final AuthenticationToken admin, final AdminPreference defaultadminpreference)
+            throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">saveDefaultAdminPreference()");
         }
+
+        if (!accessControlSession.isAuthorized(admin, AccessRulesConstants.ROLE_ROOT)) {
+            String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", AccessRulesConstants.ROLE_ROOT, null);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            auditSession.log(EjbcaEventTypes.RA_DEFAULTADMINPREF, EventStatus.FAILURE, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA,
+                    admin.toString(), null, null, null, details);
+            throw new AuthorizationDeniedException(msg);
+        }
+
         AdminPreferencesData apdata = AdminPreferencesData.findById(entityManager, DEFAULTUSERPREFERENCE);
         if (apdata != null) {
             final Map<Object, Object> diff = apdata.getAdminPreference().diff(defaultadminpreference);
@@ -172,7 +188,8 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
             for (Map.Entry<Object, Object> entry : diff.entrySet()) {
                 details.put(entry.getKey().toString(), entry.getValue().toString());
             }
-            auditSession.log(EjbcaEventTypes.RA_DEFAULTADMINPREF, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA, admin.toString(), null, null, null, details);
+            auditSession.log(EjbcaEventTypes.RA_DEFAULTADMINPREF, EventStatus.SUCCESS, EjbcaModuleTypes.RA, EjbcaServiceTypes.EJBCA,
+                    admin.toString(), null, null, null, details);
         } else {
             final String msg = intres.getLocalizedMessage("ra.errorsavedefaultadminpref");
             log.info(msg);

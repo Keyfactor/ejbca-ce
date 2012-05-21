@@ -13,6 +13,7 @@
  
 package org.ejbca.core.model.ra.raadmin;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 
@@ -26,7 +27,7 @@ import org.ejbca.config.GlobalConfiguration;
  * @author  Philip Vendil
  * @version $Id$
  */
-public class AdminPreference extends UpgradeableDataHashMap implements java.io.Serializable, Cloneable {
+public class AdminPreference extends UpgradeableDataHashMap implements Serializable, Cloneable {
     
     private static final long serialVersionUID = -3408759285870979620L;
 
