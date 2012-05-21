@@ -28,7 +28,9 @@ import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
@@ -57,7 +59,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     private SecurityEventsLoggerSessionLocal auditSession;
 
     @Override
-    public AdminPreference getAdminPreference(AuthenticationToken admin, String certificatefingerprint) {
+    public AdminPreference getAdminPreference(final String certificatefingerprint) {
         if (log.isTraceEnabled()) {
             log.trace(">getAdminPreference()");
         }
@@ -73,7 +75,8 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     }
 
     @Override
-    public boolean addAdminPreference(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference) {
+    public boolean addAdminPreference(final X509CertificateAuthenticationToken admin, final AdminPreference adminpreference) {
+        String certificatefingerprint = CertTools.getFingerprintAsString(admin.getCertificate());
         if (log.isTraceEnabled()) {
             log.trace(">addAdminPreference(fingerprint : " + certificatefingerprint + ")");
         }
@@ -81,6 +84,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
         // EJB 2.1 only?: We must actually check if there is one before we try
         // to add it, because wls does not allow us to catch any errors if
         // creating fails, that sux
+       
         if (AdminPreferencesData.findById(entityManager, certificatefingerprint) == null) {
             try {
                 AdminPreferencesData apdata = new AdminPreferencesData(certificatefingerprint, adminpreference);
@@ -103,24 +107,18 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     }
 
     @Override
-    public boolean changeAdminPreference(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference) {
-        if (log.isTraceEnabled()) {
-            log.trace(">changeAdminPreference(fingerprint : " + certificatefingerprint + ")");
-        }
-        return updateAdminPreference(admin, certificatefingerprint, adminpreference, true);
+    public boolean changeAdminPreference(final X509CertificateAuthenticationToken admin, final AdminPreference adminpreference) {
+        return updateAdminPreference(admin, adminpreference, true);
     }
 
     @Override
-    public boolean changeAdminPreferenceNoLog(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference) {
-        if (log.isTraceEnabled()) {
-            log.trace(">changeAdminPreferenceNoLog(fingerprint : " + certificatefingerprint + ")");
-        }
-        return updateAdminPreference(admin, certificatefingerprint, adminpreference, false);
+    public boolean changeAdminPreferenceNoLog(final X509CertificateAuthenticationToken admin, final AdminPreference adminpreference) {
+        return updateAdminPreference(admin, adminpreference, false);
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean existsAdminPreference(AuthenticationToken admin, String certificatefingerprint) {
+    public boolean existsAdminPreference(final String certificatefingerprint) {
         if (log.isTraceEnabled()) {
             log.trace(">existsAdminPreference(fingerprint : " + certificatefingerprint + ")");
         }
@@ -135,7 +133,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     }
 
     @Override
-    public AdminPreference getDefaultAdminPreference(AuthenticationToken admin) {
+    public AdminPreference getDefaultAdminPreference() {
         if (log.isTraceEnabled()) {
             log.trace(">getDefaultAdminPreference()");
         }
@@ -160,7 +158,7 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
     }
 
     @Override
-    public void saveDefaultAdminPreference(AuthenticationToken admin, AdminPreference defaultadminpreference) {
+    public void saveDefaultAdminPreference(final AuthenticationToken admin, final  AdminPreference defaultadminpreference) {
         if (log.isTraceEnabled()) {
             log.trace(">saveDefaultAdminPreference()");
         }
@@ -189,7 +187,8 @@ public class AdminPreferenceSessionBean implements AdminPreferenceSessionLocal, 
      * Changes the admin preference in the database. Returns false if admin
      * preference doesn't exist.
      */
-    private boolean updateAdminPreference(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference, boolean dolog) {
+    private boolean updateAdminPreference(X509CertificateAuthenticationToken admin, AdminPreference adminpreference, boolean dolog) {
+        String certificatefingerprint = CertTools.getFingerprintAsString(admin.getCertificate());
         if (log.isTraceEnabled()) {
             log.trace(">updateAdminPreference(fingerprint : " + certificatefingerprint + ")");
         }

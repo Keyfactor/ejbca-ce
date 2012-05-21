@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.ra.raadmin;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 
 /** Session bean to handle admin preference administration
@@ -25,31 +26,31 @@ public interface AdminPreferenceSession {
      * Finds the admin preference belonging to a certificate serialnumber.
      * Returns null if admin does not exist.
      */
-    AdminPreference getAdminPreference(AuthenticationToken admin, String certificatefingerprint);
+    AdminPreference getAdminPreference(String certificatefingerprint);
 
     /**
      * Adds a admin preference to the database. Returns false if admin already
      * exists.
      */
-    boolean addAdminPreference(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference);
+    boolean addAdminPreference(X509CertificateAuthenticationToken admin, AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database. Returns false if admin
      * does not exist.
      */
-    boolean changeAdminPreference(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference);
+    boolean changeAdminPreference(X509CertificateAuthenticationToken admin, AdminPreference adminpreference);
 
     /**
      * Changes the admin preference in the database. Returns false if admin
      * does not exist.
      */
-    boolean changeAdminPreferenceNoLog(AuthenticationToken admin, String certificatefingerprint, AdminPreference adminpreference);
+    boolean changeAdminPreferenceNoLog(X509CertificateAuthenticationToken admin, AdminPreference adminpreference);
 
     /** Checks if a admin preference exists in the database. */
-    boolean existsAdminPreference(AuthenticationToken admin, String certificatefingerprint);
+    boolean existsAdminPreference(String certificatefingerprint);
 
     /** Function that returns the default admin preference. */
-    AdminPreference getDefaultAdminPreference(AuthenticationToken admin);
+    AdminPreference getDefaultAdminPreference();
 
     /** Function that saves the default admin preference. */
     void saveDefaultAdminPreference(AuthenticationToken admin, AdminPreference defaultadminpreference);

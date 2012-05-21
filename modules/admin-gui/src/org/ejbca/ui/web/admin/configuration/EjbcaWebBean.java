@@ -45,10 +45,8 @@ import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
-import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -142,7 +140,7 @@ public class EjbcaWebBean implements Serializable {
     private boolean initialized = false;
     private boolean errorpage_initialized = false;
     private Boolean[] raauthorized;
-    private AuthenticationToken administrator;
+    private X509CertificateAuthenticationToken administrator;
     private String requestServerName;
 
     /*
@@ -166,7 +164,7 @@ public class EjbcaWebBean implements Serializable {
             final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
             credentials.add(certificates[0]);
             AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
-            administrator = authenticationSession.authenticate(subject);
+            administrator = (X509CertificateAuthenticationToken) authenticationSession.authenticate(subject);
             if (administrator == null) {
                 throw new AuthenticationFailedException("Authorization failed for certificate: "+CertTools.getSubjectDN(certificates[0]));
             }        	
@@ -301,12 +299,13 @@ public class EjbcaWebBean implements Serializable {
     public GlobalConfiguration initialize_errorpage(HttpServletRequest request) throws Exception {
 
         if (!errorpage_initialized) {
-
+/*
             if (administrator == null) {
                 String remoteAddr = request.getRemoteAddr();
                 administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Public web user: " + remoteAddr));
-            }
+            }*/
             commonInit();
+            
 
             adminspreferences = new AdminPreferenceDataHandler(administrator);
 
