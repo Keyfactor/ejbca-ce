@@ -671,7 +671,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             throws AuthorizationDeniedException {
         // Store the request data in history table.
         if (ca.isUseCertReqHistory()) {
-            certreqHistorySession.addCertReqHistoryData(authenticationToken, certificate, endEntity);
+            certreqHistorySession.addCertReqHistoryData(certificate, endEntity);
         }
 
         /* Store certificate in certificate profiles publishers. But check if the certificate was revoked directly on issuance, 

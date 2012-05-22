@@ -62,6 +62,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
+import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.UserDataConstants;
@@ -100,7 +101,8 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateRequestSessionRemote certificateRequestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private CertReqHistorySessionRemote certReqHistorySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistorySessionRemote.class);
+    private CertReqHistoryProxySessionRemote certReqHistoryProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CertReqHistoryProxySessionRemote.class);
     private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @BeforeClass
@@ -171,7 +173,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
             userAdminSession.deleteUser(admin, userData.getUsername());
         }
         if (useCertReqHistory) {
-            certReqHistorySession.removeCertReqHistoryData(admin, CertTools.getFingerprintAsString(certificate));
+            certReqHistoryProxySession.removeCertReqHistoryData(CertTools.getFingerprintAsString(certificate));
         }
         LOG.trace("<generateCertificatePkcs10");
     }
@@ -252,7 +254,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
     }
 
     private boolean certificateRequestHistoryExists(Certificate certificate) {
-        return certReqHistorySession.retrieveCertReqHistory(admin, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate)) != null;
+        return certReqHistoryProxySession.retrieveCertReqHistory(CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate)) != null;
     }
 
     private boolean certificateExists(Certificate certificate) {

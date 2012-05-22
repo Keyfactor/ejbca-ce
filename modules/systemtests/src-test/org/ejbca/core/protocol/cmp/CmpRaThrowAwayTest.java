@@ -42,7 +42,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertReqHistorySessionRemote;
+import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.junit.After;
@@ -153,8 +153,8 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(bao.toByteArray(), 200);
         checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, PBE_SECRET);
         X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
-        assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistorySessionRemote.class)
-                .retrieveCertReqHistory(ADMIN, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null);
+        assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistoryProxySessionRemote.class)
+                .retrieveCertReqHistory(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null);
         assertEquals("User data was or wasn't stored: ", useUserStorage, EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).existsUser(username));
         assertEquals("Certificate data was or wasn't stored: ", useCertificateStorage, EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
                 .findCertificateByFingerprint(CertTools.getFingerprintAsString(cert)) != null);
@@ -190,7 +190,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
             EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(ADMIN, username);
         }
         if (useCertReqHistory) {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistorySessionRemote.class).removeCertReqHistoryData(ADMIN, CertTools.getFingerprintAsString(cert));
+            EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistoryProxySessionRemote.class).removeCertReqHistoryData(CertTools.getFingerprintAsString(cert));
         }
         LOG.trace("<testIssueConfirmRevoke");
     }

@@ -16,29 +16,18 @@ import java.math.BigInteger;
 import java.security.cert.Certificate;
 import java.util.List;
 
-import javax.ejb.Local;
+import javax.ejb.Remote;
 
-import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 
 /**
- * Local interface for CertificateStoreSession.
  * @version $Id$
+ *
  */
-@Local
-public interface CertReqHistorySessionLocal extends CertReqHistorySession {
+@Remote
+public interface CertReqHistoryProxySessionRemote {
 
-    /**
-     * Method used to add a CertReqHistory to database
-     * 
-     * @param cert the certificate to store (Only X509Certificate used for now)
-     * @param useradmindata the user information used when issuing the certificate.
-     */
-    void addCertReqHistoryData(Certificate cert, EndEntityInformation useradmindata);
-    
-	CertificateInfo findFirstCertificateInfo(String issuerDN, BigInteger serno);
-	
     /**
      * Method to remove CertReqHistory data.
      *
@@ -58,7 +47,15 @@ public interface CertReqHistorySessionLocal extends CertReqHistorySession {
      * @return the CertReqHistory or null if no data is stored with the certificate.
      */
     CertReqHistory retrieveCertReqHistory(BigInteger certificateSN, String issuerDN);
-
+    
+    /**
+     * Method used to add a CertReqHistory to database
+     * 
+     * @param cert the certificate to store (Only X509Certificate used for now)
+     * @param useradmindata the user information used when issuing the certificate.
+     */
+    void addCertReqHistoryData(Certificate cert, EndEntityInformation useradmindata);
+    
     /**
      * NOTE: This method will try to repair broken XML and will in that case
      * update the database. This means that this method must always run in a

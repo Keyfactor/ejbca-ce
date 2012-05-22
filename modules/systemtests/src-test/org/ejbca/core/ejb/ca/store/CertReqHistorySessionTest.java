@@ -51,13 +51,14 @@ import org.junit.Test;
 public class CertReqHistorySessionTest {
 
     private static final Logger log = Logger.getLogger(CertReqHistorySessionTest.class);
-    private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertReqHistorySessionTest"));
     private static X509Certificate cert1;
     private static X509Certificate cert2;
     private static String username = "";
     private static KeyPair keyPair;
 
     private CertReqHistorySessionRemote certReqHistorySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistorySessionRemote.class);
+    private CertReqHistoryProxySessionRemote certReqHistoryProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CertReqHistoryProxySessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
@@ -95,10 +96,10 @@ public class CertReqHistorySessionTest {
         log.debug("Generated random username: username =" + username);
         userdata.setUsername(username);
         userdata.setDN("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1");
-        certReqHistorySession.addCertReqHistoryData(internalAdmin, cert1, userdata);
+        certReqHistoryProxySession.addCertReqHistoryData(cert1, userdata);
 
         userdata.setDN("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2");
-        certReqHistorySession.addCertReqHistoryData(internalAdmin, cert2, userdata);
+        certReqHistoryProxySession.addCertReqHistoryData(cert2, userdata);
         log.trace("<test09addCertReqHist()");
     }
 
@@ -111,7 +112,7 @@ public class CertReqHistorySessionTest {
     public void test02getCertReqHistByIssuerDNAndSerial() throws Exception {
         log.trace(">test10getCertReqHistByIssuerDNAndSerial()");
 
-        CertReqHistory certreqhist = certReqHistorySession.retrieveCertReqHistory(internalAdmin, cert1.getSerialNumber(), cert1.getIssuerDN().toString());
+        CertReqHistory certreqhist = certReqHistoryProxySession.retrieveCertReqHistory(cert1.getSerialNumber(), cert1.getIssuerDN().toString());
 
         assertNotNull("Error couldn't find the certificate request data stored previously", certreqhist);
 
@@ -130,7 +131,7 @@ public class CertReqHistorySessionTest {
     @Test
     public void test03getCertReqHistByUsername() throws Exception {
         log.trace(">test11getCertReqHistByUsername()");
-        Collection<CertReqHistory> result = certReqHistorySession.retrieveCertReqHistory(internalAdmin, username);
+        Collection<CertReqHistory> result = certReqHistoryProxySession.retrieveCertReqHistory(username);
         assertTrue("Error size of the returned collection.", (result.size() == 2));
 
         Iterator<CertReqHistory> iter = result.iterator();
@@ -150,13 +151,13 @@ public class CertReqHistorySessionTest {
     public void test04removeCertReqHistData() throws Exception {
         log.trace(">test12removeCertReqHistData()");
 
-        certReqHistorySession.removeCertReqHistoryData(internalAdmin, CertTools.getFingerprintAsString(cert1));
-        certReqHistorySession.removeCertReqHistoryData(internalAdmin, CertTools.getFingerprintAsString(cert2));
+        certReqHistoryProxySession.removeCertReqHistoryData(CertTools.getFingerprintAsString(cert1));
+        certReqHistoryProxySession.removeCertReqHistoryData(CertTools.getFingerprintAsString(cert2));
 
-        CertReqHistory certreqhist = certReqHistorySession.retrieveCertReqHistory(internalAdmin, cert1.getSerialNumber(), cert1.getIssuerDN().toString());
+        CertReqHistory certreqhist = certReqHistoryProxySession.retrieveCertReqHistory(cert1.getSerialNumber(), cert1.getIssuerDN().toString());
         assertNull("Error removing cert req history data, cert1 data is still there", certreqhist);
 
-        certreqhist = certReqHistorySession.retrieveCertReqHistory(internalAdmin, cert2.getSerialNumber(), cert2.getIssuerDN().toString());
+        certreqhist = certReqHistoryProxySession.retrieveCertReqHistory(cert2.getSerialNumber(), cert2.getIssuerDN().toString());
         assertNull("Error removing cert req history data, cert2 data is still there", certreqhist);
 
         log.trace("<test12removeCertReqHistData()");
