@@ -748,7 +748,7 @@ public class RAInterfaceBean implements Serializable {
     			returnval = false;
     		}
     	}
-    	return returnval && keyrecoverysession.existsKeys(administrator, cert) && !keyrecoverysession.isUserMarked(administrator,username);
+    	return returnval && keyrecoverysession.existsKeys(cert) && !keyrecoverysession.isUserMarked(username);
     }
 
     public void markForRecovery(String username, Certificate cert) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {

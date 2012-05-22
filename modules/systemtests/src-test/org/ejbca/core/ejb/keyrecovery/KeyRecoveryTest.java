@@ -138,12 +138,12 @@ public class KeyRecoveryTest extends CaTestCase {
                 fail("Exception generating keys/cert");
             }
             keyRecoverySession.addKeyRecoveryData(internalAdmin, cert, user, keypair);
-            assertTrue("Couldn't save key's in database", keyRecoverySession.existsKeys(internalAdmin, cert));
+            assertTrue("Couldn't save key's in database", keyRecoverySession.existsKeys(cert));
             log.trace("<test01AddKeyPair()");
             log.trace(">test02MarkAndRecoverKeyPair()");
-            assertFalse("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(internalAdmin, user));
+            assertFalse("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
             userAdminSession.prepareForKeyRecovery(internalAdmin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert);
-            assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(internalAdmin, user));
+            assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
             KeyRecoveryData data = keyRecoverySession.keyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
 
             assertTrue("Couldn't recover keys from database",
@@ -152,7 +152,7 @@ public class KeyRecoveryTest extends CaTestCase {
         } finally {
             log.trace(">test03RemoveKeyPair()");
             keyRecoverySession.removeKeyRecoveryData(internalAdmin, cert);
-            assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(internalAdmin, cert));
+            assertTrue("Couldn't remove keys from database", !keyRecoverySession.existsKeys(cert));
             log.trace("<test03RemoveKeyPair()");
         }
     }

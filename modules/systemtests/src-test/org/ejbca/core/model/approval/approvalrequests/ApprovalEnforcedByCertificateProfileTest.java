@@ -324,9 +324,9 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username1, "foo123", keypair.getPublic());
             assertNotNull("Cert should have been created.", cert);
             keyRecoverySession.addKeyRecoveryData(admin1, cert, username1, keypair);
-            assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(admin1, username1));
+            assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(username1));
             userAdminSession.prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
-            assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(admin1, username1));
+            assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(username1));
             KeyRecoveryData data = keyRecoverySession.keyRecovery(admin1, username1, SecConst.EMPTY_ENDENTITYPROFILE);
             assertTrue("Couldn't recover keys from database",
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));
@@ -345,7 +345,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username1, "foo123", keypair.getPublic());
             keyRecoverySession.addKeyRecoveryData(admin1, cert, username1, keypair);
 
-            assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(admin1, username1));
+            assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(username1));
             userAdminSession.prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
             fail("This should have caused an approval request");
         } catch (WaitingForApprovalException ex) {

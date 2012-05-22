@@ -14,14 +14,13 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.keyrecovery.KeyRecoverySession;
+import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
 
 /** Class that has helper methods to generate tokens for users in ejbca. 
  * Generating tokens can often depend on the ejb services (local interfaces), for example for key recovery.
  * 
- * @author Tomas Gustavsson
  * @version $Id$
  */
 public class GenerateToken {
@@ -30,10 +29,10 @@ public class GenerateToken {
 	private EndEntityAuthenticationSession authenticationSession;
 	private EndEntityAccessSession endEntityAccessSession;
 	private CaSession caSession;
-	private KeyRecoverySession keyRecoverySession;
+	private KeyRecoverySessionLocal keyRecoverySession;
 	private SignSession signSession;
 	
-    public GenerateToken(EndEntityAuthenticationSession authenticationSession, EndEntityAccessSession endEntityAccessSession, CaSession caSession, KeyRecoverySession keyRecoverySession, SignSession signSession) {
+    public GenerateToken(EndEntityAuthenticationSession authenticationSession, EndEntityAccessSession endEntityAccessSession, CaSession caSession, KeyRecoverySessionLocal keyRecoverySession, SignSession signSession) {
     	this.authenticationSession = authenticationSession;
     	this.endEntityAccessSession = endEntityAccessSession;
     	this.caSession = caSession;
