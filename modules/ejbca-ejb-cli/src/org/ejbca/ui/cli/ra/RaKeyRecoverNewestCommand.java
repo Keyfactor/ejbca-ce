@@ -50,7 +50,7 @@ public class RaKeyRecoverNewestCommand extends BaseRaAdminCommand {
     			getLogger().error("Keyrecovery have to be enabled in the system configuration in order to use this command.");
     			return;                   
     		}   
-    		if(ejb.getRemoteSession(KeyRecoverySessionRemote.class).isUserMarked(getAdmin(cliUserName, cliPassword), username)){
+    		if(ejb.getRemoteSession(KeyRecoverySessionRemote.class).isUserMarked(username)){
     			getLogger().error("User is already marked for recovery.");
     			return;                     
     		}

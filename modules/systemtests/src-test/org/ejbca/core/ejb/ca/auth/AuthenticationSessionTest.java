@@ -213,14 +213,14 @@ public class AuthenticationSessionTest extends CaTestCase {
         keyRecoverySession.addKeyRecoveryData(internalAdmin, cert, username1, keys);
         userAdminSession.prepareForKeyRecovery(internalAdmin, username1, SecConst.EMPTY_ENDENTITYPROFILE, null);
 
-        assertTrue("Failure the users keyrecovery session should have been marked", keyRecoverySession.isUserMarked(internalAdmin, username1));
+        assertTrue("Failure the users keyrecovery session should have been marked", keyRecoverySession.isUserMarked(username1));
 
         // Now finish the user (The actual test)
         EndEntityInformation userdata = endEntityAccessSession.findUser(internalAdmin, username1);
         authenticationSessionRemote.finishUser(userdata);
         // And se if the user is still marked
 
-        assertTrue("Failure the users keyrecovery session should have been unmarked", !keyRecoverySession.isUserMarked(internalAdmin, username1));
+        assertTrue("Failure the users keyrecovery session should have been unmarked", !keyRecoverySession.isUserMarked(username1));
 
         // Clean up
         keyRecoverySession.removeAllKeyRecoveryData(internalAdmin, username1);

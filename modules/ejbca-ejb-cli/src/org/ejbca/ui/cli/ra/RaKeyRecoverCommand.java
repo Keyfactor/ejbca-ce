@@ -63,11 +63,11 @@ public class RaKeyRecoverCommand extends BaseRaAdminCommand {
             	return;              
             }
             String username = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findUsernameByCertSerno(certificatesn, issuerdn);
-            if(!ejb.getRemoteSession(KeyRecoverySessionRemote.class).existsKeys(getAdmin(cliUserName, cliPassword) ,cert)){
+            if(!ejb.getRemoteSession(KeyRecoverySessionRemote.class).existsKeys(cert)){
             	getLogger().error("Specified keys doesn't exist in database.");
             	return;                  
             }
-            if(ejb.getRemoteSession(KeyRecoverySessionRemote.class).isUserMarked(getAdmin(cliUserName, cliPassword) ,username)){
+            if(ejb.getRemoteSession(KeyRecoverySessionRemote.class).isUserMarked(username)){
             	getLogger().error("User is already marked for recovery.");
             	return;                     
             }

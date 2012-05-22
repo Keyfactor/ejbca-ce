@@ -102,12 +102,11 @@ public interface KeyRecoverySession {
     public void unmarkUser(AuthenticationToken admin, String username);
 
     /** @return true if user is already marked for key recovery. */
-    public boolean isUserMarked(AuthenticationToken admin, String username);
+    public boolean isUserMarked(String username);
 
     /**
-     * @param admin the administrator calling the function
      * @param certificate the certificate used with the keys about to be removed.
      * @return true if specified certificates keys exists in database.
      */
-    public boolean existsKeys(AuthenticationToken admin, Certificate certificate);
+    public boolean existsKeys(Certificate certificate);
 }

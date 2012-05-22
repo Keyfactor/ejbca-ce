@@ -221,7 +221,7 @@ public class HardTokenInterfaceBean implements Serializable {
         Iterator<Certificate> iter = hardtokensession.findCertificatesInHardToken(tokensn).iterator();
         while (iter.hasNext()) {
             X509Certificate cert = (X509Certificate) iter.next();
-            if (keyrecoverysession.existsKeys(admin, cert)) {
+            if (keyrecoverysession.existsKeys(cert)) {
                 keyRecCert = cert;
             }
         }
@@ -235,7 +235,7 @@ public class HardTokenInterfaceBean implements Serializable {
         Iterator<Certificate> iter = hardtokensession.findCertificatesInHardToken(tokensn).iterator();
         while (iter.hasNext()) {
             X509Certificate cert = (X509Certificate) iter.next();
-            if (keyrecoverysession.existsKeys(admin, cert)) {
+            if (keyrecoverysession.existsKeys(cert)) {
                 rabean.markForRecovery(username, cert);
             }
         }

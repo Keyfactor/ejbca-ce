@@ -1160,7 +1160,7 @@ public class EjbcaWS implements IEjbcaWS {
 				String msg = intres.getLocalizedMessage("ra.errorentitynotexist", username);            	
 				throw new NotFoundException(msg);
 			}
-			if(keyRecoverySession.isUserMarked(admin, username)){
+			if(keyRecoverySession.isUserMarked(username)){
 				// User is already marked for recovery.
 				return;                     
 			}
