@@ -1952,7 +1952,7 @@ public class EjbcaWS implements IEjbcaWS {
 		try{
 			String bcIssuerDN = CertTools.stringToBCDNString(issuerDN);
 			caSession.verifyExistenceOfCA(bcIssuerDN.hashCode());
-			CertReqHistory certreqhist = certreqHistorySession.retrieveCertReqHistory(admin,new BigInteger(serialNumberInHex,16), bcIssuerDN);
+			CertReqHistory certreqhist = certreqHistorySession.retrieveCertReqHistory(new BigInteger(serialNumberInHex,16), bcIssuerDN);
 			if(certreqhist == null){
 				throw new PublisherException("Error: the  certificate with  serialnumber : " + serialNumberInHex +" and issuerdn " + issuerDN + " couldn't be found in database.");
 			}

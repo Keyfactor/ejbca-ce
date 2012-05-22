@@ -1272,7 +1272,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         assertAuthorizedToCA(admin, caid);
         int certificateProfileId = info.getCertificateProfileId();
         String userDataDN = info.getSubjectDN();
-        final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(admin, certserno, issuerdn);
+        final CertReqHistory certReqHistory = certreqHistorySession.retrieveCertReqHistory(certserno, issuerdn);
         UserData data = null;
         if (certReqHistory == null || XkmsConfiguration.getEnabled()) {
             // We could use userdata later, so try to find it

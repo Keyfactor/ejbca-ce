@@ -28,7 +28,6 @@ import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
@@ -56,7 +55,7 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void addCertReqHistoryData(AuthenticationToken admin, Certificate cert, EndEntityInformation useradmindata){
+    public void addCertReqHistoryData(Certificate cert, EndEntityInformation useradmindata){
     	final String issuerDN = CertTools.getIssuerDN(cert);
     	final String username = useradmindata.getUsername();
     	if (log.isTraceEnabled()) {
@@ -76,7 +75,7 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
     
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void removeCertReqHistoryData(AuthenticationToken admin, String certFingerprint){
+    public void removeCertReqHistoryData(String certFingerprint){
     	if (log.isTraceEnabled()) {
         	log.trace(">removeCertReqHistData(" + certFingerprint + ")");
     	}
@@ -104,7 +103,7 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
     // getCertReqHistory() might perform database updates, so we always need to run this in a transaction
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public CertReqHistory retrieveCertReqHistory(AuthenticationToken admin, BigInteger certificateSN, String issuerDN){
+    public CertReqHistory retrieveCertReqHistory(BigInteger certificateSN, String issuerDN){
     	CertReqHistory retval = null;
     	Collection<CertReqHistoryData> result = CertReqHistoryData.findByIssuerDNSerialNumber(entityManager, issuerDN, certificateSN.toString());
     	if(result.iterator().hasNext()) {
@@ -116,7 +115,7 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
     // getCertReqHistory() might perform database updates, so we always need to run this in a transaction
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public List<CertReqHistory> retrieveCertReqHistory(AuthenticationToken admin, String username){
+    public List<CertReqHistory> retrieveCertReqHistory(String username){
     	ArrayList<CertReqHistory> retval = new ArrayList<CertReqHistory>();
     	Collection<CertReqHistoryData> result = CertReqHistoryData.findByUsername(entityManager, username);
     	Iterator<CertReqHistoryData> iter = result.iterator();

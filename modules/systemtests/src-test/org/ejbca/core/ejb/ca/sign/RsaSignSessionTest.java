@@ -82,7 +82,7 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.ca.store.CertReqHistorySessionRemote;
+import org.ejbca.core.ejb.ca.store.CertReqHistoryProxySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -144,7 +144,8 @@ public class RsaSignSessionTest extends SignSessionCommon {
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateProfileSessionRemote.class);
-    private CertReqHistorySessionRemote certReqHistorySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistorySessionRemote.class);
+    private CertReqHistoryProxySessionRemote certReqHistoryProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CertReqHistoryProxySessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
@@ -838,7 +839,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         // Check that certreq history was created
-        List<CertReqHistory> history = certReqHistorySession.retrieveCertReqHistory(internalAdmin, username);
+        List<CertReqHistory> history = certReqHistoryProxySession.retrieveCertReqHistory(username);
         assertEquals(1, history.size());
         userAdminSession.deleteUser(internalAdmin, username);
         // Configure CA not to store certreq history
@@ -851,7 +852,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         cert = (X509Certificate) signSession.createCertificate(internalAdmin, username, "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         // Check that certreq history was not created
-        history = certReqHistorySession.retrieveCertReqHistory(internalAdmin, username);
+        history = certReqHistoryProxySession.retrieveCertReqHistory(username);
         assertEquals(0, history.size());
         userAdminSession.deleteUser(internalAdmin, username);
         // Reset CA info

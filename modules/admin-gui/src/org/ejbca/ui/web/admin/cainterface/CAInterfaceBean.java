@@ -57,7 +57,7 @@ import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
-import org.ejbca.core.ejb.ca.store.CertReqHistorySession;
+import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -73,12 +73,11 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
 /**
  * A class used as an interface between CA jsp pages and CA ejbca functions.
  *
- * @author  Philip Vendil
  * @version $Id$
  */
 public class CAInterfaceBean implements Serializable {
 
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 3L;
 
     public static final int CATOKENTYPE_P12          = 1;
     public static final int CATOKENTYPE_HSM          = 2;
@@ -88,7 +87,7 @@ public class CAInterfaceBean implements Serializable {
 
     // Private fields
     private CertificateStoreSession certificatesession;
-    private CertReqHistorySession certreqhistorysession;
+    private CertReqHistorySessionLocal certreqhistorysession;
     private CAAdminSession caadminsession;
     private CaSession caSession;
     private CrlStoreSession crlStoreSession;
@@ -390,7 +389,7 @@ public class CAInterfaceBean implements Serializable {
 		String dn = null;
 		ExtendedInformation ei = null;
 		final Certificate certificate = certificatedata.getCertificate();
-		final CertReqHistory certreqhist = certreqhistorysession.retrieveCertReqHistory(administrator, CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate));
+		final CertReqHistory certreqhist = certreqhistorysession.retrieveCertReqHistory(CertTools.getSerialNumber(certificate), CertTools.getIssuerDN(certificate));
 		if (certreqhist != null) {
 			// First try to look up all info using the Certificate Request History from when the certificate was issued
 			// We need this since the certificate subjectDN might be a subset of the subjectDN in the template
@@ -447,7 +446,7 @@ public class CAInterfaceBean implements Serializable {
 	 * Returns a List of CertReqHistUserData from the certreqhist database in an collection sorted by timestamp.
 	 */
 	public List<CertReqHistory> getCertReqUserDatas(String username){
-		List<CertReqHistory> history = this.certreqhistorysession.retrieveCertReqHistory(administrator, username);
+		List<CertReqHistory> history = this.certreqhistorysession.retrieveCertReqHistory(username);
 		// Sort it by timestamp, newest first;
 		Collections.sort(history, new CertReqUserCreateComparator());
 		return history;
