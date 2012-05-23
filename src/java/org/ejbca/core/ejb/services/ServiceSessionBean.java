@@ -323,7 +323,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         Collection<Integer> allVisibleServiceIds = new ArrayList<Integer>();
         // If superadmin return all visible services
         if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
-            Collection<Integer> allServiceIds = getServiceIdToNameMap(admin).keySet();
+            Collection<Integer> allServiceIds = getServiceIdToNameMap().keySet();
             Iterator<Integer> i = allServiceIds.iterator();
             while (i.hasNext()) {
                 int id = i.next().intValue();
@@ -342,7 +342,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public ServiceConfiguration getService(AuthenticationToken admin, String name) {
+    public ServiceConfiguration getService(String name) {
         if (log.isTraceEnabled()) {
             log.trace(">getService: " + name);
         }
@@ -359,7 +359,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public int getServiceId(AuthenticationToken admin, String name) {
+    public int getServiceId(String name) {
         int returnval = 0;
         ServiceData serviceData = serviceDataSession.findByName(name);
         if (serviceData != null) {
@@ -407,7 +407,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public String getServiceName(AuthenticationToken admin, int id) {
+    public String getServiceName(int id) {
         if (log.isTraceEnabled()) {
             log.trace(">getServiceName(id: " + id + ")");
         }
@@ -706,7 +706,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @Override
     public Map<Integer, Long> getNewServiceTimeouts(HashSet<Serializable> existingTimers) {
         Map<Integer, Long> ret = new HashMap<Integer, Long>();
-        HashMap<Integer, String> idToNameMap = getServiceIdToNameMap(intAdmin);
+        HashMap<Integer, String> idToNameMap = getServiceIdToNameMap();
         Collection<Integer> allServices = idToNameMap.keySet();
         Iterator<Integer> iter2 = allServices.iterator();
         while (iter2.hasNext()) {
@@ -880,7 +880,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public HashMap<Integer, String> getServiceIdToNameMap(AuthenticationToken admin) {
+    public HashMap<Integer, String> getServiceIdToNameMap() {
         HashMap<Integer, String> returnval = new HashMap<Integer, String>();
         Collection<ServiceData> result = serviceDataSession.findAll();
         Iterator<ServiceData> i = result.iterator();

@@ -177,7 +177,7 @@ public class CertificateExpireTest extends CaTestCase {
         workerprop.setProperty(BaseWorker.PROP_TIMEUNIT, BaseWorker.UNIT_SECONDS);
         config.setWorkerProperties(workerprop);
 
-        if (serviceSession.getService(admin, CERTIFICATE_EXPIRATION_SERVICE) == null) {
+        if (serviceSession.getService(CERTIFICATE_EXPIRATION_SERVICE) == null) {
             serviceSession.addService(admin, 4711, CERTIFICATE_EXPIRATION_SERVICE, config);
         }
         serviceSession.activateServiceTimer(admin, CERTIFICATE_EXPIRATION_SERVICE);

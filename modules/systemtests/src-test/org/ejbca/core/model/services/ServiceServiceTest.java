@@ -196,7 +196,7 @@ public class ServiceServiceTest extends CaTestCase {
             }
         }
         for (String service : services) {
-            if(serviceSession.getService(admin, service) != null) {
+            if(serviceSession.getService(service) != null) {
                 serviceSession.removeService(admin, service);
                 log.debug("Removed service: " + service);
             }           

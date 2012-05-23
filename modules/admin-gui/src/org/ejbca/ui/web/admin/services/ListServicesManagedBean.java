@@ -64,7 +64,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 	    while (iter.hasNext()) {
 	    	Integer id = (Integer) iter.next();
 	    	ServiceConfiguration serviceConfig =  ejb.getServiceSession().getServiceConfiguration(getAdmin(), id.intValue());
-	    	String serviceName = ejb.getServiceSession().getServiceName(getAdmin(), id.intValue());
+	    	String serviceName = ejb.getServiceSession().getServiceName(id.intValue());
 	    	String hidden = "";
 	    	if (serviceConfig.isHidden()) {
 	    		hidden = "<Hidden, Debug mode>";
@@ -84,7 +84,7 @@ public class ListServicesManagedBean extends BaseManagedBean {
 		if (StringUtils.isNotEmpty(selectedServiceName)){			
 			try {
 				getEditServiceBean().setServiceName(selectedServiceName);
-				ServiceConfiguration serviceConf = ejb.getServiceSession().getService(getAdmin(), selectedServiceName);
+				ServiceConfiguration serviceConf = ejb.getServiceSession().getService(selectedServiceName);
 				getEditServiceBean().setServiceConfiguration(serviceConf);
 			} catch (IOException e) {
 				addNonTranslatedErrorMessage((String) EjbcaJSFHelper.getBean().getText().get("ERROREDITINGSERVICE") + " " + e.getMessage());						
