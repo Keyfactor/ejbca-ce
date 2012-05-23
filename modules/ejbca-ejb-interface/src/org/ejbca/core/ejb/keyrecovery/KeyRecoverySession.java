@@ -27,7 +27,7 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
  */
 public interface KeyRecoverySession {
 
-	/**
+    /**
      * Adds a certificates keyrecovery data to the database.
      *
      * @param admin the administrator calling the function
@@ -36,8 +36,9 @@ public interface KeyRecoverySession {
      * @param keypair the actual keypair to save.
      *
      * @return false if the certificates keyrecovery data already exists.
+     * @throws AuthorizationDeniedException if not authorized to administer keys.
      */
-    public boolean addKeyRecoveryData(AuthenticationToken admin, Certificate certificate, String username, KeyPair keypair);
+    boolean addKeyRecoveryData(AuthenticationToken admin, Certificate certificate, String username, KeyPair keypair) throws AuthorizationDeniedException;
 
     /**
      * Updates keyrecovery data
@@ -48,21 +49,33 @@ public interface KeyRecoverySession {
      * @param keypair the actual keypair to save.
      *
      * @return false if certificates keyrecovery data does not exist
+     * @throws AuthorizationDeniedException if not authorized to administrate keys.
      *
-     * @throws javax.ejb.EJBException if a communication or other error occurs.
      */
-    public boolean changeKeyRecoveryData(AuthenticationToken admin, X509Certificate certificate, boolean markedasrecoverable, KeyPair keypair);
+    boolean changeKeyRecoveryData(AuthenticationToken admin, X509Certificate certificate, boolean markedasrecoverable, KeyPair keypair) throws AuthorizationDeniedException;
 
     /**
      * Removes a certificates keyrecovery data from the database.
      *
      * @param admin the administrator calling the function
      * @param certificate the certificate used with the keys about to be removed.
+     * @throws AuthorizationDeniedException if not authorized to administer keys
      */
-    public void removeKeyRecoveryData(AuthenticationToken admin, Certificate certificate);
+    void removeKeyRecoveryData(AuthenticationToken admin, Certificate certificate) throws AuthorizationDeniedException;
 
     /** Removes a all keyrecovery data saved for a user from the database. */
-    public void removeAllKeyRecoveryData(AuthenticationToken admin, String username);
+    void removeAllKeyRecoveryData(AuthenticationToken admin, String username);
+
+    /**
+     * Returns the keyrecovery data for a user. Observe only one certificates
+     * key can be recovered for every user at the time.
+     * 
+     * @param endentityprofileid the end entity profile id the user belongs to.
+     * @return the marked keyrecovery data or null if none can be found.
+     * @deprecated since 5.1.0 Use org.ejbca.core.ejb.keyrecovery.KeyRecoverySession.recoverKeys(AuthenticationToken, String, int) instead 
+     */
+    org.ejbca.core.model.keyrecovery.KeyRecoveryData keyRecovery(AuthenticationToken admin, String username, int endEntityProfileId)
+            throws AuthorizationDeniedException;
 
     /**
      * Returns the keyrecovery data for a user. Observe only one certificates
@@ -71,7 +84,8 @@ public interface KeyRecoverySession {
      * @param endentityprofileid the end entity profile id the user belongs to.
      * @return the marked keyrecovery data or null if none can be found.
      */
-    public org.ejbca.core.model.keyrecovery.KeyRecoveryData keyRecovery(AuthenticationToken admin, String username, int endEntityProfileId) throws AuthorizationDeniedException;
+    org.ejbca.core.model.keyrecovery.KeyRecoveryData recoverKeys(AuthenticationToken admin, String username, int endEntityProfileId)
+            throws AuthorizationDeniedException;
 
     /**
      * Marks a users newest certificate for key recovery. Newest means certificate with latest not
@@ -84,8 +98,8 @@ public interface KeyRecoverySession {
      * @return true if operation went successful or false if no certificates could be found for
      *         user, or user already marked.
      */
-    public boolean markNewestAsRecoverable(AuthenticationToken admin, String username, int endEntityProfileId, GlobalConfiguration gc)
-    		throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException;
+    boolean markNewestAsRecoverable(AuthenticationToken admin, String username, int endEntityProfileId, GlobalConfiguration gc)
+            throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException;
 
     /**
      * Marks a users certificate for key recovery.
@@ -95,18 +109,18 @@ public interface KeyRecoverySession {
      * @param gc The GlobalConfiguration used to extract approval information
      * @return true if operation went successful or false if  certificate couldn't be found.
      */
-    public boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId, GlobalConfiguration gc)
-    		throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException;
+    boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId, GlobalConfiguration gc)
+            throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException;
 
     /** Resets keyrecovery mark for a user. */
-    public void unmarkUser(AuthenticationToken admin, String username);
+    void unmarkUser(AuthenticationToken admin, String username);
 
     /** @return true if user is already marked for key recovery. */
-    public boolean isUserMarked(String username);
+    boolean isUserMarked(String username);
 
     /**
      * @param certificate the certificate used with the keys about to be removed.
      * @return true if specified certificates keys exists in database.
      */
-    public boolean existsKeys(Certificate certificate);
+    boolean existsKeys(Certificate certificate);
 }

@@ -327,7 +327,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(username1));
             userAdminSession.prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(username1));
-            KeyRecoveryData data = keyRecoverySession.keyRecovery(admin1, username1, SecConst.EMPTY_ENDENTITYPROFILE);
+            KeyRecoveryData data = keyRecoverySession.recoverKeys(admin1, username1, SecConst.EMPTY_ENDENTITYPROFILE);
             assertTrue("Couldn't recover keys from database",
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));
         } catch (WaitingForApprovalException ex) {

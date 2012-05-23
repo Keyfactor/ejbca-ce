@@ -144,7 +144,7 @@ public class KeyRecoveryTest extends CaTestCase {
             assertFalse("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
             userAdminSession.prepareForKeyRecovery(internalAdmin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
-            KeyRecoveryData data = keyRecoverySession.keyRecovery(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
+            KeyRecoveryData data = keyRecoverySession.recoverKeys(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
 
             assertTrue("Couldn't recover keys from database",
                     Arrays.equals(data.getKeyPair().getPrivate().getEncoded(), keypair.getPrivate().getEncoded()));

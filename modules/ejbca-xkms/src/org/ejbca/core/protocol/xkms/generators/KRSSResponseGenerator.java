@@ -228,7 +228,7 @@ public class KRSSResponseGenerator extends
 					reusecertificate = endEntityProfile.getReUseKeyRecoveredCertificate();
 
 					// used saved keys.
-					keyData = keyRecoverySession.keyRecovery(pubAdmin, userDataVO.getUsername(), userDataVO.getEndEntityProfileId());
+					keyData = keyRecoverySession.recoverKeys(pubAdmin, userDataVO.getUsername(), userDataVO.getEndEntityProfileId());
 					keyPair = keyData.getKeyPair();
 					certKey = keyPair.getPublic();
 					privKey = keyPair.getPrivate();
