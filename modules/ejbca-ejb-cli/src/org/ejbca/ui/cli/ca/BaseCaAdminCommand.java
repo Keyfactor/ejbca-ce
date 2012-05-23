@@ -157,7 +157,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
             result = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(authenticationToken, caname);
         } catch (Exception e) {
             getLogger().debug("Error retriving CA " + caname + " info.", e);
-            throw new Exception("Error retriving CA " + caname + " info.");
+            throw new Exception("Error retriving CA " + caname + " info.", e);
         }
         if (result == null) {
             getLogger().debug("CA " + caname + " not found.");

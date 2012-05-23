@@ -25,8 +25,6 @@ import org.cesecore.util.StringTools;
 /**
  * Holds non-sensitive information about a CVC CA (Card Verifiable Certificate).
  *
- * Probably based on EJBCA's org.ejbca.core.model.ca.caadmin.CVCCAInfo r11111
- *
  * @version $Id$
  */
 public class CVCCAInfo extends CAInfo {
