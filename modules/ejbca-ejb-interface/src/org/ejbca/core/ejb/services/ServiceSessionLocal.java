@@ -20,7 +20,6 @@ import java.util.Map;
 import javax.ejb.Local;
 import javax.ejb.Timer;
 
-import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.ejbca.core.model.services.IWorker;
 
 /**
@@ -31,19 +30,19 @@ import org.ejbca.core.model.services.IWorker;
 public interface ServiceSessionLocal extends ServiceSession {
 
     /** @return HashMap mapping service id (Integer) to service name (String). */
-    public HashMap<Integer, String> getServiceIdToNameMap(AuthenticationToken admin);
+    HashMap<Integer, String> getServiceIdToNameMap();
 
     /**
      * Internal method used from load() to separate timer access from database
      * access transactions.
      */
-	public Map<Integer, Long> getNewServiceTimeouts(HashSet<Serializable> existingTimers);
+	Map<Integer, Long> getNewServiceTimeouts(final HashSet<Serializable> existingTimers);
    
     /**
      * Return the configured interval for the specified worker or
      * IInterval.DONT_EXECUTE if it could not be found.
      */
-	public long getServiceInterval(Integer serviceId);
+	long getServiceInterval(final Integer serviceId);
 
     /**
      * Reads the current timeStamp values and tries to update them in a single transaction.
@@ -52,15 +51,15 @@ public interface ServiceSessionLocal extends ServiceSession {
      * 
      * Should only be called from timeoutHandler
      */
-	public IWorker getWorkerIfItShouldRun(Integer timerInfo, long nextTimeout);
+	IWorker getWorkerIfItShouldRun(final Integer timerInfo, final long nextTimeout);
 
 	/** Executes a the service in a separate in no transaction. */
-	public void executeServiceInNoTransaction(IWorker worker, String serviceName);
+	void executeServiceInNoTransaction(final IWorker worker, final String serviceName);
 	
     /** Cancels a timer with the given Id. */
-	public void cancelTimer(Integer id);
+	void cancelTimer(final Integer id);
 	
 	/** The timeout method */
-    public void timeoutHandler(Timer timer);
+    void timeoutHandler(final Timer timer);
 
 }

@@ -64,13 +64,13 @@ public interface ServiceSession {
      * Retrieves a named service.
      * @returns the service configuration or null if it doesn't exist.
      */
-    public org.ejbca.core.model.services.ServiceConfiguration getService(AuthenticationToken admin, String name);
+    public org.ejbca.core.model.services.ServiceConfiguration getService(String name);
 
     /**
      * Returns a service id, given it's service name
      * @return the id or 0 if the service cannot be found.
      */
-    public int getServiceId(AuthenticationToken admin, String name);
+    public int getServiceId(String name);
 
     /**
      * Activates the timer for a named service. The service must already be
@@ -85,7 +85,7 @@ public interface ServiceSession {
      * Returns a Service name given its id.
      * @return the name or null if id does not exist
      */
-    public String getServiceName(AuthenticationToken admin, int id);
+    public String getServiceName(int id);
 
  
     /** Loads and activates all the services from database that are active. */
