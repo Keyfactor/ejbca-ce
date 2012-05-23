@@ -70,7 +70,7 @@ public class GenerateToken {
     	        log.debug("Recovering keys for user: "+ username);
     	    }
             // used saved keys.
-			keyData = keyRecoverySession.keyRecovery(administrator, username, endEntityProfileId);
+			keyData = keyRecoverySession.recoverKeys(administrator, username, endEntityProfileId);
     		if (keyData == null) {
     			throw new Exception("No key recovery data exists for user");
     		}

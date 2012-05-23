@@ -370,7 +370,7 @@ public class BatchMakeP12 extends BaseCommand {
             boolean reusecertificate = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfile(data.getEndEntityProfileId()).getReUseKeyRecoveredCertificate();
             // Recover Keys
 
-            KeyRecoveryData recoveryData = ejb.getRemoteSession(KeyRecoverySessionRemote.class).keyRecovery(getAdmin(cliUserName, cliPassword), data.getUsername(), data.getEndEntityProfileId());
+            KeyRecoveryData recoveryData = ejb.getRemoteSession(KeyRecoverySessionRemote.class).recoverKeys(getAdmin(cliUserName, cliPassword), data.getUsername(), data.getEndEntityProfileId());
             if (reusecertificate) {
                 ejb.getRemoteSession(KeyRecoverySessionRemote.class).unmarkUser(getAdmin(cliUserName, cliPassword), data.getUsername());
             }
