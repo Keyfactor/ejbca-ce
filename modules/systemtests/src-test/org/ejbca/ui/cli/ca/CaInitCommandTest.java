@@ -13,12 +13,14 @@
 
 package org.ejbca.ui.cli.ca;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
@@ -40,11 +42,15 @@ public class CaInitCommandTest {
 
     private static final String CA_NAME = "1327ca2";
     private static final String CERTIFICATE_PROFILE_NAME = "certificateProfile1327";
-    private static final String[] HAPPY_PATH_ARGS = { "init", CA_NAME, "\"CN=CLI Test CA 1237ca2,O=EJBCA,C=SE\"", "soft", "foo123", "2048", "RSA",
+    private static final String[] HAPPY_PATH_ARGS = { "init", CA_NAME, "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE", "soft", "foo123", "2048", "RSA",
             "365", "null", "SHA1WithRSA" };
-    private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, "\"CN=CLI Test CA 1237ca2,O=EJBCA,C=SE\"", "soft", "foo123", "2048", "RSA",
+    private static final String[] X509_TYPE_ARGS = { "init", CA_NAME, "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE", "soft", "foo123", "2048", "RSA",
+        "365", "null", "SHA1WithRSA", "-type", "x509" };
+    private static final String[] CVC_TYPE_ARGS = { "init", CA_NAME, "CN=CVCCATEST,O=EJBCA,C=AZ ", "soft", "foo123", "2048", "RSA",
+        "365", "null", "SHA1WithRSA", "-type", "cvc" };
+    private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE", "soft", "foo123", "2048", "RSA",
             "365", "null", "SHA1WithRSA", "-certprofile", "ROOTCA" };
-    private static final String[] CUSTOM_PROFILE_ARGS = { "init", CA_NAME, "\"CN=CLI Test CA 1237ca2,O=EJBCA,C=SE\"", "soft", "foo123", "2048",
+    private static final String[] CUSTOM_PROFILE_ARGS = { "init", CA_NAME, "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE", "soft", "foo123", "2048",
             "RSA", "365", "null", "SHA1WithRSA", "-certprofile", CERTIFICATE_PROFILE_NAME };
 
     private CaInitCommand caInitCommand;
@@ -83,7 +89,29 @@ public class CaInitCommandTest {
             caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
         }
     }
+    
+    @Test
+    public void testWithX509Type() throws Exception{
+        try {
+            caInitCommand.execute(X509_TYPE_ARGS);
+            assertNotNull("X509 typed CA was not created.", caSession.getCAInfo(admin, CA_NAME));
+        } finally {
+            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
+        }
+    }
 
+    @Test
+    public void testWithCVCType() throws Exception{
+        try {
+            caInitCommand.execute(CVC_TYPE_ARGS);
+            CAInfo caInfo = caSession.getCAInfo(admin, CA_NAME);
+            assertNotNull("CVC typed CA was not created.", caInfo);
+            assertEquals("CAInfo was not of type CVC", caInfo.getCAType(), CAInfo.CATYPE_CVC);        
+        } finally {
+            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
+        }
+    }
+    
     @Test
     public void testExecuteWithRootCACertificateProfile() throws Exception {
         try {
