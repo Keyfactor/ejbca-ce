@@ -129,7 +129,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger()
                     .info("Usage: "
                             + getCommand()
-                            + " <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [-certprofile profileName] [-superadmincn SuperAdmin] [<catokenproperties> or null] [<signed by caid>]");
+                            + " <caname> <dn> <catokentype> <catokenpassword> <keyspec> <keytype> <validity-days> <policyID> <signalgorithm> [-certprofile profileName] [-type catype] [-superadmincn SuperAdmin] [<catokenproperties> or null] [<signed by caid>]");
             getLogger()
                     .info(" catokentype defines if the CA should be created with soft keys or on a HSM. Use 'soft' for software keys and 'org.cesecore.keys.token.PKCS11CryptoToken' for PKCS#11 HSMs.");
             getLogger()
@@ -140,6 +140,18 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger().info(" keyspec for RSA keys is size of RSA keys (1024, 2048, 4096, 8192).");
             getLogger().info(" keyspec for DSA keys is size of DSA keys (1024).");
             getLogger().info(" keyspec for ECDSA keys is name of curve or 'implicitlyCA', see docs.");
+            StringBuilder typesStringBuilder = new StringBuilder();
+            CaType[] typeArray = CaType.values();
+            for(int i = 0; i < typeArray.length; ++i) {
+                CaType type = typeArray[i];
+                typesStringBuilder.append(type.getTypeName());
+                if(i == typeArray.length-2) {
+                    typesStringBuilder.append(" or ");
+                } else {
+                    typesStringBuilder.append(",");
+                }
+            }
+            getLogger().info(" -type is the CA type. [" + typesStringBuilder.toString() + "]");
             getLogger()
                     .info(" policyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' or objectID and cpsurl as \"2.5.29.32.0 http://foo.bar.com/mycps.txt\".");
             getLogger()
@@ -167,14 +179,14 @@ public class CaInitCommand extends BaseCaAdminCommand {
             String profileName = null;
             if (profileInd > -1) {
                 profileName = argsList.get(profileInd + 1);
-                argsList.remove(profileName);
+                argsList.remove(profileInd + 1);
                 argsList.remove("-certprofile");
             }
             int superAdminCNInd = argsList.indexOf("-superadmincn");
             String superAdminCN = null;
             if (superAdminCNInd > -1) {
                 superAdminCN = argsList.get(superAdminCNInd + 1);
-                argsList.remove(superAdminCN);
+                argsList.remove(superAdminCNInd + 1);
                 argsList.remove("-superadmincn");
             }
             int typeIndex = argsList.indexOf("-type");
@@ -186,7 +198,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 if (type == null) {
                     throw new InvalidParameterException("CA type of name " + typeName + " unknown. Available types: " + CaType.getTypeNames());
                 }
-                argsList.remove(type.getTypeName());
+                argsList.remove(typeIndex + 1);
                 argsList.remove("-type");
             }
 
