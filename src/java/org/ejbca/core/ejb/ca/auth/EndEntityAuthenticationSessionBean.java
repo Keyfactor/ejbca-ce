@@ -97,7 +97,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                 userAdminSession.resetRemainingLoginAttempts(username);
             	// Log formal message that authentication was successful
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", intres.getLocalizedMessageCs("authentication.authok", username));
+                details.put("msg", intres.getLocalizedMessageCs("authentication.authok", username).toString());
                 auditSession.log(EjbcaEventTypes.CA_USERAUTH, EventStatus.SUCCESS, ModuleTypes.CA, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(data.getCaId()), null, username, details);
             	if (log.isTraceEnabled()) {
                     log.trace("<authenticateUser("+username+", hiddenpwd)");
