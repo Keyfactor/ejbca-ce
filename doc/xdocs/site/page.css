@@ -107,7 +107,7 @@ acronym {
 .tab a:link {   text-decoration : none;  }
 .tab a:visited { text-decoration : none; color: #2A4A6D; }
 .tab a:visited { text-decoration : none; color: #8ca8d0; }
-.tab a:hover { color: #000066; text-decoration : underlined; }
+.tab a:hover { color: #000066; text-decoration: underline; }
 
 table .title { background-color: #FFFFFF; width:100%; border: 0px; }
 .dida { font-size: 80%; }
