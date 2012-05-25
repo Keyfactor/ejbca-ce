@@ -9,6 +9,8 @@ This is a maintenance release with a few bug fixes and new features. In all, X i
 
 * Noteworthy changes:
 - Index recommendations have changed.
+- CVC CAs can now be created from the Command Line Interface.
+- EJBCA now supports Japanese localization
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE
