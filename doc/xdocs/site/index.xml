@@ -8,30 +8,35 @@
 <body>
   <section name="News and Info">
 
+
+<table class="promotion"><!--AC table for twitterwidget and Note area-->
+
+<tr>
+<td valign="top"><!--TWITTER WIDGET-->
 <div class="frame note" id="twitter" style="border:0;">
-  <script charset="utf-8" src="https://widgets.twimg.com/j/2/widget.js">
-  </script>
+<script charset="utf-8" src="https://widgets.twimg.com/j/2/widget.js">
+</script>
 <script>
 new TWTR.Widget({
   version: 2,
   type: 'profile',
-  rpp: 1,
+  rpp: 3,
   interval: 30000,
-  width: 1100,
-  height: 50,
+  width: 0,
+  height: 0,
   theme: {
     shell: {
       background: '#8ca8d0',
-      color: '#ffffff'
+      color: '#ffffff',
     },
     tweets: {
       background: '#eee',
       color: '#333',
-      links: '#da5c05'
+      links: '#5e87bb'
     }
   },
   features: {
-    scrollbar: false,
+    scrollbar: true,
     loop: true,
     live: false,
     behavior: 'all'
@@ -39,21 +44,46 @@ new TWTR.Widget({
 }).render().setUser('primekeyPKI').start();
 </script>
 </div>
+</td>
 
-  <note>
-  <p><strong>2012-03-08: EJBCA 5.0.4 is now out!</strong>
-  <br/>Visit the <a href="download.html">download</a> section. There is also a LiveCD!
+<td valign="top">
+<div class="frame note">
+<div class="label"><a style="color:white; padding:1.8em;" href="http://www.primekey.se/PKI+shop/">PKI Course in California!</a><a style="color:white; padding:1.8em;" href="http://www.primekey.se/PKI+shop/">Learn PKI in Sweden!</a><a style="color:white; padding:1.8em;" href="http://www.primekey.se/services/training/Open+schedule">PKI Training Schedule</a></div>
+<div class="content">
+  <p><strong>EJBCA 4.0.10 is now out!</strong>
+  <br />Visit the <a href="download.html">download</a> section. There is also a LiveCD!
+  <br />
+  <span class="date"> Date: 2012-03-14</span>  
+  </p>  
+  <p><strong>Full EU EAC ePassport support in Cert-cvc 1.3.0!</strong><br />
+  The <a href="download.html">cert-cvc library</a> handles CVC certificates for <a href="cvccas.html">EU EAC ePassport PKI</a> and the current release has full support for EU EAC ePassports using all algorithms. Release Date: 2012-05-03!
+Visit the download section. There is also a LiveCD!
+<br />
+  <span class="date"> Date: 2012-05-03</span> 
   </p>
-  </note>
-  <note>
-  EJBCA 5.0 is a CWA and Common Criteria certified version of EJBCA. EJBCA 5.0 is available exclusively from <a href="http://www.primekey.se/PKI+shop/">PrimeKey</a>. 
-  </note>
-  <note>
-  Find latest news about ejbca at the <a href="http://blog.ejbca.org/">EJBCA blog</a>.
-  </note>
-  <note>
-  The <a href="download.html">cert-cvc library</a> handles CVC certificates for <a href="cvccas.html">EU EAC ePassport PKI</a> and the current release has full support for EU EAC ePassports using all algorithms.
-  </note>
+  <p>
+  <strong>Another EJBCA User Guide!</strong><br />The latest addition is a CMP 3GPP manual. Buy it at the <a href="http://www.primekey.se/PKI+shop/">Prime PKI Shop!</a>
+  <br />
+  <span class="date"> Date: 2012-05-25</span>
+  </p>
+
+  <p><strong>Certified PKI for Customers!</strong><br />
+  5.0 is a CWA certified EJBCA version, with accomplished Common Criteria certification just around the corner. EJBCA 5.0 is available exclusively from <a href="http://www.primekey.se/PKI+shop/">PrimeKey Solutions AB</a>.
+  <br />
+  </p>
+   <p>
+  <strong><a href="http://blog.ejbca.org/2012/05/ejbca-will-always-be-open-source.html">Employees Guarantee Top OS Software Quality...</a><br /><a href="http://blog.ejbca.org/2012/05/new-features-in-ejbca-5.html">EJBCA Enterprise vs Community Features...</a>
+  <br /><a href="http://blog.ejbca.org">Read more News from the EJBCA Blog...</a></strong>
+  </p>
+  <p>
+  </p>
+
+</div>
+</div>
+</td>
+</tr>
+</table>
+
   </section>
 
 <section name="EJBCA Enterprise PKI">
