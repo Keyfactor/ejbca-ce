@@ -614,6 +614,14 @@ but when authenticated RA CMP messages arrive a user is created in EJBCA and a c
 CMP support in RA mode (see below) can support several CAs and profiles based on the keyId of the
 password used to protect the CMP messages (PBE protection).
 </p>
+
+<subsection name="CMP and 3GPP/4G/LTE configuration guide">
+<p>
+<a href="http://www.primekey.se/">PrimeKey</a> has created a detailed CMP configuration guide, with details how to 
+configure EJBCA for 3GPP/4G/LTE networks using CMP. You can purchase it easily in the <a href="http://www.primekey.se/PKI+shop/">PKI Shop</a>.
+</p>
+</subsection>
+
 <subsection name="Configuration">
 <p>
 Copy conf/cmp.properties.sample to conf/cmp.properties and configure. The options in the configuration file should
