@@ -4,14 +4,14 @@ html {
 	padding: 0px;
 }
 body, ul, li, p {
-	font-family: verdana, "Trebuchet MS", arial, helvetica, sans-serif; 
-        font-size: small;
+	font-family: verdana, arial, helvetica, sans-serif; 
+	font-size: small;
 }
 body { 
-	color: #555753; 
+	color: #333; 
 	background-color: #fff; 
-	margin: 0px; 
-	padding: 0px;
+	margin: 0; 
+	padding: 0;
 }
 ul {
 	list-style-type:square;
@@ -29,23 +29,22 @@ a {
 	text-decoration : none;	 
 }
 
-a:link { color:#cc6600; text-decoration: none;} 
-a:hover { text-decoration: underline;}
-a:visited { color:#5e87bb} 
+a:link { color:#015a9c; text-decoration: none;} 
+a:visited { color:#2170ab}
 
 #services { 
 	white-space: nowrap;
-	margin: 0 0 0 20px;
-	padding: 10px 0 15px 35px;
-	font-size : 200%;}
+	padding: 20px 0 0 90px;
+	font-size : 110%;}
 #services a:link { color:#da5c05} 
 #services a:visited { color:#8ca8d0} 
 #services a:hover { color:#da5c05}
 
+#toppic { padding-left:210px;}
+
 .twitter {
-	top: 85px;
+	top: 185px;
 	left: 400px;
-	width: 64%;
 	z-index: -1;
 	padding: 1px 0 0 0;
 	margin: 0;
@@ -57,7 +56,13 @@ a:visited { color:#5e87bb}
 .pagetitle{
 	color:#005a9b;
 	}
-
+#promotion {
+	padding:0;
+	margin:0 0 0 0;
+	}
+.marg{padding-left:13px;}
+.marg2{padding:0 0 .5em 0;}	
+	
 div.right {
 	float: left;
 }
@@ -80,33 +85,38 @@ acronym {
     border-left: 1px solid #ddd;
 }
 
-.menu a { font-weight:normal; font-style: normal; color: #1081b9; text-decoration : none; }
+.menu a { font-weight:normal; font-style: normal; color: #5e87bb; text-decoration : none; }
 .menu a:link {   }
-.menu a:visited {  }
+.menu a:visited { color:#999999; }
 .menu a:hover { text-decoration: underline; }
 .menu ul { margin: 0px 0px 0px 20px; padding: 0px; }
-.menu li  {  list-style-type: none; font-weight : normal ; color:#8ca8d0; }
-.menu ul ul li .sel { text-decoration: underline; color: #000000; font-weight: bold;}
-.menu ul ul li  { list-style-type: disc; font-weight : normal; color: #005a9c;}
+.menu li  {  list-style-type: none; font-weight : normal ; color:#5e87bb; }
+.menu ul ul li .sel { padding: 0 0 0 10px;  font-style:italic; text-decoration: underline; font-weight: bold;}
+.menu ul ul li  { list-style-type: disc; font-weight : normal; color: #015a9c;}
 
 .menuheader {
-	font: normal 135% georgia;
+
+	font-family: arial, helvetica, sans-serif;
+	font-size: 120%;
+	font-weight: bold;
 	letter-spacing: 1px;
 	border-bottom: 1px dashed #688B9A;
+	border-bottom: 1px dashed #8ca8d0;
+
 	margin-top: 8px;
 	margin-bottom: 5px;
 	padding: 2px;
-	padding-left: 5px;
-	color: #5e87bb;
+	padding-left: 0px;
+	color: #015a9c;
 }
 
 .sel {
 }
 
 .tab { font-size : 85%; border: 0; background-color: #294563;}
-.tab a:link {   text-decoration : none;  }
-.tab a:visited { text-decoration : none; color: #2A4A6D; }
-.tab a:visited { text-decoration : none; color: #8ca8d0; }
+.tab a:link {   text-decoration: none;  }
+.tab a:visited { text-decoration: none; color: #2A4A6D; }
+.tab a:visited { text-decoration: none; color: #8ca8d0; }
 .tab a:hover { color: #000066; text-decoration: underline; }
 
 table .title { background-color: #FFFFFF; width:100%; border: 0px; }
@@ -122,6 +132,7 @@ table .title { background-color: #FFFFFF; width:100%; border: 0px; }
 .content {
     padding: 5px 5px 5px 10px;
 }
+.date{ font-size:0.8em; font-weight:bold;}
 
 .content .ForrestTable { width: 100%; background-color: #7099C5; color: #ffffff; font-size : 90%;}
 .content .ForrestTable caption { text-align: left; color: black; font-weight: bold; }
@@ -135,19 +146,29 @@ table .title { background-color: #FFFFFF; width:100%; border: 0px; }
 
 
 .frame {
+    border-radius: 5px;
   border: solid #8ca8d0 1px;
-  margin: 1em 4em 1em 2em;
+  margin: 0em 4em 0em 0em;
 }
+div.frame{
+	padding:0;
+	margin:0em 0 0 1.5em;
+	}
 
 .frame .label {
-	font-family:georgia;
-  background: #369;
-    background: #8ca8d0;
+  background: #8ca8d0;
+     border-radius: 3px 3px 0px 0;
   color: white;
   font-weight: bold;
   padding: 5px 10px;
 }
+.label a { font-weight:bold; font-style: normal; color: #015a9c; text-decoration : none; }
+.label a:link {   }
+.label a:visited { color:#015a9c;}
+.label a:hover { text-decoration: underline; }
+
 .frame .content {
+  border-radius: 5px;
   padding: 5px 10px;
   background: #f4f2f2;
   color: black;
@@ -181,9 +202,8 @@ table .title { background-color: #FFFFFF; width:100%; border: 0px; }
 
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: verdana, arial, helvetica, sans-serif;
+	font-family: geneva, verdana, sans-serif;
     font-weight: bold;
-    font-style: italic;
     margin: 1em 0 1em;
     padding-bottom: 1px;
 }
@@ -193,18 +213,21 @@ h1 {
     color: #333333;
     margin-top: 0em;    
 }
+h2 {
+    font-size: 110%;
+    color: #333333;
+    margin-top: 0em;
+}	
 
 h3 { 
-    /*font-size: 135%;*/
-		font-size:1.4em;
+    font-family: "new york", georgia, serif;
+    font-size: 175%;
     font-weight: bold;
     letter-spacing: 1px;
-    margin: 1.0em 3em .5em 0;
+    margin: 1em 3em 0em 0;
     padding: 0;
-    border-bottom: 1px dashed #688B9A;
-	    border-bottom: 1px dashed #8ca8d0;
     color: #015a9c;
-	    color: #333;
+
 }
 
 h4 {
@@ -260,7 +283,7 @@ h4 {
     background-color: #F1F1F1;
     clear: both;
     text-align: left;
-    margin: 0px;
+    margin:0 0 10px 0;
     padding-left: 15px;
     border-top: thin solid #CCC;
     border-bottom: thin solid #CCC;
@@ -297,7 +320,7 @@ h4 {
     margin: 0px;
     float: left;
     text-align: left;
-    padding: 5px 0 0 100px;
+    padding: 5px 0 0 108px;
 }
 
 #searchBox {
