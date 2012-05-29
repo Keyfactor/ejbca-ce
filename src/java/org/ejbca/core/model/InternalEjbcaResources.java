@@ -145,7 +145,7 @@ public class InternalEjbcaResources extends InternalResources {
     }
 
     @Override
-    public CharSequence getLocalizedMessageCs(final String key, final Object... params) {
+    protected CharSequence getLocalizedMessageCs(final String key, final Object... params) {
         final StringBuilder sb = new StringBuilder();
         if (primaryEjbcaResource.containsKey(key)) {
             sb.append(primaryEjbcaResource.getProperty(key));

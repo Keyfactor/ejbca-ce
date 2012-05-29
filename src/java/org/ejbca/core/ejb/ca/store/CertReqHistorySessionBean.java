@@ -63,9 +63,9 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
     	}
         try {
         	entityManager.persist(new CertReqHistoryData(cert, issuerDN, useradmindata));
-        	log.info(intres.getLocalizedMessageCs("store.storehistory", username));
+        	log.info(intres.getLocalizedMessage("store.storehistory", username));
         } catch (Exception e) {
-        	log.error(intres.getLocalizedMessageCs("store.errorstorehistory", useradmindata.getUsername()));
+        	log.error(intres.getLocalizedMessage("store.errorstorehistory", useradmindata.getUsername()));
             throw new EJBException(e);
         }
     	if (log.isTraceEnabled()) {
