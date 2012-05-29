@@ -371,12 +371,17 @@ public class CVCCA extends CA implements Serializable {
 		}
 		// Get the fields for the Holder Reference fields
 		// country is taken from C in a DN string, mnemonic from CN in a DN string and seq from SERIALNUMBER in a DN string
-		String subjectDn = subject.getCertificateDN();
-		String country = CertTools.getPartFromDN(subjectDn, "C");
+		final String subjectDn = subject.getCertificateDN();
+		final String country = CertTools.getPartFromDN(subjectDn, "C");
 		if(country == null) {
-		    throw new InvalidParameterException("Invalid DN: " + subjectDn + ". Country field must be filled in.");
+	        final String msg = intres.getLocalizedMessage("cvc.error.missingdnfield", subjectDn, "Country");
+            throw new InvalidParameterException(msg);
 		}
-		String mnemonic = CertTools.getPartFromDN(subject.getCertificateDN(), "CN");
+		final String mnemonic = CertTools.getPartFromDN(subjectDn, "CN");
+        if(mnemonic == null) {
+            final String msg = intres.getLocalizedMessage("cvc.error.missingdnfield", subjectDn, "Common Name");
+            throw new InvalidParameterException(msg);
+        }
 		String seq = sequence;
 		if (seq == null) {
 			log.info("No sequence in request, using random 5 number sequence.");
@@ -392,7 +397,7 @@ public class CVCCA extends CA implements Serializable {
 				seq = "0"+seq;					
 			}
 		}
-		// The DN 'CN=00111,O=CVCA-RPS,C=SE' will make the following reference
+		// The DN 'SERIALNUMBER=00111,CN=CVCA-RPS,C=SE' will make the following reference
         //HolderReferenceField holderRef = new HolderReferenceField("SE","CVCA-RPS","00111");		
         HolderReferenceField holderRef = new HolderReferenceField(country, mnemonic, seq);
 
