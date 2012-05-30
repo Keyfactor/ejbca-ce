@@ -46,6 +46,8 @@ public class CaInitCommandTest {
             "365", "null", "SHA1WithRSA" };
     private static final String[] X509_TYPE_ARGS = { "init", CA_NAME, "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE", "soft", "foo123", "2048", "RSA",
         "365", "null", "SHA1WithRSA", "-type", "x509" };
+    private static final String[] X509_ARGS_NON_DEFULTPWD = { "init", CA_NAME, "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE", "soft", "bar123", "2048", "RSA",
+        "365", "1.1.1.1", "SHA1WithRSA" };
     private static final String[] CVC_TYPE_ARGS = { "init", CA_NAME, "CN=CVCCATEST,O=EJBCA,C=AZ ", "soft", "foo123", "2048", "RSA",
         "365", "null", "SHA1WithRSA", "-type", "cvc" };
     private static final String[] ROOT_CA_ARGS = { "init", CA_NAME, "CN=CLI Test CA 1237ca2,O=EJBCA,C=SE", "soft", "foo123", "2048", "RSA",
@@ -95,6 +97,16 @@ public class CaInitCommandTest {
         try {
             caInitCommand.execute(X509_TYPE_ARGS);
             assertNotNull("X509 typed CA was not created.", caSession.getCAInfo(admin, CA_NAME));
+        } finally {
+            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
+        }
+    }
+
+    @Test
+    public void testWithX509TypeNonDefaultPwd() throws Exception{
+        try {
+            caInitCommand.execute(X509_ARGS_NON_DEFULTPWD);
+            assertNotNull("X509 typed CA with non default CA token pwd was not created.", caSession.getCAInfo(admin, CA_NAME));
         } finally {
             caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
         }
