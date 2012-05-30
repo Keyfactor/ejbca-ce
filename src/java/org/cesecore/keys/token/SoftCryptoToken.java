@@ -192,7 +192,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
         CryptoProviderTools.installBCProviderIfNotAvailable();
         KeyStore keystore = KeyStore.getInstance("PKCS12", PROVIDER);
         if (log.isDebugEnabled()) {
-        	log.debug("Loading keystore data of size: "+ksdata.length);
+        	log.debug("Loading keystore data of size: "+ (ksdata == null ? "null" : ksdata.length));
         }
         keystore.load(new ByteArrayInputStream(ksdata), keystorepass);
         return keystore;
@@ -224,7 +224,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
             log.error(e);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Storing soft keystore of size " + keystoreData.length);
+            log.debug("Storing soft keystore of size " + (keystoreData == null ? "null" : keystoreData.length));
         }
     }
 

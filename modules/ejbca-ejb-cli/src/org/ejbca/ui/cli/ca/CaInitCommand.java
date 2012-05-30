@@ -333,16 +333,21 @@ public class CaInitCommand extends BaseCaAdminCommand {
             if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
                 prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
             }
-            catokeninfo.setProperties(prop);
-
             if (!catokenpassword.equalsIgnoreCase("null")) {
                 catokeninfo.setAuthenticationCode(catokenpassword);
             }
             if ( catokentype.equalsIgnoreCase("soft")) {
                 catokeninfo.setClassPath(SoftCryptoToken.class.getName());
+                if (catokeninfo.getAuthenticationCode() != null) {
+                    // We must do this in order to not set the default password when creating a new soft CA token
+                    // A bit tricky, but thats how it is as of EJBCA 5.0.x, 2012-05.
+                    getLogger().info("Non default password used for soft CA token, auto activation disabled.");
+                    prop.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
+                }
             } else {
                 catokeninfo.setClassPath(catokentype);
             }
+            catokeninfo.setProperties(prop);
 
             CAInfo cainfo = null;
             switch (type) {
