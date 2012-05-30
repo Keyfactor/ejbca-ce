@@ -153,7 +153,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                     typesStringBuilder.append(",");
                 } 
             }
-            getLogger().info(" type is the CA type. May be [" + typesStringBuilder.toString() + "]");
+            getLogger().info(" type is the CA type. May be [" + typesStringBuilder.toString() + "]. Optional parameter, defaults to x509.");
             getLogger()
                     .info(" policyId can be 'null' if no Certificate Policy extension should be present, or\nobjectID as '2.5.29.32.0' or objectID and cpsurl as \"2.5.29.32.0 http://foo.bar.com/mycps.txt\".");
             getLogger()
