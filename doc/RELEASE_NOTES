@@ -5,12 +5,16 @@ EJBCA 5.1.0
 
 EJBCA 5.0.5
 -----------
-This is a maintenance release with a few bug fixes and new features. In all, X issues have been resolved.
+This is a maintenance release with a few bug fixes and new features. In all, 26 issues have been resolved.
 
 * Noteworthy changes:
 - Index recommendations have changed.
 - CVC CAs can now be created from the Command Line Interface.
 - EJBCA now supports Japanese localization
+- Fixed bug where recursive deny rules caused deny for system user.
+- Overall performance increases
+- Removed redundant and excessive logging to audit logs
+
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE
