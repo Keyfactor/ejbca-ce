@@ -420,14 +420,14 @@ If you choose to not activate the new keys immediately you must give the CA Toke
 <p>
 If you have set up your own CA you can request another CA to cross certify your CA, or you can get certified by Bridge CA such as the Federal Bridge. This is done in the following way:
 <ol>
-<li>In the 'Edit CA' page, choose a CA name of the external CA you are about to sign and click on 'Edit'.</li>
+<li>In the 'Edit CA' page, choose a CA that you intend to get cross certified by another CA by and click on 'Edit'.</li>
 <li>In the lower part of the screen, click on 'Make Certificate Request'.</li>
 <li>Now check 'No CA chain file available' and click 'Make Certificate Request'.</li>
 <li>Save the created PKCS#10 certificate request to disc and send to the other CA.</li>
 </ol>
 </p>
-<p>Now you have a certificate request to send to the other CA or bridge CA. When the other CA have issued a certificate for you, everything is completed.
-You don't need to (and you can't) import the cross-certificate or bridge-certificate in EJBCA. What you need to do is make sure the clients using the certificates issued by your CA
+<p>Now you have a certificate request to send to the other CA or Bridge CA. When the other CA have issued a certificate for you, everything is completed.
+You don't need to (and you can not) import the cross-certificate or bridge-certificate in EJBCA. What you need to do is make sure the clients using the certificates issued by your CA
 have access to the correct certificate chain. If you are cross-certified with several other CA, multiple possible certificate chains exist.
 <br/>Handling the certificate chains on clients is out of the scope for EJBCA.
 </p> 
