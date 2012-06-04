@@ -20,7 +20,7 @@
 new TWTR.Widget({
   version: 2,
   type: 'profile',
-  rpp: 3,
+  rpp: 7,
   interval: 30000,
   width: 0,
   height: 0,
