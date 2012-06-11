@@ -10,7 +10,7 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
+
 package org.ejbca.core.protocol.ws.client;
 
 import java.math.BigInteger;
@@ -32,61 +32,61 @@ import org.ejbca.ui.cli.IllegalAdminCommandException;
  */
 public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCommand{
 
-	
-	private static final int ARG_ISSUERDN                 = 1;
-	private static final int ARG_CERTSN                   = 2;
-	private static final int ARG_REASON                   = 3;
-	
-	
-    /**
-     * Creates a new instance of RevokeCertCommand
-     *
-     * @param args command line arguments
-     */
-    public RevokeCertCommand(String[] args) {
-        super(args);
-    }
 
-    /**
-     * Runs the command
-     *
-     * @throws IllegalAdminCommandException Error in command args
-     * @throws ErrorAdminCommandException Error running command
-     */
-    public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
+	private static final int ARG_ISSUERDN			= 1;
+	private static final int ARG_CERTSN				= 2;
+	private static final int ARG_REASON				= 3;
 
-    	try {   
-           
-            if(args.length != 4){
-            	usage();
-            	System.exit(-1); // NOPMD, it's not a JEE app
-            }
-            
-            String issuerdn = CertTools.stringToBCDNString(args[ARG_ISSUERDN]);            
-            String certsn = getCertSN(args[ARG_CERTSN]);
-            int reason = getRevokeReason(args[ARG_REASON]);
-            
-            try{
-            	RevokeStatus status =  getEjbcaRAWS().checkRevokationStatus(issuerdn,certsn);
-            	if (status != null) {
-                	getEjbcaRAWS().revokeCert(issuerdn,certsn,reason);            	         
-                    getPrintStream().println("Certificate revoked (or unrevoked) successfully.");            		
-            	} else {
-            		getPrintStream().println("Certificate does not exist.");
-            	}
-            } catch (AuthorizationDeniedException_Exception e) {
-            	getPrintStream().println("Error : " + e.getMessage());            
-            } catch (AlreadyRevokedException_Exception e) {
-            	getPrintStream().println("The certificate was already revoked, or you tried to unrevoke a permanently revoked certificate.");            
+
+	/**
+	 * Creates a new instance of RevokeCertCommand
+	 *
+	 * @param args command line arguments
+	 */
+	public RevokeCertCommand(String[] args) {
+		super(args);
+	}
+
+	/**
+	 * Runs the command
+	 *
+	 * @throws IllegalAdminCommandException Error in command args
+	 * @throws ErrorAdminCommandException Error running command
+	 */
+	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
+
+		try {
+
+			if(args.length != 4){
+				usage();
+				System.exit(-1); // NOPMD, it's not a JEE app
+			}
+
+			String issuerdn = CertTools.stringToBCDNString(args[ARG_ISSUERDN]);
+			String certsn = getCertSN(args[ARG_CERTSN]);
+			int reason = getRevokeReason(args[ARG_REASON]);
+
+			try{
+				RevokeStatus status =  getEjbcaRAWS().checkRevokationStatus(issuerdn,certsn);
+				if (status != null) {
+					getEjbcaRAWS().revokeCert(issuerdn,certsn,reason);
+					getPrintStream().println("Certificate revoked (or unrevoked) successfully.");
+				} else {
+					getPrintStream().println("Certificate does not exist.");
+				}
+			} catch (AuthorizationDeniedException_Exception e) {
+				getPrintStream().println("Error : " + e.getMessage());
+			} catch (AlreadyRevokedException_Exception e) {
+				getPrintStream().println("The certificate was already revoked, or you tried to unrevoke a permanently revoked certificate.");
 			} catch (WaitingForApprovalException_Exception e) {
-            	getPrintStream().println("The revocation request has been sent for approval.");            
+				getPrintStream().println("The revocation request has been sent for approval.");
 			} catch (ApprovalException_Exception e) {
-            	getPrintStream().println("This revocation has already been requested.");            
-            }
-        } catch (Exception e) {
-            throw new ErrorAdminCommandException(e);
-        }
-    }
+				getPrintStream().println("This revocation has already been requested.");
+			}
+		} catch (Exception e) {
+			throw new ErrorAdminCommandException(e);
+		}
+	}
 
 
 	private String getCertSN(String certsn) {
@@ -109,7 +109,7 @@ public class RevokeCertCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			getPrintStream().print(REASON_TEXTS[i] + ", ");
 		}
 		getPrintStream().print(REASON_TEXTS[REASON_TEXTS.length-1]);
-   }
+	}
 
 
 }
