@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ca;
 import java.beans.XMLDecoder;
 import java.io.File;
 import java.io.FileInputStream;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -101,7 +102,8 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                     if (index1 < 0 || index2 < 0 || index3 < 0) {
                     	getLogger().error("Filename not as expected (cert/entityprofile_<name>-<id>.xml).");
                     } else {
-                        String profilename = infiles[i].getName().substring(index1+1,index2);
+                    	final String filename = infiles[i].getName().substring(index1+1,index2);
+                        final String profilename = URLDecoder.decode(filename, "UTF-8");
                         //getLogger().debug("Name:"+profilename);
                         //getLogger().debug("Id:"+infiles[i].getName().substring(index2+1,index3));
                         int profileid = Integer.parseInt(infiles[i].getName().substring(index2+1,index3));

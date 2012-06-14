@@ -16,6 +16,7 @@ package org.ejbca.ui.cli.ca;
 import java.beans.XMLEncoder;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -76,7 +77,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                     if (profile == null) {
                     	getLogger().error("Couldn't find certificate profile '"+profilename+"'-"+profileid+" in database.");
                     } else {
-                        String outfile = outpath+"/certprofile_"+profilename+"-"+profileid+".xml";
+                    	final String profilenameEncoded = URLEncoder.encode(profilename, "UTF-8");
+                        final String outfile = outpath+"/certprofile_"+profilenameEncoded+"-"+profileid+".xml";
                         getLogger().info(outfile+".");
                         XMLEncoder encoder = new XMLEncoder(new  FileOutputStream(outfile));
                         encoder.writeObject(profile.saveData());
@@ -98,7 +100,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                     if (profile == null) {
                     	getLogger().error("Error : Couldn't find entity profile '"+profilename+"'-"+profileid+" in database.");
                     } else {
-                        String outfile = outpath+"/entityprofile_"+profilename+"-"+profileid+".xml";
+                    	final String profilenameEncoded = URLEncoder.encode(profilename, "UTF-8");
+                        final String outfile = outpath+"/entityprofile_"+profilenameEncoded+"-"+profileid+".xml";
                         getLogger().info(outfile+".");
                         XMLEncoder encoder = new XMLEncoder(new  FileOutputStream(outfile));
                         encoder.writeObject(profile.saveData());
