@@ -60,6 +60,13 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.ejbca.ui.cli.IllegalAdminCommandException;
 import org.ejbca.util.CliTools;
 
+/**
+ * CLI command for initializing initializing CAs.
+ * 
+ * @version $Id$
+ *
+ */
+
 enum CaType {
     X509("x509"), CVC("cvc");
 
