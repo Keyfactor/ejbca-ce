@@ -42,17 +42,10 @@ a:visited { color:#2170ab}
 
 #toppic { padding-left:210px;}
 
-.twitter {
-	top: 185px;
-	left: 400px;
-	z-index: -1;
-	padding: 1px 0 0 0;
-	margin: 0;
-	position: absolute;
+#twitter p {
+   text-align: left;
 }
-.twitter h4{
-    border-bottom: 0;
-	}
+
 .pagetitle{
 	color:#005a9b;
 	}
