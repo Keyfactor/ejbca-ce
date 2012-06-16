@@ -23,8 +23,12 @@ import java.security.SignatureException;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.xml.bind.DatatypeConverter;
 
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
@@ -34,6 +38,7 @@ import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
+import org.ejbca.core.protocol.ws.client.gen.RevokeBackDateNotAllowedForProfileException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -55,6 +60,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		BASIC,
 		BASICSINGLETRANS,
 		REVOKE,
+		REVOKE_BACKDATED,
 		REVOKEALOT
 	}
 	private class MyCommandFactory implements CommandFactory {
@@ -73,6 +79,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.maxCertificateSN = _maxCertificateSN;
 			this.subjectDN = _subjectDN;
 		}
+		@Override
 		public Command[] getCommands() throws Exception {
 			final KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
 			kpg.initialize(1024);
@@ -87,13 +94,14 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 				return new Command[]{
 									 new CertificateRequestCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN, kpg.generateKeyPair())
 									};
+			case REVOKE_BACKDATED:
 			case REVOKE:
 				return new Command[]{
 									 new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, true, this.maxCertificateSN),
 									 new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData),
 									 new FindUserCommand(ejbcaWS, jobData),
 									 new ListCertsCommand(ejbcaWS, jobData),
-									 new RevokeCertCommand(ejbcaWS, jobData),
+									 this.testType.equals(TestType.REVOKE_BACKDATED) ? new RevokeCertBackdatedCommand(ejbcaWS, jobData) : new RevokeCertCommand(ejbcaWS, jobData),
 									 new EditUserCommand(ejbcaWS, this.caName, this.endEntityProfileName, this.certificateProfileName, jobData, false, -1),
 									 new Pkcs10RequestCommand(ejbcaWS, kpg.generateKeyPair(), jobData) };
 			case REVOKEALOT:
@@ -142,11 +150,13 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate());
 			this.ejbcaWS = _ejbcaWS;
 		}
+		@Override
 		public boolean doIt() throws Exception {
 			final CertificateResponse certificateResponse = this.ejbcaWS.pkcs10Request(this.jobData.userName, this.jobData.passWord,
 																					   new String(Base64.encode(this.pkcs10.getEncoded())),null,CertificateHelper.RESPONSETYPE_CERTIFICATE);
 			return checkAndLogCertificateResponse(certificateResponse, this.jobData);
 		}
+		@Override
 		public String getJobTimeDescription() {
 			return "Relative time spent signing certificates";
 		}
@@ -158,27 +168,23 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 	 */
 	private boolean checkAndLogCertificateResponse(
 			final CertificateResponse certificateResponse, final JobData jobData)
-			throws CertificateException {
-		boolean ret = false;
-		@SuppressWarnings("unchecked")
-		final Iterator<X509Certificate> i = (Iterator<X509Certificate>)CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))).iterator();
+					throws CertificateException {
 		X509Certificate cert = null;
-		while ( i.hasNext() ) {
-			cert = i.next();
+		for ( final java.security.cert.Certificate tmp : CertificateFactory.getInstance("X.509").generateCertificates(new ByteArrayInputStream(Base64.decode(certificateResponse.getData()))) ) {
+			cert = (X509Certificate)tmp;
 		}
 		if ( cert==null ) {
 			StressTestCommand.this.performanceTest.getLog().error("no certificate generated for user "+jobData.userName);
-		} else {
-			final String commonName = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "CN");
-			if ( commonName.equals(jobData.userName) ) {
-				StressTestCommand.this.performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
-				StressTestCommand.this.performanceTest.getLog().result(CertTools.getSerialNumber(cert));
-				ret = true;
-			} else {
-				StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");			  
-			}
+			return false;
 		}
-		return ret;
+		final String commonName = CertTools.getPartFromDN(cert.getSubjectDN().getName(), "CN");
+		if ( !commonName.equals(jobData.userName) ) {
+			StressTestCommand.this.performanceTest.getLog().error("Cert not created for right user. Username: \""+jobData.userName+"\" Subject DN: \""+cert.getSubjectDN()+"\".");
+			return false;
+		}
+		StressTestCommand.this.performanceTest.getLog().info("Cert created. Subject DN: \""+cert.getSubjectDN()+"\".");
+		StressTestCommand.this.performanceTest.getLog().result(CertTools.getSerialNumber(cert));
+		return true;
 	}
 
 	private class MultipleCertsRequestsForAUserCommand extends BaseCommand implements Command {
@@ -195,6 +201,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.kpg = _kpg;
 			this.ejbcaWS = _ejbcaWS;
 		}
+		@Override
 		public boolean doIt() throws Exception {
 			boolean createUser = true;
 			for (int i=0; i<50; i++) {
@@ -212,6 +219,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			}
 			return true;
 		}
+		@Override
 		public String getJobTimeDescription() {
 			return "Relative time spent creating a lot of certificates";
 		}
@@ -222,6 +230,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			super(_jobData);
 			this.ejbcaWS = _ejbcaWS;
 		}
+		@Override
 		public boolean doIt() throws Exception {
 			final org.ejbca.core.protocol.ws.client.gen.UserMatch match = new org.ejbca.core.protocol.ws.client.gen.UserMatch();
 			match.setMatchtype(BasicMatch.MATCH_TYPE_EQUALS);
@@ -242,6 +251,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			}
 			return true;
 		}
+		@Override
 		public String getJobTimeDescription() {
 			return "Relative time spent looking for user";
 		}
@@ -252,6 +262,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			super(_jobData);
 			this.ejbcaWS = _ejbcaWS;
 		}
+		@Override
 		public boolean doIt() throws Exception {
 			final List<Certificate> result = this.ejbcaWS.findCerts(this.jobData.userName, true);
 			final Iterator<Certificate> i = result.iterator();
@@ -266,6 +277,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 
 			return true;
 		}
+		@Override
 		public String getJobTimeDescription() {
 			return "Relative time spent finding certs for user.";
 		}
@@ -276,6 +288,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			super(_jobData);
 			this.ejbcaWS = _ejbcaWS;
 		}
+		@Override
 		public boolean doIt() throws Exception {
 			for (int i=0; i<this.jobData.userCertsToBeRevoked.length; i++) {
 				this.ejbcaWS.revokeCert(this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
@@ -284,6 +297,50 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			}
 			return true;
 		}
+		@Override
+		public String getJobTimeDescription() {
+			return "Relative time spent revoking certificates.";
+		}
+	}
+
+	private class RevokeCertBackdatedCommand extends BaseCommand implements Command {
+		final private EjbcaWS ejbcaWS;
+		final String revoceTime;
+		RevokeCertBackdatedCommand(EjbcaWS _ejbcaWS, JobData _jobData) throws Exception {
+			super(_jobData);
+			this.ejbcaWS = _ejbcaWS;
+			final Calendar c = Calendar.getInstance();
+			c.setTime(new Date(new Date().getTime()-1000*60*60*24));
+			this.revoceTime = DatatypeConverter.printDateTime(c);
+			StressTestCommand.this.performanceTest.getLog().info("Revoke time: "+this.revoceTime);
+		}
+		private void revokeBackdated( int i ) throws Exception {
+			this.ejbcaWS.revokeCertBackdated(
+					this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+					this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
+					REVOKATION_REASON_UNSPECIFIED,
+					this.revoceTime);
+		}
+		private void revoke( int i ) throws Exception {
+			this.ejbcaWS.revokeCert(
+					this.jobData.userCertsToBeRevoked[i].getIssuerDN().getName(),
+					this.jobData.userCertsToBeRevoked[i].getSerialNumber().toString(16),
+					REVOKATION_REASON_UNSPECIFIED);
+		}
+		@Override
+		public boolean doIt() throws Exception {
+			for (int i=0; i<this.jobData.userCertsToBeRevoked.length; i++) {
+				try {
+					revokeBackdated(i);
+				} catch (RevokeBackDateNotAllowedForProfileException_Exception e) {
+					revoke(i);
+					StressTestCommand.this.performanceTest.getLog().info("No back dating since not allowed for the profile.");
+					continue;
+				}
+			}
+			return true;
+		}
+		@Override
 		public String getJobTimeDescription() {
 			return "Relative time spent revoking certificates.";
 		}
@@ -309,6 +366,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.user.setCertificateProfileName(certificateProfileName);
 			this.bitsInCertificateSN = _bitsInCertificateSN;
 		}
+		@Override
 		public boolean doIt() throws Exception {
 			if ( this.doCreateNewUser ) {
 				this.jobData.passWord = "foo123";
@@ -323,6 +381,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.ejbcaWS.editUser(this.user);
 			return true;
 		}
+		@Override
 		public String getJobTimeDescription() {
 			if ( this.doCreateNewUser ) {
 				return "Relative time spent registring new users";
@@ -357,6 +416,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.bitsInCertificateSN = _bitsInCertificateSN;
 			this.pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate());			
 		}
+		@Override
 		public boolean doIt() throws Exception {
 			if ( this.doCreateNewUser ) {
 				this.jobData.passWord = "foo123";
@@ -375,6 +435,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			final CertificateResponse certificateResponse = this.ejbcaWS.certificateRequest(this.user, requestData, requestType, hardTokenSN, responseType);
 			return checkAndLogCertificateResponse(certificateResponse, this.jobData);
 		}
+		@Override
 		public String getJobTimeDescription() {
 			if ( this.doCreateNewUser ) {
 				return "Relative time spent registring new users";
@@ -417,9 +478,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		getPrintStream().println();
 	}
 
-	/* (non-Javadoc)
-	 * @see org.ejbca.ui.cli.IAdminCommand#execute()
-	 */
+	@Override
 	public void execute() throws IllegalAdminCommandException, ErrorAdminCommandException {
 
 		try {
