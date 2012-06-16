@@ -207,8 +207,13 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     }
 
     @Test
-    public void test06RevokeCert() throws Exception {
+    public void test060RevokeCert() throws Exception {
         revokeCert();
+    }
+
+    @Test
+    public void test061RevokeCertBackdated() throws Exception {
+        revokeCertBackdated();
     }
 
     @Test

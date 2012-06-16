@@ -612,6 +612,18 @@ function checkallfields(){
       </td>
     </tr>
 
+    <tr  id="Row<%=row++%2%>"> 
+      <td width="50%"  align="right"> 
+        <c:out value="<%= ejbcawebbean.getText(\"ALLOWBACKDATEDREVOCATION\") %>" />
+        <%= ejbcawebbean.getHelpReference("/userguide.html#Allow%20back%20dated%20revocation") %>
+      </td>
+      <td width="50%">
+           <input type="checkbox" name="<%=CHECKBOX_ALLOWBACKDATEDREVOCATION %>"  value="<%=CHECKBOX_VALUE %>" 
+           <% if(certificateprofiledata.getAllowBackdatedRevocation())
+                 out.write("CHECKED");
+           %> id="<%=CHECKBOX_ALLOWBACKDATEDREVOCATION%>">
+      </td>
+    </tr>
 
 
     <%-- X.509v3 extensions --%>

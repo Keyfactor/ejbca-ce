@@ -56,6 +56,7 @@ import javax.ejb.TransactionAttributeType;
 import javax.jws.WebService;
 import javax.persistence.PersistenceException;
 import javax.security.auth.x500.X500Principal;
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.ws.WebServiceContext;
 
@@ -151,6 +152,7 @@ import org.ejbca.core.model.hardtoken.types.HardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -1068,34 +1070,69 @@ public class EjbcaWS implements IEjbcaWS {
 			}
 	}
 
-	/**
-	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#revokeCert(java.lang.String, java.lang.String, int)
-	 */
-	public void revokeCert(final String issuerDN, final String certificateSN, final int reason) throws CADoesntExistsException, AuthorizationDeniedException,
-			NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
+	private void revokeCert(final String issuerDN, final String certificateSN, final int reason, Date date, IPatternLogger logger) throws CADoesntExistsException, AuthorizationDeniedException,
+			NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException {
 		if (log.isDebugEnabled()) {
-	        log.debug("Revoke cert with serial number '"+certificateSN+"' from issuer '"+issuerDN+"' with reason '"+reason+"'.");
+			log.debug("Revoke cert with serial number '"+certificateSN+"' from issuer '"+issuerDN+"' with reason '"+reason+"'.");
 		}
-        final IPatternLogger logger = TransactionLogger.getPatternLogger();
-        try {
+		try {
 			final EjbcaWSHelper ejbhelper = new EjbcaWSHelper(wsContext, authorizationSession, caAdminSession, caSession, certificateProfileSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession, hardTokenSession, userAdminSession, webAuthenticationSession);
 			final AuthenticationToken admin = ejbhelper.getAdmin();
-            logAdminName(admin,logger);
+			logAdminName(admin,logger);
 			final int caid = CertTools.stringToBCDNString(issuerDN).hashCode();
 			caSession.verifyExistenceOfCA(caid);
 			final BigInteger serno = new BigInteger(certificateSN, 16);
 			// Revoke or unrevoke, will throw appropriate exceptions if parameters are wrong, such as trying to unrevoke a certificate
 			// that was permanently revoked
-			userAdminSession.revokeCert(admin, serno, issuerDN, reason);
+			userAdminSession.revokeCert(admin, serno, date, issuerDN, reason, true);
 		} catch (FinderException e) {
 			throw new NotFoundException(e.getMessage());
-        } catch (RuntimeException e) {	// EJBException, ClassCastException, ...
-            throw EjbcaWSHelper.getInternalException(e, logger);
-        } finally {
-            logger.writeln();
-            logger.flush();
-        }
+		} catch (RuntimeException e) {	// EJBException, ClassCastException, ...
+			throw EjbcaWSHelper.getInternalException(e, logger);
+		}
 	}
+
+	@Override
+	public void revokeCert(final String issuerDN, final String certificateSN, final int reason) throws
+	CADoesntExistsException, AuthorizationDeniedException, NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
+		final IPatternLogger logger = TransactionLogger.getPatternLogger();
+		try {
+			try {
+				revokeCert( issuerDN, certificateSN, reason, (Date)null, logger);
+			} catch (RevokeBackDateNotAllowedForProfileException e) {
+				throw new Error("This is should not happen since there is no back dating.",e);
+			}
+		} finally {
+			logger.writeln();
+			logger.flush();
+		}
+	}
+
+	@Override
+	public void revokeCertBackdated(final String issuerDN, final String certificateSN, final int reason, String sDate) throws CADoesntExistsException, AuthorizationDeniedException,
+			NotFoundException, EjbcaException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException, DateNotValidException {
+		final IPatternLogger logger = TransactionLogger.getPatternLogger();
+		try {
+			if ( sDate==null ) {
+				revokeCert(issuerDN, certificateSN, reason);
+				return;
+			}
+			final Date date;
+			try {
+				date = DatatypeConverter.parseDateTime(sDate).getTime();
+			} catch (IllegalArgumentException e) {
+				throw new DateNotValidException( intres.getLocalizedMessage("ra.bad.date", sDate) );
+			}
+			if ( date.after(new Date()) ) {
+				throw new DateNotValidException("Revocation date in the future: '"+sDate+"'.");
+			}
+			revokeCert(issuerDN, certificateSN, reason, date, logger);
+		} finally {
+			logger.writeln();
+			logger.flush();
+		}
+	}
+
 
 	/**
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#revokeUser(java.lang.String, int, boolean)

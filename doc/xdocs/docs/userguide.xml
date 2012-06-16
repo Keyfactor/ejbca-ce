@@ -578,6 +578,20 @@ The java system property 'maxCertSN' specifies how many bits that should be in t
 JAVA_OPT="-DmaxCertSN=16" $EJBCA_HOME/dist/clientToolBox/ejbcaClientToolBox.sh EjbcaWsRaCli stress WsCA1 20 2000 wsCreatedUser wsCreatedUser
 </source>
 </subsubsection>
+<subsubsection name="Allow back dated revocation">
+<p>
+Revocation information of a revoked certificate contains the date and time from which the certificate is not valid (the revocation time).
+Normally the revocation time is set to the time of the revocation. But with this feature enable it is possible to set an earlier time when
+revoking a certificate from the profile. This is called a back dated revocation.
+</p><p>
+Currently you can only back date revocations with the use of Web Service, either by using the WS API call
+<a href="ws/org/ejbca/core/protocol/ws/client/gen/EjbcaWS.html#revokeCertBackdated(java.lang.String,%20java.lang.String,%20int,%20java.lang.String)">revokeCertBackdated</a>
+in your application or with the <a href="adminguide.html#Using the Web Services CLI">Web Services CLI</a>.
+</p>
+<note>
+Do not enable this feature if the profile will be used by a CA that is issuing delta CRLs.
+</note>
+</subsubsection>
 <subsubsection name="Path Length Constraints">
 <p>
 Note: this extension is only applicable for immediate CA certificates

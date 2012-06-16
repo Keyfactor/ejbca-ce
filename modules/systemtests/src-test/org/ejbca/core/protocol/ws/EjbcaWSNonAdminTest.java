@@ -216,6 +216,13 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         }
 
         try {
+            revokeCertBackdated();
+            fail("should not have been allowed to revoke cert");
+        } catch (AuthorizationDeniedException_Exception e) {
+            // NOPMD: this is what we want
+        }
+
+        try {
             revokeToken();
             fail("should not have been allowed to revoke token");
         } catch (AuthorizationDeniedException_Exception e) {

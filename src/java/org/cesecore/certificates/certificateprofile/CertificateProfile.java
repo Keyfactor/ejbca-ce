@@ -117,6 +117,7 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
     protected static final String VALIDITY = "validity";
     protected static final String ALLOWVALIDITYOVERRIDE = "allowvalidityoverride";
     protected static final String ALLOWKEYUSAGEOVERRIDE = "allowkeyusageoverride";
+    protected static final String ALLOWBACKDATEDREVOCATION = "allowbackdatedrevokation";
     protected static final String ALLOWEXTENSIONOVERRIDE = "allowextensionoverride";
     protected static final String ALLOWDNOVERRIDE = "allowdnoverride";
     protected static final String ALLOWCERTSNOVERIDE = "allowcertsnoverride";
@@ -962,6 +963,14 @@ public class CertificateProfile extends UpgradeableDataHashMap implements Serial
 
     public boolean getAllowKeyUsageOverride() {
         return ((Boolean) data.get(ALLOWKEYUSAGEOVERRIDE)).booleanValue();
+    }
+
+    public void setAllowBackdatedRevocation(boolean override) {
+        this.data.put(ALLOWBACKDATEDREVOCATION, Boolean.valueOf(override));
+    }
+    public boolean getAllowBackdatedRevocation() {
+        final Object value = this.data.get(ALLOWBACKDATEDREVOCATION);
+        return value!=null && value instanceof Boolean && ((Boolean)value).booleanValue();
     }
 
     public void setUseExtendedKeyUsage(boolean use) {
