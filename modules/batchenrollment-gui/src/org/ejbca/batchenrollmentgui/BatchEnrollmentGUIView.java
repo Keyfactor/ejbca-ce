@@ -99,19 +99,14 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
-import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
-import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
-import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
-import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
-import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.jdesktop.application.Action;
 import org.jdesktop.application.Application;
@@ -1265,47 +1260,12 @@ public class BatchEnrollmentGUIView extends FrameView {
                         out.println(base64EncodedData);
                         out.println("-----END CERTIFICATE-----");
                         request.setDone(true);
-                    } catch (ApprovalException_Exception ex) {
+                    } catch (Exception ex) {
                         final String error = ex.getMessage();
                         LOG.error(error, ex);
                         JOptionPane.showMessageDialog(getFrame(), error,
                                 "Enrolling", JOptionPane.ERROR_MESSAGE);
-                    } catch (UserDoesntFullfillEndEntityProfile_Exception ex) {
-                        final String error = ex.getMessage();
-                        LOG.error(error, ex);
-                        JOptionPane.showMessageDialog(getFrame(), error,
-                                "Enrolling", JOptionPane.ERROR_MESSAGE);
-                    } catch (WaitingForApprovalException_Exception ex) {
-                        final String error = ex.getMessage();
-                        LOG.error(error, ex);
-                        JOptionPane.showMessageDialog(getFrame(), error,
-                                "Enrolling", JOptionPane.ERROR_MESSAGE);
-                    } catch (FileNotFoundException ex) {
-                        final String error = ex.getMessage();
-                        LOG.error(error, ex);
-                        JOptionPane.showMessageDialog(getFrame(), error,
-                                "Enrolling", JOptionPane.ERROR_MESSAGE);
-                    } catch (AuthorizationDeniedException_Exception ex) {
-                        final String error = ex.getMessage();
-                        LOG.error(error, ex);
-                        JOptionPane.showMessageDialog(getFrame(), error,
-                                "Enrolling", JOptionPane.ERROR_MESSAGE);
-                    } catch (CADoesntExistsException_Exception ex) {
-                        final String error = ex.getMessage();
-                        LOG.error(error, ex);
-                        JOptionPane.showMessageDialog(getFrame(), error,
-                                "Enrolling", JOptionPane.ERROR_MESSAGE);
-                    } catch (EjbcaException_Exception ex) {
-                        final String error = ex.getMessage();
-                        LOG.error(error, ex);
-                        JOptionPane.showMessageDialog(getFrame(), error,
-                                "Enrolling", JOptionPane.ERROR_MESSAGE);
-                    } catch (NotFoundException_Exception ex) {
-                        final String error = ex.getMessage();
-                        LOG.error(error, ex);
-                        JOptionPane.showMessageDialog(getFrame(), error,
-                                "Enrolling", JOptionPane.ERROR_MESSAGE);
-                    } finally {
+					} finally {
                         if (out != null) {
                             out.close();
                         }

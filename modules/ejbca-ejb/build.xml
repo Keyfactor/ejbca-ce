@@ -219,6 +219,7 @@
 		<include name="org/ejbca/core/model/hardtoken/HardTokenProfileExistsException.java"/>
 		<include name="org/ejbca/core/model/keyrecovery/KeyRecoveryData.java"/>
 		<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
+       	<include name="org/ejbca/core/model/ra/RevokeBackDateNotAllowedForProfileException.java"/>
 		<include name="org/ejbca/core/model/ra/NotFoundException.java"/>
 		<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceExistsException.java"/>
 		<include name="org/ejbca/core/model/services/ServiceExistsException.java"/>

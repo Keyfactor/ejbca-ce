@@ -88,6 +88,7 @@
   static final String CHECKBOX_ALLOWEXTENSIONOVERRIDE             = "checkallowextensionoverride";
   static final String CHECKBOX_ALLOWVALIDITYOVERRIDE              = "checkallowvalidityoverride";
   static final String CHECKBOX_ALLOWKEYUSAGEOVERRIDE              = "checkallowkeyusageoverride";
+  static final String CHECKBOX_ALLOWBACKDATEDREVOCATION           = "checkallowbackdatedrevokation";
   static final String CHECKBOX_USEEXTENDEDKEYUSAGE                = "checkuseextendedkeyusage";
   static final String CHECKBOX_EXTENDEDKEYUSAGECRITICAL           = "checkboxextendedkeyusagecritical";
   static final String CHECKBOX_USEOCSPNOCHECK                     = "checkuseocspnocheck";
@@ -560,10 +561,13 @@
               if(value != null){
                  use = value.equals(CHECKBOX_VALUE);
                  certificateprofiledata.setAllowKeyUsageOverride(use);
-              }
-              else
+              } else {
                  certificateprofiledata.setAllowKeyUsageOverride(false);
-
+              }
+              {
+            	  final String v = request.getParameter(CHECKBOX_ALLOWBACKDATEDREVOCATION);
+            	  certificateprofiledata.setAllowBackdatedRevocation( v!=null && v.equals(CHECKBOX_VALUE) );
+              }
               values = request.getParameterValues(SELECT_AVAILABLECAS);
               ArrayList availablecas = new ArrayList(); 
               if(values != null){

@@ -32,6 +32,7 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.util.query.IllegalQueryException;
 import org.ejbca.util.query.Query;
@@ -312,21 +313,22 @@ public interface EndEntityManagementSession {
     void revokeUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
-     * Method that revokes a certificate for a user. It can also be used to
-     * un-revoke a certificate that has been revoked with reason ON_HOLD. This
-     * is done by giving reason RevokedCertInfo.NOT_REVOKED (or
-     * RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL).
-     * 
-     * @param admin the administrator performing the action
-     * @param certserno the serno of certificate to revoke.
-     * @param revocationdate the revocation date
-     * @param reason the reason of revocation, one of the RevokedCertInfo.XX
-     *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a
-     *            certificate on hold.
-     * @throws AlreadyRevokedException if the certificate was already revoked
+     * Same as {@link #revokeCert(Admin, BigInteger, String, int)} but also sets the revocation date.
+     * @param admin
+     * @param certserno
+     * @param revocationdate after this the the certificate is not valid
+     * @param issuerdn
+     * @param reason
+     * @param checkPermission if true and if 'revocationdate' is not null then the certificate profile must allow back dating otherwise a {@link RevokeBackDateNotAllowedForProfileException} is thrown.
+     * @throws AuthorizationDeniedException
+     * @throws FinderException
+     * @throws ApprovalException
+     * @throws WaitingForApprovalException
+     * @throws AlreadyRevokedException
+     * @throws RevokeBackDateNotAllowedForProfileException
      */
-    void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason) throws AuthorizationDeniedException,
-    		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
+    void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkPermission) throws AuthorizationDeniedException,
+            FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException;
 
     /**
      * Method that revokes a certificate for a user. It can also be used to
@@ -336,10 +338,15 @@ public interface EndEntityManagementSession {
      * 
      * @param admin the administrator performing the action
      * @param certserno the serno of certificate to revoke.
+     * @param issuerdn
      * @param reason the reason of revocation, one of the RevokedCertInfo.XX
      *            constants. Use RevokedCertInfo.NOT_REVOKED to re-activate a
      *            certificate on hold.
      * @throws AlreadyRevokedException if the certificate was already revoked
+     * @throws FinderException
+     * @throws ApprovalException
+     * @throws WaitingForApprovalException
+     * @throws AlreadyRevokedException
      */
     void revokeCert(AuthenticationToken admin, BigInteger certserno, String issuerdn, int reason) throws AuthorizationDeniedException,
     		FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;

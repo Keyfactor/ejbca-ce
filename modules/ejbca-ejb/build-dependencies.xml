@@ -678,6 +678,7 @@
 					<include name="org/ejbca/core/model/ca/AuthLoginException.java"/>
 					<include name="org/ejbca/core/model/ra/raadmin/UserDoesntFullfillEndEntityProfile.java"/>
 					<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
+					<include name="org/ejbca/core/model/ra/RevokeBackDateNotAllowedForProfileException.java"/>
 					<include name="org/ejbca/core/model/ra/UserDataConstants.java"/>
 					<include name="org/ejbca/util/crypto/BCrypt.java"/>
 					<include name="org/ejbca/util/crypto/CryptoTools.java"/>
