@@ -31,9 +31,11 @@ import org.ejbca.core.model.hardtoken.HardTokenDoesntExistsException;
 import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
+import org.ejbca.core.protocol.ws.DateNotValidException;
 import org.ejbca.core.protocol.ws.objects.Certificate;
 import org.ejbca.core.protocol.ws.objects.CertificateResponse;
 import org.ejbca.core.protocol.ws.objects.HardTokenDataWS;
@@ -372,23 +374,57 @@ public interface IEjbcaWS {
 	 * Revokes a user certificate.
 	 * 
 	 * Authorization requirements:<pre>
+	 * - Administrator flag set
 	 * - /administrator
 	 * - /ra_functionality/revoke_end_entity
 	 * - /endentityprofilesrules/<end entity profile of the user owning the cert>/revoke_end_entity
 	 * - /ca/&lt;ca of certificate&gt;
 	 * </pre>
-	 * 
+	 * <p>
+	 * To use this call the certificate to be used must be from a certificate profile that has 'Allow back dated revocation' enabled.
+	 * </p><p>
+	 * If {@link RevokeBackDateNotAllowedForProfileException} is throwed then the CA is not
+	 * allowing back date and you could then revoke with {@link #revokeCert(String, String, int)}.
+	 * {@link DateNotValidException} means that the date parameter can't be parsed and in this case it might also
+	 * be better with a fall back to {@link #revokeCert(String, String, int)}.
+	 * </p>
 	 * @param issuerDN of the certificate to revoke
 	 * @param certificateSN of the certificate to revoke
 	 * @param reason for revocation, one of {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.REVOKATION_REASON_ constants, 
 	 * or use {@link org.ejbca.core.protocol.ws.client.gen.RevokeStatus}.NOT_REVOKED to un-revoke a certificate on hold.
+	 * @param sDate The revocation date. If null then the current date is used. If specified then the profile of the certificate must allow
+	 * "back dating" and the date must be i the past. The parameter is specified as an
+	 * <a href="http://en.wikipedia.org/wiki/ISO8601">ISO 8601 string</a>.
+	 * An example: 2012-06-07T23:55:59+02:00
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws AuthorizationDeniedException if client isn't authorized.
 	 * @throws NotFoundException if certificate doesn't exist
 	 * @throws WaitingForApprovalException If request has bean added to list of tasks to be approved
 	 * @throws ApprovalException There already exists an approval request for this task
 	 * @throws AlreadyRevokedException The certificate was already revoked, or you tried to unrevoke a permanently revoked certificate
+	 * @throws EjbcaException internal error
+	 * @throws RevokeBackDateNotAllowedForProfileException if back date is not allowed in the certificate profile
+	 * @throws DateNotValidException if the date is not a valid ISO 8601 string or if it is in the future.
+	 */
+	void revokeCertBackdated(String issuerDN, String certificateSN, int reason,
+			String sDate) throws CADoesntExistsException,
+			AuthorizationDeniedException, NotFoundException, EjbcaException,
+			ApprovalException, WaitingForApprovalException,
+			AlreadyRevokedException, RevokeBackDateNotAllowedForProfileException, DateNotValidException;
+
+	/**
+	 * Same as {@link #revokeCertBackdated(String, String, int, String)} but revocation date is current time.
+	 * 
+	 * @param issuerDN
+	 * @param certificateSN
+	 * @param reason
+	 * @throws CADoesntExistsException
+	 * @throws AuthorizationDeniedException
+	 * @throws NotFoundException
 	 * @throws EjbcaException
+	 * @throws ApprovalException
+	 * @throws WaitingForApprovalException
+	 * @throws AlreadyRevokedException
 	 */
 	public abstract void revokeCert(String issuerDN, String certificateSN,
 			int reason) throws CADoesntExistsException, AuthorizationDeniedException, NotFoundException,
@@ -536,8 +572,8 @@ public interface IEjbcaWS {
 	 * - /administrator
 	 * - /ra_functionality/create_end_entity and/or edit_end_entity
 	 * - /endentityprofilesrules/&lt;end entity profile&gt;/create_end_entity and/or edit_end_entity
-     * - /ra_functionality/revoke_end_entity (if overwrite flag is set)
-     * - /endentityprofilesrules/&lt;end entity profile&gt;/revoke_end_entity (if overwrite flag is set)
+	 * - /ra_functionality/revoke_end_entity (if overwrite flag is set)
+	 * - /endentityprofilesrules/&lt;end entity profile&gt;/revoke_end_entity (if overwrite flag is set)
 	 * - /ca_functionality/create_certificate
 	 * - /ca/&lt;ca of all requested certificates&gt;
 	 * - /hardtoken_functionality/issue_hardtokens
@@ -823,7 +859,7 @@ public interface IEjbcaWS {
 	 * - /administrator
 	 * - /ca/&lt;caid&gt;
 	 * </pre>
-     *
+	 *
 	 * @param caname the name in EJBCA of the CA that should have a new CRL generated
 	 * @throws CADoesntExistsException if a referenced CA does not exist 
 	 * @throws ApprovalException

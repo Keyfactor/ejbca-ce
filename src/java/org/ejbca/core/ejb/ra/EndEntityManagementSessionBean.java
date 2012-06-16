@@ -103,6 +103,7 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
+import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.FieldValidator;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
@@ -1242,12 +1243,16 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
     @Override
     public void revokeCert(final AuthenticationToken admin, final BigInteger certserno, final String issuerdn, final int reason)
             throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
-        revokeCert(admin, certserno, new Date(), issuerdn, reason);
+        try {
+            revokeCert(admin, certserno, null, issuerdn, reason, false);
+        } catch (RevokeBackDateNotAllowedForProfileException e) {
+            throw new Error("This is should not happen since there is no back dating.",e);
+        }
     }
 
     @Override
-    public void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason)
-            throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
+    public void revokeCert(AuthenticationToken admin, BigInteger certserno, Date revocationdate, String issuerdn, int reason, boolean checkDate)
+            throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, RevokeBackDateNotAllowedForProfileException, AlreadyRevokedException {
         if (log.isTraceEnabled()) {
             log.trace(">revokeCert(" + certserno.toString(16) + ", IssuerDN: " + issuerdn + ")");
         }
@@ -1346,9 +1351,14 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         } else {
             log.warn("No certificate profile for certificate with serial #" + certserno.toString(16) + " issued by " + issuerdn);
         }
+        if ( checkDate && revocationdate!=null && (certificateProfile==null || !certificateProfile.getAllowBackdatedRevocation()) ) {
+        	final String profileName = this.certificateProfileSession.getCertificateProfileName(certificateProfileId);
+        	final String m = intres.getLocalizedMessage("ra.norevokebackdate", profileName, certserno.toString(16), issuerdn);
+        	throw new RevokeBackDateNotAllowedForProfileException(m);
+        }
         // Revoke certificate in database and all publishers
         try {
-            revocationSession.revokeCertificate(admin, issuerdn, certserno, revocationdate, publishers, reason, userDataDN);
+            this.revocationSession.revokeCertificate(admin, issuerdn, certserno, revocationdate!=null ? revocationdate : new Date(), publishers, reason, userDataDN);
         } catch (CertificateRevokeException e) {
             final String msg = intres.getLocalizedMessage("ra.errorfindentitycert", issuerdn, certserno.toString(16));
             log.info(msg);
