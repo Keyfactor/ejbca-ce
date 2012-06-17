@@ -34,32 +34,34 @@ import org.junit.Test;
  * 
  */
 public class CrlStoreServletTest extends CaTestCase {
-    private final static Logger log = Logger.getLogger(CrlStoreServletTest.class);
+	private final static Logger log = Logger.getLogger(CrlStoreServletTest.class);
 
-    private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private CrlStoreSessionRemote crlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
+	private final ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+	private final CrlStoreSessionRemote crlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
+	@Override
+	@Before
+	public void setUp() throws Exception{
+		super.setUp();
+	}
 
-    @Before
-    public void setUp() throws Exception{
-        super.setUp();
-    }
-    
-    @After
-    public void tearDown() throws Exception {
-        super.tearDown();
-    }
-    
-    @Test
-    public void testCRLStore() throws Exception {
-        log.trace(">testCRLStore()");
-        final String HTTP_PORT = configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
-        X509Certificate cacert = (X509Certificate)getTestCACert();
-    	final String result = ValidationAuthorityTst.cRLStore(cacert, this.crlSession, HTTP_PORT);
-    	assertNull(result, result);
-        log.trace("<testCRLStore()");
-    }
+	@Override
+	@After
+	public void tearDown() throws Exception {
+		super.tearDown();
+	}
 
+	@Test
+	public void testCRLStore() throws Exception {
+		log.trace(">testCRLStore()");
+		final String HTTP_PORT = this.configurationSession.getProperty(WebConfiguration.CONFIG_HTTPSERVERPUBHTTP);
+		final X509Certificate cacert = (X509Certificate)getTestCACert();
+		final String result = ValidationAuthorityTst.testCRLStore(cacert, this.crlSession, HTTP_PORT);
+		assertNull(result, result);
+		log.trace("<testCRLStore()");
+	}
+
+	@Override
     public String getRoleName() {
-        return this.getClass().getSimpleName();
-    }
+		return this.getClass().getSimpleName();
+	}
 }

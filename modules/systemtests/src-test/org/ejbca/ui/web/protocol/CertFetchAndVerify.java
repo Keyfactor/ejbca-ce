@@ -127,10 +127,10 @@ public class CertFetchAndVerify {
 	
 	private X509Certificate getCert(RFC4387URL url, HashID id) throws CertificateException, IOException, URISyntaxException {
 		final String sURI = url.appendQueryToURL(getURL(), id);
-		log.debug("URL: '"+sURI+"'.");
+		log.debug("Trying to get cert with URL: '"+sURI+"'.");
 		final HttpURLConnection connection = (HttpURLConnection)new URI(sURI).toURL().openConnection();
 		connection.connect();
-		Assert.assertTrue( "Fetching cert with '"+sURI+"' is not working.", HttpURLConnection.HTTP_OK==connection.getResponseCode() );
+		Assert.assertEquals( "Fetching cert with '"+sURI+"' is not working.", HttpURLConnection.HTTP_OK, connection.getResponseCode() );
 		return (X509Certificate)this.cf.generateCertificate(connection.getInputStream());
 	}
 	private void checkIssuer( X509Certificate bottom ) throws IOException, CertificateException, URISyntaxException {
@@ -186,7 +186,7 @@ public class CertFetchAndVerify {
 		final String sURI = RFC4387URL.iHash.appendQueryToURL(getURL(), subjectID);
 		// remove keyID from list of CA keyIds to be checked.
 		Assert.assertTrue("The certificate '"+theCert.getSubjectX500Principal().getName()+"' already tested.", setOfSubjectKeyIDs.remove(keyID.key));
-		log.debug("URL: '"+sURI+"'.");
+		log.debug("Trying to get all issuers with MimeMultiPart. URL: '"+sURI+"'.");
 		final Multipart multipart;
 		try {
 			multipart = new MimeMultipart(new MyDataSource(new URI(sURI).toURL()));
@@ -199,7 +199,7 @@ public class CertFetchAndVerify {
 			try {
 				cert.verify(theCert.getPublicKey());
 			} catch (GeneralSecurityException e) {
-				// CA probably signed by an old not any longer existing CA. But this old CA certificate should still be in the DB. Let's check the chain.
+				log.debug("CA '" + cert.getSubjectX500Principal().getName() +"' probably signed by an old not any longer existing CA. But this old CA certificate should still be in the DB. Let's check the chain.");
 				checkIssuer(cert);
 				continue;
 			}

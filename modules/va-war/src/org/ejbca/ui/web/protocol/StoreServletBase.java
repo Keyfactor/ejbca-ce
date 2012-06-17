@@ -6,7 +6,7 @@
  *  modify it under the terms of the GNU Lesser General Public           *
  *  License as published by the Free Software Foundation; either         *
  *  version 2.1 of the License, or any later version.                    *
- *                                                                       *
+ *                                     testCRLStore                                  *
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
@@ -27,11 +27,14 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
+import org.ejbca.config.VAConfiguration;
 import org.ejbca.core.protocol.certificatestore.CertificateCacheFactory;
 import org.ejbca.core.protocol.certificatestore.HashID;
 import org.ejbca.core.protocol.certificatestore.ICertificateCache;
 
 /**
+ * Base class for servlets (CRL or Certificate) implementing rfc4378
+ * 
  * @author Lars Silven PrimeKey
  * @version  $Id$
  */
@@ -44,60 +47,161 @@ public abstract class StoreServletBase extends HttpServlet {
 	protected ICertificateCache certCache;
 	final String space = "|&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
 
+	/**
+	 * Called when the servlet is initialized.
+	 * @param config see {@link HttpServlet#init(ServletConfig)}
+	 * @param certificateStoreSession reference to store session bean
+	 * @throws ServletException
+	 */
 	public void init(ServletConfig config, CertificateStoreSessionLocal certificateStoreSession) throws ServletException {
 		super.init(config);
 		this.certCache = CertificateCacheFactory.getInstance(certificateStoreSession);
 	}
 
-	abstract void sHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
+	/**
+	 * Return certificate or CRL for the RFC4387 sHash http parameter
+	 * @param sHash
+	 * @param resp
+	 * @param req
+	 * @throws IOException
+	 * @throws ServletException
+	 */
+	abstract void sHash(String sHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
+	/**
+	 * Return certificate or CRL for the RFC4387 iHash http parameter
+	 * @param iHash
+	 * @param resp
+	 * @param req
+	 * @throws IOException
+	 * @throws ServletException
+	 */
 	abstract void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
+	/**
+	 * Return certificate or CRL for the RFC4387 sKIDHash http parameter
+	 * @param sKIDHash
+	 * @param resp
+	 * @param req
+	 * @throws IOException
+	 * @throws ServletException
+	 */
 	abstract void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException;
+	/**
+	 * Return certificate or CRL for the RFC4387 sKIDHash http parameter. In this case the alias name has been used to get the parameter.
+	 * @param sKIDHash
+	 * @param resp
+	 * @param req
+	 * @param name alias name of the object
+	 * @throws IOException
+	 * @throws ServletException
+	 */
+	abstract void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException;
 
 	@Override
 	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, java.io.IOException {
 		if (log.isTraceEnabled()) {
 			log.trace(">doGet()");			
 		}
+		try {
+			if ( alias(req, resp) ) {
+				return;
+			}
+			if ( reload(req, resp) ) {
+				return;
+			}
+			if ( fromName(req, resp) ) {
+				return;
+			}
+			rfcRequest(req, resp);
+		} finally {
+			if (log.isTraceEnabled()) {
+				log.trace("<doGet()");			
+			}
+		}
+	}
+	private void rfcRequest(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+		// Do actual processing of the protocol
+		{
+			final String sHash = req.getParameter(RFC4387URL.sHash.toString());
+			if ( sHash!=null ) {
+				sHash( sHash, resp, req );
+				return;
+			}
+		}{
+			final String iHash = req.getParameter(RFC4387URL.iHash.toString());
+			if ( iHash!=null ) {
+				iHash( iHash, resp, req );
+				return;
+			}
+		}{
+			final String sKIDHash = req.getParameter(RFC4387URL.sKIDHash.toString());
+			if ( sKIDHash!=null ) {
+				sKIDHash(sKIDHash, resp, req );
+				return;
+			}
+		}
+		printInfo(req, resp);
+	}
+	private boolean alias(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		final String alias = req.getParameter("setAlias");
+		if ( alias==null ) {
+			return false;
+		}
+		if ( !checkIfAutorizedIP(req, resp) ) {
+			return true;
+		}
+		final int ix = alias.indexOf('=');
+		if ( ix<1 || alias.length()<=ix+2 ) {
+			log.debug("No valid alias definition string: "+alias);
+			return true;
+		}
+		final String key = alias.substring(0, ix).trim();
+		final String hash = alias.substring(ix+1).trim();
+		if ( !VAConfiguration.sKIDHashSetAlias(key, hash) ) {
+			log.error("Not possible to add: "+alias);
+			return true;
+		}
+		log.debug("Alias '"+key+"' defined for hash '"+hash+"'.");
+		return true;
+	}
+	private boolean fromName(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
+		final String alias = req.getParameter("alias");
+		if ( alias==null ) {
+			return false;
+		}
+		final String sKIDHash = VAConfiguration.sKIDHashFromName(alias);
+		if ( sKIDHash==null || sKIDHash.length()<1 ) {
+			final String m = "No '"+alias+"' alias defined in va.properties .";
+			resp.sendError(HttpServletResponse.SC_NOT_FOUND, m);
+			log.debug(m);
+			return true;
+		}
+		sKIDHash( sKIDHash, resp, req, alias );
+		return true;
+	}
+	private boolean reload(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		// We have a command to force reloading of the certificate cache that can only be run from localhost
 		// http://localhost:8080/crls/search.cgi?reloadcache=true
 		final boolean doReload = StringUtils.equals(req.getParameter("reloadcache"), "true");
-		if ( doReload ) {
-			final String remote = req.getRemoteAddr();
-			// localhost in either ipv4 and ipv6
-			if (StringUtils.equals(remote, "127.0.0.1") || (StringUtils.equals(remote, "0:0:0:0:0:0:0:1"))) {
-				log.info("Reloading certificate and CRL caches due to request from "+remote);
-				// Reload CA certificates
-				this.certCache.forceReload();
-			} else {
-				log.info("Got reloadcache command from unauthorized ip: "+remote);
-				resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-			}
-		} else {
-			// Do actual processing of the protocol
-			{
-				final String sHash = req.getParameter(RFC4387URL.sHash.toString());
-				if ( sHash!=null ) {
-					sHash( sHash, resp, req );
-					return;
-				}
-			}{
-				final String iHash = req.getParameter(RFC4387URL.iHash.toString());
-				if ( iHash!=null ) {
-					iHash( iHash, resp, req );
-					return;
-				}
-			}{
-				final String sKIDHash = req.getParameter(RFC4387URL.sKIDHash.toString());
-				if ( sKIDHash!=null ) {
-					sKIDHash(sKIDHash, resp, req );
-					return;
-				}
-			}
-			printInfo(req, resp);
+		if ( !doReload ) {
+			return false;
 		}
-		if (log.isTraceEnabled()) {
-			log.trace("<doGet()");			
+		if ( !checkIfAutorizedIP(req, resp) ) {
+			return true;
 		}
+		log.info("Reloading certificate and CRL caches due to request from "+req.getRemoteAddr());
+		// Reload CA certificates
+		this.certCache.forceReload();
+		return true;
+	}
+	private boolean checkIfAutorizedIP(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+		final String remote = req.getRemoteAddr();
+		// localhost in either ipv4 and ipv6
+		if ( StringUtils.equals(remote, "127.0.0.1") || StringUtils.equals(remote, "0:0:0:0:0:0:0:1") ) {
+			return true;
+		}
+		log.info("Got reloadcache command from unauthorized ip: "+remote);
+		resp.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+		return false;
 	}
 	private void printInfo(X509Certificate certs[], String indent, PrintWriter pw, String url) {
 		for ( int i=0; i<certs.length; i++ ) {
@@ -111,7 +215,17 @@ public abstract class StoreServletBase extends HttpServlet {
 		}
 	}
 
+	/**
+	 * Print info and download URL of a certificate or CRL.
+	 * @param cert
+	 * @param indent
+	 * @param pw
+	 * @param url
+	 */
 	abstract void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url);
+	/**
+	 * @return the title of the page
+	 */
 	abstract String getTitle();
 
 	private void returnInfoPage(HttpServletResponse response, String info) throws IOException {
