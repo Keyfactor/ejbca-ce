@@ -44,20 +44,23 @@ public class HashID {
 	 */
 	public final String b64;
 	/**
+	 * The b64 with \ substituted with %2B to be used for URLs
+	 */
+	public final String b64url;
+	/**
 	 * Key to be used for hash tables.
 	 */
 	public final Integer key;
 	private HashID(byte hash[]) {
 		final String b64padded = new String(Base64.encode(hash));
-		final String b64w;
 		if ( b64padded.length()!=28 || b64padded.charAt(27)!='=' ) {
 			this.isOK = false;
-			b64w = b64padded;
+			this.b64 = b64padded;
 		} else {
 			this.isOK = true;
-			b64w = b64padded.substring(0, 27);
+			this.b64 = b64padded.substring(0, 27);
 		}
-		this.b64 = b64w.replaceAll("\\+", "%2B");
+		this.b64url = this.b64.replaceAll("\\+", "%2B");
 		this.key = Integer.valueOf(new BigInteger(hash).hashCode());
 	}
 	private static byte[] hashFromPrincipalDN( X500Principal principal ) {

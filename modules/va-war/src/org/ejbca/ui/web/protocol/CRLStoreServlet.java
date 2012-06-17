@@ -50,8 +50,8 @@ public class CRLStoreServlet extends StoreServletBase {
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
-		super.init(config, certificateStoreSession);
-		this.crlCache = CRLCacheFactory.getInstance(crlSession, this.certCache);		
+		super.init(config, this.certificateStoreSession);
+		this.crlCache = CRLCacheFactory.getInstance(this.crlSession, this.certCache);		
 	}
 
 	@Override
@@ -66,7 +66,12 @@ public class CRLStoreServlet extends StoreServletBase {
 
 	@Override
 	void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
-		returnCrl( this.crlCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash), isDelta(req)), resp, sKIDHash, isDelta(req) );
+		sKIDHash( sKIDHash, resp, req, sKIDHash);
+	}
+
+	@Override
+	void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException {
+		returnCrl( this.crlCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash), isDelta(req)), resp, name, isDelta(req) );
 	}
 
 	@Override
@@ -93,7 +98,7 @@ public class CRLStoreServlet extends StoreServletBase {
 			return;
 		}
 		resp.setContentType("application/pkix-crl");
-		resp.setHeader("Content-disposition", "attachment; filename="+(isDelta?"delta":"")+"crl" + name + ".crl");
+		resp.setHeader("Content-disposition", "attachment; filename="+(isDelta?"delta":"") + name + ".crl");
 		resp.setContentLength(crl.length);
 		resp.getOutputStream().write(crl);
 	}
