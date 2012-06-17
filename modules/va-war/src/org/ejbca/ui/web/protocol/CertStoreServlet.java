@@ -51,25 +51,35 @@ public class CertStoreServlet extends StoreServletBase {
 	
 	private final static Logger log = Logger.getLogger(CertStoreServlet.class);
 
+	@Override
 	public void init(ServletConfig config) throws ServletException {
-		super.init(config, certificateStoreSession);
+		super.init(config, this.certificateStoreSession);
 	}
 
+	@Override
 	void iHash(String iHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
 		returnCerts( this.certCache.findLatestByIssuerDN(HashID.getFromB64(iHash)), resp, iHash );
 		return;
 	}
 
-	void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
-		returnCert( this.certCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash)), resp, sKIDHash );
-		return;
+
+	@Override
+	void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req, String name) throws IOException, ServletException {
+		returnCert( this.certCache.findBySubjectKeyIdentifier(HashID.getFromB64(sKIDHash)), resp, name );
 	}
 
+	@Override
+	void sKIDHash(String sKIDHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
+		sKIDHash( sKIDHash, resp, req, sKIDHash );
+	}
+
+	@Override
 	void sHash(String sHash, HttpServletResponse resp, HttpServletRequest req) throws IOException, ServletException {
 		final X509Certificate cert = this.certCache.findLatestBySubjectDN(HashID.getFromB64(sHash));
 		returnCert( cert, resp, sHash);
 	}
 
+	@Override
 	void printInfo(X509Certificate cert, String indent, PrintWriter pw, String url) {
 		pw.println(indent+cert.getSubjectX500Principal());
 		pw.println(indent+" "+RFC4387URL.sHash.getRef(url, HashID.getFromSubjectDN(cert)));
@@ -77,6 +87,7 @@ public class CertStoreServlet extends StoreServletBase {
 		pw.println(indent+" "+RFC4387URL.sKIDHash.getRef(url, HashID.getFromKeyID(cert)));
 	}
 
+	@Override
 	String getTitle() {
 		return "CA certificates";
 	}
@@ -93,7 +104,7 @@ public class CertStoreServlet extends StoreServletBase {
 			throw new ServletException(e);
 		}
 		resp.setContentType("application/pkix-cert");
-		resp.setHeader("Content-disposition", "attachment; filename=cert" + name + ".der");
+		resp.setHeader("Content-disposition", "attachment; filename=" + name + ".der");
 		resp.setContentLength(encoded.length);
 		resp.getOutputStream().write(encoded);
 	}

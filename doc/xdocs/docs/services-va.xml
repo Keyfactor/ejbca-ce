@@ -40,7 +40,16 @@ See <a href="architecture-ocsp.html">OCSP Architecture</a>
 </p>
 </subsection>
 </section>
-
+<section name="Alias">
+<p>
+You may also define aliases to certificates or CRLs. This is done in the configuration file conf/certstore.properties.
+</p><p>
+This is an example on how to get your root certificate if you have defined an alias for it:
+</p>
+<source>
+http://myhost.com:8080/certificates/search.cgi?alias=root
+</source>
+</section>
 <section name="RFC 4387">
 <p>
 The protocol to retrieve CRLs and certificates is described in <a href="http://www.ietf.org/rfc/rfc4387">RFC 4387</a>.
