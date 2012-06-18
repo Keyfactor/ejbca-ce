@@ -403,8 +403,9 @@ public class CaInitCommand extends BaseCaAdminCommand {
             CAInfo newInfo = ejb.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
             int caid = newInfo.getCAId();
             getLogger().info("CAId for created CA: " + caid);
-            getLogger().info("-Created and published initial CRL.");
+            getLogger().info("Created and published initial CRL.");
             getLogger().info("CA initialized");
+            getLogger().info("Note that any open browser sessions must be restarted to interact with this CA.");
         } catch (Exception e) {
             getLogger().debug("An error occured: ", e);
             throw new ErrorAdminCommandException(e);
