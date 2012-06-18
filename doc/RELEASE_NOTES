@@ -119,6 +119,20 @@ upgrade to 5.0, verify your roles and privileges.
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE
 
+EJBCA 4.0.11
+------------
+This is a maintenance release containing a few new features, GUI improvements and support for Japanese.
+
+* Noteworthy changes: 
+- Support for Japanese in the admin GUI, by OGIS-RI Co.
+- Possibility to use custom revocation dates. 
+- Possibility to use aliases in RFC4387 CRL download links.
+- Fixed support for special characters in filenames in export profiles cli command. 
+- Admin GUI improvements for looks and consistency, by David Carella of Linagora.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 EJBCA 4.0.10
 ------------
 This is a maintenance release containing 1 new VA publisher feature, 1 security fix and GUI improvements..

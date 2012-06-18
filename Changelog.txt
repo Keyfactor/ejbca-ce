@@ -255,6 +255,31 @@ Task
     [ECA-2320] - Merge changes from CESECORE-197
     [ECA-2324] - Merge changes from CESECORE-269 to EJBCA
 
+EJBCA 4.0.11, 2012-06-18
+---
+New Feature
+    [ECA-2629] - Add Japanese language file
+    [ECA-2696] - Custom revocation date in EJBCA
+
+Task
+    [ECA-2579] - Help message keys refactoring
+
+Bug
+    [ECA-2662] - Strip whitespace from username entered in public web
+    [ECA-2664] - Cleartext links (http) in documentation
+    [ECA-2699] - ejbca.sh CLI exportprofiles function can't handle special characters in filename
+
+Improvement
+    [ECA-1979] - GUI: End-Entity (profile, add, edit) forms usability
+    [ECA-2577] - GUI: Configuration forms improvement
+    [ECA-2583] - GUI: LDAP Publishers form layout improvement
+    [ECA-2584] - GUI: Improvement of in-line help in all forms
+    [ECA-2627] - Process CA: forms layout improvement, and message keys refactoring
+    [ECA-2633] - GUI: Improve Services form
+    [ECA-2634] - GUI: View Certificate popup improvement
+    [ECA-2661] - Possible to use aliases for CRL Naming in RFC4387 CRL Store
+    [ECA-2675] - JBOSS with APR makes EJBCA deploy fail
+
 EJBCA 4.0.10, 2012-03-14
 ---
 New Feature
