@@ -78,6 +78,8 @@ public class ErrorCode implements Serializable {
 	private static final String _CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER = "CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER";
 	private static final String _SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS = "SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS";
 	private static final String _FIELD_VALUE_NOT_VALID = "_FIELD_VALUE_NOT_VALID";
+	private static final String _REVOKE_BACKDATE_NOT_ALLOWED = "REVOKE_BACKDATE_NOT_ALLOWED";
+	private static final String _DATE_NOT_VALID = "DATE_NOT_VALID";
 
     /** Default constructor. */
     private ErrorCode() {}
@@ -165,6 +167,8 @@ public class ErrorCode implements Serializable {
 	public static final ErrorCode CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER = new ErrorCode(_CERTIFICATE_WITH_THIS_SUBJECTDN_ALLREADY_EXISTS_FOR_ANOTHER_USER);
 	public static final ErrorCode SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS = new ErrorCode(_SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS);
 	public static final ErrorCode FIELD_VALUE_NOT_VALID = new ErrorCode(_FIELD_VALUE_NOT_VALID);
+	public static final ErrorCode REVOKE_BACKDATE_NOT_ALLOWED = new ErrorCode(_REVOKE_BACKDATE_NOT_ALLOWED);
+	public static final ErrorCode DATE_NOT_VALID = new ErrorCode(_DATE_NOT_VALID);
 
     /** Get the internal error code. */
     public String getInternalErrorCode() {
