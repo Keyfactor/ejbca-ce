@@ -42,7 +42,7 @@ See <a href="architecture-ocsp.html">OCSP Architecture</a>
 </section>
 <section name="Alias">
 <p>
-You may also define aliases to certificates or CRLs. This is done in the configuration file conf/certstore.properties.
+You may also define aliases to certificates or CRLs. This is done in the configuration file conf/va.properties.
 </p><p>
 This is an example on how to get your root certificate if you have defined an alias for it:
 </p>
