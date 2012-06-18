@@ -94,7 +94,7 @@ import org.junit.Test;
  * 
  * Based on OcspUtilTest.java 9435 2010-07-14 15:18:39Z mikekushner
  * 
- * @version $Id: IntegratedOcspResponseTest.java 1308 2012-02-17 10:03:38Z mikek $
+ * @version $Id$
  * 
  */
 public class IntegratedOcspResponseTest extends CaCreatingTestCase {

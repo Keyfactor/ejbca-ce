@@ -17,7 +17,7 @@ import javax.xml.ws.WebFault;
 
 /**
  * Thrown when a string is not a valid date
- * @version $Id: DateNotValidException.java 14932 2012-06-14 21:53:07Z primelars $
+ * @version $Id$
  *
  */
 @WebFault
