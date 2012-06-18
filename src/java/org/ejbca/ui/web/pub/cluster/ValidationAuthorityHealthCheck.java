@@ -48,32 +48,28 @@ public class ValidationAuthorityHealthCheck extends CommonHealthCheck {
 
 	@Override
 	public String checkHealth(HttpServletRequest request) {
-		log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
-		String errormessage = "";
-		
-		errormessage += checkMaintenance();
-		if( !errormessage.equals("") ) { 
+	    if (log.isDebugEnabled()) {
+	        log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
+	    }
+        final StringBuilder sb = new StringBuilder(0);
+		checkMaintenance(sb);
+		if (sb.length()>0) { 
 			// if Down for maintenance do not perform more checks
-			return errormessage; 
+			return sb.toString(); 
 		}
-		if(errormessage.equals("")){
-		  errormessage += checkMemory();								
-		  errormessage += checkOCSPSignTokens();	
-		}
-		
-		if(errormessage.equals("")){
-			// everything seems ok.
-			errormessage = null;
-		}
-		
-		return errormessage;
+		checkMemory(sb);
+		checkOCSPSignTokens(sb);
+        if( sb.length()==0 ) {
+            return null; 
+        }
+        return sb.toString(); 
 	}
 
-
-	private String checkOCSPSignTokens(){
-		if ( healthChecker==null ) {
-			return "No OCSP token health checker set";
+	private void checkOCSPSignTokens(final StringBuilder sb) {
+		if (healthChecker==null) {
+			sb.append("No OCSP token health checker set");
+		} else {
+		    sb.append(healthChecker.healthCheck(this.doSignTest, this.doValidityTest));
 		}
-		return healthChecker.healthCheck(this.doSignTest, this.doValidityTest);
 	}
 }

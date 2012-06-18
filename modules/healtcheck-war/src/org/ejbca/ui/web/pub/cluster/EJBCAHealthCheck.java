@@ -58,50 +58,46 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 		if (log.isDebugEnabled()) {
 			log.debug("Starting HealthCheck requested by : " + request.getRemoteAddr());
 		}
-		String errormessage = "";
-		
-		errormessage += checkMaintenance();
-		if( !errormessage.equals("") ) { 
+		final StringBuilder sb = new StringBuilder(0);
+		checkMaintenance(sb);
+		if( sb.length()>0 ) { 
 			// if Down for maintenance do not perform more checks
-			return errormessage; 
+			return sb.toString(); 
 		} 
-		errormessage += checkDB();
-		if(errormessage.equals("")) {
-			errormessage += checkMemory();								
-			errormessage += checkCAs();	
-
-			if(checkPublishers){
-				errormessage += checkPublishers();
+		checkDB(sb);
+        if (sb.length()==0) { 
+			checkMemory(sb);
+			checkCAs(sb);
+			if (checkPublishers) {
+				checkPublishers(sb);
 			}
 		}
-		
-		if(errormessage.equals("")){
-			// everything seems ok.
-			errormessage = null;
+        if (sb.length()==0) {
+            // everything seems ok.
+            return null;
 		}
-		
-		return errormessage;
+		return sb.toString();
 	}
 		
-	private String checkDB(){
+	private void checkDB(final StringBuilder sb) {
 		if (log.isDebugEnabled()) {
 			log.debug("Checking database connection.");
 		}
-		return healthCheckSession.getDatabaseStatus();
+		sb.append(healthCheckSession.getDatabaseStatus());
 	}
 
-	private String checkCAs(){
+	private void checkCAs(final StringBuilder sb){
 		if (log.isDebugEnabled()) {
 			log.debug("Checking CAs.");
 		}
-		return caAdminSession.healthCheck();
+		sb.append(caAdminSession.healthCheck());
 	}
 	
-	private String checkPublishers(){
+	private void checkPublishers(final StringBuilder sb) {
 		if (log.isDebugEnabled()) {
 			log.debug("Checking publishers.");
 		}
-		return publisherSession.testAllConnections();
+		sb.append(publisherSession.testAllConnections());
 	}
 
     public void setCheckPublishers(boolean checkPublishers) {

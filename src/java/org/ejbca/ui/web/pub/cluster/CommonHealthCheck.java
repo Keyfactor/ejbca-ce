@@ -34,9 +34,9 @@ import org.ejbca.config.EjbcaConfiguration;
 public abstract class CommonHealthCheck implements IHealthCheck {
 	private static final Logger log = Logger.getLogger(CommonHealthCheck.class);
 
-	private long minfreememory = EjbcaConfiguration.getHealthCheckAmountFreeMem();
-	private String maintenanceFile = EjbcaConfiguration.getHealthCheckMaintenanceFile();
-	private String maintenancePropertyName = EjbcaConfiguration.getHealthCheckMaintenancePropertyName();
+	private final long minfreememory = EjbcaConfiguration.getHealthCheckAmountFreeMem();
+	private final String maintenanceFile = EjbcaConfiguration.getHealthCheckMaintenanceFile();
+	private final String maintenancePropertyName = EjbcaConfiguration.getHealthCheckMaintenancePropertyName();
 
 	public CommonHealthCheck() {
 		super();
@@ -48,29 +48,38 @@ public abstract class CommonHealthCheck implements IHealthCheck {
 		initMaintenanceFile();
 	}
 
-	protected String checkMemory(){
-		log.debug("Checking JVM memory.");
-		String retval = "";
-        if(minfreememory >= Runtime.getRuntime().freeMemory()){
-          retval = "\nMEM: Error Virtual Memory is about to run out, currently free memory :" + Runtime.getRuntime().freeMemory();	
-        }		
-		
-		return retval;
+	protected void checkMemory(final StringBuilder sb) {
+	    if (log.isDebugEnabled()) {
+	        log.debug("Checking JVM memory.");
+	    }
+	    if (minfreememory >= Runtime.getRuntime().freeMemory()) {
+	        sb.append("\nMEM: Error Virtual Memory is about to run out, currently free memory :").append(String.valueOf(Runtime.getRuntime().freeMemory()));	
+	    }		
 	}
 
-	protected String checkMaintenance() {
-		Properties maintenanceProperties = new Properties();
+	protected void checkMaintenance(final StringBuilder sb) {
 		if (StringUtils.isEmpty(maintenanceFile)) {
-			log.debug("Maintenance file not specified, node will be monitored");
-			return "";
+            if (log.isDebugEnabled()) {
+                log.debug("Maintenance file not specified, node will be monitored");
+            }
+			return;
 		} 
 		InputStream in = null;
 		try {
 			in = new FileInputStream(maintenanceFile);
+	        final Properties maintenanceProperties = new Properties();
 			maintenanceProperties.load(in);
+            final String maintenancePropertyValue = maintenanceProperties.getProperty(maintenancePropertyName);
+            if (maintenancePropertyValue == null) {
+                log.info("Could not find property " + maintenancePropertyName+ " in " + maintenanceFile+ ", will continue to monitor this node");
+            } else if (Boolean.TRUE.toString().equalsIgnoreCase(maintenancePropertyValue)) {
+                sb.append("MAINT: ").append(maintenancePropertyName);
+            }
 		} catch (IOException e) {
-			log.debug("Could not read Maintenance File. Expected to find file at: "+ maintenanceFile);
-			return "";
+	        if (log.isDebugEnabled()) {
+	            log.debug("Could not read Maintenance File. Expected to find file at: "+ maintenanceFile);
+	        }
+			return;
 		} finally {
 			if (in != null) {
 				try {
@@ -80,17 +89,6 @@ public abstract class CommonHealthCheck implements IHealthCheck {
 				}
 			}
 		}
-		try {
-			String temp = maintenanceProperties.getProperty(maintenancePropertyName).toString();
-			if (temp.equalsIgnoreCase("true")) {
-				return "MAINT: "+maintenancePropertyName;
-			} else {
-				return "";
-			}
-		} catch (NullPointerException e) {
-			log.info("Could not find property " + maintenancePropertyName+ " in " + maintenanceFile+ ", will continue to monitor this node");
-			return "";
-		}			
 	}
 	
 	private void initMaintenanceFile() {
