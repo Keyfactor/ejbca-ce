@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.ArrayUtils;
 import org.apache.log4j.Logger;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.EjbcaConfiguration;
@@ -28,8 +29,7 @@ import org.ejbca.ui.web.pub.cluster.IHealthCheck;
 import org.ejbca.ui.web.pub.cluster.IHealthResponse;
 
 /**
- * @author mikek
- * 
+ * @version $Id$
  */
 public abstract class AbstractHealthServlet extends HttpServlet {
 
@@ -38,8 +38,10 @@ public abstract class AbstractHealthServlet extends HttpServlet {
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
+    private static final SameRequestRateLimiter<String> rateLimiter = new SameRequestRateLimiter<String>();
 
     private String[] authIPs = null;
+    private boolean anyIpAuthorized = false;
 
     /**
      * Servlet init
@@ -52,12 +54,13 @@ public abstract class AbstractHealthServlet extends HttpServlet {
      */
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-
         // Install BouncyCastle provider
         CryptoProviderTools.installBCProviderIfNotAvailable();
-
         authIPs = EjbcaConfiguration.getHealthCheckAuthorizedIps().split(";");
-
+        if (ArrayUtils.contains(authIPs, "ANY")) {
+            log.info(intres.getLocalizedMessage("healthcheck.allipsauthorized"));
+            anyIpAuthorized = true;
+        }
         if (config.getInitParameter("CheckPublishers") != null) {
             log.warn("CheckPublishers servlet parameter has been dropped. Use \"healthcheck.publisherconnections\" property instead.");
         }
@@ -76,33 +79,23 @@ public abstract class AbstractHealthServlet extends HttpServlet {
     public abstract void initializeServlet();
 
     private void check(HttpServletRequest request, HttpServletResponse response) {
-        boolean authorizedIP = false;
         String remoteIP = request.getRemoteAddr();
-        if ((authIPs != null) && (authIPs.length > 0)) {
-            for (int i = 0; i < authIPs.length; i++) {
-                if (remoteIP.equals(authIPs[i])) {
-                    authorizedIP = true;
-                }
-            }
-        } else {
-            String iMsg = intres.getLocalizedMessage("healthcheck.allipsauthorized");
-            log.info(iMsg);
-            authorizedIP = true;
+        if (remoteIP == null || remoteIP.length()>100) {
+            remoteIP = "unknown";
         }
-
-        if (authorizedIP) {
-            getHealthResponse().respond(getHealthCheck().checkHealth(request), response);
-        } else {
-            if ((remoteIP == null) || (remoteIP.length() > 100)) {
-                remoteIP = "unknown";
+        if (anyIpAuthorized || ArrayUtils.contains(authIPs, remoteIP)) {
+            final SameRequestRateLimiter<String>.Result result = rateLimiter.getResult();
+            if (result.isFirst()) {
+                result.setValue(getHealthCheck().checkHealth(request));
             }
+            getHealthResponse().respond(result.getValue(), response);
+        } else {
             try {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "ERROR : Healthcheck request recieved from an non authorized IP: " + remoteIP);
             } catch (IOException e) {
                 log.error("Problems generating unauthorized http response.", e);
             }
-            String iMsg = intres.getLocalizedMessage("healthcheck.errorauth", remoteIP);
-            log.error(iMsg);
+            log.error(intres.getLocalizedMessage("healthcheck.errorauth", remoteIP));
         }
     }
 

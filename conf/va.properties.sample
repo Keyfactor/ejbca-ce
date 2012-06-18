@@ -22,6 +22,8 @@
 
 # Parameter specifying IP addresses authorized to access the healthcheck
 # servlet. Use ';' between multiple IPs.
+# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1. 
+# "ANY" can be specified to allow any remote IP. 
 # Default: 127.0.0.1  
 #ocsphealthcheck.authorizedips=127.0.0.1
 
