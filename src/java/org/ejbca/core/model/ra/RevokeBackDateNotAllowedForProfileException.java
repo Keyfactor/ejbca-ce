@@ -15,17 +15,20 @@ package org.ejbca.core.model.ra;
 
 import javax.xml.ws.WebFault;
 
+import org.cesecore.ErrorCode;
+import org.ejbca.core.EjbcaException;
+
 /**
  * The certificate profile is not allowing revocation back date.
  * @version $Id$
  *
  */
 @WebFault
-public class RevokeBackDateNotAllowedForProfileException extends Exception {
+public class RevokeBackDateNotAllowedForProfileException extends EjbcaException {
 
 	private static final long serialVersionUID = -707975049447839896L;
 
 	public RevokeBackDateNotAllowedForProfileException(String m) {
-		super(m);
+		super(ErrorCode.REVOKE_BACKDATE_NOT_ALLOWED, m);
 	}
 }
