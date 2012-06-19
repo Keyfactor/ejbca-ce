@@ -86,7 +86,11 @@ public abstract class AbstractHealthServlet extends HttpServlet {
         if (anyIpAuthorized || ArrayUtils.contains(authIPs, remoteIP)) {
             final SameRequestRateLimiter<String>.Result result = rateLimiter.getResult();
             if (result.isFirst()) {
-                result.setValue(getHealthCheck().checkHealth(request));
+                try {
+                    result.setValue(getHealthCheck().checkHealth(request));
+                } catch (Throwable t) {
+                    result.setError(t);
+                }
             }
             getHealthResponse().respond(result.getValue(), response);
         } else {
