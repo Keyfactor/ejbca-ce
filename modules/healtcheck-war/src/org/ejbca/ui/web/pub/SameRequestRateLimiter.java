@@ -24,8 +24,12 @@ import java.util.concurrent.locks.ReentrantLock;
  * ...
  * SameRequestRateLimiter<Object>.Result result = srrl.getResult();
  * if (result.isFirst()) {
- *   // Perform common action
- *   result.setValue(...);
+ *   try {
+ *     // Perform common action
+ *     result.setValue(...);
+ *   } catch (Throwable t) {
+ *     result.setError(t);
+ *   }
  * }
  * Object resultValue = result.getValue();
  * ...
@@ -41,6 +45,7 @@ public class SameRequestRateLimiter<T> {
     public class Result {
         private boolean isFirst = true;
         private T value;
+        private Throwable throwable = null;
         
         /** @return true if the setValue should be called. */
         public boolean isFirst() {
@@ -53,6 +58,9 @@ public class SameRequestRateLimiter<T> {
                 // Programming/meatware problem..
                 throw new RuntimeException("Current thread should have called setValue first!");
             }
+            if (throwable != null) {
+                throw new RuntimeException(throwable);
+            }
             return value;
         }
         
@@ -62,6 +70,19 @@ public class SameRequestRateLimiter<T> {
             try {
                 this.isFirst = false;
                 this.value = value;
+                result = null;
+                rateLimiterLock.unlock();
+            } finally {
+                resultObjectLock.unlock();
+            }
+        }
+        
+        /** Store resulting exception and release all pending threads */
+        public void setError(final Throwable throwable) {
+            resultObjectLock.lock();
+            try {
+                this.isFirst = false;
+                this.throwable = throwable;
                 result = null;
                 rateLimiterLock.unlock();
             } finally {
