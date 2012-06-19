@@ -91,6 +91,8 @@ public abstract class AbstractHealthServlet extends HttpServlet {
                 } catch (Throwable t) {
                     result.setError(t);
                 }
+            } else if (log.isDebugEnabled()) {
+                log.debug("Re-using health check answer from first concurrent request for this request to conserve server load.");
             }
             getHealthResponse().respond(result.getValue(), response);
         } else {
