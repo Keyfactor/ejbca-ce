@@ -14,10 +14,10 @@
 package org.ejbca.ui.web.admin.configuration;
 
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
-import java.net.URLDecoder;
 import java.net.UnknownHostException;
 import java.security.cert.X509Certificate;
 import java.sql.SQLException;
@@ -30,14 +30,12 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TimeZone;
 
 import javax.ejb.EJBException;
-import javax.security.auth.x500.X500Principal;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
@@ -45,8 +43,10 @@ import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.AuthenticationFailedException;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
@@ -74,6 +74,7 @@ import org.ejbca.core.ejb.hardtoken.HardTokenSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionLocal;
+import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.util.HTMLTools;
@@ -101,11 +102,17 @@ public class EjbcaWebBean implements Serializable {
     public static final int AUTHORIZED_CA_VIEW_CERT = 7;
     public static final int AUTHORIZED_RA_KEYRECOVERY_RIGHTS = 8;
 
-    private static final int AUTHORIZED_FIELD_LENGTH = 9;
-    private static final String[] AUTHORIZED_RA_RESOURCES = { "/ra_functionality/view_end_entity", "/ra_functionality/edit_end_entity",
-            "/ra_functionality/create_end_entity", "/ra_functionality/delete_end_entity", "/ra_functionality/revoke_end_entity",
-            "/ra_functionality/view_end_entity_history", "/ra_functionality/view_hardtoken", "/ca_functionality/view_certificate",
-            "/ra_functionality/keyrecovery" };
+    private static final String[] AUTHORIZED_RA_RESOURCES = {
+        AccessRulesConstants.REGULAR_VIEWENDENTITY,
+        AccessRulesConstants.REGULAR_EDITENDENTITY,
+        AccessRulesConstants.REGULAR_CREATEENDENTITY,
+        AccessRulesConstants.REGULAR_DELETEENDENTITY,
+        AccessRulesConstants.REGULAR_REVOKEENDENTITY,
+        AccessRulesConstants.REGULAR_VIEWENDENTITYHISTORY,
+        AccessRulesConstants.REGULAR_VIEWHARDTOKENS,
+        AccessRulesConstants.REGULAR_VIEWCERTIFICATE,
+        AccessRulesConstants.REGULAR_KEYRECOVERY
+    };
 
     private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private final AccessControlSessionLocal authorizationSession = ejbLocalHelper.getAccessControlSession();
@@ -129,18 +136,15 @@ public class EjbcaWebBean implements Serializable {
     private AdminPreference currentadminpreference;
     private GlobalConfiguration globalconfiguration;
     private ServletContext servletContext = null;
-    private GlobalConfigurationDataHandler globaldataconfigurationdatahandler;
     private AuthorizationDataHandler authorizedatahandler;
     private WebLanguages adminsweblanguage;
     private String usercommonname = "";
-    private String certificatefingerprint;
-    /** Certificates for administrator logging into admin-GUI */
-    private X509Certificate[] certificates;
+    private String certificatefingerprint;  // Unique key to identify the admin.. usually a hash of the admin's certificate
     private InformationMemory informationmemory;
     private boolean initialized = false;
     private boolean errorpage_initialized = false;
-    private Boolean[] raauthorized;
-    private X509CertificateAuthenticationToken administrator;
+    private final Boolean[] raauthorized = new Boolean[AUTHORIZED_RA_RESOURCES.length];
+    private AuthenticationToken administrator;
     private String requestServerName;
 
     /*
@@ -153,26 +157,10 @@ public class EjbcaWebBean implements Serializable {
 
     /** Creates a new instance of EjbcaWebBean */
     public EjbcaWebBean() {
-        initialized = false;
-        raauthorized = new Boolean[AUTHORIZED_FIELD_LENGTH];
     }
 
     private void commonInit() throws Exception {
-        if ((administrator == null) && (certificates == null)) {
-            throw new AuthenticationFailedException("Client certificate required.");
-        } else if ((certificates != null) && (administrator == null)) {
-            final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-            credentials.add(certificates[0]);
-            AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
-            administrator = (X509CertificateAuthenticationToken) authenticationSession.authenticate(subject);
-            if (administrator == null) {
-                throw new AuthenticationFailedException("Authorization failed for certificate: "+CertTools.getSubjectDN(certificates[0]));
-            }        	
-            //administrator = userAdminSession.getAdmin(certificates[0]);
-        } // else we have already defined an administrator, for example in initialize_errorpage
-
-        globaldataconfigurationdatahandler = new GlobalConfigurationDataHandler(administrator, globalConfigurationSession);
-        globalconfiguration = this.globaldataconfigurationdatahandler.loadGlobalConfiguration();
+        reloadGlobalConfiguration();
         if (informationmemory == null) {
             informationmemory = new InformationMemory(administrator, caAdminSession, caSession, authorizationSession, complexAccessControlSession,
                     endEntityProfileSession, hardTokenSession, publisherSession, userDataSourceSession, certificateProfileSession,
@@ -180,86 +168,66 @@ public class EjbcaWebBean implements Serializable {
         }
         authorizedatahandler = new AuthorizationDataHandler(administrator, informationmemory, roleAccessSession, roleManagementSession,
                 authorizationSession);
-
     }
 
     /* Sets the current user and returns the global configuration */
     public GlobalConfiguration initialize(HttpServletRequest request, String... resources) throws Exception {
-
-        certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
-        if (certificates == null || certificates.length == 0) {
-            throw new AuthenticationFailedException("Client certificate required.");
-        }
-
-        String userdn = "";
-
         if (!initialized) {
             requestServerName = getRequestServerName(request);
-
-            commonInit(); // sets administrator object
-            // Check if user certificate is valid and not revoked
-            final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-            credentials.add(certificates[0]);
-            AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
-            AuthenticationToken admin = authenticationSession.authenticate(subject);
-            if (admin == null) {
-                throw new AuthenticationFailedException("Authentication failed for certificate: "+CertTools.getSubjectDN(certificates[0]));
+            final X509Certificate[] certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.X509Certificate");
+            if (certificates == null || certificates.length == 0) {
+                throw new AuthenticationFailedException("Client certificate required.");
+            } else {
+                final Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+                credentials.add(certificates[0]);
+                final AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
+                administrator = authenticationSession.authenticate(subject);
+                if (administrator == null) {
+                    throw new AuthenticationFailedException("Authentication failed for certificate: "+CertTools.getSubjectDN(certificates[0]));
+                }
             }
-            
-            adminspreferences = new AdminPreferenceDataHandler(administrator);
-
+            commonInit();
+            adminspreferences = new AdminPreferenceDataHandler((X509CertificateAuthenticationToken) administrator);
             // Set ServletContext for reading language files from resources
             servletContext = request.getSession(true).getServletContext();
-
             // Check if certificate and user is an RA Admin
-            userdn = CertTools.getSubjectDN(certificates[0]);
+            final String userdn = CertTools.getSubjectDN(certificates[0]);
+            final DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
+            usercommonname = dn.getField(DNFieldExtractor.CN, 0);
             if (log.isDebugEnabled()) {
                 log.debug("Verifying authorization of '" + userdn + "'");
             }
             final String issuerDN = CertTools.getIssuerDN(certificates[0]);
             final String sernostr = CertTools.getSerialNumberAsString(certificates[0]);
-           
-            if(!userAdminSession.checkIfCertificateBelongToUser(CertTools.getSerialNumber(certificates[0]), issuerDN)) {
-                throw new RuntimeException("Certificate with SN " +  CertTools.getSerialNumber(certificates[0]) + " did not belong to user " + issuerDN);
+            final BigInteger serno = CertTools.getSerialNumber(certificates[0]);
+            certificatefingerprint = CertTools.getFingerprintAsString(certificates[0]);
+            if(!userAdminSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
+                throw new RuntimeException("Certificate with SN " +  serno + " did not belong to user " + issuerDN);
             }
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, CertTools.getSerialNumber(certificates[0])) == null) {
+            Map<String, Object> details = null;
+            if (certificateStoreSession.findCertificateByIssuerAndSerno(issuerDN, serno) == null) {
+                details = new LinkedHashMap<String, Object>();
             	details.put("msg", "Logging in : Administrator Certificate is issued by external CA");
             }
             auditSession.log(EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.SUCCESS, EjbcaModuleTypes.ADMINWEB, EjbcaServiceTypes.EJBCA,
                     administrator.toString(), Integer.toString(issuerDN.hashCode()), sernostr, null, details);
         }
-
         try {
-            if (resources.length > 0) {
-                final List<String> resourcesDecoded = new ArrayList<String>();
-                for (final String resource : resources) {
-                    // Why would we ever need to URL decode this??
-                    resourcesDecoded.add(URLDecoder.decode(resource, "UTF-8"));
-                }
-                isAuthorized(resourcesDecoded.toArray(new String[0]));
+            if (resources.length>0 && !authorizationSession.isAuthorized(administrator, resources)) {
+                throw new AuthorizationDeniedException("You are not authorized to view this page.");
             }
-        } catch (AuthorizationDeniedException e) {
-            throw new AuthorizationDeniedException("You are not authorized to view this page.");
         } catch (EJBException e) {
+            // Will this code ever execute? You are "initialized" (logged in) when the database went under
+            // and your AppServer + JDBC driver throws an EJBException with SQLException as cause..?
+            // Since the errorpage.jsp requires a database connection to show, it does not make any sense
+            // to move this code there..
             final Throwable cause = e.getCause();
-            final String dbProblemMessage = getText("DATABASEDOWN");
-            if (cause instanceof SQLException) {
-                final Exception e1 = new Exception(dbProblemMessage);
-                e1.initCause(e);
-                throw e1;
-            } else if (cause.getMessage().indexOf("SQLException", 0) >= 0) {
-                final Exception e1 = new Exception(dbProblemMessage);
-                e1.initCause(e);
-                throw e1;
+            if (cause instanceof SQLException || cause.getMessage().indexOf("SQLException", 0) >= 0) {
+                throw new Exception(getText("DATABASEDOWN"), e);
             }
             throw e;
         }
-
         if (!initialized) {
-            certificatefingerprint = CertTools.getFingerprintAsString(certificates[0]);
-
-            // Get current admin preference.
             currentadminpreference = null;
             if (certificatefingerprint != null) {
                 currentadminpreference = adminspreferences.getAdminPreference(certificatefingerprint);
@@ -269,11 +237,6 @@ public class EjbcaWebBean implements Serializable {
             }
             adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage(),
                     currentadminpreference.getSecondaryLanguage());
-
-            // set User Common Name
-            DNFieldExtractor dn = new DNFieldExtractor(userdn, DNFieldExtractor.TYPE_SUBJECTDN);
-            usercommonname = dn.getField(DNFieldExtractor.CN, 0);
-
             initialized = true;
         }
         return globalconfiguration;
@@ -286,32 +249,24 @@ public class EjbcaWebBean implements Serializable {
      */
     private String getRequestServerName(HttpServletRequest request) {
         String requestURL = request.getRequestURL().toString();
-
         // Remove https://
         requestURL = requestURL.substring(8);
         int firstSlash = requestURL.indexOf("/");
         // Remove application path
         requestURL = requestURL.substring(0, firstSlash);
-
         return requestURL;
     }
 
     public GlobalConfiguration initialize_errorpage(HttpServletRequest request) throws Exception {
-
         if (!errorpage_initialized) {
-/*
             if (administrator == null) {
                 String remoteAddr = request.getRemoteAddr();
                 administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Public web user: " + remoteAddr));
-            }*/
+            }
             commonInit();
-            
-
-            adminspreferences = new AdminPreferenceDataHandler(administrator);
-
+            adminspreferences = new AdminPreferenceDataHandler((X509CertificateAuthenticationToken) administrator);
             // Set ServletContext for reading language files from resources
             servletContext = request.getSession(true).getServletContext();
-
             if (currentadminpreference == null) {
                 currentadminpreference = adminspreferences.getDefaultAdminPreference();
             }
@@ -419,12 +374,8 @@ public class EjbcaWebBean implements Serializable {
      * @throws AuthorizationDeniedException is not authorized to resource
      */
     public boolean isAuthorized(String... resources) throws AuthorizationDeniedException {
-        if (certificates != null) {
-            if (!authorizationSession.isAuthorized(administrator, resources)) {
-                throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
-            }
-        } else {
-            throw new AuthorizationDeniedException("Client certificate required.");
+        if (!authorizationSession.isAuthorized(administrator, resources)) {
+            throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
         }
         return true;
     }
@@ -439,12 +390,8 @@ public class EjbcaWebBean implements Serializable {
      * @throws AuthorizationDeniedException is not authorized to resource
      */
     public boolean isAuthorizedNoLog(String... resources) throws AuthorizationDeniedException {
-        if (certificates != null) {
-            if (!authorizationSession.isAuthorizedNoLogging(administrator, resources)) {
-                throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
-            }
-        } else {
-            throw new AuthorizationDeniedException("Client certificate required");
+        if (!authorizationSession.isAuthorizedNoLogging(administrator, resources)) {
+            throw new AuthorizationDeniedException("Not authorized to " + Arrays.toString(resources));
         }
         return true;
     }
@@ -459,21 +406,10 @@ public class EjbcaWebBean implements Serializable {
      * @throws AuthorizationDeniedException is not authorized to resource
      */
     public boolean isAuthorizedNoLog(int resource) throws AuthorizationDeniedException {
-        boolean returnval = false;
-        if (certificates != null) {
-            if (raauthorized[resource] == null) {
-                // We don't bother to lookup the admin's username and email for this check..
-                Set<X509Certificate> credentials = new HashSet<X509Certificate>();
-                credentials.add(certificates[0]);
-                Set<X500Principal> principals = new HashSet<X500Principal>();
-                principals.add(certificates[0].getSubjectX500Principal());
-                AuthenticationToken admin = new X509CertificateAuthenticationToken(principals, credentials);
-                raauthorized[resource] = Boolean.valueOf(authorizationSession.isAuthorizedNoLogging(admin, AUTHORIZED_RA_RESOURCES[resource]));
-            }
-            returnval = raauthorized[resource].booleanValue();
-        } else {
-            throw new AuthorizationDeniedException("Client certificate required.");
+        if (raauthorized[resource] == null) {
+            raauthorized[resource] = Boolean.valueOf(authorizationSession.isAuthorizedNoLogging(administrator, AUTHORIZED_RA_RESOURCES[resource]));
         }
+        final boolean returnval = raauthorized[resource].booleanValue();
         if (!returnval) {
             throw new AuthorizationDeniedException("Not authorized to " + resource);
         }
@@ -699,12 +635,16 @@ public class EjbcaWebBean implements Serializable {
     }
 
     public void reloadGlobalConfiguration() throws Exception {
-        globalconfiguration = globaldataconfigurationdatahandler.loadGlobalConfiguration();
-        informationmemory.systemConfigurationEdited(globalconfiguration);
+        globalconfiguration = globalConfigurationSession.getCachedGlobalConfiguration();
+        globalconfiguration.initialize("adminweb", WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css", 
+                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort(), "http", "https");
+        if (informationmemory != null) {
+            informationmemory.systemConfigurationEdited(globalconfiguration);
+        }
     }
 
     public void saveGlobalConfiguration() throws Exception {
-        globaldataconfigurationdatahandler.saveGlobalConfiguration(globalconfiguration);
+        globalConfigurationSession.saveGlobalConfiguration(administrator, globalconfiguration);
         informationmemory.systemConfigurationEdited(globalconfiguration);
     }
 

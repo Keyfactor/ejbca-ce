@@ -2,7 +2,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, 
-    org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.ra.raadmin.AdminPreference, org.ejbca.ui.web.admin.configuration.GlobalConfigurationDataHandler,
+    org.ejbca.ui.web.RequestHelper,org.ejbca.core.model.ra.raadmin.AdminPreference,
                 org.ejbca.ui.web.admin.configuration.WebLanguages, org.ejbca.core.model.authorization.AccessRulesConstants, org.ejbca.core.model.InternalEjbcaResources, 
                 java.util.Set, java.util.Arrays "%>
 
@@ -68,11 +68,10 @@
   // Initialize environment.
   final String THIS_FILENAME                          =  "configuration.jsp";
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION); 
-  GlobalConfiguration gc = globalconfiguration;
+  GlobalConfiguration gc = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITSYSTEMCONFIGURATION); 
   AdminPreference dup = ejbcawebbean.getDefaultAdminPreference();
 
-  String forwardurl = "/" + globalconfiguration .getMainFilename(); 
+  String forwardurl = "/" + gc.getMainFilename(); 
 
   RequestHelper.setDefaultCharacterEncoding(request);
 
@@ -108,7 +107,6 @@
         }
 
        // Change global configuration and proceed with default user preferences.
-      //GlobalConfiguration gc = ejbcawebbean.getGlobalConfiguration();
        if(request.getParameter(TEXTFIELD_TITLE) != null){
          String title = request.getParameter(TEXTFIELD_TITLE); 
          gc.setEjbcaTitle(title);

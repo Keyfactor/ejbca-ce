@@ -7,7 +7,7 @@
   <title><c:out value="<%= gc.getEjbcaTitle() %>"/></title>
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
-  <script type="text/javascript" src="<%= globalconfiguration .getAdminWebPath() %>ejbcajslib.js"></script>
+  <script type="text/javascript" src="<%= gc.getAdminWebPath() %>ejbcajslib.js"></script>
   <script type="text/javascript">
 <!--  
 
@@ -52,7 +52,7 @@ function checkuseautoenroll(){
 
 <h1><c:out value="<%= ejbcawebbean.getText(\"EJBCAWEBCONFIGURATION\") %>"/></h1> 
 
-<form name="webconfiguration" method="post" action="<%= globalconfiguration .getConfigPath() + "/" + THIS_FILENAME %>">
+<form name="webconfiguration" method="post" action="<%= gc.getConfigPath() + "/" + THIS_FILENAME %>">
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
 <!--
     <tr id="Row0"> 
