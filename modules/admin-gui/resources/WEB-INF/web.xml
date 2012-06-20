@@ -165,38 +165,10 @@
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
-
-    <!-- TODO: Are these still used in any way? WebConfiguration might be a better place if this should be configurable.. -->
-   <env-entry>
-      <description><![CDATA[Defines the admin directory]]></description>
-      <env-entry-name>ADMINDIRECTORY</env-entry-name>
-      <env-entry-type>java.lang.String</env-entry-type>
-      <env-entry-value>adminweb</env-entry-value>
-   </env-entry>
-   <env-entry>
-      <description><![CDATA[Defines the available themes by css-filenames separated with a comma]]></description>
-      <env-entry-name>AVAILABLETHEMES</env-entry-name>
-      <env-entry-type>java.lang.String</env-entry-type>
-      <env-entry-value>default_theme.css,second_theme.css</env-entry-value>
-   </env-entry>
-   <env-entry>
-      <description><![CDATA[Protocol used by EJBCA public webcomponents. i.e that doesn't require client authentication]]></description>
-      <env-entry-name>PUBLICPROTOCOL</env-entry-name>
-      <env-entry-type>java.lang.String</env-entry-type>
-      <env-entry-value>http</env-entry-value>
-   </env-entry>
-   <env-entry>
-      <description><![CDATA[Protocol used by EJBCA private webcomponents. i.e that requires client authentication]]></description>
-      <env-entry-name>PRIVATEPROTOCOL</env-entry-name>
-      <env-entry-type>java.lang.String</env-entry-type>
-      <env-entry-value>https</env-entry-value>
-   </env-entry>
-
     <ejb-local-ref>
         <description>An EJB that can provide references to all other SSBs to avoid this kind of declarations</description>
         <ejb-ref-name>EjbBridgeSession</ejb-ref-name>
         <local>org.ejbca.core.ejb.EjbBridgeSessionLocal</local>
         <ejb-link>EjbBridgeSessionBean</ejb-link>
     </ejb-local-ref>
-
 </web-app>

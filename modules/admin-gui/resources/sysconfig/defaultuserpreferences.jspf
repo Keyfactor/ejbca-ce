@@ -48,7 +48,7 @@
       </td>
       <td width="50%" valign="top"> 
         <select name="<%= LIST_THEME %>">
-          <% String[] availablethemes = globalconfiguration.getAvailableThemes();                                    
+          <% String[] availablethemes = gc.getAvailableThemes();                                    
              String theme = dup.getTheme();
              if(availablethemes != null){
                for(int i = 0; i < availablethemes.length; i++){
@@ -66,7 +66,7 @@
       </td>
       <td width="51%" valign="top"> 
         <select name="<%= LIST_ENTIESPERPAGE %>">
-          <% String[] possibleentriesperpage = globalconfiguration .getPossibleEntiresPerPage();                                    
+          <% String[] possibleentriesperpage = gc.getPossibleEntiresPerPage();                                    
              int entriesperpage = dup.getEntriesPerPage();
              for(int i = 0; i < possibleentriesperpage.length; i++){
           %>   <option <% if(Integer.parseInt(possibleentriesperpage[i]) == entriesperpage){ %> selected <% } %>
@@ -89,7 +89,7 @@
   </table>
  </form>
 <% // Include Footer 
-   String footurl = globalconfiguration .getFootBanner(); %>
+   String footurl = gc.getFootBanner(); %>
    
   <jsp:include page="<%= footurl %>" />
  
