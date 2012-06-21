@@ -65,7 +65,7 @@ public class CAData extends ProtectedData implements Serializable {
 	private String rowProtection;
 	// Not a mapped variable, used to determine if CAData has changed
     private boolean databaseUpdateRequired = false;
-
+    
 	/**
 	 * Entity Bean holding data of a CA.
 	 * @param subjectdn

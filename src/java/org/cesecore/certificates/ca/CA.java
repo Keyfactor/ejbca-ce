@@ -122,6 +122,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
 
     private CAInfo cainfo = null;
 
+    /**
+     * Public constructor required for XML serialization.
+     */
+    public CA() {
+    }
+    
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
     public CA(CAInfo cainfo) {
         data = new LinkedHashMap<Object, Object>();

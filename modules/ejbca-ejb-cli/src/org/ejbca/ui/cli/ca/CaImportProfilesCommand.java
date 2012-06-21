@@ -104,8 +104,6 @@ public class CaImportProfilesCommand extends BaseCaAdminCommand {
                     } else {
                     	final String filename = infiles[i].getName().substring(index1+1,index2);
                         final String profilename = URLDecoder.decode(filename, "UTF-8");
-                        //getLogger().debug("Name:"+profilename);
-                        //getLogger().debug("Id:"+infiles[i].getName().substring(index2+1,index3));
                         int profileid = Integer.parseInt(infiles[i].getName().substring(index2+1,index3));
                         // We don't add the fixed profiles, EJBCA handles those automagically
                         if (!entityprofile && 
