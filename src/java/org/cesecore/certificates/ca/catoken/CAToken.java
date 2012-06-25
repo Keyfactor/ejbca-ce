@@ -93,13 +93,6 @@ public class CAToken extends UpgradeableDataHashMap {
 
     private CryptoToken token;
     private PurposeMapping keyStrings;
-
-    /**
-     * Public constructor required for XML serialization.
-     */
-    public CAToken() {
-        
-    }
     
     public CAToken(final CryptoToken token) {
         super();
