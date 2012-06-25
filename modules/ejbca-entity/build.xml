@@ -83,6 +83,7 @@
 
 	<path id="cli.classpath">
 		<path refid="lib.ldap.classpath"/>
+		<path refid="lib.xstream.classpath"/>
 		<path refid="compile.classpath"/>
 	</path>
 
