@@ -14,6 +14,7 @@
     <target name="test:runsa" description="run stand-alone JUnit test cases, use -Dtest.includep11=true to include P11 tests">
     	<ant antfile="build.xml" dir="modules/ejbca-ejb" target="test" />
     	<ant antfile="build.xml" dir="modules/ejbca-entity" target="test" />
+    	<ant antfile="build.xml" dir="modules/healtcheck-war" target="test" />
     </target>
 
     <target name="test:rungfver" description="run Glassfish JEE validation tool on the EJBCA EAR" depends="ejbca.ear">

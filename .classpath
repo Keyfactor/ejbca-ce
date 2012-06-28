@@ -28,6 +28,7 @@
 	<classpathentry kind="src" path="modules/externalra/src"/>
 	<classpathentry kind="src" path="modules/externalra/src-test"/>
 	<classpathentry kind="src" path="modules/healtcheck-war/src"/>
+	<classpathentry kind="src" path="modules/healtcheck-war/src-test"/>
 	<classpathentry kind="src" path="modules/oldlogexport-cli/src"/>
 	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
 	<classpathentry kind="src" path="modules/va-war/src"/>
