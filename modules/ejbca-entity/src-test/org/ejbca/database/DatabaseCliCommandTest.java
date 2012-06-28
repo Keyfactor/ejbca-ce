@@ -37,6 +37,9 @@ import javax.persistence.EntityManagerFactory;
 import javax.persistence.Query;
 
 import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.impl.integrityprotected.AuditRecordData;
 import org.cesecore.authorization.cache.AccessTreeUpdateData;
 import org.cesecore.authorization.rules.AccessRuleData;
@@ -66,9 +69,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.StringTools;
 import org.easymock.EasyMock;
 import org.ejbca.core.ejb.approval.ApprovalData;
-import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
-import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
-import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -210,8 +210,8 @@ public class DatabaseCliCommandTest {
 
     @Test
     public void testExportTableXmlWithAuditRecordData() throws Exception {
-        AuditRecordData auditRecordData = new AuditRecordData("foo", 0L, 0L, EjbcaEventTypes.ADMINWEB_ADMINISTRATORLOGGEDIN, EventStatus.SUCCESS,
-                "foo", EjbcaServiceTypes.EJBCA, EjbcaModuleTypes.ADMINWEB, "foo", "foo", "foo", null);
+        AuditRecordData auditRecordData = new AuditRecordData("foo", 0L, 0L, EventTypes.ACCESS_CONTROL, EventStatus.SUCCESS,
+                "foo",ServiceTypes.CORE, ModuleTypes.ACCESSCONTROL, "foo", "foo", "foo", null);
         File exportFile = File.createTempFile("tmp", ".xml");
         long freespaceBefore = exportFile.getFreeSpace();
         performExport(auditRecordData, exportFile, PERSISTENCE_UNIT, OutputFormat.XML);
