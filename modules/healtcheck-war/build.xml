@@ -9,8 +9,11 @@
 	
 	<property name="build.dir" location="${this.dir}/build"/>
 	<property name="build-ocsp.dir" location="${this.dir}/build-ocsp"/>
+	<property name="build-test.dir" location="${this.dir}/build-test"/>
 	<property name="src.dir" location="${this.dir}/src"/>
+	<property name="src-test.dir" location="${this.dir}/src-test"/>
 	<property name="resources.dir" location="${this.dir}/resources"/>
+	<property name="reports.base.dir" location="${this.dir}/build-test/reports/"/>
 
 	<path id="compile-common.classpath">
 		<path refid="lib.servlet.classpath"/>
@@ -31,10 +34,18 @@
 		<pathelement location="${mod.va-entity.lib}" />
     	<path refid="lib.ejbca-util.classpath"/>
 	</path>
-		
+
+	<path id="test.classpath">
+		<path refid="compile-common.classpath"/>
+		<path location="${build-test.dir}" />
+		<path location="${build.dir}/WEB-INF/classes" />
+		<path refid="lib.junit.classpath"/>
+	</path>
+
     <target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
 		<delete dir="${build-ocsp.dir}" />
+		<delete dir="${build-test.dir}" />
     	<delete file="${mod.healthcheck-war.war}" />
     </target>
 
@@ -57,6 +68,32 @@
 		<mkdir dir="${build-ocsp.dir}/WEB-INF/classes" />
 		<javac srcdir="${src.dir}" destdir="${build-ocsp.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			excludes="org/ejbca/ui/web/pub/cluster/EJBCAHealthCheck.java, org/ejbca/ui/web/pub/HealthCheckServlet.java" classpathref="compile-va.classpath"/>
+	</target>
+
+	<target name="compile-tests" depends="with.clover, ejbca-compile">
+		<mkdir dir="${build-test.dir}" />
+		<javac srcdir="${src-test.dir}" destdir="${build-test.dir}" debug="on" includeantruntime="no"
+        	encoding="iso8859-1" target="${java.target.version}" classpathref="test.classpath"/>
+		<copy file="${log4j.test.file}" tofile="${build-test.dir}/log4j.xml" failonerror="true"/>
+	</target>
+
+	<target name="test" depends="compile-tests">
+		<property name="reports.dir" location="${reports.base.dir}/test"/>
+		<delete dir="${reports.dir}" />
+		<mkdir dir="${reports.dir}/html"/>
+		<junit printsummary="yes" haltonfailure="no" >
+			<classpath>
+				<path refid="test.classpath"/>
+				<pathelement path="${clover.jar}"/>
+			</classpath>
+			<formatter type="xml" />
+			<batchtest fork="yes" todir="${reports.dir}">
+				<fileset dir="${build-test.dir}">
+					<include name="**/*Test.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<antcall target="createreport"/>
 	</target>
 
 </project>
