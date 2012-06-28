@@ -54,7 +54,9 @@
 	<path id="compile-test.classpath">
 		<path refid="compile.classpath"/>
 		<path location="${build.dir}"/>
+		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.junit.classpath"/>
+		<path refid="lib.xstream.classpath"/>
 	</path>
 	
 	<path id="compile-cli.classpath">
