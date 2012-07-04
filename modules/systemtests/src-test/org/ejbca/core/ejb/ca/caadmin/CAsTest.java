@@ -102,6 +102,7 @@ import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.cvc.CertificateParser;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -126,19 +127,25 @@ public class CAsTest extends CaTestCase {
     // private AuthenticationToken adminTokenNoAuth;
 
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
+        createTestCA();
+    }
+    
+    @AfterClass
+    public static void afterClass() throws Exception {
+        removeTestCA();
     }
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
+        addDefaultRole();
 
     }
 
     @After
     public void tearDown() throws Exception {
-        super.tearDown();
+        removeDefaultRole();
     }
 
     public String getRoleName() {
@@ -156,11 +163,10 @@ public class CAsTest extends CaTestCase {
     public void test01AddRSACA() throws Exception {
 
         final String caName = getTestCAName();
-
         // Preemptively remove the CA if it exists.
         try {
-            CA ca = caTestSession.getCA(caAdmin, caName);
-            caSession.removeCA(caAdmin, ca.getCAId());
+            CA ca = caTestSession.getCA(admin, caName);
+            caSession.removeCA(admin, ca.getCAId());
         } catch (CADoesntExistsException e) {
             // All is well, do go on.
         }
@@ -227,7 +233,7 @@ public class CAsTest extends CaTestCase {
                 null // cmpRaAuthSecret
         );
 
-        caAdminSession.createCA(caAdmin, cainfo);
+        caAdminSession.createCA(admin, cainfo);
 
         CAInfo info = caSession.getCAInfo(caAdmin, getTestCAName());
 

@@ -37,6 +37,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -69,6 +70,8 @@ import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemot
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.RoleData;
+import org.cesecore.roles.RoleExistsException;
+import org.cesecore.roles.RoleNotFoundException;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
@@ -117,8 +120,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     private final static Logger log = Logger.getLogger(CaTestCase.class);
 
-    private String roleName;
-
     private static final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaTestCase"));
 
     protected TestX509CertificateAuthenticationToken caAdmin;
@@ -126,11 +127,15 @@ public abstract class CaTestCase extends RoleUsingTestCase {
     public abstract String getRoleName();
 
     protected void setUp() throws Exception { // NOPMD: this is a base class
-        roleName = getRoleName();
         super.setUpAuthTokenAndRole(getRoleName());
         removeTestCA(); // We cant be sure this CA was not left over from
         createTestCA();
-
+        addDefaultRole();
+      
+    }
+    
+    protected void addDefaultRole() throws RoleExistsException, AuthorizationDeniedException, AccessRuleNotFoundException, RoleNotFoundException {
+        String roleName = getRoleName();
         final Set<Principal> principals = new HashSet<Principal>();
         principals.add(new X500Principal("C=SE,O=CaUser,CN=CaUser"));
         final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = getAuthenticationProviderSession();
@@ -141,7 +146,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         RoleData role = CaTestCase.getRoleAccessSession().findRole(roleName);
         if (role == null) {
             log.error("Role should not be null here.");
-            role = roleManagementSession.create(roleMgmgToken, roleName);
+            role = roleManagementSession.create(internalAdmin, roleName);
         }
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true));
@@ -151,12 +156,26 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(certificate).hashCode(),
                 X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, CertTools.getPartFromDN(
                         CertTools.getSubjectDN(certificate), "CN")));
-        roleManagementSession.addSubjectsToRole(roleMgmgToken, role, accessUsers);
+        roleManagementSession.addSubjectsToRole(internalAdmin, role, accessUsers);
 
         final AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
         accessControlSession.forceCacheExpire();
     }
 
+    protected void tearDown() throws Exception { // NOPMD: this is a base class
+        super.tearDownRemoveRole();
+        removeTestCA();
+        removeDefaultRole();
+    }
+    
+    protected void removeDefaultRole() throws RoleNotFoundException, AuthorizationDeniedException {
+        RoleAccessSessionRemote roleAccessSession = CaTestCase.getRoleAccessSession();
+        RoleData role = roleAccessSession.findRole(getRoleName());
+        if (role != null) {
+            CaTestCase.getRoleManagementSession().remove(internalAdmin, role);
+        }
+    }
+    
     private static SimpleAuthenticationProviderSessionRemote getAuthenticationProviderSession() {
         return EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     }
@@ -171,16 +190,6 @@ public abstract class CaTestCase extends RoleUsingTestCase {
 
     private static RoleAccessSessionRemote getRoleAccessSession() {
         return EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
-    }
-
-    protected void tearDown() throws Exception { // NOPMD: this is a base class
-        super.tearDownRemoveRole();
-        removeTestCA();
-        RoleAccessSessionRemote roleAccessSession = CaTestCase.getRoleAccessSession();
-        RoleData role = roleAccessSession.findRole(roleName);
-        if (role != null) {
-            CaTestCase.getRoleManagementSession().remove(roleMgmgToken, role);
-        }
     }
 
     /**
