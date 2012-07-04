@@ -1,6 +1,6 @@
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
-
+<jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 	<h:panelGroup>
 	<f:verbatim>
 <script type="text/javascript">
@@ -48,7 +48,16 @@ function checkUseEndUserNotification(){
 	</h:panelGroup>
 	<h:panelGroup>							
 		<h:selectManyListbox id="certCheckCASelect" value="#{editService.notifyingType.selectedCANamesToCheck}" size="10">
-			<f:selectItems value="#{editService.availableCAs}"/>
+			<f:selectItems value="#{editService.availableCAsWithAnyOption}" />
+		</h:selectManyListbox>		
+	</h:panelGroup>	
+	
+	<h:panelGroup>
+		<h:outputText value="#{web.text.CERTIFICATEPROFILESTOCHECK}"/><f:verbatim> </f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Currently%20Available%20Services") %></h:outputText>
+	</h:panelGroup>
+	<h:panelGroup>							
+		<h:selectManyListbox id="certCheckCertificateProfileSelect" value="#{editService.baseWorkerType.selectedCertificateProfilesToCheck}" size="10">
+			<f:selectItems value="#{editService.certificateProfiles}"/>
 		</h:selectManyListbox>		
 	</h:panelGroup>	
 

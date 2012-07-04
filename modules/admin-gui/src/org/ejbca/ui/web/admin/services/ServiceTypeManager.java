@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -42,11 +43,9 @@ import org.ejbca.ui.web.admin.services.servicetypes.WorkerType;
  * 
  * To this there is also a need for a JSFSubView page with it's managed beans.
  *
- * @author Philip Vendil 2006 sep 29
- *
  * @version $Id$
  */
-public class ServiceTypeManager implements java.io.Serializable {
+public class ServiceTypeManager implements Serializable {
 	
     /**
      * Determines if a de-serialized file is compatible with this class.

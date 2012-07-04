@@ -25,9 +25,7 @@ import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
 
 /**
- * Class managing the view of the Certificate Exiration Notifier Worker
- * 
- * @author Philip Vendil
+ * Class managing the view of the Certificate Expiration Notifier Worker
  * 
  * @version $Id$
  *

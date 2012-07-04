@@ -145,7 +145,7 @@ public abstract class CaTestCase extends RoleUsingTestCase {
         }
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(roleName, AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true));
-        role = roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+        role = roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
 
         final List<AccessUserAspectData> accessUsers = new ArrayList<AccessUserAspectData>();
         accessUsers.add(new AccessUserAspectData(roleName, CertTools.getIssuerDN(certificate).hashCode(),
