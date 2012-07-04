@@ -225,8 +225,8 @@ public class CAImportExportTest  {
             caSession.removeCA(internalAdmin, cainfo.getCAId());
             caadminsession.importCAFromKeyStore(internalAdmin, caname, keystorebytes, capassword, capassword, "SignatureKeyAlias", "EncryptionKeyAlias");
             ret = true;
-        } catch (Exception e) { 
-            log.info("Error: ", e);
+        } finally {
+            caSession.removeCA(internalAdmin, caSession.getCAInfo(internalAdmin, caname).getCAId());
         }
         assertEquals("Could not import CA.", ret, defaultRetValue);
     }
