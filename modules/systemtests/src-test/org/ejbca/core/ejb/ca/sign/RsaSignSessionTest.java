@@ -207,6 +207,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testSignSession() throws Exception {
         createReverseEndEntity();
+        CAInfo inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
         try {
             // user that we know exists...
             X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
@@ -221,7 +222,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             log.debug("Cert=" + cert.toString());
             // Reverse DN order
             assertEquals(cert.getSubjectX500Principal().getName(), "CN=" + RSA_REVERSE_USERNAME + ",O=AnaTom,C=SE");
-            CAInfo inforsareverse = caSession.getCAInfo(internalAdmin, "TESTRSAREVERSE");
+            
             X509Certificate rsarevcacert = (X509Certificate) inforsareverse.getCertificateChain().toArray()[0];
             try {
                 cert.verify(rsarevcacert.getPublicKey());
@@ -234,6 +235,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             } catch (Exception e) {
                 //NOPMD
             }
+            caSession.removeCA(internalAdmin, inforsareverse.getCAId());
         }
     }
 
@@ -392,10 +394,10 @@ public class RsaSignSessionTest extends SignSessionCommon {
     private void createReverseEndEntity() throws Exception {
         CAInfo inforsareverse = null;
         try {
-            inforsareverse = caSession.getCAInfo(internalAdmin, "TESTRSAREVERSE");
+            inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
         } catch (CADoesntExistsException e) {
             CaTestCase.createTestRSAReverseCa(internalAdmin);
-            inforsareverse = caSession.getCAInfo(internalAdmin, "TESTRSAREVERSE");
+            inforsareverse = caSession.getCAInfo(internalAdmin, TEST_RSA_REVERSE_CA_NAME);
         }
 
         int rsareversecaid = inforsareverse.getCAId();
