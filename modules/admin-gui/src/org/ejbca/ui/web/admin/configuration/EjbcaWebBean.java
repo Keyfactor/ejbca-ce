@@ -260,15 +260,14 @@ public class EjbcaWebBean implements Serializable {
     public GlobalConfiguration initialize_errorpage(HttpServletRequest request) throws Exception {
         if (!errorpage_initialized) {
             if (administrator == null) {
-                String remoteAddr = request.getRemoteAddr();
+                final String remoteAddr = request.getRemoteAddr();
                 administrator = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Public web user: " + remoteAddr));
             }
             commonInit();
-            adminspreferences = new AdminPreferenceDataHandler((X509CertificateAuthenticationToken) administrator);
             // Set ServletContext for reading language files from resources
             servletContext = request.getSession(true).getServletContext();
             if (currentadminpreference == null) {
-                currentadminpreference = adminspreferences.getDefaultAdminPreference();
+                currentadminpreference = ejbLocalHelper.getRaAdminSession().getDefaultAdminPreference();
             }
             adminsweblanguage = new WebLanguages(servletContext, globalconfiguration, currentadminpreference.getPreferedLanguage(),
                     currentadminpreference.getSecondaryLanguage());
