@@ -22,8 +22,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
  * 
  * The methods work() method is used to signal to this service that
  * it is time to work.
- * 
- * @author Philip Vendil 2006 sep 27
  *
  * @version $Id$
  */
@@ -31,6 +29,7 @@ public interface IWorker {
 
 	/** Should be a ';' separated string of CAIds. */
 	public static final String PROP_CAIDSTOCHECK     = "worker.caidstocheck";
+	public static final String PROP_CERTIFICATE_PROFILE_IDS_TO_CHECK     = "worker.certificateprofileidstocheck";
 	
 	/** The time in 'timeunit' that a user is allowed to have status 'new' since last modification date */
 	public static final String PROP_TIMEBEFOREEXPIRING = "worker.timebeforeexpiring";
