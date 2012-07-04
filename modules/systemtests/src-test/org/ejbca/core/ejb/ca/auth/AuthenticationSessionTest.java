@@ -53,6 +53,7 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -84,19 +85,23 @@ public class AuthenticationSessionTest extends CaTestCase {
 
     /** Creates a new TestAuthenticationSession object. */
     @BeforeClass
-    public static void beforeClass() {
+    public static void beforeClass() throws Exception{
         CryptoProviderTools.installBCProvider();
+        createTestCA();
+    }
+    
+    @AfterClass
+    public static void afterClass() throws Exception {
+        removeTestCA();
     }
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
         createNewUser();
     }
 
     @After
     public void tearDown() throws Exception {
-        super.tearDown();
         if (userAdminSession.existsUser(username1)) {
             userAdminSession.deleteUser(internalAdmin, username1);
         }

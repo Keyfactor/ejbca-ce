@@ -159,7 +159,7 @@ public class ApprovalSessionTest extends CaTestCase {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void createTestCAWithEndEntity() throws Exception {
         // An if on a static thing here, just so we don't have to batch generate new certs for every test
         if (adminusername1 == null) {
             adminusername1 = genRandomUserName();
