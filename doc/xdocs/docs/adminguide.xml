@@ -2161,8 +2161,8 @@ The worker have the following settings:
 <i>CAs to Check</i> - Select here which CAs that should be searched for expiring certificates.
 </li>
 <li>
-<i> Certificate Profiles Required from CAs</i> - Selecting profiles from this list will cause the worker to only include 
-CAs using those profiles. Leaving the list blank will ignore this option entirely.
+<i> Certificate Profiles Required from CAs</i> - Certificate Profiles chosen from this list will narrow down the returned certificates
+to only those using the chosen profiles AND from the CAs chosen. If no Certificate Profiles are chosen, all specified CAs will be covered. 
 </li>
 <li>
 <i>Time before notification is sent</i> - The number of Days/Hours/Minutes/Seconds that should 
