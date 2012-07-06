@@ -835,9 +835,9 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax,
-            long activeExpireDateMin) {
-        return CertificateData.findExpirationInfo(entityManager, cas, activeNotifiedExpireDateMin, activeNotifiedExpireDateMax,
+    public List<Object[]> findExpirationInfo(Collection<String> cas, Collection<Integer> certificateProfiles, long activeNotifiedExpireDateMin,
+            long activeNotifiedExpireDateMax, long activeExpireDateMin) {
+        return CertificateData.findExpirationInfo(entityManager, cas, certificateProfiles, activeNotifiedExpireDateMin, activeNotifiedExpireDateMax,
                 activeExpireDateMin);
     }
 
