@@ -71,9 +71,16 @@ public interface CertificateStoreSessionLocal extends CertificateStoreSession {
 
     /**
      * Fetch a List of all certificate fingerprints and corresponding username
+     * 
+     * @param cas A list of CAs that the sought certificates should be issued from
+     * @param certificateProfiles A list if certificateprofiles to sort from. Will be ignored if left empty. 
+     * @param activeNotifiedExpireDateMin The minimal date for expiration notification
+     * @param activeNotifiedExpireDateMax The maxmimal date for expiration notification
+     * @param activeExpireDateMin the current rune timestamp + the threshold 
+     * 
      * @return [0] = (String) fingerprint, [1] = (String) username
      */
-    List<Object[]> findExpirationInfo(Collection<String> cas, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
+    List<Object[]> findExpirationInfo(Collection<String> cas, Collection<Integer> certificateProfiles, long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin);
     
     /**
      * Query if we have a clear cut case where no username or the provided username is the only user of the subjectDN and subjectKeyId.

@@ -1110,16 +1110,44 @@ public class CertificateData extends ProtectedData implements Serializable {
     /**
      * Fetch a List of all certificate fingerprints and corresponding username
      * 
+     * We want to accomplish two things:
+     * 
+     * 1. Notify for expirations within the service window 
+     * 2. Notify _once_ for expirations that occurred before the service window like flagging certificates that have a shorter 
+     * life-span than the threshold (pathologic test-case...)
+     * 
+     * The first is checked by:
+     * 
+     * notify = currRunTimestamp + thresHold <= ExpireDate < nextRunTimestamp + thresHold 
+     *          AND (status = ACTIVE OR status = NOTIFIEDABOUTEXPIRATION)
+     * 
+     * The second can be checked by:
+     * 
+     * notify = currRunTimestamp + thresHold > ExpireDate AND status = ACTIVE
+     * 
+     * @param cas A list of CAs that the sought certificates should be issued from
+     * @param certificateProfiles A list if certificateprofiles to sort from. Will be ignored if left empty. 
+     * @param activeNotifiedExpireDateMin The minimal date for expiration notification
+     * @param activeNotifiedExpireDateMax The maxmimal date for expiration notification
+     * @param activeExpireDateMin the current rune timestamp + the threshold 
+     * 
      * @return [0] = (String) fingerprint, [1] = (String) username
      */
     @SuppressWarnings("unchecked")
-    public static List<Object[]> findExpirationInfo(EntityManager entityManager, Collection<String> cas, long activeNotifiedExpireDateMin,
-            long activeNotifiedExpireDateMax, long activeExpireDateMin) {
+    public static List<Object[]> findExpirationInfo(EntityManager entityManager, Collection<String> cas, Collection<Integer> certificateProfiles,
+            long activeNotifiedExpireDateMin, long activeNotifiedExpireDateMax, long activeExpireDateMin) {
         // We don't select the base64 certificate data here, because it may be a LONG data type which we can't simply select, or we don't want to read all the data.
-        final Query query = entityManager.createNativeQuery("SELECT DISTINCT fingerprint, username" + " FROM CertificateData WHERE issuerDN IN (:cas) AND " + "(expireDate>:activeNotifiedExpireDateMin) AND "
-                + "(expireDate<:activeNotifiedExpireDateMax) AND (status=:status1" + " OR status=:status2) AND (expireDate>=:activeExpireDateMin OR "
-                + "status=:status3)", "FingerprintUsernameSubset");
+        final Query query = entityManager.createNativeQuery("SELECT DISTINCT fingerprint, username"
+                + " FROM CertificateData WHERE "
+                + "issuerDN IN (:cas) AND "
+                // If the list of certificate profiles is empty, ignore it as a parameter
+                + (!certificateProfiles.isEmpty() ? "certificateProfileId IN (:certificateProfiles) AND" : "")
+                + "(expireDate>:activeNotifiedExpireDateMin) AND " + "(expireDate<:activeNotifiedExpireDateMax) AND (status=:status1"
+                + " OR status=:status2) AND (expireDate>=:activeExpireDateMin OR " + "status=:status3)", "FingerprintUsernameSubset");
         query.setParameter("cas", cas);
+        if(!certificateProfiles.isEmpty()) {
+            query.setParameter("certificateProfiles", certificateProfiles);
+        }
         query.setParameter("activeNotifiedExpireDateMin", activeNotifiedExpireDateMin);
         query.setParameter("activeNotifiedExpireDateMax", activeNotifiedExpireDateMax);
         query.setParameter("status1", CertificateConstants.CERT_ACTIVE);

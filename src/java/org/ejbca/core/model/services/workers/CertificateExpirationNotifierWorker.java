@@ -16,10 +16,8 @@ import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -49,7 +47,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     private CertificateStoreSessionLocal certificateStoreSession;
-    private transient Set<Integer> certificateProfileIds;
+    private transient List<Integer> certificateProfileIds;
 
     /**
      * Worker that makes a query to the Certificate Store about expiring certificates.
@@ -68,7 +66,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
         // Build Query
         Collection<String> cas = new ArrayList<String>();
         Collection<Integer> caIds = getCAIdsToCheck(false);
-        Set<Integer> certificateProfileIds = getCertificateProfileIdsToCheck();
+        Collection<Integer> certificateProfileIds = getCertificateProfileIdsToCheck();
         if (!caIds.isEmpty()) {
             //if caIds contains SecConst.ALLCAS, reassign caIds to contain just that.
             if(caIds.contains(SecConst.ALLCAS)) {
@@ -78,13 +76,6 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                 CAInfo caInfo;
                 try {
                     caInfo = caSession.getCAInfo(getAdmin(), caid);
-                    if(!certificateProfileIds.isEmpty()) {
-                        //If there are certificate profiles specified, then the selected CAs must be 
-                        //using one of them. Otherwise business as usual.
-                        if(!certificateProfileIds.contains(caInfo.getCertificateProfileId())) {
-                            continue;
-                        }
-                    }
                 } catch (CADoesntExistsException e) {
                     String msg = intres.getLocalizedMessage("services.errorworker.errornoca", caid, null);
                     log.info(msg);
@@ -93,7 +84,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
                     String msg = intres.getLocalizedMessage("authorization.notuathorizedtoresource", caid, "CAId");
                     log.info(msg);
                     continue;
-                } 
+                }
                 String cadn = caInfo.getSubjectDN();
                 cas.add(cadn);
             }
@@ -141,7 +132,7 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
             long now = new Date().getTime();
             if (!cas.isEmpty()) {
                 try {
-                    List<Object[]> fingerprintUsernameList = certificateStoreSession.findExpirationInfo(cas, now, (nextRunTimeStamp + thresHold),
+                    List<Object[]> fingerprintUsernameList = certificateStoreSession.findExpirationInfo(cas, certificateProfileIds, now, (nextRunTimeStamp + thresHold),
                             (runTimeStamp + thresHold));
                     int count = 0;
                     for (Object[] next : fingerprintUsernameList) {
@@ -236,9 +227,9 @@ public class CertificateExpirationNotifierWorker extends EmailSendingWorker {
      * 
      * @return
      */
-    private Set<Integer> getCertificateProfileIdsToCheck() {
+    private Collection<Integer>getCertificateProfileIdsToCheck() {
         if (this.certificateProfileIds == null) {
-            this.certificateProfileIds = new HashSet<Integer>();
+            this.certificateProfileIds = new ArrayList<Integer>();
             String idString = properties.getProperty(PROP_CERTIFICATE_PROFILE_IDS_TO_CHECK);
             if (idString != null) {
                 for (String id : idString.split(";")) {
