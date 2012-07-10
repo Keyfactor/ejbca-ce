@@ -4343,6 +4343,39 @@ echo $* >> /home/user/publisherlog.txt
 cp $1 /home/user/cert.crt
 </source>
 </subsubsection>
+
+<subsubsection name="Publisher for sampling of issued certificates">
+<p>
+One custom publisher called CertificateSamplerCustomerPublisher can be used to 
+store published certificates to a configured directory. Different sampling methods
+can be specified per certificate profile, either storing every certificate, no 
+certificate or randomly with a configured probability.
+</p>
+<p>
+To use the CertificateSamplerCustomerPublisher, select "Edit Publishers" in the Administration GUI, create a new publisher and edit it.
+</p>
+<ul>
+<li>Publisher type: Custom Publisher</li>
+<li>Class Path: org.ejbca.core.model.ca.publisher.CertificateSamplerCustomPublisher</li>
+<li>Properties of Custom Publisher: 
+</li>
+</ul>
+<source>
+outputfolder=/tmp/sampledcertificates/
+default.samplingmethod=SAMPLE_ALL
+profileid.2234644354.samplingmethod=SAMPLE_NONE
+profileid.1645141026.samplingmethod=SAMPLE_PROBABILISTIC
+profileid.1645141026.pvalue=0.25
+</source>
+<p>
+and click "Save and Test Connection" to save the entered information and validate
+that the entered configuration is correct. Select the publisher in the relevant 
+certificate profiles.
+</p>
+<p>
+In the example above the certificate profile with id 2234644354 will not have any certificates stored. The profile with id 1645141026 will have about 25% of the certificates stored and for all other profiles all certificates will be sampled.
+</p>
+</subsubsection>
 </subsection>
 
 <subsection name="Publisher Queue and failures">
