@@ -31,7 +31,6 @@ import org.ejbca.core.model.InternalEjbcaResources;
  * 
  * @see SamplingMethod
  * @version $Id$
- * @author Markus Kilas
  */
 public class CertificateSamplerCustomPublisher implements ICustomPublisher {
     private static final Logger LOG = Logger.getLogger(CertificateSamplerCustomPublisher.class);
@@ -199,7 +198,7 @@ public class CertificateSamplerCustomPublisher implements ICustomPublisher {
         if (LOG.isTraceEnabled()) {
             LOG.trace("<storeCertificate");
         }
-        return true; // If we got this far either we chosed to not store the certificate or it was stored correcly
+        return true; // If we got this far either we chose to not store the certificate or it was stored correctly
     }
 
     protected void writeCertificate(Certificate cert, File outFolder, String prefix, String suffix) throws PublisherException {
@@ -226,6 +225,9 @@ public class CertificateSamplerCustomPublisher implements ICustomPublisher {
     }
     
     /**
+     * Checks if the certificate should be sampled according to the sampling 
+     * method.
+     * @param profileId The profileId the certificate was issued for
      * @return True if it is "time" to take a sample.
      * @throws PublisherException in case of configuration errors
      */
@@ -237,29 +239,37 @@ public class CertificateSamplerCustomPublisher implements ICustomPublisher {
             LOG.trace("samplingMethod: " + theMethod);
         }
         
-        if (SamplingMethod.SAMPLE_NONE.equals(theMethod)) {
-            result = false;
-        } else if (SamplingMethod.SAMPLE_ALL.equals(theMethod)) {
-            result = true;
-        } else if (SamplingMethod.SAMPLE_PROBABILISTIC.equals(theMethod)) {
-            // Get the ratio
-            Double p = getPvalue(profileId);
-            if (LOG.isTraceEnabled()) {
-                LOG.trace("pvalue: " + p);
+        switch (theMethod) {
+            case SAMPLE_NONE: {
+                result = false;
+                break;
+            } 
+            case SAMPLE_ALL: {
+                result = true;
+                break;
             }
-            
-            // Gets an pseudorandomly value between 0 and 1 from an approximately uniform distribution
-            // Notice: This method call is thread-safe, however uses synchronization which might decrease performance
-            //         We can not use a random object as instance variable as a new instance of this class is created for every request and requests at the same time would then be initialized with the same seed
-            //         When we switch to Java 7 we could possibly use ThreadLocalRandom instead.
-            final double r = Math.random();
-            
-            // r will be less than our p with the probability of p
-            result = r < p;
-        } else {
-            final String msg = intres.getLocalizedMessage("publisher.errorsamplingmethod");
-            LOG.error(msg);
-            throw new PublisherException(msg);
+            case SAMPLE_PROBABILISTIC: {
+                // Get the ratio
+                Double p = getPvalue(profileId);
+                if (LOG.isTraceEnabled()) {
+                    LOG.trace("pvalue: " + p);
+                }
+
+                // Gets an pseudorandomly value between 0 and 1 from an approximately uniform distribution
+                // Notice: This method call is thread-safe, however uses synchronization which might decrease performance
+                //         We can not use a random object as instance variable as a new instance of this class is created for every request and requests at the same time would then be initialized with the same seed
+                //         When we switch to Java 7 we could possibly use ThreadLocalRandom instead.
+                final double r = Math.random();
+
+                // r will be less than our p with the probability of p
+                result = r < p;
+                    break;
+                }
+            default: {
+                final String msg = intres.getLocalizedMessage("publisher.errorsamplingmethod");
+                LOG.error(msg);
+                throw new PublisherException(msg);
+            }
         }
         return result;
     }
