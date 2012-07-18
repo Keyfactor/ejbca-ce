@@ -33,7 +33,6 @@ import org.junit.Test;
  * 
  * This is a unit test and does not require EJBCA to be running.
  *
- * @author Markus Kilas
  * @version $Id$
  */
 public class CertificateSamplerCustomPublisherUnitTest {
