@@ -22,7 +22,7 @@ import java.util.Properties;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.junit.After;
 import org.junit.Before;
@@ -39,7 +39,7 @@ import org.junit.Test;
 public class CertificateSamplerCustomPublisherUnitTest {
 
     private static final File TEMP_DIR = new File(System.getProperty("java.io.tmpdir"));
-    private static final AuthenticationToken ANY_ADMIN = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertificateSamplerCustomPublisherUnitTest"));
+    private static final AuthenticationToken ANY_ADMIN = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertificateSamplerCustomPublisherUnitTest"));
     private static final byte[] ANY_BYTEARRAY = new byte[0];
     private static final String ANY_CAFP = "44447777111";
     private static final int ANY_NUMBER = 4711;
