@@ -304,13 +304,6 @@ public class OcspConfiguration {
     }
 
     /**
-     * Parameter specifying database test query string. Used to check that the database is operational.
-     */
-    public static String getHealthCheckDbQuery() {
-        return ConfigurationHolder.getExpandedString("ocsphealthcheck.dbquery");
-    }
-
-    /**
      * All available signing keys should be tested.
      */
     public static boolean getHealthCheckSignTest() {

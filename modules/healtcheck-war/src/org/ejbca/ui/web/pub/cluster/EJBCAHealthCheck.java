@@ -44,14 +44,13 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 
 	private boolean checkPublishers = EjbcaConfiguration.getHealthCheckPublisherConnections();
 	
-	private CAAdminSessionLocal caAdminSession;
-	private PublisherSessionLocal publisherSession;
-	private HealthCheckSessionLocal healthCheckSession;
+	private final CAAdminSessionLocal caAdminSession;
+	private final PublisherSessionLocal publisherSession;
 
 	public EJBCAHealthCheck(CAAdminSessionLocal caAdminSession, PublisherSessionLocal publisherSession, HealthCheckSessionLocal healthCheckSession) {
+	    super(healthCheckSession);
 	    this.caAdminSession = caAdminSession;
 	    this.publisherSession = publisherSession;
-	    this.healthCheckSession = healthCheckSession;
 	}
 	
 	public String checkHealth(HttpServletRequest request) {
@@ -79,13 +78,6 @@ public class EJBCAHealthCheck extends CommonHealthCheck {
 		return sb.toString();
 	}
 		
-	private void checkDB(final StringBuilder sb) {
-		if (log.isDebugEnabled()) {
-			log.debug("Checking database connection.");
-		}
-		sb.append(healthCheckSession.getDatabaseStatus());
-	}
-
 	private void checkCAs(final StringBuilder sb){
 		if (log.isDebugEnabled()) {
 			log.debug("Checking CAs.");

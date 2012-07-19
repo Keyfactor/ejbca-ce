@@ -17,9 +17,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
 import org.cesecore.config.OcspConfiguration;
+import org.ejbca.core.ejb.config.HealthCheckSessionLocal;
 import org.ejbca.ui.web.protocol.IHealtChecker;
-
-
 
 /**
  * External OCSP Health Checker. 
@@ -33,7 +32,6 @@ import org.ejbca.ui.web.protocol.IHealtChecker;
  * @author Philip Vendil
  * @version $Id$
  */
-
 public class ValidationAuthorityHealthCheck extends CommonHealthCheck {
 	
 	private static final Logger log = Logger.getLogger(ValidationAuthorityHealthCheck.class);
@@ -44,6 +42,10 @@ public class ValidationAuthorityHealthCheck extends CommonHealthCheck {
 
 	static public void setHealtChecker(IHealtChecker hc) {
 		healthChecker = hc;
+	}
+
+	public ValidationAuthorityHealthCheck(final HealthCheckSessionLocal healthCheckSession) {
+	    super(healthCheckSession);
 	}
 
 	@Override
@@ -57,8 +59,13 @@ public class ValidationAuthorityHealthCheck extends CommonHealthCheck {
 			// if Down for maintenance do not perform more checks
 			return sb.toString(); 
 		}
-		checkMemory(sb);
-		checkOCSPSignTokens(sb);
+        checkMemory(sb);
+        if (sb.length()==0) { 
+            checkDB(sb);
+        }
+		if (sb.length()==0) { 
+		    checkOCSPSignTokens(sb);
+		}
         if( sb.length()==0 ) {
             return null; 
         }
