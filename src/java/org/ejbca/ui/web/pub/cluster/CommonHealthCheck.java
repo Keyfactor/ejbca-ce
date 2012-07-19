@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.ejbca.config.EjbcaConfiguration;
+import org.ejbca.core.ejb.config.HealthCheckSessionLocal;
 
 /** Base class for health checkers with functionality that is common to at least
  * both EJBCA and External OCSP.
@@ -37,9 +38,11 @@ public abstract class CommonHealthCheck implements IHealthCheck {
 	private final long minfreememory = EjbcaConfiguration.getHealthCheckAmountFreeMem();
 	private final String maintenanceFile = EjbcaConfiguration.getHealthCheckMaintenanceFile();
 	private final String maintenancePropertyName = EjbcaConfiguration.getHealthCheckMaintenancePropertyName();
+    private final HealthCheckSessionLocal healthCheckSession;
 
-	public CommonHealthCheck() {
+	public CommonHealthCheck(final HealthCheckSessionLocal healthCheckSession) {
 		super();
+		this.healthCheckSession = healthCheckSession;
 	}
 	
 	public abstract String checkHealth(HttpServletRequest request);
@@ -56,6 +59,14 @@ public abstract class CommonHealthCheck implements IHealthCheck {
 	        sb.append("\nMEM: Error Virtual Memory is about to run out, currently free memory :").append(String.valueOf(Runtime.getRuntime().freeMemory()));	
 	    }		
 	}
+
+	protected void checkDB(final StringBuilder sb) {
+	    if (log.isDebugEnabled()) {
+	        log.debug("Checking database connection.");
+	    }
+	    sb.append(healthCheckSession.getDatabaseStatus());
+	}
+
 
 	protected void checkMaintenance(final StringBuilder sb) {
 		if (StringUtils.isEmpty(maintenanceFile)) {

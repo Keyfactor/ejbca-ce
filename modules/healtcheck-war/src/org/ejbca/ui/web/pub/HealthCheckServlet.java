@@ -43,14 +43,12 @@ public class HealthCheckServlet extends AbstractHealthServlet {
     private IHealthCheck healthcheck = null;
     private TextResponse healthresponse = null;
 
-    
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
     private HealthCheckSessionLocal healthCheckSession;
-
 
     @Override
     public void initializeServlet() {
@@ -67,5 +65,4 @@ public class HealthCheckServlet extends AbstractHealthServlet {
     public TextResponse getHealthResponse() {
         return healthresponse;
     }
-
-} 
+}
