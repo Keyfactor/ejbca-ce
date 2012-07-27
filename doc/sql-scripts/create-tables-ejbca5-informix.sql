@@ -304,7 +304,7 @@ CREATE TABLE UserDataSourceData (
     PRIMARY KEY (id)
 );
 
-alter table AccessRulesData add constraint  foreign key (AdminGroupData_accessRules) references AdminGroupData constraint FKABB4C1DFD8AEA20;
+alter table AccessRulesData add constraint  foreign key (AdminGroupData_accessRules) references AdminGroupData constraint FKABB4C1DFDBBC970;
 
-alter table AdminEntityData add constraint  foreign key (AdminGroupData_adminEntities) references AdminGroupData constraint FKD9A99EBCB370315D;
+alter table AdminEntityData add constraint  foreign key (AdminGroupData_adminEntities) references AdminGroupData constraint FKD9A99EBCB3A110AD;
 

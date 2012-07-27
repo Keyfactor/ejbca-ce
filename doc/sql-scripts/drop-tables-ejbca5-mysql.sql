@@ -1,5 +1,5 @@
-alter table AccessRulesData drop foreign key FKABB4C1DFD8AEA20;
-alter table AdminEntityData drop foreign key FKD9A99EBCB370315D;
+alter table AccessRulesData drop foreign key FKABB4C1DFDBBC970;
+alter table AdminEntityData drop foreign key FKD9A99EBCB3A110AD;
 drop table if exists AccessRulesData;
 drop table if exists AdminEntityData;
 drop table if exists AdminGroupData;
