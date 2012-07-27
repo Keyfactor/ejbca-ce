@@ -1,3 +1,38 @@
+EJBCA 5.0.5, 2012-06-03
+
+Bug
+    [ECA-2650] - A few EJB methods do not log access control
+    [ECA-2662] - Strip whitespace from username entered in public web
+    [ECA-2667] - AllwaysAllowLocalAuthenticationToken can be denied access
+    [ECA-2673] - End entitiy profiles with AnyCA causes RA admins to not be able to add user
+    [ECA-2674] - Editing access rules gives exception
+    [ECA-2694] - Can not create CA with non default soft token pwd from CLI
+
+Improvement
+    [ECA-2382] - Performance improvements, profiling
+    [ECA-2529] - Don't use Security Audit Log when doing healthchecks
+    [ECA-2553] - Improve CRL generation memory requirements
+    [ECA-2572] - Update index recommendations
+    [ECA-2573] - Merge enforcement queries to save database round-trip
+    [ECA-2618] - Remove authentication checks on CertConf messages
+    [ECA-2632] - Internal resources speed optimizations
+    [ECA-2639] - Do not use unneeded access control for internal CAInfo lookups and avoid ee profile cloning when not needed
+    [ECA-2642] - Improve Tomcat configuration
+    [ECA-2643] - Authorization checks does not always have to start a new transaction
+    [ECA-2645] - Fix transaction management for background updates to CAData
+    [ECA-2648] - Optimize away redundant query in WS getAdmin
+    [ECA-2652] - Multiple authorization checks in a single access controls invocation.
+    [ECA-2657] - Merge two CA access control log entires into one
+    [ECA-2659] - Merge Admin GUI access controls and remove redundant checks
+    [ECA-2675] - JBOSS with APR makes EJBCA deploy fail
+    [ECA-2676] - Replace the string "/super_administrator" with the constant AccessRulesConstants.ROLE_SUPERADMINISTRATOR
+
+
+New Feature
+    [ECA-2629] - Add Japanese language file
+    [ECA-2653] - Enforce issuerDN,serialNumber uniqueness with database query if no unique index is present
+    [ECA-2687] - Allow CVC CAs to be created from the CLI
+
 EJBCA 5.0.4, 2012-03-08
 ---
 New Feature
