@@ -15,6 +15,7 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.URLEncoder;
 import java.security.cert.Certificate;
 
 import javax.servlet.ServletException;
@@ -134,7 +135,7 @@ public class EndEntityCertServlet extends HttpServlet {
 					res.getOutputStream().write(enccert);
 					log.debug("Sent CA cert to NS client, len="+enccert.length+".");
 				} else if (command.equalsIgnoreCase(COMMAND_IECERT)) {
-					res.setHeader("Content-disposition", "attachment; filename=" + certview.getUsername() + ".crt");
+					res.setHeader("Content-disposition", "attachment; filename=" + URLEncoder.encode(certview.getUsername(),"UTF-8") + ".crt");
 					res.setContentType("application/octet-stream");
 					res.setContentLength(enccert.length);
 					res.getOutputStream().write(enccert);
@@ -144,7 +145,7 @@ public class EndEntityCertServlet extends HttpServlet {
 					String out = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;                   
 					out += new String(b64cert);
 					out += RequestHelper.END_CERTIFICATE_WITH_NL;
-					res.setHeader("Content-disposition", "attachment; filename=" + certview.getUsername() + ".pem");
+					res.setHeader("Content-disposition", "attachment; filename=" + URLEncoder.encode(certview.getUsername(),"UTF-8") + ".pem");
 					res.setContentType("application/octet-stream");
 					res.setContentLength(out.length());
 					res.getOutputStream().write(out.getBytes());
