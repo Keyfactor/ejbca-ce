@@ -304,7 +304,7 @@ CREATE TABLE UserDataSourceData (
     PRIMARY KEY (id)
 );
 
-alter table AccessRulesData add index FKABB4C1DFD8AEA20 (AdminGroupData_accessRules), add constraint FKABB4C1DFD8AEA20 foreign key (AdminGroupData_accessRules) references AdminGroupData (pK);
+alter table AccessRulesData add index FKABB4C1DFDBBC970 (AdminGroupData_accessRules), add constraint FKABB4C1DFDBBC970 foreign key (AdminGroupData_accessRules) references AdminGroupData (pK);
 
-alter table AdminEntityData add index FKD9A99EBCB370315D (AdminGroupData_adminEntities), add constraint FKD9A99EBCB370315D foreign key (AdminGroupData_adminEntities) references AdminGroupData (pK);
+alter table AdminEntityData add index FKD9A99EBCB3A110AD (AdminGroupData_adminEntities), add constraint FKD9A99EBCB3A110AD foreign key (AdminGroupData_adminEntities) references AdminGroupData (pK);
 

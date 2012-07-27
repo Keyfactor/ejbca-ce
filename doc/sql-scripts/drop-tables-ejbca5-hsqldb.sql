@@ -1,5 +1,5 @@
-alter table AccessRulesData drop constraint FKABB4C1DFD8AEA20;
-alter table AdminEntityData drop constraint FKD9A99EBCB370315D;
+alter table AccessRulesData drop constraint FKABB4C1DFDBBC970;
+alter table AdminEntityData drop constraint FKD9A99EBCB3A110AD;
 drop table AccessRulesData if exists;
 drop table AdminEntityData if exists;
 drop table AdminGroupData if exists;
