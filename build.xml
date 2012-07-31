@@ -882,6 +882,10 @@
     <target name="validationtool" description="Builds the ValidationTool standalone client application">
     	<ant dir="modules" target="validationtool" />
     </target>
+    
+    <target name="validationtool-src" description="Builds source distribution of the ValidationTool">
+    	<ant dir="modules" target="validationtool-src" />
+    </target>
 
     <target name="ejbca-cmp-tcp">
     	<ant dir="modules" target="ejbca-cmp-tcp" />
