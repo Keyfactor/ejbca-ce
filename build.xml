@@ -883,7 +883,7 @@
     	<ant dir="modules" target="validationtool" />
     </target>
     
-    <target name="validationtool-src" description="Builds source distribution of the ValidationTool">
+    <target name="validationtool-src" depends="doc" description="Builds source distribution of the ValidationTool">
     	<ant dir="modules" target="validationtool-src" />
     </target>
 
