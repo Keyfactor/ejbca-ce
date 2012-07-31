@@ -64,6 +64,7 @@
 		<ant antfile="${mod.externalra-scep.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.externalra-gui.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+        <ant antfile="${mod.validationtool.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.cmpProxy.path}/build-tcp.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 		<ant antfile="${mod.cmpProxy.path}/build-http.xml" target="clean" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
@@ -111,6 +112,30 @@
 
 	<target name="clientToolBox" description="Build EJBCA client toolbox">
 		<ant antfile="${mod.clientToolBox.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
+	</target>
+    
+    <target name="validationtool" description="Build ValidationTool">
+		<ant antfile="${mod.validationtool.path}/build.xml" target="jar" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="basedir" value="${mod.validationtool.path}"/></ant>
+        <mkdir dir="${mod.validationtool.dist}"/>
+        <copy todir="${mod.validationtool.dist}" flatten="true">
+            <fileset dir="${mod.validationtool.path}">
+                <include name="dist/ValidationTool.jar"/>
+            </fileset>
+        </copy>
+    	<copy todir="${mod.validationtool.dist}">
+            <fileset dir="${mod.validationtool.path}">
+                <include name="bin/**/*"/>
+                <include name="conf/**/*"/>
+                <include name="README.txt"/>
+            </fileset>
+        </copy>
+        <mkdir dir="${mod.validationtool.dist}"/>
+        <copy todir="${mod.validationtool.dist}">
+            <fileset dir="${mod.validationtool.path}/dist">
+                <include name="lib/*"/>
+            </fileset>
+        </copy>
+        <chmod file="${mod.validationtool.dist}/bin/*.sh" perm="a+rx"/>
 	</target>
 
 	<target name="ejbca-cmp-tcp" description="Build EJBCA CMP TCP module">
