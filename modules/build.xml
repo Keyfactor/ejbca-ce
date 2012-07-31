@@ -149,6 +149,11 @@
                 <exclude name="dist/*/**"/>
                 <exclude name="build/*/**"/>
             </fileset>
+            <fileset dir="../tmp/htdocs/">
+                <include name="docs/*.css"/>
+                <include name="docs/images/*/**"/>
+                <include name="docs/validationtool.html"/>
+            </fileset>
         </copy>
     	<copy todir="${mod.validationtool.srcdist}">
             <fileset dir="${mod.validationtool.dist}">
