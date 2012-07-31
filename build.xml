@@ -589,6 +589,7 @@
            	<sourcepath location="${ejbca.home}/modules/ejbca-ws/src"/>	<!-- ECA-1396 will probably change this.. -->
            	<sourcepath location="${ejbca.home}/modules/ejbca-ejb-cli/src"/>
            	<sourcepath location="${ejbca.home}/modules/clientToolBox/src"/>
+            <sourcepath location="${ejbca.home}/modules/validationtool/src"/>
            	<sourcepath location="${ejbca.home}/modules/cmpProxy/src"/>
            	<sourcepath location="${ejbca.home}/modules/ejbca-entity/src"/>
         </javadoc>
@@ -876,6 +877,10 @@
 
 	<target name="clientToolBox" description="Builds command line clients as separate toolbox that can be deployed separately">
     	<ant dir="modules" target="clientToolBox" />
+    </target>
+    
+    <target name="validationtool" description="Builds the ValidationTool standalone client application">
+    	<ant dir="modules" target="validationtool" />
     </target>
 
     <target name="ejbca-cmp-tcp">
