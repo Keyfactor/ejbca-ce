@@ -137,6 +137,35 @@
         </copy>
         <chmod file="${mod.validationtool.dist}/bin/*.sh" perm="a+rx"/>
 	</target>
+    
+    <!-- Source release of just ValidationTool -->
+    <target name="validationtool-src" depends="validationtool">
+		
+        <mkdir dir="${mod.validationtool.srcdist}"/>
+        <copy todir="${mod.validationtool.srcdist}/modules/validationtool">
+            <fileset dir="${mod.validationtool.path}">
+                <exclude name="dist"/>
+                <exclude name="build"/>
+                <exclude name="dist/*/**"/>
+                <exclude name="build/*/**"/>
+            </fileset>
+        </copy>
+    	<copy todir="${mod.validationtool.srcdist}">
+            <fileset dir="${mod.validationtool.dist}">
+                <include name="lib/**/*"/>
+            </fileset>
+            <fileset dir="..">
+                <include name="lib/ext/junit*"/>
+            </fileset>
+        </copy>
+        <mkdir dir="${mod.validationtool.dist}"/>
+        <copy todir="${mod.validationtool.dist}">
+            <fileset dir="${mod.validationtool.path}/dist">
+                <include name="lib/*"/>
+            </fileset>
+        </copy>
+        <chmod file="${mod.validationtool.srcdist}/modules/validationtool/bin/*.sh" perm="a+rx"/>
+	</target>
 
 	<target name="ejbca-cmp-tcp" description="Build EJBCA CMP TCP module">
 		<ant antfile="${mod.ejbca-cmp-tcp.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
