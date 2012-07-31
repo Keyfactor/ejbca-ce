@@ -1,0 +1,271 @@
+<?xml version="1.0"?>
+<document>
+  <properties>
+    <title>Validation/conformance Tool</title>
+  </properties>
+<body>
+<section name="Introduction">
+<p>
+The ValidationTool is a standalone client-side application for certificates and OCSP responses validation and conformance checks. 
+</p>
+</section>
+
+<section name="Quick start">
+<subsection name="Building">
+<p>
+In the validationtool folder run:
+</p>
+<source>
+ant jar        
+</source>
+</subsection>
+<subsection name="Configuring">
+<p>
+The folder conf/sample1 contains sample OCSP checks and certificate checks configuration files that can be used as examples.
+</p>
+</subsection>
+<subsection name="Running">
+<p>
+To run the OCSP checks issue:
+</p>
+<source>
+bin/validationtool.sh ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf conf/sample1/ocspchecks_adminca.properties
+</source>
+<p>
+This will query the OCSP responder for three different results (good, revoked and unknown) as configured in ocspchecks_adminca.properties. For the tests to succeed you will have to replace the adminca1.crt with the issuer of your OCSP responder certificates as well as changing the DN:s and serial numbers in the configuration file to match your installation. For more details see later sections of the manual.
+</p>
+</subsection>
+<p>
+To run the certificate checks issue:    
+</p>
+<source>
+bin/validationtool.sh certificate -conf conf/sample1/certchecks1.properties -certfolder ./certfolder
+</source>
+<p>
+The tool will wait for certificate files to be placed in the folder called "certfolder". When a certificate file is detected it will be parsed and the configured certificate checks will be executed. You will have to configure certchecks1.properties with the tests that should be performed and their properties.    
+</p>
+</section>
+
+<section name="Results">
+<p>
+Results are written after all configured checks has run for a query or certificate file. By default the log is written to both standard output and a log file called validationtool.log. Log4j can be configured in conf/log4j.xml.
+</p>
+<p>
+If the validation was successful, that is all checks for the current query or certificate file was successful, the results are logged with the INFO priority. Otherwise the ERROR priority is used.
+</p>
+<p>
+For every check performed an entry is written in the report beginning with the result of the check, either <i>SUCCESS</i>, <i>UNKNOWN</i> or <i>FAILURE</i>. Success means that the check was successfully executed and the expected result obtained. Unknown means that the test could not be executed for instance because a certificate was not included in the OCSP response etc. Failure means that the test was executed but the expected result was not obtained.    
+</p>
+<p>
+For successful checks the name of the test as well as a short description is noted. For other results an more detailed description about what failed with the analyzed certificate or OCSP response is noted down.
+</p>
+<p>
+Sample output:    
+</p>
+<source>
+2012-07-31 15:21:22,208 ERROR : Validation results for: 
+          Configuration:        certchecks1.properties
+          Certificate file:     timestamp2.pem
+          Certificate serial:   0x5c04ced718526417
+          Certificate issuer:   O=PrimeKey Solutions AB,CN=ServerCA
+
+[SUCCESS] CertCheck_Signature_algorithmEquals
+          Compares the signature algorithm
+
+[SUCCESS] CertCheck_SubjectDNComponents_required
+          Checks that sampled certificate contains the required DN fields
+
+[FAILURE] CertCheck_SubjectDNComponents_identical
+          Compares the values of the extensions configured to be identical
+          Expected:  the following to be identical [C, O]
+          Actual:    was different [O]
+          Details:   [O="PrimeKey Solutions AB", "Organization 1"]    
+...
+</source>
+</section>
+
+<section name="Command Line Interface (CLI)">
+<p>
+The ValidationTool command line interface currently has two commands with the following syntax:
+</p>
+<subsubsection name="ocsp">
+<source>
+bin/validationtool ocsp
+
+usage: ocsp [-url URL]... [-maxtries NUMBER] [-caconf CONFIGFILE]...
+Run the OCSP healthcheck tool with the specifed CA configuration file(s)
+ -caconf      CA configuration file. This option can be specified for
+              every issuer to query.
+ -maxtries    Maximum number of tries to perform before giving up getting
+              a response from a particular responder.
+ -url         URL of server to query. This option can be specified for
+              every server to query.
+
+Sample usages:
+a) ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf
+ocspchecks_adminca1.properties
+b) ocsp -url http://server1/status/ocsp -url http://server2/status/ocsp
+-maxtries 4 -caconf ocspchecks_adminca1.properties -caconf
+ocspchecks_authca1.properties
+</source>
+</subsubsection>
+<p>
+Multiple OCSP responder URL:s and CA configuration files can be specified as arguments to the command. Each URL will be queried with all quries as configured in each CA configuration file.
+</p>
+
+<subsubsection name="certificate">
+<source>
+bin/validationtool certificate
+
+usage: certificate -certfolder FOLDERPATH [-minfileage 2000] [-waittime
+                   1000]
+The certificate validation application monitoring and checking all
+certificates in the specified folder.
+ -certfolder    Folder to watch for certificates.
+ -conf          File name of the configuration file to use.
+ -minfileage    Minimum number of milliseconds since the last modified
+                time before a file is up for inspection. Specify this to make it less
+                likely a file is being checked before it has been completely written to
+                disk.
+ -waittime      Time in milliseconds to wait before checking again if
+                there were no files in the directory.
+
+Sample usages:
+a) certificate -conf certchecks.properties -certfolder ./certfolder
+b) certificate -conf certchecks.properties -certfolder ./certfolder
+-minfileage 2000 -waittime 1000
+</source>
+<note>
+It is important to not run multiple instances of the tool at the same time on the same folder as the tool will remove the tested certificates.
+</note>
+</subsubsection>
+</section>
+
+<section name="Configuration">
+<subsection name="Certificate checks">
+<p>
+The certificate check tool is run with one certificate checks configuration file. The file points out one template certificate to compare the certificates against as well as lists all checks to perform and their properties.
+</p>
+<p>
+Sample cert check configuration:    
+</p>
+<source>
+template.file=template1.pem
+
+checks=\
+    CertCheck_Fields_identical,\
+    CertCheck_Signature_algorithmEquals,\
+    CertCheck_SubjectDNComponents_required,\
+    CertCheck_SubjectDNComponents_allowed,\
+    CertCheck_IssuerDNComponents_specified,\
+    CertCheck_ValidityNotAfter_minRemaining,\
+    CertCheck_Extensions_identical
+
+checks.CertCheck_Fields_identical.dynamicfields=\
+    serialNumber,\
+    signature,\
+    issuer,\
+    validity,\
+    subject,\
+    subjectPublicKeyInfo,\
+    extensions
+
+checks.CertCheck_SubjectDNComponents_required.components=CN,O
+checks.CertCheck_SubjectDNComponents_allowed.components=CN,O,L,ST,C
+
+checks.CertCheck_IssuerDNComponents_specified.dnparts=O\=PrimeKey Solutions AB,C\=SE
+checks.CertCheck_ValidityNotAfter_minRemaining.hours=24
+checks.CertCheck_Extensions_identical.oids=\
+    2.5.29.37,\
+    2.5.29.14
+</source>
+<p>
+Each check is listed in the "checks" property separated by a comma sign. Properties for the checks (if required) are added in properties of the form checks.CHECKNAME.PROPERTYNAME=VALUE where CHECKNAME is the name of the check as it is written in the checks list and PROPERTYNAME is the name of a property the check is expecting. Checks might require 0 or more properties. The tool will exit with an error message if not all required properties are specified.
+</p>
+</subsection>
+
+<subsection name="OCSP checks">
+<p>
+The OCSP check tool can be feed with one or more CA configuration files. Each CA configuration file represents one CA issuing OCSP responder certificates. It defines a set of queries to send to the OCSP responders as well as lists all checks to perform and their properties.
+</p>
+<p>
+Sample OCPS checks CA configuration:    
+</p>
+<source>
+ca.issuercertificatefile=myca1.crt
+ca.usenonce=true
+
+ca.queries=revoked1,unknown1,good1
+ca.queries.revoked1.serialnumber=0x70A81ED6E6339EDC
+ca.queries.revoked1.expectedstatus=revoked
+ca.queries.revoked1.signersubjectdn=CN\=OCSPSigner1 MyCA1,OU=The Unit,O=The organization,L=Stockholm,C=SE
+
+ca.queries.unknown1.serialnumber=0x47114711
+ca.queries.unknown1.expectedstatus=unknown
+ca.queries.unknown1.signersubjectdn=CN\=OCSPSigner1 MyCA1,OU=The Unit,O=The organization,L=Stockholm,C=SE
+
+ca.queries.good1.serialnumber=0x168794FBD471C7FC
+ca.queries.good1.expectedstatus=good
+ca.queries.good1.signersubjectdn=CN\=OCSPSigner1 MyCA1,OU=The Unit,O=The organization,L=Stockholm,C=SE
+
+ca.checks=\
+    OcspCheck_ExpectedStatus,\
+    OcspCheck_Response_time,\
+    OcspCheck_Response_verify,\
+    OcspCheck_Nonce,\
+    OcspCheck_Extensions_required,\
+    OcspCheck_Extensions_allowed,\
+    OcspCheck_CertificateChain,\
+    OcspCheck_SignerCertificate
+
+ca.checks.OcspCheck_Response_time.maxtime=500
+ca.checks.OcspCheck_SignerCertificate.includeconfigurationfile=certchecks1.properties
+ca.checks.OcspCheck_Extensions_allowed.allowedoids=1.3.6.1.5.5.7.48.1.2
+ca.checks.OcspCheck_Extensions_required.requiredoids=
+</source>
+<p>
+This example defines three queries to send, one with each OCSP response status - good, revoked or unknown for different certificate serial numbers. The idea is to configure the queries to be for certificate which are known to have a particular status in the CA database. The OCSP responder (signer) subject DN for the expected responder answering the request is also configured. Only responses from the expected responder is further examined. This could be particular useful if running queries against a load balancer or a virtual IP (VIP) with multiple responders behind and one wants to be sure that each responder is tested.
+</p>
+<p>
+Notice in this example that the check called OcspCheck_SignerCertificate is using a certificate checks configuration file (as described in previous section) and will also run all checks configured in that one against the responder certificate.
+</p>
+</subsection>
+
+<subsection name="Available checks">
+<table>
+<tr><td colspan="2"><b>Certificate checks</b></td></tr>
+<tr><td>CertCheck_Signature_algorithmEquals</td><td>Compares the signature algorithm</td></tr>
+<tr><td>CertCheck_SubjectDNComponents_required</td><td>Checks that sampled certificate contains the required DN fields</td></tr>
+<tr><td>CertCheck_Extensions_criticalOIDs</td><td>Checks that the same critical extensions OIDs are present</td></tr>
+<tr><td>CertCheck_ValidityNotBefore_maxDiffFromNow</td><td>Checks that the notBefore date is not more than a specified number of minutues from now</td></tr>
+<tr><td>CertCheck_SubjectDNComponents_identical</td><td>Compares the values of the extensions configured to be identical</td></tr>
+<tr><td>CertCheck_PublicKey_algorithmEquals</td><td>Compares the public key algorithm</td></tr>
+<tr><td>CertCheck_ValidityNotAfter_minRemaining</td><td>Checks that the notAfter date is at least the specified number of hours in the future</td></tr>
+<tr><td>CertCheck_SubjectDNComponents_allowed</td><td>Checks that sampled certified does not contain any other DN components than the allowed</td></tr>
+<tr><td>CertCheck_SubjectDNComponents_specified</td><td>Compares the values of the DN parts configured to be as specified</td></tr>
+<tr><td>CertCheck_IssuerDNComponents_identical</td><td>Compares the values of the extensions configured to be identical</td></tr>
+<tr><td>CertCheck_IssuerDNComponents_allowed</td><td>Checks that sampled certified does not contain any other DN components than the allowed</td></tr>
+<tr><td>CertCheck_ValidityNotAfter_maxRemaining</td><td>Checks that the notAfter date is not more than a specied number of hours in the future</td></tr>
+<tr><td>CertCheck_IssuerDNComponents_specified</td><td>Compares the values of the DN parts configured to be as specified</td></tr>
+<tr><td>CertCheck_PublicKey_sizeEquals</td><td>Compares the public key specification</td></tr>
+<tr><td>CertCheck_IssuerDNComponents_required</td><td>Checks that sampled certificate contains the required DN fields</td></tr>
+<tr><td>CertCheck_Extensions_nonCriticalOIDs</td><td>Checks that the same non-critical extensions OIDs are present</td></tr>
+<tr><td>CertCheck_Fields_identical</td><td>Compares the values of the fields with those in the template, except for those in the 'dynamicfields' set.</td></tr>
+<tr><td>CertCheck_Extensions_identical</td><td>Checks that the configured extension values are identical</td></tr>
+
+<tr><td colspan="2"><b>OCSP checks</b></td></tr>
+
+<tr><td>OcspCheck_SignerCertificate</td><td>Runs the configured checks for the signer certificate.</td></tr>
+<tr><td>OcspCheck_Extensions_required</td><td>Checks that all required extensions are in the response</td></tr>
+<tr><td>OcspCheck_CertificateChain</td><td>Validates the signer certificate chain</td></tr>
+<tr><td>OcspCheck_ExpectedStatus</td><td>Checks that the returned certificate status is the expected</td></tr>
+<tr><td>OcspCheck_Nonce</td><td>Checks that the nonce in the response matches the request</td></tr>
+<tr><td>OcspCheck_Response_verify</td><td>Verifies the signature</td></tr>
+<tr><td>OcspCheck_Response_time</td><td>Checks that the response was returned within the configured max time</td></tr>
+<tr><td>OcspCheck_Extensions_allowed</td><td>Checks that only allowed extensions are in the response</td></tr>
+</table>
+</subsection>
+</section>
+
+</body>
+</document>

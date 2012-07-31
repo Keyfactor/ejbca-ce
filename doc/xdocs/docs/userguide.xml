@@ -1456,7 +1456,7 @@ Build these tools with:
 </p><source>
 ant clientToolBox
 </source><p>
-The directory './clientToolBox-dist' is then created. You may then move this directory to any location.
+The directory './dist/clientToolBox' is then created. You may then move this directory to any location.
 </p><p>
 To use any of the tools just call 'ejbcaClientToolBox.sh' in this directory. You may call the script from any location. Running the command will provide on-line documentation for available commands and options.
 </p><p>
@@ -1469,6 +1469,30 @@ ejbcaClientToolBox.sh
 Then just one argument gives help about the specified tool. Example:
 </p><source>
 ejbcaClientToolBox.sh ocsp
+</source>
+</section>
+
+<section name="EJBCA Validation/Conformance Tool">
+<p>
+The ValidationTool is a standalone client-side application for certificates and OCSP responses validation and conformance checks. 
+</p>
+<p>
+For details see the <a href="validationtool.html">ValidationTool manual</a>.
+</p>
+<p>
+Build the tools with:
+</p><source>
+ant validationtool
+</source><p>
+The directory 'dist/validationtool' is then created. You may then move this directory to any location.
+</p><p>
+To use any of the ValidationTool commands just call 'bin/validationtool.sh' in this directory. You may call the script from any location. Running the command will provide on-line documentation for available commands and options.
+</p>
+<p>
+A source distribution can also be created by running:    
+</p>
+<source>
+ant validationtool-src
 </source>
 </section>
 
