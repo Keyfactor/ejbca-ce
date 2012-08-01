@@ -159,7 +159,7 @@ Sample cert check configuration:
 template.file=template1.pem
 
 checks=\
-    CertCheck_Fields_identical,\
+    CertCheck_Certificate_identical,\
     CertCheck_Signature_algorithmEquals,\
     CertCheck_SubjectDNComponents_required,\
     CertCheck_SubjectDNComponents_allowed,\
@@ -167,7 +167,7 @@ checks=\
     CertCheck_ValidityNotAfter_minRemaining,\
     CertCheck_Extensions_identical
 
-checks.CertCheck_Fields_identical.dynamicfields=\
+checks.CertCheck_Certificate_identical.dynamicfields=\
     serialNumber,\
     signature,\
     issuer,\
@@ -240,7 +240,7 @@ Notice in this example that the check called OcspCheck_SignerCertificate is usin
 <subsection name="Available checks">
 <table>
 <tr><td colspan="2"><b>Certificate checks</b></td></tr>
-<tr><td>CertCheck_Fields_identical</td><td>Compares the values of the fields with those in the template, except for those in the 'dynamicfields' set.</td></tr>
+<tr><td>CertCheck_Certificate_identical</td><td>Compares the certificate with the template except for the certificate fields declared in the 'dynamicfields' set.<br/>Notice that unless the certificates should match exactly many of the certificate fields would probably have to be added to the list.</td></tr>
 <tr><td>CertCheck_SubjectDNComponents_required</td><td>Checks that sampled certificate contains the required DN fields</td></tr>
 <tr><td>CertCheck_IssuerDNComponents_required</td><td>Checks that sampled certificate contains the required DN fields</td></tr>
 <tr><td>CertCheck_SubjectDNComponents_allowed</td><td>Checks that sampled certified does not contain any other DN components than the allowed</td></tr>
@@ -307,7 +307,7 @@ Notice in this example that the check called OcspCheck_SignerCertificate is usin
 <li>The tool is configured with a configuration file pointing out a template certificate that can be used by the different checks to compare the certificates against. The configuration file also contains details about which checks to perform.</li>
 <li>Certificates could be exported from EJBCA to the configured certificate folder for instance using a publisher.</li>
 
-<li>Verifying that the sampled certificates are identical to the template certificate (except for dynamic values) by adding the check called <i>CertCheck_Fields_identical</i>.</li>
+<li>Verifying that the sampled certificates are identical to the template certificate (except for dynamic values) by adding the check called <i>CertCheck_Certificate_identical</i>.</li>
 <li>Verifying that the sampled certificates contains issuer and subject DN components that are configured to be required by adding the checks called <i>CertCheck_SubjectDNComponents_required</i> and <i>CertCheck_IssuerDNComponents_required</i>.</li>
 <li>Verifying that the sampled certificates does not contain other DN components than required or optional by by adding the checks called <i>CertCheck_SubjectDNComponents_allowed</i> and <i>CertCheck_IssuerDNComponents_allowed</i> and configure it with the list of allowed DN components, that is both the required and optional ones.</li>
 <li>Verifying that the certificate contains the specified values for DN components that must be the same, i.e. O=PrimeKey,C=SE, by adding the checks called <i>CertCheck_SubjectDNComponents_specified</i> and <i>CertCheck_IssuerDNComponents_specified</i> and specify the DN parts or add the checks <i>CertCheck_SubjectDNComponents_identical</i> and <i>CertCheck_IssuerDNComponents_identical</i> to required the values of the specified DN components to be identical to those in the template certificate.</li>
