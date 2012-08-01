@@ -14,7 +14,7 @@ package org.ejbca.ui.web.admin.services.servicetypes;
 
 
 /**
- * Class managing the view of the Certificate Exiration Notifier Worker
+ * Class managing the view of the Certificate Expiration Notifier Worker
  *
  * @version $Id$
  */

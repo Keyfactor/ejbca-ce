@@ -138,7 +138,9 @@
   boolean  triedtodeletefixedcertificateprofile = false;
   boolean  triedtoaddfixedcertificateprofile    = false;
   boolean  certificateprofileexists             = false;
-  boolean  certificateprofiledeletefailed       = false;
+  boolean  certificteDeletionFailed = false;
+  List<String> servicesContainingCertificateProfile = new ArrayList<String>();
+  String  certificateprofiledeleteErrorMessage  = "";
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITCERTIFICATEPROFILES); 
                                             cabean.initialize(request, ejbcawebbean); 
@@ -196,7 +198,17 @@
           if(certprofile != null){
             if(!certprofile.trim().equals("")){
               if(!certprofile.endsWith("(FIXED)")){ 
-                certificateprofiledeletefailed = !cabean.removeCertificateProfile(certprofile);
+                  servicesContainingCertificateProfile = cabean.getServicesUsingCertificateProfile(certprofile);   
+                  if(!servicesContainingCertificateProfile.isEmpty()) {
+                      certificteDeletionFailed = true;
+                  }
+                  if(cabean.ifCertificateProfileExistsInEndEntityOrCAs(certprofile)) {
+                      //Reviewer: The below is temporary and will be replaced with proper error message in ECA-2723/ECA-2724       
+                      certificteDeletionFailed = true;
+                  }
+                  if (!certificteDeletionFailed) {
+                      cabean.removeCertificateProfile(certprofile);
+                  }
               }else{
                 triedtodeletefixedcertificateprofile=true;
               }

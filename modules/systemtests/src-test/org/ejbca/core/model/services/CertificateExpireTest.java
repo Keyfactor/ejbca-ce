@@ -27,8 +27,6 @@ import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
-import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -75,7 +73,6 @@ public class CertificateExpireTest extends CaTestCase {
 
     private static final String CERTIFICATE_EXPIRATION_SERVICE = "CertificateExpirationService";
 
-    private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
@@ -108,8 +105,34 @@ public class CertificateExpireTest extends CaTestCase {
         certificatesToRemove = new ArrayList<Certificate>();
         userAdminSession.addUser(admin, USERNAME, PASSWORD, "C=SE,O=AnaTom,CN=" + USERNAME, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, 0, caid);
+        
+    }
+
+    @After
+    public void tearDown() throws Exception {      
+        for(Certificate certificate : certificatesToRemove) {
+            internalCertificateStoreSession.removeCertificate(certificate);
+        }
+        for(Certificate certificate : internalCertificateStoreSession.findCertificatesByIssuer("CN="+CA_NAME)) {
+            internalCertificateStoreSession.removeCertificate(certificate);
+        }
+        
+        userAdminSession.deleteUser(admin, USERNAME);
+        log.debug("Removed user: " + USERNAME);
+        serviceSession.removeService(admin, CERTIFICATE_EXPIRATION_SERVICE);
+        log.debug("Removed service:" + CERTIFICATE_EXPIRATION_SERVICE);
+        assertNull("ServiceData object with id 4711 was not removed properly.", serviceDataSession.findById(4711));
+
+    }
+    
+    private void createCertificate() throws Exception {
+        createCertificate(CertificateProfileConstants.CERTPROFILE_NO_PROFILE);
+    }
+    
+    private void createCertificate(int certificateProfileId) throws Exception {
         KeyPair keys = KeyTools.genKeys("1024", "RSA");
-        cert = (X509Certificate) signSession.createCertificate(admin, USERNAME, PASSWORD, keys.getPublic());
+        cert = (X509Certificate) signSession.createCertificate(admin, USERNAME, PASSWORD, keys.getPublic(), -1, null, null, certificateProfileId,
+                SecConst.CAID_USEUSERDEFINED);
         certificatesToRemove.add(cert);
         fingerprint = CertTools.getFingerprintAsString(cert);
         X509Certificate ce = (X509Certificate) certificateStoreSession.findCertificateByFingerprint(fingerprint);
@@ -134,23 +157,6 @@ public class CertificateExpireTest extends CaTestCase {
             throw new Exception("status does not match.");
         }
     }
-
-    @After
-    public void tearDown() throws Exception {      
-        for(Certificate certificate : certificatesToRemove) {
-            internalCertificateStoreSession.removeCertificate(certificate);
-        }
-        for(Certificate certificate : internalCertificateStoreSession.findCertificatesByIssuer("CN="+CA_NAME)) {
-            internalCertificateStoreSession.removeCertificate(certificate);
-        }
-        
-        userAdminSession.deleteUser(admin, USERNAME);
-        log.debug("Removed user: " + USERNAME);
-        serviceSession.removeService(admin, CERTIFICATE_EXPIRATION_SERVICE);
-        log.debug("Removed service:" + CERTIFICATE_EXPIRATION_SERVICE);
-        assertNull("ServiceData object with id 4711 was not removed properly.", serviceDataSession.findById(4711));
-
-    }
     
     /**
      * Add a new user and an expire service. Test that the service expires the
@@ -159,6 +165,7 @@ public class CertificateExpireTest extends CaTestCase {
      */
     @Test
     public void testExpireCertificate() throws Exception {
+        createCertificate();
         long seconds = (cert.getNotAfter().getTime() - new Date().getTime()) / 1000l;
         log.debug("ceritificate OK in store, expires in " + seconds + " seconds");
 
@@ -193,7 +200,6 @@ public class CertificateExpireTest extends CaTestCase {
         Thread.sleep(2000);
         info = certificateStoreSession.getCertificateInfo(fingerprint);
         assertEquals("status does not match.", CertificateConstants.CERT_ACTIVE, info.getStatus());
-  
         // The service will run...We need some tolerance since timers cannot
         // be guaranteed to executed at the exact interval. 
         Thread.sleep(3000);
@@ -215,6 +221,7 @@ public class CertificateExpireTest extends CaTestCase {
      */
     @Test
     public void testExpireCertificateWithAllCAs() throws Exception {
+        createCertificate();
         long seconds = (cert.getNotAfter().getTime() - new Date().getTime()) / 1000l;
         // Create a new UserPasswordExpireService
         ServiceConfiguration config = new ServiceConfiguration();
@@ -269,13 +276,9 @@ public class CertificateExpireTest extends CaTestCase {
     @Test
     public void testExpireCertificateWithCertificateProfiles() throws Exception {
         final String certificateprofilename = "foo";
-        certificateProfileSession.addCertificateProfile(admin, certificateprofilename, new CertificateProfile());
+        int certificateProfileId = certificateProfileSession.addCertificateProfile(admin, certificateprofilename, new CertificateProfile());
         try {
-            //Modify the CA to use the Certificate Profile
-            CAInfo caInfo = caSession.getCAInfo(admin, caid);
-            caInfo.setCertificateProfileId(certificateProfileSession.getCertificateProfileId(certificateprofilename));
-            caSession.editCA(admin, caInfo);
-            
+            createCertificate(certificateProfileId);
             long seconds = (cert.getNotAfter().getTime() - new Date().getTime()) / 1000l;
             // Create a new UserPasswordExpireService
             ServiceConfiguration config = new ServiceConfiguration();
@@ -294,9 +297,8 @@ public class CertificateExpireTest extends CaTestCase {
             Properties workerprop = new Properties();
             workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS, "FALSE");
             workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS, "FALSE");
-            // All CAs
             workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, String.valueOf(caid));
-
+            workerprop.setProperty(BaseWorker.PROP_CERTIFICATE_PROFILE_IDS_TO_CHECK, Integer.toString(certificateProfileId));
             workerprop.setProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING, String.valueOf(seconds - 5));
             workerprop.setProperty(BaseWorker.PROP_TIMEUNIT, BaseWorker.UNIT_SECONDS);
             config.setWorkerProperties(workerprop);
