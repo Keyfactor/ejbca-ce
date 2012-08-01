@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.ejb.Stateless;
@@ -24,11 +25,11 @@ import javax.persistence.Query;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.QueryResultWrapper;
 import org.ejbca.core.model.services.ServiceConfiguration;
+import org.ejbca.core.model.services.workers.CertificateExpirationNotifierWorker;
 
 /**
  * Session bean for the Service Data table.
  *
- * @author mikek
  * @version $Id$
  */
 @Stateless(mappedName = JndiConstants.APP_JNDI_PREFIX + "ServiceDataSessionRemote")

@@ -12,13 +12,14 @@
  *************************************************************************/
 package org.ejbca.core.ejb.services;
 
+
 /** Session bean to manage services, these are services that runs periodically.
  * 
- * @author mikek
  * @version $Id$
  */
 public interface ServiceDataSession {
 
     /** @return the found entity instance or null if the entity does not exist */
     ServiceData findById(Integer id);
+    
 }

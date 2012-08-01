@@ -38,12 +38,21 @@
       <td width="60%"></td>
     </tr>
   <% } %>
-  <% if(certificateprofiledeletefailed){ %> 
+  <% if(certificteDeletionFailed){ %> 
     <tr> 
-      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETECERTPROF") %></td>
+      <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETECERTPROF") %> </td>      
       <td width="60%"></td>
     </tr>
-  <% } %>
+    <% if(!servicesContainingCertificateProfile.isEmpty()) { %>  	
+         <tr><td width="40%" class="alert"><%= ejbcawebbean.getText("CERTPROFILEUSEDINSERVICES") %></td><td width="60%"></td></tr>                 
+         <tr><td width="40%">
+         	<% for(String serviceName : servicesContainingCertificateProfile) { %>
+         		<c:out value="<%= serviceName %>"/>,
+         	 <% } %>   
+         </td><td width="60%" class="alert"></td></tr>   
+                    
+    <% } %>
+   <% } %>
     <tr> 
       <td width="40%"><h3><%= ejbcawebbean.getText("CURRENTCERTIFICATEPROFILES") %></h3></td>
       <td width="60%"></td>
@@ -53,9 +62,8 @@
         <select name="<%=SELECT_CERTIFICATEPROFILES%>" style="width: 50em" size="15"  >
           <% Iterator iter = certificateprofiles.keySet().iterator();
              while(iter.hasNext()){
-               String profilename = (String) iter.next(); %>
-               
-            <option value="<c:out value="<%= profilename %>"/>"> 
+               String profilename = (String) iter.next(); %>     
+            	<option value="<c:out value="<%= profilename %>"/>"> 
                 <c:out value="<%= profilename %>"/>
              </option>
           <%}%>
@@ -82,7 +90,7 @@
       <td width="60%"></td>
     </tr>
   </table>
-
+  
   <table class="add">
     <tr> 
       <td width="100%"><h3><%= ejbcawebbean.getText("ADDPROFILE") %></h3></td>
