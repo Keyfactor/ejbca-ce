@@ -8,6 +8,12 @@
 <p>
 The ValidationTool is a standalone client-side application for certificates and OCSP responses validation and conformance checks. 
 </p>
+<p>
+Currently two different commands are available, one for OCSP and one for certificates. The purpose of the tool is to validate that the issued certificates and OCSP responses are as expected. A typical usage scenario is to, after setting up the system and determine that it is functioning correctly, configure a set of checks to be run either periodically or for instance after upgrades and configuration changes to make sure it is still functioning as expected.
+</p>
+<p>
+The tool is independent of EJBCA version so the same tool can be used also after upgrading EJBCA.
+</p>
 </section>
 
 <section name="Quick start">
@@ -234,37 +240,92 @@ Notice in this example that the check called OcspCheck_SignerCertificate is usin
 <subsection name="Available checks">
 <table>
 <tr><td colspan="2"><b>Certificate checks</b></td></tr>
-<tr><td>CertCheck_Signature_algorithmEquals</td><td>Compares the signature algorithm</td></tr>
-<tr><td>CertCheck_SubjectDNComponents_required</td><td>Checks that sampled certificate contains the required DN fields</td></tr>
-<tr><td>CertCheck_Extensions_criticalOIDs</td><td>Checks that the same critical extensions OIDs are present</td></tr>
-<tr><td>CertCheck_ValidityNotBefore_maxDiffFromNow</td><td>Checks that the notBefore date is not more than a specified number of minutues from now</td></tr>
-<tr><td>CertCheck_SubjectDNComponents_identical</td><td>Compares the values of the extensions configured to be identical</td></tr>
-<tr><td>CertCheck_PublicKey_algorithmEquals</td><td>Compares the public key algorithm</td></tr>
-<tr><td>CertCheck_ValidityNotAfter_minRemaining</td><td>Checks that the notAfter date is at least the specified number of hours in the future</td></tr>
-<tr><td>CertCheck_SubjectDNComponents_allowed</td><td>Checks that sampled certified does not contain any other DN components than the allowed</td></tr>
-<tr><td>CertCheck_SubjectDNComponents_specified</td><td>Compares the values of the DN parts configured to be as specified</td></tr>
-<tr><td>CertCheck_IssuerDNComponents_identical</td><td>Compares the values of the extensions configured to be identical</td></tr>
-<tr><td>CertCheck_IssuerDNComponents_allowed</td><td>Checks that sampled certified does not contain any other DN components than the allowed</td></tr>
-<tr><td>CertCheck_ValidityNotAfter_maxRemaining</td><td>Checks that the notAfter date is not more than a specied number of hours in the future</td></tr>
-<tr><td>CertCheck_IssuerDNComponents_specified</td><td>Compares the values of the DN parts configured to be as specified</td></tr>
-<tr><td>CertCheck_PublicKey_sizeEquals</td><td>Compares the public key specification</td></tr>
-<tr><td>CertCheck_IssuerDNComponents_required</td><td>Checks that sampled certificate contains the required DN fields</td></tr>
-<tr><td>CertCheck_Extensions_nonCriticalOIDs</td><td>Checks that the same non-critical extensions OIDs are present</td></tr>
 <tr><td>CertCheck_Fields_identical</td><td>Compares the values of the fields with those in the template, except for those in the 'dynamicfields' set.</td></tr>
+<tr><td>CertCheck_SubjectDNComponents_required</td><td>Checks that sampled certificate contains the required DN fields</td></tr>
+<tr><td>CertCheck_IssuerDNComponents_required</td><td>Checks that sampled certificate contains the required DN fields</td></tr>
+<tr><td>CertCheck_SubjectDNComponents_allowed</td><td>Checks that sampled certified does not contain any other DN components than the allowed</td></tr>
+<tr><td>CertCheck_IssuerDNComponents_allowed</td><td>Checks that sampled certified does not contain any other DN components than the allowed</td></tr>
+<tr><td>CertCheck_SubjectDNComponents_specified</td><td>Compares the values of the DN parts configured to be as specified</td></tr>
+<tr><td>CertCheck_IssuerDNComponents_specified</td><td>Compares the values of the DN parts configured to be as specified</td></tr>
+<tr><td>CertCheck_SubjectDNComponents_identical</td><td>Compares the values of the extensions configured to be identical</td></tr>
+<tr><td>CertCheck_IssuerDNComponents_identical</td><td>Compares the values of the extensions configured to be identical</td></tr>
+<tr><td>CertCheck_ValidityNotAfter_minRemaining</td><td>Checks that the notAfter date is at least the specified number of hours in the future</td></tr>
+<tr><td>CertCheck_ValidityNotAfter_maxRemaining</td><td>Checks that the notAfter date is not more than a specied number of hours in the future</td></tr>
+<tr><td>CertCheck_ValidityNotBefore_maxDiffFromNow</td><td>Checks that the notBefore date is not more than a specified number of minutues from now</td></tr>
+<tr><td>CertCheck_PublicKey_sizeEquals</td><td>Compares the public key specification</td></tr>
+<tr><td>CertCheck_PublicKey_algorithmEquals</td><td>Compares the public key algorithm</td></tr>
+<tr><td>CertCheck_Signature_algorithmEquals</td><td>Compares the signature algorithm</td></tr>
+<tr><td>CertCheck_Extensions_criticalOIDs</td><td>Checks that the same critical extensions OIDs are present</td></tr>
+<tr><td>CertCheck_Extensions_nonCriticalOIDs</td><td>Checks that the same non-critical extensions OIDs are present</td></tr>
 <tr><td>CertCheck_Extensions_identical</td><td>Checks that the configured extension values are identical</td></tr>
 
 <tr><td colspan="2"><b>OCSP checks</b></td></tr>
 
 <tr><td>OcspCheck_SignerCertificate</td><td>Runs the configured checks for the signer certificate.</td></tr>
-<tr><td>OcspCheck_Extensions_required</td><td>Checks that all required extensions are in the response</td></tr>
 <tr><td>OcspCheck_CertificateChain</td><td>Validates the signer certificate chain</td></tr>
 <tr><td>OcspCheck_ExpectedStatus</td><td>Checks that the returned certificate status is the expected</td></tr>
 <tr><td>OcspCheck_Nonce</td><td>Checks that the nonce in the response matches the request</td></tr>
 <tr><td>OcspCheck_Response_verify</td><td>Verifies the signature</td></tr>
 <tr><td>OcspCheck_Response_time</td><td>Checks that the response was returned within the configured max time</td></tr>
-<tr><td>OcspCheck_Extensions_allowed</td><td>Checks that only allowed extensions are in the response</td></tr>
+<tr><td>OcspCheck_Extensions_required</td><td>Checks that all required extensions are in the response.<br/>Also add this extensions to the list of allowed if that check is also used.</td></tr>
+<tr><td>OcspCheck_Extensions_allowed</td><td>Checks that only allowed extensions are in the response.<br/>Also add the required extensions to this list if that check is also used.</td></tr>
 </table>
 </subsection>
+</section>
+
+<section name="Features">
+<subsection name="General">
+<ul>
+
+<li>The tool is independent of EJBCA version.</li>
+<li>Configuration properties are validated before the testing starts.</li>
+
+</ul>
+</subsection>
+<subsection name="OCSP Specific">
+<ul>
+
+<li>The OCSP command works as a real OCSP client sending requests to the configured OCSP responer(s).</li>
+<li>The OCSP client can query multiple clients by specifying multiple "url" arguments at the command line. In addition if multiple responders are behind an load balancer or VIP the queries in the CA configuration files can be configured to look for responses from specific responders by specifying the signer certificate subject DN. Then only responses from that responder will be considered.</li>
+<li>The maximum number of tries to perform to get a response for a query from a particular responder is configurable at the command line by specifying the <i>maxtries</i> argument.</li>
+
+<li>Querying for multiple CAs on each server by supplying multiple CA configuration files. New files can easily be created and supplied at the command line when invoking the tool.</li>
+<li>Querying one OK, one revoked and one unknown certificate, as configured, from each CA by specifying multiple queries in the CA configuration file with different expected status for different certificates.</li>
+
+<li>Verifying that the returned certificate chain in the OCSP response is good by adding the check called <i>OcspCheck_CertificateChain</i>.</li>
+<li>Verifying that the returned OCSP response verifies by adding the check called <i>OcspCheck_Response_verify</i>.</li>
+<li>Verifying that the OCSP response is returned timely (configurable max time) by adding the check called <i>OcspCheck_Response_time</i>.</li>
+<li>Verifying the nonce if configured to use one by adding the check called <i>OcspCheck_Nonce</i>.</li>
+<li>Verifying that the right extensions are used by adding the checks called <i>OcspCheck_Extensions_required</i> and <i>OcspCheck_Extensions_allowed</i>.</li>
+<li>The signer certificate can be validated with the same set of checks and configuration as with the certificate checks tool by adding the check called <i>OcspCheck_SignerCertificate</i> and configure it with the name of a certificate checks configuration file.</li>
+
+</ul>
+</subsection>
+<subsection name="Certificate Specific">
+<ul>
+
+<li>The tool is configured with a configuration file pointing out a template certificate that can be used by the different checks to compare the certificates against. The configuration file also contains details about which checks to perform.</li>
+<li>Certificates could be exported from EJBCA to the configured certificate folder for instance using a publisher.</li>
+
+<li>Verifying that the sampled certificates are identical to the template certificate (except for dynamic values) by adding the check called <i>CertCheck_Fields_identical</i>.</li>
+<li>Verifying that the sampled certificates contains issuer and subject DN components that are configured to be required by adding the checks called <i>CertCheck_SubjectDNComponents_required</i> and <i>CertCheck_IssuerDNComponents_required</i>.</li>
+<li>Verifying that the sampled certificates does not contain other DN components than required or optional by by adding the checks called <i>CertCheck_SubjectDNComponents_allowed</i> and <i>CertCheck_IssuerDNComponents_allowed</i> and configure it with the list of allowed DN components, that is both the required and optional ones.</li>
+<li>Verifying that the certificate contains the specified values for DN components that must be the same, i.e. O=PrimeKey,C=SE, by adding the checks called <i>CertCheck_SubjectDNComponents_specified</i> and <i>CertCheck_IssuerDNComponents_specified</i> and specify the DN parts or add the checks <i>CertCheck_SubjectDNComponents_identical</i> and <i>CertCheck_IssuerDNComponents_identical</i> to required the values of the specified DN components to be identical to those in the template certificate.</li>
+<li>Verifying that the validity end date is at least a configurable number of hours in the future by adding the check called <i>CertCheck_ValidityNotAfter_minRemaining</i>.</li>
+<li>Verifying that the validity end date is not more than a configurable number of hours in the future by adding the check called <i>CertCheck_ValidityNotAfter_maxRemaining</i>.</li>
+<li>Verifying that the validity start date is not more than a configurable number of minutes from now by adding the check called <i>CertCheck_ValidityNotBefore_maxDiffFromNow</i>.</li>
+<li>Verifying that the public key specification (ie. key length for RSA) is the same as in the template by adding the check called <i>CertCheck_PublicKey_sizeEquals</i>.</li>
+<li>Verifying that the public key algorithm is the same as in the template by adding the check called <i>CertCheck_PublicKey_algorithmEquals</i>.</li>
+<li>Verifying that the signature algorithm is the same as in the template by adding the check called <i>CertCheck_Signature_algorithmEquals</i>.</li>
+<li>Verifying that the same extensions are used in the certificate as in the template and that they have the same criticality but not necessarily the same value by adding the checks called <i>CertCheck_Extensions_criticalOIDs</i> and <i>CertCheck_Extensions_nonCriticalOIDs</i></li>
+<li>Verifying that the same extensions are used in the certificate as in the template and that they have the same criticality but not necessarily the same value by adding the checks called <i>CertCheck_Extensions_criticalOIDs</i> and <i>CertCheck_Extensions_nonCriticalOIDs</i></li>
+<li>Verifying the extensions that are configured to be identical by adding the check <i>CertCheck_Extensions_identical</i> which compares the DER encoded values of the extensions in the certificate with those in the template.</li>
+<li>The tool runs as long as there are certificate files in the configured directory. When a file is analyzed, then the output is written to log files and the analyzed file is deleted. When there are no more certificate files in the configured directory, the application sleeps for a while (as configured) before checking if there are some more certificates to validate.</li>
+<li>To make it less likely a certificate file is being analyzed before it has been completely written to disk new files will not be read until their last modified time is more than configured time in the past (for instance 2 seconds).</li>
+
+</ul>
+</subsection>
+
 </section>
 
 </body>
