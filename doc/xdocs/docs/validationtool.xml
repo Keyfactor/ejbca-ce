@@ -268,7 +268,8 @@ Notice in this example that the check called OcspCheck_SignerCertificate is usin
 <tr><td>OcspCheck_Response_verify</td><td>Verifies the signature</td></tr>
 <tr><td>OcspCheck_Response_time</td><td>Checks that the response was returned within the configured max time</td></tr>
 <tr><td>OcspCheck_Extensions_required</td><td>Checks that all required extensions are in the response.<br/>Also add this extensions to the list of allowed if that check is also used.</td></tr>
-<tr><td>OcspCheck_Extensions_allowed</td><td>Checks that only allowed extensions are in the response.<br/>Also add the required extensions to this list if that check is also used.</td></tr>
+<tr><td>OcspCheck_Extensions_allowed</td><td>Checks that only allowed extensions are in the response.
+<br/>Also add the required extensions to this list if that check is also used. Also if a nonce is used the OID for nonce (1.3.6.1.5.5.7.48.1.2) should be included.</td></tr>
 </table>
 </subsection>
 </section>
