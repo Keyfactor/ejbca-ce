@@ -37,7 +37,7 @@ function checkUseEndUserNotification(){
 
 -->
 </script></f:verbatim>
-		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.CERTEXPIRATIONSETTINGS}"/><f:verbatim></strong></f:verbatim>
+		<f:verbatim><strong></f:verbatim><h:outputText value="#{web.text.CERTEXPIRATIONSETTINGS}"/><f:verbatim></strong></f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Currently%20Available%20Services") %></h:outputText>
 	</h:panelGroup>
 	<h:panelGroup>
 		<f:verbatim>&nbsp;</f:verbatim>
@@ -53,7 +53,7 @@ function checkUseEndUserNotification(){
 	</h:panelGroup>	
 	
 	<h:panelGroup>
-		<h:outputText value="#{web.text.CERTIFICATEPROFILESTOCHECK}"/><f:verbatim> </f:verbatim><h:outputText><%= ejbcawebbean.getHelpReference("/adminguide.html#Currently%20Available%20Services") %></h:outputText>
+		<h:outputText value="#{web.text.CERTIFICATEPROFILESTOCHECK}"/><f:verbatim> </f:verbatim>
 	</h:panelGroup>
 	<h:panelGroup>							
 		<h:selectManyListbox id="certCheckCertificateProfileSelect" value="#{editService.baseWorkerType.selectedCertificateProfilesToCheck}" size="10">
