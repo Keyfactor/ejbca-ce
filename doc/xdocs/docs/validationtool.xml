@@ -215,6 +215,7 @@ ca.queries.good1.expectedstatus=good
 ca.queries.good1.signersubjectdn=CN\=OCSPSigner1 MyCA1,OU=The Unit,O=The organization,L=Stockholm,C=SE
 
 ca.checks=\
+    OcspCheck_ExpectedSigner,\
     OcspCheck_ExpectedStatus,\
     OcspCheck_Response_time,\
     OcspCheck_Response_verify,\
@@ -261,6 +262,7 @@ Notice in this example that the check called OcspCheck_SignerCertificate is usin
 
 <tr><td colspan="2"><b>OCSP checks</b></td></tr>
 
+<tr><td>OcspCheck_ExpectedSigner</td><td>Outputs whether a response was received from the expected signer or not.<br/>Notice that this check will be performed regardless if it is specified or not as if there are no response from the correct responder none of the other tests can run. However, include this check to get the result in the report.</td></tr>
 <tr><td>OcspCheck_SignerCertificate</td><td>Runs the configured checks for the signer certificate.</td></tr>
 <tr><td>OcspCheck_CertificateChain</td><td>Validates the signer certificate chain</td></tr>
 <tr><td>OcspCheck_ExpectedStatus</td><td>Checks that the returned certificate status is the expected</td></tr>
@@ -286,12 +288,12 @@ Notice in this example that the check called OcspCheck_SignerCertificate is usin
 <subsection name="OCSP Specific">
 <ul>
 
-<li>The OCSP command works as a real OCSP client sending requests to the configured OCSP responer(s).</li>
+<li>The OCSP command works as a real OCSP client sending requests to the configured OCSP responder(s).</li>
 <li>The OCSP client can query multiple clients by specifying multiple "url" arguments at the command line. In addition if multiple responders are behind an load balancer or VIP the queries in the CA configuration files can be configured to look for responses from specific responders by specifying the signer certificate subject DN. Then only responses from that responder will be considered.</li>
 <li>The maximum number of tries to perform to get a response for a query from a particular responder is configurable at the command line by specifying the <i>maxtries</i> argument.</li>
 
 <li>Querying for multiple CAs on each server by supplying multiple CA configuration files. New files can easily be created and supplied at the command line when invoking the tool.</li>
-<li>Querying one OK, one revoked and one unknown certificate, as configured, from each CA by specifying multiple queries in the CA configuration file with different expected status for different certificates.</li>
+<li>Querying one OK, one revoked and one unknown certificate, as configured, from each CA by specifying multiple queries in the CA configuration file with different expected status for different certificates. The check <i>OcspCheck_ExpectedStatus</i> verifies that the status is the expected and <i>OcspCheck_ExpectedSigner</i> outputs if a response was received from the expected responder.</li>
 
 <li>Verifying that the returned certificate chain in the OCSP response is good by adding the check called <i>OcspCheck_CertificateChain</i>.</li>
 <li>Verifying that the returned OCSP response verifies by adding the check called <i>OcspCheck_Response_verify</i>.</li>
