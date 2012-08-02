@@ -140,7 +140,6 @@
   boolean  certificateprofileexists             = false;
   boolean  certificteDeletionFailed = false;
   List<String> servicesContainingCertificateProfile = new ArrayList<String>();
-  String  certificateprofiledeleteErrorMessage  = "";
 
   GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_EDITCERTIFICATEPROFILES); 
                                             cabean.initialize(request, ejbcawebbean); 
