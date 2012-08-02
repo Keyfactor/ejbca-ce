@@ -962,10 +962,13 @@
 				</fileset>
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/core/ejb/services/*SessionBean.java"/>
+					<include name="org/ejbca/core/model/services/BaseWorker.java"/>
+					<include name="org/ejbca/core/model/services/BaseInterval.java"/>
 					<include name="org/ejbca/core/model/services/I*.java"/>
 					<include name="org/ejbca/core/model/services/ServiceConfiguration.java"/>
 					<include name="org/ejbca/core/model/services/*Exception.java"/>
 					<include name="org/ejbca/core/model/services/ActionInfo.java"/>
+					<include name="org/ejbca/core/model/services/intervals/DummyInterval.java"/>
 					<!-- Depends on EjbLocalHelper
        			<include name="org/ejbca/core/model/services/*.java"/>
     			<include name="org/ejbca/core/model/services/actions/*.java"/>
