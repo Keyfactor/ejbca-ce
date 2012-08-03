@@ -32,6 +32,8 @@
 	<classpathentry kind="src" path="modules/oldlogexport-cli/src"/>
 	<classpathentry kind="src" path="modules/publicweb-gui/src"/>
 	<classpathentry kind="src" path="modules/va-war/src"/>
+	<classpathentry kind="src" path="modules/validationtool/src"/>
+	<classpathentry kind="src" path="modules/validationtool/test"/>
 	<classpathentry kind="src" path="modules/systemtests/src-test"/>
 	<classpathentry kind="src" path="modules/systemtests/src-interface"/>
 	<classpathentry kind="src" path="modules/systemtests/src"/>
@@ -53,6 +55,7 @@
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-1.3.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-configuration-1.6.jar"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.0.jar"/>
 	<classpathentry kind="lib" path="lib/batik/batik-xml.jar"/>
 	<classpathentry kind="lib" path="lib/batik/batik-dom.jar"/>
 	<classpathentry kind="lib" path="lib/batik/batik-svg-dom.jar"/>
