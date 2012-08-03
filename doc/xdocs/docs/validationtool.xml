@@ -289,7 +289,7 @@ Notice in this example that the check called OcspCheck_SignerCertificate is usin
 <ul>
 
 <li>The OCSP command works as a real OCSP client sending requests to the configured OCSP responder(s).</li>
-<li>The OCSP client can query multiple clients by specifying multiple "url" arguments at the command line. In addition if multiple responders are behind an load balancer or VIP the queries in the CA configuration files can be configured to look for responses from specific responders by specifying the signer certificate subject DN. Then only responses from that responder will be considered.</li>
+<li>The OCSP client can query multiple servers by specifying multiple "url" arguments at the command line. In addition if multiple responders are behind an load balancer or VIP the queries in the CA configuration files can be configured to look for responses from specific responders by specifying the signer certificate subject DN. Then only responses from that responder will be considered.</li>
 <li>The maximum number of tries to perform to get a response for a query from a particular responder is configurable at the command line by specifying the <i>maxtries</i> argument.</li>
 
 <li>Querying for multiple CAs on each server by supplying multiple CA configuration files. New files can easily be created and supplied at the command line when invoking the tool.</li>
@@ -320,7 +320,6 @@ Notice in this example that the check called OcspCheck_SignerCertificate is usin
 <li>Verifying that the public key specification (ie. key length for RSA) is the same as in the template by adding the check called <i>CertCheck_PublicKey_sizeEquals</i>.</li>
 <li>Verifying that the public key algorithm is the same as in the template by adding the check called <i>CertCheck_PublicKey_algorithmEquals</i>.</li>
 <li>Verifying that the signature algorithm is the same as in the template by adding the check called <i>CertCheck_Signature_algorithmEquals</i>.</li>
-<li>Verifying that the same extensions are used in the certificate as in the template and that they have the same criticality but not necessarily the same value by adding the checks called <i>CertCheck_Extensions_criticalOIDs</i> and <i>CertCheck_Extensions_nonCriticalOIDs</i></li>
 <li>Verifying that the same extensions are used in the certificate as in the template and that they have the same criticality but not necessarily the same value by adding the checks called <i>CertCheck_Extensions_criticalOIDs</i> and <i>CertCheck_Extensions_nonCriticalOIDs</i></li>
 <li>Verifying the extensions that are configured to be identical by adding the check <i>CertCheck_Extensions_identical</i> which compares the DER encoded values of the extensions in the certificate with those in the template.</li>
 <li>The tool runs as long as there are certificate files in the configured directory. When a file is analyzed, then the output is written to log files and the analyzed file is deleted. When there are no more certificate files in the configured directory, the application sleeps for a while (as configured) before checking if there are some more certificates to validate.</li>
