@@ -4893,6 +4893,11 @@ cd dist/ejbca-db-cli
  Run the command to get a description about all available commands.</p>
 </subsection>
 
+<subsection name="Validation/Conformance Check Tool">
+<p>
+The <a href="userguide.html#EJBCA%20Validation/Conformance%20Tool">Validation/Conformance Tool</a> is a tool for running tests on issued certificates or OCSP responses to see that they match the configured criteria.
+</p>x
+</subsection>
 </section>
 
 <section name="Backup and Restore">

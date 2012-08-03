@@ -1474,7 +1474,7 @@ ejbcaClientToolBox.sh ocsp
 
 <section name="EJBCA Validation/Conformance Tool">
 <p>
-The ValidationTool is a standalone client-side application for certificates and OCSP responses validation and conformance checks. 
+The ValidationTool is a standalone client-side application for certificates and OCSP response validation and conformance checks. 
 </p>
 <p>
 For details see the <a href="validationtool.html">ValidationTool manual</a>.
@@ -1493,6 +1493,12 @@ A source distribution can also be created by running:
 </p>
 <source>
 ant validationtool-src
+</source>
+<p>
+The directory 'dist/validationtool-src' is then created. You may optionally zip it together and extract it any location. The ValidationTool can then be built by moving to its modules/validationtool directory and run: 
+</p>
+<source>
+ant jar
 </source>
 </section>
 
