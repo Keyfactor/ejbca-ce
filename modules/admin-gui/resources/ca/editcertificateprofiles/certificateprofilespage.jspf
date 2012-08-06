@@ -38,7 +38,7 @@
       <td width="60%"></td>
     </tr>
   <% } %>
-  <% if(certificateDeletionFailed){ %>
+  <% if(certificateProfileDeletionFailed){ %>
      <tr> 
       <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETECERTPROF") %> </td>      
       <td width="60%"></td>

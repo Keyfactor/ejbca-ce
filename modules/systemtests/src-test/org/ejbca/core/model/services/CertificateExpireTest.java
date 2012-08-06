@@ -328,6 +328,68 @@ public class CertificateExpireTest extends CaTestCase {
         }
     }
     
+    /**
+     * Tries performing the certificate expire worker based on a certificate profile which isn't used. 
+     */
+    @Test
+    public void testExpireCertificateUnusedCertificateProfile() throws Exception {
+        final String usedCertificateprofilename = "foo";
+        final String unusedCertificateProfileName = "bar";
+        int usedCertificateProfileId = certificateProfileSession.addCertificateProfile(admin, usedCertificateprofilename, new CertificateProfile());
+        int unusedCertificateProfileId = certificateProfileSession.addCertificateProfile(admin, unusedCertificateProfileName, new CertificateProfile());
+        try {
+            createCertificate(usedCertificateProfileId);
+            long seconds = (cert.getNotAfter().getTime() - new Date().getTime()) / 1000l;
+            // Create a new UserPasswordExpireService
+            ServiceConfiguration config = new ServiceConfiguration();
+            config.setActive(true);
+            config.setDescription("This is a description");
+            // No mailsending for this Junit test service
+            config.setActionClassPath(NoAction.class.getName());
+            config.setActionProperties(null);
+            config.setIntervalClassPath(PeriodicalInterval.class.getName());
+            Properties intervalprop = new Properties();
+            // Run the service every 3:rd second
+            intervalprop.setProperty(PeriodicalInterval.PROP_VALUE, "3");
+            intervalprop.setProperty(PeriodicalInterval.PROP_UNIT, PeriodicalInterval.UNIT_SECONDS);
+            config.setIntervalProperties(intervalprop);
+            config.setWorkerClassPath(CertificateExpirationNotifierWorker.class.getName());
+            Properties workerprop = new Properties();
+            workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOADMINS, "FALSE");
+            workerprop.setProperty(EmailSendingWorkerConstants.PROP_SENDTOENDUSERS, "FALSE");
+            workerprop.setProperty(BaseWorker.PROP_CAIDSTOCHECK, String.valueOf(caid));
+            //Use the unused certificate profile on the worker.
+            workerprop.setProperty(BaseWorker.PROP_CERTIFICATE_PROFILE_IDS_TO_CHECK, Integer.toString(unusedCertificateProfileId));
+            workerprop.setProperty(BaseWorker.PROP_TIMEBEFOREEXPIRING, String.valueOf(seconds - 5));
+            workerprop.setProperty(BaseWorker.PROP_TIMEUNIT, BaseWorker.UNIT_SECONDS);
+            config.setWorkerProperties(workerprop);
+            if (serviceSession.getService(CERTIFICATE_EXPIRATION_SERVICE) == null) {
+                serviceSession.addService(admin, 4711, CERTIFICATE_EXPIRATION_SERVICE, config);
+            }
+            serviceSession.activateServiceTimer(admin, CERTIFICATE_EXPIRATION_SERVICE);
+            // The service will run... the cert should still be active after 2
+            // seconds..
+            Thread.sleep(2000);
+            info = certificateStoreSession.getCertificateInfo(fingerprint);
+            assertEquals("status does not match.", CertificateConstants.CERT_ACTIVE, info.getStatus());
+            // The service will run...We need some tolerance since timers cannot
+            // be guaranteed to executed at the exact interval.
+            Thread.sleep(10000);
+            int tries = 0;
+            while (info.getStatus() != CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION && tries < 5) {
+                Thread.sleep(1000);
+                info = certificateStoreSession.getCertificateInfo(fingerprint);
+                tries++;
+            }
+            info = certificateStoreSession.getCertificateInfo(fingerprint);
+            assertEquals("Status has unduly been changed", CertificateConstants.CERT_ACTIVE, info.getStatus());
+        } finally {
+            //Clean the certificate profile
+            certificateProfileSession.removeCertificateProfile(admin, usedCertificateprofilename);
+            certificateProfileSession.removeCertificateProfile(admin, unusedCertificateProfileName);
+        }
+    }
+    
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
