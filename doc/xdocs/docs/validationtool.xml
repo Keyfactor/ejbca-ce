@@ -66,14 +66,16 @@ For every check performed an entry is written in the report beginning with the r
 For successful checks the name of the test as well as a short description is noted. For other results an more detailed description about what failed with the analyzed certificate or OCSP response is noted down.
 </p>
 <p>
-Sample output:    
+Sample certificate validation output:
 </p>
 <source>
 2012-07-31 15:21:22,208 ERROR : Validation results for: 
-          Configuration:        certchecks1.properties
-          Certificate file:     timestamp2.pem
-          Certificate serial:   0x5c04ced718526417
-          Certificate issuer:   O=PrimeKey Solutions AB,CN=ServerCA
+          Configuration:                    certchecks1.properties
+          Certificate file:                 timestamp2.pem
+          Certificate serial:               0x5c04ced718526417
+          Certificate issuer:               CN=AdminCA1,O=PrimeKey Solutions AB,C=SE
+          Certificate subject:              CN=Signer 1,C=SE
+          Certificate fingerprint (SHA1):   05a219d835622653192c30eeeee8f01f918b30fb
 
 [SUCCESS] CertCheck_Signature_algorithmEquals
           Compares the signature algorithm
@@ -88,6 +90,33 @@ Sample output:
           Details:   [O="PrimeKey Solutions AB", "Organization 1"]    
 ...
 </source>
+<p>
+Sample OCSP validation output:
+</p>
+<source>
+2012-08-06 12:16:59,887 ERROR : Validation results for: 
+          Server URL:            http://localhost:8080/ejbca/publicweb/status/ocsp
+          Configuration:         ocspchecks_myca1.properties
+          CA:                    CN=MyCA1,O=EJBCA Support,C=SE
+          Query serial number:   0x168794fbd471c7fc
+          Expected signer:       CN=Signer 2,O=EJBCA Support,C=SE
+          Expected status:       good
+
+[SUCCESS] OcspCheck_ExpectedSigner
+          Outputs whether a response was received from the expected signer or not
+
+[FAILURE] OcspCheck_ExpectedStatus
+          Checks that the returned certificate status is the expected
+          Expected:  good
+          Actual:    unknown
+          Details:   
+
+[SUCCESS] OcspCheck_Response_time
+          Checks that the response was returned within the configured max time
+
+...
+</source>
+
 </section>
 
 <section name="Command Line Interface (CLI)">
