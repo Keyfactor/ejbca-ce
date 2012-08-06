@@ -103,10 +103,10 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.CustomFieldException;
 import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
-import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.FieldValidator;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
+import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataFiller;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
@@ -1631,17 +1631,24 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public boolean checkForCertificateProfileId(int certificateprofileid) {
+    public List<String> findByCertificateProfileId(int certificateprofileid) {
         if (log.isTraceEnabled()) {
-            log.trace(">checkForCertificateProfileId(" + certificateprofileid + ")");
+            log.trace(">checkForCertificateProfileId("+certificateprofileid+")");
         }
-        long count = UserData.countByCertificateProfileId(entityManager, certificateprofileid);
-        if (log.isTraceEnabled()) {
-            log.trace("<checkForCertificateProfileId(" + certificateprofileid + "): " + count);
-        }
-        return count > 0;
-    }
+        final javax.persistence.Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.certificateProfileId=:certificateProfileId");
+        query.setParameter("certificateProfileId", certificateprofileid);
 
+        List<String> result = new ArrayList<String>();
+        for(Object userDataObject : query.getResultList()) {
+                result.add(((UserData) userDataObject).getUsername());
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("<checkForCertificateProfileId("+certificateprofileid+"): "+result.size());
+        }
+        return result;
+        
+    }
+   
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
     public boolean checkForCAId(int caid) {

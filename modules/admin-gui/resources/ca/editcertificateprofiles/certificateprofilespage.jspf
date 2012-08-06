@@ -38,17 +38,77 @@
       <td width="60%"></td>
     </tr>
   <% } %>
-  <% if(certificteDeletionFailed){ %> 
-    <tr> 
+  <% if(certificateDeletionFailed){ %>
+     <tr> 
       <td width="40%" class="alert"><%= ejbcawebbean.getText("COULDNTDELETECERTPROF") %> </td>      
       <td width="60%"></td>
     </tr>
     <% if(!servicesContainingCertificateProfile.isEmpty()) { %>  	
          <tr><td width="40%" class="alert"><%= ejbcawebbean.getText("CERTPROFILEUSEDINSERVICES") %></td><td width="60%"></td></tr>                 
          <tr><td width="40%">
-         	<% for(String serviceName : servicesContainingCertificateProfile) { %>
-         		<c:out value="<%= serviceName %>"/>,
+         	<% for(int i = 0; i < servicesContainingCertificateProfile.size(); i++) { 
+         	   String serviceName = servicesContainingCertificateProfile.get(i);
+         	 %>
+         		<c:out value="<%= serviceName%>"/>
+         		<% if(i < servicesContainingCertificateProfile.size()-1 ) {%>
+         		<c:out value=","/>
+         		<% } %> 
          	 <% } %>   
+         </td><td width="60%" class="alert"></td></tr>   
+                    
+    <% } %>
+    <% if(!endEntitiesContainingCertificateProfile.isEmpty()) { %>  	
+         <tr><td width="40%" class="alert"><%= ejbcawebbean.getText("CERTPROFILEUSEDINENDENTITIES") %></td><td width="60%"></td></tr>                 
+         <tr><td width="40%">
+         	<% for(int i = 0; i < endEntitiesContainingCertificateProfile.size(); i++) { 
+         	   String name = endEntitiesContainingCertificateProfile.get(i);
+         	 %>
+         	   <c:out value="<%= name%>"/>
+         	   <% if(i < endEntitiesContainingCertificateProfile.size()-1 ) {%>
+         		<c:out value=","/>
+         	   <% } %> 
+         	<% } %>     
+         </td><td width="60%" class="alert"></td></tr>   
+                    
+    <% } %>
+    <% if(!endEntityProfilesContainingCertificateProfile.isEmpty()) { %>
+         <tr><td width="40%" class="alert"><%= ejbcawebbean.getText("CERTPROFILEUSEDINENDENTITYPROFILES") %></td><td width="60%"></td></tr>                 
+         <tr><td width="40%">
+         	<% for(int i = 0; i < endEntityProfilesContainingCertificateProfile.size(); i++) { 
+         	   String name = endEntityProfilesContainingCertificateProfile.get(i);
+         	 %>
+         	   <c:out value="<%= name%>"/>
+         	   <% if(i < endEntityProfilesContainingCertificateProfile.size()-1 ) {%>
+         		<c:out value=","/>
+         	   <% } %> 
+         	<% } %>    
+         	</td><td width="60%" class="alert"></td></tr>                 
+    <% } %>
+    <% if(!hardTokenProfilesContainingCertificateProfile.isEmpty()) { %>  	
+         <tr><td width="40%" class="alert"><%= ejbcawebbean.getText("CERTPROFILEUSEDINHARDTOKENPROFILES") %></td><td width="60%"></td></tr>                 
+         <tr><td width="40%">
+         	<% for(int i = 0; i < hardTokenProfilesContainingCertificateProfile.size(); i++) { 
+         	   String name = hardTokenProfilesContainingCertificateProfile.get(i);
+         	 %>
+         	   <c:out value="<%= name%>"/>
+         	   <% if(i < hardTokenProfilesContainingCertificateProfile.size()-1 ) {%>
+         		<c:out value=","/>
+         	   <% } %> 
+         	<% } %>    
+         </td><td width="60%" class="alert"></td></tr>   
+                    
+    <% } %>
+    <% if(!casUsingCertificateProfile.isEmpty()) { %>  	
+         <tr><td width="40%" class="alert"><%= ejbcawebbean.getText("CERTPROFILEUSEDINCAS") %></td><td width="60%"></td></tr>                 
+         <tr><td width="40%">
+         	<% for(int i = 0; i < casUsingCertificateProfile.size(); i++) { 
+         	   String name = casUsingCertificateProfile.get(i);
+         	 %>
+         	   <c:out value="<%= name%>"/>
+         	   <% if(i < casUsingCertificateProfile.size()-1 ) {%>
+         		<c:out value=","/>
+         	   <% } %> 
+         	<% } %>  
          </td><td width="60%" class="alert"></td></tr>   
                     
     <% } %>

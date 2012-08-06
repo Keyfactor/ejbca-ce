@@ -411,8 +411,8 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
         	} catch (EndEntityProfileExistsException pee) {
         		log.warn("Failed to add Certificate Profile " + NAME + ". Assuming this is caused from a previous failed test..");
         	}
-        	assertTrue("Unable to detect that Certificate Profile Id was present in End Entity Profile.", endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(1337));
-        	assertFalse("Unable to detect that Certificate Profile Id was not present in End Entity Profile.", endEntityProfileSession.existsCertificateProfileInEndEntityProfiles(7331));
+        	assertFalse("Unable to detect that Certificate Profile Id was present in End Entity Profile.", endEntityProfileSession.getEndEntityProfilesUsingCertificateProfile(1337).isEmpty());
+        	assertTrue("Unable to detect that Certificate Profile Id was not present in End Entity Profile.", endEntityProfileSession.getEndEntityProfilesUsingCertificateProfile(7331).isEmpty());
         	assertTrue("Unable to detect that CA Id was present in Certificate Profile.", endEntityProfileSession.existsCAInEndEntityProfiles(caid));
         	assertFalse("Unable to detect that CA Id was not present in Certificate Profile.", endEntityProfileSession.existsCAInEndEntityProfiles(8331));
         } finally {
