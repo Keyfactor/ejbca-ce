@@ -101,6 +101,8 @@ Sample OCSP validation output:
           Query serial number:   0x168794fbd471c7fc
           Expected signer:       CN=Signer 2,O=EJBCA Support,C=SE
           Expected status:       good
+          Request file:          ./failfolder/request936843811890885123.orq
+          Response file:         ./failfolder/response6475558795694330535.ors
 
 [SUCCESS] OcspCheck_ExpectedSigner
           Outputs whether a response was received from the expected signer or not
@@ -129,12 +131,14 @@ bin/validationtool ocsp
 
 usage: ocsp [-url URL]... [-maxtries NUMBER] [-caconf CONFIGFILE]...
 Run the OCSP healthcheck tool with the specifed CA configuration file(s)
- -caconf      CA configuration file. This option can be specified for
-              every issuer to query.
- -maxtries    Maximum number of tries to perform before giving up getting
-              a response from a particular responder.
- -url         URL of server to query. This option can be specified for
-              every server to query.
+ -caconf        CA configuration file. This option can be specified for
+                every issuer to query.
+ -failfolder    Folder to move requests and responses for which there were
+                failures. If not specified, failures are not stored.
+ -maxtries      Maximum number of tries to perform before giving up
+                getting a response from a particular responder.
+ -url           URL of server to query. This option can be specified for
+                every server to query.
 
 Sample usages:
 a) ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf
@@ -142,10 +146,15 @@ ocspchecks_adminca1.properties
 b) ocsp -url http://server1/status/ocsp -url http://server2/status/ocsp
 -maxtries 4 -caconf ocspchecks_adminca1.properties -caconf
 ocspchecks_authca1.properties
+c) ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf
+ocspchecks_adminca1.properties -failfolder ./failfolder
 </source>
 </subsubsection>
 <p>
-Multiple OCSP responder URL:s and CA configuration files can be specified as arguments to the command. Each URL will be queried with all quries as configured in each CA configuration file.
+Multiple OCSP responder URL:s and CA configuration files can be specified as arguments to the command. Each URL will be queried with all queries as configured in each CA configuration file.
+</p>
+<p>
+If a folder for failures is specified the requests and responses which had failures will be outputted there.
 </p>
 
 <subsubsection name="certificate">
@@ -153,11 +162,13 @@ Multiple OCSP responder URL:s and CA configuration files can be specified as arg
 bin/validationtool certificate
 
 usage: certificate -certfolder FOLDERPATH [-minfileage 2000] [-waittime
-                   1000]
+                   1000] [-failfolder FOLDER]
 The certificate validation application monitoring and checking all
 certificates in the specified folder.
  -certfolder    Folder to watch for certificates.
  -conf          File name of the configuration file to use.
+ -failfolder    Folder to move certificates to for which there were
+                failures. If not specified the files are deleted.
  -minfileage    Minimum number of milliseconds since the last modified
                 time before a file is up for inspection. Specify this to make it less
                 likely a file is being checked before it has been completely written to
@@ -169,7 +180,12 @@ Sample usages:
 a) certificate -conf certchecks.properties -certfolder ./certfolder
 b) certificate -conf certchecks.properties -certfolder ./certfolder
 -minfileage 2000 -waittime 1000
+c) certificate -conf certchecks.properties -certfolder ./certfolder
+-failfolder ./failfolder
 </source>
+<p>
+If a folder for failures is specified the certificates which had failures will be moved there.
+</p>
 <note>
 It is important to not run multiple instances of the tool at the same time on the same folder as the tool will remove the tested certificates.
 </note>
