@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -1093,22 +1094,20 @@ public class HardTokenSessionBean implements HardTokenSessionLocal, HardTokenSes
     }
 
     @Override
-    public boolean existsCertificateProfileInHardTokenProfiles(int id) {
-        HardTokenProfile profile = null;
+    public List<String> getHardTokenProfileUsingCertificateProfile(int certificateProfileId) {
+        List<String> result = new ArrayList<String>();
         Collection<Integer> certprofiles = null;
-        boolean exists = false;
-        Collection<HardTokenProfileData> result = HardTokenProfileData.findAll(entityManager);
-        Iterator<HardTokenProfileData> i = result.iterator();
-        while (i.hasNext() && !exists) {
-            profile = getHardTokenProfile(i.next());
+        HardTokenProfile profile = null;
+        for(HardTokenProfileData profileData : HardTokenProfileData.findAll(entityManager)) {
+            profile = getHardTokenProfile(profileData);
             if (profile instanceof EIDProfile) {
                 certprofiles = ((EIDProfile) profile).getAllCertificateProfileIds();
-                if (certprofiles.contains(Integer.valueOf(id))) {
-                    exists = true;
+                if (certprofiles.contains(certificateProfileId)) {
+                    result.add(profileData.getName());
                 }
             }
         }
-        return exists;
+        return result;
     }
 
     @Override

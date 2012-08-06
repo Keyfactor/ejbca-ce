@@ -899,10 +899,10 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
         //Since the service types are embedded in the data objects there is no more elegant way to to this.
         List<ServiceData> allServices = serviceDataSession.findAll();
         for (ServiceData service : allServices) {
-            String[] certificateProfiles = service.getServiceConfiguration().getWorkerProperties()
-                    .getProperty(BaseWorker.PROP_CERTIFICATE_PROFILE_IDS_TO_CHECK).split(";");
-            if (certificateProfiles != null) {
-                for (String certificateProfile : certificateProfiles) {
+            String certificateProfiles = service.getServiceConfiguration().getWorkerProperties()
+                    .getProperty(BaseWorker.PROP_CERTIFICATE_PROFILE_IDS_TO_CHECK);
+            if (certificateProfiles != null && !certificateProfiles.equals("")) {
+                for (String certificateProfile : certificateProfiles.split(";")) {
                     if (certificateProfile.equals(certificateProfileId.toString())) {
                         result.add(service.getName());
                         break;

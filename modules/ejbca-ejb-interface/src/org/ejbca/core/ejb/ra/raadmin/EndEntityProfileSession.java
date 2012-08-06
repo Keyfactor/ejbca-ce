@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.ra.raadmin;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -22,7 +23,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 
 /** Session bean for managing End Entity Profiles.
  * 
- * @author Mike Kushner
  * @version $Id$
  */
 public interface EndEntityProfileSession {
@@ -119,11 +119,11 @@ public interface EndEntityProfileSession {
     /**
      * Method to check if a CertificateProfile exists in any of the end entity
      * profiles. Used to avoid desynchronization of certificate profile data.
-     * @param certificateprofileid the CertificateProfile's id to search for.
      * 
-     * @return true if CertificateProfile exists in any EndEntityProfile.
+     * @param certificateprofileid the CertificateProfile's id to search for.
+     * @return  a collection of EndEntityProfile names using the sought CertificateProfile
      */
-    boolean existsCertificateProfileInEndEntityProfiles(int certificateprofileid);
+    List<String> getEndEntityProfilesUsingCertificateProfile(int certificateprofileid);
 
     /**
      * Method to check if a CA exists in any of the end entity profiles. Used to

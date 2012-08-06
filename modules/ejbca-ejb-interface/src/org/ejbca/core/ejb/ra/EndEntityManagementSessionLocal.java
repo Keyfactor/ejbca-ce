@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.ra;
 
 import java.util.Collection;
+import java.util.List;
 
 import javax.ejb.FinderException;
 import javax.ejb.Local;
@@ -48,14 +49,14 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
     boolean checkForCAId(int caid);
 
     /**
-     * Methods that checks if a user exists in the database having the given
+     * Method that checks if a user exists in the database having the given
      * CertificateProfile id. This function is mainly for avoiding
      * desynchronization when a CertificateProfile is deleted.
      * 
      * @param certificateprofileid the id of CertificateProfile to look for.
-     * @return true if certificateproileid exists in UserData table.
+     * @return a list of end entities using the certificate profile
      */
-    boolean checkForCertificateProfileId(int certificateprofileid);
+     List<String> findByCertificateProfileId(int certificateprofileid);
     
     /**
      * Methods that checks if a user exists in the database having the given
