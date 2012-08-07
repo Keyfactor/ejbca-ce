@@ -2162,7 +2162,7 @@ The worker have the following settings:
 </li>
 <li>
 <i> Certificate Profiles to Check</i> - If any certificate profile is selected from this list, the notification service will require that 
-certificates are issued by the  selected CAs AND that they belong to one of the selected certificate profiles. Leaving this list empty will 
+certificates are issued by the selected CAs AND that they are issued using one of the selected certificate profiles. Leaving this list empty will 
 cause the service to search for certificates just based on the CA selection.   
 </li>
 <li>
