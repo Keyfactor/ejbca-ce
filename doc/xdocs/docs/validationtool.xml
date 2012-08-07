@@ -151,7 +151,7 @@ ocspchecks_adminca1.properties -failfolder ./failfolder
 </source>
 </subsubsection>
 <p>
-Multiple OCSP responder URL:s and CA configuration files can be specified as arguments to the command. Each URL will be queried with all queries as configured in each CA configuration file.
+Multiple OCSP responder URL:s and CA configuration files can be specified as arguments to the command. Each URL will be queried with all queries as configured in each CA configuration file. This means that each URL should answer responses with the signer subject DN:s as specified in the configuration. This might only be useful in some situation like when one wants to test different URL:s to the same responders. To query different responders on different URLs the command can instead be invoked multiple times with the different URLs and matching configuration files.
 </p>
 <p>
 If a folder for failures is specified the requests and responses which had failures will be outputted there.
@@ -279,6 +279,9 @@ ca.checks.OcspCheck_Extensions_required.requiredoids=
 This example defines three queries to send, one with each OCSP response status - good, revoked or unknown for different certificate serial numbers. The idea is to configure the queries to be for certificate which are known to have a particular status in the CA database. The OCSP responder (signer) subject DN for the expected responder answering the request is also configured. Only responses from the expected responder is further examined. This could be particular useful if running queries against a load balancer or a virtual IP (VIP) with multiple responders behind and one wants to be sure that each responder is tested.
 </p>
 <p>
+The ca.usenonce property determines if a nonce should be included or not when sending the queries. Default is to send a nonce (ca.usenonce=true).    
+</p>
+<p>
 Notice in this example that the check called OcspCheck_SignerCertificate is using a certificate checks configuration file (as described in previous section) and will also run all checks configured in that one against the responder certificate.
 </p>
 </subsection>
@@ -313,7 +316,8 @@ If a component specified in the configuration exists in the certificate it must 
 <tr><td>OcspCheck_SignerCertificate</td><td>Runs the configured checks for the signer certificate.</td></tr>
 <tr><td>OcspCheck_CertificateChain</td><td>Validates the signer certificate chain</td></tr>
 <tr><td>OcspCheck_ExpectedStatus</td><td>Checks that the returned certificate status is the expected</td></tr>
-<tr><td>OcspCheck_Nonce</td><td>Checks that the nonce in the response matches the request</td></tr>
+<tr><td>OcspCheck_Nonce</td><td>Checks that the nonce in the response matches the request.<br/>
+As a special case, if configured to not send a nonce the check checks that no nonce is present in the response.</td></tr>
 <tr><td>OcspCheck_Response_verify</td><td>Verifies the signature</td></tr>
 <tr><td>OcspCheck_Response_time</td><td>Checks that the response was returned within the configured max time</td></tr>
 <tr><td>OcspCheck_Extensions_required</td><td>Checks that all required extensions are in the response.<br/>Also add this extensions to the list of allowed if that check is also used.</td></tr>
@@ -342,7 +346,8 @@ If a component specified in the configuration exists in the certificate it must 
 <li>Querying for multiple CAs on each server by supplying multiple CA configuration files. New files can easily be created and supplied at the command line when invoking the tool.</li>
 <li>Querying one OK, one revoked and one unknown certificate, as configured, from each CA by specifying multiple queries in the CA configuration file with different expected status for different certificates. The check <i>OcspCheck_ExpectedStatus</i> verifies that the status is the expected and <i>OcspCheck_ExpectedSigner</i> outputs if a response was received from the expected responder.</li>
 
-<li>Verifying that the returned certificate chain in the OCSP response is good by adding the check called <i>OcspCheck_CertificateChain</i>.</li>
+<li>Verifying that the returned certificate chain in the OCSP response is good by adding the check called <i>OcspCheck_CertificateChain</i>.<br/>
+A basic certificate chain check is performed with the configured issuer certificate as trust anchor. More complex chains or chains where the responder certificate is not signed by the configured issuer might fail.</li>
 <li>Verifying that the returned OCSP response verifies by adding the check called <i>OcspCheck_Response_verify</i>.</li>
 <li>Verifying that the OCSP response is returned timely (configurable max time) by adding the check called <i>OcspCheck_Response_time</i>.</li>
 <li>Verifying the nonce if configured to use one by adding the check called <i>OcspCheck_Nonce</i>.</li>
