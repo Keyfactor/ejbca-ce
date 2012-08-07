@@ -87,7 +87,7 @@ Sample certificate validation output:
           Compares the values of the DN components configured to be identical
           Expected:  the following to be identical [C, O]
           Actual:    was different [O]
-          Details:   [O="PrimeKey Solutions AB", "Organization 1"]    
+          Details:   [[O=[PrimeKey Solutions AB], [Organization 1]]]
 ...
 </source>
 <p>
@@ -293,8 +293,8 @@ Notice in this example that the check called OcspCheck_SignerCertificate is usin
 <tr><td>CertCheck_IssuerDNComponents_allowed</td><td>Checks that sampled certified does not contain any other DN components than the allowed</td></tr>
 <tr><td>CertCheck_SubjectDNComponents_specified</td><td>Compares the values of the DN parts configured to be as specified</td></tr>
 <tr><td>CertCheck_IssuerDNComponents_specified</td><td>Compares the values of the DN parts configured to be as specified</td></tr>
-<tr><td>CertCheck_SubjectDNComponents_identical</td><td>Compares the values of the DN components configured to be identical</td></tr>
-<tr><td>CertCheck_IssuerDNComponents_identical</td><td>Compares the values of the DN components configured to be identical</td></tr>
+<tr><td>CertCheck_SubjectDNComponents_identical</td><td>Compares the values of the DN components configured to be identical.<br/>The same number of each component and with the same value(s) as in the template must exist in the certificate.</td></tr>
+<tr><td>CertCheck_IssuerDNComponents_identical</td><td>Compares the values of the DN components configured to be identical. <br/>The same number of each component and with the same value(s) as in the template must exist in the certificate.</td></tr>
 <tr><td>CertCheck_ValidityNotAfter_minRemaining</td><td>Checks that the notAfter date is at least the specified number of hours in the future</td></tr>
 <tr><td>CertCheck_ValidityNotAfter_maxRemaining</td><td>Checks that the notAfter date is not more than a specied number of hours in the future</td></tr>
 <tr><td>CertCheck_ValidityNotBefore_maxDiffFromNow</td><td>Checks that the notBefore date is not more than a specified number of minutues from now</td></tr>
