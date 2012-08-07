@@ -291,8 +291,10 @@ Notice in this example that the check called OcspCheck_SignerCertificate is usin
 <tr><td>CertCheck_IssuerDNComponents_required</td><td>Checks that sampled certificate contains the required DN fields</td></tr>
 <tr><td>CertCheck_SubjectDNComponents_allowed</td><td>Checks that sampled certified does not contain any other DN components than the allowed</td></tr>
 <tr><td>CertCheck_IssuerDNComponents_allowed</td><td>Checks that sampled certified does not contain any other DN components than the allowed</td></tr>
-<tr><td>CertCheck_SubjectDNComponents_specified</td><td>Compares the values of the DN parts configured to be as specified</td></tr>
-<tr><td>CertCheck_IssuerDNComponents_specified</td><td>Compares the values of the DN parts configured to be as specified</td></tr>
+<tr><td>CertCheck_SubjectDNComponents_specified</td><td>Checks that the DN parts in the certificate are as the values specified in the configuration if they exists in the certificate.<br/>
+If a component specified in the configuration exists in the certificate it must have the same value(s) as specified.</td></tr>
+<tr><td>CertCheck_IssuerDNComponents_specified</td><td>Checks that the DN parts in the certificate are as the values specified in the configuration if they exists in the certificate.<br/>
+If a component specified in the configuration exists in the certificate it must have the same value(s) as specified.</td></tr>
 <tr><td>CertCheck_SubjectDNComponents_identical</td><td>Compares the values of the DN components configured to be identical.<br/>The same number of each component and with the same value(s) as in the template must exist in the certificate.</td></tr>
 <tr><td>CertCheck_IssuerDNComponents_identical</td><td>Compares the values of the DN components configured to be identical. <br/>The same number of each component and with the same value(s) as in the template must exist in the certificate.</td></tr>
 <tr><td>CertCheck_ValidityNotAfter_minRemaining</td><td>Checks that the notAfter date is at least the specified number of hours in the future</td></tr>
