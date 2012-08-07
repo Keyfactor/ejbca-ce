@@ -362,6 +362,12 @@ public interface EndEntityManagementSession {
     boolean checkIfCertificateBelongToUser(BigInteger certificatesnr, String issuerdn);
 
     /**
+     * @param certificateprofileid the ID of the Certificate Profile to check against
+     * @return a count of the number of end entities
+     */
+    long countEndEntitiesUsingCertificateProfile(int certificateprofileid);
+    
+    /**
      * Finds all users with a specified status.
      * 
      * @param status the status to look for, from 'UserData'.

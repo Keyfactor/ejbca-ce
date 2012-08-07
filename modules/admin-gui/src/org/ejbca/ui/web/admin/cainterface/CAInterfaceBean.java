@@ -70,6 +70,7 @@ import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.RevokedInfoView;
+import org.ejbca.ui.web.admin.cainterface.exception.ExcessiveResultsException;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
@@ -255,20 +256,53 @@ public class CAInterfaceBean implements Serializable {
     }
     
     /**
+     * Returns a count of all end entities using a certain certificate profile of the 
+     * SecConst.CERTTYPE_ENDENTITY type. 
+     * 
+     * @param certificateProfileName the name of the certificate profile
+     * @return the number of end entities found
+     */
+    public long countEndEntitiesUsingCertificateProfile(final String certificateProfileName) {
+        int certificateprofileid = certificateProfileSession.getCertificateProfileId(certificateProfileName);
+        CertificateProfile certprofile = this.certificateProfileSession.getCertificateProfile(certificateProfileName);
+        if (certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) {
+            return countEndEntitiesUsingCertificateProfile(certificateprofileid);
+        } else {
+            return 0;
+        }       
+    }
+    
+    /**
+     * Returns a count of all end entities using a certain certificate profile 
+     * 
+     * @param certificateprofileid the ID of the certificate profile
+     * @return the number of end entities found
+     */
+    private long countEndEntitiesUsingCertificateProfile(final int certificateprofileid) {
+        return endEntityManagementSession.countEndEntitiesUsingCertificateProfile(certificateprofileid);
+    }
+  
+    
+    /**
      * Check if certificate profile is in use by any end entity
      * 
      * @param certificateProfileName the name of the sought profile
      * @return a list of end entity names using the sought profile
      * @throws CertificateProfileDoesNotExistException if sought certificate profile was not found.
+     * @throws ExcessiveResultsException on a query returning +1000 results
      */
-    public List<String> getEndEntitiesUsingCertificateProfile(final String certificateProfileName) throws CertificateProfileDoesNotExistException {
+    public List<String> getEndEntitiesUsingCertificateProfile(final String certificateProfileName) throws CertificateProfileDoesNotExistException, ExcessiveResultsException {
         int certificateprofileid = certificateProfileSession.getCertificateProfileId(certificateProfileName);
         CertificateProfile certprofile = this.certificateProfileSession.getCertificateProfile(certificateProfileName);
         if (certprofile == null) {
             throw new CertificateProfileDoesNotExistException(certificateProfileName + " was not found.");
         } else {
             if (certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) {
-                return endEntityManagementSession.findByCertificateProfileId(certificateprofileid);
+                if(countEndEntitiesUsingCertificateProfile(certificateprofileid) < 1000) {
+                    return endEntityManagementSession.findByCertificateProfileId(certificateprofileid);
+                } else {
+                    throw new ExcessiveResultsException("Excessive amount of end entities (+1000) encountered.");
+                }
             } else {
                 return new ArrayList<String>();
             }
