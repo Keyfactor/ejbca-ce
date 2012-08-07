@@ -944,6 +944,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
     }
 
+    @Override 
+    public long countEndEntitiesUsingCertificateProfile(int certificateprofileid) {
+       return UserData.countByCertificateProfileId(entityManager, certificateprofileid);
+    }
+    
     @Override
     public void setUserStatus(final AuthenticationToken admin, final String username, final int status) throws AuthorizationDeniedException,
             FinderException, ApprovalException, WaitingForApprovalException {

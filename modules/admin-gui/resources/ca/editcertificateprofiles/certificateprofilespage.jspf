@@ -57,19 +57,26 @@
          </td><td width="60%" class="alert"></td></tr>   
                     
     <% } %>
-    <% if(!endEntitiesContainingCertificateProfile.isEmpty()) { %>  	
-         <tr><td width="40%" class="alert"><%= ejbcawebbean.getText("CERTPROFILEUSEDINENDENTITIES") %></td><td width="60%"></td></tr>                 
-         <tr><td width="40%">
-         	<% for(int i = 0; i < endEntitiesContainingCertificateProfile.size(); i++) { 
-         	   String name = endEntitiesContainingCertificateProfile.get(i);
-         	 %>
-         	   <c:out value="<%= name%>"/>
-         	   <% if(i < endEntitiesContainingCertificateProfile.size()-1 ) {%>
-         		<c:out value=","/>
-         	   <% } %> 
-         	<% } %>     
-         </td><td width="60%" class="alert"></td></tr>   
-                    
+    <% if(numberOfEndEntitiesContainingCertificateProfile > 1000) { %>
+    <tr><td width="40%" class="alert"><%= ejbcawebbean.getText("CERTPROFILEUSEDINENDENTITIESEXCESSIVE") %></td><td width="60%"></td></tr>   
+    <% } else { %>
+	    <% if(!endEntitiesContainingCertificateProfile.isEmpty()) { %>  	
+	         <tr><td width="40%" class="alert"><%= ejbcawebbean.getText("CERTPROFILEUSEDINENDENTITIES") %>
+	          <% if(endEntitiesContainingCertificateProfile.size() > 10) { %> 
+	          (<%= ejbcawebbean.getText("DISPLAYINGFIRSTTENRESULTS")  %> <c:out value="<%= numberOfEndEntitiesContainingCertificateProfile%>"/>)
+	          <% } %>     
+	         </td><td width="60%"></td></tr>                 
+	         <tr><td width="40%">
+	         	<% for(int i = 0; i < endEntitiesContainingCertificateProfile.size(); i++) { 
+	         	   String name = endEntitiesContainingCertificateProfile.get(i);
+	         	 %>
+	         	   <c:out value="<%= name%>"/>
+	         	   <% if(i < endEntitiesContainingCertificateProfile.size()-1 ) {%>
+	         		<c:out value=","/>
+	         	   <% } %> 
+	         	<% } %>     
+	         </td><td width="60%" class="alert"></td></tr>
+		 <% } %>                      
     <% } %>
     <% if(!endEntityProfilesContainingCertificateProfile.isEmpty()) { %>
          <tr><td width="40%" class="alert"><%= ejbcawebbean.getText("CERTPROFILEUSEDINENDENTITYPROFILES") %></td><td width="60%"></td></tr>                 
