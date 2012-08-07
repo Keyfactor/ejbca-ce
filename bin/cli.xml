@@ -35,7 +35,10 @@
         <input message="Please enter the CA signature algorithm (default: SHA1WithRSA) ?" addproperty="ca.signaturealgorithm" defaultvalue="SHA1WithRSA" />
         <input message="Please enter the CA validity in days (default: 3650) ?" addproperty="ca.validity" defaultvalue="3650"/>
         <input message="Please enter the CA policy id (default, no policy) ?" addproperty="ca.policy" defaultvalue="null"/>
+        <echo message="To set httpsserver.hostname you need to configure conf/web.properties. See sample config file conf/web.properties.sample."/>
         <input message="Please enter the server hostname (default 'localhost') ?" addproperty="httpsserver.hostname" defaultvalue="localhost"/>
+        <echo message=""/>
+        <echo message="Common Name (CN) of httpsserver dn is by default taken from the httpsserver.hostname."/>
         <input message="Please enter the server dn (default: CN=${httpsserver.hostname},O=EJBCA Sample,C=SE) ?" addproperty="httpsserver.dn" defaultvalue="CN=${httpsserver.hostname},O=EJBCA Sample,C=SE"/>
         <input message="Please enter the superadmin cn (default: SuperAdmin) ?" addproperty="superadmin.cn" defaultvalue="SuperAdmin"/>
          <input message="Please enter the superadmin dn (default: CN=${superadmin.cn}) ?" addproperty="superadmin.dn" defaultvalue="CN=${superadmin.cn}"/>
