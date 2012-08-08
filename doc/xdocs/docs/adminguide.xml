@@ -1633,8 +1633,9 @@ To enable key recovery, use the Admin GUI:
 </p>
 <ol>
 <li>Set 'Enable Key Recovery' in 'System Configuration'.</li>
-<li>Create a new End Entity Profile and set to use 'Key Recoverable'. Do not use the 'user generated' keystore type.</li>
-<li>Add users with this End Entity Profile.</li>
+<li>Create a new End Entity Profile and set to use 'Key Recoverable'.</li>
+<li>Add users with this End Entity Profile. Use a keystore type other than 'User Generated', for example P12.</li>
+<li>Enroll the user with 'Create keystore' in Public Web.</li>
 </ol>
 <p>
 Key recovery can <strong>not</strong> be used with 'user generated' keys. this is because the CA does not have access to the 
@@ -1642,14 +1643,9 @@ private key in this case, and can thus not store it.
 </p><p>
 The following is an example of a sequence of commands that can be used to generate a new certificate for a user using the
 same key pair:
-</p><p>
-# First revoke <i>username</i>, with revocation reason <i>reason</i>,
 </p>
-<source>
-bin/ejbca.sh ra revokeuser $username $reason
-</source>
 <p>
-# then mark the certificate for keyrecovery,
+# Mark the generated certificate for keyrecovery,
 </p>
 <source>
 bin/ejbca.sh ra keyrecovernewest $username
@@ -1669,10 +1665,9 @@ bin/ejbca.sh batch $username
 <p>
 The same can be accomplished using a browser:
 <ul>
-<li>Admin GUI - List/Edit End Entities - View_Certificates for user - Revoke the certificate with revocation reason</li>
-<li>Admin GUI - List/Edit End Entities - View_Certificates for user - Recover Key, Close</li>
-<li>Admin GUI - List/Edit End Entities - Edit_End_Entity for user - Enter new password for user, Save</li>
-<li>Public Web - Create Keystore - Enter username and password - Fetch the keystore</li>
+<li>Admin GUI - List/Edit End Entities - View_Certificates for user - Recover Key, Close.</li>
+<li>Admin GUI - List/Edit End Entities - Edit_End_Entity for user - Enter new password for user, Save (user status should now be 'Key Recovery')</li>
+<li>Public Web - Create Keystore - Enter username and password - Fetch the keystore.</li>
 </ul>
 </p>
 <subsection name="Technical details">
