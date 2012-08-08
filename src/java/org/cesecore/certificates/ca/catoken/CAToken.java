@@ -318,9 +318,9 @@ public class CAToken extends UpgradeableDataHashMap {
             updateProperties(newprops);
         }
         if (tokeninfo.getKeySequence() != null) {
-            this.setKeySequence(getKeySequence());
+            this.setKeySequence(tokeninfo.getKeySequence());
         }
-        this.setKeySequenceFormat(getKeySequenceFormat());
+        this.setKeySequenceFormat(tokeninfo.getKeySequenceFormat());
 
     } // updateTokenInfo
 
