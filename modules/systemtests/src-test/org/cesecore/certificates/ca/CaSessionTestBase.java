@@ -65,6 +65,7 @@ import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.cesecore.util.StringTools;
 
 /**
  * Tests the CA session bean.
@@ -210,10 +211,16 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         assertEquals(testx509ca.getCAId(), ca2.getCAId());
         assertEquals(0, cainfo.getCRLIssueInterval());
         cainfo.setCRLIssueInterval(50);
+        assertEquals(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC, cainfo.getCATokenInfo().getKeySequenceFormat());
+        assertEquals("00000", cainfo.getCATokenInfo().getKeySequence());
+        cainfo.getCATokenInfo().setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_ALPHANUMERIC);
+        cainfo.getCATokenInfo().setKeySequence("SE002");
         caSession.editCA(roleMgmgToken, cainfo);
         ca = caTestSession.getCA(roleMgmgToken, testx509ca.getName());
         assertEquals(50, ca.getCRLIssueInterval());
         assertEquals(50, ca.getCAInfo().getCRLIssueInterval());
+        assertEquals(StringTools.KEY_SEQUENCE_FORMAT_ALPHANUMERIC, ca.getCAInfo().getCATokenInfo().getKeySequenceFormat());
+        assertEquals("SE002", ca.getCAInfo().getCATokenInfo().getKeySequence());
 
         // Test edit using a new "edit" CAInfo
         X509CAInfo newinfo = new X509CAInfo(cainfo.getCAId(), cainfo.getValidity(), cainfo.getCATokenInfo(), "new description", 
