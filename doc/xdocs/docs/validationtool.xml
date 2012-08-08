@@ -161,8 +161,8 @@ If a folder for failures is specified the requests and responses which had failu
 <source>
 bin/validationtool certificate
 
-usage: certificate -certfolder FOLDERPATH [-minfileage 2000] [-waittime
-                   1000] [-failfolder FOLDER]
+usage: certificate -conf CONFFILE -certfolder FOLDERPATH [-minfileage
+                   2000] [-waittime 1000] [-failfolder FOLDER]
 The certificate validation application monitoring and checking all
 certificates in the specified folder.
  -certfolder    Folder to watch for certificates.
