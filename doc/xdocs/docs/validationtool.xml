@@ -594,11 +594,15 @@ Details:   See the individual checks for details.
 <p>Validates the signer certificate chain</p>
 <p>Sample failure:</p>
 <pre>
-Expected:  valid certificate chain
-Actual:    verification problems
-Details:   Verification error: Signature does not match.
+Expected:  Valid certificate chain
+Actual:    Verification error
+Details:   Signature does not match.
 Certificate to be verified: CN=Sub sub CA 1
-Issuer certificate: CN=Root CA 1
+Issuer certificate: CN=Responder Sub CA 1
+Complete chain:
+   0: 0x76782bc186c29f0e CN=Sub sub CA 1 issued by CN=Sub CA 1
+   1: 0x392407a31a050b2 CN=Responder Sub CA 1 issued by CN=Root CA 1
+   2: 0x1cbb40cd1664b95e CN=Root CA 1 issued by CN=Root CA 1
 </pre>
 </td>
 </tr>
