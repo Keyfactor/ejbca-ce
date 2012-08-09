@@ -28,12 +28,9 @@ import java.util.Iterator;
 import java.util.Random;
 
 import org.apache.log4j.Logger;
-import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
-import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
