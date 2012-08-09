@@ -127,26 +127,30 @@ The ValidationTool command line interface currently has two commands with the fo
 </p>
 <subsubsection name="ocsp">
 <source>
-bin/validationtool ocsp
+bin/validationtool.sh ocsp
 
 usage: ocsp [-url URL]... [-maxtries NUMBER] [-caconf CONFIGFILE]...
+            [-failfolder FOLDER]
 Run the OCSP healthcheck tool with the specifed CA configuration file(s)
  -caconf        CA configuration file. This option can be specified for
                 every issuer to query.
  -failfolder    Folder to move requests and responses for which there were
                 failures. If not specified, failures are not stored.
+ -listchecks    Lists all the available checks and exists. No other
+                options are required when using this.
  -maxtries      Maximum number of tries to perform before giving up
                 getting a response from a particular responder.
  -url           URL of server to query. This option can be specified for
                 every server to query.
 
 Sample usages:
-a) ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf
+a) ocsp -listchecks
+b) ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf
 ocspchecks_adminca1.properties
-b) ocsp -url http://server1/status/ocsp -url http://server2/status/ocsp
+c) ocsp -url http://server1/status/ocsp -url http://server2/status/ocsp
 -maxtries 4 -caconf ocspchecks_adminca1.properties -caconf
 ocspchecks_authca1.properties
-c) ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf
+d) ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf
 ocspchecks_adminca1.properties -failfolder ./failfolder
 </source>
 </subsubsection>
@@ -159,7 +163,7 @@ If a folder for failures is specified the requests and responses which had failu
 
 <subsubsection name="certificate">
 <source>
-bin/validationtool certificate
+bin/validationtool.sh certificate
 
 usage: certificate -conf CONFFILE -certfolder FOLDERPATH [-minfileage
                    2000] [-waittime 1000] [-failfolder FOLDER]
@@ -169,6 +173,8 @@ certificates in the specified folder.
  -conf          File name of the configuration file to use.
  -failfolder    Folder to move certificates to for which there were
                 failures. If not specified the files are deleted.
+ -listchecks    Lists all the available checks and exists. No other
+                options are required when using this.
  -minfileage    Minimum number of milliseconds since the last modified
                 time before a file is up for inspection. Specify this to make it less
                 likely a file is being checked before it has been completely written to
@@ -177,10 +183,11 @@ certificates in the specified folder.
                 there were no files in the directory.
 
 Sample usages:
-a) certificate -conf certchecks.properties -certfolder ./certfolder
+a) certificate -listchecks
 b) certificate -conf certchecks.properties -certfolder ./certfolder
--minfileage 2000 -waittime 1000
 c) certificate -conf certchecks.properties -certfolder ./certfolder
+-minfileage 2000 -waittime 1000
+d) certificate -conf certchecks.properties -certfolder ./certfolder
 -failfolder ./failfolder
 </source>
 <p>
