@@ -148,7 +148,7 @@ a) ocsp -listchecks
 b) ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf
 ocspchecks_adminca1.properties
 c) ocsp -url http://server1/status/ocsp -url http://server2/status/ocsp
--maxtries 4 -caconf ocspchecks_adminca1.properties -caconf
+-maxtries 5 -caconf ocspchecks_adminca1.properties -caconf
 ocspchecks_authca1.properties
 d) ocsp -url http://localhost:8080/ejbca/publicweb/status/ocsp -caconf
 ocspchecks_adminca1.properties -failfolder ./failfolder
@@ -159,6 +159,10 @@ Multiple OCSP responder URL:s and CA configuration files can be specified as arg
 </p>
 <p>
 If a folder for failures is specified the requests and responses which had failures will be outputted there.
+</p>
+<p>
+The maxtries option decides the maximum number of times each query is sent before giving up
+trying to get a response from the specified responder. Default value is 5.
 </p>
 
 <subsubsection name="certificate">
