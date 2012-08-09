@@ -404,12 +404,39 @@ Details:   [ST=[Sweden],[Norway]]
 
 <tr>
 <td>CertCheck_IssuerDNComponents_identical</td>
-<td><p>Compares the values of the DN components configured to be identical. <br/>The same number of each component and with the same value(s) as in the template must exist in the certificate.</p>
+<td>
+<p>Compares the values of the DN components configured to be identical. <br/>The same number of each component and with the same value(s) as in the template must exist in the certificate.</p>
 <p>Sample failure:</p>
 <pre>
 Expected:  the following to be identical [ST, C, L]
 Actual:    was different [C]
 Details:   [C=[SE],[NO]]
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_SubjectDNOrder_specified</td>
+<td>
+<p>Checks that those DN components that are given in the configuration and are present in the certificate are in the right order. Any additional DN components in the certificate or in the configuration are ignored.</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  the following components to be in the this order [CN, O, C]
+Actual:    [C, O, CN]
+Details:   [O was not supposed to be before C]
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_IssuerDNOrder_specified</td>
+<td>
+<p>Checks that those DN components that are given in the configuration and are present in the certificate are in the right order. Any additional DN components in the certificate or in the configuration are ignored.</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  the following components to be in the this order [CN, O, C]
+Actual:    [C, CN, O]
+Details:   [CN was not supposed to be before C]
 </pre>
 </td>
 </tr>
@@ -707,6 +734,7 @@ A basic certificate chain check is performed with the configured issuer certific
 <li>Verifying that the signature algorithm is the same as in the template by adding the check called <i>CertCheck_Signature_algorithmEquals</i>.</li>
 <li>Verifying that the same extensions are used in the certificate as in the template and that they have the same criticality but not necessarily the same value by adding the checks called <i>CertCheck_Extensions_criticalOIDs</i> and <i>CertCheck_Extensions_nonCriticalOIDs</i></li>
 <li>Verifying the extensions that are configured to be identical by adding the check <i>CertCheck_Extensions_identical</i> which compares the DER encoded values of the extensions in the certificate with those in the template.</li>
+<li>Verifying that the subject and issuer DN are in the correct order by adding the checks called <i>SubjectDNOrder_specified</i> and <i>IssuerDNOrder_specified</i> and specify the order of the DN components.</li>
 <li>The tool runs as long as there are certificate files in the configured directory. When a file is analyzed, then the output is written to log files and the analyzed file is deleted. When there are no more certificate files in the configured directory, the application sleeps for a while (as configured) before checking if there are some more certificates to validate.</li>
 <li>To make it less likely a certificate file is being analyzed before it has been completely written to disk new files will not be read until their last modified time is more than configured time in the past (for instance 2 seconds).</li>
 
