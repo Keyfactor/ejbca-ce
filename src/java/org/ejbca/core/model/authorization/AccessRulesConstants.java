@@ -56,8 +56,9 @@ public abstract class AccessRulesConstants {
 
     public static final String ROLE_PUBLICWEBUSER                         = "/public_web_user";
     public static final String ROLE_ADMINISTRATOR                         = "/administrator";
-    // ROLE_SUPERADMINISTRATOR is only kept here for legacy reasons. Deprecated since 5.0.0 */
-    @Deprecated
+    /**
+     * @deprecated ROLE_SUPERADMINISTRATOR is only kept here for legacy reasons. Use ROLE_ROOT instead. Deprecated since 5.0.0
+     */
     public static final String ROLE_SUPERADMINISTRATOR                    = "/super_administrator";
     public static final String ROLE_ROOT                                  = "/";
     
