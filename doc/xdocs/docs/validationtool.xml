@@ -289,40 +289,373 @@ Notice in this example that the check called OcspCheck_SignerCertificate is usin
 <subsection name="Available checks">
 <table>
 <tr><td colspan="2"><b>Certificate checks</b></td></tr>
-<tr><td>CertCheck_Certificate_identical</td><td>Compares the certificate with the template except for the certificate fields declared in the 'dynamicfields' set.<br/>Notice that unless the certificates should match exactly many of the certificate fields would probably have to be added to the list.</td></tr>
-<tr><td>CertCheck_SubjectDNComponents_required</td><td>Checks that sampled certificate contains the required DN fields</td></tr>
-<tr><td>CertCheck_IssuerDNComponents_required</td><td>Checks that sampled certificate contains the required DN fields</td></tr>
-<tr><td>CertCheck_SubjectDNComponents_allowed</td><td>Checks that sampled certified does not contain any other DN components than the allowed</td></tr>
-<tr><td>CertCheck_IssuerDNComponents_allowed</td><td>Checks that sampled certified does not contain any other DN components than the allowed</td></tr>
-<tr><td>CertCheck_SubjectDNComponents_specified</td><td>Checks that the DN parts in the certificate are as the values specified in the configuration if they exists in the certificate.<br/>
-If a component specified in the configuration exists in the certificate it must have the same value(s) as specified.</td></tr>
-<tr><td>CertCheck_IssuerDNComponents_specified</td><td>Checks that the DN parts in the certificate are as the values specified in the configuration if they exists in the certificate.<br/>
-If a component specified in the configuration exists in the certificate it must have the same value(s) as specified.</td></tr>
-<tr><td>CertCheck_SubjectDNComponents_identical</td><td>Compares the values of the DN components configured to be identical.<br/>The same number of each component and with the same value(s) as in the template must exist in the certificate.</td></tr>
-<tr><td>CertCheck_IssuerDNComponents_identical</td><td>Compares the values of the DN components configured to be identical. <br/>The same number of each component and with the same value(s) as in the template must exist in the certificate.</td></tr>
-<tr><td>CertCheck_ValidityNotAfter_minRemaining</td><td>Checks that the notAfter date is at least the specified number of hours in the future</td></tr>
-<tr><td>CertCheck_ValidityNotAfter_maxRemaining</td><td>Checks that the notAfter date is not more than a specied number of hours in the future</td></tr>
-<tr><td>CertCheck_ValidityNotBefore_maxDiffFromNow</td><td>Checks that the notBefore date is not more than a specified number of minutues from now</td></tr>
-<tr><td>CertCheck_PublicKey_sizeEquals</td><td>Compares the public key specification</td></tr>
-<tr><td>CertCheck_PublicKey_algorithmEquals</td><td>Compares the public key algorithm</td></tr>
-<tr><td>CertCheck_Signature_algorithmEquals</td><td>Compares the signature algorithm</td></tr>
-<tr><td>CertCheck_Extensions_criticalOIDs</td><td>Checks that the same critical extensions OIDs are present</td></tr>
-<tr><td>CertCheck_Extensions_nonCriticalOIDs</td><td>Checks that the same non-critical extensions OIDs are present</td></tr>
-<tr><td>CertCheck_Extensions_identical</td><td>Checks that the configured extension values are identical</td></tr>
+
+<tr>
+<td>CertCheck_Certificate_identical</td>
+<td>
+<p>Compares the certificate with the template except for the certificate fields declared in the 'dynamicfields' set.<br/>Notice that unless the certificates should match exactly many of the certificate fields would probably have to be added to the list.</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  Identical values for the fields: [version, serialNumber, issuer, validity, issuerUniqueID, subjectUniqueID]
+Actual:    Different values for the fields: [serialNumber, issuer, validity]
+Details:   
+serialNumber expected: 0x7d982c66a57c3430
+serialNumber   actual: 0x4d69e649072cc0d8
+issuer expected: C=SE, O=EJBCA Sample, CN=AdminCA1
+issuer    actual: C=SE, O=EJBCA Support, CN=MyCA1
+validity expected: [Sat Jun 03 17:33:39 CEST 2006, Fri May 29 17:43:39 CEST 2026]
+validity    actual: [Wed Jul 04 20:04:07 CEST 2012, Sat Jul 02 20:04:07 CEST 2022]
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_SubjectDNComponents_required</td>
+<td>
+<p>Checks that sampled certificate contains the required DN fields</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  At least [L, O, CN]
+Actual:    [O, CN]
+Details: 
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_IssuerDNComponents_required</td>
+<td>
+<p>Checks that sampled certificate contains the required DN fields</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  At least [L, O, CN]
+Actual:    [O, CN]
+Details: 
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_SubjectDNComponents_allowed</td>
+<td>
+<p>Checks that sampled certified does not contain any other DN components than the allowed</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  Any number of [O, CN]
+Actual:    [L, O, CN]
+Details:  
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_IssuerDNComponents_allowed</td>
+<td>
+<p>Checks that sampled certified does not contain any other DN components than the allowed</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  Any number of [O, CN]
+Actual:    [L, O, CN]
+Details:   
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_SubjectDNComponents_specified</td>
+<td>
+<p>Checks that the DN parts in the certificate are as the values specified in the configuration if they exists in the certificate.<br/>
+If a component specified in the configuration exists in the certificate it must have the same value(s) as specified.</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  the following to be as specified [C, O]
+Actual:    was different [C, O]
+Details:   [C=[SE],[NO], O=[PrimeKey],[CESeCore]]    
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_IssuerDNComponents_specified</td>
+<td>
+<p>Checks that the DN parts in the certificate are as the values specified in the configuration if they exists in the certificate.<br/>
+If a component specified in the configuration exists in the certificate it must have the same value(s) as specified.</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  the following to be as specified [C, O]
+Actual:    was different [O]
+Details:   [O=[PrimeKey],[CESeCore]]    
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_SubjectDNComponents_identical</td>
+<td>
+<p>Compares the values of the DN components configured to be identical.<br/>The same number of each component and with the same value(s) as in the template must exist in the certificate.</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  the following to be identical [ST, C, L]
+Actual:    was different [ST]
+Details:   [ST=[Sweden],[Norway]]    
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_IssuerDNComponents_identical</td>
+<td><p>Compares the values of the DN components configured to be identical. <br/>The same number of each component and with the same value(s) as in the template must exist in the certificate.</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  the following to be identical [ST, C, L]
+Actual:    was different [C]
+Details:   [C=[SE],[NO]]
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_ValidityNotAfter_minRemaining</td>
+<td>
+<p>Checks that the notAfter date is at least the specified number of hours in the future</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  'notAfter' at least 4380 hours in future
+Actual:    Wed Jan 23 00:35:02 CET 2013
+Details:
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_ValidityNotAfter_maxRemaining</td>
+<td>
+<p>Checks that the notAfter date is not more than a specied number of hours in the future</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  'notAfter' not more than 4380 hours in future
+Actual:    Tue Mar 05 16:34:37 CET 2013
+Details:   
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_ValidityNotBefore_maxDiffFromNow</td>
+<td>
+<p>Checks that the notBefore date is not more than a specified number of minutues from now</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  not more than 4380 minutes from now
+Actual:    -5000 minutes
+Details:   
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_PublicKey_sizeEquals</td>
+<td>
+<p>Compares the public key specification</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  bitLength=1024
+Actual:    bitLength=2048
+Details:   
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_PublicKey_algorithmEquals</td>
+<td>
+<p>Compares the public key algorithm</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  EC
+Actual:    RSA
+Details:   
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_Signature_algorithmEquals</td>
+<td>
+<p>Compares the signature algorithm</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  1.2.840.113549.1.1.5
+Actual:    1.2.840.113549.1.1.11
+Details:   
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_Extensions_criticalOIDs</td>
+<td>
+<p>Checks that the same critical extensions OIDs are present</p>  
+<p>Sample failure:</p>
+<pre>
+Expected:  [2.5.29.19]
+Actual:    [2.5.29.15, 2.5.29.19]
+Details:
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_Extensions_nonCriticalOIDs</td>
+<td>
+<p>Checks that the same non-critical extensions OIDs are present</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  [2.5.29.19]
+Actual:    [2.5.29.15]
+Details:   
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>CertCheck_Extensions_identical</td>
+<td>
+<p>Checks that the configured extension values are identical</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  Identical values for [2.5.29.37, 2.5.29.19]
+Actual:    Different values for [2.5.29.37]
+Details:   
+</pre>
+</td>
+</tr>
 
 <tr><td colspan="2"><b>OCSP checks</b></td></tr>
 
-<tr><td>OcspCheck_ExpectedSigner</td><td>Outputs whether a response was received from the expected signer or not.<br/>Notice that this check will be performed regardless if it is specified or not as if there are no response from the correct responder none of the other tests can run. However, include this check to get the result in the report.</td></tr>
-<tr><td>OcspCheck_SignerCertificate</td><td>Runs the configured checks for the signer certificate.</td></tr>
-<tr><td>OcspCheck_CertificateChain</td><td>Validates the signer certificate chain</td></tr>
-<tr><td>OcspCheck_ExpectedStatus</td><td>Checks that the returned certificate status is the expected</td></tr>
-<tr><td>OcspCheck_Nonce</td><td>Checks that the nonce in the response matches the request.<br/>
-As a special case, if configured to not send a nonce the check checks that no nonce is present in the response.</td></tr>
-<tr><td>OcspCheck_Response_verify</td><td>Verifies the signature</td></tr>
-<tr><td>OcspCheck_Response_time</td><td>Checks that the response was returned within the configured max time</td></tr>
-<tr><td>OcspCheck_Extensions_required</td><td>Checks that all required extensions are in the response.<br/>Also add this extensions to the list of allowed if that check is also used.</td></tr>
-<tr><td>OcspCheck_Extensions_allowed</td><td>Checks that only allowed extensions are in the response.
-<br/>Also add the required extensions to this list if that check is also used. Also if a nonce is used the OID for nonce (1.3.6.1.5.5.7.48.1.2) should be included.</td></tr>
+<tr>
+<td>OcspCheck_ExpectedSigner</td>
+<td>
+<p>Outputs whether a response was received from the expected signer or not.<br/>Notice that this check will be performed regardless if it is specified or not as if there are no response from the correct responder none of the other tests can run. However, include this check to get the result in the report.</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  Response from signer with subject DN: "CN=OCSPSigner1 MyCA1,OU=The Unit,O=The organization,L=Stockholm,C=SE"
+Actual:    Got 3 responses from other responders: [CN=MyCA1,O=EJBCA Support,C=SE, CN=MyCA1,O=EJBCA Support,C=SE, 
+           CN=MyCA1,O=EJBCA Support,C=SE]
+           Got 2 query errors: [Connection refused, Connection refused]
+Details:   
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>OcspCheck_SignerCertificate</td>
+<td>
+<p>Runs the configured checks for the signer certificate.</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  All configured certificate checks to succeed
+Actual:    At least one certificate check failed
+Details:   See the individual checks for details.
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>OcspCheck_CertificateChain</td>
+<td>
+<p>Validates the signer certificate chain</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  valid certificate chain
+Actual:    verification problems
+Details:   Verification error: Signature does not match.
+Certificate to be verified: CN=Sub sub CA 1
+Issuer certificate: CN=Root CA 1
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>OcspCheck_ExpectedStatus</td>
+<td>
+<p>Checks that the returned certificate status is the expected</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  revoked
+Actual:    unknown
+Details:       
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>OcspCheck_Nonce</td>
+<td>
+<p>Checks that the nonce in the response matches the request.<br/>
+As a special case, if configured to not send a nonce the check checks that no nonce is present in the response.</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  Same nonce in response as in request
+Actual:    No nonce in response
+Details:   
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>OcspCheck_Response_verify</td>
+<td>
+<p>Verifies the signature</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  consistent signature
+Actual:    inconsistent signature
+Details:   the signature did not be verified correctly
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>OcspCheck_Response_time</td>
+<td>
+<p>Checks that the response was returned within the configured max time</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  responseTime &lt;= 5000
+Actual:    responseTime = 6137
+Details: 
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>OcspCheck_Extensions_required</td>
+<td>
+<p>Checks that all required extensions are in the response.<br/>Also add this extensions to the list of allowed if that check is also used.</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  [1.3.6.1.5.5.7.48.1.6, 1.3.6.1.5.5.7.48.1.2]
+Actual:    [1.3.6.1.5.5.7.48.1.2]
+Details:  
+</pre>
+</td>
+</tr>
+
+<tr>
+<td>OcspCheck_Extensions_allowed</td>
+<td>
+<p>Checks that only allowed extensions are in the response.
+<br/>Also add the required extensions to this list if that check is also used. Also if a nonce is used the OID for nonce (1.3.6.1.5.5.7.48.1.2) should be included.</p>
+<p>Sample failure:</p>
+<pre>
+Expected:  Any of [1.3.6.1.5.5.7.48.1.2]
+Actual:    [1.3.6.1.5.5.7.48.1.2, 1.3.6.1.5.5.7.48.1.6]
+Details:   
+</pre>
+</td>
+</tr>
+
 </table>
 </subsection>
 </section>
