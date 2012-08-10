@@ -29,6 +29,9 @@ ant jar
 <p>
 The folder conf/sample1 contains sample OCSP checks and certificate checks configuration files that can be used as examples.
 </p>
+<p>
+Configuration files are in Java Properties files format. The application expects ISO-8859-1 (latin1) encoding. Other characters can be escaped manually or by using a tool such as native2ascii.
+</p>
 </subsection>
 <subsection name="Running">
 <p>
@@ -459,8 +462,9 @@ Details:   [CN was not supposed to be before C]
 <p>Sample failure:</p>
 <pre>
 Expected:  'notAfter' at least 4380 hours in future
-Actual:    Wed Jan 23 00:35:02 CET 2013
-Details:
+Actual:    2013-01-23 22:50:21 UTC
+Details:   Current time: 2012-08-10 06:50:21 UTC
+Earliest accepted value is current time + 4380 h = 2013-02-08 18:50:21 UTC
 </pre>
 </td>
 </tr>
@@ -468,12 +472,13 @@ Details:
 <tr>
 <td>CertCheck_ValidityNotAfter_maxRemaining</td>
 <td>
-<p>Checks that the notAfter date is not more than a specied number of hours in the future</p>
+<p>Checks that the notAfter date is not more than a specified number of hours in the future</p>
 <p>Sample failure:</p>
 <pre>
 Expected:  'notAfter' not more than 4380 hours in future
-Actual:    Tue Mar 05 16:34:37 CET 2013
-Details:   
+Actual:    2013-03-06 15:02:00 UTC
+Details:   Current time: 2012-08-10 07:02:00 UTC
+Last accepted value is current time + 4380 h = 2013-02-08 19:02:00 UTC
 </pre>
 </td>
 </tr>
@@ -481,12 +486,14 @@ Details:
 <tr>
 <td>CertCheck_ValidityNotBefore_maxDiffFromNow</td>
 <td>
-<p>Checks that the notBefore date is not more than a specified number of minutues from now</p>
+<p>Checks that the notBefore date is not more than a specified number of minutes from now</p>
 <p>Sample failure:</p>
 <pre>
 Expected:  not more than 4380 minutes from now
 Actual:    -5000 minutes
 Details:   
+Current time: 2012-08-10 07:09:03 UTC
+notBefore:    2012-08-13 18:29:03 UTC
 </pre>
 </td>
 </tr>
