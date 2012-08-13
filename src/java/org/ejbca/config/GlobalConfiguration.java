@@ -156,6 +156,11 @@ public class GlobalConfiguration extends UpgradeableDataHashMap implements Seria
        setFootBanner(DEFAULTFOOTBANNER);
 
     }
+    
+    public void initializeAdminWeb() {
+        initialize("adminweb", WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css", 
+                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort(), "http", "https");
+    }
 
     /** Checks if global datauration have been initialized. */
     public boolean isInitialized(){

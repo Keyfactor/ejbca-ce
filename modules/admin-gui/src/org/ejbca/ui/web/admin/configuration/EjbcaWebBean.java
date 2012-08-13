@@ -635,8 +635,7 @@ public class EjbcaWebBean implements Serializable {
 
     public void reloadGlobalConfiguration() throws Exception {
         globalconfiguration = globalConfigurationSession.getCachedGlobalConfiguration();
-        globalconfiguration.initialize("adminweb", WebConfiguration.getAvailableLanguages(), "default_theme.css,second_theme.css", 
-                ""+WebConfiguration.getPublicHttpPort(), ""+WebConfiguration.getPrivateHttpsPort(), "http", "https");
+        globalconfiguration.initializeAdminWeb();
         if (informationmemory != null) {
             informationmemory.systemConfigurationEdited(globalconfiguration);
         }
