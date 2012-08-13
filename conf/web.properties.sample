@@ -107,6 +107,17 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Default: true
 #web.reqcertindb=true
 
+# Allow users to self-register on public web, by entering their information.
+# This creates an approval request for the admin.
+# Default = false
+#web.selfreg.enabled=false
+
+# Certificate types to make available for the user
+#web.selfreg.defaultcerttype=1
+#web.selfreg.certtypes.1.description=User certificate
+#web.selfreg.certtypes.1.eeprofile=SOMEPROFILE
+#web.selfreg.certtypes.1.certprofile=ENDUSER
+
 # Deploy the request browser certificate renewal web application and show a 
 # link to it from the EJBCA public web.
 # Default = false

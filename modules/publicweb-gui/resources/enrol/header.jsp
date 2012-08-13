@@ -47,7 +47,14 @@
               </li>
               <% } %>
             </ul>
-          </li>  
+          </li>
+          <li><div class="menuheader">Register</div>
+            <ul>
+              <li>
+                <a href="reg.jsp">Request Registration</a>
+              </li>
+            </ul>
+          </li>
           <li><div class="menuheader">Retrieve</div>
             <ul>
               <li>
