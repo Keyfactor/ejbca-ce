@@ -125,6 +125,13 @@ public class WebConfiguration {
 	}
 	
 	/**
+	 * Whether self-registration (with admin approval) is enabled in public web
+	 */
+	public static boolean getSelfRegistrationEnabled() {
+		return "true".equalsIgnoreCase(EjbcaConfigurationHolder.getExpandedString("web.selfreg.enabled"));
+	}
+	
+	/**
 	 * The request browser certificate renewal web application is deployed
 	 */
 	public static boolean getRenewalEnabled() {

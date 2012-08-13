@@ -36,13 +36,23 @@
               <li>
                 <a href="../enrol/keystore.jsp">Create Keystore</a>
               </li>
+              <li>
+                <a href="../enrol/reg.jsp">Request Registration</a>
+              </li>
               <% if(org.ejbca.config.WebConfiguration.getRenewalEnabled()) { %>
               <li>
                 <a href="../renew/index.jsp">Request Browser Certificate Renewal</a>
               </li>
               <% } %>
             </ul>
-          </li>  
+          </li>
+          <li><div class="menuheader">Register</div>
+            <ul>
+              <li>
+                <a href="../enrol/reg.jsp">Request Registration</a>
+              </li>
+            </ul>
+          </li>
           <li><div class="menuheader">Retrieve</div>
             <ul>
               <li>

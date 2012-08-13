@@ -2035,6 +2035,16 @@ Remember to configure mail-server settings in the mail.properties file.
 </p>
 </section>
 
+<section name="Self Registration">
+<p>
+It is possible to allow users of the public web to create approval requests for new end-entities (under 'Request Registration'). The type of certificate and the information that the users may enter is controlled by "certificate types", which specify an end-entity profile and a certificate profile to use. Self registration is configured in web.properties, which contains explanations of the configuration directives.
+</p>
+
+<p>
+The function targets unauthenticated users and the users must be verified by some other mean. For instance, it it possible to auto-generate the password and send it in an e-mail notification (i.e. e-mail validation). See <a href="#Email notifications">Email notifications</a>.
+</p>
+</section>
+
 <section name="Framework for External User Data Sources">
 <p>
 A basic framework for importing user data from existing databases exists. The intention of this
