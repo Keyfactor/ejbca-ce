@@ -322,7 +322,7 @@ public class CAInterfaceBean implements Serializable {
         if (certprofile == null) {
             throw new CertificateProfileDoesNotExistException(certificateProfileName + " was not found.");
         } else {
-            if (certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) {
+            if ((certprofile.getType() == CertificateConstants.CERTTYPE_ENDENTITY) || (certprofile.getType() == CertificateConstants.CERTTYPE_SUBCA)) {
                 return endEntityProfileSession.getEndEntityProfilesUsingCertificateProfile(certificateprofileid);
             } else {
                 return new ArrayList<String>();
