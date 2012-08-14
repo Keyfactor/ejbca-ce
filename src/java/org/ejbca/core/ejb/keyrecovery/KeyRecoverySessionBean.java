@@ -166,12 +166,13 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
                         admin.toString(), String.valueOf(caid), certSerialNumber, username, details);
                 returnval = true;
             } catch (Exception e) {
-                String msg = intres.getLocalizedMessage("keyrecovery.erroradddata", CertTools.getSerialNumber(certificate).toString(16),
+                final String msg = intres.getLocalizedMessage("keyrecovery.erroradddata", CertTools.getSerialNumber(certificate).toString(16),
                         CertTools.getIssuerDN(certificate));
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", msg);
                 auditSession.log(EjbcaEventTypes.KEYRECOVERY_ADDDATA, EventStatus.FAILURE, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA,
                         admin.toString(), String.valueOf(caid), certSerialNumber, username, details);
+                log.error(msg, e);
             }
             log.trace("<addKeyRecoveryData()");
             return returnval;
@@ -207,10 +208,11 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             auditSession.log(EjbcaEventTypes.KEYRECOVERY_EDITDATA, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), hexSerial, krd.getUsername(), details);
             returnval = true;
         } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("keyrecovery.errorchangedata", hexSerial, dn);            	
+            final String msg = intres.getLocalizedMessage("keyrecovery.errorchangedata", hexSerial, dn);            	
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.KEYRECOVERY_EDITDATA, EventStatus.FAILURE, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), hexSerial, null, details);
+            log.error(msg, e);
         }
         log.trace("<changeKeyRecoveryData()");
         return returnval;
@@ -241,10 +243,11 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.KEYRECOVERY_REMOVEDATA, EventStatus.SUCCESS, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), hexSerial, username, details);
         } catch (Exception e) {
-            String msg = intres.getLocalizedMessage("keyrecovery.errorremovedata", hexSerial, dn);            	
+            final String msg = intres.getLocalizedMessage("keyrecovery.errorremovedata", hexSerial, dn);            	
             final Map<String, Object> details = new LinkedHashMap<String, Object>();
             details.put("msg", msg);
             auditSession.log(EjbcaEventTypes.KEYRECOVERY_REMOVEDATA, EventStatus.FAILURE, EjbcaModuleTypes.KEYRECOVERY, EjbcaServiceTypes.EJBCA, admin.toString(), String.valueOf(caid), hexSerial, null, details);
+            log.error(msg, e);
         }
         log.trace("<removeKeyRecoveryData()");
         } else {
