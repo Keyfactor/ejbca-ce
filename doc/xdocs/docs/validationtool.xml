@@ -82,9 +82,15 @@ Sample certificate validation output:
 
 [SUCCESS] CertCheck_Signature_algorithmEquals
           Compares the signature algorithm
+          Expected:  1.2.840.113549.1.1.5
+          Actual:    1.2.840.113549.1.1.5
+          Details:   
 
 [SUCCESS] CertCheck_SubjectDNComponents_required
           Checks that sampled certificate contains the required DN fields
+          Expected:  At least [O, CN]
+          Actual:    [O, OU, CN]
+          Details:   
 
 [FAILURE] CertCheck_SubjectDNComponents_identical
           Compares the values of the DN components configured to be identical
@@ -109,6 +115,9 @@ Sample OCSP validation output:
 
 [SUCCESS] OcspCheck_ExpectedSigner
           Outputs whether a response was received from the expected signer or not
+          Expected:  Response from signer with subject DN: "CN=OCSP Signer 1,O=Organization A,C=SE"
+          Actual:    Response from signer with subject DN: "CN=OCSP Signer 1,O=Organization A,C=SE"
+          Details:   
 
 [FAILURE] OcspCheck_ExpectedStatus
           Checks that the returned certificate status is the expected
@@ -118,6 +127,9 @@ Sample OCSP validation output:
 
 [SUCCESS] OcspCheck_Response_time
           Checks that the response was returned within the configured max time
+          Expected:  responseTime <= 500
+          Actual:    responseTime = 61
+          Details:   
 
 ...
 </source>
