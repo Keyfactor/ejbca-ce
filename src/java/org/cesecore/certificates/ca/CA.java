@@ -152,6 +152,9 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         while (iter.hasNext()) {
             ExtendedCAServiceInfo next = iter.next();
             createExtendedCAService(next);
+            if (log.isDebugEnabled()) {
+                log.debug("Adding extended service to CA '"+cainfo.getName()+"': "+next.getType()+", "+next.getImplClass());
+            }
             extendedservicetypes.add(next.getType());
         }
         data.put(EXTENDEDCASERVICES, extendedservicetypes);

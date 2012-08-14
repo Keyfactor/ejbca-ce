@@ -506,6 +506,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                 		String.valueOf(caid), null, null, details);
                 throw new EJBException(e);
 			}
+        } else {
+            log.error("CA status not active when creating CA, extended services not created. CA status: "+castatus);
         }
 
         // Update local OCSP's CA certificate cache
