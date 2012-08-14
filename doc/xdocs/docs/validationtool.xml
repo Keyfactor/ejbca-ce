@@ -127,7 +127,7 @@ Sample OCSP validation output:
 
 [SUCCESS] OcspCheck_Response_time
           Checks that the response was returned within the configured max time
-          Expected:  responseTime <= 500
+          Expected:  responseTime &lt;= 500
           Actual:    responseTime = 61
           Details:   
 
