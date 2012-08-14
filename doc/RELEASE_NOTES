@@ -119,6 +119,20 @@ upgrade to 5.0, verify your roles and privileges.
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE
 
+EJBCA 4.0.12
+------------
+This is a maintenance release containing a few new features and improvements.
+
+* Noteworthy changes: 
+- Possibility for External OCSP responder key renewal at absolute times.
+- Certificate expiration notifier can now filter on certificate profiles, not only CAs. 
+- A publisher for sampling of issued certificates.
+- Added user friendly output of certificate profile dependencies when deletion can not be done. 
+- A new language tool for developers and localizers, by David Carella of Linagora.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+
 EJBCA 4.0.11
 ------------
 This is a maintenance release containing a few new features, GUI improvements and support for Japanese.
