@@ -953,19 +953,20 @@ public class CertTools {
     }
 
     /**
-     * Reads a certificate in PEM-format from a file. The file may contain other things, the first certificate in the file is read.
+     * Reads certificates in PEM-format from a file.
+     * The stream may contain other things between the different certificates.
      * 
-     * @param certFile the file containing the certificate in PEM-format
-     * @return Ordered Collection of Certificate, first certificate first, or empty Collection
-     * @exception IOException if the filen cannot be read.
-     * @exception CertificateException if the filen does not contain a correct certificate.
+     * @param certFile the file containing the certificates in PEM-format
+     * @return Ordered List of Certificates, first certificate first, or empty List
+     * @exception IOException if the file cannot be read.
+     * @exception CertificateException if the file contains an incorrect certificate.
      */
-    public static Collection<Certificate> getCertsFromPEM(String certFile) throws IOException, CertificateException {
+    public static List<Certificate> getCertsFromPEM(String certFile) throws IOException, CertificateException {
         if (log.isTraceEnabled()) {
             log.trace(">getCertfromPEM: certFile=" + certFile);
         }
         InputStream inStrm = null;
-        Collection<Certificate> certs;
+        final List<Certificate> certs;
         try {
             inStrm = new FileInputStream(certFile);
             certs = getCertsFromPEM(inStrm);
@@ -981,14 +982,15 @@ public class CertTools {
     }
 
     /**
-     * Reads a certificate in PEM-format from an InputStream. The stream may contain other things, the first certificate in the stream is read.
+     * Reads certificates in PEM-format from an InputStream. 
+     * The stream may contain other things between the different certificates.
      * 
-     * @param certstream the input stream containing the certificate in PEM-format
-     * @return Ordered Collection of Certificate, first certificate first, or empty Collection
+     * @param certstream the input stream containing the certificates in PEM-format
+     * @return Ordered List of Certificates, first certificate first, or empty List
      * @exception IOException if the stream cannot be read.
-     * @exception CertificateException if the stream does not contain a correct certificate.
+     * @exception CertificateException if the stream contains an incorrect certificate.
      */
-    public static Collection<Certificate> getCertsFromPEM(InputStream certstream) throws IOException, CertificateException {
+    public static List<Certificate> getCertsFromPEM(InputStream certstream) throws IOException, CertificateException {
         if (log.isTraceEnabled()) {
             log.trace(">getCertfromPEM");
         }
@@ -1046,7 +1048,7 @@ public class CertTools {
             log.trace("<getcertfromPEM:" + ret.size());
         }
         return ret;
-    } // getCertsFromPEM
+    }
 
     /**
      * Converts a regular array of certificates into an ArrayList, using the provided provided.
