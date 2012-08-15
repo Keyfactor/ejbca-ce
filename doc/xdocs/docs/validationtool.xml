@@ -473,10 +473,9 @@ Details:   [CN was not supposed to be before C]
 <p>Checks that the notAfter date is at least the specified number of hours in the future</p>
 <p>Sample failure:</p>
 <pre>
-Expected:  'notAfter' at least 4380 hours in future
-Actual:    2013-01-23 22:50:21 UTC
-Details:   Current time: 2012-08-10 06:50:21 UTC
-Earliest accepted value is current time + 4380 h = 2013-02-08 18:50:21 UTC
+Expected:  'notAfter' at least 4380 hours in future (earliest valid is 2013-02-14 00:13:11 UTC)
+Actual:    4379 hours in future (2013-02-13 23:13:11 UTC)
+Details:   Current time: 2012-08-15 12:13:11 UTC
 </pre>
 </td>
 </tr>
@@ -487,10 +486,9 @@ Earliest accepted value is current time + 4380 h = 2013-02-08 18:50:21 UTC
 <p>Checks that the notAfter date is not more than a specified number of hours in the future</p>
 <p>Sample failure:</p>
 <pre>
-Expected:  'notAfter' not more than 4380 hours in future
-Actual:    2013-03-06 15:02:00 UTC
-Details:   Current time: 2012-08-10 07:02:00 UTC
-Last accepted value is current time + 4380 h = 2013-02-08 19:02:00 UTC
+Expected:  'notAfter' not more than 4380 hours in future (last valid is 2013-02-14 00:07:14 UTC)
+Actual:    4381 hours in the future (2013-02-14 01:07:14 UTC)
+Details:   Current time: 2012-08-15 12:07:14 UTC
 </pre>
 </td>
 </tr>
