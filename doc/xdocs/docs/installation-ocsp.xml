@@ -172,6 +172,7 @@ Be aware that the re-keying operation has not been tested on all of the applicat
 <ol>
 <li>JBoss 5.1.0.GA (jdk6)</li>
 <li>JBoss EAP 5.1.2</li>
+<li>JBoss 6.1.0.Final</li>
 </ol>
 </p>
 </subsection>
