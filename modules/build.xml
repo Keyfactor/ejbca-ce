@@ -128,6 +128,11 @@
                 <include name="conf/**/*"/>
                 <include name="README.txt"/>
             </fileset>
+            <fileset dir="../tmp/htdocs/">
+                <include name="docs/*.css"/>
+                <include name="docs/images/*/**"/>
+                <include name="docs/validationtool.html"/>
+            </fileset>
         </copy>
         <mkdir dir="${mod.validationtool.dist}"/>
         <copy todir="${mod.validationtool.dist}">

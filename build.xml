@@ -879,7 +879,7 @@
     	<ant dir="modules" target="clientToolBox" />
     </target>
     
-    <target name="validationtool" description="Builds the ValidationTool standalone client application">
+    <target name="validationtool" depends="doc" description="Builds the ValidationTool standalone client application">
     	<ant dir="modules" target="validationtool" />
     </target>
     
