@@ -129,6 +129,7 @@ This is a maintenance release containing a few new features and improvements.
 - A publisher for sampling of issued certificates.
 - Added user friendly output of certificate profile dependencies when deletion can not be done. 
 - A new language tool for developers and localizers, by David Carella of Linagora.
+- OCSP rekeying now works on JBoss 6.1.0 and JBoss EAP5
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.

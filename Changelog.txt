@@ -290,6 +290,25 @@ Task
     [ECA-2320] - Merge changes from CESECORE-197
     [ECA-2324] - Merge changes from CESECORE-269 to EJBCA
 
+EJBCA 4.0.12, 2012-08-16
+---
+New Feature
+    [ECA-2705] - OCSP key renewal at absolute times
+    [ECA-2706] - Allow Certificate Expiration Notification Service to specify Certificate Profiles
+    [ECA-2709] - Publisher for sampling of issued certificates
+
+Improvement
+    [ECA-2069] - Better log message when querying for not existing CA and default responder CA does not exist
+    [ECA-2714] - Hide the HARDTOKEN profiles in "Certificate Expiration Checker" configuration if "Issue Hardware Tokens" hasn't been enabled
+    [ECA-2724] - When deleting a Certificate Profile, list which end entities/end entity profiles that use it.
+
+Bug
+    [ECA-2077] - OCSP rekeying does not work on JBoss 6.1.0 and JBoss EAP5
+    [ECA-2719] - Download of certificates from Admin GUI fails in Chrome when using "strange" usernames
+
+Task
+    [ECA-2625] - Language tool for developers and localizers
+
 EJBCA 4.0.11, 2012-06-18
 ---
 New Feature
