@@ -130,7 +130,11 @@ public class CAToken extends UpgradeableDataHashMap {
             log.debug("CA token classpath: " + classpath);
         }
         final CryptoToken token = CryptoTokenFactory.createCryptoToken(classpath, prop, keyStoreData, caid);
-        internalInit(token);
+        if (token != null) {
+            internalInit(token);
+        } else {
+            log.error("CryptoToken is null, can not initialize CAToken for CA with id "+caid);
+        }
     }
     
     public int getTokenStatus() {
