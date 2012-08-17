@@ -774,6 +774,8 @@
 				     		          "",
 							  keySpec,
 							  keyAlg));
+                extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+                extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
                  X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caname, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
                                                         certprofileid, validity,
                                                         null, catype, CAInfo.SIGNEDBYEXTERNALCA,
@@ -1131,7 +1133,8 @@
   		             new CmsCAServiceInfo(cmsactive, cmsrenew)); 
 
               final String sharedCmpRaSecret = request.getParameter(TEXTFIELD_SHAREDCMPRASECRET);
-
+			  // No need to add the HardTokenEncrypt or Keyrecovery extended service here, because they are only "updated" in EditCA, and there
+			  // is not need to update them.
               cainfo = new X509CAInfo(caid, validity,
                                                       catoken, description, 
                                                       crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
