@@ -142,7 +142,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
         OCSPResp response = new OCSPResp(responseBytes);
         assertEquals("Response status not zero.", response.getStatus(), 0);
         BasicOCSPResp basicOcspResponse = (BasicOCSPResp) response.getResponseObject();
-        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(caCertificate.getPublicKey())));
+        assertTrue("OCSP response was not signed correctly.", basicOcspResponse.isSignatureValid(new JcaContentVerifierProviderBuilder().build(p12Certificate.getPublicKey())));
         SingleResp[] singleResponses = basicOcspResponse.getResponses();
         assertEquals("Delivered some thing else than one and exactly one response.", 1, singleResponses.length);
         assertEquals("Response cert did not match up with request cert", p12Certificate.getSerialNumber(), singleResponses[0].getCertID()
