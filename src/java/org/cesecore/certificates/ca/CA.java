@@ -393,14 +393,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     	final String sigAlg = catoken.getTokenInfo().getSignatureAlgorithm();
     	if (StringUtils.isNotEmpty(sigAlg)) {
             if (!ArrayUtils.contains(AlgorithmConstants.AVAILABLE_SIGALGS, sigAlg)) {
-                final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", sigAlg);
+                final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", sigAlg, ArrayUtils.toString(AlgorithmConstants.AVAILABLE_SIGALGS));
                 throw new InvalidAlgorithmException(msg);        	
             }    		
     	}
     	final String encAlg = catoken.getTokenInfo().getEncryptionAlgorithm();
     	if (StringUtils.isNotEmpty(encAlg)) {
     		if (!ArrayUtils.contains(AlgorithmConstants.AVAILABLE_SIGALGS, encAlg)) {
-    			final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", encAlg);
+    			final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", encAlg, ArrayUtils.toString(AlgorithmConstants.AVAILABLE_SIGALGS));
     			throw new InvalidAlgorithmException(msg);        	
     		}
     	}
