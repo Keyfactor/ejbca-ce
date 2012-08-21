@@ -23,6 +23,14 @@ All database upgrades require CREATE and ALTER TABLE privileges besides the regu
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
 
+From EJBCA 5.0.x to EJBCA 5.1.x
+-------------------------------
+See release notes for details between certain versions. 
+
+Note for upgrade to 5.1.0:
+In EJBCA 5.1.0 new versions of BouncyCastle jars are included. If you have been copying ejbca/lib/bc*.jar files to JBoss 
+(jboss/server/default/lib), you must remove the old jars from JBoss and copy new jars from EJBCA.
+
 From EJBCA 5.0.x to EJBCA 5.0.x
 -------------------------------
 See release notes for details between certain versions. 
@@ -40,12 +48,10 @@ Read RELEASE_NOTES carefully in order to see if any particular changes might eff
 If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
-Note for upgrades from EJBCA 5.0.0 or 5.0.1:
-Due to a bug found in EJBCA's logging rules (ECA-2408), rules in new installations made for versions 5.0.0
-and 5.0.1 need to be manually upgraded with an SQL script. This script can be found attached top the issue
-at https://jira.primekey.se/browse/ECA-2408
-Installations upgraded from 4.0.x are upgraded automatically. 
-
+Note for upgrade to 5.0.6:
+In EJBCA 5.0.6 new versions of BouncyCastle jars are included. If you have been copying ejbca/lib/bc*.jar files to JBoss 
+(jboss/server/default/lib), you must remove the old jars from JBoss and copy new jars from EJBCA.
+ 
 From EJBCA 4.0.x to EJBCA 5.0.x
 --------------------------------
 Support for the old LogEntryData has been dropped in EJBCA 5.0 and is replaced by a new AuditRecordData. 

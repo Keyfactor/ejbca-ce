@@ -86,6 +86,7 @@ import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
+import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.ContentSigner;
@@ -1231,12 +1232,12 @@ public class X509CA extends CA implements Serializable {
         CMSEnvelopedData ed = new CMSEnvelopedData(data);
 
         RecipientInformationStore recipients = ed.getRecipientInfos();
-        @SuppressWarnings("unchecked")
-        Iterator<RecipientInformation> it = recipients.getRecipients().iterator();
-        RecipientInformation recipient =  it.next();
+        RecipientInformation recipient = (RecipientInformation) recipients.getRecipients().iterator().next();
         ObjectInputStream ois = null;
-        byte[] recdata = recipient
-                .getContent(getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT), getCAToken().getCryptoToken().getEncProviderName());
+        JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+        rec.setProvider(getCAToken().getCryptoToken().getEncProviderName());
+        rec.setContentProvider("BC");
+        byte[] recdata = recipient.getContent(rec);
         ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
 
         return (KeyPair) ois.readObject();
@@ -1246,7 +1247,10 @@ public class X509CA extends CA implements Serializable {
         CMSEnvelopedData ed = new CMSEnvelopedData(data);
         RecipientInformationStore recipients = ed.getRecipientInfos();
         RecipientInformation recipient = (RecipientInformation) recipients.getRecipients().iterator().next();
-        byte[] recdata = recipient.getContent(getCAToken().getPrivateKey(cAKeyPurpose), getCAToken().getCryptoToken().getSignProviderName());
+        JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(getCAToken().getPrivateKey(cAKeyPurpose));
+        rec.setProvider(getCAToken().getCryptoToken().getSignProviderName());
+        rec.setContentProvider("BC");
+        byte[] recdata = recipient.getContent(rec);
         return recdata;
     }
 
