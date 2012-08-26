@@ -289,7 +289,7 @@ public class CAInterfaceBean implements Serializable {
      * @param certificateProfileName the name of the sought profile
      * @return a list of end entity names using the sought profile
      * @throws CertificateProfileDoesNotExistException if sought certificate profile was not found.
-     * @throws ExcessiveResultsException on a query returning +1000 results
+     * @throws ExcessiveResultsException on a query returning +100 results
      */
     public List<String> getEndEntitiesUsingCertificateProfile(final String certificateProfileName) throws CertificateProfileDoesNotExistException, ExcessiveResultsException {
         int certificateprofileid = certificateProfileSession.getCertificateProfileId(certificateProfileName);
