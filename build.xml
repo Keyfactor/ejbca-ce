@@ -664,7 +664,14 @@
 		<!-- Build the test EAR -->
 	   	<antcall target="j2ee:deployTestEar"/>
 	</target>
-	
+
+    <!-- ======================================================================= -->
+    <!-- Renew the keystore used by the web interface on the application server. -->
+    <!-- ======================================================================= -->
+    <target name="renew-keystore" description="Renews the keystore for the application server web interface. Don't forget to deploy the new keystore afterwards. The old keystore in p12/tomcat.jks will be overwritten.">
+      <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:renew-keystore" />
+    </target>
+
     <!-- ======================================================================= -->
     <!-- Make a ZIP release file of EJBCA, and a SHA1 checksum of the release    -->
 	<!-- The ZIP file contains all the files used, but not temporary or compile files etc -->

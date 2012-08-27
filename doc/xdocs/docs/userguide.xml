@@ -1590,7 +1590,13 @@ You can also do everything using the CLI:
 <ol>
 <li>bin/ejbca.sh ra setuserstatus tomcat 10</li>
 <li>bin/ejbca.sh ra setclearpwd tomcat &lt;password from httpsserver.password&gt;</li>
-<li>bin/ejbca.sh batch</li>
+<li>bin/ejbca.sh batch tomcat</li>
+<li>cp p12/tomcat.jks $APPSRV_HOME/server/default/conf/keystore.jks</li>
+<li>Restart JBoss.</li>
+</ol>
+A small convenience ant target is present which can simplify the proceess and save some typing (it's running the above three ejbca.sh commands in succession):
+<ol>
+<li>ant renew-keystore</li>
 <li>cp p12/tomcat.jks $APPSRV_HOME/server/default/conf/keystore.jks</li>
 <li>Restart JBoss.</li>
 </ol>
