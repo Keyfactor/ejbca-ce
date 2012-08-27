@@ -98,6 +98,8 @@
 	</path>
 
 	<target name="build" description="Build this module" depends="build-libs, compile-tests" />
+	
+	<target name="build-va" description="Build this module" depends="build-libs, compile-tests-va" />
 
 	<target name="clean" description="Clean up this module">
 		<delete dir="${build.dir}" />
@@ -159,6 +161,27 @@
 		<!-- needed by the cesecore tests -->
 		<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
 	</target>
+	
+	<target name="compile-tests-va" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
+			<mkdir dir="${build.test.dir}" />
+			<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
+	        	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
+				<include name="org/cesecore/certificates/ocsp/standalone/*.java" />
+				<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpStandaloneTest.java" />
+				<include name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.java" />	
+			</javac>
+			<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
+	        	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
+				<include name="org/ejbca/core/protocol/xkms/**" if="xkms.enabled.true"/>
+				<classpath path="${build.test.dir}"/>
+			</javac>
+			<copy file="${log4j.test.file}" tofile="${build.test.dir}/log4j.xml" failonerror="true"/>
+			<!-- jndi.properties needs to be in the classpath, if it exists (not for glassfish) -->
+			<copy file="${jndi.properties.file}" todir="${build.dir}" failonerror="false"/>
+			<copy file="${jboss-ejb-client.properties}" todir="${build.dir}" failonerror="false"/>
+			<!-- needed by the cesecore tests -->
+			<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
+		</target>
 
 	<target name="assert-notinproduction">
 		<fail message="You cannot run system tests in a production environment.">
@@ -529,7 +552,7 @@
 		<fail unless="noOcspTestSigner" message="Could not batch generate OCSP signing keystore."/>
 	</target>
 
-	<target name="runocsp" depends="build, assert-appserverrunning-ocsp">
+	<target name="runocsp" depends="build-va, assert-appserverrunning-ocsp">
 		<property name="reports.dir" location="${reports.base.dir}/runocsp"/>
 		<fail message="'reports.dir' is not set." unless="reports.dir" />
 		<delete dir="${reports.dir}" />
@@ -553,7 +576,7 @@
 			<formatter type="xml" />
 			<batchtest fork="yes" todir="${reports.dir}">
 				<fileset dir="${build.test.dir}">
-					<include name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionTest.class" />
+					<include name="org/cesecore/certificates/ocsp/standalone/*Test.class" />
 					<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpStandaloneTest.class" />
 					<include name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.class" />					
 				</fileset>
