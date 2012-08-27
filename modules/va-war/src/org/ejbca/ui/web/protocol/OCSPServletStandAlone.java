@@ -31,7 +31,6 @@ import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGenerator
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.OcspConfiguration;
 import org.ejbca.config.GlobalConfiguration;
-import org.ejbca.core.ejb.ocsp.standalone.OcspKeyRenewalSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.HTMLTools;
 
@@ -57,8 +56,8 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
 
     @EJB
     private StandaloneOcspResponseGeneratorSessionLocal standaloneOcspResponseGeneratorSession;
-    @EJB
-    private OcspKeyRenewalSessionLocal ocspKeyRenewalSession;
+   
+
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -162,7 +161,7 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
                     response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                     return;
                 }
-                renewKeys(keyrenewalSignerDn);
+               // renewKeys(keyrenewalSignerDn);
                 return;
             }
             processOcspRequest(request, response);
@@ -229,13 +228,5 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
     protected OcspResponseGeneratorSessionLocal getOcspResponseGenerator() {
         return standaloneOcspResponseGeneratorSession;
     }
-    
-    /**
-     * Commands a renewal of the signer keys. 
-     * 
-     * @param signerSubjectDN
-     */
-    private void renewKeys(final String signerSubjectDN) {
-        this.ocspKeyRenewalSession.renewKeys(signerSubjectDN);
-    }
+   
 }
