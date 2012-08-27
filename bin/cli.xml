@@ -147,6 +147,12 @@ appserver.home         : ${appserver.home}
 		</fail>
 	</target>
 	
+        <target name="ejbca:renew-keystore" description="Renews the keystore used by the application server for https access.">
+                <ejbca:cli-hideargs arg="ra setuserstatus tomcat 10"/>
+                <ejbca:cli-hideargs arg="ra setclearpwd tomcat ${httpsserver.password}"/>
+                <ejbca:cli arg="batch tomcat"/>
+        </target>
+
 	<!-- Only try to batch generate superadmin if if keystoretyp is P12 -->
 	<target name="ejbca:batchsuperadmin" if="superadmin.batch.true">
 		<ejbca:cli arg="batch superadmin"/>
