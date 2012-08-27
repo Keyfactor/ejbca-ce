@@ -14,6 +14,7 @@
 package org.ejbca.ui.web.protocol;
 
 import java.io.IOException;
+import java.util.Set;
 
 import javax.ejb.EJB;
 import javax.servlet.ServletConfig;
@@ -30,6 +31,7 @@ import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGenerator
 import org.cesecore.config.ConfigurationHolder;
 import org.cesecore.config.OcspConfiguration;
 import org.ejbca.config.GlobalConfiguration;
+import org.ejbca.core.ejb.ocsp.standalone.OcspKeyRenewalSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.util.HTMLTools;
 
@@ -50,9 +52,13 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
     private static final Logger m_versionLog = Logger.getLogger("org.ejbca.version.log");
 
     private static final Logger log = Logger.getLogger(OCSPServletStandAlone.class);
+    private final Set<String> rekeyingTriggeringHosts = OcspConfiguration.getRekeyingTriggingHosts();
+    private final String rekeyingTriggingPassword = OcspConfiguration.getRekeyingTriggingPassword();
 
     @EJB
     private StandaloneOcspResponseGeneratorSessionLocal standaloneOcspResponseGeneratorSession;
+    @EJB
+    private OcspKeyRenewalSessionLocal ocspKeyRenewalSession;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
@@ -88,6 +94,9 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
             if (log.isTraceEnabled()) {
                 log.trace(">doGet()");
             }
+            final String keyRenewalSignerDN =  request.getParameter("renewSigner");
+            final boolean performKeyRenewal = keyRenewalSignerDN!=null && keyRenewalSignerDN.length()>0;
+            
             // We have a command to force reloading of keys that can only be run from localhost
             final boolean doReload = StringUtils.equals(request.getParameter("reloadkeys"), "true");
             final String newConfig = request.getParameter("newConfig");
@@ -111,7 +120,6 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
                 if (!OcspConfiguration.getDoNotStorePasswordsInMemory()) {
                     standaloneOcspResponseGeneratorSession.reloadTokenAndChainCache();
                 }
-
                 return;
             }
             if (doNewConfig) {
@@ -134,6 +142,27 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
                 ConfigurationHolder.restoreConfiguration();
                 OcspConfigurationCache.INSTANCE.reloadConfiguration();
                 log.info("Call from " + remote + " to restore configuration.");
+                return;
+            }
+            if ( performKeyRenewal ) {
+                if ( !this.rekeyingTriggeringHosts.contains(remote) ) {
+                    log.info( intres.getLocalizedMessage("ocsp.rekey.triggered.unauthorized.ip", remote) );
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+                if ( this.rekeyingTriggingPassword==null ) {
+                    log.info( intres.getLocalizedMessage("ocsp.rekey.triggered.not.enabled",remote) );
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+                final String requestPassword = request.getParameter("password");
+                final String keyrenewalSignerDn =  request.getParameter("renewSigner");
+                if ( !this.rekeyingTriggingPassword.equals(requestPassword) ) {
+                    log.info( intres.getLocalizedMessage("ocsp.rekey.triggered.wrong.password", remote) );
+                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                    return;
+                }
+                renewKeys(keyrenewalSignerDn);
                 return;
             }
             processOcspRequest(request, response);
@@ -199,5 +228,14 @@ public class OCSPServletStandAlone extends BaseOcspServlet {
     @Override
     protected OcspResponseGeneratorSessionLocal getOcspResponseGenerator() {
         return standaloneOcspResponseGeneratorSession;
+    }
+    
+    /**
+     * Commands a renewal of the signer keys. 
+     * 
+     * @param signerSubjectDN
+     */
+    private void renewKeys(final String signerSubjectDN) {
+        this.ocspKeyRenewalSession.renewKeys(signerSubjectDN);
     }
 }
