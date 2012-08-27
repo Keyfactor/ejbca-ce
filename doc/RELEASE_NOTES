@@ -2,6 +2,7 @@ EJBCA 5.1.0
 -----------
 
 - The term 'Admin Group' has been mostly purged and replaced with 'Role'.
+- The installation work-flow and ant targets have changed.
 
 EJBCA 5.0.5
 -----------
