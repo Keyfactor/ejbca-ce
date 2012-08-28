@@ -19,6 +19,7 @@
 	<property name="test-ejb.jar" location="${systemtests.dist.dir}/systemtests-ejb.jar"/>
 	<property name="test-va.jar" location="${systemtests.dist.dir}/va-systemtests.jar"/>
 	<property name="test-interface.jar" location="${systemtests.dist.dir}/systemtests-interfaces.jar" />
+	<property name="test-va-interface.jar" location="${systemtests.dist.dir}/test-va-interface.jar" />
 
 	<!-- Include endorsed jars from Glassfish -->
 	<condition property="tests.jvmargs" value="-Djava.endorsed.dirs=${appserver.home}/modules/endorsed" else="">
@@ -112,6 +113,14 @@
 	        	encoding="iso8859-1" classpathref="interfaces.classpath" target="${java.target.version}">
 		</javac>
 	</target>
+	
+	<target name="systemtest-compile-interfaces-va" depends="ejbca-properties">
+			<mkdir dir="${build.interface.dir}" />
+			<javac srcdir="${src.interface.dir}" destdir="${build.interface.dir}" debug="on" includeantruntime="no"
+		        	encoding="iso8859-1" classpathref="interfaces.classpath" target="${java.target.version}">
+				<include name="org/cesecore/configuration/CesecoreConfigurationProxySession*.java"/>
+			</javac>
+		</target>
 
 	<target name="systemtest-compile-src" depends="ejbca-properties">
 		<mkdir dir="${build.src.dir}" />
@@ -125,11 +134,11 @@
 		<javac srcdir="${src.dir}" destdir="${build.src.va.dir}" debug="on" includeantruntime="no"
 					        	encoding="iso8859-1" classpathref="compile-ejb.classpath" target="${java.target.version}">
 			<include name="org/cesecore/mock/authentication/tokens/TestAlwaysAllowLocalAuthenticationToken.java"/>
+			<include name="org/cesecore/configuration/CesecoreConfigurationProxySessionBean.java"/>
 		</javac>
 	</target>
 
 	<target name="build-libs" depends="check-inproduction" unless="in-production-mode">
-		<mkdir dir="${dist.dir}" />
 		<antcall target="systemtest-compile-interfaces" />
 		<antcall target="systemtest-compile-src" />	
 		<jar destfile="${test-interface.jar}" basedir="${build.interface.dir}"/>
@@ -137,9 +146,18 @@
 	</target>
 	
 	<target name="build-libs-va" depends="check-inproduction" unless="in-production-mode">
-		<mkdir dir="${dist.dir}" />
+		<antcall target="systemtest-compile-interfaces-va"/>
 		<antcall target="systemtest-compile-src-va"/>
-		<jar destfile="${test-va.jar}" basedir="${build.src.va.dir}"/>
+		<delete file="${test-va-interface.jar}" quiet="true"/>
+		<jar destfile="${test-va-interface.jar}" basedir="${build.interface.dir}">
+			<include name="org/cesecore/configuration/CesecoreConfigurationProxySession*.class"/>
+		</jar>
+		<delete file="${test-va.jar}" quiet="true"/>
+		<mkdir dir="monki"/>
+		<jar destfile="${test-va.jar}" basedir="${build.src.va.dir}">
+			<include name="org/cesecore/mock/authentication/tokens/TestAlwaysAllowLocalAuthenticationToken.class"/>
+			<include name="org/cesecore/configuration/CesecoreConfigurationProxySessionBean.class"/>
+		</jar>
 	</target>
 
 	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">

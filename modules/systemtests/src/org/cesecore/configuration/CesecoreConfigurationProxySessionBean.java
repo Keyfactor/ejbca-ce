@@ -16,6 +16,7 @@ import javax.ejb.Stateless;
 
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.config.ConfigurationHolder;
+import org.cesecore.config.OcspConfiguration;
 import org.cesecore.jndi.JndiConstants;
 
 /**
@@ -29,6 +30,11 @@ public class CesecoreConfigurationProxySessionBean implements CesecoreConfigurat
     public void setConfigurationValue(String key, String value) {
         ConfigurationHolder.updateConfiguration(key, value);
         OcspConfigurationCache.INSTANCE.reloadConfiguration();
+    }
+
+    @Override
+    public String getConfigurationValue(String key) {
+        return ConfigurationHolder.getExpandedString(key);
     }
 
 }

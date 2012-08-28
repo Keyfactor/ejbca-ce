@@ -31,4 +31,6 @@ public interface CesecoreConfigurationProxySessionRemote {
      */
     void setConfigurationValue(String key, String value);
     
+    String getConfigurationValue(String key);
+    
 }                           

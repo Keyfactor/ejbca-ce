@@ -53,6 +53,8 @@ import org.cesecore.certificates.ocsp.logging.AuditLogger;
 import org.cesecore.certificates.ocsp.logging.GuidHolder;
 import org.cesecore.certificates.ocsp.logging.TransactionCounter;
 import org.cesecore.certificates.ocsp.logging.TransactionLogger;
+import org.cesecore.config.OcspConfiguration;
+import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -77,6 +79,8 @@ public class StandaloneOcspResponseGeneratorSessionTest {
     private StandaloneOcspResponseGeneratorSessionRemote standaloneOcspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(StandaloneOcspResponseGeneratorSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
+    private CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySessionRemote = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CesecoreConfigurationProxySessionRemote.class);
 
     private X509Certificate caCertificate;
     private X509Certificate p12Certificate;
@@ -104,7 +108,7 @@ public class StandaloneOcspResponseGeneratorSessionTest {
 
          //Just to make things easy, dig out the OCSP signer certificate from the pre-manufactured p12 keystore and store it. 
          //It should have the same issuer DN as the ca created above.
-        String softKeyDirectory = "/Users/mikek/Documents/workspace/ejbca/modules/systemtests/build/keys"; //OcspConfiguration.getSoftKeyDirectoryName()
+        String softKeyDirectory = cesecoreConfigurationProxySessionRemote.getConfigurationValue(OcspConfiguration.OCSP_KEYS_DIR);
         File p12File = new File(softKeyDirectory, P12_FILENAME);
         KeyStore keyStore = KeyStore.getInstance("PKCS12", "BC");
         keyStore.load(new FileInputStream(p12File), PASSWORD.toCharArray());
