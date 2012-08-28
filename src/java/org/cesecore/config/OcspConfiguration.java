@@ -442,7 +442,11 @@ public class OcspConfiguration {
      */
     public static Set<String> getRekeyingTriggingHosts() {
         final String sHosts = ConfigurationHolder.getString(REKEYING_TRIGGERING_HOSTS);
-        return new HashSet<String>(Arrays.asList(StringUtils.split(sHosts.trim(), ';')));
+        if (sHosts == null) {
+            return new HashSet<String>();
+        } else {
+            return new HashSet<String>(Arrays.asList(StringUtils.split(sHosts.trim(), ';')));
+        }
     }
     /**
      * Get password needed for triggering rekey. Null means that it is not possible to trigger rekey.
