@@ -340,6 +340,9 @@ public class StandaloneOcspResponseGeneratorSessionBean extends OcspResponseSess
                 }
             } else {
                 log.warn("No OCSP certificate found for subject key ID " + new String(Hex.encode(subjectKeyId)));
+                if(log.isDebugEnabled()) {
+                    log.debug("Sought alias was :" + alias);
+                }
             }
         }
         return result;
