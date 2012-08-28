@@ -153,7 +153,6 @@
 			<include name="org/cesecore/configuration/CesecoreConfigurationProxySession*.class"/>
 		</jar>
 		<delete file="${test-va.jar}" quiet="true"/>
-		<mkdir dir="monki"/>
 		<jar destfile="${test-va.jar}" basedir="${build.src.va.dir}">
 			<include name="org/cesecore/mock/authentication/tokens/TestAlwaysAllowLocalAuthenticationToken.class"/>
 			<include name="org/cesecore/configuration/CesecoreConfigurationProxySessionBean.class"/>
