@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -65,7 +66,7 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
                 EndEntityInformation data = iter.next();
                 getLogger().info("User: " + data.getUsername() + ", \"" + data.getDN() +
                     "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", " +
-                    data.getStatus() + ", " + data.getType() + ", " + data.getTokenType() + ", " + data.getHardTokenIssuerId());
+                    data.getStatus() + ", " + data.getType().getHexValue() + ", " + data.getTokenType() + ", " + data.getHardTokenIssuerId());
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
