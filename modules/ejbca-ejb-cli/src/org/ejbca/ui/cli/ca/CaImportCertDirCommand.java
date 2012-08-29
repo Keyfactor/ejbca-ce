@@ -27,6 +27,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -37,7 +38,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -194,7 +194,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			final String subjectAltName = CertTools.getSubjectAlternativeName(certificate);
 			final String email = CertTools.getEMailAddress(certificate);				
 			userdata = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), caInfo.getCAId(), subjectAltName, email,
-					UserDataConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId,
+			        EndEntityConstants.STATUS_GENERATED, new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId,
 					certificateProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 			userdata.setPassword("foo123");
 			ejb.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), userdata, false);
@@ -202,7 +202,7 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 		}
 		// addUser always adds the user with STATUS_NEW (even if we specified otherwise)
 		// We always override the userdata with the info from the certificate even if the user existed.
-		userdata.setStatus(UserDataConstants.STATUS_GENERATED);
+		userdata.setStatus(EndEntityConstants.STATUS_GENERATED);
 		ejb.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword), userdata, false);
 		getLogger().info("User '" + username + "' has been updated.");
 		// Finally import the certificate and revoke it if necessary

@@ -19,6 +19,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.crl.CrlStoreSession;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSession;
 import org.ejbca.core.ejb.ca.sign.SignSession;
@@ -28,7 +29,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
@@ -131,7 +131,7 @@ public class ReissueResponseGenerator extends KRSSResponseGenerator {
 			IPasswordGenerator passwordGenerator = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS);
 			String password= passwordGenerator.getNewPassword(8, 8);
 
-			userdata.setStatus(UserDataConstants.STATUS_NEW);
+			userdata.setStatus(EndEntityConstants.STATUS_NEW);
 			userdata.setPassword(password);
 
 			userAdminSession.changeUser(raAdmin, userdata, true);

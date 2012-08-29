@@ -35,6 +35,7 @@ import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.EjbcaException;
@@ -45,7 +46,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.cmp.authentication.EndEntityCertificateAuthenticationModule;
 
@@ -231,7 +231,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                         LOG.debug("Setting the end entity status to 'NEW'. Username: " + userdata.getUsername());
                     }
 
-                    userAdminSession.setUserStatus(admin, userdata.getUsername(), UserDataConstants.STATUS_NEW);
+                    userAdminSession.setUserStatus(admin, userdata.getUsername(), EndEntityConstants.STATUS_NEW);
                 }
                 
                 // Set the appropriate parameters in the request

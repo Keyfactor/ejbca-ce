@@ -30,6 +30,7 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -44,7 +45,6 @@ import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -277,7 +277,7 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
         final EndEntityInformation user = new EndEntityInformation(USER_PRIVKEYUSAGEPERIOD, DN_PRIVKEYUSAGEPERIOD, rsacaid, null, "fooprivatekeyusae@example.com", new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
-        user.setStatus(UserDataConstants.STATUS_NEW);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
         userAdminSession.changeUser(internalAdmin, user, false);
         
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, USER_PRIVKEYUSAGEPERIOD, "foo123", rsakeyPrivKeyUsagePeriod.getPublic());

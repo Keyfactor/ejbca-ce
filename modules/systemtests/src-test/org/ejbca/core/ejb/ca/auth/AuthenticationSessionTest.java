@@ -28,6 +28,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -50,7 +51,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -167,7 +167,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     public void testFailAuthenticateUser() throws Exception {
         log.trace(">test03FailAuthenticateUser()");
         // Set status to GENERATED so authentication will fail
-        userAdminSession.setUserStatus(internalAdmin, username1, UserDataConstants.STATUS_GENERATED);
+        userAdminSession.setUserStatus(internalAdmin, username1, EndEntityConstants.STATUS_GENERATED);
         boolean authfailed = false;
         try {
             EndEntityInformation auth = authenticationSessionRemote.authenticateUser(internalAdmin, username1, pwd1);
@@ -208,7 +208,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         // create certificate for user
         // Set status to NEW
         userAdminSession.setPassword(internalAdmin, username1, "foo123");
-        userAdminSession.setUserStatus(internalAdmin, username1, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, username1, EndEntityConstants.STATUS_NEW);
 
         // Create a dummy certificate and keypair.
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -254,7 +254,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         loginUntilLocked(username2, pwd2);
 
         // Reset the status
-        userAdminSession.setUserStatus(internalAdmin, username2, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, username2, EndEntityConstants.STATUS_NEW);
 
         // After reset: Test that we don't lock the account to early
         loginMaxNumFailedLoginsMinusOneAndThenOk(username2, pwd2);

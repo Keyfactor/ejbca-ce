@@ -17,9 +17,9 @@ package org.ejbca.core.protocol.ws.client;
 import java.util.Iterator;
 import java.util.List;
 
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
@@ -77,10 +77,10 @@ public class FindUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
     private static final String[] STATUS_TEXTS = {"NEW", "FAILED","INITIALIZED",
     	                                          "INPROCESS","GENERATED","REVOKED",
     	                                          "HISTORICAL","KEYRECOVERY"}; 
-    private static final int[] STATUS_VALUES = {UserDataConstants.STATUS_NEW, UserDataConstants.STATUS_FAILED, UserDataConstants.STATUS_INITIALIZED,
-    	                                        UserDataConstants.STATUS_INPROCESS, UserDataConstants.STATUS_GENERATED,  
-    	                                        UserDataConstants.STATUS_REVOKED, UserDataConstants.STATUS_HISTORICAL,
-    	                                        UserDataConstants.STATUS_KEYRECOVERY};
+    private static final int[] STATUS_VALUES = {EndEntityConstants.STATUS_NEW, EndEntityConstants.STATUS_FAILED, EndEntityConstants.STATUS_INITIALIZED,
+    	                                        EndEntityConstants.STATUS_INPROCESS, EndEntityConstants.STATUS_GENERATED,  
+    	                                        EndEntityConstants.STATUS_REVOKED, EndEntityConstants.STATUS_HISTORICAL,
+    	                                        EndEntityConstants.STATUS_KEYRECOVERY};
 	
     /**
      * Creates a new instance of RaAddUserCommand

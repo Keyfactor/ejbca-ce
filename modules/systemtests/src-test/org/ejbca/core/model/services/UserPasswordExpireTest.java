@@ -22,6 +22,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -31,7 +32,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
@@ -119,7 +119,7 @@ public class UserPasswordExpireTest extends CaTestCase {
         // Now the user will not have been expired
         EndEntityInformation data = endEntityAccessSession.findUser(admin, USERNAME);
         assertNotNull("User we have added can not be found", data);
-        assertEquals(UserDataConstants.STATUS_NEW, data.getStatus());
+        assertEquals(EndEntityConstants.STATUS_NEW, data.getStatus());
 
         // Change the service to expire user after 5 seconds instead of after 5
         // hours
@@ -135,7 +135,7 @@ public class UserPasswordExpireTest extends CaTestCase {
         // Now the user will be expired
         data = endEntityAccessSession.findUser(admin, USERNAME);
         assertNotNull("User we have added can not be found", data);
-        assertEquals(UserDataConstants.STATUS_GENERATED, data.getStatus());
+        assertEquals(EndEntityConstants.STATUS_GENERATED, data.getStatus());
 
         log.trace("<test01CreateNewUser()");
     }

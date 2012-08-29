@@ -53,6 +53,7 @@
 		<pathelement location="${mod.ejbca-util.lib}"/>
 		<pathelement location="${mod.ejbca-common-web.lib}"/>
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
+		<pathelement location="${mod.ejbca-util.lib}"/>
 		<pathelement location="${mysql.lib}"/>
 		<pathelement location="${test-interface.jar}"/>
 		<pathelement location="${test-ejb.jar}"/>
@@ -93,6 +94,7 @@
 		<path refid="lib.jee.classpath" />
 		<path refid="lib.ejbca-common-web.classpath" />
 		<pathelement location="${mod.ejbca-ejb.lib}"/>
+		<pathelement location="${mod.ejbca-util.lib}"/>
 		<path location="${mod.ejbca-entity.lib}" />
 		<path refid="lib.quickserver.classpath" />
 		<path location="${build.interface.dir}" />
@@ -159,7 +161,7 @@
 		</jar>
 	</target>
 
-	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
+	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-util, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
 		<mkdir dir="${build.test.dir}" />
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
         	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
@@ -179,7 +181,7 @@
 		<copy todir="${build.test.dir}" file="${ejbca.home}/src/java/defaultvalues.properties"/>
 	</target>
 	
-	<target name="compile-tests-va" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
+	<target name="compile-tests-va" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-util, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
 			<mkdir dir="${build.test.dir}" />
 			<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
 	        	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">

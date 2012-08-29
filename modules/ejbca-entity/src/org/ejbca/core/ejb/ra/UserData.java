@@ -30,6 +30,7 @@ import javax.persistence.Transient;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -39,7 +40,6 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.QueryResultWrapper;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.crypto.BCrypt;
 import org.ejbca.util.crypto.CryptoTools;
 import org.ejbca.util.crypto.SupportedPasswordHashAlgorithm;
@@ -118,7 +118,7 @@ public class UserData extends ProtectedData implements Serializable {
         setCaId(caid);
         setSubjectAltName(altname);
         setSubjectEmail(email);
-        setStatus(UserDataConstants.STATUS_NEW);
+        setStatus(EndEntityConstants.STATUS_NEW);
         setType(type);
         setTimeCreated(time);
         setTimeModified(time);
@@ -610,8 +610,8 @@ public class UserData extends ProtectedData implements Serializable {
                 .createQuery("SELECT a FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
         query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
         query.setParameter("tokenType", SecConst.TOKEN_HARD_DEFAULT);
-        query.setParameter("status1", UserDataConstants.STATUS_NEW);
-        query.setParameter("status2", UserDataConstants.STATUS_KEYRECOVERY);
+        query.setParameter("status1", EndEntityConstants.STATUS_NEW);
+        query.setParameter("status2", EndEntityConstants.STATUS_KEYRECOVERY);
         if (maxResults > 0) {
             query.setMaxResults(maxResults);
         }
@@ -624,8 +624,8 @@ public class UserData extends ProtectedData implements Serializable {
                 .createQuery("SELECT COUNT(a) FROM UserData a WHERE a.hardTokenIssuerId=:hardTokenIssuerId AND a.tokenType>=:tokenType AND (a.status=:status1 OR a.status=:status2)");
         query.setParameter("hardTokenIssuerId", hardTokenIssuerId);
         query.setParameter("tokenType", SecConst.TOKEN_HARD_DEFAULT);
-        query.setParameter("status1", UserDataConstants.STATUS_NEW);
-        query.setParameter("status2", UserDataConstants.STATUS_KEYRECOVERY);
+        query.setParameter("status1", EndEntityConstants.STATUS_NEW);
+        query.setParameter("status2", EndEntityConstants.STATUS_KEYRECOVERY);
         return ((Long) query.getSingleResult()).longValue(); // Always returns a result
     }
 

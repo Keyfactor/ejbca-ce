@@ -154,7 +154,7 @@ public interface EndEntityManagementSession {
      *             SecConst.TOKEN constants
      * @param hardwaretokenissuerid if token should be hard, the id of the hard
      *             token issuer, else 0.
-     * @param status the status of the user, from UserDataConstants.STATUS_X
+     * @param status the status of the user, from EndEntityConstants.STATUS_X
      * @param caid the id of the CA that should be used to issue the users
      *             certificate
      * @throws AuthorizationDeniedException
@@ -410,7 +410,7 @@ public interface EndEntityManagementSession {
 
     /**
      * Mark a user's certificate for key recovery and set the user status to
-     * UserDataConstants.STATUS_KEYRECOVERY.
+     * EndEntityConstants.STATUS_KEYRECOVERY.
      * 
      * @param admin used to authorize this action
      * @param username is the user to key recover a certificate for

@@ -344,28 +344,28 @@ function confirmrevocation(){
     <td width="17%"><c:out value="<%= users[i].getSubjectDNField(DNFieldExtractor.OU,0) %>"/></td>
     <td width="18%"><c:out value="<%= users[i].getSubjectDNField(DNFieldExtractor.O,0) %>"/></td>
     <td width="12%"><%  switch(users[i].getStatus()){
-                          case UserDataConstants.STATUS_NEW : %>
+                          case EndEntityConstants.STATUS_NEW : %>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSNEW\") %>" />
                             <%break;
-                          case UserDataConstants.STATUS_FAILED :%>
+                          case EndEntityConstants.STATUS_FAILED :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSFAILED\") %>" />
                             <%break;
-                          case UserDataConstants.STATUS_INITIALIZED :%>
+                          case EndEntityConstants.STATUS_INITIALIZED :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSINITIALIZED\") %>" />
                             <%break;
-                          case UserDataConstants.STATUS_INPROCESS :%>
+                          case EndEntityConstants.STATUS_INPROCESS :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSINPROCESS\") %>" />
                             <%break;
-                          case UserDataConstants.STATUS_GENERATED :%>
+                          case EndEntityConstants.STATUS_GENERATED :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSGENERATED\") %>" />
                             <%break;
-                          case UserDataConstants.STATUS_REVOKED :%>
+                          case EndEntityConstants.STATUS_REVOKED :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSREVOKED\") %>" />
                             <%break;
-                          case UserDataConstants.STATUS_HISTORICAL :%>
+                          case EndEntityConstants.STATUS_HISTORICAL :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSHISTORICAL\") %>" />
                             <%break;
-                          case UserDataConstants.STATUS_KEYRECOVERY :%>
+                          case EndEntityConstants.STATUS_KEYRECOVERY :%>
                             <c:out value="<%= ejbcawebbean.getText(\"STATUSKEYRECOVERY\") %>" />
                             <%break;
                         }%></td>
@@ -482,13 +482,13 @@ function confirmrevocation(){
         <input type="submit" name="<%=BUTTON_CHANGESTATUS %>" value='<c:out value="<%= ejbcawebbean.getText(\"CHANGESTATUSTO\") %>"/>'
                onClick='return confirm("<%= ejbcawebbean.getText("AREYOUSURECHANGE",true) %>")'><br />
         <select name="<%=SELECT_CHANGE_STATUS %>">
-         <option selected value='<%= Integer.toString(UserDataConstants.STATUS_NEW) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSNEW\") %>"/></option>
-     <!--   <option value='<%= Integer.toString(UserDataConstants.STATUS_FAILED) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSFAILED\") %>"/></option>  -->
-       <!--  <option value='<%= Integer.toString(UserDataConstants.STATUS_INITIALIZED) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSINITIALIZED\") %>"/></option>  -->
-       <!--  <option value='<%= Integer.toString(UserDataConstants.STATUS_INPROCESS) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSINPROCESS\") %>"/></option>  -->
-            <option value='<%= Integer.toString(UserDataConstants.STATUS_GENERATED) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSGENERATED\") %>"/></option>  
-        <!--  <option value='<%= Integer.toString(UserDataConstants.STATUS_REVOKED) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSREVOKED\") %>"/></option>  -->
-         <option value='<%= Integer.toString(UserDataConstants.STATUS_HISTORICAL) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSHISTORICAL\") %>"/></option>
+         <option selected value='<%= Integer.toString(EndEntityConstants.STATUS_NEW) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSNEW\") %>"/></option>
+     <!--   <option value='<%= Integer.toString(EndEntityConstants.STATUS_FAILED) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSFAILED\") %>"/></option>  -->
+       <!--  <option value='<%= Integer.toString(EndEntityConstants.STATUS_INITIALIZED) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSINITIALIZED\") %>"/></option>  -->
+       <!--  <option value='<%= Integer.toString(EndEntityConstants.STATUS_INPROCESS) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSINPROCESS\") %>"/></option>  -->
+            <option value='<%= Integer.toString(EndEntityConstants.STATUS_GENERATED) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSGENERATED\") %>"/></option>  
+        <!--  <option value='<%= Integer.toString(EndEntityConstants.STATUS_REVOKED) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSREVOKED\") %>"/></option>  -->
+         <option value='<%= Integer.toString(EndEntityConstants.STATUS_HISTORICAL) %>'><c:out value="<%= ejbcawebbean.getText(\"STATUSHISTORICAL\") %>"/></option>
         </select>
        <% }  
         }catch(AuthorizationDeniedException ade){} */%>&nbsp;

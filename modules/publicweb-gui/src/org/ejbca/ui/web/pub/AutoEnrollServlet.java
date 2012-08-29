@@ -40,6 +40,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -55,7 +56,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.MSPKCS10RequestMessage;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.ActiveDirectoryTools;
@@ -217,7 +217,7 @@ public class AutoEnrollServlet extends HttpServlet {
 	        }
 	        log.info("sdn=" + subjectDN + ", san=" + subjectAN);
 	        debugInfo += "\nsdn=" + subjectDN + ", san=" + subjectAN + "\n";
-            EndEntityInformation userData = new EndEntityInformation(username, subjectDN, caid, subjectAN, null, UserDataConstants.STATUS_NEW,
+            EndEntityInformation userData = new EndEntityInformation(username, subjectDN, caid, subjectAN, null, EndEntityConstants.STATUS_NEW,
                     new EndEntityType(EndEntityTypes.ENDUSER), endEntityProfileId, certProfileId, new Date(), new Date(),
                     SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
 	        String password = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS).getNewPassword(8,8);

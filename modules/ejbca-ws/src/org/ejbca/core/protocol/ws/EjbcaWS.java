@@ -99,6 +99,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
@@ -153,7 +154,6 @@ import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
@@ -606,7 +606,7 @@ public class EjbcaWS implements IEjbcaWS {
 			log.debug("Using a long random password");
 		}
 		// get and old status that we can remember so we can reset status if this fails in the last step
-		int olduserStatus = UserDataConstants.STATUS_GENERATED;
+		int olduserStatus = EndEntityConstants.STATUS_GENERATED;
         final IPatternLogger logger = TransactionLogger.getPatternLogger();
         logAdminName(admin,logger);
         try {
@@ -618,7 +618,7 @@ public class EjbcaWS implements IEjbcaWS {
 			if (user != null) {
 				olduserStatus = user.getStatus();
 				// If user is revoked, we can not proceed
-				if ( (olduserStatus == UserDataConstants.STATUS_REVOKED) || (olduserStatus == UserDataConstants.STATUS_HISTORICAL) ) {
+				if ( (olduserStatus == EndEntityConstants.STATUS_REVOKED) || (olduserStatus == EndEntityConstants.STATUS_HISTORICAL) ) {
 					throw new AuthorizationDeniedException("User '"+username+"' is revoked.");
 				}
 				CVCObject parsedObject = CertificateParser.parseCVCObject(Base64.decode(cvcreq.getBytes()));
@@ -1024,11 +1024,11 @@ public class EjbcaWS implements IEjbcaWS {
 
 			  boolean usekeyrecovery = globalConfigurationSession.getCachedGlobalConfiguration().getEnableKeyRecovery();
 			  log.debug("usekeyrecovery: "+usekeyrecovery);
-			  boolean savekeys = userdata.getKeyRecoverable() && usekeyrecovery &&  (userdata.getStatus() != UserDataConstants.STATUS_KEYRECOVERY);
+			  boolean savekeys = userdata.getKeyRecoverable() && usekeyrecovery &&  (userdata.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
 			  log.debug("userdata.getKeyRecoverable(): "+userdata.getKeyRecoverable());
 			  log.debug("userdata.getStatus(): "+userdata.getStatus());
 			  log.debug("savekeys: "+savekeys);
-			  boolean loadkeys = (userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
+			  boolean loadkeys = (userdata.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
 			  log.debug("loadkeys: "+loadkeys);
 			  int endEntityProfileId = userdata.getEndEntityProfileId();
 			  EndEntityProfile endEntityProfile = endEntityProfileSession.getEndEntityProfile(endEntityProfileId);
@@ -1644,7 +1644,7 @@ public class EjbcaWS implements IEjbcaWS {
 					userData.setCertificateProfileId(certificateProfileId);
 					userData.setCAId(cAInfo.getCAId());
 					userData.setPassword(password);
-					userData.setStatus(UserDataConstants.STATUS_NEW);
+					userData.setStatus(EndEntityConstants.STATUS_NEW);
 					userAdminSession.changeUser(admin, userData, false);
 					PKCS10RequestMessage pkcs10req = new PKCS10RequestMessage(next.getPkcs10Data());
 					java.security.cert.Certificate cert;
@@ -1667,7 +1667,7 @@ public class EjbcaWS implements IEjbcaWS {
 						userData.setCertificateProfileId(certificateProfileId);
 						userData.setCAId(cAInfo.getCAId());
 						userData.setPassword(password);
-						userData.setStatus(UserDataConstants.STATUS_NEW);
+						userData.setStatus(EndEntityConstants.STATUS_NEW);
 						userAdminSession.changeUser(admin, userData, true);
 						X509Certificate cert;
                         if(eDate == null){
@@ -1696,7 +1696,7 @@ public class EjbcaWS implements IEjbcaWS {
         } catch(Exception e){
             throw EjbcaWSHelper.getInternalException(e, logger);
         } finally{
-            userAdminSession.setUserStatus(admin, userDataWS.getUsername(), UserDataConstants.STATUS_GENERATED);
+            userAdminSession.setUserStatus(admin, userDataWS.getUsername(), EndEntityConstants.STATUS_GENERATED);
 		}
 
 		// Add hard token data

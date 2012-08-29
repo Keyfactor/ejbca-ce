@@ -50,6 +50,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
@@ -67,7 +68,6 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ca.WrongTokenTypeException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.GenerateToken;
@@ -292,13 +292,13 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
             if (log.isDebugEnabled()) {
                 log.debug("usekeyrecovery: " + usekeyrecovery);
             }
-            boolean savekeys = userdata.getKeyRecoverable() && usekeyrecovery && (userdata.getStatus() != UserDataConstants.STATUS_KEYRECOVERY);
+            boolean savekeys = userdata.getKeyRecoverable() && usekeyrecovery && (userdata.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
             if (log.isDebugEnabled()) {
                 log.debug("userdata.getKeyRecoverable(): " + userdata.getKeyRecoverable());
                 log.debug("userdata.getStatus(): " + userdata.getStatus());
                 log.debug("savekeys: " + savekeys);
             }
-            boolean loadkeys = (userdata.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
+            boolean loadkeys = (userdata.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
             if (log.isDebugEnabled()) {
                 log.debug("loadkeys: " + loadkeys);
             }

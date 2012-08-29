@@ -23,8 +23,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.core.model.ca.store.CertReqHistory;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.cainterface.CAInterfaceBean;
@@ -66,8 +66,8 @@ public class ViewEndEntityHelper implements Serializable{
 	
 	public static final String CHECKBOX_VALUE             = "true";
 
-	public static final   int[] statusids = {UserDataConstants.STATUS_NEW ,UserDataConstants.STATUS_FAILED, UserDataConstants.STATUS_INITIALIZED, UserDataConstants.STATUS_INPROCESS
-        , UserDataConstants.STATUS_GENERATED, UserDataConstants.STATUS_REVOKED , UserDataConstants.STATUS_HISTORICAL, UserDataConstants.STATUS_KEYRECOVERY};
+	public static final   int[] statusids = {EndEntityConstants.STATUS_NEW ,EndEntityConstants.STATUS_FAILED, EndEntityConstants.STATUS_INITIALIZED, EndEntityConstants.STATUS_INPROCESS
+        , EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_REVOKED , EndEntityConstants.STATUS_HISTORICAL, EndEntityConstants.STATUS_KEYRECOVERY};
 	
 	public static final   String[] statustexts         = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED", "STATUSREVOKED", "STATUSHISTORICAL", "STATUSKEYRECOVERY"};
 	

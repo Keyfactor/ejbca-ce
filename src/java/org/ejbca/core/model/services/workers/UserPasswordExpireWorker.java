@@ -18,10 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.services.ServiceExecutionFailedException;
 import org.ejbca.core.model.services.actions.MailActionInfo;
@@ -59,10 +59,10 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
        
         long timeModified = ((new Date()).getTime() - getTimeBeforeExpire());   
         List<EndEntityInformation> userDataList = userAdminSession.findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
-                timeModified, UserDataConstants.STATUS_NEW);
+                timeModified, EndEntityConstants.STATUS_NEW);
 
         for (EndEntityInformation userDataVO : userDataList) {
-            userDataVO.setStatus(UserDataConstants.STATUS_GENERATED);
+            userDataVO.setStatus(EndEntityConstants.STATUS_GENERATED);
             userDataVO.setPassword(null);
             try {
             	userAdminSession.changeUser(getAdmin(), userDataVO, false);

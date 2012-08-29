@@ -21,6 +21,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -30,7 +31,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.EndEntityManagementConstants;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -110,7 +110,7 @@ public class AddLotsofUsersTest extends CaTestCase {
     @Test
     public void test02FindAllBatchUsersByStatusWithLimit() {
         log.trace(">test02FindAllBatchUsersByStatusWithLimit()");
-    	List<EndEntityInformation> userDataVOs = userAdminSession.findAllBatchUsersByStatusWithLimit(UserDataConstants.STATUS_NEW);
+    	List<EndEntityInformation> userDataVOs = userAdminSession.findAllBatchUsersByStatusWithLimit(EndEntityConstants.STATUS_NEW);
     	assertEquals("Did not returned the maximum hardcoded limit in query.", EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT, userDataVOs.size());
         log.trace("<test02FindAllBatchUsersByStatusWithLimit()");
     }

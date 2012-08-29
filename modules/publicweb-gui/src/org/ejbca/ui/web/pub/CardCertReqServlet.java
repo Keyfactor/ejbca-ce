@@ -54,6 +54,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -71,7 +72,6 @@ import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.hardtoken.profiles.EIDProfile;
 import org.ejbca.core.model.hardtoken.profiles.HardTokenProfile;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.util.HTMLTools;
 
 /**
@@ -223,7 +223,7 @@ public class CardCertReqServlet extends HttpServlet {
                 		EndEntityInformation b = new EndEntityInformation(username, data.getDN(), signCA, data.getSubjectAltName(), data.getEmail(), data.getType(), 
                 		        data.getEndEntityProfileId(), signCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
                 		b.setPassword(data.getPassword());
-                		b.setStatus(UserDataConstants.STATUS_NEW);
+                		b.setStatus(EndEntityConstants.STATUS_NEW);
                 		userAdminSession.changeUser(administrator, b, true);     
                 		final byte[] signb64cert=pkcs10CertRequest(administrator, signSession, signReqBytes, username, data.getPassword());
 
@@ -251,7 +251,7 @@ public class CardCertReqServlet extends HttpServlet {
                             throw new Error(t);
                         }
                     } finally {
-                        data.setStatus(UserDataConstants.STATUS_GENERATED);
+                        data.setStatus(EndEntityConstants.STATUS_GENERATED);
                         userAdminSession.changeUser(administrator, data, true); // set back to original values
                     }
                 }

@@ -1546,7 +1546,7 @@ function fieldSetDisableAsCheckbox(field, boxTarget, boxSource) {
                <% for(int ev1=0;ev1< statuses.length;ev1++){%>
                 <option
                <%    // Default values
-                     if ( (statuses[ev1] == UserDataConstants.STATUS_NEW) || (statuses[ev1] == UserDataConstants.STATUS_KEYRECOVERY) || (statuses[ev1] == UserDataConstants.STATUS_INITIALIZED) )
+                     if ( (statuses[ev1] == EndEntityConstants.STATUS_NEW) || (statuses[ev1] == EndEntityConstants.STATUS_KEYRECOVERY) || (statuses[ev1] == EndEntityConstants.STATUS_INITIALIZED) )
                         out.write(" selected "); 
                 %>
                    value='<c:out value="<%= statuses[ev1] %>"/>'><c:out value="<%= statustexts[ev1] %>"/>

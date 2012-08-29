@@ -20,7 +20,7 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
-import org.ejbca.core.model.ra.UserDataConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 
 /**
  * Class holding information about user notification sent when a user transitions through
@@ -56,8 +56,8 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     /** recipient of notification is the admin of the user */
     public static final String   RCPT_CUSTOM    = "CUSTOM";
 
-    public static final String EVENTS_EDITUSER = UserDataConstants.STATUS_NEW+";"+UserDataConstants.STATUS_KEYRECOVERY+";"+UserDataConstants.STATUS_INITIALIZED;
-    public static final String EVENTS_USERENROL = String.valueOf(UserDataConstants.STATUS_GENERATED);
+    public static final String EVENTS_EDITUSER = EndEntityConstants.STATUS_NEW+";"+EndEntityConstants.STATUS_KEYRECOVERY+";"+EndEntityConstants.STATUS_INITIALIZED;
+    public static final String EVENTS_USERENROL = String.valueOf(EndEntityConstants.STATUS_GENERATED);
     
     // protected in order to upgrade in EndEntityProfile.upgrade()
     // Use private for new fields.
@@ -133,7 +133,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     }
 
     /** list of UserDataConstant.STATUS_XX separated by ;. See constants EVENTS_XX for helper events.
-     * example 'String.valueOf(UserDataConstants.STATUS_NEW)+";"+String.valueOf(UserDataConstants.STATUS_KEYRECOVERY)'
+     * example 'String.valueOf(EndEntityConstants.STATUS_NEW)+";"+String.valueOf(EndEntityConstants.STATUS_KEYRECOVERY)'
      * @return String with integer values separated by ;
      * @see UserNotification.EVENTS_EDITUSER
      */
@@ -147,7 +147,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
 
     /** Returns a collection view of getNotificationEvents.
      * 
-     * @return A Collection with String values (String.valueOf(UserDataConstants.STATUS_NEW etc), or an empty Collection, never null.
+     * @return A Collection with String values (String.valueOf(EndEntityConstants.STATUS_NEW etc), or an empty Collection, never null.
      */
     public Collection<String> getNotificationEventsCollection(){
     	String events = getNotificationEvents();
@@ -162,7 +162,7 @@ public class UserNotification extends HashMap implements Serializable, Cloneable
     }
 
     /** list of UserDataConstant.STATUS_XX separated by ;. See constants EVENTS_XX for helper events.
-     * example 'String.valueOf(UserDataConstants.STATUS_NEW)+";"+String.valueOf(UserDataConstants.STATUS_KEYRECOVERY)'
+     * example 'String.valueOf(EndEntityConstants.STATUS_NEW)+";"+String.valueOf(EndEntityConstants.STATUS_KEYRECOVERY)'
      * @param String with integer values separated by ;
      * @see UserNotification.EVENTS_EDITUSER
      */

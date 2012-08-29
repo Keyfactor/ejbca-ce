@@ -17,9 +17,9 @@ import java.math.BigInteger;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
@@ -188,16 +188,16 @@ public class EditUserCommand extends EJBCAWSRABaseCommand implements IAdminComma
     }
     private int getStatus(String status) {
 		if(status.equalsIgnoreCase("NEW")){
-			return UserDataConstants.STATUS_NEW;
+			return EndEntityConstants.STATUS_NEW;
 		}
 		if(status.equalsIgnoreCase("INPROCESS")){
-			return UserDataConstants.STATUS_INPROCESS;
+			return EndEntityConstants.STATUS_INPROCESS;
 		}
 		if(status.equalsIgnoreCase("FAILED")){
-			return UserDataConstants.STATUS_FAILED;
+			return EndEntityConstants.STATUS_FAILED;
 		}
 		if(status.equalsIgnoreCase("HISTORICAL")){
-			return UserDataConstants.STATUS_HISTORICAL;
+			return EndEntityConstants.STATUS_HISTORICAL;
 		}		
 		
 		getPrintStream().println("Error in status string : " + status );

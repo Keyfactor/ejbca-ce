@@ -2,7 +2,7 @@
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page  errorPage="/errorpage.jsp" import="java.util.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.ejbca.ui.web.admin.rainterface.UserView,
-    org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.ejbca.core.model.ra.UserDataConstants,
+    org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.ui.web.admin.rainterface.EndEntityProfileDataHandler, org.ejbca.core.model.ra.raadmin.EndEntityProfile, org.cesecore.certificates.endentity.EndEntityConstants,
                  javax.ejb.CreateException, org.cesecore.authorization.AuthorizationDeniedException, org.cesecore.certificates.util.DNFieldExtractor, org.ejbca.core.model.ra.ExtendedInformationFields, org.cesecore.certificates.endentity.EndEntityInformation,
                  org.ejbca.ui.web.admin.hardtokeninterface.HardTokenInterfaceBean, org.ejbca.core.model.hardtoken.HardTokenIssuer, org.ejbca.core.model.hardtoken.HardTokenIssuerData, java.math.BigInteger,
                  org.ejbca.core.model.SecConst, org.cesecore.util.StringTools, org.cesecore.certificates.util.DnComponents, org.apache.commons.lang.time.DateUtils, org.cesecore.certificates.endentity.ExtendedInformation, org.cesecore.certificates.crl.RevokedCertInfo,
@@ -475,7 +475,7 @@
 
               if(request.getParameter(SELECT_CHANGE_STATUS)!=null){
                 int newstatus = Integer.parseInt(request.getParameter(SELECT_CHANGE_STATUS));
-                if(newstatus == UserDataConstants.STATUS_NEW || newstatus == UserDataConstants.STATUS_GENERATED || newstatus == UserDataConstants.STATUS_HISTORICAL || newstatus == UserDataConstants.STATUS_KEYRECOVERY )
+                if(newstatus == EndEntityConstants.STATUS_NEW || newstatus == EndEntityConstants.STATUS_GENERATED || newstatus == EndEntityConstants.STATUS_HISTORICAL || newstatus == EndEntityConstants.STATUS_KEYRECOVERY )
                   newuser.setStatus(newstatus); 
               }
               try{
@@ -911,24 +911,24 @@ function checkallfields(){
 
   <% if(profile.getUse(EndEntityProfile.PASSWORD,0)){ 
        if(profile.isModifyable(EndEntityProfile.PASSWORD,0)){%>  
-   if((status == <%= UserDataConstants.STATUS_NEW%> || status == <%= UserDataConstants.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= TEXTFIELD_PASSWORD %>.value == ""){
+   if((status == <%= EndEntityConstants.STATUS_NEW%> || status == <%= EndEntityConstants.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= TEXTFIELD_PASSWORD %>.value == ""){
       alert("<%= ejbcawebbean.getText("REQUIREDPASSWORD", true) %>");
       illegalfields++;
    }
 
   <%   } else { %>
-   if((status == <%= UserDataConstants.STATUS_NEW%> || status == <%= UserDataConstants.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= TEXTFIELD_PASSWORD %>.options.selectedIndex == -1){
+   if((status == <%= EndEntityConstants.STATUS_NEW%> || status == <%= EndEntityConstants.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= TEXTFIELD_PASSWORD %>.options.selectedIndex == -1){
       alert("<%= ejbcawebbean.getText("REQUIREDPASSWORD", true) %>");
       illegalfields++;
    }
  <%   }
     }else{%>
-   if((status == <%= UserDataConstants.STATUS_NEW%> || status == <%= UserDataConstants.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= CHECKBOX_REGENERATEPASSWD %>.checked == false && token <= <%= SecConst.TOKEN_SOFT%> ){
+   if((status == <%= EndEntityConstants.STATUS_NEW%> || status == <%= EndEntityConstants.STATUS_KEYRECOVERY%>) && status != <%= userdata.getStatus() %> && document.edituser.<%= CHECKBOX_REGENERATEPASSWD %>.checked == false && token <= <%= SecConst.TOKEN_SOFT%> ){
       alert("<%= ejbcawebbean.getText("PASSWORDMUSTBEREGEN", true) %>");
       illegalfields++;
    }
  <% } %>
-   if(status != <%= UserDataConstants.STATUS_NEW%> && status != <%= UserDataConstants.STATUS_KEYRECOVERY%> && status != <%= UserDataConstants.STATUS_GENERATED%> && status != <%= UserDataConstants.STATUS_HISTORICAL%>){
+   if(status != <%= EndEntityConstants.STATUS_NEW%> && status != <%= EndEntityConstants.STATUS_KEYRECOVERY%> && status != <%= EndEntityConstants.STATUS_GENERATED%> && status != <%= EndEntityConstants.STATUS_HISTORICAL%>){
       alert("<%= ejbcawebbean.getText("ONLYSTATUSCANBESELECTED", true) %>");
       illegalfields++;
     }
@@ -1043,17 +1043,17 @@ function checkUseInBatch(){
       </td>
       <td > 
         <select name="<%=SELECT_CHANGE_STATUS %>" tabindex="<%=tabindex++%>" >
-         <%if(userdata.getStatus()== UserDataConstants.STATUS_KEYRECOVERY){ %>
-           <option selected value='<%= UserDataConstants.STATUS_KEYRECOVERY %>'><%= ejbcawebbean.getText("STATUSKEYRECOVERY") %></option>
+         <%if(userdata.getStatus()== EndEntityConstants.STATUS_KEYRECOVERY){ %>
+           <option selected value='<%= EndEntityConstants.STATUS_KEYRECOVERY %>'><%= ejbcawebbean.getText("STATUSKEYRECOVERY") %></option>
          <% }else{ %>  
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_NEW) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_NEW %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
+         <option <%if(userdata.getStatus()== EndEntityConstants.STATUS_NEW) out.write(" selected ");%> value='<%= EndEntityConstants.STATUS_NEW %>'><%= ejbcawebbean.getText("STATUSNEW") %></option>
          <% } %>
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_FAILED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_FAILED %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_INITIALIZED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_INITIALIZED %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_INPROCESS) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_INPROCESS %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_GENERATED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_GENERATED %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_REVOKED) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_REVOKED %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>
-         <option <%if(userdata.getStatus()== UserDataConstants.STATUS_HISTORICAL) out.write(" selected ");%> value='<%= UserDataConstants.STATUS_HISTORICAL %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
+         <option <%if(userdata.getStatus()== EndEntityConstants.STATUS_FAILED) out.write(" selected ");%> value='<%= EndEntityConstants.STATUS_FAILED %>'><%= ejbcawebbean.getText("STATUSFAILED") %></option>
+         <option <%if(userdata.getStatus()== EndEntityConstants.STATUS_INITIALIZED) out.write(" selected ");%> value='<%= EndEntityConstants.STATUS_INITIALIZED %>'><%= ejbcawebbean.getText("STATUSINITIALIZED") %></option>
+         <option <%if(userdata.getStatus()== EndEntityConstants.STATUS_INPROCESS) out.write(" selected ");%> value='<%= EndEntityConstants.STATUS_INPROCESS %>'><%= ejbcawebbean.getText("STATUSINPROCESS") %></option>
+         <option <%if(userdata.getStatus()== EndEntityConstants.STATUS_GENERATED) out.write(" selected ");%> value='<%= EndEntityConstants.STATUS_GENERATED %>'><%= ejbcawebbean.getText("STATUSGENERATED") %></option>
+         <option <%if(userdata.getStatus()== EndEntityConstants.STATUS_REVOKED) out.write(" selected ");%> value='<%= EndEntityConstants.STATUS_REVOKED %>'><%= ejbcawebbean.getText("STATUSREVOKED") %></option>
+         <option <%if(userdata.getStatus()== EndEntityConstants.STATUS_HISTORICAL) out.write(" selected ");%> value='<%= EndEntityConstants.STATUS_HISTORICAL %>'><%= ejbcawebbean.getText("STATUSHISTORICAL") %></option>
         </select>
         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= BUTTON_SAVE %>" value="<%= ejbcawebbean.getText("SAVE") %>" tabindex="<%=tabindex++%>" onClick='return checkallfields()' />

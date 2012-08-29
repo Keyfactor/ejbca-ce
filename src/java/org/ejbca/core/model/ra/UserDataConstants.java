@@ -17,6 +17,7 @@ import java.util.HashMap;
 
 /**
  * @version $Id$
+ * @deprecated Use org.cesecore.certificates.endentity.EndEntityConstants instead. Since EJBCA 5.0.6
  */
 public class UserDataConstants {
     // Constants for Status of user

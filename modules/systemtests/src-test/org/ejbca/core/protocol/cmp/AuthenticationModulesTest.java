@@ -75,6 +75,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -103,7 +104,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
@@ -1317,7 +1317,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
             userAdminSession.changeUser(ADMIN, user, true);
-            userAdminSession.setUserStatus(ADMIN, username, UserDataConstants.STATUS_NEW);
+            userAdminSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 

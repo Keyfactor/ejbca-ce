@@ -12,6 +12,8 @@
  *************************************************************************/
 package org.cesecore.certificates.endentity;
 
+import java.util.HashMap;
+
 /** Constants for End Entity types 
  * 
  * Based on EJBCA version: SecConst.java 11082 2011-01-07 09:14:46Z anatom
@@ -45,5 +47,52 @@ public final class EndEntityConstants {
     public static final int TOKEN_SOFT_PEM = 4;
     /** All values equal or below this constant should be treated as a soft token. */
     public static final int TOKEN_SOFT = 100;
+    
+    //
+    // Names and language strings of statuses
+    //
+    /** These string values maps a status code to a language string in the admin GUI language property files */
+    private static final HashMap<Integer, String> STATUS_TEXT_TRANS = new HashMap<Integer, String>();
+    static {
+        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_NEW),"STATUSNEW");
+        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_FAILED),"STATUSFAILED"); 
+        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_INITIALIZED),"STATUSINITIALIZED"); 
+        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_INPROCESS),"STATUSINPROCESS");
+        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_GENERATED),"STATUSGENERATED");
+        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_REVOKED),"STATUSREVOKED");
+        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_HISTORICAL),"STATUSHISTORICAL");
+        STATUS_TEXT_TRANS.put(Integer.valueOf(STATUS_KEYRECOVERY),"STATUSKEYRECOVERY");
+    }
+
+    public static String getTranslatableStatusText(int status) {
+        String ret = null;
+        Object o =  STATUS_TEXT_TRANS.get(Integer.valueOf(status));
+        if (o != null) {
+            ret = (String)o;
+        }
+        return ret;
+    }
+
+    /** These string values maps a status code to a plain string */
+    private static final HashMap<Integer, String> STATUS_TEXT = new HashMap<Integer, String>();
+    static {
+        STATUS_TEXT.put(Integer.valueOf(STATUS_NEW),"NEW");
+        STATUS_TEXT.put(Integer.valueOf(STATUS_FAILED),"FAILED"); 
+        STATUS_TEXT.put(Integer.valueOf(STATUS_INITIALIZED),"INITIALIZED"); 
+        STATUS_TEXT.put(Integer.valueOf(STATUS_INPROCESS),"INPROCESS");
+        STATUS_TEXT.put(Integer.valueOf(STATUS_GENERATED),"GENERATED");
+        STATUS_TEXT.put(Integer.valueOf(STATUS_REVOKED),"REVOKED");
+        STATUS_TEXT.put(Integer.valueOf(STATUS_HISTORICAL),"HISTORICAL");
+        STATUS_TEXT.put(Integer.valueOf(STATUS_KEYRECOVERY),"KEYRECOVERY");
+    }
+
+    public static String getStatusText(int status) {
+        String ret = null;
+        Object o =  STATUS_TEXT.get(Integer.valueOf(status));
+        if (o != null) {
+            ret = (String)o;
+        }
+        return ret;
+    }
 
 }

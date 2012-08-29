@@ -17,7 +17,7 @@ package org.ejbca.core.protocol.ws.client;
 import java.util.List;
 
 import org.cesecore.certificates.crl.RevokedCertInfo;
-import org.ejbca.core.model.ra.UserDataConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
@@ -87,7 +87,7 @@ public class RevokeUserCommand extends EJBCAWSRABaseCommand implements IAdminCom
             	}
             	
             	UserDataVOWS user = result.iterator().next();
-            	if(user.getStatus() == UserDataConstants.STATUS_REVOKED){
+            	if(user.getStatus() == EndEntityConstants.STATUS_REVOKED){
               		getPrintStream().println("Error : User already revoked.");
             		System.exit(-1); // NOPMD, it's not a JEE app         		
             	}

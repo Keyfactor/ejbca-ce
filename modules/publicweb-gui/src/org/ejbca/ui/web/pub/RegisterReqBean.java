@@ -28,6 +28,7 @@ import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -39,7 +40,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.approvalrequests.AddEndEntityApprovalRequest;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
@@ -267,7 +267,7 @@ public class RegisterReqBean {
         final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RegisterReqBean: "+remoteAddress));
         
         final EndEntityInformation endEntity = new EndEntityInformation(username, subjectDN, caid, null, 
-                null, UserDataConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId,
+                null, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId,
                 null,null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         endEntity.setSendNotification(true);
         if (email != null && eeprofile.isModifyable("EMAIL", 0)) {

@@ -24,6 +24,7 @@ import javax.ejb.FinderException;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -31,7 +32,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
  * Approval Request created when trying to edit an end entity.
@@ -65,78 +65,78 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	public boolean isAllowedTransition() {
 		boolean ret = false;
 		// Allow Keyrecovery transitions until keyrecovery approvals have been implemented.
-		if(newstatus == UserDataConstants.STATUS_KEYRECOVERY){
+		if(newstatus == EndEntityConstants.STATUS_KEYRECOVERY){
 			return true;
 		}
-		if (oldstatus == UserDataConstants.STATUS_GENERATED) {
+		if (oldstatus == EndEntityConstants.STATUS_GENERATED) {
 			switch (newstatus) {
-			case UserDataConstants.STATUS_GENERATED:
+			case EndEntityConstants.STATUS_GENERATED:
 				ret = true;
 				break;
 			default:
 				break;
 			}			
 		}
-		if (oldstatus == UserDataConstants.STATUS_NEW) {
+		if (oldstatus == EndEntityConstants.STATUS_NEW) {
 			switch (newstatus) {
-			case UserDataConstants.STATUS_NEW:
+			case EndEntityConstants.STATUS_NEW:
 				ret = true;
 				break;
-			case UserDataConstants.STATUS_INPROCESS:
+			case EndEntityConstants.STATUS_INPROCESS:
 				ret = true;
 				break;
-			case UserDataConstants.STATUS_GENERATED:
+			case EndEntityConstants.STATUS_GENERATED:
 				ret = true;
 				break;
-			case UserDataConstants.STATUS_FAILED:
+			case EndEntityConstants.STATUS_FAILED:
 				ret = true;
 				break;
 			default:
 				break;
 			}			
 		}
-		if (oldstatus == UserDataConstants.STATUS_FAILED) {
+		if (oldstatus == EndEntityConstants.STATUS_FAILED) {
 			switch (newstatus) {
-			case UserDataConstants.STATUS_FAILED:
+			case EndEntityConstants.STATUS_FAILED:
 				ret = true;
 				break;
-			case UserDataConstants.STATUS_INPROCESS:
+			case EndEntityConstants.STATUS_INPROCESS:
 				ret = true;
 				break;
-			case UserDataConstants.STATUS_GENERATED:
+			case EndEntityConstants.STATUS_GENERATED:
 				ret = true;
 				break;
 			default:
 				break;
 			}			
 		}
-		if (oldstatus == UserDataConstants.STATUS_INPROCESS) {
+		if (oldstatus == EndEntityConstants.STATUS_INPROCESS) {
 			switch (newstatus) {
-			case UserDataConstants.STATUS_INPROCESS:
+			case EndEntityConstants.STATUS_INPROCESS:
 				ret = true;
 				break;
-			case UserDataConstants.STATUS_GENERATED:
+			case EndEntityConstants.STATUS_GENERATED:
 				ret = true;
 				break;
-			case UserDataConstants.STATUS_FAILED:
+			case EndEntityConstants.STATUS_FAILED:
 				ret = true;
 				break;
 			default:
 				break;
 			}			
 		}
-		if (oldstatus == UserDataConstants.STATUS_KEYRECOVERY) {
+		if (oldstatus == EndEntityConstants.STATUS_KEYRECOVERY) {
 			switch (newstatus) {
-			case UserDataConstants.STATUS_KEYRECOVERY:
+			case EndEntityConstants.STATUS_KEYRECOVERY:
 				ret = true;
 				break;
-			case UserDataConstants.STATUS_INPROCESS:
+			case EndEntityConstants.STATUS_INPROCESS:
 				ret = true;
 				break;
-			case UserDataConstants.STATUS_GENERATED:
+			case EndEntityConstants.STATUS_GENERATED:
 				ret = true;
 				break;
-			case UserDataConstants.STATUS_FAILED:
+			case EndEntityConstants.STATUS_FAILED:
 				ret = true;
 				break;
 			default:
@@ -181,7 +181,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	public List<ApprovalDataText> getNewRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
-		retval.add(new ApprovalDataText("STATUS",UserDataConstants.getTranslatableStatusText(newstatus),true,true));		
+		retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(newstatus),true,true));		
 		return retval;
 	}
 	
@@ -189,7 +189,7 @@ public class ChangeStatusEndEntityApprovalRequest extends ApprovalRequest {
 	public List<ApprovalDataText> getOldRequestDataAsText(AuthenticationToken admin) {
 		ArrayList<ApprovalDataText> retval = new ArrayList<ApprovalDataText>();
 		retval.add(new ApprovalDataText("USERNAME",username,true,false));
-		retval.add(new ApprovalDataText("STATUS",UserDataConstants.getTranslatableStatusText(oldstatus),true,true));		
+		retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(oldstatus),true,true));		
 		return retval;
 	}
 
