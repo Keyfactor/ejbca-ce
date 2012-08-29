@@ -124,7 +124,7 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             	EndEntityInformation data = iter.next();
                 getLogger().info(
                         "User: " + data.getUsername() + ", \"" + data.getDN() + "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", "
-                                + data.getStatus() + ", " + data.getType() + ", " + data.getTokenType() + ", " + data.getHardTokenIssuerId() + ", "
+                                + data.getStatus() + ", " + data.getType().getHexValue() + ", " + data.getTokenType() + ", " + data.getHardTokenIssuerId() + ", "
                                 + data.getCertificateProfileId());
 
                 if (data.getCertificateProfileId() > 0) { // only if we find a
