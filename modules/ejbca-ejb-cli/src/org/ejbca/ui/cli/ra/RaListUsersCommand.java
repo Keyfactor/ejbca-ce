@@ -46,7 +46,7 @@ public class RaListUsersCommand extends BaseRaAdminCommand {
             if (args.length < 2) {
     			getLogger().info("Description: " + getDescription());
                 getLogger().info("Usage: " + getCommand() + " <status>");
-                getLogger().info(" Status: ANY=00; NEW=10; FAILED=11; INITIALIZED=20; INPROCESS=30; GENERATED=40; HISTORICAL=50");
+                getLogger().info(" Status: ANY=00; NEW=10; FAILED=11; INITIALIZED=20; INPROCESS=30; GENERATED=40; REVOKED=50; HISTORICAL=60; KEYRECOVERY=70");
                 return;
             }
             int status = Integer.parseInt(args[1]);
