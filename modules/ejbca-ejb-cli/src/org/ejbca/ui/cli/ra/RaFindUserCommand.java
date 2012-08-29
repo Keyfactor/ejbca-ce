@@ -57,7 +57,7 @@ public class RaFindUserCommand extends BaseRaAdminCommand {
                     getLogger().info("directoryAttributes: \"" + (ei != null ? ei.getSubjectDirectoryAttributes() : "") + "\"");
                     getLogger().info("email=" + data.getEmail());
                     getLogger().info("status=" + data.getStatus());
-                    getLogger().info("type=" + data.getType());
+                    getLogger().info("type=" + data.getType().getHexValue());
                     getLogger().info("token type=" + data.getTokenType());
                     getLogger().info("end entity profile id=" + data.getEndEntityProfileId());
                     getLogger().info("certificate entity profile id=" + data.getCertificateProfileId());

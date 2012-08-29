@@ -49,7 +49,7 @@ public class RaListNewUsersCommand extends BaseRaAdminCommand {
             	EndEntityInformation data = iter.next();
                 getLogger().info("New User: " + data.getUsername() + ", \"" + data.getDN() +
                     "\", \"" + data.getSubjectAltName() + "\", " + data.getEmail() + ", " +
-                    data.getStatus() + ", " + data.getType() + ", " + data.getTokenType());
+                    data.getStatus() + ", " + data.getType().getHexValue() + ", " + data.getTokenType());
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);
