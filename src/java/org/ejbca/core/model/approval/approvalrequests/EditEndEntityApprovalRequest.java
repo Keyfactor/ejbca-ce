@@ -27,6 +27,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.EjbcaException;
@@ -40,7 +41,6 @@ import org.ejbca.core.model.approval.ApprovalRequest;
 import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.ApprovalRequestHelper;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 
 /**
@@ -146,7 +146,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(newuserdata.getHardTokenIssuerId())));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE",newuserdata.getKeyRecoverable() ? "YES" : "NO",true,true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION",newuserdata.getSendNotification() ? "YES" : "NO",true,true));
-		retval.add(new ApprovalDataText("STATUS",UserDataConstants.getTranslatableStatusText(newuserdata.getStatus()),true,true));
+		retval.add(new ApprovalDataText("STATUS",EndEntityConstants.getTranslatableStatusText(newuserdata.getStatus()),true,true));
 		return retval;
 	}
 	
@@ -187,7 +187,7 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		retval.add(getTextWithNoValueString("HARDTOKENISSUERALIAS", hardTokenSession.getHardTokenIssuerAlias(orguserdata.getHardTokenIssuerId())));
 		retval.add(new ApprovalDataText("KEYRECOVERABLE", orguserdata.getKeyRecoverable() ? "YES" : "NO", true, true));
 		retval.add(new ApprovalDataText("SENDNOTIFICATION", orguserdata.getSendNotification() ? "YES" : "NO", true, true));
-		retval.add(new ApprovalDataText("STATUS", UserDataConstants.getTranslatableStatusText(orguserdata.getStatus()), true, true));
+		retval.add(new ApprovalDataText("STATUS", EndEntityConstants.getTranslatableStatusText(orguserdata.getStatus()), true, true));
 		return retval;
 	}
 

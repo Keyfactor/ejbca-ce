@@ -58,6 +58,7 @@ import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
@@ -82,7 +83,6 @@ import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ws.logger.TransactionTags;
 import org.ejbca.core.protocol.ws.objects.Certificate;
@@ -794,7 +794,7 @@ public class EjbcaWSHelper {
 			String msg = intres.getLocalizedMessage("cvc.info.renewallowed", CertTools.getFingerprintAsString(cert), username);            	
 			log.info(msg);
 			userAdminSession.setPassword(admin, username, password);
-			userAdminSession.setUserStatus(admin, username, UserDataConstants.STATUS_NEW);
+			userAdminSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
 			// If we managed to verify the certificate we will break out of the loop									
 			ret = true;															
 		} catch (CertificateNotYetValidException e) {

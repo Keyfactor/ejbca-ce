@@ -65,6 +65,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -107,7 +108,6 @@ import org.ejbca.core.model.ra.FieldValidator;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RAAuthorization;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UserDataFiller;
 import org.ejbca.core.model.ra.UserNotificationParamGen;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
@@ -229,7 +229,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             final boolean clearpwd, final int endentityprofileid, final int certificateprofileid, final EndEntityType type, final int tokentype, final int hardwaretokenissuerid, final int caid)
             throws PersistenceException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
             CADoesntExistsException, EjbcaException {
-        final EndEntityInformation userdata = new EndEntityInformation(username, subjectdn, caid, subjectaltname, email, UserDataConstants.STATUS_NEW,
+        final EndEntityInformation userdata = new EndEntityInformation(username, subjectdn, caid, subjectaltname, email, EndEntityConstants.STATUS_NEW,
                 type, endentityprofileid, certificateprofileid, null, null, tokentype, hardwaretokenissuerid, null);
         userdata.setPassword(password);
         addUser(admin, userdata, clearpwd);
@@ -372,7 +372,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // this point it is safe to set the password
                 endEntity.setPassword(newpassword);
                 // Send notifications, if they should be sent
-                sendNotification(admin, endEntity, UserDataConstants.STATUS_NEW);
+                sendNotification(admin, endEntity, EndEntityConstants.STATUS_NEW);
                 if (type.contains(EndEntityTypes.PRINT)) {
                     if (profile == null) {
                         profile = endEntityProfileSession.getEndEntityProfileNoClone(endEntityProfileId);
@@ -604,13 +604,13 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             userData.setCardNumber(userDataVO.getCardNumber());
             final int newstatus = userDataVO.getStatus();
             final int oldstatus = userData.getStatus();
-            if (oldstatus == UserDataConstants.STATUS_KEYRECOVERY && newstatus != UserDataConstants.STATUS_KEYRECOVERY
-                    && newstatus != UserDataConstants.STATUS_INPROCESS) {
+            if (oldstatus == EndEntityConstants.STATUS_KEYRECOVERY && newstatus != EndEntityConstants.STATUS_KEYRECOVERY
+                    && newstatus != EndEntityConstants.STATUS_INPROCESS) {
                 keyRecoverySession.unmarkUser(admin, username);
             }
             if (ei != null) {
                 final String requestCounter = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
-                if (StringUtils.equals(requestCounter, "0") && newstatus == UserDataConstants.STATUS_NEW && oldstatus != UserDataConstants.STATUS_NEW) {
+                if (StringUtils.equals(requestCounter, "0") && newstatus == EndEntityConstants.STATUS_NEW && oldstatus != EndEntityConstants.STATUS_NEW) {
                     // If status is set to new, we should re-set the allowed request counter to the default values
                     // But we only do this if no value is specified already, i.e. 0 or null
                     resetRequestCounter(admin, false, ei, username, endEntityProfileId);
@@ -645,7 +645,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // notifications, we also only print if the status changes, not for
                 // every time we press save
                 if (type.contains(EndEntityTypes.PRINT)
-                        && (newstatus == UserDataConstants.STATUS_NEW || newstatus == UserDataConstants.STATUS_KEYRECOVERY || newstatus == UserDataConstants.STATUS_INITIALIZED)) {
+                        && (newstatus == EndEntityConstants.STATUS_NEW || newstatus == EndEntityConstants.STATUS_KEYRECOVERY || newstatus == EndEntityConstants.STATUS_INITIALIZED)) {
                     print(profile, userDataVO);
                 }
                 final String msg = intres.getLocalizedMessage("ra.editedentitystatus", username, Integer.valueOf(newstatus));
@@ -788,8 +788,8 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 // If we get to 0 we must set status to generated
                 if (counter == 0) {
                     // if it isn't already
-                    if (data1.getStatus() != UserDataConstants.STATUS_GENERATED) {
-                        data1.setStatus(UserDataConstants.STATUS_GENERATED);
+                    if (data1.getStatus() != EndEntityConstants.STATUS_GENERATED) {
+                        data1.setStatus(EndEntityConstants.STATUS_GENERATED);
                         final String msg = intres.getLocalizedMessage("ra.decreasedloginattemptscounter", username, counter);
                         log.info(msg);
                         resetRemainingLoginAttemptsInternal(ei, username, caid);
@@ -889,7 +889,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (counter <= 0) {
             AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Local admin call from UserAdminSessionBean.decRequestCounter"));
             try {
-                setUserStatus(admin, data1, UserDataConstants.STATUS_GENERATED);
+                setUserStatus(admin, data1, EndEntityConstants.STATUS_GENERATED);
             } catch (AuthorizationDeniedException e) {
                 log.error("Authorization was denied for an AlwaysAllowLocalAuthenticationToken", e);
             }
@@ -999,11 +999,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                 throw new WaitingForApprovalException(msg);
             }
         }
-        if (data1.getStatus() == UserDataConstants.STATUS_KEYRECOVERY
-                && !(status == UserDataConstants.STATUS_KEYRECOVERY || status == UserDataConstants.STATUS_INPROCESS || status == UserDataConstants.STATUS_INITIALIZED)) {
+        if (data1.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY
+                && !(status == EndEntityConstants.STATUS_KEYRECOVERY || status == EndEntityConstants.STATUS_INPROCESS || status == EndEntityConstants.STATUS_INITIALIZED)) {
             keyRecoverySession.unmarkUser(admin, username);
         }
-        if ((status == UserDataConstants.STATUS_NEW) && (data1.getStatus() != UserDataConstants.STATUS_NEW)) {
+        if ((status == EndEntityConstants.STATUS_NEW) && (data1.getStatus() != EndEntityConstants.STATUS_NEW)) {
             final ExtendedInformation ei = data1.getExtendedInformation();
             if (ei != null) {
                 // If status is set to new, when it is not already new, we should
@@ -1166,7 +1166,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             assertAuthorizedToEndEntityProfile(admin, data.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid);
         }
         try {
-            if (data.getStatus() != UserDataConstants.STATUS_REVOKED) {
+            if (data.getStatus() != EndEntityConstants.STATUS_REVOKED) {
                 // Check if approvals is required.
                 final int numOfReqApprovals = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_REVOCATION, caid, data.getCertificateProfileId());
                 if (numOfReqApprovals > 0) {
@@ -1209,7 +1209,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
             assertAuthorizedToEndEntityProfile(admin, userData.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid);
         }
-        if (userData.getStatus() == UserDataConstants.STATUS_REVOKED) {
+        if (userData.getStatus() == EndEntityConstants.STATUS_REVOKED) {
             final String msg = intres.getLocalizedMessage("ra.errorbadrequest", Integer.valueOf(userData.getEndEntityProfileId()));
             log.info(msg);
             throw new AlreadyRevokedException(msg);
@@ -1238,7 +1238,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         }
         // Finally set revoke status on the user as well
         try {
-            setUserStatus(admin, userData, UserDataConstants.STATUS_REVOKED);
+            setUserStatus(admin, userData, EndEntityConstants.STATUS_REVOKED);
         } catch (ApprovalException e) {
             throw new EJBException("This should never happen", e);
         } catch (WaitingForApprovalException e) {
@@ -1837,7 +1837,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             ret = keyRecoverySession.markAsRecoverable(admin, certificate, endEntityProfileId, gc);
         }
         try {
-            setUserStatus(admin, username, UserDataConstants.STATUS_KEYRECOVERY);
+            setUserStatus(admin, username, EndEntityConstants.STATUS_KEYRECOVERY);
         } catch (FinderException e) {
             ret = false;
             log.info("prepareForKeyRecovery: No such user: " + username);

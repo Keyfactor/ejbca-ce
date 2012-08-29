@@ -58,6 +58,7 @@ import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.crl.CrlStoreSession;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.util.KeyTools;
@@ -72,7 +73,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.keyrecovery.KeyRecoveryData;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
 import org.ejbca.core.protocol.xkms.common.XKMSUtil;
@@ -207,13 +207,13 @@ public class KRSSResponseGenerator extends
 		X509Certificate retval = null;
     	
 		// Check the status of the user
-		if((!recover && userDataVO.getStatus() == UserDataConstants.STATUS_NEW) || (recover && userDataVO.getStatus() == UserDataConstants.STATUS_KEYRECOVERY)){
+		if((!recover && userDataVO.getStatus() == EndEntityConstants.STATUS_NEW) || (recover && userDataVO.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY)){
 				
 			try{		
 				boolean usekeyrecovery = !reissue && globalConfigurationSession.getCachedGlobalConfiguration().getEnableKeyRecovery();
 
-				boolean savekeys = userDataVO.getKeyRecoverable() && usekeyrecovery &&  (userDataVO.getStatus() != UserDataConstants.STATUS_KEYRECOVERY);
-				boolean loadkeys = (userDataVO.getStatus() == UserDataConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
+				boolean savekeys = userDataVO.getKeyRecoverable() && usekeyrecovery &&  (userDataVO.getStatus() != EndEntityConstants.STATUS_KEYRECOVERY);
+				boolean loadkeys = (userDataVO.getStatus() == EndEntityConstants.STATUS_KEYRECOVERY) && usekeyrecovery;
 
 				// get users Token Type.
 				int tokentype = userDataVO.getTokenType();

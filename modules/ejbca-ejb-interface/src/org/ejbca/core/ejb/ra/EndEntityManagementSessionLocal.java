@@ -23,7 +23,6 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
-import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
  * Local interface for EndEntityManagementSession.
@@ -95,7 +94,7 @@ public interface EndEntityManagementSessionLocal extends EndEntityManagementSess
     /**
      * Decrements the remaining failed login attempts counter. If the counter
      * already was zero the status for the user is set to
-     * {@link UserDataConstants#STATUS_GENERATED} if it wasn't that already.
+     * {@link EndEntityConstants#STATUS_GENERATED} if it wasn't that already.
      * This method does nothing if the counter value is set to UNLIMITED (-1).
      * 
      * @param admin the administrator performing the action

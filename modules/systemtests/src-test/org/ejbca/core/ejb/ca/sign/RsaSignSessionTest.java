@@ -66,6 +66,7 @@ import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -89,7 +90,6 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.AuthStatusException;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.util.cert.SeisCardNumberExtension;
@@ -247,7 +247,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
      */
     @Test
     public void testDSAKey() throws Exception {
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         try {
             PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytooldsa);
@@ -272,7 +272,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     public void testKeyUsage() throws Exception {
         log.trace(">test06KeyUsage()");
 
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         int keyusage1 = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment;
@@ -286,7 +286,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         assertTrue("Fel KeyUsage, keyEncipherment finns ej!", retKU[2]);
         assertTrue("Fel KeyUsage, cRLSign finns!", !retKU[6]);
 
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         int keyusage2 = X509KeyUsage.keyCertSign | X509KeyUsage.cRLSign;
@@ -314,7 +314,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     public void testIEPKCS10() throws Exception {
         log.trace(">test05TestIEPKCS10()");
 
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(iep10);
@@ -334,7 +334,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testBCPKCS10() throws Exception {
         log.trace(">test03TestBCPKCS10()");
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"),
@@ -379,7 +379,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testKeytoolPKCS10() throws Exception {
         log.trace(">test04TestKeytoolPKCS10()");
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(keytoolp10);
         p10.setUsername(RSA_USERNAME);
@@ -409,7 +409,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         } else {
             log.info("User " + RSA_REVERSE_USERNAME + " already exists, resetting status.");
             EndEntityInformation userData = new EndEntityInformation("foorev", "C=SE,O=AnaTom,CN="+ RSA_REVERSE_USERNAME,
-                    rsareversecaid, null, "foo@anatom.se", UserDataConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    rsareversecaid, null, "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
             userData.setPassword("foo123");
@@ -448,7 +448,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             // Change a user that we know...
             EndEntityInformation userData = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
                     rsacaid, "uniformResourceId=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1", 
-                    "foo@anatom.se", UserDataConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
             userData.setPassword("foo123");
@@ -475,7 +475,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             // Change a user that we know...
             EndEntityInformation endEntity = new EndEntityInformation(RSA_USERNAME,  "C=SE,O=AnaTom,CN=foo",
                     rsacaid, "uri=http://www.a.se/,upn=foo@a.se,upn=foo@b.se,rfc822name=tomas@a.se,dNSName=www.a.se,dNSName=www.b.se,iPAddress=10.1.1.1", 
-                    "foo@anatom.se", UserDataConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    "foo@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeprofile, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
             endEntity.setPassword("foo123");
@@ -541,7 +541,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             // Change a user that we know...
             EndEntityInformation endEntity = new EndEntityInformation(qcCertEndEntityName,  "C=SE,CN=qc",
                     rsacaid, null, 
-                    "foo@anatom.nu", UserDataConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    "foo@anatom.nu", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     eeprofile, cprofile, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
             endEntity.setPassword("foo123");
@@ -605,7 +605,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             EndEntityInformation user = new EndEntityInformation(validityOverrideEndEntityName, "C=SE,CN=validityoverride", rsacaid, null, "foo@anatom.nu",
                     new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
             user.setPassword("foo123");
-            user.setStatus(UserDataConstants.STATUS_NEW);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
             user.setCardNumber("123456789");
             userAdminSession.changeUser(internalAdmin, user, false);
             Calendar cal = Calendar.getInstance();
@@ -639,7 +639,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             Calendar notBefore = Calendar.getInstance();
             notBefore.add(Calendar.DAY_OF_MONTH, 2);
             cal.add(Calendar.DAY_OF_MONTH, 10);
-            userAdminSession.setUserStatus(internalAdmin, validityOverrideEndEntityName, UserDataConstants.STATUS_NEW);
+            userAdminSession.setUserStatus(internalAdmin, validityOverrideEndEntityName, EndEntityConstants.STATUS_NEW);
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, validityOverrideEndEntityName, "foo123", anotherKey.getPublic(), -1,
                     notBefore.getTime(), cal.getTime());
             assertNotNull("Failed to create certificate", cert);
@@ -674,7 +674,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             notBefore.add(Calendar.DAY_OF_MONTH, -2);
             cal = Calendar.getInstance();
             cal.add(Calendar.DAY_OF_MONTH, 200);
-            userAdminSession.setUserStatus(internalAdmin, validityOverrideEndEntityName, UserDataConstants.STATUS_NEW);
+            userAdminSession.setUserStatus(internalAdmin, validityOverrideEndEntityName, EndEntityConstants.STATUS_NEW);
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, validityOverrideEndEntityName, "foo123", anotherKey.getPublic(), -1,
                     notBefore.getTime(), cal.getTime());
             assertNotNull("Failed to create certificate", cert);
@@ -729,7 +729,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             log.debug("created user: " + username + ", foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
         } else {
             log.debug("user " + username + " already exists: " + username + ", foo123, C=SE, O=\u00E5\u00E4\u00F6, CN=\u00E5\u00E4\u00F6");
-            userAdminSession.setUserStatus(internalAdmin, username, UserDataConstants.STATUS_NEW);
+            userAdminSession.setUserStatus(internalAdmin, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         try {
@@ -775,7 +775,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     
             EndEntityInformation user = new EndEntityInformation(endEntityName, "C=SE,O=PrimeKey,CN=dnorder", rsacaid, null, "foo@primekey.se",
                     new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
-            user.setStatus(UserDataConstants.STATUS_NEW);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
             // Change a user that we know...
             userAdminSession.changeUser(internalAdmin, user, false);
             log.debug("created user: foo, foo123, C=SE,O=PrimeKey,CN=dnorder");
@@ -806,7 +806,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testOfflineCA() throws Exception {
         // user that we know exists...
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create certificate", cert);
         // Set CA to offline
@@ -814,7 +814,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         CAInfo inforsa = caSession.getCAInfo(internalAdmin, rsacaid);
         inforsa.setStatus(CAConstants.CA_OFFLINE);
         caAdminSession.editCA(internalAdmin, inforsa);
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         boolean thrown = false;
         try {
             cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
@@ -869,7 +869,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     public void testCertCreationErrorHandling() throws Exception {
         log.trace(">test33certCreationErrorHandling");
         log.debug("Trying to use a certificate that isn't selfsigned for certificate renewal.");
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         KeyPair anotherRsaKey = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
         final X509Certificate notSelfSignedCert = CertTools.genSelfCert("CN=notSelfSigned", 1, null, rsakeys.getPrivate(), anotherRsaKey.getPublic(),
                 AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
@@ -903,7 +903,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=testsigalg", rsacaid, null, "foo@anatom.nu", new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
-        user.setStatus(UserDataConstants.STATUS_NEW);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
         // Change a user that we know...
         userAdminSession.changeUser(internalAdmin, user, false);
         // Create a P10
@@ -962,7 +962,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,CN=extoverride", rsacaid, null, "foo@anatom.nu", new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile,
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
-        user.setStatus(UserDataConstants.STATUS_NEW);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
         // Change a user that we know...
         userAdminSession.changeUser(internalAdmin, user, false);
         // Create a P10 with extensions, in this case altNames with a lot of DNS
@@ -1055,7 +1055,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         EndEntityInformation user = new EndEntityInformation(RSA_USERNAME, "C=SE,O=AnaTom,CN=foo", rsacaid, null, null, new EndEntityType(
                 EndEntityTypes.ENDUSER), pid, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         userAdminSession.changeUser(internalAdmin, user, false);
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         // create first cert
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
         assertNotNull("Failed to create cert", cert);
@@ -1081,7 +1081,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         int allowedrequests = 2;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user.setExtendedinformation(ei);
-        user.setStatus(UserDataConstants.STATUS_NEW);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
         userAdminSession.changeUser(internalAdmin, user, false);
         // create first cert
         cert = (X509Certificate) signSession.createCertificate(internalAdmin, RSA_USERNAME, "foo123", rsakeys.getPublic());
@@ -1147,7 +1147,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             EndEntityInformation user = new EndEntityInformation(dnOverrideEndEntityName, "C=SE,CN=dnoverride", rsacaid, null, "foo@anatom.nu",
                     new EndEntityType(EndEntityTypes.ENDUSER), eeprofile, cprofile, SecConst.TOKEN_SOFT_PEM, 0, null);
             user.setPassword("foo123");
-            user.setStatus(UserDataConstants.STATUS_NEW);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
             // Change a user that we know...
             userAdminSession.changeUser(internalAdmin, user, false);
             // Create a P10 with strange order DN
@@ -1198,7 +1198,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
             user.setPassword("cvc");
             userAdminSession.addUser(internalAdmin, user, false);
-            userAdminSession.setUserStatus(internalAdmin, cvcEndEntityName, UserDataConstants.STATUS_NEW);
+            userAdminSession.setUserStatus(internalAdmin, cvcEndEntityName, EndEntityConstants.STATUS_NEW);
             userAdminSession.setPassword(internalAdmin, cvcEndEntityName, "foo123");
             log.debug("Reset status of 'cvc' to NEW");
             // user that we know exists...
@@ -1236,7 +1236,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testsignSessionDSAWithRSACA() throws Exception {
         log.trace(">test23SignSessionDSAWithRSACA()");
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // user that we know exists...
         KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
@@ -1265,7 +1265,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     public void testBCPKCS10DSAWithRSACA() throws Exception {
         log.trace(">test24TestBCPKCS10DSAWithRSACA()");
 
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);

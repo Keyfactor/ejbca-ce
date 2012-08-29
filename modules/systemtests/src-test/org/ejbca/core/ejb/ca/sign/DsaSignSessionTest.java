@@ -36,6 +36,7 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -45,7 +46,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -100,7 +100,7 @@ public class DsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testSignSessionDSAWithDSACA() throws Exception {
         log.trace(">test25SignSessionDSAWithDSACA()");
-        userAdminSession.setUserStatus(internalAdmin, DSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, DSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '"+DSA_USERNAME+"' to NEW");
         // user that we know exists...
         KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
@@ -135,7 +135,7 @@ public class DsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testBCPKCS10DSAWithDSACA() throws Exception {
         log.trace(">test26TestBCPKCS10DSAWithDSACA()");
-        userAdminSession.setUserStatus(internalAdmin, DSA_USERNAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, DSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foodsa' to NEW");
         KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
         // Create certificate request

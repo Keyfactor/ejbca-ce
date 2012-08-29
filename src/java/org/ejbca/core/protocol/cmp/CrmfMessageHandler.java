@@ -37,6 +37,7 @@ import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -52,7 +53,6 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -390,7 +390,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			} else {
 				ei = null;
 			}
-			final EndEntityInformation userdata = new EndEntityInformation(username, dnname.toString(), caId, altNames, email, UserDataConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, ei);
+			final EndEntityInformation userdata = new EndEntityInformation(username, dnname.toString(), caId, altNames, email, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, ei);
 			userdata.setPassword(pwd);
 			// Set so we have the right params in the call to processCertReq. 
 			// Username and pwd in the UserDataVO and the IRequestMessage must match

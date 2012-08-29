@@ -26,6 +26,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -40,7 +41,6 @@ import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -136,7 +136,7 @@ public class UserDataTest extends CaTestCase {
         log.debug("email=" + data2.getEmail());
         assertNull("wrong email", data2.getEmail());
         log.debug("status=" + data2.getStatus());
-        assertTrue("wrong status", data2.getStatus() == UserDataConstants.STATUS_NEW);
+        assertTrue("wrong status", data2.getStatus() == EndEntityConstants.STATUS_NEW);
         log.debug("type=" + data2.getType());
         assertTrue("wrong type", data2.getType().isType(EndEntityTypes.INVALID));
         assertTrue("wrong pwd (foo123 works)", userAdminSession.verifyPassword(admin, username, "foo123") == false);
@@ -145,7 +145,7 @@ public class UserDataTest extends CaTestCase {
         // Change DN
         EndEntityInformation endEntity = new EndEntityInformation(username,  "C=SE,O=AnaTom,OU=Engineering,CN=" + username,
                 caid, null, 
-                username + "@anatom.se", UserDataConstants.STATUS_GENERATED, EndEntityTypes.ENDUSER.toEndEntityType(),
+                username + "@anatom.se", EndEntityConstants.STATUS_GENERATED, EndEntityTypes.ENDUSER.toEndEntityType(),
                 SecConst.EMPTY_ENDENTITYPROFILE,  CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                 null);
         endEntity.setPassword("foo123");
@@ -164,7 +164,7 @@ public class UserDataTest extends CaTestCase {
         assertNotNull("Email should not be null now.", data.getEmail());
         assertTrue("wrong email", data.getEmail().equals(username + "@anatom.se"));
         log.debug("status=" + data.getStatus());
-        assertTrue("wrong status", data.getStatus() == UserDataConstants.STATUS_GENERATED);
+        assertTrue("wrong status", data.getStatus() == EndEntityConstants.STATUS_GENERATED);
         log.debug("type=" + data.getType());
         assertTrue("wrong type", data.getType().isType(EndEntityTypes.ENDUSER));
         assertTrue("wrong pwd foo123", userAdminSession.verifyPassword(admin, username, "foo123"));
@@ -173,7 +173,7 @@ public class UserDataTest extends CaTestCase {
         // Use clear text pwd instead, new email, reverse DN again
         EndEntityInformation user = new EndEntityInformation(username,  "C=SE,O=AnaTom,CN=" + username,
                 caid, null, 
-                username + "@anatom.nu", UserDataConstants.STATUS_GENERATED, EndEntityTypes.ENDUSER.toEndEntityType(),
+                username + "@anatom.nu", EndEntityConstants.STATUS_GENERATED, EndEntityTypes.ENDUSER.toEndEntityType(),
                 SecConst.EMPTY_ENDENTITYPROFILE,  CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                 null);
         user.setPassword("foo234");
@@ -191,7 +191,7 @@ public class UserDataTest extends CaTestCase {
         assertNotNull("Email should not be null now.", data.getEmail());
         assertTrue("wrong email", data.getEmail().equals(username + "@anatom.nu"));
         log.debug("status=" + data.getStatus());
-        assertTrue("wrong status", data.getStatus() == UserDataConstants.STATUS_GENERATED);
+        assertTrue("wrong status", data.getStatus() == EndEntityConstants.STATUS_GENERATED);
         log.debug("type=" + data.getType());
         assertTrue("wrong type", data.getType().isType(EndEntityTypes.ENDUSER));
         assertTrue("wrong pwd foo234", userAdminSession.verifyPassword(admin, username, "foo234"));
@@ -206,17 +206,17 @@ public class UserDataTest extends CaTestCase {
     public void testListNewUser() throws Exception {
         log.trace(">test05ListNewUser()");
 
-        Collection<EndEntityInformation> coll = userAdminSession.findAllUsersByStatus(admin, UserDataConstants.STATUS_NEW);
+        Collection<EndEntityInformation> coll = userAdminSession.findAllUsersByStatus(admin, EndEntityConstants.STATUS_NEW);
         Iterator<EndEntityInformation> iter = coll.iterator();
         while (iter.hasNext()) {
 
             EndEntityInformation data = iter.next();
             log.debug("New user: " + data.getUsername() + ", " + data.getDN() + ", " + data.getEmail() + ", " + data.getStatus() + ", "
                     + data.getType());
-            userAdminSession.setUserStatus(admin, data.getUsername(), UserDataConstants.STATUS_GENERATED);
+            userAdminSession.setUserStatus(admin, data.getUsername(), EndEntityConstants.STATUS_GENERATED);
         }
 
-        Collection<EndEntityInformation> coll1 = userAdminSession.findAllUsersByStatus(admin, UserDataConstants.STATUS_NEW);
+        Collection<EndEntityInformation> coll1 = userAdminSession.findAllUsersByStatus(admin, EndEntityConstants.STATUS_NEW);
         assertTrue("found NEW users though there should be none!", coll1.isEmpty());
         log.trace("<test05ListNewUser()");
     }
@@ -228,7 +228,7 @@ public class UserDataTest extends CaTestCase {
         // Change already existing user to add extended information with counter
         EndEntityInformation user = new EndEntityInformation(username, "C=SE,O=AnaTom,CN=" + username, caid, null, null, EndEntityTypes.INVALID.toEndEntityType(),
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
-        user.setStatus(UserDataConstants.STATUS_GENERATED);
+        user.setStatus(EndEntityConstants.STATUS_GENERATED);
         userAdminSession.changeUser(admin, user, false);
 
         // Default value should be 1, so it should return 0
@@ -330,7 +330,7 @@ public class UserDataTest extends CaTestCase {
         ei = user.getExtendedinformation();
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "0");
         user.setExtendedinformation(ei);
-        user.setStatus(UserDataConstants.STATUS_NEW);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user, false);
         // decrease the value
         counter = userAdminProxySession.decRequestCounter(username);
@@ -343,12 +343,12 @@ public class UserDataTest extends CaTestCase {
         assertEquals(-1, counter);
 
         // test setuserstatus it will re-set the counter
-        userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
+        userAdminSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_GENERATED);
         ep = endEntityProfileSession.getEndEntityProfile(pid);
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
-        userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_NEW);
         // decrease the value
         counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(2, counter);
@@ -356,7 +356,7 @@ public class UserDataTest extends CaTestCase {
         counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(1, counter);
         // test setuserstatus again it will not re-set the counter if it is already new
-        userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_NEW);
         assertEquals(1, counter);
         // decrease the value again
         counter = userAdminProxySession.decRequestCounter(username);
@@ -370,16 +370,16 @@ public class UserDataTest extends CaTestCase {
         ep.setUse(EndEntityProfile.ALLOWEDREQUESTS, 0, true);
         ep.setValue(EndEntityProfile.ALLOWEDREQUESTS, 0, "3");
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTREQUESTCOUNTER", ep);
-        userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_NEW);
         // decrease the value
         counter = userAdminProxySession.decRequestCounter(username);
         assertEquals(2, counter);
 
         // Also changeUser to new from something else will re-set status, if ei value is 0
-        userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
+        userAdminSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_GENERATED);
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "0");
         user.setExtendedinformation(ei);
-        user.setStatus(UserDataConstants.STATUS_NEW);
+        user.setStatus(EndEntityConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user, false);
         // decrease the value
         counter = userAdminProxySession.decRequestCounter(username);
@@ -393,7 +393,7 @@ public class UserDataTest extends CaTestCase {
         allowedrequests = 2;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user1.setExtendedinformation(ei);
-        user1.setStatus(UserDataConstants.STATUS_GENERATED);
+        user1.setStatus(EndEntityConstants.STATUS_GENERATED);
         userAdminSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
@@ -404,33 +404,33 @@ public class UserDataTest extends CaTestCase {
         allowedrequests = 1;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user1.setExtendedinformation(ei);
-        user1.setStatus(UserDataConstants.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I set status to new again, with noting changed, nothing should change
-        userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_NEW);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // The same when I change the user
-        user1.setStatus(UserDataConstants.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I change the status to generated, nothing should happen
-        userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_GENERATED);
+        userAdminSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_GENERATED);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("1", value);
         // If I change the status to new from generated the default value should be used
-        userAdminSession.setUserStatus(admin, user.getUsername(), UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(admin, user.getUsername(), EndEntityConstants.STATUS_NEW);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
@@ -440,21 +440,21 @@ public class UserDataTest extends CaTestCase {
         allowedrequests = 0;
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, String.valueOf(allowedrequests));
         user1.setExtendedinformation(ei);
-        user1.setStatus(UserDataConstants.STATUS_GENERATED);
+        user1.setStatus(EndEntityConstants.STATUS_GENERATED);
         userAdminSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("0", value);
         // Changing again to new, with 0 passed in will set the default value
-        user1.setStatus(UserDataConstants.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();
         value = ei.getCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER);
         assertEquals("3", value);
         // Set back to 0
-        user1.setStatus(UserDataConstants.STATUS_GENERATED);
+        user1.setStatus(EndEntityConstants.STATUS_GENERATED);
         ei.setCustomData(ExtendedInformationFields.CUSTOM_REQUESTCOUNTER, "0");
         user1.setExtendedinformation(ei);
         userAdminSession.changeUser(admin, user1, false);
@@ -464,7 +464,7 @@ public class UserDataTest extends CaTestCase {
         assertEquals("0", value);
         // Setting with null value will always remove the request counter (the whole extendedinformatin actually)
         user1.setExtendedinformation(null);
-        user1.setStatus(UserDataConstants.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         userAdminSession.changeUser(admin, user1, false);
         user1 = endEntityAccessSession.findUser(admin, user.getUsername());
         ei = user1.getExtendedinformation();

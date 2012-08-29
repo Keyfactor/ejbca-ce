@@ -31,6 +31,7 @@ import org.cesecore.audit.enums.EventStatus;
 import org.cesecore.audit.enums.ModuleTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -42,7 +43,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ca.AuthStatusException;
-import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
  * Authenticates users towards a user database.
@@ -82,7 +82,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
            	userAdminSession.decRemainingLoginAttempts(username);
            	final int status = data.getStatus();
-            if ( (status == UserDataConstants.STATUS_NEW) || (status == UserDataConstants.STATUS_FAILED) || (status == UserDataConstants.STATUS_INPROCESS) || (status == UserDataConstants.STATUS_KEYRECOVERY)) {
+            if ( (status == EndEntityConstants.STATUS_NEW) || (status == EndEntityConstants.STATUS_FAILED) || (status == EndEntityConstants.STATUS_INPROCESS) || (status == EndEntityConstants.STATUS_KEYRECOVERY)) {
             	if (log.isDebugEnabled()) {
             		log.debug("Trying to authenticate user: username="+username+", dn="+data.getSubjectDN()+", email="+data.getSubjectEmail()+", status="+status+", type="+data.getType());
             	}
@@ -104,7 +104,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             	}
                 return data.toUserDataVO();
             }
-        	final String msg = intres.getLocalizedMessage("authentication.wrongstatus", UserDataConstants.getStatusText(status), Integer.valueOf(status), username);
+        	final String msg = intres.getLocalizedMessage("authentication.wrongstatus", EndEntityConstants.getStatusText(status), Integer.valueOf(status), username);
         	log.info(msg);
             throw new AuthStatusException(msg);
         } catch (ObjectNotFoundException oe) {

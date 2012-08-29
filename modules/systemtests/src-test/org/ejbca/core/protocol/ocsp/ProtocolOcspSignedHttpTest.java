@@ -46,6 +46,7 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
@@ -60,7 +61,6 @@ import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
 import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -152,7 +152,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         if (userExists) {
             log.debug("User ocsptest already exists.");
             EndEntityInformation userData = new EndEntityInformation("ocsptest", "C=SE,O=AnaTom,CN=OCSPTest",
-                    caid, null, "ocsptest@anatom.se", UserDataConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
             userData.setPassword("foo123");

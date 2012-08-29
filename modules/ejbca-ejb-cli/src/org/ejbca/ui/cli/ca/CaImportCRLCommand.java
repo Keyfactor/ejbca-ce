@@ -38,6 +38,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.CrlStoreSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -50,7 +51,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -147,13 +147,13 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                        // Add the user and change status to REVOKED
 	                        getLogger().debug("Loading/updating user " + missing_user_name);
 	                        final EndEntityInformation userdataNew = new EndEntityInformation(missing_user_name, CertTools.getSubjectDN(certificate), cainfo.getCAId(), null, null,
-	                                UserDataConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
+	                                EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
 	                                CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null,
 	                                SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
 	                        userdataNew.setPassword("foo123");
 	                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).addUser(getAdmin(cliUserName, cliPassword), userdataNew, false);
 	                        getLogger().info("User '" + missing_user_name + "' has been added.");
-	                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), missing_user_name, UserDataConstants.STATUS_REVOKED);
+	                        ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), missing_user_name, EndEntityConstants.STATUS_REVOKED);
 	                        getLogger().info("User '" + missing_user_name + "' has been updated.");
 	                    }
 	                    ejb.getRemoteSession(CertificateStoreSessionRemote.class).storeCertificate(getAdmin(cliUserName, cliPassword), certificate, missing_user_name, fingerprint,

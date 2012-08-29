@@ -16,7 +16,7 @@ package org.ejbca.util.query;
 import static org.junit.Assert.assertEquals;
 
 import org.apache.log4j.Logger;
-import org.ejbca.core.model.ra.UserDataConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.junit.Test;
 
 
@@ -32,7 +32,7 @@ public class QueryTest {
     public void test01TestUserQuery() throws Exception {
         log.trace(">test01TestUserQuery()");
         Query query = new Query(Query.TYPE_USERQUERY);
-        query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(UserDataConstants.STATUS_NEW));
+        query.add(UserMatch.MATCH_WITH_STATUS, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(EndEntityConstants.STATUS_NEW));
         String str = query.getQueryString();
         assertEquals("status = 10", str);
 

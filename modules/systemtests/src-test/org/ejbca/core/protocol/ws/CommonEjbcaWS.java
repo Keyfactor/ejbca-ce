@@ -90,6 +90,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -126,7 +127,6 @@ import org.ejbca.core.model.ca.publisher.DummyCustomPublisher;
 import org.ejbca.core.model.ca.publisher.PublisherConst;
 import org.ejbca.core.model.ca.publisher.PublisherQueueData;
 import org.ejbca.core.model.hardtoken.HardTokenConstants;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
@@ -1682,7 +1682,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         List<UserDataVOWS> userdatas = ejbcaraws.findUser(usermatch);
         assertTrue(userdatas != null);
         assertTrue(userdatas.size() == 1);
-        userdatas.get(0).setStatus(UserDataConstants.STATUS_KEYRECOVERY);
+        userdatas.get(0).setStatus(EndEntityConstants.STATUS_KEYRECOVERY);
         ejbcaraws.editUser(userdatas.get(0));
         // A new PK12 request now should return the same key and certificate
         KeyStore ksenv2 = ejbcaraws.pkcs12Req("WSTESTUSERKEYREC1", "foo456", null, "1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -2108,7 +2108,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         errorCode = null;
 
         // ///// Check Error.USER_WRONG_STATUS ///////
-        user1.setStatus(UserDataConstants.STATUS_REVOKED);
+        user1.setStatus(EndEntityConstants.STATUS_REVOKED);
         ejbcaraws.editUser(user1);
 
         keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -2171,7 +2171,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         errorCode = null;
 
         // insert wrong status
-        user1.setStatus(UserDataConstants.STATUS_REVOKED);
+        user1.setStatus(EndEntityConstants.STATUS_REVOKED);
         ejbcaraws.editUser(user1);
 
         // Should failed because certificate already exists.
@@ -2470,7 +2470,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setClearPwd(true);
         user1.setSubjectDN("CN=Test,C=SE");
         user1.setCaName(caname);
-        user1.setStatus(UserDataConstants.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         user1.setTokenType("USERGENERATED");
         user1.setEndEntityProfileName("EMPTY");
         user1.setCertificateProfileName("ENDUSER");
@@ -2535,7 +2535,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setClearPwd(true);
         user1.setSubjectDN("CN=Test1,C=SE");
         user1.setCaName(caname);
-        user1.setStatus(UserDataConstants.STATUS_NEW);
+        user1.setStatus(EndEntityConstants.STATUS_NEW);
         user1.setTokenType("USERGENERATED");
         user1.setEndEntityProfileName("EMPTY");
         user1.setCertificateProfileName("ENDUSER");

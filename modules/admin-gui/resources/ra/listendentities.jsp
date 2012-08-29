@@ -3,7 +3,7 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp"  import="org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.cesecore.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper,org.ejbca.ui.web.admin.rainterface.UserView, org.ejbca.ui.web.admin.rainterface.SortBy,org.ejbca.ui.web.RevokedInfoView,org.ejbca.core.model.SecConst,
-                 org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.ejbca.core.model.ra.UserDataConstants,org.ejbca.core.model.ra.raadmin.AdminPreference, org.cesecore.certificates.util.DNFieldExtractor,
+                 org.ejbca.ui.web.admin.rainterface.RAInterfaceBean, org.cesecore.certificates.endentity.EndEntityConstants,org.ejbca.core.model.ra.raadmin.AdminPreference, org.cesecore.certificates.util.DNFieldExtractor,
                  javax.ejb.CreateException, org.ejbca.util.query.*, java.util.*, org.ejbca.core.model.authorization.AccessRulesConstants" %>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
@@ -773,16 +773,16 @@
     rabean.clearUsers();
 
   
-    int[] availablestatuses = {UserDataConstants.STATUS_NEW, UserDataConstants.STATUS_FAILED ,UserDataConstants.STATUS_INITIALIZED, 
-                               UserDataConstants.STATUS_INPROCESS, UserDataConstants.STATUS_GENERATED, UserDataConstants.STATUS_REVOKED,
-                               UserDataConstants.STATUS_HISTORICAL};
+    int[] availablestatuses = {EndEntityConstants.STATUS_NEW, EndEntityConstants.STATUS_FAILED ,EndEntityConstants.STATUS_INITIALIZED, 
+                               EndEntityConstants.STATUS_INPROCESS, EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_REVOKED,
+                               EndEntityConstants.STATUS_HISTORICAL};
     String[] availablestatustexts = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED",
                                      "STATUSREVOKED", "STATUSHISTORICAL"}; 
 
     if(globalconfiguration.getEnableKeyRecovery()){
-      int[] tempintarray = {UserDataConstants.STATUS_NEW, UserDataConstants.STATUS_FAILED ,UserDataConstants.STATUS_INITIALIZED, 
-                               UserDataConstants.STATUS_INPROCESS, UserDataConstants.STATUS_GENERATED, UserDataConstants.STATUS_REVOKED,
-                               UserDataConstants.STATUS_HISTORICAL, UserDataConstants.STATUS_KEYRECOVERY}; 
+      int[] tempintarray = {EndEntityConstants.STATUS_NEW, EndEntityConstants.STATUS_FAILED ,EndEntityConstants.STATUS_INITIALIZED, 
+                               EndEntityConstants.STATUS_INPROCESS, EndEntityConstants.STATUS_GENERATED, EndEntityConstants.STATUS_REVOKED,
+                               EndEntityConstants.STATUS_HISTORICAL, EndEntityConstants.STATUS_KEYRECOVERY}; 
        
       String[] tempstringarray = {"STATUSNEW", "STATUSFAILED", "STATUSINITIALIZED", "STATUSINPROCESS", "STATUSGENERATED",
                                   "STATUSREVOKED", "STATUSHISTORICAL", "STATUSKEYRECOVERY"};

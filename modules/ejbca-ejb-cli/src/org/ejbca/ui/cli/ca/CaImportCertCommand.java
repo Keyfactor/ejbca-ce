@@ -25,6 +25,7 @@ import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -36,7 +37,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -106,7 +106,7 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			// Check if username already exists.
 			EndEntityInformation userdata = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), username);
 			if (userdata != null) {
-				if (userdata.getStatus() != UserDataConstants.STATUS_REVOKED) {
+				if (userdata.getStatus() != EndEntityConstants.STATUS_REVOKED) {
 					throw new Exception("User " + username +
 					" already exists; only revoked user can be overwrite.");
 				}
@@ -170,16 +170,16 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 						SecConst.NO_HARDTOKENISSUER,
 						cainfo.getCAId());
 				if (status == CertificateConstants.CERT_ACTIVE) {
-					ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), username, UserDataConstants.STATUS_GENERATED);
+					ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), username, EndEntityConstants.STATUS_GENERATED);
 				}
 				else {
-					ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), username, UserDataConstants.STATUS_REVOKED);
+					ejb.getRemoteSession(EndEntityManagementSessionRemote.class).setUserStatus(getAdmin(cliUserName, cliPassword), username, EndEntityConstants.STATUS_REVOKED);
 				}
 				getLogger().info("User '" + username + "' has been added.");
 			}
 			else {
                 EndEntityInformation endEntityInformation = new EndEntityInformation(username, CertTools.getSubjectDN(certificate), cainfo.getCAId(), subjectAltName, email, 
-                        (status == CertificateConstants.CERT_ACTIVE ? UserDataConstants.STATUS_GENERATED : UserDataConstants.STATUS_REVOKED), endEntityType, endentityprofileid, 
+                        (status == CertificateConstants.CERT_ACTIVE ? EndEntityConstants.STATUS_GENERATED : EndEntityConstants.STATUS_REVOKED), endEntityType, endentityprofileid, 
                         certificateprofileid, null, null, SecConst.TOKEN_SOFT_BROWSERGEN, SecConst.NO_HARDTOKENISSUER, null);
                 endEntityInformation.setPassword(password);
                 ejb.getRemoteSession(EndEntityManagementSessionRemote.class).changeUser(getAdmin(cliUserName, cliPassword), endEntityInformation, false);

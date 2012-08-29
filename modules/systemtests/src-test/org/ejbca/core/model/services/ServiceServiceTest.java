@@ -29,6 +29,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -40,7 +41,6 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.services.ServiceSession;
 import org.ejbca.core.ejb.services.ServiceSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.services.actions.NoAction;
 import org.ejbca.core.model.services.intervals.PeriodicalInterval;
 import org.ejbca.core.model.services.workers.EmailSendingWorkerConstants;
@@ -259,7 +259,7 @@ public class ServiceServiceTest extends CaTestCase {
         }
         status = data.getStatus();
         log.debug("status: " + status);
-        result = status == UserDataConstants.STATUS_GENERATED;
+        result = status == EndEntityConstants.STATUS_GENERATED;
         return result;
     }
 

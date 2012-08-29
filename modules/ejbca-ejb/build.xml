@@ -130,6 +130,7 @@
 		<include name="org/cesecore/certificates/certificate/Certificate*.java"/>
 		<include name="org/cesecore/certificates/certificate/*Exception.java"/>
 		<include name="org/cesecore/certificates/certificate/request/*.java"/>
+		<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
 		<include name="org/cesecore/certificates/*Exception.java"/>
 		<include name="org/cesecore/certificates/ca/*.java"/>
 		<include name="org/cesecore/certificates/crl/*.java"/>
@@ -312,6 +313,7 @@
 		<include name="org/ejbca/util/CombineTime.java"/>
 		<!-- This is only used from AdminGUI, but we probably want to use it more generally -->
 		<include name="org/cesecore/audit/AuditDevicesConfig.java"/>
+		<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
 		<include name="org/ejbca/core/model/log/CsvLogExporter.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/ActiveDirectoryPublisher.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/ValidationAuthorityPublisher.java"/>

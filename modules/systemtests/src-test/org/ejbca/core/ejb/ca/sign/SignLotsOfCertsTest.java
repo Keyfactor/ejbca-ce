@@ -34,6 +34,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -42,7 +43,6 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -127,7 +127,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         }
         if (userExists) {
             log.info("User performancefoo already exists, resetting status.");
-            userAdminSession.setUserStatus(admin, "performancefoo" + post, UserDataConstants.STATUS_NEW);
+            userAdminSession.setUserStatus(admin, "performancefoo" + post, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 

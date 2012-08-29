@@ -62,7 +62,7 @@ public class UserDataVO implements Serializable {
     private String subjectEmail;
     private String password;
     private String cardNumber;
-    /** Status of user, from UserDataConstants.STATUS_XX */
+    /** Status of user, from EndEntityConstants.STATUS_XX */
     private int status;
     /** Type of user, from SecConst */
     private EndEntityType type = EndEntityTypes.INVALID.toEndEntityType();

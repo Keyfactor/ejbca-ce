@@ -16,9 +16,9 @@ package org.ejbca.ui.cli.ra;
 import java.util.Collection;
 import java.util.Iterator;
 
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -43,7 +43,7 @@ public class RaListNewUsersCommand extends BaseRaAdminCommand {
         }
         
         try {
-            Collection<EndEntityInformation> coll = ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), UserDataConstants.STATUS_NEW);
+            Collection<EndEntityInformation> coll = ejb.getRemoteSession(EndEntityManagementSessionRemote.class).findAllUsersByStatus(getAdmin(cliUserName, cliPassword), EndEntityConstants.STATUS_NEW);
             Iterator<EndEntityInformation> iter = coll.iterator();
             while (iter.hasNext()) {
             	EndEntityInformation data = iter.next();

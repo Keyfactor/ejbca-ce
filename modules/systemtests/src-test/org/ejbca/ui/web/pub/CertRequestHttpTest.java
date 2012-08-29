@@ -42,6 +42,7 @@ import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.keys.util.KeyTools;
@@ -55,7 +56,6 @@ import org.ejbca.core.ejb.config.ConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -298,7 +298,7 @@ public class CertRequestHttpTest extends CaTestCase {
         log.trace(">test04RequestWrongStatus()");
 
         setupUser(SecConst.TOKEN_SOFT_P12);
-        setupUserStatus(UserDataConstants.STATUS_GENERATED);
+        setupUserStatus(EndEntityConstants.STATUS_GENERATED);
 
         // POST the OCSP request
         URL url = new URL(httpReqPath + '/' + resourceReq);
@@ -439,7 +439,7 @@ public class CertRequestHttpTest extends CaTestCase {
             EndEntityInformation endEntityInformation = new EndEntityInformation("reqtest", "C=SE,O=PrimeKey,CN=ReqTest", caid, null, "reqtest@anatom.se", EndEntityTypes.ENDUSER.toEndEntityType(), 
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, tokentype, 0, null);
             endEntityInformation.setPassword("foo123");
-            endEntityInformation.setStatus(UserDataConstants.STATUS_NEW);
+            endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
             userAdminSession.changeUser(admin, endEntityInformation, false);
             log.debug("Reset status to NEW");
         }

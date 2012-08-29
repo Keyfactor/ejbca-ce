@@ -34,6 +34,7 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -43,7 +44,6 @@ import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -85,7 +85,7 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
             log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
         } else {
             log.info("User foorsamgf1ca already exists, resetting status.");
-            userAdminSession.setUserStatus(internalAdmin, "foorsamgf1ca", UserDataConstants.STATUS_NEW);
+            userAdminSession.setUserStatus(internalAdmin, "foorsamgf1ca", EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
     }
@@ -101,7 +101,7 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
     @Test
     public void testSignSessionRSAMGF1WithRSASha256WithMGF1CA() throws Exception {
         log.trace(">test18SignSessionRSAWithRSASha256WithMGF1CA()");
-        userAdminSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsakeys.getPrivate(), rsakeys.getPublic(),
@@ -149,7 +149,7 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
     @Test
     public void testBCPKCS10RSAWithRSASha256WithMGF1CA() throws Exception {
         log.trace(">test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
-        userAdminSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, UserDataConstants.STATUS_NEW);
+        userAdminSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,

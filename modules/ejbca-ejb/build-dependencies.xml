@@ -562,6 +562,7 @@
 					<include name="org/ejbca/core/protocol/ocsp/CertificateCache.java"/>
 					<include name="org/ejbca/core/model/ca/caadmin/extendedcaservices/OCSPCAService*.java"/>					
 					<!-- End Entity classes .. -->
+					<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
 					<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
 					<include name="org/cesecore/certificates/endentity/EndEntityInformation.java"/>
 					<include name="org/cesecore/certificates/util/dn/DNFieldsUtil.java"/>
@@ -679,7 +680,7 @@
 					<include name="org/ejbca/core/model/ra/raadmin/UserDoesntFullfillEndEntityProfile.java"/>
 					<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
 					<include name="org/ejbca/core/model/ra/RevokeBackDateNotAllowedForProfileException.java"/>
-					<include name="org/ejbca/core/model/ra/UserDataConstants.java"/>
+					<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
 					<include name="org/ejbca/util/crypto/BCrypt.java"/>
 					<include name="org/ejbca/util/crypto/CryptoTools.java"/>
 				</fileset>
@@ -809,13 +810,13 @@
 					<include name="org/ejbca/core/ejb/ra/raadmin/*.java"/>
 				</fileset>
 				<fileset dir="${src.dir}">
+					<include name="org/cesecore/certificates/endentity/EndEntityConstants.java"/>
 					<include name="org/cesecore/certificates/endentity/EndEntityInformation.java"/>
 					<include name="org/cesecore/certificates/endentity/ExtendedInformation.java"/>
 					<include name="org/ejbca/core/ejb/ra/raadmin/*SessionBean.java"/>
 					<include name="org/ejbca/core/ejb/ra/raadmin/*Cache.java"/>
 					<include name="org/ejbca/core/model/ra/raadmin/**/*.java"/>
 					<include name="org/ejbca/util/passgen/*.java"/>
-					<include name="org/ejbca/core/model/ra/UserDataConstants.java"/>
 					<include name="org/ejbca/core/model/ra/ExtendedInformationFields.java"/>			
 				</fileset>
 			</copy>

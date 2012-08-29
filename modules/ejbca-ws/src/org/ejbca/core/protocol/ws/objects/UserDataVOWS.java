@@ -16,9 +16,9 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.List;
 
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
-import org.ejbca.core.model.ra.UserDataConstants;
 
 /**
  * Class used to represent userdata in the WebService API.
@@ -55,14 +55,14 @@ public class UserDataVOWS implements Serializable{
 	public static final java.lang.String TOKEN_TYPE_PEM           = "PEM";
 	public static final java.lang.String TOKEN_TYPE_P12           = "P12";
 	
-    public static final int STATUS_NEW = UserDataConstants.STATUS_NEW;        // New user
-    public static final int STATUS_FAILED = UserDataConstants.STATUS_FAILED;     // Generation of user certificate failed
-    public static final int STATUS_INITIALIZED = UserDataConstants.STATUS_INITIALIZED;// User has been initialized
-    public static final int STATUS_INPROCESS = UserDataConstants.STATUS_INPROCESS;  // Generation of user certificate in process
-    public static final int STATUS_GENERATED = UserDataConstants.STATUS_GENERATED;  // A certificate has been generated for the user
-    public static final int STATUS_REVOKED = UserDataConstants.STATUS_REVOKED;  // The user has been revoked and should not have any more certificates issued
-    public static final int STATUS_HISTORICAL = UserDataConstants.STATUS_HISTORICAL; // The user is old and archived
-    public static final int STATUS_KEYRECOVERY  = UserDataConstants.STATUS_KEYRECOVERY; // The user is should use key recovery functions in next certificate generation.
+    public static final int STATUS_NEW = EndEntityConstants.STATUS_NEW;        // New user
+    public static final int STATUS_FAILED = EndEntityConstants.STATUS_FAILED;     // Generation of user certificate failed
+    public static final int STATUS_INITIALIZED = EndEntityConstants.STATUS_INITIALIZED;// User has been initialized
+    public static final int STATUS_INPROCESS = EndEntityConstants.STATUS_INPROCESS;  // Generation of user certificate in process
+    public static final int STATUS_GENERATED = EndEntityConstants.STATUS_GENERATED;  // A certificate has been generated for the user
+    public static final int STATUS_REVOKED = EndEntityConstants.STATUS_REVOKED;  // The user has been revoked and should not have any more certificates issued
+    public static final int STATUS_HISTORICAL = EndEntityConstants.STATUS_HISTORICAL; // The user is old and archived
+    public static final int STATUS_KEYRECOVERY  = EndEntityConstants.STATUS_KEYRECOVERY; // The user is should use key recovery functions in next certificate generation.
 	
     private java.lang.String username = null;
     private java.lang.String password = null;

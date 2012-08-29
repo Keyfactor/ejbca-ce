@@ -19,6 +19,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -28,7 +29,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 
 
@@ -61,7 +61,7 @@ public abstract class SignSessionCommon extends CaTestCase{
             log.info("User " + username + " already exists, resetting status.");
             EndEntityInformation endEntity = new EndEntityInformation(username,  "C=SE,CN="+username,
                     caId, null, 
-                    "foo@anatom.nu", UserDataConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
+                    "foo@anatom.nu", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
                     endEntityProfileId, certificateProfileId, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
             endEntity.setPassword("foo123");

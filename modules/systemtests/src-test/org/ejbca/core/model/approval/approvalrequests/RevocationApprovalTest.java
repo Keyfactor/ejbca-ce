@@ -48,6 +48,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -75,7 +76,6 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 import org.junit.After;
 import org.junit.Before;
@@ -281,7 +281,7 @@ public class RevocationApprovalTest extends CaTestCase {
                     ApprovalDataVO.APPROVALTYPE_REVOKEENDENTITY, certificateStoreSession, approvalSessionRemote, approvalExecutionSessionRemote, approvalCAID);
             // Make sure userstatus changed to revoked
             EndEntityInformation userdata = endEntityAccessSession.findUser(internalAdmin, username);
-            assertTrue("User was not revoked when last cert was.", userdata.getStatus() == UserDataConstants.STATUS_REVOKED);
+            assertTrue("User was not revoked when last cert was.", userdata.getStatus() == EndEntityConstants.STATUS_REVOKED);
         } finally {
             userAdminSession.deleteUser(internalAdmin, username);
         }

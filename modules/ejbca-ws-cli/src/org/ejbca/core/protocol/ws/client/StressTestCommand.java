@@ -33,8 +33,8 @@ import javax.xml.bind.DatatypeConverter;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
 import org.ejbca.core.protocol.ws.client.gen.CertificateResponse;
 import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
@@ -360,7 +360,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.user.setCaName(caName);
 			this.user.setEmail(null);
 			this.user.setSubjectAltName(null);
-			this.user.setStatus(UserDataConstants.STATUS_NEW);
+			this.user.setStatus(EndEntityConstants.STATUS_NEW);
 			this.user.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
 			this.user.setEndEntityProfileName(endEntityProfileName);
 			this.user.setCertificateProfileName(certificateProfileName);
@@ -409,7 +409,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.user.setCaName(caName);
 			this.user.setEmail(null);
 			this.user.setSubjectAltName(null);
-			this.user.setStatus(UserDataConstants.STATUS_NEW);
+			this.user.setStatus(EndEntityConstants.STATUS_NEW);
 			this.user.setTokenType(org.ejbca.core.protocol.ws.objects.UserDataVOWS.TOKEN_TYPE_USERGENERATED);
 			this.user.setEndEntityProfileName(endEntityProfileName);
 			this.user.setCertificateProfileName(certificateProfileName);

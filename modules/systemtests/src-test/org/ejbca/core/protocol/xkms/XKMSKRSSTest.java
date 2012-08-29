@@ -49,6 +49,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
@@ -74,7 +75,6 @@ import org.ejbca.core.model.approval.Approval;
 import org.ejbca.core.model.approval.ApprovalDataVO;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalRequest;
 import org.ejbca.core.model.approval.approvalrequests.RevocationApprovalTest;
-import org.ejbca.core.model.ra.UserDataConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.protocol.xkms.client.XKMSInvoker;
 import org.ejbca.core.protocol.xkms.common.XKMSConstants;
@@ -890,7 +890,7 @@ public class XKMSKRSSTest {
 
 	@Test
     public void test15RecoverWrongCert() throws Exception {
-        userAdminSession.setUserStatus(administrator, username2, UserDataConstants.STATUS_KEYRECOVERY);
+        userAdminSession.setUserStatus(administrator, username2, EndEntityConstants.STATUS_KEYRECOVERY);
         userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
         recoverRequestType.setId("703");
