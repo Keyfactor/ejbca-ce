@@ -334,7 +334,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             data.setCAId(caid);
         }
         if (log.isDebugEnabled()) {
-            log.debug("User type=" + data.getType());
+            log.debug("User type (EndEntityType) = " + data.getType().getHexValue());
         }
         // Get CA object and make sure it is active
         // Do not log access control to the CA here, that is logged later on when we use the CA to issue a certificate (if we get that far).

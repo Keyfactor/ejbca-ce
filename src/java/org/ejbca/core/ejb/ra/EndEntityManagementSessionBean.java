@@ -380,7 +380,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                     print(profile, endEntity);
                 } else {
                     if (log.isDebugEnabled()) {
-                        log.debug("Type ("+type+") does not contain SecConst.USER_PRINT, no print job created.");
+                        log.debug("Type ("+type.getHexValue()+") does not contain SecConst.USER_PRINT, no print job created.");
                     }
                 }
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
@@ -1808,7 +1808,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             }
         } else { // if ( ((data.getType() & EndEntityTypes.USER_SENDNOTIFICATION) != 0) )
             if (log.isDebugEnabled()) {
-                log.debug("Type ("+data.getType()+") does not contain EndEntityTypes.USER_SENDNOTIFICATION, no notification sent.");
+                log.debug("Type ("+data.getType().getHexValue()+") does not contain EndEntityTypes.USER_SENDNOTIFICATION, no notification sent.");
             }
         }
         if (log.isTraceEnabled()) {
