@@ -49,7 +49,7 @@
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
-    <target name="build" depends="fail-unless-appserver-detected, testforgnujava, ejbca.ear" description="Builds EJBCA"/>
+    <target name="build" depends="check-deprecated, fail-unless-appserver-detected, testforgnujava, ejbca.ear" description="Builds EJBCA"/>
 
 	<!--
 	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
@@ -113,6 +113,36 @@
 				<equals arg1="${ejbca.productionmode}" arg2="ca" casesensitive="false"/>
 			</condition>
 		</fail>
+    </target>
+    
+    <!-- =================================================================== -->
+    <!-- Check configuration for deprecated properties                       -->
+    <!-- =================================================================== -->
+    <target name="cond-deprecated-healthcheck">
+        <condition property="is-deprecated-healthcheck">
+            <or>
+                <isset property="ocsphealthcheck.amountfreemem"/>
+                <isset property="ocsphealthcheck.authorizedips"/>
+                <isset property="ocsphealthcheck.checkSigningCertificateValidity"/>
+                <isset property="ocsphealthcheck.dbquery"/>
+                <isset property="ocsphealthcheck.maintenancefile"/>
+                <isset property="ocsphealthcheck.maintenancepropertyname"/>
+                <isset property="ocsphealthcheck.signtest"/>
+            </or>
+        </condition>
+    </target>
+    
+    <target name="check-deprecated-healthcheck" depends="cond-deprecated-healthcheck" if="is-deprecated-healthcheck">
+        <echo level="error">The ocsphealthcheck.* properties have been renamed to healthcheck.*. Please update your configuration!</echo>
+    </target>
+    
+    <target name="check-deprecated-logmaxqueryrowcount" if="log.maxqueryrowcount"><echo level="error">The property "log.maxqueryrowcount" is deprecated. Please update your configuration!</echo></target>
+    
+    <target name="check-deprecated-logconfigurationcachetime" if="logconfiguration.cachetime"><echo level="error">The property "logconfiguration.cachetime" is deprecated. Please update your configuration!</echo></target>
+    
+    <target name="check-deprecated-webpromptForPassword" if="web.promptForPassword"><echo level="error">The property "web.promptForPassword" is deprecated. Please update your configuration!</echo></target>
+    
+    <target name="check-deprecated" depends="check-deprecated-logmaxqueryrowcount, check-deprecated-logconfigurationcachetime, check-deprecated-webpromptForPassword, check-deprecated-healthcheck">
     </target>
 
     <!-- =================================================================== -->
