@@ -561,15 +561,18 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         }
 
         // Check if extended service certificates are about to be renewed.
-        Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
-        while (iter.hasNext()) {
-            ExtendedCAServiceInfo next = iter.next();
-            // No OCSP Certificate exists that can be renewed.
-            if (next instanceof XKMSCAServiceInfo) {
-                xkmsrenewcert = ((XKMSCAServiceInfo) next).getRenewFlag();
-            } else if (next instanceof CmsCAServiceInfo) {
-                cmsrenewcert = ((CmsCAServiceInfo) next).getRenewFlag();
-            }
+        Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
+        if (infos != null) {
+            Iterator<ExtendedCAServiceInfo> iter = infos.iterator();
+            while (iter.hasNext()) {
+                ExtendedCAServiceInfo next = iter.next();
+                // No OCSP Certificate exists that can be renewed.
+                if (next instanceof XKMSCAServiceInfo) {
+                    xkmsrenewcert = ((XKMSCAServiceInfo) next).getRenewFlag();
+                } else if (next instanceof CmsCAServiceInfo) {
+                    cmsrenewcert = ((CmsCAServiceInfo) next).getRenewFlag();
+                }
+            }            
         }
 
         // Get CA from database

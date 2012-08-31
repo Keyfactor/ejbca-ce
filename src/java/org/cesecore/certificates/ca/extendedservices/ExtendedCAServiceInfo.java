@@ -44,6 +44,10 @@ public abstract class ExtendedCAServiceInfo implements Serializable {
         return this.status;
     }
 
+    public void setStatus(final int status) {
+        this.status = status;
+    }
+
     /** @return a unique type identifier, such as ExtendedCAServiceInfo.TYPE_OCSPEXTENDEDSERVICE etc */
     public abstract int getType();
 

@@ -117,7 +117,7 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             CAInfo cainfo = ca.getCAInfo();
             // The CA needs a name and a subject DN in order to store it
             if ((ca.getName() == null) || (ca.getSubjectDN() == null)) {
-                throw new CAExistsException("Null CA name or SubjectDN");
+                throw new CAExistsException("Null CA name or SubjectDN. Name: '"+ca.getName()+"', SubjectDN: '"+ca.getSubjectDN()+"'.");
             }
             if (CAData.findByName(entityManager, cainfo.getName()) != null) {
                 String msg = intres.getLocalizedMessage("caadmin.caexistsname", cainfo.getName());

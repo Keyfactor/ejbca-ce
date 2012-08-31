@@ -79,7 +79,7 @@ public class CAInfo implements Serializable {
     protected String subjectdn;
     protected int caid;
     protected String name;
-    /** SecConst.CA_ACTIVE etc, 0 means not defined (i.e. not updated when editing CA) */
+    /** CAConstants.CA_ACTIVE etc, 0 means not defined (i.e. not updated when editing CA) */
     protected int status=0;
     protected long validity;
     protected Date expiretime;
@@ -120,12 +120,15 @@ public class CAInfo implements Serializable {
     public String getSubjectDN() {return subjectdn;}
     public void setSubjectDN(final String subjectdn) {this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));}
     public int getCAId(){return this.caid;}
+    public void setCAId(final int caid){this.caid = caid;}
     public String getName() {return this.name;}
     public void setName(final String name) {this.name = name;}
+    /** CAConstants.CA_ACTIVE etc, 0 means not defined (i.e. not updated when editing CA) */
     public int getStatus() {return status;}
     public void setStatus(int status) {this.status = status;}
     /** CAInfo.CATYPE_X509 or CAInfo.CATYPE_CVC */
     public int getCAType() {return catype;}
+    public void setCAType(int catype) {this.catype = catype;}
     public int getSignedBy() {return signedby;}
     public void setSignedBy(int signedby) {this.signedby = signedby;}
     
@@ -133,8 +136,13 @@ public class CAInfo implements Serializable {
     public void setValidity(int validity) { this.validity = validity; }
     
     public Date getExpireTime() {return this.expiretime;}
+    public void setExpireTime(final Date expiretime) {
+        this.expiretime = expiretime;
+    }
     public Date getUpdateTime() {return this.updatetime;}
-
+    public void setUpdateTime(final Date updatetime) {
+        this.updatetime = updatetime;
+    }
       
     /** Retrieves the certificate chain for the CA. The returned certificate chain MUST have the
 	 * RootCA certificate in the last position and the CAs certificate in the first.
@@ -148,7 +156,13 @@ public class CAInfo implements Serializable {
     public void setDescription(String description){ this.description = description;}
     
     public int getRevocationReason(){ return this.revocationReason;}
+    public void setRevocationReason(final int revocationReason) {
+        this.revocationReason = revocationReason;
+    }
     public Date getRevocationDate(){ return this.revocationDate;}    
+    public void setRevocationDate(final Date revocationDate) {
+        this.revocationDate = revocationDate;
+    }
     
     public void setCertificateProfileId(int _certificateprofileid) { this.certificateprofileid = _certificateprofileid; }
     public int getCertificateProfileId(){ return this.certificateprofileid; }

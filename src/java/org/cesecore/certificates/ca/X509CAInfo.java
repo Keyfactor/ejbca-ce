@@ -194,6 +194,9 @@ public class X509CAInfo extends CAInfo{
   public List<CertificatePolicy> getPolicies() {
 	  return this.policies;
   }
+  public void setPolicies(final List<CertificatePolicy> policies) {
+      this.policies = policies;
+  }
   public boolean getUseCRLNumber(){ return usecrlnumber;}
   public void setUseCRLNumber(boolean usecrlnumber){ this.usecrlnumber=usecrlnumber;}
   
@@ -215,8 +218,14 @@ public class X509CAInfo extends CAInfo{
   }
   
   public String getDefaultCRLIssuer(){ return defaultcrlissuer; }
+  public void setDefaultCRLIssuer(String defaultcrlissuer) {
+      this.defaultcrlissuer = defaultcrlissuer;
+  }
   
   public String getDefaultOCSPServiceLocator(){ return defaultocsplocator; }
+  public void setDefaultOCSPServiceLocator(String defaultocsplocator) {
+      this.defaultocsplocator = defaultocsplocator;
+  }
   
   public String getCADefinedFreshestCRL(){ return this.cadefinedfreshestcrl; }
 
@@ -225,12 +234,23 @@ public class X509CAInfo extends CAInfo{
   }
 
   public String getSubjectAltName(){ return subjectaltname; }
-  
+  public void setSubjectAltName(final String subjectaltname) {
+      this.subjectaltname = subjectaltname;
+  }
   public boolean getUseUTF8PolicyText() { return useUTF8PolicyText; } 
+  public void setUseUTF8PolicyText(final boolean useUTF8PolicyText) { 
+      this.useUTF8PolicyText = useUTF8PolicyText; 
+  } 
   
   public boolean getUsePrintableStringSubjectDN() { return usePrintableStringSubjectDN; }
+  public void setUsePrintableStringSubjectDN(final boolean usePrintableStringSubjectDN) { 
+      this.usePrintableStringSubjectDN = usePrintableStringSubjectDN; 
+  } 
   
   public boolean getUseLdapDnOrder() { return useLdapDNOrder; }
+  public void setUseLdapDnOrder(final boolean useLdapDNOrder) { 
+      this.useLdapDNOrder = useLdapDNOrder; 
+  } 
 
   public boolean getUseCrlDistributionPointOnCrl() {
       return this.useCrlDistributionPointOnCrl;
@@ -242,6 +262,9 @@ public class X509CAInfo extends CAInfo{
 
   public boolean getCrlDistributionPointOnCrlCritical() {
       return this.crlDistributionPointOnCrlCritical;
+  }
+  public void setCrlDistributionPointOnCrlCritical(boolean crlDistributionPointOnCrlCritical) {
+      this.crlDistributionPointOnCrlCritical = crlDistributionPointOnCrlCritical;
   }
   
   public String getCmpRaAuthSecret() { return cmpRaAuthSecret; }
