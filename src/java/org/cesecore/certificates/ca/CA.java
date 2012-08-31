@@ -654,7 +654,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
         }
         CAToken token = getCAToken();
-        if (token != null) {
+        if ((token != null) && (cainfo.getCATokenInfo() != null)) {
             token.updateTokenInfo(cainfo.getCATokenInfo());
             try {
 				setCAToken(token);
@@ -678,26 +678,29 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         }
 
         // Update or create extended CA services
-        Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
-        Collection<Integer> extendedservicetypes = getExternalCAServiceTypes(); // Se we can add things to this
-        while (iter.hasNext()) {
-            ExtendedCAServiceInfo info = iter.next();
-            ExtendedCAService service = this.getExtendedCAService(info.getType());
-            if (service == null) {
-            	if (log.isDebugEnabled()) {
-            		log.debug("Creating new extended CA service of type: "+info.getType());
-            	}
-                createExtendedCAService(info);
-                extendedservicetypes.add(info.getType());
-            } else {
-            	if (log.isDebugEnabled()) {
-            		log.debug("Updating extended CA service of type: "+info.getType());
-            	}
-                service.update(info, this);
-                setExtendedCAService(service);
+        Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
+        if (infos != null) {
+            Iterator<ExtendedCAServiceInfo> iter = cainfo.getExtendedCAServiceInfos().iterator();
+            Collection<Integer> extendedservicetypes = getExternalCAServiceTypes(); // Se we can add things to this
+            while (iter.hasNext()) {
+                ExtendedCAServiceInfo info = iter.next();
+                ExtendedCAService service = this.getExtendedCAService(info.getType());
+                if (service == null) {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Creating new extended CA service of type: "+info.getType());
+                    }
+                    createExtendedCAService(info);
+                    extendedservicetypes.add(info.getType());
+                } else {
+                    if (log.isDebugEnabled()) {
+                        log.debug("Updating extended CA service of type: "+info.getType());
+                    }
+                    service.update(info, this);
+                    setExtendedCAService(service);
+                }
             }
+            data.put(EXTENDEDCASERVICES, extendedservicetypes);            
         }
-        data.put(EXTENDEDCASERVICES, extendedservicetypes);
         this.cainfo = cainfo;
     }
 
