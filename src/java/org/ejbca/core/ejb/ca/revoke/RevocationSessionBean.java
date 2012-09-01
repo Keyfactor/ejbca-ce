@@ -24,6 +24,8 @@ import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import org.apache.log4j.Logger;
 import org.cesecore.audit.enums.EventStatus;
@@ -32,10 +34,11 @@ import org.cesecore.audit.enums.ServiceTypes;
 import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.certificate.CertificateInfo;
+import org.cesecore.certificates.certificate.CertificateData;
 import org.cesecore.certificates.certificate.CertificateRevokeException;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
@@ -54,6 +57,9 @@ import org.ejbca.core.model.InternalEjbcaResources;
 public class RevocationSessionBean implements RevocationSessionLocal, RevocationSessionRemote {
 
     private static final Logger log = Logger.getLogger(RevocationSessionBean.class);
+
+    @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
+    private EntityManager entityManager;
 
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
@@ -97,8 +103,10 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     	final boolean waschanged = certificateStoreSession.setRevokeStatus(admin, cert, revocationDate, reason, userDataDN);
     	// Publish the revocation if it was actually performed
     	if (waschanged) {
-    	    final CertificateInfo info = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(cert));
-    	    final String cafp = info.getCAFingerprint();
+    	    // Since storeSession.findCertificateInfo uses a native query, it does not pick up changes made above
+    	    // that is part if the transaction in the EntityManager, so we need to get the object from the EntityManager.
+            CertificateData info = CertificateData.findByFingerprint(entityManager, CertTools.getFingerprintAsString(cert));
+    	    final String cafp = info.getCaFingerprint();
     	    final String username = info.getUsername();
     	    final String password = null;
     	    final int status = info.getStatus();
@@ -112,7 +120,7 @@ public class RevocationSessionBean implements RevocationSessionLocal, Revocation
     		    final boolean published = publisherSession.storeCertificate(admin, publishers, cert, username, password, userDataDN,
         				cafp, status, type, -1L, reason, tag, certProfile, now, null);
         		if (published) {
-        			final String msg = intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason));
+                    final String msg = intres.getLocalizedMessage("store.republishunrevokedcert", Integer.valueOf(reason));
         			log.info(msg);
         		} else {
             		// If it is not possible, only log error but continue the operation of not revoking the certificate
