@@ -29,6 +29,10 @@ import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.CesecoreException;
@@ -228,32 +232,43 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
 
     @Test
     public void testDnFromRequestAllowDnOverride() throws Exception {
-
         final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        certprof.setAllowDNOverride(true);
+        certprof.setAllowDNOverride(false); // first test with override not allowed
         assertTrue(certprof.getUseLdapDnOrder());
-        String fp1 = null;
-        String fp2 = null;
+        String finger1 = null;
+        String finger2 = null;
+        String finger3 = null;
         try {
         	int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
 
-        	EndEntityInformation user = new EndEntityInformation();
-        	user.setType(EndEntityTypes.ENDUSER.toEndEntityType());
-        	user.setUsername("certcreatereq");
-        	user.setCertificateProfileId(cpId);
+        	// EJBCA standard has SN means serialnumber, surname is SURNAME. Must be kept for backwards compatibility
+            EndEntityInformation user = new EndEntityInformation("dnoverride", "C=SE,O=AnaTom,SN=123456,SURNAME=surname,CN=dnoverride", testx509ca.getCAId(), null,
+                    "dnoverride@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
+            user.setPassword("foo123");
 
-        	SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), "certcreatereq", "foo123");
+        	SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), "dnoverride", "foo123");
         	req.setIssuerDN(CertTools.getIssuerDN(testx509ca.getCACertificate()));
-        	req.setRequestDN("C=SE,O=PrimeKey,CN=noUserData");
+        	req.setRequestDN("C=SE,O=PrimeKey,SN=123456,SURNAME=surname,CN=noUserData");
 
         	// Make the call
-        	X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
-        	assertNotNull("Failed to get response", resp);
-        	Certificate cert = (X509Certificate)resp.getCertificate();
-        	fp1 = CertTools.getFingerprintAsString(cert);
-        	assertNotNull("Failed to create certificate", cert);
-        	assertEquals("CN=noUserData,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert));
-
+        	{
+        	    X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+        	    assertNotNull("Failed to get response", resp);
+        	    Certificate cert = (X509Certificate)resp.getCertificate();
+        	    finger1 = CertTools.getFingerprintAsString(cert);
+        	    assertNotNull("Failed to create certificate", cert);
+        	    assertEquals("CN=dnoverride,SN=123456,SURNAME=surname,O=AnaTom,C=SE", ((X509Certificate)cert).getSubjectDN().toString());
+        	}
+            // Make the call again, now allowing DN override
+            certprof.setAllowDNOverride(true);
+            certProfileSession.changeCertificateProfile(roleMgmgToken, "createCertTest", certprof);
+            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+            assertNotNull("Failed to get response", resp);
+            Certificate cert = (X509Certificate)resp.getCertificate();
+            finger2 = CertTools.getFingerprintAsString(cert);
+            assertNotNull("Failed to create certificate", cert);
+            assertEquals("C=SE,O=PrimeKey,SN=123456,SURNAME=surname,CN=noUserData", ((X509Certificate)cert).getSubjectDN().toString());
         	// Test reversing DN, should make no difference since we override with requestDN
         	certprof.setUseLdapDnOrder(false);
         	certProfileSession.changeCertificateProfile(roleMgmgToken, "createCertTest", certprof);
@@ -261,13 +276,80 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         	resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
         	assertNotNull("Failed to get response", resp);
         	cert = (X509Certificate)resp.getCertificate();
-        	fp2 = CertTools.getFingerprintAsString(cert);
+        	finger3 = CertTools.getFingerprintAsString(cert);
         	assertNotNull("Failed to create certificate", cert);
-        	assertEquals("CN=noUserData,O=PrimeKey,C=SE", CertTools.getSubjectDN(cert));
+        	assertEquals("C=SE,O=PrimeKey,SN=123456,SURNAME=surname,CN=noUserData", ((X509Certificate)cert).getSubjectDN().toString());
         } finally {
         	certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
-        	internalCertStoreSession.removeCertificate(fp1);
-        	internalCertStoreSession.removeCertificate(fp2);
+        	internalCertStoreSession.removeCertificate(finger1);
+        	internalCertStoreSession.removeCertificate(finger2);
+            internalCertStoreSession.removeCertificate(finger3);
+        }
+    }
+
+    @Test
+    public void testDnOrder() throws Exception {
+        final CertificateProfile certprof = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
+        assertTrue(certprof.getUseLdapDnOrder());
+        String finger1 = null;
+        String finger2 = null;
+        try {
+            int cpId = certProfileSession.addCertificateProfile(roleMgmgToken, "createCertTest", certprof);
+
+            // EJBCA standard has SN means serialnumber, surname is SURNAME. Must be kept for backwards compatibility
+            EndEntityInformation user = new EndEntityInformation("dnorder", "C=SE,O=PrimeKey,SN=12345,SURNAME=surname,CN=DnOrderTest", testx509ca.getCAId(), null,
+                    "dnoverride@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0, cpId, EndEntityConstants.TOKEN_USERGEN, 0, null);
+            user.setStatus(EndEntityConstants.STATUS_NEW);
+            user.setPassword("foo123");
+
+            SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), "dnorder", "foo123");
+            req.setIssuerDN(CertTools.getIssuerDN(testx509ca.getCACertificate()));
+            req.setRequestDN("C=SE,O=Foo Company,SN=12345,SURNAME=surname,CN=DnOrderTest"); // This should not matter now
+
+            // Make the call
+            X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+            assertNotNull("Failed to get response", resp);
+            Certificate cert = (X509Certificate)resp.getCertificate();
+            finger1 = CertTools.getFingerprintAsString(cert);
+            assertNotNull("Failed to create certificate", cert);
+            X500Principal princ = ((X509Certificate)cert).getSubjectX500Principal();
+            X500Name name = X500Name.getInstance(princ.getEncoded());
+            assertEquals("CN=DnOrderTest,SERIALNUMBER=12345,SURNAME=surname,O=PrimeKey,C=SE", name.toString());
+            // Get device serial number to check that it really is the correct stuff and that SerialNumber and SurName has not gotten mixed up
+            RDN[] rdns = name.getRDNs(new ASN1ObjectIdentifier("2.5.4.5")); // Device serial number
+            assertEquals(1, rdns.length);
+            AttributeTypeAndValue value = rdns[0].getFirst();
+            assertEquals("12345", value.getValue().toString());
+            rdns = name.getRDNs(new ASN1ObjectIdentifier("2.5.4.4")); // Surname (last name)
+            value = rdns[0].getFirst();
+            assertEquals(1, rdns.length);
+            assertEquals("surname", value.getValue().toString());
+
+            // Test reversing DN, should make a lot of difference
+            certprof.setUseLdapDnOrder(false);
+            certProfileSession.changeCertificateProfile(roleMgmgToken, "createCertTest", certprof);
+
+            resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+            assertNotNull("Failed to get response", resp);
+            cert = (X509Certificate)resp.getCertificate();
+            finger2 = CertTools.getFingerprintAsString(cert);
+            assertNotNull("Failed to create certificate", cert);
+            princ = ((X509Certificate)cert).getSubjectX500Principal();
+            name = X500Name.getInstance(princ.getEncoded());
+            assertEquals("C=SE,O=PrimeKey,SURNAME=surname,SERIALNUMBER=12345,CN=DnOrderTest", name.toString());
+            // Get device serial number to check that it really is the correct stuff and that SerialNumber and SurName has not gotten mixed up
+            rdns = name.getRDNs(new ASN1ObjectIdentifier("2.5.4.5")); // Device serial number
+            assertEquals(1, rdns.length);
+            value = rdns[0].getFirst();
+            assertEquals("12345", value.getValue().toString());
+            rdns = name.getRDNs(new ASN1ObjectIdentifier("2.5.4.4")); // Surname (last name)
+            value = rdns[0].getFirst();
+            assertEquals(1, rdns.length);
+            assertEquals("surname", value.getValue().toString());
+        } finally {
+            certProfileSession.removeCertificateProfile(roleMgmgToken, "createCertTest");
+            internalCertStoreSession.removeCertificate(finger1);
+            internalCertStoreSession.removeCertificate(finger2);
         }
     }
 
