@@ -58,7 +58,7 @@ ca.keytype=RSA
 
 # Default signing algorithm for the administrative CA.
 # Available algorithms are:
-# SHA1WithRSA, SHA1WithECDSA, SHA256WithRSA, SHA256WithECDSA.
+# SHA1WithRSA, SHA1withECDSA, SHA256WithRSA, SHA256withECDSA.
 ca.signaturealgorithm=SHA1WithRSA
 
 # The validity in days for the administrative CA, only digits.
