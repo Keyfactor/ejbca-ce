@@ -123,11 +123,9 @@
             <or>
                 <isset property="ocsphealthcheck.amountfreemem"/>
                 <isset property="ocsphealthcheck.authorizedips"/>
-                <isset property="ocsphealthcheck.checkSigningCertificateValidity"/>
                 <isset property="ocsphealthcheck.dbquery"/>
                 <isset property="ocsphealthcheck.maintenancefile"/>
                 <isset property="ocsphealthcheck.maintenancepropertyname"/>
-                <isset property="ocsphealthcheck.signtest"/>
             </or>
         </condition>
     </target>
