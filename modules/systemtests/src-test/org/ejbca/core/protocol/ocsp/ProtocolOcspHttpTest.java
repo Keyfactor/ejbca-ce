@@ -755,7 +755,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
 			// Only glassfish will come here, with a non-null response, but of length 2(/r/n?). JBoss (4, 5, 6) will go to the
 			// IOException below
-			if (response.getEncoded().length > 2) {
+            if ((response.getEncoded() != null) && (response.getEncoded().length > 2)) {
 				// Actually this error message is wrong, since it is our client that does not handle streaming responses
 				// where the first response should be good.
 				fail("Was able to send a lot of data with a fake HTTP Content-length without any error.");
