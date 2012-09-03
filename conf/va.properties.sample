@@ -8,35 +8,8 @@
 #
 # Configure these options if you are configuring a VA now.
 
-# Note: The naming ocsphealthcheck.* of the properties has a historical reason, before the VA only contained an OCSP responder.
-# The property names are kept for backward compatibility. 
-
-# Parameter specifying amount of free memory (Mb) before alarming
-# Default: 1
-#ocsphealthcheck.amountfreemem=1
-
-# Parameter specifying database test query string. Used to check that
-# the database is operational.
-# Default : Select 1 From CertificateData where fingerprint='XX'
-#ocsphealthcheck.dbquery=Select 1 From CertificateData where fingerprint='XX'
-
-# Parameter specifying IP addresses authorized to access the healthcheck
-# servlet. Use ';' between multiple IPs.
-# IPv6 address can be specified, for example 127.0.0.1;0:0:0:0:0:0:0:1. 
-# "ANY" can be specified to allow any remote IP. 
-# Default: 127.0.0.1  
-#ocsphealthcheck.authorizedips=127.0.0.1
-
-# Parameter to specify location of file containing information about maintenance
-# Use this file to specify wether to include node in healthcheck or report as down for maintenance, 
-# which will return an error message (either the property name specified below or a custom message specified in web.xml).
-#ocsphealthcheck.maintenancefile=~/maintenance.properties
-
-# Parameter to configure name of maintenance property, default = DOWN_FOR_MAINTENANCE
-# The healthcheck.maintenancefile should contain a single line like this:
-# DOWN_FOR_MAINTENANCE=true
-# Where the node will be down for maintenance of the property is true, and not down for maintenance if the property is false.
-#ocsphealthcheck.maintenancepropertyname=DOWN_FOR_MAINTENANCE
+# Most of the old ocsphealthcheck.* properties have been moved
+# to healthcheck.* in ejbca.properties
 
 # Parameter to configure if all available signing keys should be tested.
 # The test will fail if any of the available signing keys is not working or if there are no available signing keys.

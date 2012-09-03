@@ -2,7 +2,7 @@
 # When upgrading, the important options are:
 # - httpsserver.password
 
-# Password for java trust keystore (p12/truststore.jks). Default is changeit if web.promptForPassword is not true.
+# Password for java trust keystore (p12/truststore.jks). Default is changeit
 # This truststore will contain the CA-certificate after running 'ant javatruststore'
 # Run 'ant -Dca.name=FooCA javatruststore' to install the CA-certificate for FooCA instead of the default AdminCA1
 java.trustpassword=changeit
@@ -22,21 +22,12 @@ superadmin.password=ejbca
 # importing the P12-keystore. This can be used to put the initial superadmin-certificate on a smart card.
 superadmin.batch=true
 
-# The password used to protect the web servers SSL keystore. Default is serverpwd if web.promptForPassword is not true.
+# The password used to protect the web servers SSL keystore. Default is serverpwd
 # Choose a good password here.
 # If upgrading from EJBCA 3.1, enter here the password found in 
 #   $JBOSS_HOME/server/default/deploy/jbossweb-tomcat55.sar/server.xml
 #   under the section about 'HTTPS Connector...', the password is in attribute 'keystorePass=...'.
 httpsserver.password=serverpwd
-
-# Uncomment this and comment away 'java.trustpassword' and 'httpsserver.password' if you want be prompt for these
-# passwords when doing 'ant install'.
-# If this is used you got to manually change these passwords in the tomcat definition file (server.xml) after
-# 'ant deploy' if you are running jboss. If you are not changing any properties you can the later use 'ant bootstrap'
-# after the first 'ant deploy' in order not to have to do this change again.
-# By doing this it might be possible to have these passwords encrypted in the tomcat definition file. Consult the jboss
-# documentation if such an encryption is desirable.
-#web.promptForPassword=true
 
 # The CA servers DNS host name, must exist on client using the admin GUI.
 httpsserver.hostname=localhost
@@ -87,12 +78,6 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # Values should be "true" or "false".
 # Default = true
 #hardtoken.diplaysensitiveinfo=true
-
-# Setting to configure the maximum number of rows to be returned when viewing logs in the admin-GUI.
-# Setting this too high may put burden on the database, and make queries take a long time if the query
-# results in a lot of rows.
-# Default = 1000
-#log.maxqueryrowcount=1000
 
 # Show links to the EJBCA documentation. The links can either point to internally deployed
 # documentation on the server or any exteral location like ejbca.org.
