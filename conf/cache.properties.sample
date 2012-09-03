@@ -84,16 +84,3 @@
 #authorization.cachetime=157680000000
 #authorization.cachetime=-1
 
-# Set to a value for caching calls to update log configuration. This means that for log configuration to be updated
-# the cache time expires, an "Edit log configuration" or server restart is done, or flushConfigurationCache is called on LogSessionBean.
-# This cache works fine in a single server environment. In a multi server (clustered) environment, 
-# this can be used to disable the check if access rules has been edited on another node, so the configuration must be edited on all nodes, 
-# or nodes caches flushed after editing on one node.
-# Setting this value will improve performance (very little) for very large volume installations (>100 cert/s). 
-# For normal installations, where extreme speeds and response times are not required, leave as default.
-# Value is milliseconds.
-# Default: 5000 (5 seconds)
-# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
-#  anything more than 157680000000 (5 years) should mean infinitely in practice.
-#logconfiguration.cachetime=157680000000
-#logconfiguration.cachetime=-1
