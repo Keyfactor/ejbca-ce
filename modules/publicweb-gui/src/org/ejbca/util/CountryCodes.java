@@ -12,8 +12,6 @@
  *************************************************************************/
 package org.ejbca.util;
 
-import javax.persistence.Transient;
-
 /**
  * A list of 2-character ISO country codes.
  * See https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
@@ -23,9 +21,7 @@ import javax.persistence.Transient;
 public final class CountryCodes {
 
     public static final class Country {
-        @Transient // should never be created except statically below
         private final String code;
-        @Transient
         private final String name;
         
         private Country(final String name, final String code) {
