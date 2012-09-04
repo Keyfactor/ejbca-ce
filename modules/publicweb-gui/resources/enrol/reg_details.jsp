@@ -23,23 +23,23 @@
         <legend>Registration request - Step 2 of 2</legend>
         
         <b>Certificate type: <c:out value="${reg.certTypeDescription}" /></b>
-        <input type="hidden" name="certType" value="${reg.certType}"  />
+        <input type="hidden" name="certType" value="<c:out value="${reg.certType}" />"  />
         <br />
         
         <c:forEach var="field" items="${reg.modifiableCertFields}">
             <c:set var="name" value="field_${field.name}" />
             
-            <label for="${name}" title="${field.description}"><c:out value="${field.humanReadableName}" /></label>
+            <label for="<c:out value="${name}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /></label>
             <c:choose>
                 <c:when test='${field.name == "c"}'>
-                    <select name="${name}" id="${name}" title="${field.description}">
+                    <select name="<c:out value="${name}" />" id="<c:out value="${name}" />" title="<c:out value="${field.description}" />">
                       <c:forEach var="country" items="${countrycodes.countriesFromBean}">
-                        <option value="${country.code}"<c:if test="${field.defaultValue == country.code}"> selected="selected"</c:if>>${country.name}</option>
+                        <option value="<c:out value="${country.code}" />"<c:if test="${field.defaultValue == country.code}"> selected="selected"</c:if>><c:out value="${country.name}" /></option>
                       </c:forEach>
                     </select>
                 </c:when>
                 <c:otherwise>
-                    <input name="${name}" id="${name}" type="text" size="25" title="${field.description}" value="${field.defaultValue}" />
+                    <input name="<c:out value="${name}" />" id="<c:out value="${name}" />" type="text" size="25" title="<c:out value="${field.description}" />" value="<c:out value="${field.defaultValue}" />" />
                 </c:otherwise>
             </c:choose>
             <br />

@@ -19,7 +19,7 @@
         <select name="certType" id="certType" accesskey="t">
           <jsp:useBean id="reg" class="org.ejbca.ui.web.pub.RegisterReqBean" scope="request" />
           <c:forEach var="certtype" items="${reg.certificateTypes}">
-            <option value="${certtype.key}"${reg.defaultCertType == certtype.key ? " selected=\"selected\"" : ""}>${certtype.value}</option>
+            <option value="<c:out value="${certtype.key}" />"${reg.defaultCertType == certtype.key ? " selected=\"selected\"" : ""}><c:out value="${certtype.value}" /></option>
           </c:forEach>
         </select>
         <br />
