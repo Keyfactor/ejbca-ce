@@ -4,7 +4,12 @@
     <condition property="jboss7">
         <equals arg1="${appserver.subtype}" arg2="jboss7" />
     </condition>
+
     
+    <!-- ============================================================================ -->
+    <!-- Miscelaneous targets for detecting JBoss versions, setting-up file-paths etc -->
+    <!-- ============================================================================ -->
+
     <target name="set-paths-jboss7" if="jboss7">
         <!-- Paths for JBoss 7 -->
         <property name="jboss7.mode" value="standalone"/>
@@ -15,7 +20,7 @@
 	    <property name="keystore.file" value="configuration/keystore/keystore.jks"/>
 	    <property name="truststore.file" value="configuration/keystore/truststore.jks"/>
     </target>
-    
+
     <target name="set-paths-not-jboss7" unless="jboss7">
         <!-- Paths for JBoss 4, 5 and 6 -->
         <property name="jboss.config" value="default"/>
@@ -26,18 +31,10 @@
 	    <property name="jboss.deploy.dir" location="${jboss.server.home.dir}/deploy"/>
 	    <property name="keystore.file" value="conf/keystore/keystore.jks"/>
 	    <property name="truststore.file" value="conf/keystore/truststore.jks"/>
-	</target>
+    </target>
 	
-	<target name="set-paths" depends="set-paths-jboss7, set-paths-not-jboss7">
-	</target>
-
-
-	<!--
-	 Do not configure the servlet container, deploys blindly ears
-	 This is ideally passed by the caller and is just here as a reminder
-	  -->
-	<!--property name="j2ee.web-noconfigure" value="true"/-->
-
+    <target name="set-paths" depends="set-paths-jboss7, set-paths-not-jboss7">
+    </target>
 
 	<target name="j2ee:check" depends="set-paths">
 		<!--
@@ -52,39 +49,6 @@
         <available file="${appserver.home}/modules/org/jboss/as/standalone/main/module.xml" property="appserver.home.valid"/>
 		<fail message="'appserver.home' (${appserver.home}) does not seem to be a valid JBoss home directory" unless="appserver.home.valid"/>
 		<echo message="Using appserver.home : ${appserver.home}"/>
-	</target>
-
-	<!-- Configure the J2EE server with appropriate settings -->
-	<target name="j2ee:configure" depends="j2ee:check, j2ee:web-configure">
-	</target>
-
-	<target name="j2ee:deploytruststore" depends="set-paths">
-		<!-- copy the truststore file to the server -->
-		<available file="${ejbca.home}/p12/truststore.jks" property="truststore.file.present"/>
-		<fail message="Missing JKS truststorestore file in '${basedir}/p12/truststore.jks'" unless="truststore.file.present"/>
-
-		<copy file="${ejbca.home}/p12/truststore.jks" tofile="${jboss.server.home.dir}/${truststore.file}" overwrite="true"/>
-		<chmod file="${jboss.server.home.dir}/${truststore.file}" perm="600"/>
-	</target>
-
-	<target name="j2ee:web-configure" depends="j2ee:check" unless="j2ee.web-noconfigure">
-		<echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
-
-		<!-- copy the keystore file to the server -->
-		<available file="p12/tomcat.jks" property="keystore.file.present"/>
-		<fail message="Missing JKS keystore file in '${basedir}/p12/tomcat.jks'" unless="keystore.file.present"/>
-
-		<copy file="p12/tomcat.jks" tofile="${jboss.server.home.dir}/${keystore.file}" overwrite="true"/>
-		<chmod file="${jboss.server.home.dir}/${keystore.file}" perm="600"/>
-
-		<!-- Also deploy the truststore -->
-		<antcall target="j2ee:deploytruststore" />
-
-		<!-- Deploy the tomcat files -->
-		<property name="definitions_away_begin" value="" />
-		<property name="definitions_away_end" value="" />
-		<antcall target="deploytomcat" />
-
 	</target>
 
 	<target name="detect-tomcatdir" depends="set-paths">
@@ -110,6 +74,157 @@
 		<available file="${jboss.conf.dir}/${jboss7.mode}.xml" type="file" property="tomcat.dir" value="${jboss.conf.dir}"/>
 	</target>
 
+
+        <!-- ================================================================ -->
+        <!-- Generic targets used for supporting different versions of JBoss. -->
+        <!-- ================================================================ -->
+
+        <target name="j2ee:deployDS" depends="j2ee:deployDSJBoss5,j2ee:deployDSJBoss7" description="Deploys the main (CA) datasource." />
+
+        <target name="j2ee:deployOCSPDS" description="Deploys the OCSP datasource." if="ocsp-datasource.jndi-name">
+            <antcall target="j2ee:deployOCSPDSJBoss5" />
+            <antcall target="j2ee:deployOCSPDSJBoss7" />
+        </target>
+
+        <target name="j2ee:deployServices" depends="j2ee:deployServicesJBoss5,j2ee:deployServicesJBoss7" description="Deploys the services (mail etc)." />
+
+        <target name="j2ee:web-configure" depends="j2ee:web-configureJBoss5,j2ee:web-configureJBoss7" unless="web-noconfigure" description="Configures the web interface component of the application server." />
+
+        <target name="notifyDeploymentScanner" depends="notifyDeploymentScannerJBoss5,notifyDeploymentScannerJBoss7" description="Notifies the application server to perform (re)deployment of an application."/>
+
+
+        <!-- ========================================================== -->
+        <!-- These are implementation-specific targets for the JBoss 5. -->
+        <!-- ========================================================== -->
+
+	<target name="j2ee:deployDSJBoss5" unless="jboss7" depends="set-paths">
+		<copy todir="${jboss.farm.dir}" overwrite="true">
+			<fileset dir="src/appserver/jboss">
+				<include name="ejbca-ds.xml" />
+			</fileset>
+			<filterchain>
+				<expandproperties />
+			</filterchain>
+		</copy>
+		<mkdir dir="dist/datasources"/>
+		<chmod dir="dist/datasources" includes="*.xml" perm="600" failonerror="false"/>
+		<copy todir="${jboss.farm.dir}" overwrite="true" failonerror="false">
+			<fileset dir="dist/datasources" includes="**"/>
+		</copy>
+		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600"/>
+	</target>
+
+        <target name="j2ee:deployOCSPDSJBoss5" unless="jboss7" depends="set-paths">
+                <copy todir="${jboss.farm.dir}" overwrite="true">
+                    <fileset dir="src/appserver/jboss">
+                        <include name="ocsp-ds.xml"/>
+                    </fileset>
+                    <filterchain>
+                        <expandproperties/>
+                    </filterchain>
+                </copy>
+                <chmod file="${jboss.farm.dir}/ocsp-ds.xml" perm="600"/>
+        </target>
+
+        <target name="j2ee:deployServicesJBoss5" unless="jboss7" depends="set-paths">
+            <copy todir="${jboss.farm.dir}" overwrite="true">
+                <fileset dir="src/appserver/jboss">
+                    <include name="ejbca-mail-service.xml" />
+                </fileset>
+                <filterchain>
+                    <expandproperties />
+                </filterchain>
+            </copy>
+            <chmod file="${jboss.farm.dir}/ejbca-mail-service.xml" perm="600"/>
+        </target>
+
+	<target name="j2ee:web-configureJBoss5" depends="j2ee:check" unless="jboss7">
+            <echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
+            <!-- If the ssl-noconfigure option was provided, don't deploy the SSL by commenting it out from the deployed file. -->
+            <condition property="definitions_away_begin" value="&#x3C;!--">
+                <isset property="ssl-noconfigure" />
+            </condition>
+            <condition property="definitions_away_end" value="-->">
+                <isset property="ssl-noconfigure" />
+            </condition>
+            <property name="definitions_away_begin" value="" />
+            <property name="definitions_away_end" value="" />
+            
+            <antcall target="deploytomcat" />
+        </target>
+
+        <!-- Dummy target, we do not support live redeployments with JBoss 5 -->
+        <target name="notifyDeploymentScannerJBoss5" depends="set-paths" unless="jboss7" />
+
+
+        <!-- ========================================================== -->
+        <!-- These are implementation-specific targets for the JBoss 7. -->
+        <!-- ========================================================== -->
+
+        <!-- Since JBoss 7 uses a single configuration file for everything, and
+             currently we don't have an easy way to deploy just the stuff we
+             want, we are deploying everything (well, single file) from this
+             target - this includes data sources, web configuration, ssl
+             configuration, and OCSP configuration. @TODO: Migrate all of this
+             to using JBoss 7 administration CLI. -->
+        <!-- Dummy target, everything is done in "deploytomcat". -->
+        <target name="j2ee:deployServicesJBoss7" depends="j2ee:web-configureJBoss7" if="jboss7" />
+
+	<!-- On JBoss 7 this is the same as deloying tomcat config (only one config file) -->
+	<target name="j2ee:deployDSJBoss7" if="jboss7" depends="j2ee:web-configureJBoss7" />
+
+        <!-- On JBoss 7 this is the same as deloying tomcat config (only one config file) -->
+	<target name="j2ee:deployOCSPDSJBoss7" if="jboss7" depends="j2ee:web-configureJBoss7" />
+
+	<target name="notifyDeploymentScannerJBoss7" depends="set-paths" if="jboss7">
+	    <touch file="${jboss.farm.dir}/ejbca.ear.dodeploy" />
+	</target>
+
+        <target name="j2ee:web-configureJBoss7" depends="j2ee:check" if="jboss7">
+          <echo message="Setting-up web configration for JBoss 7." />
+          <!-- If the ssl-noconfigure option was provided, don't deploy the SSL by commenting it out from the deployed file. -->
+            <condition property="definitions_away_begin" value="&#x3C;!--">
+                <isset property="ssl-noconfigure" />
+            </condition>
+            <condition property="definitions_away_end" value="-->">
+                <isset property="ssl-noconfigure" />
+            </condition>
+            <property name="definitions_away_begin" value="" />
+            <property name="definitions_away_end" value="" />
+
+            <antcall target="deploytomcat" />
+        </target>
+
+
+        <!-- =================================== -->
+        <!-- Implementation-independent targets. -->
+        <!-- =================================== -->
+
+        <target name="j2ee:deploytruststore" depends="set-paths" unless="ssl-noconfigure">
+		<!-- copy the truststore file to the server -->
+		<available file="${ejbca.home}/p12/truststore.jks" property="truststore.file.present"/>
+		<fail message="Missing JKS truststorestore file in '${basedir}/p12/truststore.jks'" unless="truststore.file.present"/>
+
+		<copy file="${ejbca.home}/p12/truststore.jks" tofile="${jboss.server.home.dir}/${truststore.file}" overwrite="true"/>
+		<chmod file="${jboss.server.home.dir}/${truststore.file}" perm="600"/>
+	</target>
+
+        <target name="j2ee:keystore" depends="j2ee:check" unless="ssl-noconfigure">
+            <echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
+            <!-- copy the keystore file to the server -->
+            <available file="p12/tomcat.jks" property="keystore.file.present"/>
+            <fail message="Missing JKS keystore file in '${basedir}/p12/tomcat.jks'" unless="keystore.file.present"/>
+
+            <copy file="p12/tomcat.jks" tofile="${jboss.server.home.dir}/${keystore.file}" overwrite="true"/>
+            <chmod file="${jboss.server.home.dir}/${keystore.file}" perm="600"/>
+
+            <!-- Also deploy the truststore -->
+            <antcall target="j2ee:deploytruststore" />
+        </target>
+
+        <!-- @TODO: This should really be renamed in some way, and once we have
+             proper JBoss 7 support using administration CLI, we should
+             make similar abstraction for it like for the other things. -->
 	<target name="deploytomcat" depends="detect-tomcatdir">
 		<!-- Set dummy value if password is not defined. If defined the old value is kept -->
 
@@ -144,65 +259,17 @@
 		<chmod file="${tomcat.dir}/standalone.xml" perm="600"/>
 	</target>
 
-	<target name="j2ee:deployDSJBoss5" unless="jboss7">
-		<copy todir="${jboss.farm.dir}" overwrite="true">
-			<fileset dir="src/appserver/jboss">
-				<include name="ejbca-ds.xml" />
-				<include name="ejbca-mail-service.xml" />
-			</fileset>
-			<filterchain>
-				<expandproperties />
-			</filterchain>
-		</copy>
-		<mkdir dir="dist/datasources"/>
-		<chmod dir="dist/datasources" includes="*.xml" perm="600" failonerror="false"/>
-		<copy todir="${jboss.farm.dir}" overwrite="true" failonerror="false">
-			<fileset dir="dist/datasources" includes="**"/>
-		</copy>
-		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600"/>
-		<chmod file="${jboss.farm.dir}/ejbca-mail-service.xml" perm="600"/>
-	</target>
 
-	<!-- On JBoss 7 this is the same as deloying tomcat config (only one config file) -->
-	<target name="j2ee:deployDSJBoss7" if="jboss7">
-		<antcall target="deploytomcat"/>
-	</target>
+        <!-- ================= -->
+        <!-- Top-level targets -->
+        <!-- ================= -->
 
-	<target name="j2ee:deployServices" depends="j2ee:deployDSJBoss5, j2ee:deployDSJBoss7">
-	</target>
-
-	<target name="j2ee:deployBase" depends="j2ee:configure, j2ee:deployServices">
+	<target name="j2ee:deploy" depends="j2ee:deployServices, j2ee:deployDS, j2ee:deployOCSPDS">
 		<copy todir="${jboss.farm.dir}">
 			<fileset dir="${dist.dir}" includes="ejbca.ear"/>
 		</copy>
 		<chmod file="${dist.dir}/ejbca.ear" perm="600"/>
 		<antcall target="notifyDeploymentScanner" />
-	</target>
-	
-	<target name="notifyDeploymentScanner" depends="set-paths" if="jboss7">
-	    <touch file="${jboss.farm.dir}/ejbca.ear.dodeploy" />
-	</target>
-
-	<!-- This target takes the current deployed ear and stores it in ejbca.old -->
-	<target name="j2ee:cacheDeployable">
-		<move file="${jboss.farm.dir}/ejbca.ear" tofile="${jboss.farm.dir}/ejbca.old"/>
-	</target>
-
-	<target name="j2ee:unCacheDeployable">
-		<move file="${jboss.farm.dir}/ejbca.old" tofile="${jboss.farm.dir}/ejbca.ear"/>
-	</target>
-
-	<target name="j2ee:deploy" if="ocsp-datasource.jndi-name" depends="j2ee:deployBase">
-		<!-- deploy base handles ejbca, here we check if we should deploy a datasource to an external va responder -->
-		<copy todir="${jboss.farm.dir}" overwrite="true">
-			<fileset dir="src/appserver/jboss">
-				<include name="ocsp-ds.xml"/>
-			</fileset>
-			<filterchain>
-				<expandproperties/>
-			</filterchain>
-		</copy>
-		<chmod file="${jboss.farm.dir}/ocsp-ds.xml" perm="600"/>
 	</target>
 
 	<target name="j2ee:deploy-scep-war" depends="j2ee:check">
@@ -221,28 +288,13 @@
 		<copy todir="${tomcat.dir}" overwrite="true" file="dist/externalra-gui/server.xml"/>
 	</target>
 
-	<target name="j2ee:vabasewebdeploy" if="j2ee.web-noconfigure">
-		<!-- Deploys a standard http setup for JBoss, without SSL -->
-		<property name="definitions_away_begin" value="&#x3C;!--" />
-		<property name="definitions_away_end" value="-->" />
-		<antcall target="deploytomcat" />
-	</target>
-
-	<target name="j2ee:deployva" depends="j2ee:vabasewebdeploy, j2ee:configure">
-		<copy todir="${jboss.farm.dir}" overwrite="true">
-			<fileset dir="src/appserver/jboss">
-				<include name="ejbca-ds.xml"/>
-			</fileset>
-			<filterchain>
-				<expandproperties/>
-			</filterchain>
-		</copy>
-		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600"/>
-
+	<target name="j2ee:deployva" depends="set-paths">
+                <antcall target="j2ee:deployDS" />
 		<copy todir="${jboss.farm.dir}">
 			<fileset dir="${va-dist.dir}" includes="ejbca.ear"/>
 		</copy>
 		<chmod file="${jboss.farm.dir}/ejbca.ear" perm="600"/>
+		<antcall target="notifyDeploymentScanner" />
 	</target>
 
 
@@ -254,9 +306,6 @@
 		</waitfor>
 		<fail message="Please start J2EE server before running this script" if="j2ee.notrunning"/>
 	</target>
-
-
-
 
 	<target name="j2ee:run" description="Start the J2EE server">
 		<j2ee-server classname="org.jboss.Main" classpath="${appserver.home}/bin/run.jar">
@@ -279,8 +328,6 @@
         -->
 	</target>
 
-
-
 	<target name="j2ee:debug" description="Start the J2EE server in debug mode">
 		<property name="j2ee.debug.transport" value="dt_socket"/>
 		<property name="j2ee.debug.address" value="5005"/>
@@ -288,6 +335,10 @@
 		<echo message="Connect your debugger using transport '${j2ee.debug.transport}' and address '${j2ee.debug.address}'"/>
 		<antcall target="j2ee:run"/>
 	</target>
+
+        <!-- ================= -->
+        <!-- Macro definitions -->
+        <!-- ================= -->
 
 	<macrodef name="j2ee-server">
 		<attribute name="classname"/>

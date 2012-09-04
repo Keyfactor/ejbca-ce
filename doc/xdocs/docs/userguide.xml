@@ -739,7 +739,7 @@ Normally the values specified in the fixed certificate profiles are good for the
 <p>
 You can define your own extended key usages very simple. Edit the file EJBCA_HOME/conf/extendedkeyusage.properties and add your custom 
 extended key usages in the end. Be sure to follow the numbering. 
-After editing the file, simply build and re-deploy EJBCA (ant clean; ant bootstrap).
+After editing the file, simply build and re-deploy EJBCA (ant clean; ant deploy).
 </p>
 </subsubsection>
 <subsubsection name="Private Key Usage Period">
@@ -1192,7 +1192,7 @@ To use a certificate issued by an external CA as Administrator:
 <ol>
 <li>Add the CA-certificate to p12/truststore.jks with
 <code>keytool -import -trustcacerts -file externalca.pem -keystore p12/truststore.jks -storepass changeit -alias externalca</code></li>
-<li>Redeploy EJBCA (ant deploy) and restart the application server to make sure the new
+<li>Redeploy EJBCA truststore (ant deploy-keystore) and restart the application server to make sure the new
 truststore is in use</li>
 <li>Import the CA-certificate under "Admin GUI - Edit Certificate Authorities
  - Import CA Certificate.." or use the CLI</li>
@@ -1205,7 +1205,7 @@ web.reqcertindb=false in conf/web.properties.</li>
 <subsubsection name="Installing EJBCA with external administrators">
 <p>
 You can even install an EJBCA instance from scratch, with a certificate from an external CA as the initial SuperAdmin certificate. 
-Start with bootstrapping EJBCA as usual with 'ant bootstrap', but instead of running 'ant install' you run:
+Start with deploying EJBCA as usual with 'ant deploy', but instead of running 'ant install' you run:
 </p>
 <source>
 bin/ejbca.sh ca importcacert AdminCA adminca.pem -initauthorization
@@ -1213,7 +1213,7 @@ bin/ejbca.sh ca importcacert AdminCA adminca.pem -initauthorization
 <p>
 This command imports the certificate of the external Administration CA and initializes the authorization system of EJBCA. 
 You need to configure SSL and the truststore of the application server yourself, or if you have a p12/tomcat.jks and
-p12/truststore.jks this can be done for you on JBoss by 'ant deploy'.   
+p12/truststore.jks this can be done for you on JBoss by 'ant web-configure' and 'ant deploy-keystore'.
 </p><p>
 The initial administrator that is set up has DN 'CN=SuperAdmin', but you can change this using the -superadmincn (run 'bin/ejbca.sh ca importcacert' for documentation).
 Also check the 'bin/ejbca.sh admins' command for information how to configure other admins.
@@ -1563,7 +1563,7 @@ To restore:
 <li>Restore database</li>
 <lI>Unzip new EJBCA</lI>
 <li>Restore conf and p12</li>
-<li>Run "ant deploy" to configure JBoss and deploy EJBCA. If you are using another application server, consult the Installation doc for deployment.</li>
+<li>Run "ant deploy", "ant web-configure", and "ant deploy-keystore" to configure JBoss and deploy EJBCA. If you are using another application server, consult the Installation doc for deployment.</li>
 </ul>
 </p>
 <p>

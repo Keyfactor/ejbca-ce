@@ -66,7 +66,7 @@
 
     <faq id="heapSpaceError">
      <question>
-      I get an error with "Java heap space" when building EJBCA (during ant bootstrap).
+      I get an error with "Java heap space" when building EJBCA (during ant deploy).
       </question>
       <answer>
       <p>
@@ -79,7 +79,7 @@
       </p>
       <source>
       export ANT_OPTS=-Xmx=512m
-      ant bootstrap
+      ant deploy
       </source>
       <p>On windows set the environment variable ANT_OPTS to -Xmx=512m, and restart your shell.
       </p>
@@ -100,11 +100,12 @@
       <li>Stop JBoss</li>
       <li>Make sure the database is clean</li>
       <li>Run "ant clean"</li>
-      <li>Run "ant bootstrap"</li>
+      <li>Run "ant deploy"</li>
       <li>Start JBoss and check that it starts without problems</li>
       <li>Run "ant install"</li>
       <li>Stop JBoss and check that it stops without problems</li>
-      <li>Run "ant deploy"</li>
+      <li>Run "ant web-configure"</li>
+      <li>Run "ant deploy-keystore"</li>
       <li>Start JBoss and check that it starts without problems</li>
       <li>Remove the old superadmin.p12 in you browser and import the newly generated one</li>
       </ul>
@@ -113,7 +114,7 @@
     
     <faq id="strangeErrors">
       <question>
-      I get strange errors during 'ant bootstrap' or 'ant install'.
+      I get strange errors during 'ant deploy' or 'ant install'.
       </question>
       <answer>
       <p>

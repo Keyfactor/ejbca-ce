@@ -23,6 +23,8 @@
 	<import file="bin/${appserver.type}.xml" optional="true"/><!-- We might just want to build the clientToolBox with an appserver. -->
 	<import file="./test.xmli" />
 	<import file="./docs.xmli" />
+        <!-- Include the build file which takes care of deprecation detection (for options etc). -->
+        <import file="./deprecation.xml" />
 	<!-- this import is only used by the plugin scheme-->
     <import file="${ejbca.home}/modules/build-properties.xml"/>
 	
@@ -52,21 +54,14 @@
     <target name="build" depends="check-deprecated, fail-unless-appserver-detected, testforgnujava, ejbca.ear" description="Builds EJBCA"/>
 
 	<!--
-	  EJBCA need to be run before the app.server (or the webapp) is fully ssl configured with the keystore
-	  So we are 'bootstrapping' it, the 'j2ee.web-noconfigure' property will skip all the serverside
-	  -->
-    <target name="bootstrap" depends="testforgnujava" description="Bootstrap EJBCA application">
-        <ant target="deploy">
-        	<property name="j2ee.web-noconfigure" value="true"/>
-        </ant>
-    </target>
-
-	<!--
 	  Installs EJBCA by creating an initial CA, configuring the web container and generating certs for
 	  SSL and the super administrator.
 	  -->
     <target name="install" depends="fail-unless-appserver-detected, ejbca-ejb-cli" description="Install EJBCA application (only once)">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
+        <!-- By calling the j2ee targets we make sure that the target calls will succeed, but no changes will be made if web-noconfigure and ssl-noconfiugre properties have been set (unlike the plain web-configure/deploy-keystore targets which will fail hard with an error message). -->
+        <antcall target="j2ee:web-configure"/>
+        <antcall target="j2ee:keystore"/>
     </target>
 	
     <target name="javatruststore" depends="testforgnujava" description="Install RootCA certificate in Java trust store (can be run wih -Dca.name=FooCA -Dtrust.keystore=trust.jks -Dtrust.password=foo123)">
@@ -690,6 +685,47 @@
     <target name="ocsp-deploy" depends="va-deploy" description="Deprecated, use va-deploy instead" >
         <echo message="Deprecated use va-deploy instead." />
     </target>
+
+    <!-- ======================================================================= -->
+    <!-- Configure the web access for application servers.                       -->
+    <!-- ======================================================================= -->
+    <target name="web-configure" description="Set-up the web confiugration for the application server (including changes related to setting-up SSL keystore/truststore).">
+      <fail message="You cannot run the web configuration target since it has been explicitly disabled in the web.properties file.">
+        <condition>
+          <isset property="web-noconfigure" />
+        </condition>
+      </fail>
+      <antcall target="j2ee:web-configure" />
+    </target>
+
+    <!-- ======================================================================= -->
+    <!-- Deploy the keystores to the application server.                         -->
+    <!-- ======================================================================= -->
+    <target name="deploy-keystore" description="Deploy the keystore and truststore for the application server.">
+      <fail message="You cannot run the keystore deployment target since the SSL configuration has been explicitly disabled in the web.properties file.">
+        <condition>
+          <isset property="ssl-noconfigure" />
+        </condition>
+      </fail>
+      <antcall target="j2ee:keystore" />
+    </target>
+
+    <!-- ======================================================================= -->
+    <!-- Deploy the datasources to the application server.                       -->
+    <!-- ======================================================================= -->
+    <target name="deploy-datasource" description="Deploy the datasources for the application server.">
+      <antcall target="j2ee:deployDS" />
+      <antcall target="j2ee:deployOCSPDS" />
+    </target>
+
+    <!-- ======================================================================= -->
+    <!-- Deploy the services to the application server.                          -->
+    <!-- ======================================================================= -->
+    <target name="deploy-service" description="Deploy the services for the application server.">
+      <antcall target="j2ee:deployServices" />
+    </target>
+
+
 	<target name="deploy-test" depends="failinproduction-ca,build, inputDeployPasswords,inputBootstrapAndDeployPasswords" description="Deploy a test version of EJBCA.">		
 		<!-- Build the test EAR -->
 	   	<antcall target="j2ee:deployTestEar"/>
