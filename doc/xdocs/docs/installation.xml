@@ -481,6 +481,70 @@ improve performance.
 See documentation in src/appserver/tomcat60jboss5, and the JBoss documentation for installing the native connector.
 </p> 
 </subsubsection>
+
+<subsubsection name="JBoss 7 General Notes">
+<p>
+Version JBoss AS 7.1.1.Final has been tested with EJBCA, and it should work. There's a couple of caveats and notes you should be aware of:
+<ul>
+<li>You should be using the standalone-full.xml profile</li>
+<li>If you're having problem with HornetQ start-up, try switching to Java NIO with the following commands in JBoss CLI administration tool:
+<pre>
+/subsystem=messaging/hornetq-server=default:write-attribute(name=journal-type,value=NIO)
+:reload
+</pre>
+</li>
+<li>You don't need to start/stop JBoss 7, deployment is done with a live system (in fact you should have the JBoss 7 running at all times).</li>
+<li>Currently the ant install target does not work! You will need to do the install with the JBoss 5 version, and then you can run on top of JBoss 7 by running only the deploy/web-configure/deploy-keystore targets!</li>
+</ul>
+</p>
+</subsubsection>
+
+<subsubsection name="JBoss 7 and MySQL JDBC">
+<p>
+Since the MySQL JDBC driver is not fully JDBC-compliant (mainly because it's not fully SQL92-compliant), it's not enough to just drop the JAR archive into the deployments directory. Instead you will have to perform the following steps:
+<ol>
+<li>Create the necessary directories (relative to JBoss 7 base directory):
+<pre>
+ mkdir -p modules/com/mysql/main/
+</pre>
+</li>
+<li>Place the mysql.jar file in the directory you just created (modules/com/mysql/main/)</li>
+<li>Create the JDBC module configuration file modules/com/mysql/main/module.xml with the following contents:
+<pre>
+&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;module xmlns=&quot;urn:jboss:module:1.0&quot; name=&quot;com.mysql&quot;&gt;
+  &lt;resources&gt;
+    &lt;resource-root path=&quot;mysql.jar&quot;/&gt;
+  &lt;/resources&gt;
+  &lt;dependencies&gt;
+    &lt;module name=&quot;javax.api&quot;/&gt;
+    &lt;module name=&quot;javax.transaction.api&quot;/&gt;
+  &lt;/dependencies&gt;
+&lt;/module&gt;
+<!-- This is the original of above XML text.
+<?xml version="1.0" encoding="UTF-8"?>
+<module xmlns="urn:jboss:module:1.0" name="com.mysql">
+  <resources>
+    <resource-root path="mysql.jar"/>
+  </resources>
+  <dependencies>
+    <module name="javax.api"/>
+    <module name="javax.transaction.api"/>
+  </dependencies>
+</module>
+-->
+</pre>
+</li>
+<li>Register the driver by running the following two commands in the JBoss 7 CLI administration tool:
+<pre>
+/subsystem=datasources/jdbc-driver=com.mysql.jdbc.Driver:add(driver-name=com.mysql.jdbc.Driver,driver-module-name=com.mysql,driver-xa-datasource-class-name=com.mysql.jdbc.jdbc.jdbc2.optional.MysqlXADataSource)
+:reload
+</pre>
+</li>
+</ol>
+</p>
+</subsubsection>
+
 <subsubsection name="JBoss 7 and Oracle JDK BC issues">
 <p>
 When using Oracle JDK and JBoss 7 (Windows platform) you need to install BC jars as a module in JBoss 7.
