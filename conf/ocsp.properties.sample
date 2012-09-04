@@ -152,12 +152,6 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # No default value, must be set if the extension is used
 #ocsp.unidcacert=
 
-# If you are not using SSL on the external OCSP responder (normally not needed for OCSP), you should define
-# this property, e.g. remove the comment sign. See 'Configuring TLS on the Unid lookup server' in the Howto.
-# Note! If defining this property on the EJBCA server, SSL will not be configured there either, and the admin-GUI will not work.
-#j2ee.web-noconfigure=true
-
-
 #------------------- Custom signer used by external OCSP responder------------------------------
 # The used token is referred to as "card" since smart card was the first (and is the only) token a custom signer has been implemented for.
 

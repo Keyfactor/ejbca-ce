@@ -431,7 +431,7 @@ extendedkeyusage.name.24 = CSN369791-TLS-SERVER</source>
 
   <p>If the numbering have changed (i.e. other standard extended key usages have been added) since the publication of this sample, just make sure the numbers (23 and 24)
   are changed to follow consecutive numbering in the file.</p>
-  <p>After this change you simply have to re-deploy ejbca (ant clean; ant bootstrap) and they will show up as selectable values in <i>Certificate Profiles</i> in the EJCBA admin GUI.</p>
+  <p>After this change you simply have to re-deploy ejbca (ant clean; ant deploy) and they will show up as selectable values in <i>Certificate Profiles</i> in the EJCBA admin GUI.</p>
   <p>A SPOC client should use "Client Authentication, CSN369791-TLS-CLIENT" and a SPOC server should use "Server Authentication, CSN369791-TLS-SERVER".</p>
   </subsection>
   </section>

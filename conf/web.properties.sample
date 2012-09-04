@@ -2,6 +2,22 @@
 # When upgrading, the important options are:
 # - httpsserver.password
 
+# If you prefer to manually configure the web settings for your application
+# server, you should uncomment this property. Enabling this option will prevent
+# the 'ant web-configure' command from making any changes to the configuration
+# of your application server (in terms of web settings, like paths etc).
+#web-noconfigure=true
+
+# If you enable this option (by uncommenting it), the 'ant web-configure'
+# command will not set-up the SSL access on your application server. This is
+# required for the OCSP responder or Validation Authority if you only wish to
+# run them on the unencrypted HTTP protocol (which is the most common case). If
+# you wish to use the Unid functionality on the OCSP responder, make sure to
+# also have a look at the 'Configuring TLS on the Unid lookup server' how-t.
+# If you are deploying EJBCA as a certification authority, turning this option
+# on will _prevent_ you from using the administration web interface!
+#ssl-noconfigure=true
+
 # Password for java trust keystore (p12/truststore.jks). Default is changeit
 # This truststore will contain the CA-certificate after running 'ant javatruststore'
 # Run 'ant -Dca.name=FooCA javatruststore' to install the CA-certificate for FooCA instead of the default AdminCA1

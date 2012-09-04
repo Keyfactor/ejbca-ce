@@ -93,7 +93,7 @@ We also assume installation is made in a user account with username "user". In y
 <li>Build and deploy EJBCA to JBoss.
 <ul>
 <li>cd ejbca_4_0_10</li>
-<li>ant bootstrap (just press enter if questions show up)</li>
+<li>ant deploy (just press enter if questions show up)</li>
 </ul>
 </li>
 <li>Open new terminal "jboss" and start JBoss.<br/>
@@ -104,7 +104,6 @@ We also assume installation is made in a user account with username "user". In y
 <li>Go back to terminal "ejbca" and run install to create initial administrator CA.<br/>
 <ul>
 <li>ant install (choose all default values)</li>
-<li>ant deploy</li>
 </ul>
 </li>
 <li>Go back to terminal "jboss" and restart JBoss.<br/>
@@ -322,7 +321,7 @@ ANT_OPTS=-Xmx512m
 2) Open a console and type:
 </p>
 <source>
-ant bootstrap
+ant deploy
 </source>
 <p>it will compile and build EJBCA and deploy it to JBoss. You will be prompted to enter the value for database.password if it has
 not already been defined in database.properties. 
@@ -336,7 +335,7 @@ picking up everything and deploying the ear without errors.
 <source>
 ant install
 </source>
-<p>it will generate all certificates, keys, etc needed to run with an initial CA.
+<p>The command will generate all certificates, keys, etc needed to run with an initial CA, deploy the necessary datasources and services, and configure the servlet container to use the generated keystore and truststore files (which are also copied in the process).
 You will find admin keys in ${ejbca.home}/p12. (do not delete those files!)
 <br/>The command 'ant install' is only run once, when the CA is first installed. It creates lots of things in the database, 
 and can not be run again (it will give an error if you try).
@@ -351,24 +350,14 @@ Instead of creating an initial Admin CA and issuing administrator certificates f
 See <a href="userguide.html#Administrators%20issued%20by%20external%20CAs">Administrators issued by external CAs</a> for more information. This would replace step 4-8, but instead require other steps.
 </note>
 <p>
-5) Stop JBoss (Ctrl+C if you run JBoss in the foreground in a terminal)
+5) Restart JBoss (Ctrl+C if you run JBoss in the foreground in a terminal)
 </p><p>
-6) Type:
-</p>
-<source>
-ant deploy
-</source>
-<p>this will deploy everything again and configure the servlet
-container with the keystore file (this is why we needed to stop the container). You will again be prompted for httpserver.password,
-java.trustpassword and database.password, if these have not been predefined in web.properties and database.proprties respectively.
-</p><p>
-7) Import the certificate from EJBCA_HOME/p12/superadmin.p12 in your web browser. 
+6) Import the certificate from EJBCA_HOME/p12/superadmin.p12 in your web browser. 
 This is the super administrators certificate used to access the admin GUI. 
 Other administrators with specific privileges can be created later on.
 The default password for superadmin.p12 is ejbca, and is configured in web.properties.
 </p><p>
-8) Start JBoss again and go to https://localhost:8443/ejbca/ to access the Admin GUI, 
-or http://localhost:8080/ejbca for the public web pages.
+7) Go to https://localhost:8443/ejbca/ to access the Admin GUI, or http://localhost:8080/ejbca for the public web pages.
 </p><p>
 If you create other CAs that you want to add as acceptable CAs in the SSL server configuration, 
 or if you renew the CA certificate, you can install any CA certificate in the SSL server configuration afterwards 
@@ -933,24 +922,47 @@ There is a property you can change:</p>
 
 <section name="Files deployed">
 <p>
-Here we describe shortly which files are copied during ant bootstrap and ant deploy. These targets only modified files automatically on the JBoss platforms,
+Here we describe shortly which files are copied during various ant targets that are called . These targets only modified files automatically on the JBoss platforms,
 but it will give an indication as well for other platforms what configuration steps are needed.
-</p>
-<p>
-<strong>ant bootstrap</strong>
-<ul>
-<li>deploy/ejbca-ds.xml</li>
-<li>deploy/ejbca-mail-service.xml</li>
-<li>deploy/ejbca.ear</li>
-</ul>
 </p>
 <p>
 <strong>ant deploy</strong>
 <ul>
-<li>Files from ant bootstrap</li>
-<li>conf/keystore/keystore.jk</li>
-<li>conf/keystore/truststore.jks</li>
-<li>deploy/jboss-web.deployer/server.xml</li>
+<li>deploy/ejbca-ds.xml</li>
+<li>deploy/ejbca-mail-service.xml</li>
+<li>deploy/ejbca.ear</li>
+<li>deploy/ocsp-ds.xml (if OCSP datasource is configured)</li>
+</ul>
+</p>
+
+<p>
+    <strong>ant web-configure</strong>
+    <li>deploy/jbossweb.sar/server.xml</li>
+</p>
+
+<p>
+    <strong>ant deploy-keystore</strong>
+    <li>conf/keystore/tomcat.jks</li>
+    <li>conf/keystore/truststore.jks</li>
+</p>
+
+<p>
+    <strong>ant deploy-datasource</strong>
+    <li>deploy/ejbca-ds.xml</li>
+    <li>deploy/ocsp-ds.xml</li>
+</p>
+
+<p>
+    <strong>ant deploy-service</strong>
+    <li>deploy/ejbca-mail-service.xml</li>
+</p>
+
+<p>
+<strong>ant install</strong>
+<ul>
+<li>Files from ant deploy</li>
+<li>Files from ant web-configure</li>
+<li>Files from ant deploy-keystore</li>
 </ul>
 </p>
 </section>
