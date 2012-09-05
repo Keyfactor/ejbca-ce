@@ -6,8 +6,7 @@
 
 
 <% if (!org.ejbca.config.WebConfiguration.getSelfRegistrationEnabled()) { %>
-  <p>Self-registration is disbled. For administrators: You can enable this page
-     with the <code>web.selfreg.enabled</code> setting in <code>web.properties</code>.</p>
+  <p>Self-registration is disbled. For administrators: See the admin guide for instructions on how to configure self-registration.</p>
 <% } else { %>
     <p>Please enter your information below. A request for approval will be sent to your administrator.</p>
 
