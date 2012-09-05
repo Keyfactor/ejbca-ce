@@ -2037,11 +2037,13 @@ Remember to configure mail-server settings in the mail.properties file.
 
 <section name="Self Registration">
 <p>
-It is possible to allow users of the public web to create approval requests for new end-entities (under 'Request Registration'). The type of certificate and the information that the users may enter is controlled by "certificate types", which specify an end-entity profile and a certificate profile to use. Self registration is configured in web.properties, which contains explanations of the configuration directives.
+It is possible to allow users of the public web to create approval requests for new end-entities (under 'Request Registration'). The users' choice of end-entity type and DN fields is confined, for instance it could be limited to end-user certificates with only the name and e-mail fields being available. Setting up self registration consists of two steps: creating end-endity profiles that should be available, and configuring self registration in <code>web.properties</code>.
 </p>
-
 <p>
-The function targets unauthenticated users and the users must be verified by some other mean. For instance, it it possible to auto-generate the password and send it in an e-mail notification (i.e. e-mail validation). See <a href="#Email notifications">Email notifications</a>.
+The available fields are controlled by making DN fields in the end-entity profile <em>modifiable</em> and optionally <em>required</em>. Furthermore, <em>certificate types</em> must be added in <code>web.properties</code> using the <code>web.selfreg.certtypes.<em>&lt;number&gt;</em>.*</code> properties. Each certificate type defines an end-entity profile and a certificate profile that should be available, and what name should be displayed in the user interface. Finally, the property <code>web.selfreg.enabled</code> must be set to true.
+</p>
+<p>
+As this function targets unauthenticated users, the users must be verified by some other mean. For instance, it is possible to auto-generate the password and send it in an e-mail notification (i.e. e-mail validation). See <a href="#Email notifications">Email notifications</a>.
 </p>
 </section>
 
