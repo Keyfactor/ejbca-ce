@@ -9,6 +9,17 @@
   <p>Self-registration is disbled. For administrators: See the admin guide for instructions on how to configure self-registration.</p>
 <% } else { %>
     <p>Please enter your information below. A request for approval will be sent to your administrator.</p>
+    
+    <jsp:useBean id="reg" class="org.ejbca.ui.web.pub.RegisterReqBean" scope="request" />
+    <%
+    reg.checkConfig();
+    %>
+    
+    <c:forEach var="error" items="${reg.errors}">
+        <p><c:out value="${error}" /></p>
+    </c:forEach>
+    
+    <c:if test="${empty reg.errors}">
 
     <form action="reg_details.jsp" method="post">
       <fieldset>
@@ -16,7 +27,6 @@
         
         <label for="certType">Certificate type</label>
         <select name="certType" id="certType" accesskey="t">
-          <jsp:useBean id="reg" class="org.ejbca.ui.web.pub.RegisterReqBean" scope="request" />
           <c:forEach var="certtype" items="${reg.certificateTypes}">
             <option value="<c:out value="${certtype.key}" />"${reg.defaultCertType == certtype.key ? " selected=\"selected\"" : ""}><c:out value="${certtype.value}" /></option>
           </c:forEach>
@@ -29,6 +39,7 @@
       </fieldset>
     </form>
 
+    </c:if>
 <% } %>
 
 

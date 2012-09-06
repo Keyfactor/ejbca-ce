@@ -15,7 +15,14 @@
     <%
     reg.initialize(request);
     %>
-
+    
+    <c:forEach var="error" items="${reg.errors}">
+        <p><c:out value="${error}" /></p>
+    </c:forEach>
+    
+    <c:if test="${empty reg.errors}">
+    
+    
     <p>Please enter your information below. A request for approval will be sent to your administrator.</p>
 
     <form action="reg_submit.jsp" method="post">
@@ -65,6 +72,8 @@
       </fieldset>
     </form>
 
+
+    </c:if>
 <% } %>
 
 

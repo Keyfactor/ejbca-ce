@@ -104,7 +104,7 @@ public class RegisterReqBean {
         String key = "web.selfreg.certtypes."+certType+"."+subproperty;
         String value = EjbcaConfigurationHolder.getString(key);
         if (value == null) {
-            throw new IllegalStateException("property "+key+" not configured");
+            internalError("Configuration property "+key+" not defined");
         }
         return value;
     }
@@ -151,9 +151,28 @@ public class RegisterReqBean {
         return fields;
     }
     
+    private void checkCertEEProfilesExist() {
+        String eeprofName = getCertTypeInfo(certType, "eeprofile");
+        if (eeprofName != null && endEntityProfileSession.getEndEntityProfile(eeprofName) == null) {
+            internalError("End entity profile "+eeprofName+" does not exist. Check web.selfreg.certtypes."+certType+".eeprofile configuration");
+        }
+        
+        String certprofName = getCertTypeInfo(certType, "certprofile");
+        if (certprofName != null && certificateProfileSession.getCertificateProfile(certprofName) == null) {
+            internalError("Certificate profile "+certprofName+" does not exist. Check web.selfreg.certtypes."+certType+".certprofile configuration");
+        }
+    }
+    
+    public void checkConfig() {
+        String s = EjbcaConfigurationHolder.getString("web.selfreg.defaultcerttype");
+        if (s != null && getCertTypeInfo(s, "description") == null) {
+            internalError("Please check the default certificate type. It is configured by web.selfreg.defaultcerttype.");
+        }
+    }
+    
     public void initialize(final HttpServletRequest request) {
         if (!"POST".equalsIgnoreCase(request.getMethod())) {
-            errors.add("Internal error: Invalid request method.");
+            internalError("Internal error: Invalid request method.");
         }
 
         // Get all fields
@@ -170,6 +189,9 @@ public class RegisterReqBean {
         }
         
         certType = request.getParameter("certType");
+        
+        checkConfig();
+        checkCertEEProfilesExist();
         
         // User account
         username = request.getParameter("username");
@@ -210,6 +232,14 @@ public class RegisterReqBean {
         return new ArrayList<String>(errors);
     }
     
+    /**
+     * Adds and logs an internal or configuration error.
+     */
+    public void internalError(String message) {
+        errors.add(message);
+        log.info(message);
+    }
+    
     private String getSubjectDN() {
         boolean first = true;
         StringBuilder sb = new StringBuilder();
@@ -244,7 +274,7 @@ public class RegisterReqBean {
         final EndEntityProfile eeprofile = endEntityProfileSession.getEndEntityProfile(eeProfileId);
         final int caid = eeprofile.getDefaultCA();
         if (caid == -1) {
-            errors.add("The selected end-entity profile does not have any default CA. Please make sure you selected the correct profile and contact your administrator.");
+            internalError("The end-entity profile "+getCertTypeInfo(certType, "eeprofile")+" for cert type "+certType+" does not have any default CA.");
         }
         
         String domainRequirement = eeprofile.getValue(EndEntityProfile.EMAIL, 0);
