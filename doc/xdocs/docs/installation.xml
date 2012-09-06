@@ -482,10 +482,16 @@ See documentation in src/appserver/tomcat60jboss5, and the JBoss documentation f
 </p> 
 </subsubsection>
 
-<subsubsection name="JBoss 7 General Notes">
+<subsubsection name="JBoss 7/EAP 6 General Notes">
 <p>
-Version JBoss AS 7.1.1.Final has been tested with EJBCA, and it should work. There's a couple of caveats and notes you should be aware of:
+Version JBoss AS 7.1.1.Final and EAP 6.0.0 has been tested with EJBCA, and it should work. There's a couple of caveats and notes you should be aware of:
 <ul>
+<li>Start and connect with the JBoss 7/EAP6 cli like this:
+<pre>
+./jboss-cli.sh
+connect
+</pre>
+</li>
 <li>You should be using the standalone-full.xml profile</li>
 <li>If you're having problem with HornetQ start-up, try switching to Java NIO with the following commands in JBoss CLI administration tool:
 <pre>
@@ -499,7 +505,7 @@ Version JBoss AS 7.1.1.Final has been tested with EJBCA, and it should work. The
 </p>
 </subsubsection>
 
-<subsubsection name="JBoss 7 and MySQL JDBC">
+<subsubsection name="JBoss 7/EAP 6 and MySQL JDBC">
 <p>
 Since the MySQL JDBC driver is not fully JDBC-compliant (mainly because it's not fully SQL92-compliant), it's not enough to just drop the JAR archive into the deployments directory. Instead you will have to perform the following steps:
 <ol>
@@ -509,7 +515,7 @@ Since the MySQL JDBC driver is not fully JDBC-compliant (mainly because it's not
 </pre>
 </li>
 <li>Place the mysql.jar file in the directory you just created (modules/com/mysql/main/)</li>
-<li>Create the JDBC module configuration file modules/com/mysql/main/module.xml with the following contents:
+<li>Create the JDBC module configuration file modules/com/mysql/main/module.xml with the following contents (replace mysql.jar with the full name of your jar file for example mysql-connector-java-5.1.18-bin.jar):
 <pre>
 &lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;module xmlns=&quot;urn:jboss:module:1.0&quot; name=&quot;com.mysql&quot;&gt;
