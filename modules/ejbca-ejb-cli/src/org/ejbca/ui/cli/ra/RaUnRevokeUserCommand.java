@@ -30,7 +30,8 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Reactivates a user if the revocation reason is 'on hold'.
+ * Reactivates user's certificates if the revocation reason of user certificates is 'on hold'.
+ * Does not change status of the user itself.
  *
  * @version $Id$
  */
@@ -38,7 +39,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
 
 	public String getMainCommand() { return MAINCOMMAND; }
 	public String getSubCommand() { return "unrevokeuser"; }
-	public String getDescription() { return "Reactivates a user if the revocation reason is 'on hold'"; }
+	public String getDescription() { return "Reactivates a user's certificates if the revocation reason of certificates is 'on hold'. Does not change status of the user itself."; }
 
     public void execute(String[] args) throws ErrorAdminCommandException {
         try {
@@ -52,6 +53,7 @@ public class RaUnRevokeUserCommand extends BaseRaAdminCommand {
     			getLogger().info("Description: " + getDescription());
             	getLogger().info("Usage: " + getCommand() + " <username>");
             	getLogger().info(" A users certificate can unly be unrevoked if the revocation reason is certificate_hold.");
+                getLogger().info(" The user status on the user itself is not changed, it is still revoked. Use setuserstatus command to change status of a user.");
                 return;
             }
             String username = args[1];
