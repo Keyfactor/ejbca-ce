@@ -48,7 +48,7 @@ import org.junit.Test;
 /**
  * System test class for RA adduser and setpwd commands
  * 
- * @version $Id: CaEditPublisherCommandTest.java 14300 2012-03-08 16:07:07Z anatom $
+ * @version $Id$
  */
 public class RaAddUserCommandTest {
 
