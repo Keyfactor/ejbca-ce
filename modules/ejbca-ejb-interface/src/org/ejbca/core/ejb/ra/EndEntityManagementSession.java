@@ -316,8 +316,9 @@ public interface EndEntityManagementSession {
      * If user status is already revoked it still revokes all users certificates, ignoring the ones that are already revoked.
      * @param username the username to revoke.
      * @param reason revocation reason to use in certificate revocations
+     * @throws AlreadyRevokedException if user is revoked and unrevocation is attempted by sending revocation reason NOTREVOKED or REMOVEFROMCRL
      */
-    void revokeUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
+    void revokeUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
 
     /**
      * Same as {@link #revokeCert(Admin, BigInteger, String, int)} but also sets the revocation date.
