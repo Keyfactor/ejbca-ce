@@ -312,11 +312,12 @@ public interface EndEntityManagementSession {
     void revokeAndDeleteUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, RemoveException, NotFoundException;
 
     /**
-     * Method that revokes a user.
+     * Method that revokes a user. Revokes all users certificates and then sets user status to revoked.
+     * If user status is already revoked it still revokes all users certificates, ignoring the ones that are already revoked.
      * @param username the username to revoke.
-     * @throws AlreadyRevokedException if the certificate was already revoked
+     * @param reason revocation reason to use in certificate revocations
      */
-    void revokeUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException, AlreadyRevokedException;
+    void revokeUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, FinderException, ApprovalException, WaitingForApprovalException;
 
     /**
      * Same as {@link #revokeCert(Admin, BigInteger, String, int)} but also sets the revocation date.

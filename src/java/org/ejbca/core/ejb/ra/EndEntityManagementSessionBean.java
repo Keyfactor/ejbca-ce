@@ -1177,12 +1177,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"));
                     }
                 }
-                try {
-                    revokeUser(admin, username, reason);
-                } catch (AlreadyRevokedException e) {
-                    // This just means that the end entity was revoked before
-                    // this request could be completed. No harm.
-                }
+                revokeUser(admin, username, reason);
             }
         } catch (FinderException e) {
             throw new NotFoundException("User " + username + "not found.");
@@ -1196,7 +1191,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @Override
     public void revokeUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, FinderException,
-            ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
+            ApprovalException, WaitingForApprovalException {
         if (log.isTraceEnabled()) {
             log.trace(">revokeUser(" + username + ")");
         }
@@ -1209,11 +1204,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
             assertAuthorizedToEndEntityProfile(admin, userData.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid);
         }
-        if (userData.getStatus() == EndEntityConstants.STATUS_REVOKED) {
-            final String msg = intres.getLocalizedMessage("ra.errorbadrequest", Integer.valueOf(userData.getEndEntityProfileId()));
-            log.info(msg);
-            throw new AlreadyRevokedException(msg);
-        }
+
         // Check if approvals is required.
         final int numOfReqApprovals = getNumOfApprovalRequired(CAInfo.REQ_APPROVAL_REVOCATION, caid, userData.getCertificateProfileId());
         if (numOfReqApprovals > 0) {
