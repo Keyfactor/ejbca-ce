@@ -115,6 +115,7 @@ public class BatchMakeP12Test extends CaTestCase {
         log.trace("<test02MakeP12()");
     }
 
+    @Override
     public String getRoleName() {
         return this.getClass().getSimpleName(); 
     }
