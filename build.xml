@@ -734,7 +734,7 @@
     <!-- ======================================================================= -->
     <!-- Renew the keystore used by the web interface on the application server. -->
     <!-- ======================================================================= -->
-    <target name="renew-keystore" depends="inputDeployPasswords" description="Renews the keystore for the application server web interface. Don't forget to deploy the new keystore afterwards. The old keystore in p12/tomcat.jks will be overwritten.">
+    <target name="renew-keystore" depends="inputKeystorePassword" description="Renews the keystore for the application server web interface. Don't forget to deploy the new keystore afterwards. The old keystore in p12/tomcat.jks will be overwritten.">
       <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:renew-keystore" />
     </target>
 
