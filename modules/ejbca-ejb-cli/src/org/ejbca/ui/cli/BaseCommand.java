@@ -88,7 +88,7 @@ public abstract class BaseCommand implements CliCommandPlugin {
         }
     }
     
-    protected Logger getLogger() {
+    public Logger getLogger() {
         if (log == null) {
             log = Logger.getLogger(this.getClass());
         }
