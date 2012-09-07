@@ -1177,7 +1177,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         throw new WaitingForApprovalException(intres.getLocalizedMessage("ra.approvalrevoke"));
                     }
                 }
-                revokeUser(admin, username, reason);
+                try {
+                    revokeUser(admin, username, reason);
+                } catch (AlreadyRevokedException e) {
+                    // This just means that the end entity was revoked before
+                    // this request could be completed. No harm.
+                }
             }
         } catch (FinderException e) {
             throw new NotFoundException("User " + username + "not found.");
@@ -1191,7 +1196,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     @Override
     public void revokeUser(AuthenticationToken admin, String username, int reason) throws AuthorizationDeniedException, FinderException,
-            ApprovalException, WaitingForApprovalException {
+            ApprovalException, WaitingForApprovalException, AlreadyRevokedException {
         if (log.isTraceEnabled()) {
             log.trace(">revokeUser(" + username + ")");
         }
@@ -1203,6 +1208,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         assertAuthorizedToCA(admin, caid);
         if (getGlobalConfiguration().getEnableEndEntityProfileLimitations()) {
             assertAuthorizedToEndEntityProfile(admin, userData.getEndEntityProfileId(), AccessRulesConstants.REVOKE_RIGHTS, caid);
+        }
+
+        if ((userData.getStatus() == EndEntityConstants.STATUS_REVOKED) && ((reason == RevokedCertInfo.NOT_REVOKED) || (reason == RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL)) ){
+            final String msg = intres.getLocalizedMessage("ra.errorbadrequest", Integer.valueOf(userData.getEndEntityProfileId()));
+            log.info(msg);
+            throw new AlreadyRevokedException(msg);
         }
 
         // Check if approvals is required.
