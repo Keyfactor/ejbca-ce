@@ -107,7 +107,7 @@
     <entity class="org.cesecore.certificates.ca.CAData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="caId"><column name="cAId" column-definition="INT(11)"/></id>
-            <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR(250) BINARY"/></basic>
+            <basic fetch="EAGER" name="name"><column name="name" column-definition="VARCHAR(250) BINARY" unique="true"/></basic>
             <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="VARCHAR(250) BINARY"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="INT(11)" nullable="false"/></basic>
             <basic fetch="EAGER" name="expireTime"><column name="expireTime" column-definition="BIGINT(20)" nullable="false"/></basic>

@@ -117,7 +117,7 @@
     <entity class="org.cesecore.certificates.ca.CAData" access="PROPERTY" metadata-complete="false">
         <attributes>
             <id name="caId"><column name="cAId" column-definition="INT4"/></id>
-            <basic fetch="EAGER" name="name"><column name="name" column-definition="TEXT"/></basic>
+            <basic fetch="EAGER" name="name"><column name="name" column-definition="TEXT" unique="true"/></basic>
             <basic fetch="EAGER" name="subjectDN"><column name="subjectDN" column-definition="TEXT"/></basic>
             <basic fetch="EAGER" name="status"><column name="status" column-definition="INT4" nullable="false"/></basic>
             <basic fetch="EAGER" name="expireTime"><column name="expireTime" column-definition="INT8" nullable="false"/></basic>
