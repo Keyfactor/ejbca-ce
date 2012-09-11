@@ -33,22 +33,32 @@
         <input type="hidden" name="certType" value="<c:out value="${reg.certType}" />"  />
         <br />
         
-        <c:forEach var="field" items="${reg.modifiableCertFields}">
-            <c:set var="name" value="field_${field.name}" />
+        <!-- Subject DN fields -->
+        <c:forEach var="field" items="${reg.modifiableDNFields}">
+            <c:set var="id" value="dnfield_${field.id}" />
             
-            <label for="<c:out value="${name}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /></label>
+            <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /></label>
             <c:choose>
                 <c:when test='${field.name == "c"}'>
-                    <select name="<c:out value="${name}" />" id="<c:out value="${name}" />" title="<c:out value="${field.description}" />">
+                    <select name="<c:out value="${id}" />" id="<c:out value="${id}" />" title="<c:out value="${field.description}" />">
                       <c:forEach var="country" items="${countrycodes.countriesFromBean}">
                         <option value="<c:out value="${country.code}" />"<c:if test="${field.defaultValue == country.code}"> selected="selected"</c:if>><c:out value="${country.name}" /></option>
                       </c:forEach>
                     </select>
                 </c:when>
                 <c:otherwise>
-                    <input name="<c:out value="${name}" />" id="<c:out value="${name}" />" type="text" size="25" title="<c:out value="${field.description}" />" value="<c:out value="${field.defaultValue}" />" />
+                    <input name="<c:out value="${id}" />" id="<c:out value="${id}" />" type="text" size="25" title="<c:out value="${field.description}" />" value="<c:out value="${field.defaultValue}" />" />
                 </c:otherwise>
             </c:choose>
+            <br />
+        </c:forEach>
+        
+        <!-- Subject alt name fields -->
+        <c:forEach var="field" items="${reg.modifiableAltNameFields}">
+            <c:set var="id" value="altnamefield_${field.id}" />
+            
+            <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /></label>
+            <input name="<c:out value="${id}" />" id="<c:out value="${id}" />" type="text" size="25" title="<c:out value="${field.description}" />" value="<c:out value="${field.defaultValue}" />" />
             <br />
         </c:forEach>
         
