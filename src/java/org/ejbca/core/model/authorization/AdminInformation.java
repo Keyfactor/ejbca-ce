@@ -32,7 +32,7 @@ import java.util.Random;
  */
 public class AdminInformation implements Serializable {
 
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 1L;
 	
 	// Special in JVM random token to authenticate specialuser. 
 	// The token will work _if_ we are running within the same jvm as the service we call (i.e. EJBCA/JBoss server)
