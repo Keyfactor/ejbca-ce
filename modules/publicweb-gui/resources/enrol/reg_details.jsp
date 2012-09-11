@@ -71,7 +71,17 @@
             <c:set var="id" value="altnamefield_${field.id}" />
             
             <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /></label>
-            <input name="<c:out value="${id}" />" id="<c:out value="${id}" />" type="text" size="25" title="<c:out value="${field.description}" />" value="<c:out value="${field.defaultValue}" />" />
+            
+            <c:if test="${field.modifiable}">
+                <input name="<c:out value="${id}" />" id="<c:out value="${id}" />" type="text" size="25" title="<c:out value="${field.description}" />" value="<c:out value="${field.defaultValue}" />" />
+            </c:if>
+            <c:if test="${!field.modifiable}">
+                <select name="<c:out value="${id}" />" id="<c:out value="${id}" />" title="<c:out value="${field.description}" />">
+                  <c:forEach var="value" items="${field.allowedValuesList}">
+                    <option value="<c:out value="${value}" />"><c:out value="${value}" /></option>
+                  </c:forEach>
+                </select>
+            </c:if>
             <br />
         </c:forEach>
         
