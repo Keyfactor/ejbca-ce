@@ -12,7 +12,11 @@
  *************************************************************************/
 package org.ejbca.util;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.cesecore.certificates.util.DnComponents;
@@ -26,27 +30,69 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  */
 public final class DNFieldDescriber {
     
-    /** Index in fielddata array */
+    /** Index in dn fields array */
     private final int index;
-    /** EndEntityProfile.FIELDTYPE from fielddata arrays */
+    private final int[] fielddata;
     private final int fieldType;
+    private final boolean fieldModifiable; 
     /** DN codes, e.g. CN, C, O */
     private final String name;
     private final String defaultValue;
     /** DNFieldExtractor.TYPE_ constants. E.g. subjectdn or altname */
     private final int dnAltType;
     
-    public DNFieldDescriber(int index, int fieldType, EndEntityProfile eeprofile, int dnAltType) {
+    private final Map<String,Boolean> allowedValuesMap; // maps to true. Used from .jsp
+    private final List<String> allowedValuesList;
+    
+    public DNFieldDescriber(int index, int[] fielddata, EndEntityProfile eeprofile, int dnAltType) {
         this.index = index;
-        this.fieldType = fieldType;
+        this.fielddata = fielddata;
+        this.fieldType = fielddata[EndEntityProfile.FIELDTYPE];
+        final int fieldNumber = fielddata[EndEntityProfile.NUMBER];
+        this.fieldModifiable = eeprofile.isModifyable(fieldType, fieldNumber);
         this.name = fieldTypeToString(fieldType, dnAltType);
-        this.defaultValue = eeprofile.getValue(fieldType, 0).trim();
+        
+        String value = eeprofile.getValue(fieldType, fieldNumber);
+        if (fieldModifiable) {
+            // A text entry is used in this case
+            this.defaultValue = value.trim();
+            this.allowedValuesMap = null;
+            this.allowedValuesList = null;
+        } else {
+            // A select field with restricted choices
+            this.defaultValue = null;
+            this.allowedValuesMap = new HashMap<String,Boolean>();
+            this.allowedValuesList = new ArrayList<String>();
+            
+            if (!eeprofile.isRequired(fieldType, fieldNumber)) {
+                allowedValuesMap.put("", true);
+                allowedValuesList.add("");
+            }
+            
+            for (String allowed : value.split(";")) {
+                allowed = allowed.trim();
+                allowedValuesMap.put(allowed, true);
+                allowedValuesList.add(allowed);
+            }
+        }
         this.dnAltType = dnAltType;
     }
     
     private static String fieldTypeToString(int fieldType, int dnAltType) {
         String name = DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fieldType), dnAltType);
         return (name != null ? name.replaceAll("=", "").toLowerCase(Locale.ROOT) : null);
+    }
+    
+    public boolean isModifiable() {
+        return fieldModifiable;
+    }
+    
+    public Map<String,Boolean> getAllowedValuesMap() {
+        return allowedValuesMap;
+    }
+    
+    public List<String> getAllowedValuesList() {
+        return allowedValuesList;
     }
     
     public String getName() {
@@ -72,7 +118,7 @@ public final class DNFieldDescriber {
     }
     
     public String getHumanReadableName() {
-        String langconst = DnComponents.getLanguageConstantFromProfileId(fieldType);
+        String langconst = DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]);
         if (langconst.equals("DN_PKIX_COMMONNAME")) { return "Name"; }
         if (langconst.equals("DN_PKIX_ORGANIZATION")) { return "Organization"; }
         if (langconst.equals("DN_PKIX_COUNTRY")) { return "Country"; } 
