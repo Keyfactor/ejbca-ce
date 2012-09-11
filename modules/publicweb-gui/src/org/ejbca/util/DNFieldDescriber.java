@@ -25,33 +25,68 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
  * @version $Id$
  */
 public final class DNFieldDescriber {
-
-    private final int fieldType;
-    private final String name, defaultValue;
     
-    public DNFieldDescriber(int fieldType, EndEntityProfile eeprofile) {
+    /** Index in fielddata array */
+    private final int index;
+    /** EndEntityProfile.FIELDTYPE from fielddata arrays */
+    private final int fieldType;
+    /** DN codes, e.g. CN, C, O */
+    private final String name;
+    private final String defaultValue;
+    /** DNFieldExtractor.TYPE_ constants. E.g. subjectdn or altname */
+    private final int dnAltType;
+    
+    public DNFieldDescriber(int index, int fieldType, EndEntityProfile eeprofile, int dnAltType) {
+        this.index = index;
         this.fieldType = fieldType;
-        this.name = fieldTypeToString(fieldType).toLowerCase(Locale.ROOT);
+        this.name = fieldTypeToString(fieldType, dnAltType);
         this.defaultValue = eeprofile.getValue(fieldType, 0).trim();
+        this.dnAltType = dnAltType;
     }
     
-    private String fieldTypeToString(int fieldType) {
-        return DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fieldType), DNFieldExtractor.TYPE_SUBJECTDN).replaceAll("=", "");
+    private static String fieldTypeToString(int fieldType, int dnAltType) {
+        String name = DNFieldExtractor.getFieldComponent(DnComponents.profileIdToDnId(fieldType), dnAltType);
+        return (name != null ? name.replaceAll("=", "").toLowerCase(Locale.ROOT) : null);
     }
     
     public String getName() {
         return name;
     }
     
+    public String getId() {
+        return String.valueOf(index);
+    }
+    
+    public static int extractIndexFromId(String id) {
+        return Integer.parseInt(id.split(":")[0]);
+    }
+    
+    public static String extractSubjectDnNameFromId(EndEntityProfile eeprofile, String id) {
+        int i = extractIndexFromId(id);
+        return fieldTypeToString(eeprofile.getSubjectDNFieldsInOrder(i)[EndEntityProfile.FIELDTYPE], DNFieldExtractor.TYPE_SUBJECTDN);
+    }
+    
+    public static String extractSubjectAltNameFromId(EndEntityProfile eeprofile, String id) {
+        int i = extractIndexFromId(id);
+        return fieldTypeToString(eeprofile.getSubjectAltNameFieldsInOrder(i)[EndEntityProfile.FIELDTYPE], DNFieldExtractor.TYPE_SUBJECTALTNAME);
+    }
+    
     public String getHumanReadableName() {
-        if (name.equalsIgnoreCase("cn")) { return "Name"; }
-        if (name.equalsIgnoreCase("o")) { return "Organization"; }
-        if (name.equalsIgnoreCase("c")) { return "Country"; }
-        else { return DnComponents.getLanguageConstantFromProfileId(fieldType).replaceAll("DN_PKIX_", "").toLowerCase(Locale.ROOT); }
+        String langconst = DnComponents.getLanguageConstantFromProfileId(fieldType);
+        if (langconst.equals("DN_PKIX_COMMONNAME")) { return "Name"; }
+        if (langconst.equals("DN_PKIX_ORGANIZATION")) { return "Organization"; }
+        if (langconst.equals("DN_PKIX_COUNTRY")) { return "Country"; } 
+        if (langconst.equals("ALT_PKIX_DNSNAME")) { return "DNS Name"; }
+        if (langconst.equals("ALT_PKIX_IPADDRESS")) { return "IP Address"; }
+        else { return langconst.replaceAll("DN_PKIX_", "").replaceAll("ALT_PKIX_", "").toLowerCase(Locale.ROOT); }
     }
     
     public String getDescription() {
-        return getHumanReadableName()+" ("+name.toUpperCase(Locale.ROOT)+")";
+        if (name != null) {
+            return getHumanReadableName()+" ("+name.toUpperCase(Locale.ROOT)+")";
+        } else {
+            return getHumanReadableName();
+        }
     }
     
     public String getDefaultValue() {
