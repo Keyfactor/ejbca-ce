@@ -137,38 +137,30 @@ public class RegisterReqBean {
     }
     
     /**
-     * Returns a list of all modifiable certificate DN fields in the
+     * Returns a list of all certificate DN fields in the
      * end-entity profile of the given certtype.
      */
-    public List<DNFieldDescriber> getModifiableDNFields() {
+    public List<DNFieldDescriber> getDnFields() {
         List<DNFieldDescriber> fields = new ArrayList<DNFieldDescriber>();
         EndEntityProfile eeprofile = getEndEntityProfile();
         
         int numberofsubjectdnfields = eeprofile.getSubjectDNFieldOrderLength();
         for (int i=0; i < numberofsubjectdnfields; i++) {
             int[] fielddata = eeprofile.getSubjectDNFieldsInOrder(i);
-            int fieldType = fielddata[EndEntityProfile.FIELDTYPE];
-            
-            if (eeprofile.isModifyable(fieldType, 0)) {
-                fields.add(new DNFieldDescriber(i, fieldType, eeprofile, DNFieldExtractor.TYPE_SUBJECTDN));
-            }
+            fields.add(new DNFieldDescriber(i, fielddata, eeprofile, DNFieldExtractor.TYPE_SUBJECTDN));
         }
         
         return fields;
     }
     
-    public List<DNFieldDescriber> getModifiableAltNameFields() {
+    public List<DNFieldDescriber> getAltNameFields() {
         List<DNFieldDescriber> fields = new ArrayList<DNFieldDescriber>();
         EndEntityProfile eeprofile = getEndEntityProfile();
         
         int numberofaltnamefields = eeprofile.getSubjectAltNameFieldOrderLength();
         for (int i=0; i < numberofaltnamefields; i++) {
             int[] fielddata = eeprofile.getSubjectAltNameFieldsInOrder(i);
-            int fieldType = fielddata[EndEntityProfile.FIELDTYPE];
-            
-            if (eeprofile.isModifyable(fieldType, 0)) {
-                fields.add(new DNFieldDescriber(i, fieldType, eeprofile, DNFieldExtractor.TYPE_SUBJECTALTNAME));
-            }
+            fields.add(new DNFieldDescriber(i, fielddata, eeprofile, DNFieldExtractor.TYPE_SUBJECTALTNAME));
         }
         
         return fields;

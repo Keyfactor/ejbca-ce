@@ -34,27 +34,40 @@
         <br />
         
         <!-- Subject DN fields -->
-        <c:forEach var="field" items="${reg.modifiableDNFields}">
+        <c:forEach var="field" items="${reg.dnFields}">
             <c:set var="id" value="dnfield_${field.id}" />
             
             <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /></label>
             <c:choose>
                 <c:when test='${field.name == "c"}'>
+                    <!-- Country field -->
                     <select name="<c:out value="${id}" />" id="<c:out value="${id}" />" title="<c:out value="${field.description}" />">
                       <c:forEach var="country" items="${countrycodes.countriesFromBean}">
-                        <option value="<c:out value="${country.code}" />"<c:if test="${field.defaultValue == country.code}"> selected="selected"</c:if>><c:out value="${country.name}" /></option>
+                        <c:if test="${field.modifiable || field.allowedValuesMap[country.code] != null}">
+                          <option value="<c:out value="${country.code}" />"<c:if test="${field.defaultValue == country.code}"> selected="selected"</c:if>><c:out value="${country.name}" /></option>
+                        </c:if>
                       </c:forEach>
                     </select>
                 </c:when>
                 <c:otherwise>
-                    <input name="<c:out value="${id}" />" id="<c:out value="${id}" />" type="text" size="25" title="<c:out value="${field.description}" />" value="<c:out value="${field.defaultValue}" />" />
+                    <!-- Other field -->
+                    <c:if test="${field.modifiable}">
+                        <input name="<c:out value="${id}" />" id="<c:out value="${id}" />" type="text" size="25" title="<c:out value="${field.description}" />" value="<c:out value="${field.defaultValue}" />" />
+                    </c:if>
+                    <c:if test="${!field.modifiable}">
+                        <select name="<c:out value="${id}" />" id="<c:out value="${id}" />" title="<c:out value="${field.description}" />">
+                          <c:forEach var="value" items="${field.allowedValuesList}">
+                            <option value="<c:out value="${value}" />"><c:out value="${value}" /></option>
+                          </c:forEach>
+                        </select>
+                    </c:if>
                 </c:otherwise>
             </c:choose>
             <br />
         </c:forEach>
         
         <!-- Subject alt name fields -->
-        <c:forEach var="field" items="${reg.modifiableAltNameFields}">
+        <c:forEach var="field" items="${reg.altNameFields}">
             <c:set var="id" value="altnamefield_${field.id}" />
             
             <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /></label>
