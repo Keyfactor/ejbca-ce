@@ -15,9 +15,9 @@ CREATE TABLE AdminEntityData (
     matchType INTEGER NOT NULL,
     matchValue VARCHAR(256),
     matchWith INTEGER NOT NULL,
-    tokenType VARCHAR(256),
     rowProtection VARCHAR,
     rowVersion INTEGER NOT NULL,
+    tokenType VARCHAR(256),
     AdminGroupData_adminEntities INTEGER,
     PRIMARY KEY (pK)
 );
@@ -94,7 +94,8 @@ CREATE TABLE CAData (
     status INTEGER NOT NULL,
     subjectDN VARCHAR(256),
     updateTime BIGINT NOT NULL,
-    PRIMARY KEY (cAId)
+    PRIMARY KEY (cAId),
+    unique (name)
 );
 
 CREATE TABLE CRLData (

@@ -15,9 +15,9 @@ CREATE TABLE AdminEntityData (
     matchType INT4 NOT NULL,
     matchValue TEXT,
     matchWith INT4 NOT NULL,
-    tokenType TEXT,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
+    tokenType TEXT,
     AdminGroupData_adminEntities INT4,
     PRIMARY KEY (pK)
 );
@@ -88,7 +88,7 @@ CREATE TABLE CAData (
     cAId INT4 NOT NULL,
     data TEXT NOT NULL,
     expireTime INT8 NOT NULL,
-    name TEXT,
+    name TEXT unique,
     rowProtection TEXT,
     rowVersion INT4 NOT NULL,
     status INT4 NOT NULL,

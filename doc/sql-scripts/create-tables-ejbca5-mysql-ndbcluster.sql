@@ -17,9 +17,9 @@ CREATE TABLE AdminEntityData (
     matchType INT(11) NOT NULL,
     matchValue VARCHAR(250) BINARY,
     matchWith INT(11) NOT NULL,
-    tokenType VARCHAR(250) BINARY,
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
+    tokenType VARCHAR(250) BINARY,
     AdminGroupData_adminEntities INT(11),
     PRIMARY KEY (pK)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
@@ -90,7 +90,7 @@ CREATE TABLE CAData (
     cAId INT(11) NOT NULL,
     data LONGTEXT NOT NULL,
     expireTime BIGINT(20) NOT NULL,
-    name VARCHAR(250) BINARY,
+    name VARCHAR(250) BINARY unique,
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     status INT(11) NOT NULL,
