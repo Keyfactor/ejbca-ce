@@ -15,9 +15,9 @@ CREATE TABLE AdminEntityData (
     matchType INTEGER NOT NULL,
     matchValue VARCHAR(254),
     matchWith INTEGER NOT NULL,
-    tokenType VARCHAR(254),
     rowProtection CLOB(10K),
     rowVersion INTEGER NOT NULL,
+    tokenType VARCHAR(254),
     AdminGroupData_adminEntities INTEGER,
     PRIMARY KEY (pK)
 );
@@ -99,7 +99,7 @@ CREATE TABLE CAData (
 
 CREATE TABLE CRLData (
     fingerprint VARCHAR(254) NOT NULL,
-    base64Crl CLOB NOT NULL,
+    base64Crl CLOB(100M) NOT NULL,
     cAFingerprint VARCHAR(254) NOT NULL,
     cRLNumber INTEGER NOT NULL,
     deltaCRLIndicator INTEGER NOT NULL,

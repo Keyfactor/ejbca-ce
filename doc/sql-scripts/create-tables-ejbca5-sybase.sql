@@ -2,10 +2,10 @@ CREATE TABLE AccessRulesData (
     pK INTEGER NOT NULL,
     accessRule VARCHAR(255) NOT NULL,
     isRecursive BIT NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     rule_ INTEGER NOT NULL,
-    AdminGroupData_accessRules INTEGER null,
+    AdminGroupData_accessRules INTEGER,
     PRIMARY KEY (pK)
 );
 
@@ -13,19 +13,19 @@ CREATE TABLE AdminEntityData (
     pK INTEGER NOT NULL,
     cAId INTEGER NOT NULL,
     matchType INTEGER NOT NULL,
-    matchValue VARCHAR(255) null,
+    matchValue VARCHAR(255),
     matchWith INTEGER NOT NULL,
-    tokenType VARCHAR(255) null,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
-    AdminGroupData_adminEntities INTEGER null,
+    tokenType VARCHAR(255),
+    AdminGroupData_adminEntities INTEGER,
     PRIMARY KEY (pK)
 );
 
 CREATE TABLE AdminGroupData (
     pK INTEGER NOT NULL,
     adminGroupName VARCHAR(255) NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (pK)
 );
@@ -33,7 +33,7 @@ CREATE TABLE AdminGroupData (
 CREATE TABLE AdminPreferencesData (
     id VARCHAR(255) NOT NULL,
     data IMAGE NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
@@ -47,11 +47,11 @@ CREATE TABLE ApprovalData (
     endEntityProfileId INTEGER NOT NULL,
     expireDate DECIMAL(20,0) NOT NULL,
     remainingApprovals INTEGER NOT NULL,
-    reqAdminCertIssuerDn VARCHAR(255) null,
-    reqAdminCertSn VARCHAR(255) null,
+    reqAdminCertIssuerDn VARCHAR(255),
+    reqAdminCertSn VARCHAR(255),
     requestData TEXT NOT NULL,
     requestDate DECIMAL(20,0) NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     status INTEGER NOT NULL,
     PRIMARY KEY (id)
@@ -59,17 +59,17 @@ CREATE TABLE ApprovalData (
 
 CREATE TABLE AuditRecordData (
     pk VARCHAR(255) NOT NULL,
-    additionalDetails TEXT null,
+    additionalDetails TEXT,
     authToken VARCHAR(255) NOT NULL,
-    customId VARCHAR(255) null,
+    customId VARCHAR(255),
     eventStatus VARCHAR(255) NOT NULL,
     eventType VARCHAR(255) NOT NULL,
     module VARCHAR(255) NOT NULL,
     nodeId VARCHAR(255) NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
-    searchDetail1 VARCHAR(255) null,
-    searchDetail2 VARCHAR(255) null,
+    searchDetail1 VARCHAR(255),
+    searchDetail2 VARCHAR(255),
     sequenceNumber DECIMAL(20,0) NOT NULL,
     service VARCHAR(255) NOT NULL,
     timeStamp DECIMAL(20,0) NOT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE AuditRecordData (
 CREATE TABLE AuthorizationTreeUpdateData (
     pK INTEGER NOT NULL,
     authorizationTreeUpdateNumber INTEGER NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (pK)
 );
@@ -88,11 +88,11 @@ CREATE TABLE CAData (
     cAId INTEGER NOT NULL,
     data TEXT NOT NULL,
     expireTime DECIMAL(20,0) NOT NULL,
-    name VARCHAR(255) null,
-    rowProtection TEXT null,
+    name VARCHAR(255) unique,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     status INTEGER NOT NULL,
-    subjectDN VARCHAR(255) null,
+    subjectDN VARCHAR(255),
     updateTime DECIMAL(20,0) NOT NULL,
     PRIMARY KEY (cAId)
 );
@@ -105,7 +105,7 @@ CREATE TABLE CRLData (
     deltaCRLIndicator INTEGER NOT NULL,
     issuerDN VARCHAR(255) NOT NULL,
     nextUpdate DECIMAL(20,0) NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     thisUpdate DECIMAL(20,0) NOT NULL,
     PRIMARY KEY (fingerprint)
@@ -114,7 +114,7 @@ CREATE TABLE CRLData (
 CREATE TABLE CertReqHistoryData (
     fingerprint VARCHAR(255) NOT NULL,
     issuerDN VARCHAR(255) NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     serialNumber VARCHAR(255) NOT NULL,
     timestamp DECIMAL(20,0) NOT NULL,
@@ -125,23 +125,23 @@ CREATE TABLE CertReqHistoryData (
 
 CREATE TABLE CertificateData (
     fingerprint VARCHAR(255) NOT NULL,
-    base64Cert TEXT null,
-    cAFingerprint VARCHAR(255) null,
+    base64Cert TEXT,
+    cAFingerprint VARCHAR(255),
     certificateProfileId INTEGER NOT NULL,
     expireDate DECIMAL(20,0) NOT NULL,
     issuerDN VARCHAR(255) NOT NULL,
     revocationDate DECIMAL(20,0) NOT NULL,
     revocationReason INTEGER NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     serialNumber VARCHAR(255) NOT NULL,
     status INTEGER NOT NULL,
     subjectDN VARCHAR(255) NOT NULL,
-    subjectKeyId VARCHAR(255) null,
-    tag VARCHAR(255) null,
+    subjectKeyId VARCHAR(255),
+    tag VARCHAR(255),
     type INTEGER NOT NULL,
     updateTime DECIMAL(20,0) NOT NULL,
-    username VARCHAR(255) null,
+    username VARCHAR(255),
     PRIMARY KEY (fingerprint)
 );
 
@@ -149,7 +149,7 @@ CREATE TABLE CertificateProfileData (
     id INTEGER NOT NULL,
     certificateProfileName VARCHAR(255) NOT NULL,
     data IMAGE NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
@@ -158,7 +158,7 @@ CREATE TABLE EndEntityProfileData (
     id INTEGER NOT NULL,
     data IMAGE NOT NULL,
     profileName VARCHAR(255) NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
@@ -166,14 +166,14 @@ CREATE TABLE EndEntityProfileData (
 CREATE TABLE GlobalConfigurationData (
     configurationId VARCHAR(255) NOT NULL,
     data IMAGE NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (configurationId)
 );
 
 CREATE TABLE HardTokenCertificateMap (
     certificateFingerprint VARCHAR(255) NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     tokenSN VARCHAR(255) NOT NULL,
     PRIMARY KEY (certificateFingerprint)
@@ -182,13 +182,13 @@ CREATE TABLE HardTokenCertificateMap (
 CREATE TABLE HardTokenData (
     tokenSN VARCHAR(255) NOT NULL,
     cTime DECIMAL(20,0) NOT NULL,
-    data IMAGE null,
+    data IMAGE,
     mTime DECIMAL(20,0) NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
-    significantIssuerDN VARCHAR(255) null,
+    significantIssuerDN VARCHAR(255),
     tokenType INTEGER NOT NULL,
-    username VARCHAR(255) null,
+    username VARCHAR(255),
     PRIMARY KEY (tokenSN)
 );
 
@@ -197,16 +197,16 @@ CREATE TABLE HardTokenIssuerData (
     adminGroupId INTEGER NOT NULL,
     alias VARCHAR(255) NOT NULL,
     data IMAGE NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     PRIMARY KEY (id)
 );
 
 CREATE TABLE HardTokenProfileData (
     id INTEGER NOT NULL,
-    data TEXT null,
+    data TEXT,
     name VARCHAR(255) NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     updateCounter INTEGER NOT NULL,
     PRIMARY KEY (id)
@@ -215,9 +215,9 @@ CREATE TABLE HardTokenProfileData (
 CREATE TABLE HardTokenPropertyData (
     id VARCHAR(255) NOT NULL,
     property VARCHAR(255) NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
-    value VARCHAR(255) null,
+    value VARCHAR(255),
     PRIMARY KEY (id,
     property)
 );
@@ -227,18 +227,18 @@ CREATE TABLE KeyRecoveryData (
     issuerDN VARCHAR(255) NOT NULL,
     keyData TEXT NOT NULL,
     markedAsRecoverable BIT NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
-    username VARCHAR(255) null,
+    username VARCHAR(255),
     PRIMARY KEY (certSN,
     issuerDN)
 );
 
 CREATE TABLE PublisherData (
     id INTEGER NOT NULL,
-    data TEXT null,
-    name VARCHAR(255) null,
-    rowProtection TEXT null,
+    data TEXT,
+    name VARCHAR(255),
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     updateCounter INTEGER NOT NULL,
     PRIMARY KEY (id)
@@ -246,25 +246,25 @@ CREATE TABLE PublisherData (
 
 CREATE TABLE PublisherQueueData (
     pk VARCHAR(255) NOT NULL,
-    fingerprint VARCHAR(255) null,
+    fingerprint VARCHAR(255),
     lastUpdate DECIMAL(20,0) NOT NULL,
     publishStatus INTEGER NOT NULL,
     publishType INTEGER NOT NULL,
     publisherId INTEGER NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     timeCreated DECIMAL(20,0) NOT NULL,
     tryCounter INTEGER NOT NULL,
-    volatileData TEXT null,
+    volatileData TEXT,
     PRIMARY KEY (pk)
 );
 
 CREATE TABLE ServiceData (
     id INTEGER NOT NULL,
-    data TEXT null,
+    data TEXT,
     name VARCHAR(255) NOT NULL,
     nextRunTimeStamp DECIMAL(20,0) NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     runTimeStamp DECIMAL(20,0) NOT NULL,
     PRIMARY KEY (id)
@@ -273,20 +273,20 @@ CREATE TABLE ServiceData (
 CREATE TABLE UserData (
     username VARCHAR(255) NOT NULL,
     cAId INTEGER NOT NULL,
-    cardNumber VARCHAR(255) null,
+    cardNumber VARCHAR(255),
     certificateProfileId INTEGER NOT NULL,
-    clearPassword VARCHAR(255) null,
+    clearPassword VARCHAR(255),
     endEntityProfileId INTEGER NOT NULL,
-    extendedInformationData TEXT null,
+    extendedInformationData TEXT,
     hardTokenIssuerId INTEGER NOT NULL,
-    keyStorePassword VARCHAR(255) null,
-    passwordHash VARCHAR(255) null,
-    rowProtection TEXT null,
+    keyStorePassword VARCHAR(255),
+    passwordHash VARCHAR(255),
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     status INTEGER NOT NULL,
-    subjectAltName VARCHAR(255) null,
-    subjectDN VARCHAR(255) null,
-    subjectEmail VARCHAR(255) null,
+    subjectAltName VARCHAR(255),
+    subjectDN VARCHAR(255),
+    subjectEmail VARCHAR(255),
     timeCreated DECIMAL(20,0) NOT NULL,
     timeModified DECIMAL(20,0) NOT NULL,
     tokenType INTEGER NOT NULL,
@@ -296,9 +296,9 @@ CREATE TABLE UserData (
 
 CREATE TABLE UserDataSourceData (
     id INTEGER NOT NULL,
-    data TEXT null,
+    data TEXT,
     name VARCHAR(255) NOT NULL,
-    rowProtection TEXT null,
+    rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     updateCounter INTEGER NOT NULL,
     PRIMARY KEY (id)

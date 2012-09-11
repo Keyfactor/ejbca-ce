@@ -15,9 +15,9 @@ CREATE TABLE AdminEntityData (
     matchType NUMBER(10) NOT NULL,
     matchValue VARCHAR2(255 byte),
     matchWith NUMBER(10) NOT NULL,
-    tokenType VARCHAR2(255 byte),
     rowProtection CLOB,
     rowVersion NUMBER(10) NOT NULL,
+    tokenType VARCHAR2(255 byte),
     AdminGroupData_adminEntities NUMBER(10),
     PRIMARY KEY (pK)
 );
@@ -88,7 +88,7 @@ CREATE TABLE CAData (
     cAId NUMBER(10) NOT NULL,
     data CLOB NOT NULL,
     expireTime NUMBER(19) NOT NULL,
-    name VARCHAR2(255 byte),
+    name VARCHAR2(255 byte) unique,
     rowProtection CLOB,
     rowVersion NUMBER(10) NOT NULL,
     status NUMBER(10) NOT NULL,
