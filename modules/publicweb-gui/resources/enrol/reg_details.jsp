@@ -49,6 +49,17 @@
                       </c:forEach>
                     </select>
                 </c:when>
+                <c:when test='${field.name == "e"}'>
+                    <!-- E-mail -->
+                    <c:if test="${!field.required}">
+                        <input type="checkbox" name="emailindn" value="1" />
+                    </c:if>
+                    <c:if test="${field.required}">
+                        <input type="checkbox" checked="checked" disabled="disabled" />
+                        <input type="hidden" name="emailindn" value="1" />
+                    </c:if>
+                    Include e-mail
+                </c:when>
                 <c:otherwise>
                     <!-- Other field -->
                     <c:if test="${field.modifiable}">
@@ -87,14 +98,32 @@
         
         <br />
         
+        <!-- Username -->
         <label for="username">Username</label>
         <input name="username" id="username" type="text" size="20" accesskey="u" />
         <br />
+        
+        <!-- E-mail -->
         <label for="email">E-mail</label>
         <input name="email" id="email" type="text" size="25" accesskey="e" />
+        <c:choose>
+            <c:when test='${reg.emailDomainFrozen}'>
+                <b>@ <c:out value="${reg.selectableEmailDomains[0]}" /></b>
+                <input name="emaildomain" id="emaildomain" type="hidden" value="<c:out value="${reg.selectableEmailDomains[0]}" />" />
+            </c:when>
+            <c:when test='${reg.emailDomainSelectable}'>
+                <b>@</b>
+                <select name="emaildomain">
+                    <c:forEach var="domain" items="${reg.selectableEmailDomains}">
+                        <option value="<c:out value="${domain}" />"><c:out value="${domain}" /></option>
+                    </c:forEach>
+                </select>
+            </c:when>
+        </c:choose>
         <br />
         <br />
         
+        <!-- CAPTCHA -->
         <b>Prevention of automatic registration (CAPTCHA)</b><br />
         <label for="code" style="font-size: 85%">Last character in username</label>
         <input name="code" id="code" type="text" size="3" accesskey="t" />
