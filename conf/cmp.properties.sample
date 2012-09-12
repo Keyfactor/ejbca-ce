@@ -177,6 +177,7 @@
 # The certificateProfile to be used when adding users in RA mode. 
 # Possible values are:
 # The name of a Certificate Profile
+# ProfileDefault - use the default certificate profile of the end entity profile used
 # KeyId - use a Certificate Profile with the same name as the KeyId sent in the CMP request (UTF-8 encoding is used)
 #
 # Default: ENDUSER
