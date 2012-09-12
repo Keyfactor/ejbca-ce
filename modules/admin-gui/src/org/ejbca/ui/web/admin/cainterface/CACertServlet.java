@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.util.Base64;
+import org.cesecore.util.CertTools;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.cvc.CardVerifiableCertificate;
 import org.ejbca.ui.web.RequestHelper;
@@ -101,8 +102,11 @@ public class CACertServlet extends HttpServlet {
         
         RequestHelper.setDefaultCharacterEncoding(req);
 
+        // HttpServetRequets.getParameter URLDecodes the value for you
+        // No need to do it manually, that will cause problems with + characters
         String issuerdn = req.getParameter(ISSUER_PROPERTY);
-        
+        issuerdn = CertTools.stringToBCDNString(issuerdn);
+
         String command;
         // Keep this for logging.
         log.debug("Got request from "+req.getRemoteAddr());

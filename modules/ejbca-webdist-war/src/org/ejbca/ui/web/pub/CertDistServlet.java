@@ -144,10 +144,11 @@ public class CertDistServlet extends HttpServlet {
         RequestHelper.setDefaultCharacterEncoding(req);
         String issuerdn = null; 
         if(req.getParameter(ISSUER_PROPERTY) != null){
-          issuerdn = java.net.URLDecoder.decode(req.getParameter(ISSUER_PROPERTY),"UTF-8");
-          issuerdn = CertTools.stringToBCDNString(issuerdn);
+            // HttpServetRequets.getParameter URLDecodes the value for you
+            // No need to do it manually, that will cause problems with + characters
+            issuerdn = req.getParameter(ISSUER_PROPERTY);
+            issuerdn = CertTools.stringToBCDNString(issuerdn);
         }    
-        
 		int caid = 0; 
 		if(req.getParameter(CAID_PROPERTY) != null){
 		  caid = Integer.parseInt(req.getParameter(CAID_PROPERTY));
@@ -192,7 +193,9 @@ public class CertDistServlet extends HttpServlet {
                 return;
             }
         } else if (command.equalsIgnoreCase(COMMAND_CERT) || command.equalsIgnoreCase(COMMAND_LISTCERT)) {
-        	String dn = java.net.URLDecoder.decode(req.getParameter(SUBJECT_PROPERTY),"UTF-8");
+            // HttpServetRequets.getParameter URLDecodes the value for you
+            // No need to do it manually, that will cause problems with + characters
+        	String dn = req.getParameter(SUBJECT_PROPERTY);
             if (dn == null) {
                 log.debug("Bad request, no 'subject' arg to 'lastcert' or 'listcert' command.");
                 res.sendError(HttpServletResponse.SC_BAD_REQUEST, "Usage command=lastcert/listcert?subject=<subjectdn>.");

@@ -87,7 +87,10 @@ public class GetCRLServlet extends HttpServlet {
         RequestHelper.setDefaultCharacterEncoding(req);
         String issuerdn = null; 
         if(req.getParameter(ISSUER_PROPERTY) != null){
-          issuerdn = java.net.URLDecoder.decode(req.getParameter(ISSUER_PROPERTY),"UTF-8");
+            // HttpServetRequets.getParameter URLDecodes the value for you
+            // No need to do it manually, that will cause problems with + characters
+            issuerdn = req.getParameter(ISSUER_PROPERTY);
+            issuerdn = CertTools.stringToBCDNString(issuerdn);
         }
         
         String command;
