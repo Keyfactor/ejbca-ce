@@ -70,6 +70,7 @@ public class RegisterReqBean {
     private String subjectAltName = "";
     
     private String certType;
+    private EndEntityProfile eeprofile; // of cert type
     
     private String username;
     private String email;
@@ -142,7 +143,6 @@ public class RegisterReqBean {
      */
     public List<DNFieldDescriber> getDnFields() {
         List<DNFieldDescriber> fields = new ArrayList<DNFieldDescriber>();
-        EndEntityProfile eeprofile = getEndEntityProfile();
         
         int numberofsubjectdnfields = eeprofile.getSubjectDNFieldOrderLength();
         for (int i=0; i < numberofsubjectdnfields; i++) {
@@ -155,7 +155,6 @@ public class RegisterReqBean {
     
     public List<DNFieldDescriber> getAltNameFields() {
         List<DNFieldDescriber> fields = new ArrayList<DNFieldDescriber>();
-        EndEntityProfile eeprofile = getEndEntityProfile();
         
         int numberofaltnamefields = eeprofile.getSubjectAltNameFieldOrderLength();
         for (int i=0; i < numberofaltnamefields; i++) {
@@ -164,6 +163,23 @@ public class RegisterReqBean {
         }
         
         return fields;
+    }
+    
+    public boolean isEmailDomainFrozen() {
+        if (eeprofile.isModifyable(EndEntityProfile.EMAIL, 0)) return false;
+        String value = eeprofile.getValue(EndEntityProfile.EMAIL, 0);
+        return !value.contains(";");
+    }
+    
+    public boolean isEmailDomainSelectable() {
+        if (eeprofile.isModifyable(EndEntityProfile.EMAIL, 0)) return false;
+        String value = eeprofile.getValue(EndEntityProfile.EMAIL, 0);
+        return value.contains(";");
+    }
+    
+    public String[] getSelectableEmailDomains() {
+        String value = eeprofile.getValue(EndEntityProfile.EMAIL, 0);
+        return value.trim().split(";");
     }
     
     private void checkCertEEProfilesExist() {
@@ -194,7 +210,7 @@ public class RegisterReqBean {
         
         checkConfig();
         checkCertEEProfilesExist();
-        EndEntityProfile eeprofile = getEndEntityProfile();
+        eeprofile = getEndEntityProfile();
 
         // Get all fields
         @SuppressWarnings("rawtypes")
@@ -228,7 +244,13 @@ public class RegisterReqBean {
         // User account
         username = request.getParameter("username");
         email = request.getParameter("email");
+        String domain = request.getParameter("emaildomain");
+        if (domain != null && !email.isEmpty()) email += "@" + domain;
         captcha = request.getParameter("code");
+        
+        if ("1".equals(request.getParameter("emailindn"))) {
+            formDNFields.put("e", email);
+        }
         
         remoteAddress = request.getRemoteAddr();
         initialized = true;
@@ -332,7 +354,7 @@ public class RegisterReqBean {
                 null, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId,
                 null,null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         endEntity.setSendNotification(true);
-        if (email != null && eeprofile.isModifyable("EMAIL", 0)) {
+        if (email != null) {
             endEntity.setEmail(email);
         }
         
