@@ -315,7 +315,9 @@ public class RegisterReqBean {
             throw new IllegalStateException("initialize not called before submit");
         }
         
-        // Set up config for admingui (e.g. for e-mails to admins with links to it) 
+        // Set up config for admingui (e.g. for e-mails to admins with links to it)
+        // This should be OK to do here and to do per request, since it just
+        // sets up some hard-coded config strings, etc.
         globalConfiguration.initializeAdminWeb();
         
         checkFormFields();
