@@ -331,11 +331,6 @@ public class RegisterReqBean {
             internalError("The end-entity profile "+getCertTypeInfo(certType, "eeprofile")+" for cert type "+certType+" does not have any default CA.");
         }
         
-        String domainRequirement = eeprofile.getValue(EndEntityProfile.EMAIL, 0);
-        if (domainRequirement != null && domainRequirement.matches("[^\\s]")) {
-            throw new UnsupportedOperationException("Self-registration does not yet support e-mail domain restrictions in end-entity profiles.");
-        }
-        
         final int certProfileId = getCertificateProfileId();
         
         if (userAdminSession.existsUser(username)) {
