@@ -88,7 +88,7 @@ CREATE TABLE CAData (
     cAId INTEGER NOT NULL,
     data TEXT NOT NULL,
     expireTime BIGINT NOT NULL,
-    name VARCHAR(256) unique,
+    name VARCHAR(256),
     rowProtection TEXT,
     rowVersion INTEGER NOT NULL,
     status INTEGER NOT NULL,

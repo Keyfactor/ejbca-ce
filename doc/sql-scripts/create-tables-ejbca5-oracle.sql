@@ -88,7 +88,7 @@ CREATE TABLE CAData (
     cAId NUMBER(10) NOT NULL,
     data CLOB NOT NULL,
     expireTime NUMBER(19) NOT NULL,
-    name VARCHAR2(255 byte) unique,
+    name VARCHAR2(255 byte),
     rowProtection CLOB,
     rowVersion NUMBER(10) NOT NULL,
     status NUMBER(10) NOT NULL,
