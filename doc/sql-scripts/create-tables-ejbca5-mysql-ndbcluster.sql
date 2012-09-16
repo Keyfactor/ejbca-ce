@@ -90,7 +90,7 @@ CREATE TABLE CAData (
     cAId INT(11) NOT NULL,
     data LONGTEXT NOT NULL,
     expireTime BIGINT(20) NOT NULL,
-    name VARCHAR(250) BINARY unique,
+    name VARCHAR(250) BINARY,
     rowProtection LONGTEXT,
     rowVersion INT(11) NOT NULL,
     status INT(11) NOT NULL,
