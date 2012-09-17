@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,26 +10,15 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp.standalone;
+package org.ejbca.core.ejb.ocsp.standalone;
 
-import java.util.Collection;
+import javax.ejb.Remote;
 
-import javax.ejb.Local;
-
-import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
-import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
-
-/**  
+/**
  * @version $Id$
  *
  */
-@Local
-public interface StandaloneOcspResponseGeneratorSessionLocal extends StandAloneOcspResponseGeneratorSession, OcspResponseGeneratorSessionLocal {
+@Remote
+public interface StandaloneOcspKeyRenewalSessionRemote {
 
-    /**
-     * 
-     * @return the contents of the token and chain cache.
-     */
-    Collection<CryptoTokenAndChain> getCacheValues();
-  
 }

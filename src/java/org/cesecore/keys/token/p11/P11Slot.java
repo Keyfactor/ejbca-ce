@@ -93,12 +93,10 @@ public class P11Slot {
      */
     public void reset() {
         final String mapName = this.sharedLibrary!=null ? new File(this.sharedLibrary).getName() : ONLY_ONE;
-        final Iterator<P11Slot> i = libMap.get(mapName).iterator();
-        while( i.hasNext() ) {
-            Iterator<Integer> i2 = i.next().tokenids.iterator();
-            while( i2.hasNext() ) {
+        for( P11Slot slot : libMap.get(mapName)) {
+            for(Integer tokenId : slot.tokenids ) {
                 try {
-                    tokenMap.get(i2.next()).deactivate();
+                    tokenMap.get(tokenId).deactivate();
                 } catch (Exception e) {
                     log.error("Not possible to deactivate token.", e);
                 }

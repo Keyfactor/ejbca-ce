@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,26 +10,31 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp.standalone;
-
-import java.util.Collection;
+package org.ejbca.core.ejb.ocsp.standalone;
 
 import javax.ejb.Local;
 
-import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
-import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
+import org.ejbca.core.protocol.ws.client.gen.EjbcaWS;
 
-/**  
+/**
  * @version $Id$
  *
  */
 @Local
-public interface StandaloneOcspResponseGeneratorSessionLocal extends StandAloneOcspResponseGeneratorSession, OcspResponseGeneratorSessionLocal {
+public interface StandaloneOcspKeyRenewalSessionLocal {
 
+    static final String RENEW_ALL_KEYS = "all";
+    
     /**
+     * This method causes the standalone OCSP responder to renew its keystores. 
      * 
-     * @return the contents of the token and chain cache.
+     * @param signerSubjectDN subject DN of the signing key to be renewed. The string "all" (as represented by the constant 
+     * TokenAndChainCache.RENEW_ALL_KEYS) will result 
+     * 
      */
-    Collection<CryptoTokenAndChain> getCacheValues();
-  
+    void renewKeyStores(String signerSubjectDN);
+    
+
+    void setEjbcaWs(EjbcaWS ejbcaWS);
+
 }

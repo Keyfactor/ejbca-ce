@@ -363,6 +363,8 @@
 		<exclude name="org/cesecore/core/ejb/ca/crl/CrlStandAloneSessionBean.java" />
 		<exclude name="org/ejbca/cesecoreintegration/StandAloneVaMockSessionBean.java" />
 		<exclude name="org/cesecore/certificates/ocsp/standalone/**/*.java" />
+		<exclude name="org/ejbca/core/ejb/ocsp/standalone/**/*.java" />
+		<exclude name="org/ejbca/core/protocol/ocsp/standalone/**.java" />
 		<!-- Samples should never be included.. -->
 		<exclude name="org/ejbca/samples/**/*.java" />
 		<!-- Some common classes used by various components.. TODO: If possible, move to the only component using the class.. -->
@@ -541,6 +543,7 @@
 			<include name="org/cesecore/certificates/certificate/CertificateStoreSessionBean.java" />
 			<include name="org/cesecore/certificates/crl/CrlStoreSessionBean.java" />
 			<include name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionBean.java" />
+			<include name="org/ejbca/core/ejb/ocsp/standalone/StandaloneOcspKeyRenewalSessionBean.java" />
 			<include name="org/ejbca/cesecoreintegration/StandAloneVaMockSessionBean.java" />
 			<include name="org/ejbca/core/ejb/config/HealthCheckSessionBean.java" />
 		</javac>
