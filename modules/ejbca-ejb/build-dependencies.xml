@@ -61,12 +61,14 @@
 					<include name="org/cesecore/certificates/CertificateCreationException.java" />
 					<include name="org/cesecore/certificates/certificate/CertificateConstants.java"/>
 					<include name="org/cesecore/certificates/certificateprofile/CertificateProfileConstants.java"/>
+					<include name="org/cesecore/certificates/ocsp/exception/CryptoProviderException.java"/>
 					<include name="org/cesecore/certificates/util/AlgorithmConstants.java"/>					
 					<include name="org/cesecore/certificates/util/DNFieldExtractor.java"/>
 					<include name="org/cesecore/certificates/util/dn/DNFieldsUtil.java"/>
 					<include name="org/cesecore/config/CesecoreConfiguration.java"/>
 					<include name="org/cesecore/config/ConfigurationHolder.java"/>							
 					<include name="org/cesecore/config/ExtendedKeyUsageConfiguration.java"/>
+					<include name="org/cesecore/config/OcspConfiguration.java"/>
 					<include name="org/cesecore/util/CryptoProviderTools.java"/>				
 					<include name="org/cesecore/util/FileTools.java"/>
 					<include name="org/cesecore/util/Base64.java"/>
@@ -108,6 +110,7 @@
 					<include name="org/cesecore/keys/token/CryptoTokenFactory.java"/>
 					<include name="org/cesecore/keys/token/CryptoTokenOfflineException.java"/>
 					<include name="org/cesecore/keys/token/IllegalCryptoTokenException.java"/>
+					<include name="org/cesecore/keys/token/KeyRenewalFailedException.java"/>
 					<include name="org/cesecore/keys/token/PrivateKeyNotExtractableException.java"/>
 					<include name="org/cesecore/keys/token/p11/*.java"/>
 					<include name="org/cesecore/keys/KeyCreationException.java"/>
@@ -462,7 +465,6 @@
 					<include name="org/cesecore/certificates/certificate/*.java"/>
 					<include name="org/cesecore/certificates/certificate/request/*.java"/>
 					<include name="org/cesecore/certificates/ca/SignRequestException.java"/>
-					<include name="org/ejbca/config/OcspConfiguration.java"/>
 					<!-- Required by external OCSP's LocalCertificateStoreOnlyDataSessionBean -->
 					<include name="org/cesecore/certificates/ca/CAConstants.java"/>					
 					<include name="org/ejbca/core/ejb/ca/store/CertreqHistorySessionBean.java"/>										

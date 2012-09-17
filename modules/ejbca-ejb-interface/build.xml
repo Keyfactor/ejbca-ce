@@ -22,6 +22,7 @@
 
 	<path id="va-compile.classpath">
 		<pathelement location="${mod.va-entity.lib}" />
+		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<path refid="lib.ejbca-util.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.jee.classpath"/>
@@ -61,6 +62,7 @@
 			<include name="org/ejbca/core/ejb/config/HealthCheckSession*.java"/>
 			<include name="org/cesecore/certificates/ocsp/OcspResponseGeneratorSessionLocal.java"/>
 			<include name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSession*.java"/>
+			<include name="org/ejbca/core/ejb/ocsp/standalone/StandaloneOcspKeyRenewalSession*.java" />
         	<include name="org/cesecore/jndi/JndiHelper.java" />
     	</javac>
     </target>
@@ -72,6 +74,7 @@
         <javac srcdir="${src.dir}" destdir="${ejb3.build.dir}" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
         	classpathref="compile.classpath">	
         	<exclude name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSession*.java"/>
+        	<exclude name="org/ejbca/core/ejb/ocsp/standalone/StandaloneOcspKeyRenewalSession*.java" />
         </javac>
     </target>
 	

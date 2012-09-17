@@ -1,6 +1,6 @@
 /*************************************************************************
  *                                                                       *
- *  CESeCore: CE Security Core                                           *
+ *  EJBCA: The OpenSource Certificate Authority                          *
  *                                                                       *
  *  This software is free software; you can redistribute it and/or       *
  *  modify it under the terms of the GNU Lesser General Public           *
@@ -10,26 +10,24 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
-package org.cesecore.certificates.ocsp.standalone;
+package org.ejbca.core.protocol.ocsp;
 
-import java.util.Collection;
+import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.protocol.ocsp.standalone.OcspKeyRenewalProxySessionRemote;
+import org.junit.Test;
 
-import javax.ejb.Local;
-
-import org.cesecore.certificates.ocsp.OcspResponseGeneratorSessionLocal;
-import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
-
-/**  
+/**
  * @version $Id$
  *
  */
-@Local
-public interface StandaloneOcspResponseGeneratorSessionLocal extends StandAloneOcspResponseGeneratorSession, OcspResponseGeneratorSessionLocal {
-
-    /**
-     * 
-     * @return the contents of the token and chain cache.
-     */
-    Collection<CryptoTokenAndChain> getCacheValues();
-  
+public class OcspKeyRenewalTest {
+    
+    OcspKeyRenewalProxySessionRemote ocspKeyRenewalProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(OcspKeyRenewalProxySessionRemote.class);
+    
+    
+    @Test
+    public void testKeyRenewal() {
+        ocspKeyRenewalProxySession.renewKeyStores("CN=ocspTestSigner");
+    }
+   
 }

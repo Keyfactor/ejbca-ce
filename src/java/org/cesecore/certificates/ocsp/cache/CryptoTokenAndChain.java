@@ -14,6 +14,7 @@ package org.cesecore.certificates.ocsp.cache;
 
 import java.io.Serializable;
 import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 
 import org.cesecore.keys.token.CryptoToken;
@@ -49,6 +50,15 @@ public class CryptoTokenAndChain implements Serializable {
         }
     }
 
+    /**
+     * 
+     * @return the public key from this crypto token
+     * @throws CryptoTokenOfflineException if Crypto Token is not available or connected, or key with alias does not exist.
+     */
+    public PublicKey getPublicKey() throws CryptoTokenOfflineException {
+        return cryptoToken.getPublicKey(privateKeyAlias);
+    }
+    
     /**
      * 
      * @return the private key from this crypto token.

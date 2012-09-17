@@ -66,7 +66,7 @@
 	</path>
 	
 	<path id="systemtests-va.classpath">
-		<path refid="systemtests.classpath.nojee"/>
+		<path refid="systemtests.classpath"/>
 		<pathelement location="${mod.va-ejb-interface.lib}"/>
 	</path>
 
@@ -99,6 +99,13 @@
 		<path refid="lib.quickserver.classpath" />
 		<path location="${build.interface.dir}" />
 	</path>
+	
+	<path id="compile-ejb-va.classpath">
+		<path refid="compile-ejb.classpath" />
+		<pathelement location="${mod.va-ejb.lib}"/>
+		<pathelement location="${mod.va-ejb-interface.lib}"/>
+		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
+	</path>
 
 	<target name="build" description="Build this module" depends="build-libs, compile-tests" />
 	
@@ -121,6 +128,7 @@
 			<javac srcdir="${src.interface.dir}" destdir="${build.interface.dir}" debug="on" includeantruntime="no"
 		        	encoding="iso8859-1" classpathref="interfaces.classpath" target="${java.target.version}">
 				<include name="org/cesecore/configuration/CesecoreConfigurationProxySession*.java"/>
+				<include name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySession*.java" />
 			</javac>
 		</target>
 
@@ -128,15 +136,17 @@
 		<mkdir dir="${build.src.dir}" />
 		<javac srcdir="${src.dir}" destdir="${build.src.dir}" debug="on" includeantruntime="no"
 			        	encoding="iso8859-1" classpathref="compile-ejb.classpath" target="${java.target.version}">
+			<exclude name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySessionBean.java" />
 		</javac>
 	</target>
 	
 	<target name="systemtest-compile-src-va" depends="ejbca-properties">
 		<mkdir dir="${build.src.va.dir}" />
 		<javac srcdir="${src.dir}" destdir="${build.src.va.dir}" debug="on" includeantruntime="no"
-					        	encoding="iso8859-1" classpathref="compile-ejb.classpath" target="${java.target.version}">
+					        	encoding="iso8859-1" classpathref="compile-ejb-va.classpath" target="${java.target.version}">
 			<include name="org/cesecore/mock/authentication/tokens/TestAlwaysAllowLocalAuthenticationToken.java"/>
 			<include name="org/cesecore/configuration/CesecoreConfigurationProxySessionBean.java"/>
+			<include name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySessionBean.java" />
 		</javac>
 	</target>
 
@@ -153,11 +163,13 @@
 		<delete file="${test-va-interface.jar}" quiet="true"/>
 		<jar destfile="${test-va-interface.jar}" basedir="${build.interface.dir}">
 			<include name="org/cesecore/configuration/CesecoreConfigurationProxySession*.class"/>
+			<include name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySession*.class" />
 		</jar>
 		<delete file="${test-va.jar}" quiet="true"/>
 		<jar destfile="${test-va.jar}" basedir="${build.src.va.dir}">
 			<include name="org/cesecore/mock/authentication/tokens/TestAlwaysAllowLocalAuthenticationToken.class"/>
 			<include name="org/cesecore/configuration/CesecoreConfigurationProxySessionBean.class"/>
+			<include name="org/ejbca/core/protocol/ocsp/standalone/OcspKeyRenewalProxySession*.class" />
 		</jar>
 	</target>
 
@@ -167,6 +179,7 @@
         	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
 			<exclude name="org/ejbca/core/protocol/xkms/**"/>
 			<exclude name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionTest.java"/>
+			<exclude name="org/ejbca/core/protocol/ocsp/OcspKeyRenewalTest.java"/>
 		</javac>
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no" includejavaruntime="true"
         	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
@@ -186,6 +199,7 @@
 			<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
 	        	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
 				<include name="org/cesecore/certificates/ocsp/standalone/*.java" />
+				<include name="org/ejbca/core/protocol/ocsp/OcspKeyRenewalTest.java" />
 				<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpStandaloneTest.java" />
 				<include name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.java" />	
 			</javac>
@@ -344,6 +358,7 @@
 					<!-- Tests that require special configuration to work -->
 					<exclude name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionTest.class" />
 					<exclude name="org/ejbca/ui/web/pub/AutoEnrollServletTest.class" />
+					<exclude name="org/ejbca/core/protocol/ocsp/OcspKeyRenewalTest.class"/>
 					<exclude name="org/ejbca/core/protocol/cmp/CrmfRAPbeMultipleKeyIdRequestTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolLookupServerHttpTest.class" />
 					<exclude name="org/ejbca/core/protocol/ocsp/ProtocolLookupServerHttpTest$SimpleVerifier.class" />
@@ -597,6 +612,7 @@
 				<fileset dir="${build.test.dir}">
 					<include name="org/cesecore/certificates/ocsp/standalone/*Test.class" />
 					<include name="org/ejbca/core/protocol/ocsp/ProtocolOcspHttpStandaloneTest.class" />
+					<include name="org/ejbca/core/protocol/ocsp/OcspKeyRenewalTest.class" />
 					<include name="org/ejbca/ui/web/pub/cluster/WebOcspHealthCheckTest.class" />					
 				</fileset>
 			</batchtest>
