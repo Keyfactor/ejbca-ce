@@ -434,28 +434,20 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     }
 
     @Override
-    /*
-     * FIXME: Test this method! 
-     */
     public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
         if (role == null) {
             return false;
         }
-
         // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
         for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
             if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {
                 return false;
             }
         }
-        // Secondly, examine all resources in this role and establish access rights
         for (AccessRuleData accessRule : role.getAccessRules().values()) {
             String rule = accessRule.getAccessRuleName();
-            // Check only CA rules
-            if (rule.startsWith(StandardRules.CAACCESS.resource())) {
-                if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, rule)) {
-                    return false;
-                }
+            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, rule)) {
+                return false;
             }
         }
         // Everything's A-OK, role is good.

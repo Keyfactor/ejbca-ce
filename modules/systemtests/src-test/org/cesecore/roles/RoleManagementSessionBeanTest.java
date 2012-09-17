@@ -13,6 +13,7 @@
 package org.cesecore.roles;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -26,7 +27,9 @@ import java.util.Map;
 
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleExistsException;
 import org.cesecore.authorization.rules.AccessRuleManagementTestSessionRemote;
@@ -37,8 +40,11 @@ import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.AccessUserAspectExistsException;
 import org.cesecore.authorization.user.AccessUserAspectManagerTestSessionRemote;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
+import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
 import org.junit.Before;
@@ -59,6 +65,8 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     
     private AuthenticationToken authenticationToken;
+    private AuthenticationToken alwaysAllowAuthenticationToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
+            "RoleManagementSessionBeanTest"));
    
 
     @Before
@@ -288,7 +296,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             roleManagementSession.removeAccessRulesFromRole(authenticationToken, role, accessRulesToRemove);
             assertTrue(accessRuleManagementSession.find(AccessRuleData.generatePrimaryKey(roleName, ruleName)) == null);
         } finally {
-            roleManagementSession.remove(authenticationToken, role);
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, role);
         }
     }
 
@@ -309,8 +317,8 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             }
             assertTrue(caught);
         } finally {
-            roleManagementSession.remove(authenticationToken, kip);
-            roleManagementSession.remove(authenticationToken, cubert);
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, kip);
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, cubert);
         }
     }
     
@@ -346,7 +354,108 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             assertNotNull("Rule to be added was not added", ralph.getAccessRules().get(toBeAdded.getPrimaryKey()));
             assertNull("Rule to be removed was not removed", ralph.getAccessRules().get(toBeRemoved.getPrimaryKey()));
         } finally {
-            roleManagementSession.remove(roleMgmgToken, ralph);
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, ralph);
+        }
+    }
+    
+    /**
+     * This method tests isAuthorizedToEditRoleWithoutAspectAccess for a role not having access to that role's CA
+     */
+    @Test
+    public void testIsAuthorizedToEditRoleWithoutCaAccess() throws RoleNotFoundException, AuthorizationDeniedException, RoleExistsException,
+            AccessUserAspectExistsException {
+        final String momName = "Mom";
+        final String momDn = "CN=Mom";
+        final String agnewName = "Headless Body of Agnew";
+
+        RoleData mom = roleAccessSession.findRole(momName);
+        if (mom != null) {
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, mom);      
+        }
+        mom = roleManagementSession.create(alwaysAllowAuthenticationToken, momName);
+        RoleData headlessBodyofAgnew = roleAccessSession.findRole(agnewName);
+        if (headlessBodyofAgnew != null) {
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, headlessBodyofAgnew);
+        }
+        headlessBodyofAgnew = roleManagementSession.create(alwaysAllowAuthenticationToken, agnewName);
+        final int caId = 1337;
+        try {
+            AccessUserAspectData momAspect = accessUserAspectManagerSession.create(mom, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                    AccessMatchType.TYPE_EQUALCASE, momName);
+            Collection<AccessUserAspectData> momSubjects = new ArrayList<AccessUserAspectData>();
+            momSubjects.add(momAspect);
+            mom = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, mom, momSubjects);
+            AccessUserAspectData agnewAspect = accessUserAspectManagerSession.create(headlessBodyofAgnew, caId,
+                    X500PrincipalAccessMatchValue.WITH_COMMONNAME, AccessMatchType.TYPE_EQUALCASE, agnewName);
+            Collection<AccessUserAspectData> agnewSubjects = new ArrayList<AccessUserAspectData>();
+            agnewSubjects.add(agnewAspect);
+            headlessBodyofAgnew = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, headlessBodyofAgnew, agnewSubjects);
+            AuthenticationToken momAuthenticationToken = createAuthenticationToken(momDn);
+            assertFalse("Authorization should have been denied",
+                    roleManagementSession.isAuthorizedToEditRole(momAuthenticationToken, headlessBodyofAgnew));
+
+        } finally {
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, mom);
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, headlessBodyofAgnew);
+        }
+    }
+    
+    /**
+     * This method tests isAuthorizedToEditRoleWithoutAspectAccess for a role that doesn't have access to another role's rules.
+     * @throws AccessRuleExistsException 
+     */
+    @Test
+    public void testIsAuthorizedToEditRoleWithoutRuleAccess() throws RoleNotFoundException, AuthorizationDeniedException, RoleExistsException,
+            AccessUserAspectExistsException, AccessRuleExistsException {
+        final String momName = "Mom";
+        final String momDn = "CN=Mom";
+        final String agnewName = "Headless Body of Agnew";
+        AuthenticationToken momAuthenticationToken = createAuthenticationToken(momDn);
+        int caId = CertTools.getIssuerDN(((TestX509CertificateAuthenticationToken)momAuthenticationToken).getCertificate()).hashCode();      
+        RoleData mom = roleAccessSession.findRole(momName);
+        if (mom != null) {
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, mom);
+        }
+        mom = roleManagementSession.create(alwaysAllowAuthenticationToken, momName);
+        RoleData headlessBodyofAgnew = roleAccessSession.findRole(agnewName);
+        if (headlessBodyofAgnew != null) {
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, headlessBodyofAgnew);
+        }
+        headlessBodyofAgnew = roleManagementSession.create(alwaysAllowAuthenticationToken, agnewName);
+        try {
+            AccessUserAspectData momAspect = accessUserAspectManagerSession.create(mom, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                    AccessMatchType.TYPE_EQUALCASE, momName);
+            Collection<AccessUserAspectData> momSubjects = new ArrayList<AccessUserAspectData>();
+            momSubjects.add(momAspect);
+            mom = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, mom, momSubjects);
+            Collection<AccessRuleData> momRules = new ArrayList<AccessRuleData>();
+            momRules.add(new AccessRuleData(momName, StandardRules.CAACCESS.resource() + Integer.toString(caId), AccessRuleState.RULE_ACCEPT, true));
+            momRules.add(new AccessRuleData(momName, "/bar", AccessRuleState.RULE_ACCEPT, true));
+            mom = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, mom, momRules);
+           
+            Collection<AccessUserAspectData> agnewSubjects = new ArrayList<AccessUserAspectData>();
+            agnewSubjects.add(accessUserAspectManagerSession.create(headlessBodyofAgnew, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                    AccessMatchType.TYPE_EQUALCASE, agnewName));
+            headlessBodyofAgnew = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, headlessBodyofAgnew, agnewSubjects);            
+            if(!roleManagementSession.isAuthorizedToEditRole(momAuthenticationToken, headlessBodyofAgnew)) {
+                throw new RuntimeException("Authorization should have been allowed");
+            }
+            //Just a quick check that everything works. 
+            Collection<AccessRuleData> agnewRules = new ArrayList<AccessRuleData>();
+            agnewRules.add(accessRuleManagementSession.createRule("/bar", agnewName, AccessRuleState.RULE_ACCEPT, true));
+            headlessBodyofAgnew = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, headlessBodyofAgnew, agnewRules);
+            if(!roleManagementSession.isAuthorizedToEditRole(momAuthenticationToken, headlessBodyofAgnew)) {
+                throw new RuntimeException("Authorization should have been allowed");
+            }
+            
+          //The important bit is here. We add a rule to headlessBodyofAgnew that mom doesn't have access to. 
+            Collection<AccessRuleData> newAgnewRules = new ArrayList<AccessRuleData>();
+            newAgnewRules.add(accessRuleManagementSession.createRule("/foo", agnewName, AccessRuleState.RULE_ACCEPT, true));
+            headlessBodyofAgnew = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, headlessBodyofAgnew, newAgnewRules);
+            assertFalse("Authorization should have been denied", roleManagementSession.isAuthorizedToEditRole(momAuthenticationToken, headlessBodyofAgnew));
+        } finally {
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, mom);
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, headlessBodyofAgnew);
         }
     }
 }

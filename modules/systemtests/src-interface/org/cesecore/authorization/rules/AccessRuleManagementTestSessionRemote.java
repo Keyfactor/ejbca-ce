@@ -17,7 +17,7 @@ import java.util.Collection;
 import javax.ejb.Remote;
 
 /**
- * Local interface for AccessRuleManagement
+ * Remote interface for AccessRuleManagementTestSession
  * 
  * @version $Id$
  *
