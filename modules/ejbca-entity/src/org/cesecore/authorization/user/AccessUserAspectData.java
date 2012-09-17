@@ -195,7 +195,7 @@ public class AccessUserAspectData extends ProtectedData implements AccessUserAsp
             final String matchValue) {
         final int roleNameHash = roleName == null ? 0 : roleName.hashCode();
         final int matchValueHash = matchValue == null ? 0 : matchValue.hashCode();
-        return roleNameHash ^ caId ^ matchWith.getNumericValue() ^ matchValueHash ^ matchType.getNumericValue();
+        return (roleNameHash & matchValueHash) ^ caId ^ matchWith.getNumericValue() ^ matchType.getNumericValue();
     }
 
     @Override
