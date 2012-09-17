@@ -42,8 +42,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.ejb.EJBException;
-
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -1030,7 +1028,7 @@ public class X509CA extends CA implements Serializable {
             crl = crlgen.build(signer);
         } catch (OperatorCreationException e) {
             // Very fatal error
-            throw new EJBException("Can not create Jca content signer: ", e);
+            throw new RuntimeException("Can not create Jca content signer: ", e);
         }
         if (log.isDebugEnabled()) {
             log.debug("Finished signing CRL. Free memory="+Runtime.getRuntime().freeMemory());
@@ -1058,7 +1056,7 @@ public class X509CA extends CA implements Serializable {
             }
         } catch (OperatorCreationException e) {
             // Very fatal error
-            throw new EJBException("Can not create Jca content signer: ", e);
+            throw new RuntimeException("Can not create Jca content signer: ", e);
         } catch (CertException e) {
             throw new SignatureException(e.getMessage(), e);
         }
