@@ -97,6 +97,10 @@ public final class DNFieldDescriber {
         return fieldUse;
     }
     
+    public String getRequiredMarker() {
+        return fieldRequired ? " *" : "";
+    }
+    
     public Map<String,Boolean> getAllowedValuesMap() {
         return allowedValuesMap;
     }

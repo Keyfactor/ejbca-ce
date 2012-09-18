@@ -37,11 +37,14 @@
         <c:forEach var="field" items="${reg.dnFields}">
             <c:set var="id" value="dnfield_${field.id}" />
             
-            <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /></label>
+            <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /><c:out value="${field.requiredMarker}" /></label>
             <c:choose>
                 <c:when test='${field.name == "c"}'>
                     <!-- Country field -->
                     <select name="<c:out value="${id}" />" id="<c:out value="${id}" />" title="<c:out value="${field.description}" />">
+                      <c:if test="${!field.required}">
+                        <option value=""></option>
+                      </c:if>
                       <c:forEach var="country" items="${countrycodes.countriesFromBean}">
                         <c:if test="${field.modifiable || field.allowedValuesMap[country.code] != null}">
                           <option value="<c:out value="${country.code}" />"<c:if test="${field.defaultValue == country.code}"> selected="selected"</c:if>><c:out value="${country.name}" /></option>
@@ -82,7 +85,7 @@
         <c:forEach var="field" items="${reg.altNameFields}">
             <c:set var="id" value="altnamefield_${field.id}" />
             
-            <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /></label>
+            <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /><c:out value="${field.requiredMarker}" /></label>
             
             <c:choose>
                 <c:when test='${field.name == "rfc822name" && field.use}'>
@@ -117,12 +120,15 @@
         <c:forEach var="field" items="${reg.dirAttrFields}">
             <c:set var="id" value="dirattrfield_${field.id}" />
             
-            <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /></label>
+            <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /><c:out value="${field.requiredMarker}" /></label>
             
             <c:choose>
                 <c:when test='${field.name == "countryofcitizenship" || field.name == "countryofresidence"}'>
                     <!-- Country field -->
                     <select name="<c:out value="${id}" />" id="<c:out value="${id}" />" title="<c:out value="${field.description}" />">
+                      <c:if test="${!field.required}">
+                        <option value=""></option>
+                      </c:if>
                       <c:forEach var="country" items="${countrycodes.countriesFromBean}">
                         <c:if test="${field.modifiable || field.allowedValuesMap[country.code] != null}">
                           <option value="<c:out value="${country.code}" />"<c:if test="${field.defaultValue == country.code}"> selected="selected"</c:if>><c:out value="${country.name}" /></option>
@@ -148,12 +154,12 @@
         <c:if test="${!empty reg.dirAttrFields}"><br /></c:if>
         
         <!-- Username -->
-        <label for="username">Username</label>
+        <label for="username">Username *</label>
         <input name="username" id="username" type="text" size="20" accesskey="u" />
         <br />
         
         <!-- E-mail -->
-        <label for="email">E-mail</label>
+        <label for="email">E-mail *</label>
         <input name="email" id="email" type="text" size="25" accesskey="e" />
         <c:choose>
             <c:when test='${reg.emailDomainFrozen}'>
@@ -174,9 +180,11 @@
         
         <!-- CAPTCHA -->
         <b>Prevention of automatic registration (CAPTCHA)</b><br />
-        <label for="code" style="font-size: 85%">Last character in username</label>
+        <label for="code" style="font-size: 85%">Last character in username *</label>
         <input name="code" id="code" type="text" size="3" accesskey="t" />
         <br />
+        
+        <p><small>* = Required field.</small></p>
         
         <label for="ok"></label>
         <input type="submit" id="ok" value="Request registration" />
