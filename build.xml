@@ -59,14 +59,14 @@
 	  -->
     <target name="install" depends="fail-unless-appserver-detected, ejbca-ejb-cli" description="Install EJBCA application (only once)">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
-        <!-- By calling the j2ee targets we make sure that the target calls will succeed, but no changes will be made if web-noconfigure and ssl-noconfiugre properties have been set (unlike the plain web-configure/deploy-keystore targets which will fail hard with an error message). -->
-        <antcall target="j2ee:web-configure"/>
-        <antcall target="j2ee:keystore"/>
+        <!-- By calling the jee targets we make sure that the target calls will succeed, but no changes will be made if web-noconfigure and ssl-noconfiugre properties have been set (unlike the plain web-configure/deploy-keystore targets which will fail hard with an error message). -->
+        <antcall target="jee:web-configure"/>
+        <antcall target="jee:keystore"/>
     </target>
 	
     <target name="javatruststore" depends="testforgnujava" description="Install RootCA certificate in Java trust store (can be run wih -Dca.name=FooCA -Dtrust.keystore=trust.jks -Dtrust.password=foo123)">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:javatruststore" />
-        <antcall target="j2ee:deploytruststore" />
+        <antcall target="jee:deploytruststore" />
     </target>
 
     <!-- =================================================================== -->
@@ -659,7 +659,7 @@
     <!-- Note: This code is duplicated in cli.xml!!!!                               -->
     <!-- ========================================================================== -->
     
-	<target name="inputKeystorePassword" unless="j2ee.web-noconfigure">
+	<target name="inputKeystorePassword" unless="jee.web-noconfigure">
 		<input message="Please enter the password of the truststore with the CA certificate for https?" addproperty="java.trustpassword" defaultvalue="changeit">
 			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
 		</input>
@@ -674,11 +674,11 @@
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
     <target name="deploy" depends="cleanDistDir, failinproduction-ca,build, inputDatabasePassword" description="Deploy the main EJBCA application">       
-    	<antcall target="j2ee:deploy" />
+    	<antcall target="jee:deploy" />
         <antcall target="showtime" />
     </target>
     <target name="va-deploy" depends="failinproduction-va,va-ear,inputDatabasePassword" description="Deploy the stand alone Verification Authority (VA)" >
-        <antcall target="j2ee:deployva" />
+        <antcall target="jee:deployva" />
         <antcall target="showtime" />
     </target>
     <target name="ocsp-deploy" depends="va-deploy" description="Deprecated, use va-deploy instead" >
@@ -695,7 +695,7 @@
         </condition>
       </fail>
       <antcall target="inputKeystorePassword" />
-      <antcall target="j2ee:web-configure" />
+      <antcall target="jee:web-configure" />
     </target>
 
     <!-- ======================================================================= -->
@@ -707,28 +707,28 @@
           <isset property="ssl-noconfigure" />
         </condition>
       </fail>
-      <antcall target="j2ee:keystore" />
+      <antcall target="jee:keystore" />
     </target>
 
     <!-- ======================================================================= -->
     <!-- Deploy the datasources to the application server.                       -->
     <!-- ======================================================================= -->
     <target name="deploy-datasource" description="Deploy the datasources for the application server.">
-      <antcall target="j2ee:deployDS" />
-      <antcall target="j2ee:deployOCSPDS" />
+      <antcall target="jee:deployDS" />
+      <antcall target="jee:deployOCSPDS" />
     </target>
 
     <!-- ======================================================================= -->
     <!-- Deploy the services to the application server.                          -->
     <!-- ======================================================================= -->
     <target name="deploy-service" description="Deploy the services for the application server.">
-      <antcall target="j2ee:deployServices" />
+      <antcall target="jee:deployServices" />
     </target>
 
 
 	<target name="deploy-test" depends="failinproduction-ca,build, inputDatabasePassword, inputKeystorePassword" description="Deploy a test version of EJBCA.">		
 		<!-- Build the test EAR -->
-	   	<antcall target="j2ee:deployTestEar"/>
+	   	<antcall target="jee:deployTestEar"/>
 	</target>
 
     <!-- ======================================================================= -->
@@ -1012,7 +1012,7 @@
 	</target>
 
 	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application" depends="externalra-scep">
-        <antcall target="j2ee:deploy-scep-war" />
+        <antcall target="jee:deploy-scep-war" />
 	</target>
 
 	<target name="externalra-gui" description="Build the EJBCA External RA StandAlone GUI application">
@@ -1020,7 +1020,7 @@
 	</target>
 
 	<target name="externalra-gui-deploy" description="Deploy the EJBCA External RA StandAlone GUI application" depends="externalra-gui">
-        <antcall target="j2ee:deploy-externalragui-war" />
+        <antcall target="jee:deploy-externalragui-war" />
 	</target>
 
 	<target name="batchenrollment-gui" description="Build the EJBCA Batch Enrollment StandAlone GUI application" depends="ejbcaws.client">

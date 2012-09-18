@@ -1,4 +1,4 @@
-<project name="jboss" basedir=".." default="j2ee:deploy" xmlns:jboss="jboss">
+<project name="jboss" basedir=".." default="jee:deploy" xmlns:jboss="jboss">
 	<property environment="env"/>
 
     <condition property="jboss7">
@@ -36,7 +36,7 @@
     <target name="set-paths" depends="set-paths-jboss7, set-paths-not-jboss7">
     </target>
 
-	<target name="j2ee:check" depends="set-paths">
+	<target name="jee:check" depends="set-paths">
 		<!--
             we could have a dedicated jboss for ejbca, so give users a chance to override
             otherwise, try to pick the one from environment if it exists
@@ -79,26 +79,26 @@
         <!-- Generic targets used for supporting different versions of JBoss. -->
         <!-- ================================================================ -->
 
-        <target name="j2ee:deployDS" depends="j2ee:deployDSJBoss5,j2ee:deployDSJBoss7" description="Deploys the main (CA) datasource." />
+        <target name="jee:deployDS" depends="jee:deployDSJBoss5,jee:deployDSJBoss7" description="Deploys the main (CA) datasource." />
 
-        <target name="j2ee:deployOCSPDS" description="Deploys the OCSP datasource." if="ocsp-datasource.jndi-name">
-            <antcall target="j2ee:deployOCSPDSJBoss5" />
-            <antcall target="j2ee:deployOCSPDSJBoss7" />
+        <target name="jee:deployOCSPDS" description="Deploys the OCSP datasource." if="ocsp-datasource.jndi-name">
+            <antcall target="jee:deployOCSPDSJBoss5" />
+            <antcall target="jee:deployOCSPDSJBoss7" />
         </target>
 
-        <target name="j2ee:deployServices" depends="j2ee:deployServicesJBoss5,j2ee:deployServicesJBoss7" description="Deploys the services (mail etc)." />
+        <target name="jee:deployServices" depends="jee:deployServicesJBoss5,jee:deployServicesJBoss7" description="Deploys the services (mail etc)." />
 
-        <target name="j2ee:web-configure" depends="j2ee:web-configureJBoss5,j2ee:web-configureJBoss7" unless="web-noconfigure" description="Configures the web interface component of the application server." />
+        <target name="jee:web-configure" depends="jee:web-configureJBoss5,jee:web-configureJBoss7" unless="web-noconfigure" description="Configures the web interface component of the application server." />
 
         <target name="notifyDeploymentScanner" depends="notifyDeploymentScannerJBoss5,notifyDeploymentScannerJBoss7" description="Notifies the application server to perform (re)deployment of an application."/>
 
-	<target name="j2ee:assert-run" description="Determines if server is running or not, and fails if it isn't." depends="j2ee:assert-runJBoss5,j2ee:assert-runJBoss7" />
+	<target name="jee:assert-run" description="Determines if server is running or not, and fails if it isn't." depends="jee:assert-runJBoss5,jee:assert-runJBoss7" />
 
         <!-- ========================================================== -->
         <!-- These are implementation-specific targets for the JBoss 5. -->
         <!-- ========================================================== -->
 
-	<target name="j2ee:deployDSJBoss5" unless="jboss7" depends="set-paths">
+	<target name="jee:deployDSJBoss5" unless="jboss7" depends="set-paths">
 		<copy todir="${jboss.farm.dir}" overwrite="true">
 			<fileset dir="src/appserver/jboss">
 				<include name="ejbca-ds.xml" />
@@ -115,7 +115,7 @@
 		<chmod file="${jboss.farm.dir}/ejbca-ds.xml" perm="600"/>
 	</target>
 
-        <target name="j2ee:deployOCSPDSJBoss5" unless="jboss7" depends="set-paths">
+        <target name="jee:deployOCSPDSJBoss5" unless="jboss7" depends="set-paths">
                 <copy todir="${jboss.farm.dir}" overwrite="true">
                     <fileset dir="src/appserver/jboss">
                         <include name="ocsp-ds.xml"/>
@@ -127,7 +127,7 @@
                 <chmod file="${jboss.farm.dir}/ocsp-ds.xml" perm="600"/>
         </target>
 
-        <target name="j2ee:deployServicesJBoss5" unless="jboss7" depends="set-paths">
+        <target name="jee:deployServicesJBoss5" unless="jboss7" depends="set-paths">
             <copy todir="${jboss.farm.dir}" overwrite="true">
                 <fileset dir="src/appserver/jboss">
                     <include name="ejbca-mail-service.xml" />
@@ -139,7 +139,7 @@
             <chmod file="${jboss.farm.dir}/ejbca-mail-service.xml" perm="600"/>
         </target>
 
-	<target name="j2ee:web-configureJBoss5" depends="j2ee:check" unless="jboss7">
+	<target name="jee:web-configureJBoss5" depends="jee:check" unless="jboss7">
             <echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
             <!-- If the ssl-noconfigure option was provided, don't deploy the SSL by commenting it out from the deployed file. -->
             <condition property="definitions_away_begin" value="&#x3C;!--">
@@ -157,19 +157,19 @@
         <!-- Dummy target, we do not support live redeployments with JBoss 5 -->
         <target name="notifyDeploymentScannerJBoss5" depends="set-paths" unless="jboss7" />
 
-        <target name="j2ee:assert-runJBoss5" unless="jboss7">
-		<echo message="Checking that the J2EE server is up and running..."/>
-		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="j2ee.notrunning">
+        <target name="jee:assert-runJBoss5" unless="jboss7">
+		<echo message="Checking that the JEE server is up and running..."/>
+		<waitfor maxwait="2" maxwaitunit="second" timeoutproperty="jee.notrunning">
 			<http url="http://localhost:${httpserver.pubhttp}/"/>
 		</waitfor>
-		<fail message="Please start J2EE server before running this script" if="j2ee.notrunning"/>
+		<fail message="Please start JEE server before running this script" if="jee.notrunning"/>
 	</target>
 
         <!-- ========================================================== -->
         <!-- These are implementation-specific targets for the JBoss 7. -->
         <!-- ========================================================== -->
 
-        <target name="j2ee:deployServicesJBoss7" depends="set-paths,j2ee:assert-runJBoss7" if="jboss7">
+        <target name="jee:deployServicesJBoss7" depends="set-paths,jee:assert-runJBoss7" if="jboss7">
             <!-- Remove the current definitions. -->
             <jboss:admsilent arg="/subsystem=mail/mail-session=&quot;${mail.jndi-name}&quot;:remove" failonerror="false" />
             <jboss:admsilent arg="/socket-binding-group=standard-sockets/remote-destination-outbound-socket-binding=ejbca-mail-smtp:remove" failonerror="false" />
@@ -189,7 +189,7 @@
             <sleep seconds="10"/>
         </target>
 
-	<target name="j2ee:deployDSJBoss7" if="jboss7" depends="set-paths,j2ee:assert-runJBoss7">
+	<target name="jee:deployDSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7">
             <!-- We have to undeploy ejbca.ear before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
             <jboss:admsilent arg="undeploy ejbca.ear --keep-content" failonerror="false" />
             <jboss:admsilent arg="data-source remove --name=ejbcads" failonerror="false" />
@@ -199,7 +199,7 @@
             <jboss:admsilent arg="deploy --name=ejbca.ear" failonerror="false" />
         </target>
 
-	<target name="j2ee:deployOCSPDSJBoss7" if="jboss7" depends="set-paths,j2ee:assert-runJBoss7" >
+	<target name="jee:deployOCSPDSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7" >
             <!-- We have to undeploy ejbca.ear before removing the datasource, or removal will fail. @TODO: Figure out how to detect if something is deployed or not. -->
             <jboss:admsilent arg="undeploy ejbca.ear --keep-content" failonerror="false" />
             <jboss:admsilent arg="data-source remove --name=ocspds" failonerror="false" />
@@ -209,11 +209,11 @@
             <jboss:admsilent arg="deploy --name=ejbca.ear" failonerror="false" />
         </target>
 
-	<target name="notifyDeploymentScannerJBoss7" depends="set-paths" if="jboss7,j2ee:assert-runJBoss7">
+	<target name="notifyDeploymentScannerJBoss7" depends="set-paths" if="jboss7,jee:assert-runJBoss7">
 	    <touch file="${jboss.farm.dir}/ejbca.ear.dodeploy" />
 	</target>
 
-        <target name="j2ee:web-configureJBoss7Cleanup" if="jboss7" description="Purges the old web configuration.">
+        <target name="jee:web-configureJBoss7Cleanup" if="jboss7" description="Purges the old web configuration.">
             <jboss:admsilent arg="/socket-binding-group=standard-sockets/socket-binding=httpspub:remove" failonerror="false"/>
             <jboss:admsilent arg="/subsystem=web/connector=httpspub:remove" failonerror="false" />
             <jboss:admsilent arg="/socket-binding-group=standard-sockets/socket-binding=httpspriv:remove" failonerror="false" />
@@ -223,17 +223,17 @@
             <jboss:admsilent arg=":reload" />
         </target>
 
-        <target name="j2ee:web-configureJBoss7" depends="j2ee:check,j2ee:assert-runJBoss7" if="jboss7">
+        <target name="jee:web-configureJBoss7" depends="jee:check,jee:assert-runJBoss7" if="jboss7">
             <echo message="Setting-up web configration for JBoss 7." />
-            <antcall target="j2ee:web-configureJBoss7Cleanup" />
+            <antcall target="jee:web-configureJBoss7Cleanup" />
             <jboss:adm arg="/socket-binding-group=standard-sockets/socket-binding=http:add(port=${httpserver.pubhttp})" />
             <jboss:adm arg="/subsystem=web/connector=http:add(protocol=HTTP/1.1, scheme=http, socket-binding=http)" />
             <jboss:adm arg="/subsystem=web/connector=http:write-attribute(name=redirect-port, value=${httpserver.privhttps})" />
             <jboss:adm arg=":reload" />
-            <antcall target="j2ee:web-configureJBoss7SSL" />
+            <antcall target="jee:web-configureJBoss7SSL" />
         </target>
 
-        <target name="j2ee:web-configureJBoss7SSL" depends="j2ee:check" unless="ssl-noconfigure">
+        <target name="jee:web-configureJBoss7SSL" depends="jee:check" unless="ssl-noconfigure">
             <echo message="Setting-up SSL web configration for JBoss 7." />
             <!-- Set-up the private port which requires client certificate -->
             <jboss:adm arg="/socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port=${httpserver.privhttps})" />
@@ -253,7 +253,7 @@
             <jboss:adm arg=":reload" />
         </target>
 
-        <target name="j2ee:assert-runJBoss7" if="jboss7">
+        <target name="jee:assert-runJBoss7" if="jboss7">
             <echo message="Checking if JBoss 7 is up and running..."/>
             <jboss:admsilent arg=":read-attribute(name=server-state)" resultproperty="jboss7.server.status" failonerror="false" />
             <condition property="jboss7.server.isrunning" value="true">
@@ -266,7 +266,7 @@
         <!-- Implementation-independent targets. -->
         <!-- =================================== -->
 
-        <target name="j2ee:deploytruststore" depends="set-paths" unless="ssl-noconfigure">
+        <target name="jee:deploytruststore" depends="set-paths" unless="ssl-noconfigure">
 		<!-- copy the truststore file to the server -->
 		<available file="${ejbca.home}/p12/truststore.jks" property="truststore.file.present"/>
 		<fail message="Missing JKS truststorestore file in '${basedir}/p12/truststore.jks'" unless="truststore.file.present"/>
@@ -275,7 +275,7 @@
 		<chmod file="${jboss.server.home.dir}/${truststore.file}" perm="600"/>
 	</target>
 
-        <target name="j2ee:keystore" depends="j2ee:check" unless="ssl-noconfigure">
+        <target name="jee:keystore" depends="jee:check" unless="ssl-noconfigure">
             <echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
             <!-- copy the keystore file to the server -->
             <available file="p12/tomcat.jks" property="keystore.file.present"/>
@@ -285,7 +285,7 @@
             <chmod file="${jboss.server.home.dir}/${keystore.file}" perm="600"/>
 
             <!-- Also deploy the truststore -->
-            <antcall target="j2ee:deploytruststore" />
+            <antcall target="jee:deploytruststore" />
         </target>
 
         <!-- @TODO: We should rename this to something else.  This is currently
@@ -329,7 +329,7 @@
         <!-- Top-level targets -->
         <!-- ================= -->
 
-	<target name="j2ee:deploy" depends="j2ee:deployServices, j2ee:deployDS, j2ee:deployOCSPDS">
+	<target name="jee:deploy" depends="jee:deployServices, jee:deployDS, jee:deployOCSPDS">
 		<copy todir="${jboss.farm.dir}">
 			<fileset dir="${dist.dir}" includes="ejbca.ear"/>
 		</copy>
@@ -337,14 +337,14 @@
 		<antcall target="notifyDeploymentScanner" />
 	</target>
 
-	<target name="j2ee:deploy-scep-war" depends="j2ee:check">
+	<target name="jee:deploy-scep-war" depends="jee:check">
 		<chmod dir="dist/datasources" includes="ramessage-ds.xml" perm="600"/>
 		<copy todir="${jboss.farm.dir}" overwrite="true" file="dist/datasources/ramessage-ds.xml"/>
 		<chmod dir="dist" includes="scepraserver.war" perm="600"/>
 		<copy todir="${jboss.farm.dir}" overwrite="true" file="dist/scepraserver.war"/>
 	</target>
 
-	<target name="j2ee:deploy-externalragui-war" depends="j2ee:check, detect-tomcatdir">
+	<target name="jee:deploy-externalragui-war" depends="jee:check, detect-tomcatdir">
 		<chmod dir="dist/externalra-gui" includes="externalragui-ds.xml" perm="600"/>
 		<copy todir="${jboss.farm.dir}" overwrite="true" file="dist/externalra-gui/externalragui-ds.xml"/>
 		<chmod dir="dist/externalra-gui" includes="externalra-gui.war" perm="600"/>
@@ -353,8 +353,8 @@
 		<copy todir="${tomcat.dir}" overwrite="true" file="dist/externalra-gui/server.xml"/>
 	</target>
 
-	<target name="j2ee:deployva" depends="set-paths">
-                <antcall target="j2ee:deployDS" />
+	<target name="jee:deployva" depends="set-paths">
+                <antcall target="jee:deployDS" />
 		<copy todir="${jboss.farm.dir}">
 			<fileset dir="${va-dist.dir}" includes="ejbca.ear"/>
 		</copy>
@@ -365,12 +365,12 @@
 
 
 
-	<target name="j2ee:run" description="Start the J2EE server">
-		<j2ee-server classname="org.jboss.Main" classpath="${appserver.home}/bin/run.jar">
+	<target name="jee:run" description="Start the JEE server">
+		<jee-server classname="org.jboss.Main" classpath="${appserver.home}/bin/run.jar">
 			<args>
 				<jvmarg value="-Djboss.home=${appserver.home}"/>
 			</args>
-		</j2ee-server>
+		</jee-server>
 		<!--
             appserver.home.dir
             appserver.home.url		${appserver.home.dir}
@@ -386,29 +386,29 @@
         -->
 	</target>
 
-	<target name="j2ee:debug" description="Start the J2EE server in debug mode">
-		<property name="j2ee.debug.transport" value="dt_socket"/>
-		<property name="j2ee.debug.address" value="5005"/>
-		<property name="j2ee.debug.jvm.opts" value="-Xdebug -Xnoagent -Xrunjdwp:transport=${j2ee.debug.transport},address=${j2ee.debug.address},server=y,suspend=y"/>
-		<echo message="Connect your debugger using transport '${j2ee.debug.transport}' and address '${j2ee.debug.address}'"/>
-		<antcall target="j2ee:run"/>
+	<target name="jee:debug" description="Start the JEE server in debug mode">
+		<property name="jee.debug.transport" value="dt_socket"/>
+		<property name="jee.debug.address" value="5005"/>
+		<property name="jee.debug.jvm.opts" value="-Xdebug -Xnoagent -Xrunjdwp:transport=${jee.debug.transport},address=${jee.debug.address},server=y,suspend=y"/>
+		<echo message="Connect your debugger using transport '${jee.debug.transport}' and address '${jee.debug.address}'"/>
+		<antcall target="jee:run"/>
 	</target>
 
         <!-- ================= -->
         <!-- Macro definitions -->
         <!-- ================= -->
 
-	<macrodef name="j2ee-server">
+	<macrodef name="jee-server">
 		<attribute name="classname"/>
 		<attribute name="classpath"/>
 		<element name="args" optional="yes"/>
 		<sequential>
-			<property name="j2ee.debug.jvm.opts" value=""/>
+			<property name="jee.debug.jvm.opts" value=""/>
 			<available file="${java.home}/../lib/tools.jar" property="jdk.present"/>
 			<fail message="Missing tools.jar in ${java.home}/lib. Please use a java JDK" unless="jdk.present"/>
 			<java classname="@{classname}" fork="true">
 				<classpath path="@{classpath}:${java.home}/../lib/tools.jar"/>
-				<jvmarg line="${j2ee.debug.jvm.opts} -XX:+UseConcMarkSweepGC -XX:MaxPermSize=192m -Xms128m -Xmx512m"/>
+				<jvmarg line="${jee.debug.jvm.opts} -XX:+UseConcMarkSweepGC -XX:MaxPermSize=192m -Xms128m -Xmx512m"/>
 				<args/>
 			</java>
 		</sequential>

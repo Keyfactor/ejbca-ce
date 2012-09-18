@@ -1,4 +1,4 @@
-<project name="websphere" basedir=".." default="j2ee:deploy">
+<project name="websphere" basedir=".." default="jee:deploy">
 	<property environment="env"/>
 
     <property name="appserver.home" value="${env.APPSRV_HOME}"/>
@@ -11,7 +11,7 @@
 	<!--property name="j2ee.web-noconfigure" value="true"/-->
 	
 	
-	<target name="j2ee:check">
+	<target name="jee:check">
         <!--
             we could have a dedicated jboss for ejbca, so give users a chance to override
             otherwise, try to pick the one from environment if it exists
@@ -24,31 +24,31 @@
 
 
 
-	<!-- Configure the J2EE server with appropriate settings -->
-	<target name="j2ee:configure" depends="j2ee:check, j2ee:web-configure">
+	<!-- Configure the JEE server with appropriate settings -->
+	<target name="jee:configure" depends="jee:check, jee:web-configure">
 		
 	</target>
 
-	<target name="j2ee:web-configure" depends="j2ee:check" unless="j2ee.web-noconfigure">
+	<target name="jee:web-configure" depends="jee:check" unless="j2ee.web-noconfigure">
         <echo message="You must configure Websphere using the admin console"/>
 
 	</target>
 
-	<target name="j2ee:deployBase" depends="j2ee:configure">
+	<target name="jee:deployBase" depends="jee:configure">
 		<!-- 
 		TODO 
 		-->
 		<echo>You have to deploy manuallt to Websphere so far</echo>
 	</target>
 
-	<target name="j2ee:deploy" if="ocsp-datasource.jndi-name" depends="j2ee:deployBase">
+	<target name="jee:deploy" if="ocsp-datasource.jndi-name" depends="jee:deployBase">
 		<!-- deploy base handles ejbca, here we check if we should deploy a datasource to an external va responder -->
 		<!-- 
 		TODO 
 		-->
 	</target>
 
-	<target name="j2ee:deployva" depends="j2ee:configure">
+	<target name="jee:deployva" depends="jee:configure">
 		<!-- 
 		TODO 
 		-->
@@ -56,12 +56,12 @@
 
 
 
-	<target name="j2ee:assert-run" description="Check that the server is running">
-        <echo message="Checking that the J2EE server is up and running..."/>
-        <waitfor maxwait="2" maxwaitunit="second" timeoutproperty="j2ee.notrunning">
+	<target name="jee:assert-run" description="Check that the server is running">
+        <echo message="Checking that the JEE server is up and running..."/>
+        <waitfor maxwait="2" maxwaitunit="second" timeoutproperty="jee.notrunning">
             <http url="http://localhost:${httpserver.pubhttp}/ejbca/index.jsp"/>
         </waitfor>
-        <fail message="Please start J2EE server before running this script" if="j2ee.notrunning"/>	
+        <fail message="Please start JEE server before running this script" if="jee.notrunning"/>	
 	</target>
 
 
