@@ -11,7 +11,7 @@
   <ejbRefBindings xmi:id="EJBLocalRefBinding_3" jndiName="CAAdminSession">
     <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_3"/>
   </ejbRefBindings>
-  <ejbRefBindings xmi:id="EJBLocalRefBinding_4" jndiName="UserAdminSession">
+  <ejbRefBindings xmi:id="EJBLocalRefBinding_4" jndiName="EndEntityManagementSession">
     <bindingEjbRef href="WEB-INF/web.xml#EJBLocalRef_4"/>
   </ejbRefBindings>
   <ejbRefBindings xmi:id="EJBLocalRefBinding_5" jndiName="RaAdminSession">

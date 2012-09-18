@@ -299,7 +299,7 @@ public interface EndEntityManagementSession {
      *            SQL query indication which endentityprofiles the
      *            administrator is authorized to view.
      * @param numberofrows the number of rows to fetch, use 0 for default
-     *            UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT
+     *            EndEntityConstants.MAXIMUM_QUERY_ROWCOUNT
      * @return a collection of EndEntityInformation.
      * @throws IllegalQueryException when query parameters internal rules isn't
      *            fulfilled.
@@ -394,7 +394,7 @@ public interface EndEntityManagementSession {
 
     /**
      * Finds all batch users with a specified status and returns the first
-     * UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT.
+     * EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT.
      * 
      * @param status the status, from 'UserData'.
      * @return all EndEntityInformation objects or an empty list

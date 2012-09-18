@@ -49,10 +49,10 @@ public abstract class SignSessionCommon extends CaTestCase{
     
 
     protected static void createEndEntity(String username, int endEntityProfileId, int certificateProfileId, int caId) throws Exception{
-        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         // Make user that we know...
-        if (!userAdminSession.existsUser(username)) {
-            userAdminSession.addUser(internalAdmin, username, "foo123", "C=SE,CN="+username, null, username+"@anatom.se", false, endEntityProfileId,
+        if (!endEntityManagementSession.existsUser(username)) {
+            endEntityManagementSession.addUser(internalAdmin, username, "foo123", "C=SE,CN="+username, null, username+"@anatom.se", false, endEntityProfileId,
                     certificateProfileId, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caId);
             if (log.isDebugEnabled()) {
                 log.debug("created user: foo, foo123, C=SE, O=AnaTom, CN=foo");
@@ -65,7 +65,7 @@ public abstract class SignSessionCommon extends CaTestCase{
                     endEntityProfileId, certificateProfileId, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
             endEntity.setPassword("foo123");
-            userAdminSession.changeUser(internalAdmin, endEntity, false);            
+            endEntityManagementSession.changeUser(internalAdmin, endEntity, false);            
             if (log.isDebugEnabled()) {
                 log.debug("Reset status to NEW");
             }
@@ -96,7 +96,7 @@ public abstract class SignSessionCommon extends CaTestCase{
     
     protected static void cleanUpEndEntity(String username) throws AuthorizationDeniedException {
         EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
        
         
@@ -116,7 +116,7 @@ public abstract class SignSessionCommon extends CaTestCase{
             //NOPMD
         }
         try {
-            userAdminSession.deleteUser(internalAdmin, username);
+            endEntityManagementSession.deleteUser(internalAdmin, username);
         } catch (Exception e) { /* ignore */
             //NOPMD
         }

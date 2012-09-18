@@ -117,17 +117,22 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	
 	/**
 	 * Construct the message handler.
+	 * 
 	 * @param admin
 	 * @param caSession
 	 * @param certificateProfileSession
 	 * @param certificateRequestSession
+	 * @param endEntityAccessSession
 	 * @param endEntityProfileSession
 	 * @param signSession
-	 * @param userAdminSession
+	 * @param certStoreSession
+	 * @param authSession
+	 * @param authProviderSession
 	 */
-	public CrmfMessageHandler(final AuthenticationToken admin, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession, CertificateRequestSession certificateRequestSession,
-			EndEntityAccessSession endEntityAccessSession, EndEntityProfileSessionLocal endEntityProfileSession, SignSession signSession, CertificateStoreSession certStoreSession, 
-			AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession) {
+    public CrmfMessageHandler(final AuthenticationToken admin, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession,
+            CertificateRequestSession certificateRequestSession, EndEntityAccessSession endEntityAccessSession,
+            EndEntityProfileSessionLocal endEntityProfileSession, SignSession signSession, CertificateStoreSession certStoreSession,
+            AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		this.signSession = signSession;
 		this.certificateRequestSession = certificateRequestSession;

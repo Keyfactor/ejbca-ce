@@ -78,7 +78,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
     private CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
 
@@ -258,7 +258,7 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
     		crmfHttpUserTest(userDN1, key1, null, bint);
     	} finally {
     		try {
-    			userAdminSession.deleteUser(admin, userName1);
+    			endEntityManagementSession.deleteUser(admin, userName1);
     		} catch (NotFoundException e) {}
     	}
     }

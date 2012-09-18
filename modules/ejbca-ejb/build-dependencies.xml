@@ -902,10 +902,10 @@
     		 The RA interface dependecy is from the way we present information about an approval. It should probably be parse
     		 general information better in the new Admin GUI for EJBCA 4.1. 
     	-->
-			<echo message=" ** Validating component: User Administration and Authentication (Excluding a lot..) **"/>
-			<mkdir dir="${src-temp.dir}/useradmin"/>
-			<mkdir dir="${build-temp.dir}/useradmin"/>
-			<copy todir="${src-temp.dir}/useradmin">
+			<echo message=" ** Validating component: End Entity Administration and Authentication (Excluding a lot..) **"/>
+			<mkdir dir="${src-temp.dir}/endentityadmin"/>
+			<mkdir dir="${build-temp.dir}/endentityadmin"/>
+			<copy todir="${src-temp.dir}/endentityadmin">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/ejbca/core/ejb/ra/*.java"/>
 					<include name="org/ejbca/core/ejb/ca/auth/*.java"/>
@@ -930,7 +930,7 @@
 					<include name="org/ejbca/core/model/ca/auth/*.java"/>
 				</fileset>
 			</copy>
-			<javac srcdir="${src-temp.dir}/useradmin" destdir="${build-temp.dir}/useradmin" debug="on" includeantruntime="no"
+			<javac srcdir="${src-temp.dir}/endentityadmin" destdir="${build-temp.dir}/endentityadmin" debug="on" includeantruntime="no"
         	encoding="iso8859-1" target="${java.target.version}">
 				<classpath>
 					<path refid="compile-util.classpath"/>
@@ -992,7 +992,7 @@
 					<pathelement location="${build-temp.dir}/notification"/>
 					<pathelement location="${build-temp.dir}/crl"/>
 					<pathelement location="${build-temp.dir}/certstore"/>
-					<pathelement location="${build-temp.dir}/useradmin"/>
+					<pathelement location="${build-temp.dir}/endentityadmin"/>
 					<pathelement location="${build-temp.dir}/raadmin"/>
 					<pathelement location="${build-temp.dir}/signing"/>
 					<pathelement location="${build-temp.dir}/raadmin"/>
@@ -1047,7 +1047,7 @@
 					<pathelement location="${build-temp.dir}/admins"/>
 					<pathelement location="${build-temp.dir}/approval"/>
 					<pathelement location="${build-temp.dir}/caadmin"/>
-					<pathelement location="${build-temp.dir}/useradmin"/>
+					<pathelement location="${build-temp.dir}/endentityadmin"/>
 					<pathelement location="${build-temp.dir}/authorization"/>
 					<pathelement location="${build-temp.dir}/certstore"/>
 					<pathelement location="${build-temp.dir}/services"/>
@@ -1084,7 +1084,7 @@
 				<pathelement location="${build-temp.dir}/ca"/>
 				<pathelement location="${build-temp.dir}/caadmin"/>
 				<pathelement location="${build-temp.dir}/raadmin"/>
-				<pathelement location="${build-temp.dir}/useradmin"/>
+				<pathelement location="${build-temp.dir}/endentityadmin"/>
         		<pathelement location="${build-temp.dir}/signing"/>
         		<pathelement location="${build-temp.dir}/admins"/>
         		<pathelement location="${build-temp.dir}/approval"/>

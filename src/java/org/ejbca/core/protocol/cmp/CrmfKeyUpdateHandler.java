@@ -68,7 +68,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
     private final CertificateStoreSession certStoreSession;
     private final AccessControlSession authorizationSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
-    private final EndEntityManagementSession userAdminSession;
+    private final EndEntityManagementSession endEntityManagementSession;
 
     /**
      * Used only by unit test.
@@ -80,7 +80,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
         this.certStoreSession = null;
         this.authorizationSession = null;
         this.authenticationProviderSession = null;
-        this.userAdminSession = null;
+        this.endEntityManagementSession = null;
     }
     
     /**
@@ -91,12 +91,12 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
      * @param certificateRequestSession
      * @param endEntityProfileSession
      * @param signSession
-     * @param userAdminSession
+     * @param endEntityManagementSession
      */
     public CrmfKeyUpdateHandler(final AuthenticationToken admin, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession, 
             EndEntityAccessSession endEntityAccessSession, EndEntityProfileSessionLocal endEntityProfileSession, SignSession signSession, 
             CertificateStoreSession certStoreSession, AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession, 
-            EndEntityManagementSession userAdminSession) {
+            EndEntityManagementSession endEntityManagementSession) {
         
         super(admin, caSession, endEntityProfileSession, certificateProfileSession);
         this.signSession = signSession;
@@ -104,7 +104,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
         this.certStoreSession = certStoreSession;
         this.authorizationSession = authSession;
         this.authenticationProviderSession = authProviderSession;
-        this.userAdminSession = userAdminSession;
+        this.endEntityManagementSession = endEntityManagementSession;
 
     }
 
@@ -225,13 +225,13 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 
                 // Set the appropriate parameters in the end entity
                 userdata.setPassword(password);
-                userAdminSession.changeUser(admin, userdata, true);
+                endEntityManagementSession.changeUser(admin, userdata, true);
                 if(CmpConfiguration.getAllowAutomaticKeyUpdate()) {
                     if(LOG.isDebugEnabled()) {
                         LOG.debug("Setting the end entity status to 'NEW'. Username: " + userdata.getUsername());
                     }
 
-                    userAdminSession.setUserStatus(admin, userdata.getUsername(), EndEntityConstants.STATUS_NEW);
+                    endEntityManagementSession.setUserStatus(admin, userdata.getUsername(), EndEntityConstants.STATUS_NEW);
                 }
                 
                 // Set the appropriate parameters in the request

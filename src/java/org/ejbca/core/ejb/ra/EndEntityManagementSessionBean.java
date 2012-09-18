@@ -267,7 +267,6 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
 
     // TODO: Try to throw an application exception instead if the PersistenceException, since this becomes
     // EJBException(java.rmi.ServerException(java.rmi.RemoteException(javax.persistence.EntityExistsException)))) on Glassfish
-    // See UserAdminSessionTest
     @Override
     public void addUser(final AuthenticationToken admin, final EndEntityInformation endEntity, final boolean clearpwd) throws AuthorizationDeniedException,
             EjbcaException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, PersistenceException, CADoesntExistsException {
@@ -887,7 +886,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
             throw new FinderException(msg);
         }
         if (counter <= 0) {
-            AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Local admin call from UserAdminSessionBean.decRequestCounter"));
+            AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Local admin call from EndEntityManagementSession.decRequestCounter"));
             try {
                 setUserStatus(admin, data1, EndEntityConstants.STATUS_GENERATED);
             } catch (AuthorizationDeniedException e) {
@@ -1305,12 +1304,12 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         int endEntityProfileId = -1;
         if (certReqHistory != null) {
             // Get the EEP that was used in the original issuance, if we can find it
-            endEntityProfileId = certReqHistory.getUserDataVO().getEndEntityProfileId();
+            endEntityProfileId = certReqHistory.getEndEntityInformation().getEndEntityProfileId();
             // Republish with the same user DN that was used in the original publication, if we can find it
-            userDataDN = certReqHistory.getUserDataVO().getCertificateDN();
+            userDataDN = certReqHistory.getEndEntityInformation().getCertificateDN();
             // If for some reason the certificate profile id was not set in the certificate data, try to get it from the certreq history
             if (certificateProfileId == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) {
-                certificateProfileId = certReqHistory.getUserDataVO().getCertificateProfileId();
+                certificateProfileId = certReqHistory.getEndEntityInformation().getCertificateProfileId();
             }
         } else if (data != null) {
             // Get the EEP that is currently used as a fallback, if we can find it
@@ -1555,7 +1554,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
      * Help function used to retrieve user information. A query parameter of null indicates all users. If caauthorizationstring or
      * endentityprofilestring are null then the method will retrieve the information itself.
      * 
-     * @param numberofrows the number of rows to fetch, use 0 for default UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT
+     * @param numberofrows the number of rows to fetch, use 0 for default EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT
      */
     private Collection<EndEntityInformation> query(final AuthenticationToken admin, final Query query, final boolean withlimit, final String caauthorizationstr,
             final String endentityprofilestr, final int numberofrows) throws IllegalQueryException {
@@ -1784,7 +1783,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                                 log.debug("approvalAdminDN: " + approvalAdminDN);
                             }
                             approvalAdmin = endEntityAccessSession.findUserBySubjectAndIssuerDN(new AlwaysAllowLocalAuthenticationToken(
-                                    new UsernamePrincipal("UserAdminSession")), CertTools.getSubjectDN(adminCert), CertTools.getIssuerDN(adminCert));
+                                    new UsernamePrincipal("EndEntityManagementSession")), CertTools.getSubjectDN(adminCert), CertTools.getIssuerDN(adminCert));
                         }
                         final UserNotificationParamGen paramGen = new UserNotificationParamGen(data, approvalAdminDN, approvalAdmin);
                         /*

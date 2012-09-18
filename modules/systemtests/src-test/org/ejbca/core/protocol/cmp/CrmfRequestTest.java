@@ -91,7 +91,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
@@ -150,7 +150,7 @@ public class CrmfRequestTest extends CmpTestCase {
         super.tearDown();
         boolean cleanUpOk = true;
         try {
-            userAdminSession.deleteUser(admin, "cmptest");
+            endEntityManagementSession.deleteUser(admin, "cmptest");
         } catch (NotFoundException e) {
             // A test probably failed before creating the entity
             log.debug("Failed to delete user \"cmptest\".");
@@ -364,7 +364,7 @@ public class CrmfRequestTest extends CmpTestCase {
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         try {
-            userAdminSession.addUser(admin, user, false); 
+            endEntityManagementSession.addUser(admin, user, false); 
             log.debug("created user: cmptest, foo123, " + userDN);
         } catch (Exception e) {
             userExists = true;
@@ -372,8 +372,8 @@ public class CrmfRequestTest extends CmpTestCase {
 
         if (userExists) {
             log.debug("User cmptest already exists.");
-            userAdminSession.changeUser(admin, user, false);
-            userAdminSession.setUserStatus(admin, "cmptest", EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.changeUser(admin, user, false);
+            endEntityManagementSession.setUserStatus(admin, "cmptest", EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
     }

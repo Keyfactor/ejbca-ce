@@ -107,9 +107,9 @@ public class DnFieldsTest extends CommonEjbcaWS {
         super.tearDown();
         super.cleanUpAdmins(wsadminRoleName);
         
-        if (userAdminSession.existsUser(TEST_USERNAME)) {
+        if (endEntityManagementSession.existsUser(TEST_USERNAME)) {
             // Remove user
-            userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         }
 
         if (endEntityProfileSession.getEndEntityProfile(PROFILE_NAME) != null) {

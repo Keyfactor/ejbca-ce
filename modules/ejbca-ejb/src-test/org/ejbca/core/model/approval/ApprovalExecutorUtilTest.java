@@ -67,8 +67,8 @@ public class ApprovalExecutorUtilTest {
     @Test
 	public void testOverridableClassNames() {
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS = {
-			new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.UserAdminSessionBean","revokeUser"),
-			new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.UserAdminSessionBean","revokeCert"),
+			new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeUser"),
+			new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeCert"),
 			new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","unrevokeCert"),
 			new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 			new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
@@ -80,8 +80,8 @@ public class ApprovalExecutorUtilTest {
 		boolean approvalRequired = ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS);   
 		assertTrue(approvalRequired);
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS1 = {
-				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.UserAdminSessionBean","revokeUser"),
-				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.UserAdminSessionBean","revokeCert"),
+				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeUser"),
+				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeCert"),
 				new ApprovalOveradableClassName("org.ejbca.core.model.approval.ApprovalExecutorUtilTest","foo"),
 				new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 				new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
@@ -91,8 +91,8 @@ public class ApprovalExecutorUtilTest {
 		approvalRequired = ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS1);   
 		assertTrue(approvalRequired);
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS2 = {
-				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.UserAdminSessionBean","revokeUser"),
-				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.UserAdminSessionBean","revokeCert"),
+				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeUser"),
+				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeCert"),
 				new ApprovalOveradableClassName("org.ejbca.core.model.approval.ApprovalExecutorUtilTest",null),
 				new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 				new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),
@@ -102,8 +102,8 @@ public class ApprovalExecutorUtilTest {
 		approvalRequired = ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_SETUSERSTATUS2);   
 		assertFalse(approvalRequired);
 		ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS3 = {
-				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.UserAdminSessionBean","revokeUser"),
-				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.UserAdminSessionBean","revokeCert"),
+				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeUser"),
+				new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeCert"),
 				new ApprovalOveradableClassName("org.ejbca.core.model.approval.ApprovalExecutorUtilTest","testOverridableClassNames"),
 				new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 				new ApprovalOveradableClassName("org.ejbca.extra.caservice.ExtRACAProcess","processExtRARevocationRequest"),

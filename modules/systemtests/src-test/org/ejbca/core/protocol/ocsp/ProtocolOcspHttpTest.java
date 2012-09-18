@@ -223,7 +223,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 	final private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 	final private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
 	final private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-	final private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+	final private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
 	@BeforeClass
 	public static void beforeClass() throws CertificateException {
@@ -405,7 +405,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 			}
 			assertTrue(caught);
 		} finally {
-			userAdminSession.deleteUser(admin, "ocsptest");
+			endEntityManagementSession.deleteUser(admin, "ocsptest");
 		}
 
 	} // test07SignedOcsp
@@ -429,7 +429,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
 			this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
 		} finally {
-			userAdminSession.deleteUser(admin, "ocsptest");
+			endEntityManagementSession.deleteUser(admin, "ocsptest");
 		}
 	} // test08OcspEcdsaGood
 
@@ -453,7 +453,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
 			this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
 		} finally {
-			userAdminSession.deleteUser(admin, "ocsptest");
+			endEntityManagementSession.deleteUser(admin, "ocsptest");
 		}
 	} // test09OcspEcdsaImplicitlyCAGood
 
@@ -1190,9 +1190,9 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 			WaitingForApprovalException, Exception, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException,
 			CADoesntExistsException {
 
-		if (!userAdminSession.existsUser("ocsptest")) {
+		if (!endEntityManagementSession.existsUser("ocsptest")) {
 
-			userAdminSession.addUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
+			endEntityManagementSession.addUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
 					SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
 			log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
 
@@ -1203,7 +1203,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 					SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
 					null);
 			userData.setPassword("foo123");
-			userAdminSession.changeUser(admin, userData, false);
+			endEntityManagementSession.changeUser(admin, userData, false);
 			log.debug("Reset status to NEW");
 		}
 		// Generate certificate for the new user

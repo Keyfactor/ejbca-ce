@@ -63,7 +63,7 @@ public class DsaSignSessionTest extends SignSessionCommon {
     
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -80,9 +80,9 @@ public class DsaSignSessionTest extends SignSessionCommon {
         EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
         CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
         InternalCertificateStoreSessionRemote internalCertificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         if (endEntityAccessSession.findUser(internalAdmin, DSA_USERNAME) != null) {
-            userAdminSession.deleteUser(internalAdmin, DSA_USERNAME);
+            endEntityManagementSession.deleteUser(internalAdmin, DSA_USERNAME);
         }        
         removeTestCA(TEST_DSA_CA_NAME);
         //Clean up certificates associated with this test class:
@@ -100,7 +100,7 @@ public class DsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testSignSessionDSAWithDSACA() throws Exception {
         log.trace(">test25SignSessionDSAWithDSACA()");
-        userAdminSession.setUserStatus(internalAdmin, DSA_USERNAME, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, DSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '"+DSA_USERNAME+"' to NEW");
         // user that we know exists...
         KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
@@ -135,7 +135,7 @@ public class DsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testBCPKCS10DSAWithDSACA() throws Exception {
         log.trace(">test26TestBCPKCS10DSAWithDSACA()");
-        userAdminSession.setUserStatus(internalAdmin, DSA_USERNAME, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, DSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foodsa' to NEW");
         KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
         // Create certificate request

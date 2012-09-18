@@ -49,8 +49,6 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
 /**
  * Class generating a response for a locate and validate calls
  * 
- * 
- * @author Philip Vendil 2006 sep 27
  *
  * @version $Id$
  */
@@ -62,12 +60,12 @@ public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator 
 	 private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
 	 private CertificateStoreSession certificateStoreSession;
-	 private EndEntityManagementSessionLocal userAdminSession;
+	 private EndEntityManagementSessionLocal endEntityManagementSession;
 	 
-    public KISSResponseGenerator(String remoteIP, RequestAbstractType req, CertificateStoreSession certificateStoreSession, EndEntityManagementSessionLocal userAdminSession, CrlStoreSession crlSession, CaSession caSession) {
+    public KISSResponseGenerator(String remoteIP, RequestAbstractType req, CertificateStoreSession certificateStoreSession, EndEntityManagementSessionLocal endEntityManagementSession, CrlStoreSession crlSession, CaSession caSession) {
         super(remoteIP, req, caSession, certificateStoreSession, crlSession);
         this.certificateStoreSession = certificateStoreSession;
-        this.userAdminSession = userAdminSession;
+        this.endEntityManagementSession = endEntityManagementSession;
     }
 
 	/** 
@@ -142,9 +140,9 @@ public class KISSResponseGenerator extends RequestAbstractTypeResponseGenerator 
 				Query query = genQueryFromUseKeyWith(queryKeyBindingType.getUseKeyWith());
                 
 				try {            		
-					Collection<EndEntityInformation> userDatas = userAdminSession.query(pubAdmin, query, null, null, resSize);
+					Collection<EndEntityInformation> userDatas = endEntityManagementSession.query(pubAdmin, query, null, null, resSize);
 					if (log.isDebugEnabled()) {
-						log.debug("userAdminSession.query returned " + userDatas.size() + " results for query \"" + query.getQueryString() + "\"");
+						log.debug("endEntityManagementSession.query returned " + userDatas.size() + " results for query \"" + query.getQueryString() + "\"");
 					}
 					Iterator<EndEntityInformation> userIter = userDatas.iterator();
 					while(userIter.hasNext() && retval.size() <= resSize){

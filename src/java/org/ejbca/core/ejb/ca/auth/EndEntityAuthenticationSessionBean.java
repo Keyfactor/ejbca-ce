@@ -60,7 +60,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
     private EntityManager entityManager;
 
     @EJB
-    private EndEntityManagementSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     
@@ -80,7 +80,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
             	throw new ObjectNotFoundException("Could not find username " + username);
             }
             // Decrease the remaining login attempts. When zero, the status is set to STATUS_GENERATED
-           	userAdminSession.decRemainingLoginAttempts(username);
+           	endEntityManagementSession.decRemainingLoginAttempts(username);
            	final int status = data.getStatus();
             if ( (status == EndEntityConstants.STATUS_NEW) || (status == EndEntityConstants.STATUS_FAILED) || (status == EndEntityConstants.STATUS_INPROCESS) || (status == EndEntityConstants.STATUS_KEYRECOVERY)) {
             	if (log.isDebugEnabled()) {
@@ -94,7 +94,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
                 	throw new AuthLoginException(msg);
                 }
                 // Resets the remaining login attempts as this was a successful login
-                userAdminSession.resetRemainingLoginAttempts(username);
+                endEntityManagementSession.resetRemainingLoginAttempts(username);
             	// Log formal message that authentication was successful
                 final Map<String, Object> details = new LinkedHashMap<String, Object>();
                 details.put("msg", intres.getLocalizedMessage("authentication.authok", username));
@@ -129,7 +129,7 @@ public class EndEntityAuthenticationSessionBean implements EndEntityAuthenticati
 		try {
 			
 			// See if we are allowed for make more requests than this one. If not user status changed by decRequestCounter
-			final int counter = userAdminSession.decRequestCounter(data.getUsername());
+			final int counter = endEntityManagementSession.decRequestCounter(data.getUsername());
 			if (counter <= 0) {
 				log.info(intres.getLocalizedMessage("authentication.statuschanged", data.getUsername()));
 			} 

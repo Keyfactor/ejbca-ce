@@ -132,7 +132,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {
@@ -318,14 +318,14 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             String username1 = genRandomUserName("test04_1");
             String email = "test@example.com";
             KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            userAdminSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC1" + username1, 
+            endEntityManagementSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC1" + username1, 
             		null, email, false, endEntityProfileId,
                     certProfileIdNoApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username1, "foo123", keypair.getPublic());
             assertNotNull("Cert should have been created.", cert);
             keyRecoverySession.addKeyRecoveryData(admin1, cert, username1, keypair);
             assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(username1));
-            userAdminSession.prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
+            endEntityManagementSession.prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(username1));
             KeyRecoveryData data = keyRecoverySession.recoverKeys(admin1, username1, SecConst.EMPTY_ENDENTITYPROFILE);
             assertTrue("Couldn't recover keys from database",
@@ -340,13 +340,13 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
             String username1 = genRandomUserName("test04_2");
             String email = "test@example.com";
             KeyPair keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-            userAdminSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC2" + username1, null, email, false, endEntityProfileId,
+            endEntityManagementSession.addUser(admin1, username1, "foo123", "CN=TESTKEYREC2" + username1, null, email, false, endEntityProfileId,
                     certProfileIdKeyRecoveryApprovals, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, approvalCAID);
             X509Certificate cert = (X509Certificate) signSession.createCertificate(admin1, username1, "foo123", keypair.getPublic());
             keyRecoverySession.addKeyRecoveryData(admin1, cert, username1, keypair);
 
             assertTrue("Couldn't mark user for recovery in database", !keyRecoverySession.isUserMarked(username1));
-            userAdminSession.prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
+            endEntityManagementSession.prepareForKeyRecovery(admin1, username1, endEntityProfileId, cert);
             fail("This should have caused an approval request");
         } catch (WaitingForApprovalException ex) {
             // OK
@@ -360,7 +360,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         // Remove users
         for (Object o : createdUsers) {
             try {
-                userAdminSession.deleteUser(admin1, (String) o);
+                endEntityManagementSession.deleteUser(admin1, (String) o);
             } catch (Exception ex) {
                 log.error("Remove user", ex);
             }
@@ -474,7 +474,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
 
     private void createUser(String cliUserName, String cliPassword, EndEntityInformation userdata) throws PersistenceException, AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, ApprovalException, WaitingForApprovalException, Exception {
-        userAdminSession.addUser(admin1, userdata, true);
+        endEntityManagementSession.addUser(admin1, userdata, true);
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());
@@ -493,7 +493,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         userdata.setDN(newDN);
         log.debug("changeUser: username=" + username + ", DN=" + userdata.getDN() + ", password=" + userdata.getPassword() + ", certProfileId="
                 + userdata.getCertificateProfileId());
-        userAdminSession.changeUser(admin, userdata, true);
+        endEntityManagementSession.changeUser(admin, userdata, true);
     }
 
     private void changeUserCertProfile(AuthenticationToken admin, String username, int newCertProfileId) throws AuthorizationDeniedException,
@@ -501,7 +501,7 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         EndEntityInformation userdata = endEntityAccessSession.findUser(admin, username);
         assertNotNull("findUser: " + username, userdata);
         userdata.setCertificateProfileId(newCertProfileId);
-        userAdminSession.changeUser(admin, userdata, true);
+        endEntityManagementSession.changeUser(admin, userdata, true);
     }
 
     private int createEndEntityProfile(AuthenticationToken admin, String endEntityProfileName, int[] certProfiles)

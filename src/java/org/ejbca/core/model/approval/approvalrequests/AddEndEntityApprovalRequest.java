@@ -72,10 +72,10 @@ public class AddEndEntityApprovalRequest extends ApprovalRequest {
 		throw new RuntimeException("This execution requires additional bean references.");
 	}
 	
-	public void execute(EndEntityManagementSession userAdminSession) throws ApprovalRequestExecutionException {
+	public void execute(EndEntityManagementSession endEntityManagementSession) throws ApprovalRequestExecutionException {
 		log.debug("Executing AddEndEntity for user:" + userdata.getUsername());
 		try{
-			userAdminSession.addUser(getRequestAdmin(), userdata, clearpwd);
+			endEntityManagementSession.addUser(getRequestAdmin(), userdata, clearpwd);
 		} catch( PersistenceException e){
 			throw new ApprovalRequestExecutionException("Error, user already exists or a database error ocurred", e);		
 		} catch (AuthorizationDeniedException e) {

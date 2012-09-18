@@ -45,18 +45,18 @@ public class HardTokenProfileDataHandler implements Serializable {
     private HardTokenSession hardtokensession; 
     private AccessControlSessionLocal authorizationsession;
     private CertificateProfileSession certificateProfileSession;
-    private EndEntityManagementSessionLocal useradminsession;
+    private EndEntityManagementSessionLocal endEntityManagementSession;
     private CaSession caSession; 
     private AuthenticationToken administrator;
     private InformationMemory info;
     
     /** Creates a new instance of HardTokenProfileDataHandler */
     public HardTokenProfileDataHandler(AuthenticationToken administrator, HardTokenSession hardtokensession, CertificateProfileSession certificatesession, AccessControlSessionLocal authorizationsession, 
-            EndEntityManagementSessionLocal useradminsession, CaSession caSession, InformationMemory info) {
+            EndEntityManagementSessionLocal endEntityManagementSession, CaSession caSession, InformationMemory info) {
        this.hardtokensession = hardtokensession;           
        this.authorizationsession = authorizationsession;
        this.certificateProfileSession = certificatesession;
-       this.useradminsession = useradminsession;
+       this.endEntityManagementSession = endEntityManagementSession;
        this.caSession = caSession;
        this.administrator = administrator;          
        this.info = info;       
@@ -107,7 +107,7 @@ public class HardTokenProfileDataHandler implements Serializable {
       
 	  int profileid = getHardTokenProfileId(name);
 	  
-      if(useradminsession.checkForHardTokenProfileId(profileid)) {
+      if(endEntityManagementSession.checkForHardTokenProfileId(profileid)) {
         return true;
       }
 	  if(hardtokensession.existsHardTokenProfileInHardTokenIssuer(profileid)) {

@@ -82,7 +82,7 @@ public class AutoEnrollServlet extends HttpServlet {
 	@EJB
 	private SignSessionLocal signSession;
 	@EJB
-	private EndEntityManagementSessionLocal userAdminSession;
+	private EndEntityManagementSessionLocal endEntityManagementSession;
 	@EJB
 	private CertificateProfileSessionLocal certificateProfileSession;
 	@EJB
@@ -223,10 +223,10 @@ public class AutoEnrollServlet extends HttpServlet {
 	        String password = PasswordGeneratorFactory.getInstance(PasswordGeneratorFactory.PASSWORDTYPE_LETTERSANDDIGITS).getNewPassword(8,8);
 	        userData.setPassword(password);
 	        try {
-	            if (userAdminSession.existsUser(username)) {
-	                userAdminSession.changeUser(internalAdmin, userData, true);
+	            if (endEntityManagementSession.existsUser(username)) {
+	                endEntityManagementSession.changeUser(internalAdmin, userData, true);
 	            } else {
-	                userAdminSession.addUser(internalAdmin, userData, true);
+	                endEntityManagementSession.addUser(internalAdmin, userData, true);
 	            }
 	        } catch (Exception e) {
 	            log.error("Could not add user "+username, e);
@@ -273,7 +273,7 @@ public class AutoEnrollServlet extends HttpServlet {
 	 * Return "OK" if renewal isn't needed.
 	 */
 	private String returnStatus(AuthenticationToken admin, String username) {
-		if (!userAdminSession.existsUser(username)) {
+		if (!endEntityManagementSession.existsUser(username)) {
 			return "NO_SUCH_USER";
 		}
 		Collection<Certificate> certificates = certificateStoreSession.findCertificatesByUsername(username);

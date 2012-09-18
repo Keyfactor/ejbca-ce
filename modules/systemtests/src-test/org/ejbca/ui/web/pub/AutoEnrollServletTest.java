@@ -55,7 +55,7 @@ public class AutoEnrollServletTest {
 
 	private static Logger log = Logger.getLogger(AutoEnrollServletTest.class);
 
-	private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);    
+	private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);    
 	private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
 	private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
 
@@ -292,7 +292,7 @@ public class AutoEnrollServletTest {
 
 	private void cleanUp(String username, String profileName) throws AuthorizationDeniedException {
 		try {
-			userAdminSession.revokeAndDeleteUser(admin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+			endEntityManagementSession.revokeAndDeleteUser(admin, username, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 		} catch (Exception e) {
 			log.debug(e);
 		}

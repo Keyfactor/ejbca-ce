@@ -154,7 +154,7 @@ public class ProtocolScepHttpTest extends CaTestCase {
     private String httpReqPath;
 
     private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {
@@ -184,13 +184,13 @@ public class ProtocolScepHttpTest extends CaTestCase {
         super.tearDown();
         // remove user
         try {
-        	userAdminSession.deleteUser(admin, userName1);
+        	endEntityManagementSession.deleteUser(admin, userName1);
         	log.debug("deleted user: " + userName1);
         } catch (Exception e) {
         	// NOPMD: ignore
         }
         try {
-        	userAdminSession.deleteUser(admin, userName2);
+        	endEntityManagementSession.deleteUser(admin, userName2);
         	log.debug("deleted user: " + userName2);
         } catch (Exception e) {
         	// NOPMD: ignore
@@ -471,15 +471,15 @@ public class ProtocolScepHttpTest extends CaTestCase {
     }
 
     private void createScepUser(String userName, String userDN) throws PersistenceException, CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException {
-        if(!userAdminSession.existsUser(userName)) {
-            userAdminSession.addUser(admin, getEndEntityInformation(userName, userDN), false);
+        if(!endEntityManagementSession.existsUser(userName)) {
+            endEntityManagementSession.addUser(admin, getEndEntityInformation(userName, userDN), false);
         } else {
             changeScepUser(userName, userDN);
         }
     }
 
     private void changeScepUser(String userName, String userDN) throws CADoesntExistsException, AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException, EjbcaException  {
-        userAdminSession.changeUser(admin, getEndEntityInformation(userName, userDN), false);
+        endEntityManagementSession.changeUser(admin, getEndEntityInformation(userName, userDN), false);
         log.debug("changing user: " + userName + ", foo123, " + userDN);
     }
 

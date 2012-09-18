@@ -90,7 +90,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     /**
      * This is the same constructor as in CrmtRAPbeRequestTest, but it's hard to refactor not to duplicate this code.
@@ -178,7 +178,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         super.tearDown();
         boolean cleanUpOk = true;
         try {
-            userAdminSession.deleteUser(admin, "cmptest");
+            endEntityManagementSession.deleteUser(admin, "cmptest");
         } catch (NotFoundException e) {
             // A test probably failed before creating the entity
             log.error("Failed to delete user \"cmptest\".");

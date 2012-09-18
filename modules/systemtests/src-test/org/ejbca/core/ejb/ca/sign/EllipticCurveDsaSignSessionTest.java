@@ -68,7 +68,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     private static final String RSA_USERNAME = "RsaUser";
     private static final String ECDSA_USERNAME = "EcdsaUser";
@@ -95,9 +95,9 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
 
     @AfterClass
     public static void afterClass() throws Exception {
-        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         cleanUpEndEntity(RSA_USERNAME);
-        userAdminSession.deleteUser(internalAdmin, ECDSA_USERNAME);
+        endEntityManagementSession.deleteUser(internalAdmin, ECDSA_USERNAME);
         removeTestCA();
         removeTestCA(TEST_ECDSA_CA_NAME);
         removeTestCA(TEST_ECDSA_IMPLICIT_CA_NAME);
@@ -106,7 +106,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testSignSessionECDSAWithRSACA() throws Exception {
         log.trace(">test12SignSessionECDSAWithRSACA()");
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(),
@@ -149,7 +149,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
     public void testBCPKCS10ECDSAWithRSACA() throws Exception {
         log.trace(">test13TestBCPKCS10ECDSAWithRSACA()");
 
-        userAdminSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"),
@@ -186,7 +186,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
     @Test
     public void testSignSessionECDSAWithECDSACA() throws Exception {
         log.trace(">test14SignSessionECDSAWithECDSACA()");
-        userAdminSession.setUserStatus(internalAdmin, ECDSA_USERNAME, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, ECDSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of '" + ECDSA_USERNAME + "' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(),
@@ -212,7 +212,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
     public void testBCPKCS10ECDSAWithECDSACA() throws Exception {
         log.trace(">test15TestBCPKCS10ECDSAWithECDSACA()");
 
-        userAdminSession.setUserStatus(internalAdmin, ECDSA_USERNAME, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, ECDSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN="
@@ -255,7 +255,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
         createEndEntity(ecDsaImplicitCaUserName, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 ecdsaimplicitlycacaid);
         try {
-            userAdminSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status of 'fooecdsaimpca' to NEW");
             // user that we know exists...
             X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, ecdsakeys.getPrivate(), ecdsakeys.getPublic(),
@@ -273,7 +273,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
                 fail("Verify failed: " + e.getMessage());
             }
         } finally {
-            userAdminSession.deleteUser(internalAdmin, ecDsaImplicitCaUserName);
+            endEntityManagementSession.deleteUser(internalAdmin, ecDsaImplicitCaUserName);
         }
         log.trace("<test16SignSessionECDSAWithECDSAImplicitlyCACA()");
     }
@@ -287,7 +287,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
         createEndEntity(ecDsaImplicitCaUserName, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                 ecdsaimplicitlycacaid);
         try {
-            userAdminSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status of 'foo' to NEW");
             // Create certificate request
             PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN="
@@ -318,7 +318,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
                 assertTrue("Verify failed: " + e.getMessage(), false);
             }
         } finally {
-            userAdminSession.deleteUser(internalAdmin, ecDsaImplicitCaUserName);
+            endEntityManagementSession.deleteUser(internalAdmin, ecDsaImplicitCaUserName);
         }
         log.trace("<test17TestBCPKCS10ECDSAWithECDSAImplicitlyCACA()");
     }
@@ -335,9 +335,9 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         userec.setPassword("cvc");
         try {
-            userAdminSession.addUser(internalAdmin, userec, false);
-            userAdminSession.setUserStatus(internalAdmin, eccUsername, EndEntityConstants.STATUS_NEW);
-            userAdminSession.setPassword(internalAdmin, eccUsername, "foo123");
+            endEntityManagementSession.addUser(internalAdmin, userec, false);
+            endEntityManagementSession.setUserStatus(internalAdmin, eccUsername, EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.setPassword(internalAdmin, eccUsername, "foo123");
             log.debug("Reset status of 'cvcec' to NEW");
             // user that we know exists...
             KeyPair ecdsasecpkeys = KeyTools.genKeys("secp256r1", AlgorithmConstants.KEYALGORITHM_ECDSA);
@@ -377,7 +377,7 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
         } finally {
             removeTestCA(TEST_CVC_ECC_DOCUMENT_VERIFIER_NAME);
             removeTestCA(TEST_CVC_ECC_CA_NAME);
-            userAdminSession.deleteUser(internalAdmin, eccUsername);
+            endEntityManagementSession.deleteUser(internalAdmin, eccUsername);
         }
 
         log.trace("<test21CVCertificate()");

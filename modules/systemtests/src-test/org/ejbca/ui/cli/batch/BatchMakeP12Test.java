@@ -45,7 +45,7 @@ public class BatchMakeP12Test extends CaTestCase {
     private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
     private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
     
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
 
     @Before
@@ -71,10 +71,10 @@ public class BatchMakeP12Test extends CaTestCase {
         String username = genRandomUserName();
         Object o = null;
         try {
-            userAdminSession.addUser(admin, username, "foo123", "C=SE, O=AnaTom, CN=" + username, "", username + "@anatom.se", false,
+            endEntityManagementSession.addUser(admin, username, "foo123", "C=SE, O=AnaTom, CN=" + username, "", username + "@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
-            userAdminSession.setClearTextPassword(admin, username, "foo123");
+            endEntityManagementSession.setClearTextPassword(admin, username, "foo123");
             o = new String("");
         } catch (Exception e) {
             assertNotNull("Failed to create user " + username, o);
@@ -85,10 +85,10 @@ public class BatchMakeP12Test extends CaTestCase {
         String username1 = genRandomUserName();
         o = null;
         try {
-        	userAdminSession.addUser(admin, username1, "foo123", "C=SE, O=AnaTom, CN=" + username1, "", username1 + "@anatom.se", false,
+        	endEntityManagementSession.addUser(admin, username1, "foo123", "C=SE, O=AnaTom, CN=" + username1, "", username1 + "@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,
                     EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
-        	userAdminSession.setClearTextPassword(admin, username1, "foo123");
+        	endEntityManagementSession.setClearTextPassword(admin, username1, "foo123");
             o = new String("");
         } catch (Exception e) {
             assertNotNull("Failed to create user " + username1, o);

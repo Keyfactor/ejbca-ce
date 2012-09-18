@@ -59,7 +59,7 @@ public interface EndEntityManagementProxySessionRemote {
      *            SQL query indication which endentityprofiles the
      *            administrator is authorized to view.
      * @param numberofrows the number of rows to fetch, use 0 for default
-     *            UserAdminConstants.MAXIMUM_QUERY_ROWCOUNT
+     *            EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT
      * @return a collection of EndEntityInformation.
      * @throws IllegalQueryException when query parameters internal rules isn't
      *            fulfilled.

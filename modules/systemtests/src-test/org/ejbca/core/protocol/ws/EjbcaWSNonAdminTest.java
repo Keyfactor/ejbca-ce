@@ -454,7 +454,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
 
         removeApprovalAdmins();
         hardTokenSessionRemote.removeHardToken(intAdmin, "12345678");
-        userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTTOKENUSER1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 
     }
 
@@ -476,7 +476,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         EndEntityInformation userData = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userData.setPassword(PASSWORD);
-        userAdminSession.addUser(intadmin, userData, true);
+        endEntityManagementSession.addUser(intadmin, userData, true);
 
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
@@ -517,7 +517,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     }
 
     protected void removeApprovalAdmins() throws Exception {
-        userAdminSession.deleteUser(intadmin, adminusername1);
+        endEntityManagementSession.deleteUser(intadmin, adminusername1);
         roleManagementSession.removeSubjectsFromRole(intadmin, roleAccessSession.findRole(getRoleName()), adminEntities);
     }
 }

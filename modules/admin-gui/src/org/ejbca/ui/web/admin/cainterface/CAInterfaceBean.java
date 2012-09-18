@@ -139,7 +139,7 @@ public class CAInterfaceBean implements Serializable {
           crlCreateSession = ejbLocalHelper.getCrlCreateSession();
           caadminsession = ejbLocalHelper.getCaAdminSession();
           authorizationsession = ejbLocalHelper.getAccessControlSession();
-          endEntityManagementSession = ejbLocalHelper.getUserAdminSession();
+          endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
           globalconfigurationsession = ejbLocalHelper.getGlobalConfigurationSession();             
           signsession = ejbLocalHelper.getSignSession();
           certcreatesession = ejbLocalHelper.getCertificateCreateSession();
@@ -514,11 +514,11 @@ public class CAInterfaceBean implements Serializable {
 		if (certreqhist != null) {
 			// First try to look up all info using the Certificate Request History from when the certificate was issued
 			// We need this since the certificate subjectDN might be a subset of the subjectDN in the template
-			certificateProfileId = certreqhist.getUserDataVO().getCertificateProfileId();
-			username = certreqhist.getUserDataVO().getUsername();
-			password = certreqhist.getUserDataVO().getPassword();
-			dn = certreqhist.getUserDataVO().getCertificateDN();
-			ei = certreqhist.getUserDataVO().getExtendedinformation();
+			certificateProfileId = certreqhist.getEndEntityInformation().getCertificateProfileId();
+			username = certreqhist.getEndEntityInformation().getUsername();
+			password = certreqhist.getEndEntityInformation().getPassword();
+			dn = certreqhist.getEndEntityInformation().getCertificateDN();
+			ei = certreqhist.getEndEntityInformation().getExtendedinformation();
 		}
 		final CertificateInfo certinfo = certificatesession.getCertificateInfo(CertTools.getFingerprintAsString(certificate));
 		if (certinfo != null) {
@@ -559,7 +559,7 @@ public class CAInterfaceBean implements Serializable {
 	private class CertReqUserCreateComparator implements Comparator<CertReqHistory> {
 		@Override
 		public int compare(CertReqHistory o1, CertReqHistory o2) {
-			return 0 - (o1.getUserDataVO().getTimeModified().compareTo(o2.getUserDataVO().getTimeModified()));
+			return 0 - (o1.getEndEntityInformation().getTimeModified().compareTo(o2.getEndEntityInformation().getTimeModified()));
 		}
 	}
 

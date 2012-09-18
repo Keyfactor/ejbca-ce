@@ -81,7 +81,7 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     private CertificateRequestSessionRemote certificateRequestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {
@@ -118,17 +118,17 @@ public class CustomCertSerialnumberTest extends CaTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
         try {
-            userAdminSession.deleteUser(internalAdmin, "foo");
+            endEntityManagementSession.deleteUser(internalAdmin, "foo");
             log.debug("deleted user: foo");
         } catch (Exception e) {
         }
         try {
-            userAdminSession.deleteUser(internalAdmin, "foo2");
+            endEntityManagementSession.deleteUser(internalAdmin, "foo2");
             log.debug("deleted user: foo2");
         } catch (Exception e) {
         }
         try {
-            userAdminSession.deleteUser(internalAdmin, "foo3");
+            endEntityManagementSession.deleteUser(internalAdmin, "foo3");
             log.debug("deleted user: foo3");
         } catch (Exception e) {
         }

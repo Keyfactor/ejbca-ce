@@ -109,7 +109,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
     private static X509Certificate ocspTestCert = null;
     private static KeyPair keys = null;
 
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
@@ -148,7 +148,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            userAdminSession.addUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest", null,
+            endEntityManagementSession.addUser(admin, "unidtest", "foo123", "C=SE,O=AnaTom,surname=Jansson,serialNumber=123456789,CN=UNIDTest", null,
                     "unidtest@anatom.se", false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
                     SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: unidtest, foo123, C=SE, O=AnaTom,surname=Jansson,serialNumber=123456789, CN=UNIDTest");
@@ -164,7 +164,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
             userData.setPassword("foo123");
-            userAdminSession.changeUser(admin, userData, false);
+            endEntityManagementSession.changeUser(admin, userData, false);
             log.debug("Reset status to NEW");
         }
         // Generate certificate for the new user
@@ -243,7 +243,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                 null);
         userData.setPassword("foo123");
-        userAdminSession.changeUser(admin, userData, false);
+        endEntityManagementSession.changeUser(admin, userData, false);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
         ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
@@ -283,7 +283,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                 null);
         userData.setPassword("foo123");
-        userAdminSession.changeUser(admin, userData, false);
+        endEntityManagementSession.changeUser(admin, userData, false);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
         ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
@@ -324,7 +324,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
                 null);
         userData.setPassword("foo123");
         userData.setStatus(EndEntityConstants.STATUS_NEW);
-        userAdminSession.changeUser(admin, userData, false);
+        endEntityManagementSession.changeUser(admin, userData, false);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
         ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
@@ -367,7 +367,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                 null);
         userData.setPassword("foo123");
-        userAdminSession.changeUser(admin, userData, false);
+        endEntityManagementSession.changeUser(admin, userData, false);
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
         ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());

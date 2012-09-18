@@ -150,7 +150,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
     private Certificate cacert;
     
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private ConfigurationSessionRemote confSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CertificateStoreSession certStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
@@ -1339,8 +1339,8 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         super.tearDown();
         
         try {
-            userAdminSession.revokeAndDeleteUser(admin, username, ReasonFlags.unused);
-            userAdminSession.revokeAndDeleteUser(admin, "fakeuser", ReasonFlags.unused);
+            endEntityManagementSession.revokeAndDeleteUser(admin, username, ReasonFlags.unused);
+            endEntityManagementSession.revokeAndDeleteUser(admin, "fakeuser", ReasonFlags.unused);
 
         } catch(Exception e){}
         
@@ -1425,15 +1425,15 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword(password);
         try {
-            //userAdminSession. addUser(ADMIN, user, true);
-            userAdminSession.addUser(admin, username, password, subjectDN, "rfc822name=" + username + "@primekey.se", username + "@primekey.se",
+            //endEntityManagementSession.addUser(ADMIN, user, true);
+            endEntityManagementSession.addUser(admin, username, password, subjectDN, "rfc822name=" + username + "@primekey.se", username + "@primekey.se",
                     true, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0,
                     caid);
             log.debug("created user: " + username);
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
-            userAdminSession.changeUser(admin, user, true);
-            userAdminSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.changeUser(admin, user, true);
+            endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
@@ -1697,7 +1697,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
             roleManagementSession.removeSubjectsFromRole(admin, roledata, accessUsers);
         }
 
-        userAdminSession.revokeAndDeleteUser(admin, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        endEntityManagementSession.revokeAndDeleteUser(admin, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
     }
 
 }

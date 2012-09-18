@@ -128,7 +128,7 @@ public class XKMSKISSTest {
     private RevocationSessionRemote revocationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RevocationSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
 
     @BeforeClass
@@ -202,9 +202,9 @@ public class XKMSKISSTest {
         if (endEntityAccessSession.findUser(administrator, username1) != null) {
             log.info("Error : User already exists in the database.");
         }
-        userAdminSession.addUser(administrator, username1, pwd, CertTools.stringToBCDNString(dn1), subjectaltname1, email1, false,
+        endEntityManagementSession.addUser(administrator, username1, pwd, CertTools.stringToBCDNString(dn1), subjectaltname1, email1, false,
                 endEntityProfileId, certificatetypeid, type, token, hardtokenissuerid, caid);
-        userAdminSession.setClearTextPassword(administrator, username1, pwd);
+        endEntityManagementSession.setClearTextPassword(administrator, username1, pwd);
         KeyPair keys1 = genKeys();
         cert1 = (X509Certificate) signSession.createCertificate(administrator, username1, "foo123", keys1.getPublic());
 
@@ -216,9 +216,9 @@ public class XKMSKISSTest {
         if (endEntityAccessSession.findUser(administrator, username2) != null) {
             log.info("Error : User already exists in the database.");
         }
-        userAdminSession.addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false,
+        endEntityManagementSession.addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false,
                 endEntityProfileId, profile1Id, type, token, hardtokenissuerid, caid);
-        userAdminSession.setClearTextPassword(administrator, username2, pwd);
+        endEntityManagementSession.setClearTextPassword(administrator, username2, pwd);
         KeyPair keys2 = genKeys();
         cert2 = (X509Certificate) signSession.createCertificate(administrator, username2, "foo123", keys2.getPublic());
 
@@ -229,9 +229,9 @@ public class XKMSKISSTest {
         if (endEntityAccessSession.findUser(administrator, username3) != null) {
             log.info("Error : User already exists in the database.");
         }
-        userAdminSession.addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false,
+        endEntityManagementSession.addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false,
                 endEntityProfileId, profile2Id, type, token, hardtokenissuerid, caid);
-        userAdminSession.setClearTextPassword(administrator, username3, pwd);
+        endEntityManagementSession.setClearTextPassword(administrator, username3, pwd);
         KeyPair keys3 = genKeys();
         signSession.createCertificate(administrator, username3, "foo123", keys3.getPublic());
         log.debug("username1: \"" + username1 + "\" dn1: \"" + dn1 + "\"");
@@ -1180,11 +1180,11 @@ public class XKMSKISSTest {
         
     	CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     	EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    	EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    	EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     	
-    	userAdminSession.deleteUser(administrator, username1);
-        userAdminSession.deleteUser(administrator, username2);
-        userAdminSession.deleteUser(administrator, username3);
+    	endEntityManagementSession.deleteUser(administrator, username1);
+        endEntityManagementSession.deleteUser(administrator, username2);
+        endEntityManagementSession.deleteUser(administrator, username3);
 
         endEntityProfileSession.removeEndEntityProfile(administrator, "XKMSTESTPROFILE");
 

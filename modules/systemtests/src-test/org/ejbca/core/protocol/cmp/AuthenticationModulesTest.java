@@ -138,7 +138,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private EndEntityAccessSessionRemote eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
     private ConfigurationSessionRemote confSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -298,7 +298,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
             assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
         } finally {
-            userAdminSession.revokeAndDeleteUser(ADMIN, revUsername, ReasonFlags.unused);
+            endEntityManagementSession.revokeAndDeleteUser(ADMIN, revUsername, ReasonFlags.unused);
             internalCertStoreSession.removeCertificate(fingerprint);
         }
 
@@ -844,7 +844,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         String clientDN = "CN=" + clientUsername + ",C=SE";
         String clientPassword = "foo123client";
         try {
-            userAdminSession.revokeAndDeleteUser(ADMIN, clientUsername, ReasonFlags.unused);
+            endEntityManagementSession.revokeAndDeleteUser(ADMIN, clientUsername, ReasonFlags.unused);
         } catch (Exception e) {
         }
         createUser(clientUsername, clientDN, clientPassword);
@@ -893,7 +893,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         String clientDN = "CN=" + clientUsername + ",C=SE";
         String clientPassword = "foo123client";
         try {
-            userAdminSession.revokeAndDeleteUser(ADMIN, clientUsername, ReasonFlags.unused);
+            endEntityManagementSession.revokeAndDeleteUser(ADMIN, clientUsername, ReasonFlags.unused);
         } catch (Exception e) {
         }
         createUser(clientUsername, clientDN, "foo123");
@@ -941,7 +941,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         String clientDN = "CN=" + clientUsername + ",C=SE";
         //String clientPassword = "foo123client";
         try {
-            userAdminSession.revokeAndDeleteUser(ADMIN, clientUsername, ReasonFlags.unused);
+            endEntityManagementSession.revokeAndDeleteUser(ADMIN, clientUsername, ReasonFlags.unused);
         } catch (Exception e) {
         }
         createUser(clientUsername, clientDN, "foo123");
@@ -988,7 +988,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         String clientDN = "CN=" + clientUsername + ",C=SE";
         String clientPassword = "foo123client";
         try {
-            userAdminSession.revokeAndDeleteUser(ADMIN, clientUsername, ReasonFlags.unused);
+            endEntityManagementSession.revokeAndDeleteUser(ADMIN, clientUsername, ReasonFlags.unused);
         } catch (Exception e) {
         }
         createUser(clientUsername, clientDN, "foo123ee");
@@ -1197,12 +1197,12 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
         } finally {
             try {
-                userAdminSession.revokeAndDeleteUser(ADMIN, testUsername, ReasonFlags.unused);
+                endEntityManagementSession.revokeAndDeleteUser(ADMIN, testUsername, ReasonFlags.unused);
             } catch (Exception e) {
             }
 
             try {
-                userAdminSession.revokeAndDeleteUser(ADMIN, otherUsername, ReasonFlags.unused);
+                endEntityManagementSession.revokeAndDeleteUser(ADMIN, otherUsername, ReasonFlags.unused);
             } catch (Exception e) {
             }
 
@@ -1214,10 +1214,10 @@ public class AuthenticationModulesTest extends CmpTestCase {
 
     @AfterClass
     public static void restoreConf() {
-        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         try {
-            userAdminSession.revokeAndDeleteUser(ADMIN, USERNAME, ReasonFlags.unused);
-            userAdminSession.revokeAndDeleteUser(ADMIN, "cmpTestUnauthorizedAdmin", ReasonFlags.keyCompromise);
+            endEntityManagementSession.revokeAndDeleteUser(ADMIN, USERNAME, ReasonFlags.unused);
+            endEntityManagementSession.revokeAndDeleteUser(ADMIN, "cmpTestUnauthorizedAdmin", ReasonFlags.keyCompromise);
         } catch (Exception e) {
         }
 
@@ -1309,15 +1309,14 @@ public class AuthenticationModulesTest extends CmpTestCase {
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword(password);
         try {
-            //userAdminSession. addUser(ADMIN, user, true);
-            userAdminSession.addUser(ADMIN, username, password, subjectDN, "rfc822name=" + username + "@primekey.se", username + "@primekey.se",
+            endEntityManagementSession.addUser(ADMIN, username, password, subjectDN, "rfc822name=" + username + "@primekey.se", username + "@primekey.se",
                     true, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0,
                     caid);
             log.debug("created user: " + username);
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
-            userAdminSession.changeUser(ADMIN, user, true);
-            userAdminSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.changeUser(ADMIN, user, true);
+            endEntityManagementSession.setUserStatus(ADMIN, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
@@ -1448,7 +1447,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
             roleManagementSession.removeSubjectsFromRole(ADMIN, roledata, accessUsers);
         }
 
-        userAdminSession.revokeAndDeleteUser(ADMIN, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        endEntityManagementSession.revokeAndDeleteUser(ADMIN, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
     }
 
     @Override

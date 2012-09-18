@@ -61,7 +61,7 @@ public class RegisterReqBean {
     private final EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
     private final EndEntityProfileSessionLocal endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession();
     private final CertificateProfileSessionLocal certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
-    private final EndEntityManagementSessionLocal userAdminSession = ejbLocalHelper.getUserAdminSession();
+    private final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
     private final ApprovalSessionLocal approvalSession = ejbLocalHelper.getApprovalSession();
     private final GlobalConfiguration globalConfiguration = ejbLocalHelper.getGlobalConfigurationSession().getCachedGlobalConfiguration();
 
@@ -347,7 +347,7 @@ public class RegisterReqBean {
         
         final int certProfileId = getCertificateProfileId();
         
-        if (userAdminSession.existsUser(username)) {
+        if (endEntityManagementSession.existsUser(username)) {
             errors.add("A user with that name exists already");
         }
         
@@ -368,7 +368,7 @@ public class RegisterReqBean {
         }
         
         try {
-            userAdminSession.canonicalizeUser(endEntity);
+            endEntityManagementSession.canonicalizeUser(endEntity);
             if (globalConfiguration.getEnableEndEntityProfileLimitations()) {
                 eeprofile.doesUserFullfillEndEntityProfile(endEntity, false);
                 

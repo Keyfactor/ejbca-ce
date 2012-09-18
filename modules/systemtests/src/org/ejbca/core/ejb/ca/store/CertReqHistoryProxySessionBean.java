@@ -47,8 +47,8 @@ public class CertReqHistoryProxySessionBean implements CertReqHistoryProxySessio
     }
 
     @Override
-    public void addCertReqHistoryData(Certificate cert, EndEntityInformation useradmindata) {
-        certReqHistorySession.addCertReqHistoryData(cert, useradmindata);  
+    public void addCertReqHistoryData(Certificate cert, EndEntityInformation endEntityInformation) {
+        certReqHistorySession.addCertReqHistoryData(cert, endEntityInformation);  
     }
 
     @Override

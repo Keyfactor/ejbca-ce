@@ -36,7 +36,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
- * Tests the UserData entity bean and some parts of UserAdminSession.
+ * Tests the EndEntityInformation entity bean and some parts of EndEntityManagementSession.
  *
  * @version $Id$
  */
@@ -47,7 +47,7 @@ public class AddLotsofUsersTest extends CaTestCase {
     private int userNo = 0;
     
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
@@ -95,10 +95,10 @@ public class AddLotsofUsersTest extends CaTestCase {
             if (endEntityAccessSession.findUser(administrator, username) != null) {
                 log.warn("User already exists in the database.");
             } else {
-            	userAdminSession.addUser(administrator, username, pwd, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
+            	endEntityManagementSession.addUser(administrator, username, pwd, CertTools.stringToBCDNString(dn), subjectaltname, email, false, profileid, certificatetypeid,
                         type, token, hardtokenissuerid, getTestCAId());
             }
-            userAdminSession.setClearTextPassword(administrator, username, pwd);
+            endEntityManagementSession.setClearTextPassword(administrator, username, pwd);
             if (i % 100 == 0) {
                 log.debug("Created " + i + " users...");
             }
@@ -110,7 +110,7 @@ public class AddLotsofUsersTest extends CaTestCase {
     @Test
     public void test02FindAllBatchUsersByStatusWithLimit() {
         log.trace(">test02FindAllBatchUsersByStatusWithLimit()");
-    	List<EndEntityInformation> userDataVOs = userAdminSession.findAllBatchUsersByStatusWithLimit(EndEntityConstants.STATUS_NEW);
+    	List<EndEntityInformation> userDataVOs = endEntityManagementSession.findAllBatchUsersByStatusWithLimit(EndEntityConstants.STATUS_NEW);
     	assertEquals("Did not returned the maximum hardcoded limit in query.", EndEntityManagementConstants.MAXIMUM_QUERY_ROWCOUNT, userDataVOs.size());
         log.trace("<test02FindAllBatchUsersByStatusWithLimit()");
     }

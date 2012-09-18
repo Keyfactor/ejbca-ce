@@ -81,7 +81,7 @@ public class CertReqServlet extends HttpServlet {
 	@EJB
 	private SignSessionLocal signSession;
 	@EJB
-	private EndEntityManagementSessionLocal userAdminSession;
+	private EndEntityManagementSessionLocal endEntityManagementSession;
 	@EJB
 	private GlobalConfigurationSessionLocal globalConfigurationSession;
 
@@ -115,7 +115,7 @@ public class CertReqServlet extends HttpServlet {
      */
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
     	new RequestInstance(getServletContext(), getServletConfig(), authenticationSession, endEntityAccessSession, caSession, certificateProfileSession, endEntityProfileSession, keyRecoverySession,
-        		signSession, userAdminSession, globalConfigurationSession).doPost(request, response);
+        		signSession, endEntityManagementSession, globalConfigurationSession).doPost(request, response);
     }
 
     /**

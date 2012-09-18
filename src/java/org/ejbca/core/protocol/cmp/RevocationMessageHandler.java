@@ -83,19 +83,18 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 	/** Parameter used to determine the type of protection for the response message */
 	private String responseProtection = null;
 	
-	private EndEntityManagementSession userAdminSession;
+	private EndEntityManagementSession endEntityManagementSession;
     private CertificateStoreSession certificateStoreSession;
     private AccessControlSession authorizationSession;
     private EndEntityAccessSession endEntityAccessSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
 	
-	public RevocationMessageHandler(final AuthenticationToken admin, final EndEntityManagementSession userAdminSession, final CaSessionLocal caSession, 
+	public RevocationMessageHandler(final AuthenticationToken admin, final EndEntityManagementSession endEntityManagementSession, final CaSessionLocal caSession, 
 	        final EndEntityProfileSessionLocal endEntityProfileSession, final CertificateProfileSession certificateProfileSession, final CertificateStoreSession certStoreSession,
 	        final AccessControlSession authSession, final EndEntityAccessSession eeAccessSession, final WebAuthenticationProviderSessionLocal authProviderSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
-		//raAuthenticationSecret = CmpConfiguration.getRAAuthenticationSecret();
 		responseProtection = CmpConfiguration.getResponseProtection();
-		this.userAdminSession = userAdminSession;
+		this.endEntityManagementSession = endEntityManagementSession;
         this.certificateStoreSession = certStoreSession;
         this.authorizationSession = authSession;
         this.endEntityAccessSession = eeAccessSession;
@@ -213,7 +212,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		        final String iMsg = INTRES.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
 		        LOG.info(iMsg);
 		        try {
-		            userAdminSession.revokeCert(admin, serno.getValue(), issuer.toString(), reason);
+		            endEntityManagementSession.revokeCert(admin, serno.getValue(), issuer.toString(), reason);
 		            status = ResponseStatus.SUCCESS;
 		        } catch (AuthorizationDeniedException e) {
 		            failInfo = FailInfo.NOT_AUTHORIZED;

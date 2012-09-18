@@ -91,7 +91,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     
     @BeforeClass
     public static void beforeClass() throws CertificateEncodingException, CertificateException, CADoesntExistsException, AuthorizationDeniedException {
@@ -219,7 +219,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
             checkCmpPKIConfirmMessage(userDN, cacert, resp);
         } finally {
-            userAdminSession.deleteUser(admin, CMP_USERNAME);
+            endEntityManagementSession.deleteUser(admin, CMP_USERNAME);
         }
     }
 
@@ -316,7 +316,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         checkCmpResponseGeneral(resp, issuerDN, subjectDN, cacert, nonce, transid, false, null);
         checkCmpPKIConfirmMessage(subjectDN, cacert, resp);
        } finally {
-           userAdminSession.deleteUser(admin, "Göran Strömförare");
+           endEntityManagementSession.deleteUser(admin, "Göran Strömförare");
        }
     }
 
@@ -328,7 +328,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            userAdminSession.addUser(admin, username, "foo123", userDN, null, "cmptest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
+            endEntityManagementSession.addUser(admin, username, "foo123", userDN, null, "cmptest@primekey.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: " + username + ", foo123, " + userDN);
         } catch (EJBException e) {
@@ -339,7 +339,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
 
         if (userExists) {
             log.debug("User " + username + " already exists.");
-            userAdminSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
     }

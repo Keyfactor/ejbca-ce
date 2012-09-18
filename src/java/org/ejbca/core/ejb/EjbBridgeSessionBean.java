@@ -102,7 +102,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB ServiceSessionLocal serviceSession;
 	@EJB SignSessionLocal signSession;
 	@EJB UserDataSourceSessionLocal userDataSourceSession;
-	@EJB EndEntityManagementSessionLocal userAdminSession;
+	@EJB EndEntityManagementSessionLocal endEntityManagementSession;
 	@EJB WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
 	@EJB EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
 	@EJB AccessUserAspectManagerSessionLocal accessUserAspectSession;
@@ -138,7 +138,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public ServiceSessionLocal getServiceSession() { return serviceSession; }
 	@Override public SignSessionLocal getSignSession() { return signSession; }
 	@Override public UserDataSourceSessionLocal getUserDataSourceSession() { return userDataSourceSession; }
-	@Override public EndEntityManagementSessionLocal getUserAdminSession() { return userAdminSession; }
+	@Override public EndEntityManagementSessionLocal getEndEntityManagementSession() { return endEntityManagementSession; }
 	@Override public WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession() { return webAuthenticationProviderSession; }
 	@Override public EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession() { return endEntityAuthenticationSession; }
 	@Override public AccessUserAspectManagerSessionLocal getAccessUserAspectSession() { return accessUserAspectSession; }

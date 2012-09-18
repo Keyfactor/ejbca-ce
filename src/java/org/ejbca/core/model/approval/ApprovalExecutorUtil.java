@@ -33,8 +33,8 @@ The check for these globally excluded classes are done in ApprovalExecutorUtil. 
 2. Fine grained excluded classes/methods. This is configured, hard coded, within a session bean that uses approval. These fine grained classes and methods uses an array of ApprovalOverridableClassName, which is passed to ApprovalExecutorUtil. The check itself is also done in ApprovalExecutorUtil. The array can be defined per approval function.
 For example:
 private static final ApprovalOveradableClassName[] NONAPPROVABLECLASSNAMES_SETUSERSTATUS = {
-		new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.UserAdminSessionBean","revokeUser"),
-		new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.UserAdminSessionBean","revokeCert"),
+		new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeUser"),
+		new ApprovalOveradableClassName("org.ejbca.core.ejb.ra.EndEntityManagementSessionBean","revokeCert"),
 		new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","unrevokeCert"),
 		new ApprovalOveradableClassName("org.ejbca.ui.web.admin.rainterface.RAInterfaceBean","markForRecovery"),
 		new ApprovalOveradableClassName("se.primeKey.cardPersonalization.ra.connection.ejbca.EjbcaConnection",null)

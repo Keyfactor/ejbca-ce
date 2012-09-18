@@ -44,23 +44,20 @@ import org.w3c.dom.Document;
 /**
  * Class generating a response for a revoke call
  * 
- * 
- * @author Philip Vendil 
- *
  * @version $Id$
  */
 
 public class RevokeResponseGenerator extends KRSSResponseGenerator {
 
-    private EndEntityManagementSession userAdminSession;
+    private EndEntityManagementSession endEntityManagementSession;
     
     public RevokeResponseGenerator(String remoteIP, RevokeRequestType req, Document requestDoc,
     		CaSession caadminsession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
-    		SignSession signSession, EndEntityManagementSession userAdminSession, CrlStoreSession crlSession) {
+    		SignSession signSession, EndEntityManagementSession endEntityManagementSession, CrlStoreSession crlSession) {
         super(remoteIP, req, requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
-				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
-        this.userAdminSession = userAdminSession;
+				keyRecoverySession, globalConfigurationSession, signSession, endEntityManagementSession, crlSession);
+        this.endEntityManagementSession = endEntityManagementSession;
     }
 	
 	/**
@@ -142,7 +139,7 @@ public class RevokeResponseGenerator extends KRSSResponseGenerator {
 		if(revocationCode.equals(password)){				
 			// revoke cert
 			try {								
-			    userAdminSession.revokeCert(raAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+			    endEntityManagementSession.revokeCert(raAdmin, cert.getSerialNumber(), CertTools.getIssuerDN(cert), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 				retval = cert;
 			} catch (WaitingForApprovalException e) {
 				// The request has been sent for approval. -> Only part of the information requested could be provided.

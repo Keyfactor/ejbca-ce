@@ -59,7 +59,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
     private final Random random = new Random();
 
     private CertificateRequestSessionRemote certificateRequestSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @Before
     public void setup() throws Exception {
@@ -96,7 +96,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
                     CertTools.getSubjectDN(cert), userdata.getDN());
             keyStore.getKey(alias, password.toCharArray());
         } finally {
-            userAdminSession.deleteUser(admin, username);
+            endEntityManagementSession.deleteUser(admin, username);
         }
         // Try again with a user that does not exist and use values that we will
         // break certificate generation
@@ -106,14 +106,14 @@ public class CertificateRequestSessionTest extends CaTestCase {
         String username2 = "softTokenRequestTest-" + random.nextInt();
         userdata.setUsername(username2); // Still the same Subject DN
         userdata.setPassword(password);
-        assertFalse(username2 + " already exists.", userAdminSession.existsUser(username2));
+        assertFalse(username2 + " already exists.", endEntityManagementSession.existsUser(username2));
         try {
             certificateRequestSession.processSoftTokenReq(admin, userdata, null, "1024", AlgorithmConstants.KEYALGORITHM_RSA, true);
             fail("Certificate creation did not fail as expected.");
         } catch (Exception e) {
             log.debug("Got an exception as expected: " + e.getMessage());
         } 
-        assertFalse("Failed keystore generation request never rolled back created user '" + username2 + "'.", userAdminSession.existsUser(username2));
+        assertFalse("Failed keystore generation request never rolled back created user '" + username2 + "'.", endEntityManagementSession.existsUser(username2));
     }
 
     /**
@@ -151,12 +151,12 @@ public class CertificateRequestSessionTest extends CaTestCase {
                 log.debug("Got an exception as expected: " + e.getMessage());
             }
             assertFalse("Failed certificate generation request never rolled back user created '" + username2 + "'.",
-                    userAdminSession.existsUser(username2));
+                    endEntityManagementSession.existsUser(username2));
         } finally {
-            userAdminSession.deleteUser(admin, username);
+            endEntityManagementSession.deleteUser(admin, username);
             //If the above test failed.
-            if(userAdminSession.existsUser(username2)) {
-                userAdminSession.deleteUser(admin, username2);
+            if(endEntityManagementSession.existsUser(username2)) {
+                endEntityManagementSession.deleteUser(admin, username2);
             }
         }
     }
@@ -182,7 +182,7 @@ public class CertificateRequestSessionTest extends CaTestCase {
             assertEquals("CertTools.getSubjectDN: " + CertTools.getSubjectDN(cert) + " expectedDn: " + expectedDn, expectedDn,
                     CertTools.getSubjectDN(cert));
         } finally {
-            userAdminSession.deleteUser(admin, username);
+            endEntityManagementSession.deleteUser(admin, username);
         }
     }
 

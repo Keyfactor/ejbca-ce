@@ -74,14 +74,14 @@ public class HardTokenInterfaceBean implements Serializable {
             hardtokensession = ejbLocalHelper.getHardTokenSession();
             hardtokenbatchsession = ejbLocalHelper.getHardTokenBatchJobSession();
             AccessControlSessionLocal authorizationsession = ejbLocalHelper.getAccessControlSession();
-            EndEntityManagementSessionLocal useradminsession = ejbLocalHelper.getUserAdminSession();
+            EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
             CertificateProfileSession certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
             keyrecoverysession = ejbLocalHelper.getKeyRecoverySession();
             CaSessionLocal caSession = ejbLocalHelper.getCaSession();
             initialized = true;
             this.informationmemory = ejbcawebbean.getInformationMemory();
             this.hardtokenprofiledatahandler = new HardTokenProfileDataHandler(admin, hardtokensession, certificateProfileSession,
-                    authorizationsession, useradminsession, caSession, informationmemory);
+                    authorizationsession, endEntityManagementSession, caSession, informationmemory);
         }
     }
 

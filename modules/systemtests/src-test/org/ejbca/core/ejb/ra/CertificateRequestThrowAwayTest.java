@@ -102,7 +102,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CertReqHistoryProxySessionRemote certReqHistoryProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertReqHistoryProxySessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @BeforeClass
     public static void setupBeforeClass() throws Exception {
@@ -169,7 +169,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
         assertEquals("Certificate was or wasn't available in database.", useCertificateStorage, certificateExists(certificate));
         // Clean up what we can
         if (useUserStorage) {
-            userAdminSession.deleteUser(admin, userData.getUsername());
+            endEntityManagementSession.deleteUser(admin, userData.getUsername());
         }
         if (useCertReqHistory) {
             certReqHistoryProxySession.removeCertReqHistoryData(CertTools.getFingerprintAsString(certificate));
@@ -249,7 +249,7 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
     }
 
     private boolean userDataExists(EndEntityInformation userData) {
-        return userAdminSession.existsUser(userData.getUsername());
+        return endEntityManagementSession.existsUser(userData.getUsername());
     }
 
     private boolean certificateRequestHistoryExists(Certificate certificate) {
