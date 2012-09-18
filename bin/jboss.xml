@@ -88,7 +88,7 @@
 
         <target name="jee:deployServices" depends="jee:deployServicesJBoss5,jee:deployServicesJBoss7" description="Deploys the services (mail etc)." />
 
-        <target name="jee:web-configure" depends="jee:web-configureJBoss5,jee:web-configureJBoss7" unless="web-noconfigure" description="Configures the web interface component of the application server." />
+        <target name="jee:web-configure" depends="jee:web-configureJBoss5,jee:web-configureJBoss7" unless="web.noconfigure" description="Configures the web interface component of the application server." />
 
         <target name="notifyDeploymentScanner" depends="notifyDeploymentScannerJBoss5,notifyDeploymentScannerJBoss7" description="Notifies the application server to perform (re)deployment of an application."/>
 
@@ -141,12 +141,12 @@
 
 	<target name="jee:web-configureJBoss5" depends="jee:check,detect-tomcatdir" unless="jboss7">
             <echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
-            <!-- If the ssl-noconfigure option was provided, don't deploy the SSL by commenting it out from the deployed file. -->
+            <!-- If the web.nosslconfigure option was provided, don't deploy the SSL by commenting it out from the deployed file. -->
             <condition property="definitions_away_begin" value="&#x3C;!--">
-                <isset property="ssl-noconfigure" />
+                <istrue value="${web.nosslconfigure}" />
             </condition>
             <condition property="definitions_away_end" value="-->">
-                <isset property="ssl-noconfigure" />
+                <istrue value="${web.nosslconfigure}" />
             </condition>
             <property name="definitions_away_begin" value="" />
             <property name="definitions_away_end" value="" />
@@ -262,7 +262,7 @@
             <antcall target="jee:web-configureJBoss7SSL" />
         </target>
 
-        <target name="jee:web-configureJBoss7SSL" depends="jee:check" unless="ssl-noconfigure">
+        <target name="jee:web-configureJBoss7SSL" depends="jee:check" unless="web.nosslconfigure">
             <echo message="Setting-up SSL web configration for JBoss 7." />
             <!-- Set-up the private port which requires client certificate -->
             <jboss:adm arg="/socket-binding-group=standard-sockets/socket-binding=httpspriv:add(port=${httpserver.privhttps})" />
@@ -295,7 +295,7 @@
         <!-- Implementation-independent targets. -->
         <!-- =================================== -->
 
-        <target name="jee:deploytruststore" depends="set-paths" unless="ssl-noconfigure">
+        <target name="jee:deploytruststore" depends="set-paths" unless="web.nosslconfigure">
 		<!-- copy the truststore file to the server -->
 		<available file="${ejbca.home}/p12/truststore.jks" property="truststore.file.present"/>
 		<fail message="Missing JKS truststorestore file in '${basedir}/p12/truststore.jks'" unless="truststore.file.present"/>
@@ -304,7 +304,7 @@
 		<chmod file="${jboss.server.home.dir}/${truststore.file}" perm="600"/>
 	</target>
 
-        <target name="jee:keystore" depends="jee:check" unless="ssl-noconfigure">
+        <target name="jee:keystore" depends="jee:check" unless="web.nosslconfigure">
             <echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
             <!-- copy the keystore file to the server -->
             <available file="p12/tomcat.jks" property="keystore.file.present"/>

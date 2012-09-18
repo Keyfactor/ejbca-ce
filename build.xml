@@ -59,7 +59,7 @@
 	  -->
     <target name="install" depends="fail-unless-appserver-detected, ejbca-ejb-cli" description="Install EJBCA application (only once)">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
-        <!-- By calling the jee targets we make sure that the target calls will succeed, but no changes will be made if web-noconfigure and ssl-noconfiugre properties have been set (unlike the plain web-configure/deploy-keystore targets which will fail hard with an error message). -->
+        <!-- By calling the jee targets we make sure that the target calls will succeed, but no changes will be made if web.noconfigure and web.nosslconfiugre properties have been set (unlike the plain web-configure/deploy-keystore targets which will fail hard with an error message). -->
         <antcall target="jee:web-configure"/>
         <antcall target="jee:keystore"/>
     </target>
@@ -659,7 +659,7 @@
     <!-- Note: This code is duplicated in cli.xml!!!!                               -->
     <!-- ========================================================================== -->
     
-	<target name="inputKeystorePassword" unless="jee.web-noconfigure">
+	<target name="inputKeystorePassword" unless="web.nosslconfigure">
 		<input message="Please enter the password of the truststore with the CA certificate for https?" addproperty="java.trustpassword" defaultvalue="changeit">
 			<handler classname="org.apache.tools.ant.input.SecureInputHandler" />
 		</input>
@@ -691,7 +691,7 @@
     <target name="web-configure" description="Set-up the web confiugration for the application server (including changes related to setting-up SSL keystore/truststore).">
       <fail message="You cannot run the web configuration target since it has been explicitly disabled in the web.properties file.">
         <condition>
-          <isset property="web-noconfigure" />
+          <istrue value="${web.noconfigure}" />
         </condition>
       </fail>
       <antcall target="inputKeystorePassword" />
@@ -704,7 +704,7 @@
     <target name="deploy-keystore" description="Deploy the keystore and truststore for the application server.">
       <fail message="You cannot run the keystore deployment target since the SSL configuration has been explicitly disabled in the web.properties file.">
         <condition>
-          <isset property="ssl-noconfigure" />
+          <istrue property="${web.nosslconfigure}" />
         </condition>
       </fail>
       <antcall target="jee:keystore" />
