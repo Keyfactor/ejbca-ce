@@ -139,7 +139,7 @@
             <chmod file="${jboss.farm.dir}/ejbca-mail-service.xml" perm="600"/>
         </target>
 
-	<target name="jee:web-configureJBoss5" depends="jee:check" unless="jboss7">
+	<target name="jee:web-configureJBoss5" depends="jee:check,detect-tomcatdir" unless="jboss7">
             <echo message="Using JBoss deploy directory ${jboss.farm.dir}"/>
             <!-- If the ssl-noconfigure option was provided, don't deploy the SSL by commenting it out from the deployed file. -->
             <condition property="definitions_away_begin" value="&#x3C;!--">
@@ -150,8 +150,37 @@
             </condition>
             <property name="definitions_away_begin" value="" />
             <property name="definitions_away_end" value="" />
-            
-            <antcall target="deploytomcat" />
+
+            <!-- Set dummy value if password is not defined. If defined the old value is kept -->
+            <property name="java.trustpassword" value="changeThisToThePassword"/>
+            <property name="httpsserver.password" value="changeThisToThePassword"/>
+
+            <!-- Copy the server configuration file to JBoss directory. -->
+            <copy todir="${tomcat.dir}" overwrite="true">
+                <fileset dir="src/appserver/jboss/${jboss.web}"/>
+                <filterchain>
+                    <tokenfilter>
+                        <replacestring from="@keystore.file@" to="${keystore.file}"/>
+                        <replacestring from="@truststore.file@" to="${truststore.file}"/>
+                        <replacestring from="@httpsserver.password@" to="${httpsserver.password}"/>
+                        <replacestring from="@java.trustpassword@" to="${java.trustpassword}"/>
+                        <replacestring from="@httpserver.pubhttp@" to="${httpserver.pubhttp}"/>
+                        <replacestring from="@httpserver.pubhttps@" to="${httpserver.pubhttps}"/>
+                        <replacestring from="@httpserver.privhttps@" to="${httpserver.privhttps}"/>
+                        <replacestring from="@web.contentencoding@" to="${web.contentencoding}"/>
+                        <replacestring from="@httpsserver.bindaddress.pubhttp@" to="${httpsserver.bindaddress.pubhttp}"/>
+                        <replacestring from="@httpsserver.bindaddress.pubhttps@" to="${httpsserver.bindaddress.pubhttps}"/>
+                        <replacestring from="@httpsserver.bindaddress.privhttps@" to="${httpsserver.bindaddress.privhttps}"/>
+                        <replacestring from="@definitions_away_begin@" to="${definitions_away_begin}"/>
+                        <replacestring from="@definitions_away_end@" to="${definitions_away_end}"/>
+                    </tokenfilter>
+                </filterchain>
+                <filterchain>
+                    <expandproperties />
+                </filterchain>
+            </copy>
+            <chmod file="${tomcat.dir}/server.xml" perm="600"/>
+            <chmod file="${tomcat.dir}/standalone.xml" perm="600"/>
         </target>
 
         <!-- Dummy target, we do not support live redeployments with JBoss 5 -->
@@ -287,43 +316,6 @@
             <!-- Also deploy the truststore -->
             <antcall target="jee:deploytruststore" />
         </target>
-
-        <!-- @TODO: We should rename this to something else.  This is currently
-             used only by the JBoss 5's web-configureJBoss5 target. -->
-	<target name="deploytomcat" depends="detect-tomcatdir">
-		<!-- Set dummy value if password is not defined. If defined the old value is kept -->
-
-
-		<property name="java.trustpassword" value="changeThisToThePassword"/>
-		<property name="httpsserver.password" value="changeThisToThePassword"/>
-
-		<copy todir="${tomcat.dir}" overwrite="true">
-			<fileset dir="src/appserver/jboss/${jboss.web}"/>
-			<filterchain>
-				<tokenfilter>
-					<replacestring from="@keystore.file@" to="${keystore.file}"/>
-					<replacestring from="@truststore.file@" to="${truststore.file}"/>
-					<replacestring from="@httpsserver.password@" to="${httpsserver.password}"/>
-					<replacestring from="@java.trustpassword@" to="${java.trustpassword}"/>
-					<replacestring from="@httpserver.pubhttp@" to="${httpserver.pubhttp}"/>
-					<replacestring from="@httpserver.pubhttps@" to="${httpserver.pubhttps}"/>
-					<replacestring from="@httpserver.privhttps@" to="${httpserver.privhttps}"/>
-					<replacestring from="@web.contentencoding@" to="${web.contentencoding}"/>
-					<replacestring from="@httpsserver.bindaddress.pubhttp@" to="${httpsserver.bindaddress.pubhttp}"/>
-					<replacestring from="@httpsserver.bindaddress.pubhttps@" to="${httpsserver.bindaddress.pubhttps}"/>
-					<replacestring from="@httpsserver.bindaddress.privhttps@" to="${httpsserver.bindaddress.privhttps}"/>
-					<replacestring from="@definitions_away_begin@" to="${definitions_away_begin}"/>
-					<replacestring from="@definitions_away_end@" to="${definitions_away_end}"/>
-				</tokenfilter>
-			</filterchain>
-			<filterchain>
-				<expandproperties />
-			</filterchain>
-		</copy>
-		<chmod file="${tomcat.dir}/server.xml" perm="600"/>
-		<chmod file="${tomcat.dir}/standalone.xml" perm="600"/>
-	</target>
-
 
         <!-- ================= -->
         <!-- Top-level targets -->
