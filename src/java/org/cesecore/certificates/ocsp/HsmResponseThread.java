@@ -27,6 +27,7 @@ import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
+import org.ejbca.core.protocol.ocsp.OCSPUtil;
 
 /**
  * This internal class exists for the sole purpose of catching deadlocks in the HSM hardware.
@@ -57,14 +58,9 @@ public class HsmResponseThread implements Callable<BasicOCSPResp> {
     @Override
     public BasicOCSPResp call() throws NoSuchProviderException, OCSPException {
         try {
-        final ContentSigner signer = new JcaContentSignerBuilder(signingAlgorithm).setProvider(provider).build(signerKey);
-        JcaX509CertificateHolder[] jcaChain = new JcaX509CertificateHolder[chain.length];
-        for(int i = 0; i < chain.length; ++i) {
-            jcaChain[i] = new JcaX509CertificateHolder(chain[i]);
-        }
-        
-        return basicRes.build(signer, jcaChain, new Date());
-        } catch(CertificateEncodingException e) {
+            final ContentSigner signer = new JcaContentSignerBuilder(signingAlgorithm).setProvider(provider).build(signerKey);
+            return basicRes.build(signer, OCSPUtil.convertCertificateChainToCertificateHolderChain(chain), new Date());
+        } catch (CertificateEncodingException e) {
             throw new OcspFailureException(e);
         } catch (OperatorCreationException e) {
             throw new OcspFailureException(e);

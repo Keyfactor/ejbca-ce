@@ -57,14 +57,12 @@ public final class TokenAndChainCache {
         } else {
             CertificateID certId = null;
             try {
-                certId = new JcaCertificateID(new SHA1DigestCalculator(MessageDigest.getInstance("SHA1")),  certificate, new BigInteger("1"));
+                certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(),  certificate, new BigInteger("1"));
             } catch (OCSPException e) {
                 throw new OcspFailureException(e);
             } catch (CertificateEncodingException e) {
                 throw new OcspFailureException(e);
-            } catch (NoSuchAlgorithmException e) {
-                throw new OcspFailureException(e);
-            }
+            } 
             return get(keyFromCertificateID(certId));
         }
     }
