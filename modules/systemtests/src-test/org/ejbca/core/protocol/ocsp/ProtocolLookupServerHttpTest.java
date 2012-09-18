@@ -171,7 +171,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
 
         // user that we know exists...
         ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
-        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+        assertNotNull("Failed to create certificate", ocspTestCert);
 
         // And an OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -247,7 +247,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
         ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
-        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+        assertNotNull("Failed to create certificate", ocspTestCert);
 
         // And an OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -287,7 +287,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
         ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
-        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+        assertNotNull("Failed to create certificate", ocspTestCert);
 
         // And an OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -328,7 +328,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
         ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
-        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+        assertNotNull("Failed to create certificate", ocspTestCert);
 
         // And an OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -371,7 +371,7 @@ public class ProtocolLookupServerHttpTest extends CaTestCase {
         log.debug("Reset status to NEW");
         // Generate certificate for the new/changed user
         ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "unidtest", "foo123", keys.getPublic());
-        assertNotNull("Misslyckades skapa cert", ocspTestCert);
+        assertNotNull("Failed to create certificate", ocspTestCert);
 
         // And an OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
