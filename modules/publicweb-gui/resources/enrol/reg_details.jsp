@@ -76,6 +76,7 @@
             </c:choose>
             <br />
         </c:forEach>
+        <br />
         
         <!-- Subject alt name fields -->
         <c:forEach var="field" items="${reg.altNameFields}">
@@ -83,16 +84,31 @@
             
             <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /></label>
             
-            <c:if test="${field.modifiable}">
-                <input name="<c:out value="${id}" />" id="<c:out value="${id}" />" type="text" size="25" title="<c:out value="${field.description}" />" value="<c:out value="${field.defaultValue}" />" />
-            </c:if>
-            <c:if test="${!field.modifiable}">
-                <select name="<c:out value="${id}" />" id="<c:out value="${id}" />" title="<c:out value="${field.description}" />">
-                  <c:forEach var="value" items="${field.allowedValuesList}">
-                    <option value="<c:out value="${value}" />"><c:out value="${value}" /></option>
-                  </c:forEach>
-                </select>
-            </c:if>
+            <c:choose>
+                <c:when test='${field.name == "rfc822name" && field.use}'>
+                    <!-- rfc822name (e-mail) with "use email field" checkbox -->
+                    <c:if test="${!field.required}">
+                        <input type="checkbox" name="emailinaltname" value="${field.id}" />
+                    </c:if>
+                    <c:if test="${field.required}">
+                        <input type="checkbox" checked="checked" disabled="disabled" />
+                        <input type="hidden" name="emailinaltname" value="${field.id}" />
+                    </c:if>
+                    Include e-mail in altname
+                </c:when>
+                <c:when test="${field.modifiable}">
+                    <!-- Free text -->
+                    <input name="<c:out value="${id}" />" id="<c:out value="${id}" />" type="text" size="25" title="<c:out value="${field.description}" />" value="<c:out value="${field.defaultValue}" />" />
+                </c:when>
+                <c:otherwise>
+                    <!-- Select box -->
+                    <select name="<c:out value="${id}" />" id="<c:out value="${id}" />" title="<c:out value="${field.description}" />">
+                      <c:forEach var="value" items="${field.allowedValuesList}">
+                        <option value="<c:out value="${value}" />"><c:out value="${value}" /></option>
+                      </c:forEach>
+                    </select>
+                </c:otherwise>
+            </c:choose>
             <br />
         </c:forEach>
         
