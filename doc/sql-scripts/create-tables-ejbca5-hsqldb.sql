@@ -94,8 +94,7 @@ CREATE TABLE CAData (
     status INTEGER NOT NULL,
     subjectDN VARCHAR(256),
     updateTime BIGINT NOT NULL,
-    PRIMARY KEY (cAId),
-    unique (name)
+    PRIMARY KEY (cAId)
 );
 
 CREATE TABLE CRLData (
