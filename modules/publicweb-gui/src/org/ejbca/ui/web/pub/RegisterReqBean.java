@@ -252,6 +252,18 @@ public class RegisterReqBean {
             formDNFields.put("e", email);
         }
         
+        if (request.getParameter("emailinaltname") != null) {
+            String id = request.getParameter("emailinaltname");
+            String altName = DNFieldDescriber.extractSubjectAltNameFromId(eeprofile, id);
+            String field = org.ietf.ldap.LDAPDN.escapeRDN(altName + "=" + email);
+            
+            if (subjectAltName.isEmpty()) {
+                subjectAltName = field;
+            } else {
+                subjectAltName += ", " + field;
+            }
+        }
+        
         remoteAddress = request.getRemoteAddr();
         initialized = true;
     }

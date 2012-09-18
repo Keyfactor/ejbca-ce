@@ -34,7 +34,7 @@ public final class DNFieldDescriber {
     private final int index;
     private final int[] fielddata;
     private final int fieldType;
-    private final boolean fieldModifiable, fieldRequired;
+    private final boolean fieldModifiable, fieldRequired, fieldUse;
     /** DN codes, e.g. CN, C, O */
     private final String name;
     private final String defaultValue;
@@ -51,6 +51,7 @@ public final class DNFieldDescriber {
         final int fieldNumber = fielddata[EndEntityProfile.NUMBER];
         this.fieldModifiable = eeprofile.isModifyable(fieldType, fieldNumber);
         this.fieldRequired = eeprofile.isRequired(fieldType, fieldNumber);
+        this.fieldUse = eeprofile.getUse(fieldType, fieldNumber);
         this.name = fieldTypeToString(fieldType, dnAltType);
         
         String value = eeprofile.getValue(fieldType, fieldNumber);
@@ -92,6 +93,10 @@ public final class DNFieldDescriber {
         return fieldRequired;
     }
     
+    public boolean isUse() {
+        return fieldUse;
+    }
+    
     public Map<String,Boolean> getAllowedValuesMap() {
         return allowedValuesMap;
     }
@@ -130,6 +135,7 @@ public final class DNFieldDescriber {
         if (langconst.equals("DN_PKIX_EMAILADDRESS")) { return "E-mail"; }
         if (langconst.equals("ALT_PKIX_DNSNAME")) { return "DNS Name"; }
         if (langconst.equals("ALT_PKIX_IPADDRESS")) { return "IP Address"; }
+        if (langconst.equals("ALT_PKIX_RFC822NAME")) { return "RFC822 Name (e-mail)"; }
         else { return langconst.replaceAll("DN_PKIX_", "").replaceAll("ALT_PKIX_", "").toLowerCase(Locale.ROOT); }
     }
     
