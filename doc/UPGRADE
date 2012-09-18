@@ -31,6 +31,10 @@ Note for upgrade to 5.1.0:
 In EJBCA 5.1.0 new versions of BouncyCastle jars are included. If you have been copying ejbca/lib/bc*.jar files to JBoss 
 (jboss/server/default/lib), you must remove the old jars from JBoss and copy new jars from EJBCA.
 
+The class CliAuthenticationToken and associated classes have been moved from the CLI module to reside next to the other 
+authentication classes under src. This means that approval requests using the CliAuthenticationToken created in 5.0.x will not 
+be forwards compatible.  
+
 From EJBCA 5.0.x to EJBCA 5.0.x
 -------------------------------
 See release notes for details between certain versions. 
