@@ -41,8 +41,6 @@ import org.w3c.dom.Document;
 /**
  * Class generating a response for a reissue call
  * 
- * 
- * @author Philip Vendil 
  *
  * @version $Id$
  */
@@ -52,15 +50,15 @@ public class ReissueResponseGenerator extends KRSSResponseGenerator {
 
 	private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
-	private EndEntityManagementSession userAdminSession;
+	private EndEntityManagementSession endEntityManagementSession;
 	
 	public ReissueResponseGenerator(String remoteIP, ReissueRequestType req, Document requestDoc,
     		CaSession caadminsession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
-    		SignSession signSession, EndEntityManagementSession userAdminSession, CrlStoreSession crlSession) {
+    		SignSession signSession, EndEntityManagementSession endEntityManagementSession, CrlStoreSession crlSession) {
 		super(remoteIP, req,requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
-				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
-		this.userAdminSession = userAdminSession;
+				keyRecoverySession, globalConfigurationSession, signSession, endEntityManagementSession, crlSession);
+		this.endEntityManagementSession = endEntityManagementSession;
 	}
 	
 	/**
@@ -134,7 +132,7 @@ public class ReissueResponseGenerator extends KRSSResponseGenerator {
 			userdata.setStatus(EndEntityConstants.STATUS_NEW);
 			userdata.setPassword(password);
 
-			userAdminSession.changeUser(raAdmin, userdata, true);
+			endEntityManagementSession.changeUser(raAdmin, userdata, true);
 			retval = password;
 		} catch (Exception e) {
 			log.error(intres.getLocalizedMessage("xkms.errorsettinguserstatus", userdata.getUsername()),e);			

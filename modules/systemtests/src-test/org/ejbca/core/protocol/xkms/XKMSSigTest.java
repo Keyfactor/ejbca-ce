@@ -101,12 +101,11 @@ public class XKMSSigTest {
 
     private static JAXBContext jAXBContext = null;
     private static Marshaller marshaller = null;
-//    private static Unmarshaller unmarshaller = null;
     private static DocumentBuilderFactory dbf = null;
 
     private static int caid;
 
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
 	private AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("XKMSSigTest"));
 
@@ -119,8 +118,6 @@ public class XKMSSigTest {
 			marshaller = XKMSUtil.getNamespacePrefixMappedMarshaller(jAXBContext);
             dbf = DocumentBuilderFactory.newInstance();
             dbf.setNamespaceAware(true);
-            //dbf.setExpandEntityReferences(true);	// Default: true
-//            unmarshaller = jAXBContext.createUnmarshaller();
 
         } catch (JAXBException e) {
             log.error("Error initializing RequestAbstractTypeResponseGenerator", e);
@@ -148,9 +145,9 @@ public class XKMSSigTest {
     	log.trace(">test00SetupAccessRights");
         username = baseUsername + "1";
         try {
-            userAdminSession.addUser(administrator, username, "foo123", "CN=superadmin", null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
+            endEntityManagementSession.addUser(administrator, username, "foo123", "CN=superadmin", null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ADMINISTRATOR.toEndEntityType(), SecConst.TOKEN_SOFT_JKS, 0, caid);
-            userAdminSession.setClearTextPassword(administrator, username, "foo123");
+            endEntityManagementSession.setClearTextPassword(administrator, username, "foo123");
         } catch (Exception e) {
             assertTrue("Failed to create user " + username, false);
         }
@@ -333,7 +330,7 @@ public class XKMSSigTest {
     @Test
     public void test04SendRevokedRequest() throws Exception {
     	log.trace(">test04SendRevokedRequest");
-        userAdminSession.revokeUser(administrator, username, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
+        endEntityManagementSession.revokeUser(administrator, username, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
         KeyStore clientKeyStore = KeyStore.getInstance("JKS");
         keystorefile = new File(tmpfile.getAbsolutePath() + "/" + username + ".jks");
@@ -569,7 +566,7 @@ public class XKMSSigTest {
     @Test
     public void test99RemoveUser() throws Exception {
     	AuthenticationToken administrator = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SYSTEMTEST"));
-        userAdminSession.deleteUser(administrator, username);
+        endEntityManagementSession.deleteUser(administrator, username);
         keystorefile.deleteOnExit();
     }
 }

@@ -77,7 +77,7 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 	 * @param issuerDN should be the same as CertTools.getIssuerDN(incert)
 	 * @param UserDataVO, the data used to issue the certificate. 
 	 */
-	public CertReqHistoryData(Certificate incert, String issuerDN, EndEntityInformation useradmindata) {
+	public CertReqHistoryData(Certificate incert, String issuerDN, EndEntityInformation endEntityInformation) {
 		// Exctract fields to store with the certificate.
 		setFingerprint(CertTools.getFingerprintAsString(incert));
         setIssuerDN(issuerDN);
@@ -86,19 +86,19 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
         }
         setSerialNumber(CertTools.getSerialNumber(incert).toString());
         setTimestamp(new Date().getTime());
-		setUsername(useradmindata.getUsername());
-		storeUserDataVO(useradmindata);
+		setUsername(endEntityInformation.getUsername());
+		storeUserDataVO(endEntityInformation);
 	}
-	private void storeUserDataVO(EndEntityInformation useradmindata) {
+	private void storeUserDataVO(EndEntityInformation endEntityInformation) {
 		try {
 			// Save the user admin data in xml encoding.
 			final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 			final XMLEncoder encoder = new XMLEncoder(baos);
-			encoder.writeObject(useradmindata);
+			encoder.writeObject(endEntityInformation);
 			encoder.close();
 			final String s = baos.toString("UTF-8");
 			if (log.isDebugEnabled()) {
-				log.debug(printUserDataVOXML("useradmindata:",s));
+				log.debug(printUserDataVOXML("endEntityInformation:",s));
 			}
 			setUserDataVO(s);
 		} catch (UnsupportedEncodingException e) {
@@ -254,18 +254,18 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 			throw new RuntimeException(e);
 		}
 		final XMLDecoder decoder = new XMLDecoder(new ByteArrayInputStream(baXML));
-		EndEntityInformation useradmindata = null;
+		EndEntityInformation endEntityInformation = null;
 		try {
 			Object o = decoder.readObject();
 			try  {
-				useradmindata  = (EndEntityInformation)o;
+				endEntityInformation  = (EndEntityInformation)o;
 			} catch( ClassCastException e ) {
 				if (log.isTraceEnabled()) {
 					log.trace("Trying to decode old type of CertReqHistoryData: "+e.getMessage());
 				}
 				// It is probably an older object of type UserDataVO
 				UserDataVO olddata = (UserDataVO)o;
-				useradmindata = olddata.toEndEntityInformation();
+				endEntityInformation = olddata.toEndEntityInformation();
 			}
 		} catch( Throwable t ) { // NOPMD: catch all to try to repair
 			// try to repair the end of the XML string.
@@ -300,10 +300,10 @@ public class CertReqHistoryData extends ProtectedData implements Serializable {
 		/* Code that fixes broken XML that has actually been parsed. It seems that the decoder is not checking for the java end tag.
 		 * Currently this is left out in order to not mess with working but broken XML.
 		if ( sXML.indexOf("<java")>0 && sXML.indexOf("</java>")<0 ) {
-			storeUserDataVO(useradmindata); // store it right				
+			storeUserDataVO(endEntityInformation); // store it right				
 		}
 		 */
-		return useradmindata;
+		return endEntityInformation;
 	}
 	private String printUserDataVOXML(String sComment, String sXML) {
 		final StringWriter sw = new StringWriter();

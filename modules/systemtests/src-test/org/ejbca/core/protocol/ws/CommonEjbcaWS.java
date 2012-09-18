@@ -238,7 +238,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final PublisherProxySessionRemote publisherSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private final PublisherQueueSessionRemote publisherQueueSession = EjbRemoteHelper.INSTANCE.getRemoteSession(PublisherQueueSessionRemote.class);
-    protected final EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    protected final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     
     public CommonEjbcaWS() {
 
@@ -282,7 +282,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
         RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
         RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         
         EndEntityInformation user1 = new EndEntityInformation();
         user1.setUsername(TEST_ADMIN_USERNAME);
@@ -299,12 +299,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user1.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         user1.setType(new EndEntityType(EndEntityTypes.ENDUSER, EndEntityTypes.ADMINISTRATOR));
 
-        if (!userAdminSession.existsUser(TEST_ADMIN_USERNAME)) {
+        if (!endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
         	log.info("Adding new user: "+user1.getUsername());
-        	userAdminSession.addUser(intAdmin, user1, true);
+        	endEntityManagementSession.addUser(intAdmin, user1, true);
         } else {
         	log.info("Changing user: "+user1.getUsername());
-        	userAdminSession.changeUser(intAdmin, user1, true);
+        	endEntityManagementSession.changeUser(intAdmin, user1, true);
         }
         boolean adminExists = false;
         RoleData role = roleAccessSession.findRole(wsadminRoleName);
@@ -341,12 +341,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         user2.setCertificateProfileId(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
         user2.setType(EndEntityTypes.ENDUSER.toEndEntityType());
 
-        if (!userAdminSession.existsUser(TEST_NONADMIN_USERNAME)) {
+        if (!endEntityManagementSession.existsUser(TEST_NONADMIN_USERNAME)) {
         	log.debug("Adding new user: "+user2.getUsername());
-        	userAdminSession.addUser(intAdmin, user2, true);
+        	endEntityManagementSession.addUser(intAdmin, user2, true);
         } else {
         	log.debug("Changing user: "+user2.getUsername());
-        	userAdminSession.changeUser(intAdmin, user2, true);
+        	endEntityManagementSession.changeUser(intAdmin, user2, true);
         }
 
         BatchMakeP12 batch = new BatchMakeP12();
@@ -2606,7 +2606,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
         RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
         RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         
             // Remove from role
     	RoleData role = roleAccessSession.findRole(wsadminRoleName);
@@ -2614,17 +2614,17 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     		roleManagementSession.remove(intAdmin, role);
 			accessControlSession.forceCacheExpire();
     	}
-    	if (userAdminSession.existsUser(TEST_ADMIN_USERNAME)) {
+    	if (endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
     		// Remove user
-    		userAdminSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+    		endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
     	}
     	// Remove role
-    	if (userAdminSession.existsUser(TEST_ADMIN_USERNAME)) {
+    	if (endEntityManagementSession.existsUser(TEST_ADMIN_USERNAME)) {
     		// Remove user
-    		userAdminSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+    		endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_ADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
     	}
-        if (userAdminSession.existsUser(TEST_NONADMIN_USERNAME)) {
-            userAdminSession.revokeAndDeleteUser(intAdmin, TEST_NONADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+        if (endEntityManagementSession.existsUser(TEST_NONADMIN_USERNAME)) {
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_NONADMIN_USERNAME, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         }
         if (new File(TEST_ADMIN_FILE).exists()) {
             new File(TEST_ADMIN_FILE).delete();
@@ -2636,42 +2636,42 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // Remove test user's ignore errors, because it probably is because the user does not exist.
         // possibly because some of the tests failed.
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	// NOPMD: ignore
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER2, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER2, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	// NOPMD: ignore
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	// NOPMD: ignore
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1CVCRSA, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA1_WSTESTUSER1CVCRSA, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	// NOPMD: ignore
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1CVCEC, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, CA2_WSTESTUSER1CVCEC, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	// NOPMD: ignore
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSERKEYREC1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTUSERKEYREC1", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	// NOPMD: ignore
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER30", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER30", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	// NOPMD: ignore
         }
         try {
-            userAdminSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER31", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            endEntityManagementSession.revokeAndDeleteUser(intAdmin, "WSTESTUSER31", RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {
         	// NOPMD: ignore
         }

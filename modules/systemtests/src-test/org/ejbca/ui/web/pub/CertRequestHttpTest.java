@@ -76,7 +76,7 @@ public class CertRequestHttpTest extends CaTestCase {
     private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CertRequestHttpTest"));
 
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {    
@@ -96,7 +96,7 @@ public class CertRequestHttpTest extends CaTestCase {
     public void tearDown() throws Exception {
         super.tearDown();
     	try {
-    		userAdminSession.deleteUser(admin, "reqtest");
+    		endEntityManagementSession.deleteUser(admin, "reqtest");
     	} catch (NotFoundException e) {
     		// NOPMD:ignore if the user was not created
     	}
@@ -412,7 +412,7 @@ public class CertRequestHttpTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            userAdminSession.addUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@primekey.se", false,
+            endEntityManagementSession.addUser(admin, "reqtest", "foo123", "C=SE,O=PrimeKey,CN=ReqTest", null, "reqtest@primekey.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), tokentype, 0, caid);
             log.debug("created user: reqtest, foo123, C=SE, O=PrimeKey, CN=ReqTest");
         } catch (EJBException ejbException) {
@@ -440,7 +440,7 @@ public class CertRequestHttpTest extends CaTestCase {
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, tokentype, 0, null);
             endEntityInformation.setPassword("foo123");
             endEntityInformation.setStatus(EndEntityConstants.STATUS_NEW);
-            userAdminSession.changeUser(admin, endEntityInformation, false);
+            endEntityManagementSession.changeUser(admin, endEntityInformation, false);
             log.debug("Reset status to NEW");
         }
     }
@@ -450,7 +450,7 @@ public class CertRequestHttpTest extends CaTestCase {
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         endEntityInformation.setPassword("foo123");
         endEntityInformation.setStatus(status);
-        userAdminSession.changeUser(admin, endEntityInformation, false);
+        endEntityManagementSession.changeUser(admin, endEntityInformation, false);
         log.debug("Set status to: " + status);
     }
 

@@ -70,13 +70,13 @@ public class KeyRecoveryApprovalRequest extends ApprovalRequest {
 		throw new RuntimeException("This execution requires additional bean references.");
 	}
 
-    public void execute(EndEntityManagementSession userAdminSession) throws ApprovalRequestExecutionException {
+    public void execute(EndEntityManagementSession endEntityManagementSession) throws ApprovalRequestExecutionException {
         log.debug("Executing mark for recovery for user:" + username);
         try {
             if (recoverNewestCert) {
-                userAdminSession.prepareForKeyRecovery(getRequestAdmin(), username, getEndEntityProfileId(), null);
+                endEntityManagementSession.prepareForKeyRecovery(getRequestAdmin(), username, getEndEntityProfileId(), null);
             } else {
-                userAdminSession.prepareForKeyRecovery(getRequestAdmin(), username, getEndEntityProfileId(), cert);
+                endEntityManagementSession.prepareForKeyRecovery(getRequestAdmin(), username, getEndEntityProfileId(), cert);
             }
         } catch (AuthorizationDeniedException e) {
             throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);

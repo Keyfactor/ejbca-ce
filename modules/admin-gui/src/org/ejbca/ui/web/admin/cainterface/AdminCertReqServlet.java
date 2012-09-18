@@ -192,8 +192,7 @@ public class AdminCertReqServlet extends HttpServlet {
         if (admin == null) {
             throw new IOException("Authorization denied for certificate: "+CertTools.getSubjectDN(certs[0]));
         }
-        //AuthenticationToken admin = userAdminSession.getAdmin(certs[0]);
-        
+ 
         RequestHelper.setDefaultCharacterEncoding(request);
 
         byte[] buffer = pkcs10Bytes(request.getParameter("pkcs10req"));

@@ -100,6 +100,6 @@ public interface EjbBridgeSessionLocal {
 	SignSessionLocal getSignSession();
 	CertificateCreateSessionLocal getCertificateCreateSession();
 	UserDataSourceSessionLocal getUserDataSourceSession();
-	EndEntityManagementSessionLocal getUserAdminSession();
+	EndEntityManagementSessionLocal getEndEntityManagementSession();
 	WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession();
 }

@@ -72,7 +72,7 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -92,10 +92,10 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
     
     @AfterClass
     public static void afterClass() throws Exception {
-        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SignSessionTest"));
         try {
-            userAdminSession.deleteUser(internalAdmin, USER_PRIVKEYUSAGEPERIOD);
+            endEntityManagementSession.deleteUser(internalAdmin, USER_PRIVKEYUSAGEPERIOD);
             log.debug("deleted user: " + USER_PRIVKEYUSAGEPERIOD + ", foo123, " + DN_PRIVKEYUSAGEPERIOD);
         } catch (Exception e) { /* ignore */
             log.debug("a");
@@ -278,7 +278,7 @@ public class PrivateKeyUsageSignSessionTest extends SignSessionCommon {
                 SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         user.setStatus(EndEntityConstants.STATUS_NEW);
-        userAdminSession.changeUser(internalAdmin, user, false);
+        endEntityManagementSession.changeUser(internalAdmin, user, false);
         
         X509Certificate cert = (X509Certificate) signSession.createCertificate(internalAdmin, USER_PRIVKEYUSAGEPERIOD, "foo123", rsakeyPrivKeyUsagePeriod.getPublic());
         assertNotNull("Failed to create certificate", cert);

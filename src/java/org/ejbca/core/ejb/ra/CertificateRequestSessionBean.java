@@ -105,7 +105,7 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
     @EJB
     private GlobalConfigurationSessionLocal globalConfigurationSession;
     @EJB
-    private EndEntityManagementSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private SignSessionLocal signSession;
     @Resource
@@ -221,17 +221,17 @@ public class CertificateRequestSessionBean implements CertificateRequestSessionR
         // Add or edit user
         try {
             String username = userdata.getUsername();
-            if (useUserStorage && userAdminSession.existsUser(username)) {
+            if (useUserStorage && endEntityManagementSession.existsUser(username)) {
                 if (log.isDebugEnabled()) {
                     log.debug("User " + username + " exists, update the userdata. New status of user '" + userdata.getStatus() + "'.");
                 }
-                userAdminSession.changeUser(admin, userdata, clearpwd, fromwebservice);
+                endEntityManagementSession.changeUser(admin, userdata, clearpwd, fromwebservice);
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("New User " + username + ", adding userdata. New status of user '" + userdata.getStatus() + "'.");
                 }
                 // addUserfromWS also checks useUserStorage internally, so don't dupliace the check
-                userAdminSession.addUserFromWS(admin, userdata, clearpwd);
+                endEntityManagementSession.addUserFromWS(admin, userdata, clearpwd);
             }
         } catch (WaitingForApprovalException e) {
             sessionContext.setRollbackOnly(); // This is an application exception so it wont trigger a roll-back automatically

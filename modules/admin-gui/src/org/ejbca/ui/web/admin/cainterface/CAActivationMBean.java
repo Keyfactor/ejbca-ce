@@ -78,7 +78,7 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 		    final AccessUserAspectManagerSessionLocal accessUserAspectManagerSession = ejbLocalhelper.getAccessUserAspectSession();
 			final CAAdminSession caadminsession = ejbLocalhelper.getCaAdminSession();
 			final CaSession caSession = ejbLocalhelper.getCaSession();
-			final EndEntityManagementSessionLocal adminsession = ejbLocalhelper.getUserAdminSession();
+			final EndEntityManagementSessionLocal adminsession = ejbLocalhelper.getEndEntityManagementSession();
 			final GlobalConfigurationSession globalconfigurationsession = ejbLocalhelper.getGlobalConfigurationSession();
 			final CertificateProfileSession certificateProfileSession = ejbLocalhelper.getCertificateProfileSession();
 			final EndEntityProfileSession endEntityProfileSession = ejbLocalhelper.getEndEntityProfileSession();

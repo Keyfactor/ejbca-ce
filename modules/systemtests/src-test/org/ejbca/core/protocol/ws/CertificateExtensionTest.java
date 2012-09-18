@@ -145,7 +145,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	        // do nothing
 	    }
 	    try {
-	        this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+	        this.endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_USER, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
 	    } catch (Exception e) {
 	        // do nothing
 	    }

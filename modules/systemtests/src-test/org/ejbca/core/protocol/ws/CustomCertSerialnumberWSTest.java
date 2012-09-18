@@ -169,13 +169,13 @@ public class CustomCertSerialnumberWSTest extends CommonEjbcaWS {
 			this.endEntityProfileSession.removeEndEntityProfile(intAdmin, END_ENTITY_PROFILE);
         } catch (AuthorizationDeniedException e) {} // NOPMD: do nothing
 		try {
-            this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            this.endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_USER1, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {} // NOPMD: do nothing
 		try {
-            this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER2, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            this.endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_USER2, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {} // NOPMD: do nothing
 		try {
-            this.userAdminSession.revokeAndDeleteUser(intAdmin, TEST_USER3, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
+            this.endEntityManagementSession.revokeAndDeleteUser(intAdmin, TEST_USER3, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
         } catch (Exception e) {} // NOPMD: do nothing
 		try {
 	        super.cleanUpAdmins(this.wsadminRoleName);

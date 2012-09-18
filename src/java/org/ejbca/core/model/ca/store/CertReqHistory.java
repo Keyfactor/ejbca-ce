@@ -17,14 +17,10 @@ import java.util.Date;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
 
-
-
-
 /**
  * Value object class containing the data stored in the 
  * CertReqHistory Entity Bean. See constructor for details of its fields.
  * 
- * @author Philip Vendil
  * @version $Id$
  * @see org.ejbca.core.ejb.ca.store.CertReqHistoryDataBean  
  */
@@ -36,7 +32,7 @@ public class CertReqHistory implements Serializable{
     private String issuerDN;
     private String username;
     private Date timestamp;
-    private EndEntityInformation userDataVO;
+    private EndEntityInformation endEntityInformation;
     
     /**
      * @param fingerprint the PK of the certificate in the CertificateDataBean
@@ -55,7 +51,7 @@ public class CertReqHistory implements Serializable{
         this.issuerDN = issuerDN;
         this.username = username;
         this.timestamp = timestamp;
-        this.userDataVO = userDataVO;
+        this.endEntityInformation = userDataVO;
     }
     /**
      * @return Returns the issuerDN.
@@ -82,10 +78,10 @@ public class CertReqHistory implements Serializable{
         return timestamp;
     }
     /**
-     * @return Returns the userAdminData.
+     * @return Returns the EndEntityInformation.
      */
-    public EndEntityInformation getUserDataVO() {
-        return userDataVO;
+    public EndEntityInformation getEndEntityInformation() {
+        return endEntityInformation;
     }
     /**
      * @return Returns the username.

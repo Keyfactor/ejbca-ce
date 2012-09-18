@@ -76,10 +76,10 @@ public class EditEndEntityApprovalRequest extends ApprovalRequest {
 		throw new RuntimeException("This execution requires additional bean references.");
 	}
 	
-    public void execute(EndEntityManagementSession userAdminSession) throws ApprovalRequestExecutionException {
+    public void execute(EndEntityManagementSession endEntityManagementSession) throws ApprovalRequestExecutionException {
         log.debug("Executing ChangeEndEntity for user:" + newuserdata.getUsername());
         try {
-        	userAdminSession.changeUser(getRequestAdmin(), newuserdata, clearpwd);
+        	endEntityManagementSession.changeUser(getRequestAdmin(), newuserdata, clearpwd);
         } catch (AuthorizationDeniedException e) {
             throw new ApprovalRequestExecutionException("Authorization Denied :" + e.getMessage(), e);
         } catch (UserDoesntFullfillEndEntityProfile e) {

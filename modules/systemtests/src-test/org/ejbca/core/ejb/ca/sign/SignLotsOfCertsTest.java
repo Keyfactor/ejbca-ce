@@ -69,7 +69,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
      
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     /**
      * Creates a new TestSignSession object.
@@ -115,7 +115,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            userAdminSession.addUser(admin, "performancefoo" + post, "foo123", "C=SE,O=AnaTom,OU=Performance Test,CN=performancefoo", null,
+            endEntityManagementSession.addUser(admin, "performancefoo" + post, "foo123", "C=SE,O=AnaTom,OU=Performance Test,CN=performancefoo", null,
                     "performancefoo@foo.se", false, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
                     SecConst.TOKEN_SOFT_PEM, 0, caid);
@@ -127,7 +127,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
         }
         if (userExists) {
             log.info("User performancefoo already exists, resetting status.");
-            userAdminSession.setUserStatus(admin, "performancefoo" + post, EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.setUserStatus(admin, "performancefoo" + post, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
 
@@ -135,7 +135,7 @@ public class SignLotsOfCertsTest extends CaTestCase {
 
     private void deleteUser(String post) throws Exception {
         try {
-            userAdminSession.deleteUser(admin, "performancefoo" + post);
+            endEntityManagementSession.deleteUser(admin, "performancefoo" + post);
             log.debug("deleted user: performancefoo" + post);
         } catch (EJBException e) {
         	log.debug("Delete operation failed.. User probably did not exist, which is fine so do nothing." + e.getMessage());

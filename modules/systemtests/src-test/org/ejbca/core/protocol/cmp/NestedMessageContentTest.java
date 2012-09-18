@@ -157,7 +157,7 @@ public class NestedMessageContentTest extends CmpTestCase {
     final private AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("NestedMessageContentTest"));
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
@@ -920,12 +920,12 @@ public class NestedMessageContentTest extends CmpTestCase {
         log.trace(">testZZZCleanUp");
         
         try {
-            userAdminSession.revokeAndDeleteUser(admin, "cmpTestAdmin", ReasonFlags.keyCompromise);
+            endEntityManagementSession.revokeAndDeleteUser(admin, "cmpTestAdmin", ReasonFlags.keyCompromise);
         } catch(Exception e){
             // NOPMD
         }
         try {
-            userAdminSession.revokeAndDeleteUser(admin, "nestedCMPTest", ReasonFlags.keyCompromise);
+            endEntityManagementSession.revokeAndDeleteUser(admin, "nestedCMPTest", ReasonFlags.keyCompromise);
         } catch(Exception e){
             // NOPMD
         }
@@ -978,7 +978,7 @@ public class NestedMessageContentTest extends CmpTestCase {
         fout.flush();
         fout.close();        
         
-        userAdminSession.deleteUser(admin, username);
+        endEntityManagementSession.deleteUser(admin, username);
         
         return racert;
     }
@@ -998,13 +998,13 @@ public class NestedMessageContentTest extends CmpTestCase {
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword(password);
         try {
-            userAdminSession.addUser(admin, user, false);
+            endEntityManagementSession.addUser(admin, user, false);
             // usersession.addUser(admin,"cmptest","foo123",userDN,null,"cmptest@primekey.se",false,SecConst.EMPTY_ENDENTITYPROFILE,CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER,EndEntityTypes.USER_ENDUSER,SecConst.TOKEN_SOFT_PEM,0,caid);
             log.debug("created user: " + username);
         } catch (Exception e) {
             log.debug("User " + username + " already exists. Setting the user status to NEW");
-            userAdminSession.changeUser(admin, user, false);
-            userAdminSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.changeUser(admin, user, false);
+            endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
         
@@ -1136,7 +1136,7 @@ public class NestedMessageContentTest extends CmpTestCase {
             roleManagementSession.removeSubjectsFromRole(admin, roledata, accessUsers);
         }
         
-        userAdminSession.revokeAndDeleteUser(admin, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);        
+        endEntityManagementSession.revokeAndDeleteUser(admin, adminName, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);        
     }
     
 

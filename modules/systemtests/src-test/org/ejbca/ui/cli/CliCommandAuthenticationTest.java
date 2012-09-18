@@ -56,7 +56,7 @@ public class CliCommandAuthenticationTest {
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationTestHelperSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private CliAuthenticationProviderSessionRemote cliAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationProviderSessionRemote.class);
 
     private final TestAlwaysAllowLocalAuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
@@ -119,7 +119,7 @@ public class CliCommandAuthenticationTest {
         } catch (CliTestRuntimeException e) {
             fail("Exception was thrown when authenticating with a known user.");
         } finally {
-            userAdminSession.deleteUser(internalAdmin, CliAuthenticationTestHelperSessionRemote.USERNAME);
+            endEntityManagementSession.deleteUser(internalAdmin, CliAuthenticationTestHelperSessionRemote.USERNAME);
         }
     }
 

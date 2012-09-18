@@ -113,7 +113,7 @@ public class CertReqHistorySessionTest {
 
         assertNotNull("Error couldn't find the certificate request data stored previously", certreqhist);
 
-        EndEntityInformation userdata = certreqhist.getUserDataVO();
+        EndEntityInformation userdata = certreqhist.getEndEntityInformation();
         assertTrue("Error wrong username.", (userdata.getUsername().equals(username)));
         assertTrue("Error wrong DN.", (userdata.getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1")));
 
@@ -134,8 +134,8 @@ public class CertReqHistorySessionTest {
         Iterator<CertReqHistory> iter = result.iterator();
         while (iter.hasNext()) {
             CertReqHistory certreqhist = iter.next();
-            assertTrue("Error wrong DN", ((certreqhist.getUserDataVO().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1")) || (certreqhist
-                    .getUserDataVO().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2"))));
+            assertTrue("Error wrong DN", ((certreqhist.getEndEntityInformation().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist1")) || (certreqhist
+                    .getEndEntityInformation().getDN().equals("C=SE,O=PrimeCA,OU=TestCertificateData,CN=CertReqHist2"))));
         }
         log.trace("<test11getCertReqHistByUsername()");
     }

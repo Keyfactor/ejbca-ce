@@ -73,7 +73,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     
     @BeforeClass
     public static void beforeClass() {
@@ -104,7 +104,7 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         certificateProfileSession.removeCertificateProfile(internalAdmin, "EXTKEYUSAGEEEPROFILE");
         // delete users that we know...
         try {
-            userAdminSession.deleteUser(internalAdmin, "extkeyusagefoo");
+            endEntityManagementSession.deleteUser(internalAdmin, "extkeyusagefoo");
             log.debug("deleted user: foo, foo123, C=SE, O=AnaTom, CN=extkeyusagefoo");
         } catch (Exception e) { /* ignore */
         }
@@ -195,14 +195,14 @@ public class ExtendedKeyUsageTest extends CaTestCase {
         user.setStatus(EndEntityConstants.STATUS_NEW);
         user.setPassword("foo123");
         try {
-            userAdminSession.addUser(internalAdmin, user, false);
+            endEntityManagementSession.addUser(internalAdmin, user, false);
             log.debug("created user: extkeyusagefoo, foo123, C=SE, O=AnaTom, CN=extkeyusagefoo");
         } catch (Exception re) {
             userExists = true;
         }
         if (userExists) {
             log.info("User extkeyusagefoo already exists, resetting status.");
-            userAdminSession.changeUser(internalAdmin, user, false);
+            endEntityManagementSession.changeUser(internalAdmin, user, false);
             log.debug("Reset status to NEW");
         }
     }

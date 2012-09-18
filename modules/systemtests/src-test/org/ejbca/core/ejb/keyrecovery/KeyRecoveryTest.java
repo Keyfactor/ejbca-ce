@@ -73,7 +73,7 @@ public class KeyRecoveryTest extends CaTestCase {
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     private AuthenticationToken admin;
 
@@ -123,9 +123,9 @@ public class KeyRecoveryTest extends CaTestCase {
         try {
             try {
                 String email = "test@test.se";
-                if (!userAdminSession.existsUser(user)) {
+                if (!endEntityManagementSession.existsUser(user)) {
                     keypair = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
-                    userAdminSession.addUser(internalAdmin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(), "rfc822name=" + email, email, false,
+                    endEntityManagementSession.addUser(internalAdmin, user, "foo123", "CN=TESTKEYREC" + new Random().nextLong(), "rfc822name=" + email, email, false,
                             SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0,
                             getTestCAId());
                     cert = (X509Certificate) signSession.createCertificate(internalAdmin, user, "foo123", keypair.getPublic());
@@ -142,7 +142,7 @@ public class KeyRecoveryTest extends CaTestCase {
             log.trace("<test01AddKeyPair()");
             log.trace(">test02MarkAndRecoverKeyPair()");
             assertFalse("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
-            userAdminSession.prepareForKeyRecovery(internalAdmin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert);
+            endEntityManagementSession.prepareForKeyRecovery(internalAdmin, user, SecConst.EMPTY_ENDENTITYPROFILE, cert);
             assertTrue("Couldn't mark user for recovery in database", keyRecoverySession.isUserMarked(user));
             KeyRecoveryData data = keyRecoverySession.recoverKeys(admin, user, SecConst.EMPTY_ENDENTITYPROFILE);
 

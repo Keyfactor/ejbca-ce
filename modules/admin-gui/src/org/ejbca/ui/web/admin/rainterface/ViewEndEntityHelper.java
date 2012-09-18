@@ -227,7 +227,7 @@ public class ViewEndEntityHelper implements Serializable{
     		  }
     		  for(int i=0; i< hist.size();i++){
     			  CertReqHistory next = ((CertReqHistory) hist.get(i));
-    			  userdatas[i+currentexists] = new UserView(next.getUserDataVO(),ejbcawebbean.getInformationMemory().getCAIdToNameMap());
+    			  userdatas[i+currentexists] = new UserView(next.getEndEntityInformation(),ejbcawebbean.getInformationMemory().getCAIdToNameMap());
     		  }
 			  
     	  }

@@ -30,9 +30,6 @@ import org.w3._2002._03.xkms_.UnverifiedKeyBindingType;
 /**
  * Class generating a response for a locate call
  * 
- * 
- * @author Philip Vendil 2006 sep 27
- *
  * @version $Id$
  */
 
@@ -40,8 +37,8 @@ public class LocateResponseGenerator extends KISSResponseGenerator {
 	
 	private static final Logger log = Logger.getLogger(LocateResponseGenerator.class);
 
-	public LocateResponseGenerator(String remoteIP, LocateRequestType req, CertificateStoreSession certificateStoreSession, EndEntityManagementSessionLocal userAdminSession, CrlStoreSession crlSession, CaSession caSession) {
-		super(remoteIP, req, certificateStoreSession, userAdminSession, crlSession, caSession);
+	public LocateResponseGenerator(String remoteIP, LocateRequestType req, CertificateStoreSession certificateStoreSession, EndEntityManagementSessionLocal endEntityManagementSession, CrlStoreSession crlSession, CaSession caSession) {
+		super(remoteIP, req, certificateStoreSession, endEntityManagementSession, crlSession, caSession);
 	}
 	
 	/**

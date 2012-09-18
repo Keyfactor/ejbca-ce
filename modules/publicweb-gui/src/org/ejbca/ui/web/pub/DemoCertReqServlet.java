@@ -94,7 +94,7 @@ public class DemoCertReqServlet extends HttpServlet {
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
     @EJB
-    private EndEntityManagementSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private EndEntityProfileSessionLocal endEntityProfileSession;
 
@@ -241,7 +241,7 @@ public class DemoCertReqServlet extends HttpServlet {
         newuser.setPassword(password);
 
         try {
-            userAdminSession.addUser(admin, newuser.getUsername(), newuser.getPassword(), newuser.getDN(), newuser.getSubjectAltName(),
+            endEntityManagementSession.addUser(admin, newuser.getUsername(), newuser.getPassword(), newuser.getDN(), newuser.getSubjectAltName(),
                     newuser.getEmail(), false, newuser.getEndEntityProfileId(), newuser.getCertificateProfileId(), newuser.getType(),
                     newuser.getTokenType(), newuser.getHardTokenIssuerId(), newuser.getCAId());
         } catch (Exception e) {

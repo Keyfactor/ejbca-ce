@@ -64,11 +64,9 @@
       <ejb-link>CAAdminSession</ejb-link>
    </ejb-local-ref>
    <ejb-local-ref id="EJBLocalRef_4">
-      <ejb-ref-name>ejb/UserAdminSessionLocal</ejb-ref-name>
+      <ejb-ref-name>ejb/EndEntityManagementSession</ejb-ref-name>
       <ejb-ref-type>Session</ejb-ref-type>
-      <local-home>org.ejbca.core.ejb.ra.IUserAdminSessionLocalHome</local-home>
-      <local>org.ejbca.core.ejb.ra.IUserAdminSessionLocal</local>
-      <ejb-link>UserAdminSession</ejb-link>
+      <ejb-link>EndEntityManagementSession</ejb-link>
    </ejb-local-ref>
    <ejb-local-ref id="EJBLocalRef_5">
       <ejb-ref-name>ejb/RaAdminSessionLocal</ejb-ref-name>

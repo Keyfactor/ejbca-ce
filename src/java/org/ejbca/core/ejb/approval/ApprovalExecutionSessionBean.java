@@ -66,7 +66,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     @EJB
-    private EndEntityManagementSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private CAAdminSessionLocal caAdminSession;
     @EJB
@@ -160,15 +160,15 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 					if (approvalRequest instanceof ActivateCATokenApprovalRequest) {
 						((ActivateCATokenApprovalRequest)approvalRequest).execute(caAdminSession);
 					} else if (approvalRequest instanceof AddEndEntityApprovalRequest) {
-						((AddEndEntityApprovalRequest)approvalRequest).execute(userAdminSession);
+						((AddEndEntityApprovalRequest)approvalRequest).execute(endEntityManagementSession);
 					} else if (approvalRequest instanceof ChangeStatusEndEntityApprovalRequest) {
-						((ChangeStatusEndEntityApprovalRequest)approvalRequest).execute(userAdminSession);
+						((ChangeStatusEndEntityApprovalRequest)approvalRequest).execute(endEntityManagementSession);
 					} else if (approvalRequest instanceof EditEndEntityApprovalRequest) {
-						((EditEndEntityApprovalRequest)approvalRequest).execute(userAdminSession);
+						((EditEndEntityApprovalRequest)approvalRequest).execute(endEntityManagementSession);
 					} else if (approvalRequest instanceof KeyRecoveryApprovalRequest) {
-						((KeyRecoveryApprovalRequest)approvalRequest).execute(userAdminSession);
+						((KeyRecoveryApprovalRequest)approvalRequest).execute(endEntityManagementSession);
 					} else if (approvalRequest instanceof RevocationApprovalRequest) {
-						((RevocationApprovalRequest)approvalRequest).execute(userAdminSession);
+						((RevocationApprovalRequest)approvalRequest).execute(endEntityManagementSession);
 					} else {
 						approvalRequest.execute();
 					}

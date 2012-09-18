@@ -75,7 +75,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
     private static X509Certificate caCertificate1;
     private static X509Certificate caCertificate2;
     
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @BeforeClass
     public static void beforeClass() {
@@ -240,7 +240,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, pbeSecret);
             X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
 
-            assertTrue("Failed to create user " + USERNAME, userAdminSession.existsUser(USERNAME));
+            assertTrue("Failed to create user " + USERNAME, endEntityManagementSession.existsUser(USERNAME));
             
             // Send a confirm message to the CA
             String hash = "foo123";
@@ -268,7 +268,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             assertEquals("Certificate was not revoked with the right reason.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, reason);
             LOG.trace("<testIssueConfirmRevoke");
         } finally {
-            userAdminSession.deleteUser(ADMIN, USERNAME);
+            endEntityManagementSession.deleteUser(ADMIN, USERNAME);
         }
     }
 

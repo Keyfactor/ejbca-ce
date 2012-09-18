@@ -35,9 +35,6 @@ import org.w3c.dom.Document;
 
 /**
  * Class generating a response for a recover call
- * 
- * 
- * @author Philip Vendil 
  *
  * @version $Id$
  */
@@ -48,9 +45,9 @@ public class RecoverResponseGenerator extends KRSSResponseGenerator {
 	public RecoverResponseGenerator(String remoteIP, RecoverRequestType req, Document requestDoc,
     		CaSession caadminsession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
-    		SignSession signSession, EndEntityManagementSession userAdminSession, CrlStoreSession crlSession) {
+    		SignSession signSession, EndEntityManagementSession endEntityManagementSession, CrlStoreSession crlSession) {
 		super(remoteIP, req,requestDoc, caadminsession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
-				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
+				keyRecoverySession, globalConfigurationSession, signSession, endEntityManagementSession, crlSession);
 	}
 	
 	/**

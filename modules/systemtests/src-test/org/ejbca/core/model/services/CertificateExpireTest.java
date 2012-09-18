@@ -78,7 +78,7 @@ public class CertificateExpireTest extends CaTestCase {
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private ServiceDataSessionRemote serviceDataSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceDataSessionRemote.class);
 
     private X509Certificate cert;
@@ -103,7 +103,7 @@ public class CertificateExpireTest extends CaTestCase {
     @Before
     public void setUp() throws Exception {
         certificatesToRemove = new ArrayList<Certificate>();
-        userAdminSession.addUser(admin, USERNAME, PASSWORD, "C=SE,O=AnaTom,CN=" + USERNAME, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
+        endEntityManagementSession.addUser(admin, USERNAME, PASSWORD, "C=SE,O=AnaTom,CN=" + USERNAME, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.TOKEN_SOFT_PEM, 0, caid);
         
     }
@@ -117,7 +117,7 @@ public class CertificateExpireTest extends CaTestCase {
             internalCertificateStoreSession.removeCertificate(certificate);
         }
         
-        userAdminSession.deleteUser(admin, USERNAME);
+        endEntityManagementSession.deleteUser(admin, USERNAME);
         log.debug("Removed user: " + USERNAME);
         serviceSession.removeService(admin, CERTIFICATE_EXPIRATION_SERVICE);
         log.debug("Removed service:" + CERTIFICATE_EXPIRATION_SERVICE);

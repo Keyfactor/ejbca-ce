@@ -40,7 +40,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests the UserData entity bean and some parts of UserAdminSession.
+/** Tests the EndEntityInformation entity bean and some parts of EndEntityManagementSession.
  *
  * @version $Id$
  */
@@ -55,7 +55,7 @@ public class UserPasswordExpireTest extends CaTestCase {
 
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private ServiceSessionRemote serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
@@ -65,7 +65,7 @@ public class UserPasswordExpireTest extends CaTestCase {
     @After
     public void tearDown() throws Exception {
         super.tearDown();
-        userAdminSession.deleteUser(admin, USERNAME);
+        endEntityManagementSession.deleteUser(admin, USERNAME);
         log.debug("Removed user: " + USERNAME);
         serviceSession.removeService(admin, "TestUserPasswordService");
         log.debug("Removed service: TestUserPasswordService");
@@ -85,7 +85,7 @@ public class UserPasswordExpireTest extends CaTestCase {
         log.trace(">test01CreateNewUser()");
 
         // Create a new user
-        userAdminSession.addUser(admin, USERNAME, PWD, "C=SE,O=AnaTom,CN=" + USERNAME, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
+        endEntityManagementSession.addUser(admin, USERNAME, PWD, "C=SE,O=AnaTom,CN=" + USERNAME, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
         log.debug("created user: " + USERNAME);
 

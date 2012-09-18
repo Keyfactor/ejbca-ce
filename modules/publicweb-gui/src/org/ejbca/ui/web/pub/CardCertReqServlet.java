@@ -116,7 +116,7 @@ public class CardCertReqServlet extends HttpServlet {
 	@EJB
 	private SignSessionLocal signSession;
 	@EJB
-	private EndEntityManagementSessionLocal userAdminSession;
+	private EndEntityManagementSessionLocal endEntityManagementSession;
 
     /**
      * Servlet init
@@ -218,19 +218,19 @@ public class CardCertReqServlet extends HttpServlet {
                 	            data.getEndEntityProfileId(), authCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
                 	    a.setStatus(data.getStatus());
                 	    a.setPassword(data.getPassword());
-                	    userAdminSession.changeUser(administrator, a, true);          	    
+                	    endEntityManagementSession.changeUser(administrator, a, true);          	    
                 		final byte[] authb64cert=pkcs10CertRequest(administrator, signSession, authReqBytes, username, data.getPassword());
                 		EndEntityInformation b = new EndEntityInformation(username, data.getDN(), signCA, data.getSubjectAltName(), data.getEmail(), data.getType(), 
                 		        data.getEndEntityProfileId(), signCertProfile, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
                 		b.setPassword(data.getPassword());
                 		b.setStatus(EndEntityConstants.STATUS_NEW);
-                		userAdminSession.changeUser(administrator, b, true);     
+                		endEntityManagementSession.changeUser(administrator, b, true);     
                 		final byte[] signb64cert=pkcs10CertRequest(administrator, signSession, signReqBytes, username, data.getPassword());
 
 
                 		for (int i=0; i<notRevokedCerts.length; i++) {
                 			try {
-                				userAdminSession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
+                				endEntityManagementSession.revokeCert(administrator, notRevokedCerts[i].getSerialNumber(),
                 						notRevokedCerts[i].getIssuerDN().toString(), RevokedCertInfo.REVOCATION_REASON_SUPERSEDED);
                 			} catch (WaitingForApprovalException e) {
                 				log.info("A request for approval to revoke " + username + "'s old certificate "+
@@ -252,7 +252,7 @@ public class CardCertReqServlet extends HttpServlet {
                         }
                     } finally {
                         data.setStatus(EndEntityConstants.STATUS_GENERATED);
-                        userAdminSession.changeUser(administrator, data, true); // set back to original values
+                        endEntityManagementSession.changeUser(administrator, data, true); // set back to original values
                     }
                 }
             }

@@ -140,7 +140,7 @@ public class ApprovalSessionTest extends CaTestCase {
     private ApprovalExecutionSessionRemote approvalExecutionSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ApprovalExecutionSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     private final SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     
@@ -169,17 +169,17 @@ public class ApprovalSessionTest extends CaTestCase {
             EndEntityInformation userdata = new EndEntityInformation(adminusername1, "CN=" + adminusername1, caid, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
-            userAdminSession.addUser(intadmin, userdata, true);
+            endEntityManagementSession.addUser(intadmin, userdata, true);
 
             EndEntityInformation userdata2 = new EndEntityInformation(adminusername2, "CN=" + adminusername2, caid, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata2.setPassword("foo123");
-            userAdminSession.addUser(intadmin, userdata2, true);
+            endEntityManagementSession.addUser(intadmin, userdata2, true);
 
             EndEntityInformation userdata3 = new EndEntityInformation(reqadminusername, "CN=" + reqadminusername, caid, null, null, new EndEntityType(EndEntityTypes.ENDUSER),
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata3.setPassword("foo123");
-            userAdminSession.addUser(intadmin, userdata3, true);
+            endEntityManagementSession.addUser(intadmin, userdata3, true);
 
             KeyPair rsakey = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
             externalcert = CertTools.genSelfCert("CN=externalCert,C=SE", 30, null, rsakey.getPrivate(), rsakey.getPublic(),
@@ -246,17 +246,17 @@ public class ApprovalSessionTest extends CaTestCase {
 			}
         }
         try {
-        	userAdminSession.deleteUser(intadmin, adminusername1);
+        	endEntityManagementSession.deleteUser(intadmin, adminusername1);
         } catch (Exception e) {
         	// NOPMD: ignore
         }
         try {
-        	userAdminSession.deleteUser(intadmin, adminusername2);
+        	endEntityManagementSession.deleteUser(intadmin, adminusername2);
         } catch (Exception e) {
         	// NOPMD: ignore
         }
         try {
-        	userAdminSession.deleteUser(intadmin, reqadminusername);
+        	endEntityManagementSession.deleteUser(intadmin, reqadminusername);
         } catch (Exception e) {
         	// NOPMD: ignore
         }
@@ -437,7 +437,7 @@ public class ApprovalSessionTest extends CaTestCase {
         approvalSessionRemote.addApprovalRequest(cliReqAuthToken, eeApprovalRequest, gc);
         // Use the authentication token
         try {
-            userAdminSession.changeUser(cliReqAuthToken, userdata, false);
+            endEntityManagementSession.changeUser(cliReqAuthToken, userdata, false);
         } catch (Exception e) {
             // NOPMD we only did the above to use our one time authentication token, we know the user does not exist
         }

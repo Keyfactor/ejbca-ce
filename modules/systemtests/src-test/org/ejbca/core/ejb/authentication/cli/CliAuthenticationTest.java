@@ -82,7 +82,7 @@ public class CliAuthenticationTest {
     private final RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private final RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     private final SecurityEventsAuditorSessionRemote securityEventsAuditorSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SecurityEventsAuditorSessionRemote.class);
-    private final EndEntityManagementSessionRemote userAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);    
+    private final EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);    
 
     private CliAuthenticationTestHelperSessionRemote cliAuthenticationTestHelperSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CliAuthenticationTestHelperSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
@@ -111,7 +111,7 @@ public class CliAuthenticationTest {
     @After
     public void tearDown() throws Exception {
         try {
-            userAdminSessionRemote.deleteUser(internalToken, CliAuthenticationTestHelperSessionRemote.USERNAME);
+            endEntityManagementSession.deleteUser(internalToken, CliAuthenticationTestHelperSessionRemote.USERNAME);
         } catch (NotFoundException e) {
             // NOPMD
         }

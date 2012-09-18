@@ -95,14 +95,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
- * Tests the UserData entity bean and some parts of UserAdminSession.
+ * Tests the EndEntityInformation entity bean and some parts of EndEntityManagementSession.
  * 
  * @version $Id$
  */
 public class EndEntityManagementSessionTest extends CaTestCase {
 
     private static final Logger log = Logger.getLogger(EndEntityManagementSessionTest.class);
-    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("UserAdminSessionTest"));
+    private static final AuthenticationToken admin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EndEntityManagementSessionTest"));
     private int caid = getTestCAId();
 
     private static String username;
@@ -114,7 +114,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private CertificateStoreSessionRemote storeSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE.getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
@@ -123,7 +123,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     private AccessControlSessionRemote accessControlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(AccessControlSessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityManagementProxySessionRemote userAdminProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST); 
+    private EndEntityManagementProxySessionRemote endEntityManagementProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST); 
 
     @BeforeClass
     public static void beforeClass() {
@@ -144,7 +144,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         super.tearDown();
         for (int i = 0; i < usernames.size(); i++) {
             try {
-                userAdminSession.deleteUser(admin, (String) usernames.get(i));
+                endEntityManagementSession.deleteUser(admin, (String) usernames.get(i));
             } catch (Exception e) {
             } // NOPMD, ignore errors so we don't stop deleting users because
               // one of them does not exist.
@@ -181,14 +181,14 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         log.trace(">addUser()");
 
         String email = username + "@anatom.se";
-        userAdminSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
+        endEntityManagementSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
         usernames.add(username);
         log.debug("created user: " + username + ", " + pwd + ", C=SE, O=AnaTom, CN=" + username);
         // Add the same user again
         boolean userexists = false;
         try {
-            userAdminSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
+            endEntityManagementSession.addUser(admin, username, pwd, "C=SE, O=AnaTom, CN=" + username, "rfc822name=" + email, email, true,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
         } catch (EJBException ejbException) {
             // On Glassfish, ejbException.getCause() returns null, getCausedByException() should be used.
@@ -216,7 +216,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         int fakecaid = -1;
         boolean thrown = false;
         try {
-            userAdminSession.addUser(admin, username2, pwd, "C=SE, O=AnaTom, CN=" + username2, null, null, true, SecConst.EMPTY_ENDENTITYPROFILE,
+            endEntityManagementSession.addUser(admin, username2, pwd, "C=SE, O=AnaTom, CN=" + username2, null, null, true, SecConst.EMPTY_ENDENTITYPROFILE,
                     CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, fakecaid);
             assertTrue(false);
         } catch (CADoesntExistsException e) {
@@ -240,9 +240,9 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         String thisusername = genRandomUserName();
         String email = thisusername + "@anatom.se";
         genRandomSerialnumber();
-        userAdminSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
+        endEntityManagementSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
-        assertTrue("User " + thisusername + " was not added to the database.", userAdminSession.existsUser(thisusername));
+        assertTrue("User " + thisusername + " was not added to the database.", endEntityManagementSession.existsUser(thisusername));
         usernames.add(thisusername);
 
         // Set the CA to enforce unique subjectDN serialnumber
@@ -254,21 +254,21 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         // Add another user with the same serialnumber
         thisusername = genRandomUserName();
         try {
-            userAdminSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email,
+            endEntityManagementSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email,
                     false, SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0,
                     caid);
             usernames.add(thisusername);
         } catch (EjbcaException e) {
             assertEquals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, e.getErrorCode());
         }
-        assertFalse(userAdminSession.existsUser(thisusername));
+        assertFalse(endEntityManagementSession.existsUser(thisusername));
 
         // Set the CA to NOT enforcing unique subjectDN serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(false);
         caAdminSession.editCA(admin, cainfo);
-        userAdminSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
+        endEntityManagementSession.addUser(admin, thisusername, pwd, "C=SE, CN=" + thisusername + ", SN=" + serialnumber, "rfc822name=" + email, email, false,
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
-        assertTrue(userAdminSession.existsUser(thisusername));
+        assertTrue(endEntityManagementSession.existsUser(thisusername));
         usernames.add(thisusername);
 
         // Set the CA back to its original settings of enforcing unique
@@ -297,7 +297,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         try {
             EndEntityInformation user = new EndEntityInformation(secondUserName, "C=SE, CN=" + secondUserName + ", SN=" + serialnumber, caid, "rfc822name=" + secondEmail, secondEmail,
                     new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);    
-            userAdminSession.changeUser(admin, user, false);
+            endEntityManagementSession.changeUser(admin, user, false);
         } catch (EjbcaException e) {
             assertEquals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, e.getErrorCode());
         }
@@ -309,7 +309,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         caAdminSession.editCA(admin, cainfo);
         EndEntityInformation user = new EndEntityInformation(secondUserName, "C=SE, CN=" + secondUserName + ", SN=" + serialnumber, caid, "rfc822name=" + secondEmail, secondEmail,
                 new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);    
-        userAdminSession.changeUser(admin, user, false);
+        endEntityManagementSession.changeUser(admin, user, false);
         assertTrue("The user '" + thisusername + "' was not changed even though unique serialnumber is not enforced", endEntityAccessSession
                 .findUserByEmail(admin, secondEmail).size() > 0);
 
@@ -335,11 +335,11 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         assertNotNull(data);
         assertEquals(username, data.getUsername());
-        boolean exists = userAdminSession.existsUser(username);
+        boolean exists = endEntityManagementSession.existsUser(username);
         assertTrue(exists);
 
         String notexistusername = genRandomUserName();
-        exists = userAdminSession.existsUser(notexistusername);
+        exists = endEntityManagementSession.existsUser(notexistusername);
         assertFalse(exists);
         data = endEntityAccessSession.findUser(admin, notexistusername);
         assertNull(data);
@@ -361,7 +361,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         query.add(UserMatch.MATCH_WITH_USERNAME, BasicMatch.MATCH_TYPE_EQUALS, username);
         String caauthstring = null;
         String eeprofilestr = null;
-        Collection<EndEntityInformation> col = userAdminProxySession.query(admin, query, caauthstring, eeprofilestr, 0);
+        Collection<EndEntityInformation> col = endEntityManagementProxySession.query(admin, query, caauthstring, eeprofilestr, 0);
         assertNotNull(col);
         assertEquals(1, col.size());
         log.trace("<test03_1QueryUser()");
@@ -392,7 +392,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         data.setDN("C=SE, O=AnaTom1, CN=" + username);
         data.setSubjectAltName("dnsName=a.b.se, rfc822name=" + email);
 
-        userAdminSession.changeUser(admin, data, true);
+        endEntityManagementSession.changeUser(admin, data, true);
         EndEntityInformation data1 = endEntityAccessSession.findUser(admin, username);
         assertNotNull(data1);
         assertEquals(username, data1.getUsername());
@@ -412,43 +412,43 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         EndEntityInformation data1 = endEntityAccessSession.findUser(admin, username);
         assertNotNull(data1);
         data1.setPassword("foo123");
-        userAdminSession.changeUser(admin, data1, true);
+        endEntityManagementSession.changeUser(admin, data1, true);
 
         Certificate cert = signSession.createCertificate(admin, username, "foo123", keypair.getPublic());
         CertificateStatus status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
         // Revoke the certificate, put on hold
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
+        endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
                 RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
 
         // Unrevoke the certificate
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.NOT_REVOKED);
+        endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert), RevokedCertInfo.NOT_REVOKED);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
 
         // Revoke again certificate
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
+        endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
                 RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD, status.revocationReason);
 
         // Unrevoke the certificate, but with different code
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
+        endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
                 RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.NOT_REVOKED, status.revocationReason);
 
         // Revoke again certificate permanently
-        userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
+        endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
                 RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE);
         status = storeSession.getStatus(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));
         assertEquals(RevokedCertInfo.REVOCATION_REASON_CACOMPROMISE, status.revocationReason);
 
         // Unrevoke the certificate, should not work
         try {
-            userAdminSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
+            endEntityManagementSession.revokeCert(admin, CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert),
                     RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL);
             assertTrue(false); // should not reach this
         } catch (AlreadyRevokedException e) {
@@ -467,12 +467,12 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         addUser();
 
         log.trace(">test06DeleteUser()");
-        userAdminSession.deleteUser(admin, username);
+        endEntityManagementSession.deleteUser(admin, username);
         log.debug("deleted user: " + username);
         // Delete the the same user again
         boolean removed = false;
         try {
-            userAdminSession.deleteUser(admin, username);
+            endEntityManagementSession.deleteUser(admin, username);
         } catch (NotFoundException e) {
             removed = true;
         }
@@ -505,19 +505,19 @@ public class EndEntityManagementSessionTest extends CaTestCase {
                 EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), profileId, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, new Date(), new Date(),
                 SecConst.TOKEN_SOFT_P12, 0, null);
         addUser.setPassword("foo123");
-        userAdminSession.addUserFromWS(admin, addUser, false);
+        endEntityManagementSession.addUserFromWS(admin, addUser, false);
         EndEntityInformation data = endEntityAccessSession.findUser(admin, username);
         assertEquals("CN=" + username + ",OU=FooOrgUnit,O=AnaTom,C=SE", data.getDN());
 
         addUser.setDN("EMAIL=foo@bar.com, OU=hoho");
         endEntityProfileSession.changeEndEntityProfile(admin, "TESTMERGEWITHWS", profile);
-        userAdminSession.changeUser(admin, addUser, false, true);
+        endEntityManagementSession.changeUser(admin, addUser, false, true);
         data = endEntityAccessSession.findUser(admin, username);
         // E=foo@bar.com,CN=430208,OU=FooOrgUnit,O=hoho,C=NO
         assertEquals("E=foo@bar.com,CN=" + username + ",OU=hoho,O=AnaTom,C=SE", data.getDN());
     }
     
-    /** Tests that CA and End Entity profile authorization methods in UserAdminSessionBean works.
+    /** Tests that CA and End Entity profile authorization methods in EndEntityManagementSessionBean works.
      * When called with a user that does not have access to the CA (that you try to add a user for), or the
      * end entity profile specified for the user, an AuthorizationDeniedException should be thrown.
      * For end entity profile authorization to be effective, this must be configured in global configuration.
@@ -526,12 +526,12 @@ public class EndEntityManagementSessionTest extends CaTestCase {
     public void test08Authorization() throws Exception {
         
         Set<Principal> principals = new HashSet<Principal>();
-        principals.add(new X500Principal("C=SE,O=Test,CN=Test UserAdminSessionNoAuth"));
+        principals.add(new X500Principal("C=SE,O=Test,CN=Test EndEntityManagementSessionNoAuth"));
         
         TestX509CertificateAuthenticationToken adminTokenNoAuth  = (TestX509CertificateAuthenticationToken) simpleAuthenticationProvider.authenticate(new AuthenticationSubject(principals, null));
         final X509Certificate adminCert = adminTokenNoAuth.getCertificate();
 
-        final String testRole = "UserAdminSessionTestAuthRole";
+        final String testRole = "EndEntityManagementSessionTestAuthRole";
         GlobalConfiguration gc = globalConfSession.getCachedGlobalConfiguration();
         boolean eelimitation = gc.getEnableEndEntityProfileLimitations();
 
@@ -542,22 +542,22 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         // Test CA authorization
         try {
             try {
-                userAdminSession.addUser(adminTokenNoAuth, userdata, false);
+                endEntityManagementSession.addUser(adminTokenNoAuth, userdata, false);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
                 assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
 
             try {
-                userAdminSession.changeUser(adminTokenNoAuth, userdata, true);
+                endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, true);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
                 assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
             }
 
             try {
-                userAdminSession.addUser(admin, userdata, false);
-                userAdminSession.deleteUser(adminTokenNoAuth, authUsername);
+                endEntityManagementSession.addUser(admin, userdata, false);
+                endEntityManagementSession.deleteUser(adminTokenNoAuth, authUsername);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
                 assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to CA"));
@@ -581,13 +581,13 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             gc.setEnableEndEntityProfileLimitations(false);
             globalConfigurationProxySession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
             // Do the same test, now it should work since we are authorized to CA and we don't enforce EE profile authorization
-            userAdminSession.changeUser(adminTokenNoAuth, userdata, false);
+            endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, false);
             // Enforce EE profile limitations
             gc.setEnableEndEntityProfileLimitations(true);
             globalConfigurationProxySession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
             // Do the same test, now we should get auth denied on EE profiles instead
             try {
-                userAdminSession.changeUser(adminTokenNoAuth, userdata, false);
+                endEntityManagementSession.changeUser(adminTokenNoAuth, userdata, false);
                 fail("should throw");
             } catch (AuthorizationDeniedException e) {
                 assertTrue("Wrong auth denied message: "+e.getMessage(), StringUtils.startsWith(e.getMessage(), "Administrator not authorized to end entity profile"));
@@ -597,7 +597,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
             gc.setEnableEndEntityProfileLimitations(eelimitation);
             globalConfigurationProxySession.saveGlobalConfigurationRemote(roleMgmgToken, gc);
             try {
-                userAdminSession.deleteUser(admin, authUsername);
+                endEntityManagementSession.deleteUser(admin, authUsername);
             } catch (Exception e) { // NOPMD
                 log.info("Error in finally: ", e);
             }

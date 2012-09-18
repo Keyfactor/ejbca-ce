@@ -55,17 +55,17 @@ public class CertReqHistorySessionBean implements CertReqHistorySessionRemote, C
 
     @TransactionAttribute(TransactionAttributeType.REQUIRED)
     @Override
-    public void addCertReqHistoryData(Certificate cert, EndEntityInformation useradmindata){
+    public void addCertReqHistoryData(Certificate cert, EndEntityInformation endEntityInformation){
     	final String issuerDN = CertTools.getIssuerDN(cert);
-    	final String username = useradmindata.getUsername();
+    	final String username = endEntityInformation.getUsername();
     	if (log.isTraceEnabled()) {
         	log.trace(">addCertReqHistoryData(" + CertTools.getSerialNumberAsString(cert) + ", " + issuerDN + ", " + username + ")");
     	}
         try {
-        	entityManager.persist(new CertReqHistoryData(cert, issuerDN, useradmindata));
+        	entityManager.persist(new CertReqHistoryData(cert, issuerDN, endEntityInformation));
         	log.info(intres.getLocalizedMessage("store.storehistory", username));
         } catch (Exception e) {
-        	log.error(intres.getLocalizedMessage("store.errorstorehistory", useradmindata.getUsername()));
+        	log.error(intres.getLocalizedMessage("store.errorstorehistory", endEntityInformation.getUsername()));
             throw new EJBException(e);
         }
     	if (log.isTraceEnabled()) {

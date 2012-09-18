@@ -38,17 +38,17 @@ import org.ejbca.util.query.Query;
 public class EndEntityManagementProxySessionBean implements EndEntityManagementProxySessionRemote{
 
     @EJB
-    private EndEntityManagementSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal endEntityManagementSession;
     
     @Override
     public int decRequestCounter(String username) throws AuthorizationDeniedException, FinderException, ApprovalException,
             WaitingForApprovalException {
-        return userAdminSession.decRequestCounter(username);
+        return endEntityManagementSession.decRequestCounter(username);
     }
     
     @Override
     public Collection<EndEntityInformation> query(AuthenticationToken admin, Query query, String caauthorizationstring,
             String endentityprofilestring, int numberofrows) throws IllegalQueryException {
-        return userAdminSession.query(admin, query, caauthorizationstring, endentityprofilestring, numberofrows);
+        return endEntityManagementSession.query(admin, query, caauthorizationstring, endentityprofilestring, numberofrows);
     }
 }

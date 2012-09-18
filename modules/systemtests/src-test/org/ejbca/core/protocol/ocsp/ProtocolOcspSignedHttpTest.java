@@ -90,7 +90,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
     private static X509Certificate cacert = null;
     private static X509Certificate ocspTestCert = null;
     
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private ConfigurationSessionRemote configurationSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
 
@@ -139,7 +139,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
         // Make user that we know...
         boolean userExists = false;
         try {
-            userAdminSession.addUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
+            endEntityManagementSession.addUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
                     SecConst.TOKEN_SOFT_PEM, 0, caid);
             log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
@@ -156,7 +156,7 @@ public class ProtocolOcspSignedHttpTest extends CaTestCase {
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
                     null);
             userData.setPassword("foo123");
-            userAdminSession.changeUser(admin, userData, false);
+            endEntityManagementSession.changeUser(admin, userData, false);
             log.debug("Reset status to NEW");
         }
         // Generate certificate for the new user

@@ -74,7 +74,7 @@ public class ServiceServiceTest extends CaTestCase {
     private static Collection<String> services = Arrays.asList(TEST01_SERVICE, TEST02_SERVICE, TEST03_SERVICE);
     private static Collection<String> cas = Arrays.asList(TESTCA1, TESTCA2, TESTCA3);
 
-    private EndEntityManagementSession userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSession endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private ServiceSession serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     
@@ -188,10 +188,10 @@ public class ServiceServiceTest extends CaTestCase {
     @AfterClass
     public static void afterClass() throws Exception {       
         ServiceSession serviceSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ServiceSessionRemote.class);
-        EndEntityManagementSession userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        EndEntityManagementSession endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         for (String username : usernames) {
-            if(userAdminSession.existsUser(username)) {
-                userAdminSession.deleteUser(admin, username);            
+            if(endEntityManagementSession.existsUser(username)) {
+                endEntityManagementSession.deleteUser(admin, username);            
                 log.debug("Removed user: " + username);
             }
         }
@@ -214,7 +214,7 @@ public class ServiceServiceTest extends CaTestCase {
     private ServiceConfiguration createAServiceConfig(final String username, final String caName) throws Exception {
         // Create a new user
         final String pwd = genRandomPwd();
-        getUserAdminSession().addUser(admin, username, pwd, "C=SE,O=AnaTom,CN=" + username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
+        getEndEntityManagementSession().addUser(admin, username, pwd, "C=SE,O=AnaTom,CN=" + username, null, null, false, SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.INVALID.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, getTestCAId(caName));
         log.debug("created user: " + username);
 
@@ -284,8 +284,8 @@ public class ServiceServiceTest extends CaTestCase {
         return hostnames;
     }
 
-    private EndEntityManagementSession getUserAdminSession() {
-        return userAdminSession;
+    private EndEntityManagementSession getEndEntityManagementSession() {
+        return endEntityManagementSession;
     }
 
     public ServiceSession getServiceSession() {

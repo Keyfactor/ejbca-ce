@@ -81,7 +81,7 @@ public class CaImportCRLCommandTest {
     private CrlStoreSessionRemote crlSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
     private CertificateRequestSessionRemote certReqSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
     private CertificateStoreSessionRemote certStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
@@ -199,7 +199,7 @@ public class CaImportCRLCommandTest {
             fingerprint = CertTools.getFingerprintAsString(cert2);
         } finally {
             caSession.removeCA(admin, caSession.getCAInfo(admin, CA_NAME).getCAId());
-            userAdminSession.revokeAndDeleteUser(admin, testUsername, ReasonFlags.unused);
+            endEntityManagementSession.revokeAndDeleteUser(admin, testUsername, ReasonFlags.unused);
             internalCertStoreSession.removeCertificate(fingerprint);
         }
     }

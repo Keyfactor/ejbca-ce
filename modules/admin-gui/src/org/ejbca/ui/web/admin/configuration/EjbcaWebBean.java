@@ -127,7 +127,7 @@ public class EjbcaWebBean implements Serializable {
     private final PublisherSessionLocal publisherSession = ejbLocalHelper.getPublisherSession();
     private final RoleAccessSessionLocal roleAccessSession = ejbLocalHelper.getRoleAccessSession();
     private final RoleManagementSessionLocal roleManagementSession = ejbLocalHelper.getRoleManagementSession();
-    private final EndEntityManagementSessionLocal userAdminSession = ejbLocalHelper.getUserAdminSession();
+    private final EndEntityManagementSessionLocal endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
     private final UserDataSourceSessionLocal userDataSourceSession = ejbLocalHelper.getUserDataSourceSession();
     private final GlobalConfigurationSessionLocal globalConfigurationSession = ejbLocalHelper.getGlobalConfigurationSession();
     private final WebAuthenticationProviderSessionLocal authenticationSession = ejbLocalHelper.getWebAuthenticationProviderSession();
@@ -201,7 +201,7 @@ public class EjbcaWebBean implements Serializable {
             final String sernostr = CertTools.getSerialNumberAsString(certificates[0]);
             final BigInteger serno = CertTools.getSerialNumber(certificates[0]);
             certificatefingerprint = CertTools.getFingerprintAsString(certificates[0]);
-            if(!userAdminSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
+            if(!endEntityManagementSession.checkIfCertificateBelongToUser(serno, issuerDN)) {
                 throw new RuntimeException("Certificate with SN " +  serno + " did not belong to user " + issuerDN);
             }
             Map<String, Object> details = null;

@@ -164,7 +164,7 @@ public class XKMSKRSSTest {
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
 
     @Before
@@ -213,7 +213,7 @@ public class XKMSKRSSTest {
 	    EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
 	    GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 	    GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-	    EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+	    EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 	    
         final CAInfo caInfo = caSession.getCAInfo(administrator, "AdminCA1");
         // make sure same keys for different users is prevented
@@ -264,10 +264,10 @@ public class XKMSKRSSTest {
             if (endEntityAccessSession.findUser(administrator, username2) != null) {
                 log.info("User already exists in the database.");
             } else {
-                userAdminSession.addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false,
+                endEntityManagementSession.addUser(administrator, username2, pwd, CertTools.stringToBCDNString(dn2), subjectaltname2, email2, false,
                         endEntityProfileId, profile1Id, type, token, hardtokenissuerid, caid);
             }
-            userAdminSession.setClearTextPassword(administrator, username2, pwd);
+            endEntityManagementSession.setClearTextPassword(administrator, username2, pwd);
         }
 
         {
@@ -276,10 +276,10 @@ public class XKMSKRSSTest {
             if (endEntityAccessSession.findUser(administrator, username3) != null) {
                 log.info("User already exists in the database.");
             } else {
-                userAdminSession.addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false,
+                endEntityManagementSession.addUser(administrator, username3, pwd, CertTools.stringToBCDNString(dn3), subjectaltname3, email3, false,
                         endEntityProfileId, profile2Id, type, token, hardtokenissuerid, caid);
             }
-            userAdminSession.setClearTextPassword(administrator, username3, pwd);
+            endEntityManagementSession.setClearTextPassword(administrator, username3, pwd);
         }
 
     }
@@ -287,7 +287,7 @@ public class XKMSKRSSTest {
     private static void addUser(String userName, String dn) throws Exception {
         EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
         EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
         
         final String pwd = "foo123";
         final int hardtokenissuerid = SecConst.NO_HARDTOKENISSUER;
@@ -300,11 +300,11 @@ public class XKMSKRSSTest {
             if (endEntityAccessSession.findUser(administrator, userName) != null) {
                 log.info("User already exists in the database.");
             } else {
-                userAdminSession.addUser(administrator, userName, pwd, CertTools.stringToBCDNString(dn), subjectaltname1, email1, false,
+                endEntityManagementSession.addUser(administrator, userName, pwd, CertTools.stringToBCDNString(dn), subjectaltname1, email1, false,
                         endEntityProfileSession.getEndEntityProfileId(endentityprofilename), certificatetypeid, type, token,
                         hardtokenissuerid, caid);
             }
-            userAdminSession.setClearTextPassword(administrator, userName, pwd);
+            endEntityManagementSession.setClearTextPassword(administrator, userName, pwd);
         }
 
     }
@@ -607,8 +607,8 @@ public class XKMSKRSSTest {
     }
 
     public void simpleReissue(String userName, String dn) throws Exception {
-        userAdminSession.setUserStatus(administrator, userName, 10);
-        userAdminSession.setClearTextPassword(administrator, userName, "ReissuePassword");
+        endEntityManagementSession.setUserStatus(administrator, userName, 10);
+        endEntityManagementSession.setClearTextPassword(administrator, userName, "ReissuePassword");
         ReissueRequestType reissueRequestType = xKMSObjectFactory.createReissueRequestType();
         reissueRequestType.setId("607");
 
@@ -662,8 +662,8 @@ public class XKMSKRSSTest {
 
 	@Test
     public void test09ReissueWrongPassword() throws Exception {
-        userAdminSession.setUserStatus(administrator, username1, 10);
-        userAdminSession.setClearTextPassword(administrator, username1, "ReissuePassword");
+        endEntityManagementSession.setUserStatus(administrator, username1, 10);
+        endEntityManagementSession.setClearTextPassword(administrator, username1, "ReissuePassword");
         ReissueRequestType reissueRequestType = xKMSObjectFactory.createReissueRequestType();
         reissueRequestType.setId("608");
 
@@ -695,8 +695,8 @@ public class XKMSKRSSTest {
 
 	@Test
     public void test10ReissueWrongStatus() throws Exception {
-        userAdminSession.setUserStatus(administrator, username1, 40);
-        userAdminSession.setClearTextPassword(administrator, username1, "ReissuePassword");
+        endEntityManagementSession.setUserStatus(administrator, username1, 40);
+        endEntityManagementSession.setClearTextPassword(administrator, username1, "ReissuePassword");
         ReissueRequestType reissueRequestType = xKMSObjectFactory.createReissueRequestType();
         reissueRequestType.setId("609");
 
@@ -728,8 +728,8 @@ public class XKMSKRSSTest {
 	@Test
     public void test11ReissueWrongCert() throws Exception {
 
-        userAdminSession.setUserStatus(administrator, username1, 10);
-        userAdminSession.setClearTextPassword(administrator, username1, "ReissuePassword");
+        endEntityManagementSession.setUserStatus(administrator, username1, 10);
+        endEntityManagementSession.setClearTextPassword(administrator, username1, "ReissuePassword");
         ReissueRequestType reissueRequestType = xKMSObjectFactory.createReissueRequestType();
         reissueRequestType.setId("610");
 
@@ -760,8 +760,8 @@ public class XKMSKRSSTest {
 
 	@Test
     public void test12SimpleRecover() throws Exception {
-        userAdminSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(endentityprofilename), cert2);
-        userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
+        endEntityManagementSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(endentityprofilename), cert2);
+        endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
         recoverRequestType.setId("700");
 
@@ -822,8 +822,8 @@ public class XKMSKRSSTest {
 
 	@Test
     public void test13RecoverWrongPassword() throws Exception {
-        userAdminSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(endentityprofilename), cert2);
-        userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
+        endEntityManagementSession.prepareForKeyRecovery(administrator, username2, endEntityProfileSession.getEndEntityProfileId(endentityprofilename), cert2);
+        endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
         recoverRequestType.setId("701");
 
@@ -856,8 +856,8 @@ public class XKMSKRSSTest {
 
 	@Test
     public void test14RecoverWrongStatus() throws Exception {
-        userAdminSession.setUserStatus(administrator, username2, 10);
-        userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
+        endEntityManagementSession.setUserStatus(administrator, username2, 10);
+        endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
         recoverRequestType.setId("702");
 
@@ -890,8 +890,8 @@ public class XKMSKRSSTest {
 
 	@Test
     public void test15RecoverWrongCert() throws Exception {
-        userAdminSession.setUserStatus(administrator, username2, EndEntityConstants.STATUS_KEYRECOVERY);
-        userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
+        endEntityManagementSession.setUserStatus(administrator, username2, EndEntityConstants.STATUS_KEYRECOVERY);
+        endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
         recoverRequestType.setId("703");
 
@@ -925,8 +925,8 @@ public class XKMSKRSSTest {
 	@Test
    public void test16CertNotMarked() throws Exception {
         keyRecoverySession.unmarkUser(administrator, username2);
-        userAdminSession.setUserStatus(administrator, username2, 40);
-        userAdminSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
+        endEntityManagementSession.setUserStatus(administrator, username2, 40);
+        endEntityManagementSession.setClearTextPassword(administrator, username2, "RerecoverPassword");
         RecoverRequestType recoverRequestType = xKMSObjectFactory.createRecoverRequestType();
         recoverRequestType.setId("704");
 
@@ -1106,7 +1106,7 @@ public class XKMSKRSSTest {
                 EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
                         CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
                 userdata.setPassword("foo123");
-                userAdminSession.addUser(administrator, userdata, true);
+                endEntityManagementSession.addUser(administrator, userdata, true);
                 // Register user
                 RegisterRequestType registerRequestType = xKMSObjectFactory.createRegisterRequestType();
                 registerRequestType.setId("806");
@@ -1165,7 +1165,7 @@ public class XKMSKRSSTest {
                         ApprovalDataVO.APPROVALTYPE_REVOKECERTIFICATE, certificateStoreSession, approvalSession, caID);
                 // Try to reactivate user
             } finally {
-                userAdminSession.deleteUser(administrator, username);
+                endEntityManagementSession.deleteUser(administrator, username);
             }
         } finally {
             // Nuke CA
@@ -1183,16 +1183,16 @@ public class XKMSKRSSTest {
         final String dnX = "C=SE, O=AnaTom, CN=" + usernameX;
         addUser(usernameX, dnX);
         simpleRegistration(dnX, true);
-        userAdminSession.deleteUser(administrator, usernameX);
+        endEntityManagementSession.deleteUser(administrator, usernameX);
     }
 
 	@Test
    public void test23SimpleRegistrationSameSubjcectDifferentUsers() throws Exception {
-        userAdminSession.deleteUser(administrator, username1);
+        endEntityManagementSession.deleteUser(administrator, username1);
         final String usernameX = baseUsername + 'X';
         addUser(usernameX, dn1);
         simpleRegistration(dn1, true);
-        userAdminSession.deleteUser(administrator, usernameX);
+        endEntityManagementSession.deleteUser(administrator, usernameX);
     }
 
 	@AfterClass
@@ -1202,10 +1202,10 @@ public class XKMSKRSSTest {
     	CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     	EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     	GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    	EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    	EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     	
-    	userAdminSession.deleteUser(administrator, username2);
-        userAdminSession.deleteUser(administrator, username3);
+    	endEntityManagementSession.deleteUser(administrator, username2);
+        endEntityManagementSession.deleteUser(administrator, username3);
 
         endEntityProfileSession.removeEndEntityProfile(administrator, endentityprofilename);
 

@@ -116,12 +116,12 @@ public class EjbcaWSHelper {
     private HardTokenSession hardTokenSession;
     private EndEntityAccessSession endEntityAccessSession;
     private EndEntityProfileSession endEntityProfileSession;
-    private EndEntityManagementSession userAdminSession;
+    private EndEntityManagementSession endEntityManagementSession;
     private WebAuthenticationProviderSessionLocal authenticationSession;
 
     protected EjbcaWSHelper(WebServiceContext wsContext, AccessControlSessionLocal authorizationSession, CAAdminSession caAdminSession, CaSessionLocal caSession,
             CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
-            EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, EndEntityManagementSession userAdminSession, WebAuthenticationProviderSessionLocal authenticationSession) {
+            EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, EndEntityManagementSession endEntityManagementSession, WebAuthenticationProviderSessionLocal authenticationSession) {
     	this.wsContext = wsContext;
 		this.authorizationSession = authorizationSession;
 		this.caAdminSession = caAdminSession;
@@ -130,7 +130,7 @@ public class EjbcaWSHelper {
 		this.certificateStoreSession = certificateStoreSession;
 		this.hardTokenSession = hardTokenSession;
 		this.endEntityProfileSession = endEntityProfileSession;
-		this.userAdminSession = userAdminSession;
+		this.endEntityManagementSession = endEntityManagementSession;
 		this.endEntityAccessSession = endEntityAccessSession;
 		this.authenticationSession = authenticationSession;
 	}
@@ -774,8 +774,8 @@ public class EjbcaWSHelper {
 
 	protected void resetUserPasswordAndStatus(AuthenticationToken admin, String username, int status) {
 		try {
-			userAdminSession.setPassword(admin, username, null);
-			userAdminSession.setUserStatus(admin, username, status);	
+			endEntityManagementSession.setPassword(admin, username, null);
+			endEntityManagementSession.setUserStatus(admin, username, status);	
 			log.debug("Reset user password to null and status to "+status);
 		} catch (Exception e) {
 			// Catch all because this reset method will be called from withing other catch clauses
@@ -793,8 +793,8 @@ public class EjbcaWSHelper {
 			// Verification succeeded, lets set user status to new, the password as passed in and proceed
 			String msg = intres.getLocalizedMessage("cvc.info.renewallowed", CertTools.getFingerprintAsString(cert), username);            	
 			log.info(msg);
-			userAdminSession.setPassword(admin, username, password);
-			userAdminSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
+			endEntityManagementSession.setPassword(admin, username, password);
+			endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
 			// If we managed to verify the certificate we will break out of the loop									
 			ret = true;															
 		} catch (CertificateNotYetValidException e) {

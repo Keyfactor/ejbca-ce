@@ -44,7 +44,7 @@ import org.junit.AfterClass;
 import org.junit.Test;
 
 /**
- * Tests the UserData entity bean and some parts of UserAdminSession.
+ * Tests the EndEntityInformation entity bean and some parts of EndEntityManagementSession.
  * 
  * @version $Id$
  */

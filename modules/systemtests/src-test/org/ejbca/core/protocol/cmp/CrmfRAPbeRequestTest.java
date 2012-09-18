@@ -127,7 +127,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
     private GlobalConfigurationSessionRemote raAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -311,7 +311,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             checkCmpRevokeConfirmMessage(issuerDN, userDN, cert.getSerialNumber(), cacert, resp, false);
         } finally {
             try {
-                userAdminSession.deleteUser(admin, "cmptest");
+                endEntityManagementSession.deleteUser(admin, "cmptest");
             } catch (NotFoundException e) {
                 // NOPMD: ignore
             }
@@ -421,7 +421,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             assertEquals("CDP is not correct, it probably means it was not the correct 'KeyId' certificate profile that was used", cdp2, cdpfromcert2.toString());            
         } finally {
             try {
-                userAdminSession.deleteUser(admin, "cmptest");
+                endEntityManagementSession.deleteUser(admin, "cmptest");
             } catch (NotFoundException e) {
                 // NOPMD: ignore
             }
@@ -472,7 +472,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, cainfo.getCAId(), null, null, new EndEntityType(EndEntityTypes.ENDUSER),
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
             userdata.setPassword("foo123");
-            userAdminSession.addUser(admin, userdata, true);
+            endEntityManagementSession.addUser(admin, userdata, true);
             BatchMakeP12 makep12 = new BatchMakeP12();
             File tmpfile = File.createTempFile("ejbca", "p12");
             makep12.setMainStoreDir(tmpfile.getParent());
@@ -537,7 +537,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             checkCmpFailMessage(resp, "Already revoked.", CmpPKIBodyConstants.REVOCATIONRESPONSE, 0, ResponseStatus.FAILURE.getValue());
         } finally {
             // Delete user
-            userAdminSession.deleteUser(admin, username);
+            endEntityManagementSession.deleteUser(admin, username);
             // Nuke CA
             try {
                 caAdminSession.revokeCA(admin, cainfo.getCAId(), RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);

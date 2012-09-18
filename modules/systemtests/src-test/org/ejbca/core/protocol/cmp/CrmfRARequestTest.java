@@ -84,7 +84,7 @@ public class CrmfRARequestTest extends CmpTestCase {
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private CAAdminSessionRemote caAdminSessionRemote = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     private ConfigurationSessionRemote configurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private EndEntityProfileSession eeProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);;
     private CertificateProfileSession certProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     private EndEntityAccessSession eeAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
@@ -281,19 +281,19 @@ public class CrmfRARequestTest extends CmpTestCase {
 
         } finally {
             try {
-                userAdminSession.deleteUser(admin, userName1);
+                endEntityManagementSession.deleteUser(admin, userName1);
             } catch (NotFoundException e) {
             }
             try {
-                userAdminSession.deleteUser(admin, userName2);
+                endEntityManagementSession.deleteUser(admin, userName2);
             } catch (NotFoundException e) {
             }
             try {
-                userAdminSession.deleteUser(admin, "AdminCA1");
+                endEntityManagementSession.deleteUser(admin, "AdminCA1");
             } catch (NotFoundException e) {
             }
             try {
-                userAdminSession.deleteUser(admin, hostname);
+                endEntityManagementSession.deleteUser(admin, hostname);
             } catch (NotFoundException e) {
             }
         }
@@ -394,12 +394,12 @@ public class CrmfRARequestTest extends CmpTestCase {
         final int reqId;
         
         try {
-            userAdminSession.deleteUser(admin, "keyIDTestUser");
+            endEntityManagementSession.deleteUser(admin, "keyIDTestUser");
         } catch (NotFoundException e) {
             // NOPMD
         }
         try {
-            userAdminSession.deleteUser(admin, "keyidtest2");
+            endEntityManagementSession.deleteUser(admin, "keyidtest2");
         } catch (NotFoundException e) {
             // NOPMD
         }
@@ -463,12 +463,12 @@ public class CrmfRARequestTest extends CmpTestCase {
             Assert.assertEquals("Certificate revocation failed.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, revstatus);
         } finally {
             try {
-                userAdminSession.deleteUser(admin, "keyIDTestUser");
+                endEntityManagementSession.deleteUser(admin, "keyIDTestUser");
             } catch (NotFoundException e) {
                 // NOPMD
             }
             try {
-                userAdminSession.deleteUser(admin, "keyidtest2");
+                endEntityManagementSession.deleteUser(admin, "keyidtest2");
             } catch (NotFoundException e) {
                 // NOPMD
             }

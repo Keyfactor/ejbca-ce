@@ -357,7 +357,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 } catch (AlreadyRevokedException_Exception e) {
                 }
             } finally {
-                userAdminSession.deleteUser(intAdmin, username);
+                endEntityManagementSession.deleteUser(intAdmin, username);
             }
             try {
                 // Create a hard token issued by this CA
@@ -814,7 +814,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         EndEntityInformation userdata = new EndEntityInformation(username, "CN=" + username, caID, null, null, new EndEntityType(EndEntityTypes.ENDUSER), SecConst.EMPTY_ENDENTITYPROFILE,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_P12, 0, null);
         userdata.setPassword(PASSWORD);
-        userAdminSession.addUser(intAdmin, userdata, true);
+        endEntityManagementSession.addUser(intAdmin, userdata, true);
         BatchMakeP12 makep12 = new BatchMakeP12();
         File tmpfile = File.createTempFile("ejbca", "p12");
         makep12.setMainStoreDir(tmpfile.getParent());

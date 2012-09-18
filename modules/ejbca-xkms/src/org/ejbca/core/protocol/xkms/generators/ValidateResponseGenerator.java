@@ -28,15 +28,13 @@ import org.w3._2002._03.xkms_.ValidateResultType;
 
 /**
  * Class generating a response for a locate call
- * 
- * @author Philip Vendil 2006 sep 27
  *
  * @version $Id$
  */
 public class ValidateResponseGenerator extends KISSResponseGenerator {
 
-	public ValidateResponseGenerator(String remoteIP, ValidateRequestType req, CertificateStoreSession certificateStoreSession, EndEntityManagementSessionLocal userAdminSession, CrlStoreSession crlSession, CaSession caSession) {
-		super(remoteIP, req, certificateStoreSession, userAdminSession, crlSession, caSession);
+	public ValidateResponseGenerator(String remoteIP, ValidateRequestType req, CertificateStoreSession certificateStoreSession, EndEntityManagementSessionLocal endEntityManagementSession, CrlStoreSession crlSession, CaSession caSession) {
+		super(remoteIP, req, certificateStoreSession, endEntityManagementSession, crlSession, caSession);
 	}
 	
 	/**

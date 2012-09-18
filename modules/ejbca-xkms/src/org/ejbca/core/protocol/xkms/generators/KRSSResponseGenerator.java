@@ -113,12 +113,12 @@ public class KRSSResponseGenerator extends
 	 private KeyRecoverySession keyRecoverySession;
 	 private GlobalConfigurationSession globalConfigurationSession;
 	 private SignSession signSession;
-	 private EndEntityManagementSession userAdminSession;
+	 private EndEntityManagementSession endEntityManagementSession;
 	 
     public KRSSResponseGenerator(String remoteIP, RequestAbstractType req, Document requestDoc,
     		CaSession casession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
-    		SignSession signSession, EndEntityManagementSession userAdminSession, CrlStoreSession crlSession) {
+    		SignSession signSession, EndEntityManagementSession endEntityManagementSession, CrlStoreSession crlSession) {
         super(remoteIP, req, casession, certificateStoreSession, crlSession);
         this.requestDoc = requestDoc;
         this.casession = casession;
@@ -129,7 +129,7 @@ public class KRSSResponseGenerator extends
         this.keyRecoverySession = keyRecoverySession;
         this.globalConfigurationSession = globalConfigurationSession;
         this.signSession = signSession;
-        this.userAdminSession = userAdminSession;
+        this.endEntityManagementSession = endEntityManagementSession;
     }
 	
 	/**
@@ -275,7 +275,7 @@ public class KRSSResponseGenerator extends
 					}
 					ei.setRevocationCodeIdentifier(revocationCode);
 					data.setExtendedinformation(ei);
-					userAdminSession.changeUser(raAdmin, data, true);
+					endEntityManagementSession.changeUser(raAdmin, data, true);
 
 				}
 

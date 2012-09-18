@@ -33,9 +33,9 @@ public interface CertReqHistorySessionLocal extends CertReqHistorySession {
      * Method used to add a CertReqHistory to database
      * 
      * @param cert the certificate to store (Only X509Certificate used for now)
-     * @param useradmindata the user information used when issuing the certificate.
+     * @param endEntityInformation the user information used when issuing the certificate.
      */
-    void addCertReqHistoryData(Certificate cert, EndEntityInformation useradmindata);
+    void addCertReqHistoryData(Certificate cert, EndEntityInformation endEntityInformation);
     
 	CertificateInfo findFirstCertificateInfo(String issuerDN, BigInteger serno);
 	

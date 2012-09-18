@@ -148,7 +148,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     @EJB
     private SignSessionLocal signSession;
     @EJB
-    private EndEntityManagementSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private PublisherQueueSessionLocal publisherQueueSession;
     @EJB
@@ -604,7 +604,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             ejbs.put(AdminPreferenceSessionLocal.class, raAdminSession);
             ejbs.put(GlobalConfigurationSessionLocal.class, globalConfigurationSession);
             ejbs.put(SignSessionLocal.class, signSession);
-            ejbs.put(EndEntityManagementSessionLocal.class, userAdminSession);
+            ejbs.put(EndEntityManagementSessionLocal.class, endEntityManagementSession);
             ejbs.put(PublisherQueueSessionLocal.class, publisherQueueSession);
             ejbs.put(PublisherSessionLocal.class, publisherSession);
             ejbs.put(CertificateRequestSessionLocal.class, certificateRequestSession);

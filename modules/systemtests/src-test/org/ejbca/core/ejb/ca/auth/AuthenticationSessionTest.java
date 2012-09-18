@@ -81,7 +81,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     /** Creates a new TestAuthenticationSession object. */
     @BeforeClass
@@ -102,11 +102,11 @@ public class AuthenticationSessionTest extends CaTestCase {
 
     @After
     public void tearDown() throws Exception {
-        if (userAdminSession.existsUser(username1)) {
-            userAdminSession.deleteUser(internalAdmin, username1);
+        if (endEntityManagementSession.existsUser(username1)) {
+            endEntityManagementSession.deleteUser(internalAdmin, username1);
         }
-        if (userAdminSession.existsUser(username2)) {
-            userAdminSession.deleteUser(internalAdmin, username2);
+        if (endEntityManagementSession.existsUser(username2)) {
+            endEntityManagementSession.deleteUser(internalAdmin, username2);
         }
     }
 
@@ -121,7 +121,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         ei.setRemainingLoginAttempts(maxFailedLogins);
         userdata.setExtendedinformation(ei);
         userdata.setPassword(password);
-        userAdminSession.addUser(admin, userdata, true);
+        endEntityManagementSession.addUser(admin, userdata, true);
         EndEntityInformation userdata2 = endEntityAccessSession.findUser(admin, userdata.getUsername());
         assertNotNull("findUser: " + userdata.getUsername(), userdata2);
     }
@@ -131,7 +131,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         username1 = genRandomUserName(); 
         pwd1 = genRandomPwd();
         String email = username1 + "@anatom.se";
-        userAdminSession.addUser(internalAdmin, username1, pwd1, "C=SE, O=AnaTom, CN=" + username1, "rfc822name=" + email, email, false,
+        endEntityManagementSession.addUser(internalAdmin, username1, pwd1, "C=SE, O=AnaTom, CN=" + username1, "rfc822name=" + email, email, false,
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_P12, 0, caid);
         log.debug("created user: " + username1 + ", " + pwd1 + ", C=SE, O=AnaTom, CN=" + username1);
 
@@ -167,7 +167,7 @@ public class AuthenticationSessionTest extends CaTestCase {
     public void testFailAuthenticateUser() throws Exception {
         log.trace(">test03FailAuthenticateUser()");
         // Set status to GENERATED so authentication will fail
-        userAdminSession.setUserStatus(internalAdmin, username1, EndEntityConstants.STATUS_GENERATED);
+        endEntityManagementSession.setUserStatus(internalAdmin, username1, EndEntityConstants.STATUS_GENERATED);
         boolean authfailed = false;
         try {
             EndEntityInformation auth = authenticationSessionRemote.authenticateUser(internalAdmin, username1, pwd1);
@@ -207,8 +207,8 @@ public class AuthenticationSessionTest extends CaTestCase {
 
         // create certificate for user
         // Set status to NEW
-        userAdminSession.setPassword(internalAdmin, username1, "foo123");
-        userAdminSession.setUserStatus(internalAdmin, username1, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setPassword(internalAdmin, username1, "foo123");
+        endEntityManagementSession.setUserStatus(internalAdmin, username1, EndEntityConstants.STATUS_NEW);
 
         // Create a dummy certificate and keypair.
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -216,7 +216,7 @@ public class AuthenticationSessionTest extends CaTestCase {
 
         // First mark the user for recovery
         keyRecoverySession.addKeyRecoveryData(internalAdmin, cert, username1, keys);
-        userAdminSession.prepareForKeyRecovery(internalAdmin, username1, SecConst.EMPTY_ENDENTITYPROFILE, null);
+        endEntityManagementSession.prepareForKeyRecovery(internalAdmin, username1, SecConst.EMPTY_ENDENTITYPROFILE, null);
 
         assertTrue("Failure the users keyrecovery session should have been marked", keyRecoverySession.isUserMarked(username1));
 
@@ -254,7 +254,7 @@ public class AuthenticationSessionTest extends CaTestCase {
         loginUntilLocked(username2, pwd2);
 
         // Reset the status
-        userAdminSession.setUserStatus(internalAdmin, username2, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, username2, EndEntityConstants.STATUS_NEW);
 
         // After reset: Test that we don't lock the account to early
         loginMaxNumFailedLoginsMinusOneAndThenOk(username2, pwd2);

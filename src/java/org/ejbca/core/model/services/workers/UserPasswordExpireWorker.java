@@ -52,20 +52,20 @@ public class UserPasswordExpireWorker extends EmailSendingWorker {
      */
     public void work(Map<Class<?>, Object> ejbs) throws ServiceExecutionFailedException {
         log.trace(">Worker started");
-        final EndEntityManagementSessionLocal userAdminSession = ((EndEntityManagementSessionLocal)ejbs.get(EndEntityManagementSessionLocal.class));
+        final EndEntityManagementSessionLocal endEntityManagementSession = ((EndEntityManagementSessionLocal)ejbs.get(EndEntityManagementSessionLocal.class));
 
         ArrayList<EmailCertData> userEmailQueue = new ArrayList<EmailCertData>();
         ArrayList<EmailCertData> adminEmailQueue = new ArrayList<EmailCertData>();
        
         long timeModified = ((new Date()).getTime() - getTimeBeforeExpire());   
-        List<EndEntityInformation> userDataList = userAdminSession.findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
+        List<EndEntityInformation> userDataList = endEntityManagementSession.findUsers(new ArrayList<Integer>(getCAIdsToCheck(false)),
                 timeModified, EndEntityConstants.STATUS_NEW);
 
         for (EndEntityInformation userDataVO : userDataList) {
             userDataVO.setStatus(EndEntityConstants.STATUS_GENERATED);
             userDataVO.setPassword(null);
             try {
-            	userAdminSession.changeUser(getAdmin(), userDataVO, false);
+            	endEntityManagementSession.changeUser(getAdmin(), userDataVO, false);
                 if (isSendToEndUsers()) {
                 	if (userDataVO.getEmail() == null || userDataVO.getEmail().trim().equals("")) {
                 		String msg = intres.getLocalizedMessage("services.errorworker.errornoemail", userDataVO.getUsername());

@@ -117,7 +117,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
     private static Certificate cacert1 = null;
     private static Certificate cacert2 = null;
     
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
 
     @BeforeClass
@@ -175,8 +175,8 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         String user1 = CertTools.getPartFromDN(userDN1, "CN");
         String user2 = CertTools.getPartFromDN(userDN2, "CN");
         try {
-            userAdminSession.deleteUser(admin, user1);
-            userAdminSession.deleteUser(admin, user2);
+            endEntityManagementSession.deleteUser(admin, user1);
+            endEntityManagementSession.deleteUser(admin, user2);
         } catch (Exception e) {
             // Ignore errors
         }

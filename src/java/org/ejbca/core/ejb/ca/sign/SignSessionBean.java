@@ -111,7 +111,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     @EJB
     private EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
     @EJB
-    private EndEntityManagementSessionLocal userAdminSession;
+    private EndEntityManagementSessionLocal endEntityManagementSession;
     @EJB
     private PublisherSessionLocal publisherSession;
     @EJB
@@ -624,7 +624,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             return;
         }
         try {
-            userAdminSession.cleanUserCertDataSN(data);
+            endEntityManagementSession.cleanUserCertDataSN(data);
         } catch (ObjectNotFoundException e) {
             final String msg = intres.getLocalizedMessage("signsession.finishnouser", data.getUsername());
             log.info(msg);

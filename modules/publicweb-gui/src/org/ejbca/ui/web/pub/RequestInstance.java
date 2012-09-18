@@ -80,7 +80,7 @@ public class RequestInstance {
     private EndEntityProfileSessionLocal endEntityProfileSession;
 	private KeyRecoverySessionLocal keyRecoverySession;
 	private SignSessionLocal signSession;
-	private EndEntityManagementSessionLocal userAdminSession;
+	private EndEntityManagementSessionLocal endEntityManagementSession;
 	private GlobalConfigurationSession globalConfigurationSession;
 	private EndEntityAccessSession endEntityAccessSession;
 	
@@ -91,7 +91,7 @@ public class RequestInstance {
 	
 	protected RequestInstance(ServletContext servletContext, ServletConfig servletConfig, EndEntityAuthenticationSessionLocal authenticationSession, EndEntityAccessSession endEntityAccessSession, CaSessionLocal caSession,
 	        CertificateProfileSessionLocal certificateProfileSession, EndEntityProfileSessionLocal endEntityProfileSession, KeyRecoverySessionLocal keyRecoverySession,
-			SignSessionLocal signSession, EndEntityManagementSessionLocal userAdminSession, GlobalConfigurationSession globalConfigurationSession) {
+			SignSessionLocal signSession, EndEntityManagementSessionLocal endEntityManagementSession, GlobalConfigurationSession globalConfigurationSession) {
 		this.servletContext = servletContext;
 		this.servletConfig = servletConfig;
 		this.authenticationSession = authenticationSession;
@@ -100,7 +100,7 @@ public class RequestInstance {
 		this.endEntityProfileSession = endEntityProfileSession;
 		this.keyRecoverySession = keyRecoverySession;
 		this.signSession = signSession;
-		this.userAdminSession = userAdminSession;
+		this.endEntityManagementSession = endEntityManagementSession;
 		this.endEntityAccessSession = endEntityAccessSession;
 		this.globalConfigurationSession = globalConfigurationSession;
 	}
@@ -184,7 +184,7 @@ public class RequestInstance {
 							// This admin can be the public web user, which may not be allowed to change status,
 							// this is a bit ugly, but what can a man do...
 							AuthenticationToken tempadmin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RequestInstance"+request.getRemoteAddr()));
-							userAdminSession.changeUser(tempadmin, data, clearpwd);            		            			
+							endEntityManagementSession.changeUser(tempadmin, data, clearpwd);            		            			
 						} else {
 							String defaultCertificateProfileName = certificateProfileSession.getCertificateProfileName(certificateProfileId);
 							log.info(intres.getLocalizedMessage("certreq.badcertprofile", certprofile, defaultCertificateProfileName));

@@ -62,7 +62,7 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
 
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
-    private EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
     private static KeyPair rsakeys;
 
@@ -77,23 +77,23 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
         CAInfo inforsamgf1ca = caSession.getCAInfo(internalAdmin, TEST_SHA256_WITH_MFG1_CA_NAME);
         int rsamgf1cacaid = inforsamgf1ca.getCAId();
 
-        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        if (!userAdminSession.existsUser("foorsamgf1ca")) {
-            userAdminSession.addUser(internalAdmin, "foorsamgf1ca", "foo123", "C=SE,O=AnaTom,CN=foorsamgf1ca", null, "foo@anatom.se", false,
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        if (!endEntityManagementSession.existsUser("foorsamgf1ca")) {
+            endEntityManagementSession.addUser(internalAdmin, "foorsamgf1ca", "foo123", "C=SE,O=AnaTom,CN=foorsamgf1ca", null, "foo@anatom.se", false,
                     SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(),
                     SecConst.TOKEN_SOFT_PEM, 0, rsamgf1cacaid);
             log.debug("created user: foorsamgf1ca, foo123, C=SE, O=AnaTom, CN=foorsamgf1ca");
         } else {
             log.info("User foorsamgf1ca already exists, resetting status.");
-            userAdminSession.setUserStatus(internalAdmin, "foorsamgf1ca", EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.setUserStatus(internalAdmin, "foorsamgf1ca", EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
     }
 
     @AfterClass
     public static void afterClass() throws Exception {
-        EndEntityManagementSessionRemote userAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
-        userAdminSession.deleteUser(internalAdmin, RSA_MFG1_ENTITY_NAME);
+        EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+        endEntityManagementSession.deleteUser(internalAdmin, RSA_MFG1_ENTITY_NAME);
 
         removeTestCA(TEST_SHA256_WITH_MFG1_CA_NAME);
     }
@@ -101,7 +101,7 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
     @Test
     public void testSignSessionRSAMGF1WithRSASha256WithMGF1CA() throws Exception {
         log.trace(">test18SignSessionRSAWithRSASha256WithMGF1CA()");
-        userAdminSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // user that we know exists...
         X509Certificate selfcert = CertTools.genSelfCert("CN=selfsigned", 1, null, rsakeys.getPrivate(), rsakeys.getPublic(),
@@ -149,7 +149,7 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
     @Test
     public void testBCPKCS10RSAWithRSASha256WithMGF1CA() throws Exception {
         log.trace(">test19TestBCPKCS10RSAWithRSASha256WithMGF1CA()");
-        userAdminSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, EndEntityConstants.STATUS_NEW);
+        endEntityManagementSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = new PKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,

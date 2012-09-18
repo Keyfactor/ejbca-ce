@@ -37,8 +37,6 @@ import org.w3c.dom.Document;
 /**
  * Class generating a response for a register call
  * 
- * 
- * @author Philip Vendil 
  *
  * @version $Id$
  */
@@ -49,9 +47,9 @@ public class RegisterResponseGenerator extends KRSSResponseGenerator {
 	public RegisterResponseGenerator(String remoteIP, RegisterRequestType req, Document requestDoc,
     		CaSession casession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
     		EndEntityProfileSession endEntityProfileSession, KeyRecoverySession keyRecoverySession, GlobalConfigurationSession globalConfigurationSession,
-    		SignSession signSession, EndEntityManagementSession userAdminSession, CrlStoreSession crlSession) {
+    		SignSession signSession, EndEntityManagementSession endEntityManagementSession, CrlStoreSession crlSession) {
 		super(remoteIP, req,requestDoc, casession, authenticationSession, certificateStoreSession, endEntityAccessSession, endEntityProfileSession,
-				keyRecoverySession, globalConfigurationSession, signSession, userAdminSession, crlSession);
+				keyRecoverySession, globalConfigurationSession, signSession, endEntityManagementSession, crlSession);
 	}
 	
 	/**

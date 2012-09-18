@@ -80,7 +80,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
     @EJB
 	private SignSessionLocal signSession;
 	@EJB
-	private EndEntityManagementSessionLocal userAdminSession;
+	private EndEntityManagementSessionLocal endEntityManagementSession;
 	@EJB
 	private CaSessionLocal caSession;
 	@EJB
@@ -161,7 +161,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				break;
 			case 7:
 			    // Key Update request (kur, Key Update Request)
-			    handler = new CrmfKeyUpdateHandler(admin, caSession, certificateProfileSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, userAdminSession);
+			    handler = new CrmfKeyUpdateHandler(admin, caSession, certificateProfileSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession);
 			    cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(), CmpConfiguration.getAllowRAVerifyPOPO(), CmpConfiguration.getExtractUsernameComponent());
 			    break;
 			case 19:
@@ -173,7 +173,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				break;
 			case 11:
 				// Revocation request (rr, Revocation Request)
-				handler = new RevocationMessageHandler(admin, userAdminSession, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession);
+				handler = new RevocationMessageHandler(admin, endEntityManagementSession, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
             case 20:
