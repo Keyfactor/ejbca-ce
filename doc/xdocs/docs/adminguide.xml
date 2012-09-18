@@ -2053,6 +2053,9 @@ E-mail sending must be configured in <code>mail.properties</code> to work. You m
 <p>
 To make the end-entity profiles available in the user interface, <em>certificate types</em> must be added in <code>web.properties</code> using the <code>web.selfreg.certtypes.<em>&lt;identifier&gt;</em>.*</code> properties (the identifier can be chosen arbitrarily). Each certificate type defines an end-entity profile and a certificate profile, and what name should be displayed in the user interface. Finally, to enable self registration, the property <code>web.selfreg.enabled</code> must be set to true.
 </p>
+<p>
+Note that the approval requests will be shown in the administration GUI as coming from a <em>Command Line Tool</em>. This is normal, since all actions that aren't initiated by an administrator are shown as coming from the command line.
+</p>
 </section>
 
 <section name="Framework for External User Data Sources">
