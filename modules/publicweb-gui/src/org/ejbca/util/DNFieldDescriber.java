@@ -127,6 +127,18 @@ public final class DNFieldDescriber {
         return fieldTypeToString(eeprofile.getSubjectAltNameFieldsInOrder(i)[EndEntityProfile.FIELDTYPE], DNFieldExtractor.TYPE_SUBJECTALTNAME);
     }
     
+    public static String extractSubjectDirAttrFromId(EndEntityProfile eeprofile, String id) {
+        int i = extractIndexFromId(id);
+        return fieldTypeToString(eeprofile.getSubjectDirAttrFieldsInOrder(i)[EndEntityProfile.FIELDTYPE], DNFieldExtractor.TYPE_SUBJECTDIRATTR);
+    }
+    
+    public String removePrefixes(String s, String... prefixes) {
+        for (String prefix : prefixes) {
+            if (s.startsWith(prefix)) s = s.substring(prefix.length());
+        }
+        return s;
+    }
+    
     public String getHumanReadableName() {
         String langconst = DnComponents.getLanguageConstantFromProfileId(fielddata[EndEntityProfile.FIELDTYPE]);
         if (langconst.equals("DN_PKIX_COMMONNAME")) { return "Name"; }
@@ -136,7 +148,7 @@ public final class DNFieldDescriber {
         if (langconst.equals("ALT_PKIX_DNSNAME")) { return "DNS Name"; }
         if (langconst.equals("ALT_PKIX_IPADDRESS")) { return "IP Address"; }
         if (langconst.equals("ALT_PKIX_RFC822NAME")) { return "RFC822 Name (e-mail)"; }
-        else { return langconst.replaceAll("DN_PKIX_", "").replaceAll("ALT_PKIX_", "").toLowerCase(Locale.ROOT); }
+        else { return removePrefixes(langconst, "DN_PKIX_", "ALT_PKIX_", "DN_", "ALT_", "SDA_").toLowerCase(Locale.ROOT); }
     }
     
     public String getDescription() {

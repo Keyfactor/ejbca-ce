@@ -32,6 +32,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.DNFieldExtractor;
 import org.ejbca.config.EjbcaConfigurationHolder;
 import org.ejbca.config.GlobalConfiguration;
@@ -68,6 +69,7 @@ public class RegisterReqBean {
     // Form fields
     private final Map<String,String> formDNFields = new HashMap<String,String>();
     private String subjectAltName = "";
+    private String subjectDirAttrs = "";
     
     private String certType;
     private EndEntityProfile eeprofile; // of cert type
@@ -165,6 +167,18 @@ public class RegisterReqBean {
         return fields;
     }
     
+    public List<DNFieldDescriber> getDirAttrFields() {
+        List<DNFieldDescriber> fields = new ArrayList<DNFieldDescriber>();
+        
+        int count = eeprofile.getSubjectDirAttrFieldOrderLength();
+        for (int i=0; i < count; i++) {
+            int[] fielddata = eeprofile.getSubjectDirAttrFieldsInOrder(i);
+            fields.add(new DNFieldDescriber(i, fielddata, eeprofile, DNFieldExtractor.TYPE_SUBJECTDIRATTR));
+        }
+        
+        return fields;
+    }
+    
     public boolean isEmailDomainFrozen() {
         if (eeprofile.isModifyable(EndEntityProfile.EMAIL, 0)) return false;
         String value = eeprofile.getValue(EndEntityProfile.EMAIL, 0);
@@ -219,7 +233,7 @@ public class RegisterReqBean {
             String key = (String)en.nextElement();
             String value = request.getParameter(key).trim();
             
-            String id = key.replaceFirst("^[a-z]+_", ""); // format is e.g. dnfield_cn or altnamefield_123 
+            String id = key.replaceFirst("^[a-z]+_", ""); // format is e.g. dnfield_cn, altnamefield_123 or dirattrfield_123 
             if (key.startsWith("dnfield_")) {
                 if (!value.isEmpty()) {
                     String dnName = DNFieldDescriber.extractSubjectDnNameFromId(eeprofile, id);
@@ -236,6 +250,19 @@ public class RegisterReqBean {
                         subjectAltName = field;
                     } else {
                         subjectAltName += ", " + field;
+                    }
+                }
+            }
+            
+            if (key.startsWith("dirattrfield_")) {
+                if (!value.isEmpty()) {
+                    String dirAttr = DNFieldDescriber.extractSubjectDirAttrFromId(eeprofile, id);
+                    String field = org.ietf.ldap.LDAPDN.escapeRDN(dirAttr + "=" + value);
+                    
+                    if (subjectDirAttrs.isEmpty()) {
+                        subjectDirAttrs = field;
+                    } else {
+                        subjectDirAttrs += ", " + field;
                     }
                 }
             }
@@ -318,6 +345,15 @@ public class RegisterReqBean {
         return sb.toString();
     }
     
+    private void assignDirAttrs(EndEntityInformation endEntity) {
+        ExtendedInformation ext = endEntity.getExtendedinformation();
+        if (ext == null) {
+            ext = new ExtendedInformation();
+        }
+        ext.setSubjectDirectoryAttributes(subjectDirAttrs);
+        endEntity.setExtendedinformation(ext);
+    }
+    
     /**
      * Creates a approval request from the given information in the form.
      * initialize() must have been called before this method is called.  
@@ -357,12 +393,13 @@ public class RegisterReqBean {
         
         final String subjectDN = getSubjectDN();
         final int numApprovalsRequired = 1;
-        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("RegisterReqBean: "+remoteAddress));
+        final AuthenticationToken admin = new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Public web registration, from IP "+remoteAddress));
         
         final EndEntityInformation endEntity = new EndEntityInformation(username, subjectDN, caid, subjectAltName, 
                 null, EndEntityConstants.STATUS_NEW, new EndEntityType(EndEntityTypes.ENDUSER), eeProfileId, certProfileId,
                 null,null, SecConst.TOKEN_SOFT_BROWSERGEN, 0, null);
         endEntity.setSendNotification(true);
+        assignDirAttrs(endEntity);
         if (email != null) {
             endEntity.setEmail(email);
         }

@@ -111,8 +111,41 @@
             </c:choose>
             <br />
         </c:forEach>
-        
         <br />
+        
+        <!-- Subject directory attributes -->
+        <c:forEach var="field" items="${reg.dirAttrFields}">
+            <c:set var="id" value="dirattrfield_${field.id}" />
+            
+            <label for="<c:out value="${id}" />" title="<c:out value="${field.description}" />"><c:out value="${field.humanReadableName}" /></label>
+            
+            <c:choose>
+                <c:when test='${field.name == "countryofcitizenship" || field.name == "countryofresidence"}'>
+                    <!-- Country field -->
+                    <select name="<c:out value="${id}" />" id="<c:out value="${id}" />" title="<c:out value="${field.description}" />">
+                      <c:forEach var="country" items="${countrycodes.countriesFromBean}">
+                        <c:if test="${field.modifiable || field.allowedValuesMap[country.code] != null}">
+                          <option value="<c:out value="${country.code}" />"<c:if test="${field.defaultValue == country.code}"> selected="selected"</c:if>><c:out value="${country.name}" /></option>
+                        </c:if>
+                      </c:forEach>
+                    </select>
+                </c:when>
+                <c:when test="${field.modifiable}">
+                    <!-- Free text -->
+                    <input name="<c:out value="${id}" />" id="<c:out value="${id}" />" type="text" size="25" title="<c:out value="${field.description}" />" value="<c:out value="${field.defaultValue}" />" />
+                </c:when>
+                <c:otherwise>
+                    <!-- Select box -->
+                    <select name="<c:out value="${id}" />" id="<c:out value="${id}" />" title="<c:out value="${field.description}" />">
+                      <c:forEach var="value" items="${field.allowedValuesList}">
+                        <option value="<c:out value="${value}" />"><c:out value="${value}" /></option>
+                      </c:forEach>
+                    </select>
+                </c:otherwise>
+            </c:choose>
+            <br />
+        </c:forEach>
+        <c:if test="${!empty reg.dirAttrFields}"><br /></c:if>
         
         <!-- Username -->
         <label for="username">Username</label>
