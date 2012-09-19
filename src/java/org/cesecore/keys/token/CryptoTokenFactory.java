@@ -156,8 +156,19 @@ public class CryptoTokenFactory {
 	 * @param data byte data passed to the init method of the CryptoToken
 	 * @param id id passed to the init method of the CryptoToken, the id is user defined and not used internally for anything but logging.
      */
-    public static final CryptoToken createCryptoToken(final String classname, final Properties properties, final byte[] data, final int id) {
-    	CryptoToken token = createTokenFromClass(classname);
+    public static final CryptoToken createCryptoToken(final String inClassname, final Properties properties, final byte[] data, final int id) {
+    	final String classname;
+    	if ( inClassname!=null ) {
+    		classname = inClassname;
+    	} else {
+    		classname = NullCryptoToken.class.getName();
+    		log.info("This must be an imported CA that is being upgraded. Use NullCryptoToken.");
+    	}
+    	final CryptoToken token = createTokenFromClass(classname);
+    	if ( token==null ) {
+    		log.error("No token. Classpath="+classname);
+    		return null;
+    	}
     	try {
 			token.init(properties, data, id);
 		} catch (Exception e) {
@@ -167,15 +178,13 @@ public class CryptoTokenFactory {
     }
     
     private static final CryptoToken createTokenFromClass(final String classpath) {
-    	CryptoToken token;
     	try{				
     		Class<?> implClass = Class.forName(classpath);
     		Object obj = implClass.newInstance();
-    		token = (CryptoToken) obj;
-    	}catch(Throwable e){ // NOPMD: when dealing with HSMs we need to catch everything
+    		return (CryptoToken) obj;
+    	}catch(Throwable e){
     		log.error("Error contructing Crypto Token (setting to null). Classpath="+classpath, e);
-    		token = null;
+    		return null;
     	}
-    	return token;    	
     }
 }
