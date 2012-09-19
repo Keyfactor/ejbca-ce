@@ -79,20 +79,26 @@
         <!-- Generic targets used for supporting different versions of JBoss. -->
         <!-- ================================================================ -->
 
-        <target name="jee:deployDS" depends="jee:deployDSJBoss5,jee:deployDSJBoss7" description="Deploys the main (CA) datasource." />
+        <!-- Deploys the main (CA) datasource. -->
+        <target name="jee:deployDS" depends="jee:deployDSJBoss5,jee:deployDSJBoss7"  />
 
-        <target name="jee:deployOCSPDS" description="Deploys the OCSP datasource." if="ocsp-datasource.jndi-name">
+        <!-- Deploys the OCSP datasource. -->
+        <target name="jee:deployOCSPDS" if="ocsp-datasource.jndi-name">
             <antcall target="jee:deployOCSPDSJBoss5" />
             <antcall target="jee:deployOCSPDSJBoss7" />
         </target>
 
-        <target name="jee:deployServices" depends="jee:deployServicesJBoss5,jee:deployServicesJBoss7" description="Deploys the services (mail etc)." />
+        <!-- Deploys the services (mail etc). -->
+        <target name="jee:deployServices" depends="jee:deployServicesJBoss5,jee:deployServicesJBoss7"  />
 
-        <target name="jee:web-configure" depends="jee:web-configureJBoss5,jee:web-configureJBoss7" unless="web.noconfigure" description="Configures the web interface component of the application server." />
+        <!-- Configures the web interface component of the application server. -->
+        <target name="jee:web-configure" depends="jee:web-configureJBoss5,jee:web-configureJBoss7" unless="web.noconfigure" />
 
-        <target name="notifyDeploymentScanner" depends="notifyDeploymentScannerJBoss5,notifyDeploymentScannerJBoss7" description="Notifies the application server to perform (re)deployment of an application."/>
+        <!-- Notifies the application server to perform (re)deployment of an application. -->
+        <target name="notifyDeploymentScanner" depends="notifyDeploymentScannerJBoss5,notifyDeploymentScannerJBoss7" />
 
-	<target name="jee:assert-run" description="Determines if server is running or not, and fails if it isn't." depends="jee:assert-runJBoss5,jee:assert-runJBoss7" />
+        <!-- Determines if server is running or not, and fails if it isn't. -->
+	<target name="jee:assert-run"  depends="jee:assert-runJBoss5,jee:assert-runJBoss7" />
 
         <!-- ========================================================== -->
         <!-- These are implementation-specific targets for the JBoss 5. -->
@@ -242,7 +248,8 @@
 	    <touch file="${jboss.farm.dir}/ejbca.ear.dodeploy" />
 	</target>
 
-        <target name="jee:web-configureJBoss7Cleanup" if="jboss7" description="Purges the old web configuration.">
+        <!-- Purges the old web configuration. -->
+        <target name="jee:web-configureJBoss7Cleanup" if="jboss7">
             <jboss:admsilent arg="/socket-binding-group=standard-sockets/socket-binding=httpspub:remove" failonerror="false"/>
             <jboss:admsilent arg="/subsystem=web/connector=httpspub:remove" failonerror="false" />
             <jboss:admsilent arg="/socket-binding-group=standard-sockets/socket-binding=httpspriv:remove" failonerror="false" />
@@ -353,9 +360,6 @@
 		<chmod file="${jboss.farm.dir}/ejbca.ear" perm="600"/>
 		<antcall target="notifyDeploymentScanner" />
 	</target>
-
-
-
 
 	<target name="jee:run" description="Start the JEE server">
 		<jee-server classname="org.jboss.Main" classpath="${appserver.home}/bin/run.jar">
