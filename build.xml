@@ -23,15 +23,17 @@
 	<import file="bin/${appserver.type}.xml" optional="true"/><!-- We might just want to build the clientToolBox with an appserver. -->
 	<import file="./test.xmli" />
 	<import file="./docs.xmli" />
+        <!-- Include the build file which takes care of removed features detection (for options etc). -->
+        <import file="./removed.xml" />
         <!-- Include the build file which takes care of deprecation detection (for options etc). -->
-        <import file="./deprecation.xml" />
+        <import file="./deprecated.xml" />
 	<!-- this import is only used by the plugin scheme-->
     <import file="${ejbca.home}/modules/build-properties.xml"/>
 	
     <!-- =================================================================== -->
     <!-- Clean ALL                                                           -->
     <!-- =================================================================== -->
-    <target name="clean">
+    <target name="clean" depends="deprecated:check">
         <delete dir="${dist.dir}" />
         <delete dir="${va-dist.dir}" />
         <delete dir="${apidoc}" />
@@ -43,7 +45,7 @@
 	<!-- =================================================================== -->
 	<!-- Clean Dist dirs                                                           -->
 	<!-- =================================================================== -->
-	<target name="cleanDistDir">
+	<target name="cleanDistDir" depends="deprecated:check">
 		 <delete dir="${dist.dir}" />
 		 <ant antfile="modules/build.xml" target="clean" inheritall="false"/>
 	</target>
@@ -51,20 +53,20 @@
     <!-- =================================================================== -->
     <!-- Build ALL                                                           -->
     <!-- =================================================================== -->
-    <target name="build" depends="check-deprecated, fail-unless-appserver-detected, testforgnujava, ejbca.ear" description="Builds EJBCA"/>
+    <target name="build" depends="check-deprecated, deprecated:check, fail-unless-appserver-detected, testforgnujava, ejbca.ear" description="Builds EJBCA"/>
 
 	<!--
 	  Installs EJBCA by creating an initial CA, configuring the web container and generating certs for
 	  SSL and the super administrator.
 	  -->
-    <target name="install" depends="fail-unless-appserver-detected, ejbca-ejb-cli" description="Install EJBCA application (only once)">
+    <target name="install" depends="fail-unless-appserver-detected, ejbca-ejb-cli, deprecated:check" description="Install EJBCA application (only once)">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
         <!-- By calling the jee targets we make sure that the target calls will succeed, but no changes will be made if web.noconfigure and web.nosslconfiugre properties have been set (unlike the plain web-configure/deploy-keystore targets which will fail hard with an error message). -->
         <antcall target="jee:web-configure"/>
         <antcall target="jee:keystore"/>
     </target>
 	
-    <target name="javatruststore" depends="testforgnujava" description="Install RootCA certificate in Java trust store (can be run wih -Dca.name=FooCA -Dtrust.keystore=trust.jks -Dtrust.password=foo123)">
+    <target name="javatruststore" depends="testforgnujava, deprecated:check" description="Install RootCA certificate in Java trust store (can be run wih -Dca.name=FooCA -Dtrust.keystore=trust.jks -Dtrust.password=foo123)">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:javatruststore" />
         <antcall target="jee:deploytruststore" />
     </target>
@@ -148,7 +150,7 @@
     <!-- =================================================================== -->
     <!-- Build ejbca util part                                                    -->
     <!-- =================================================================== -->
-    <target name="ejbca-util.jar" description="Creates ejbca util classes for use in other projects.jar">
+    <target name="ejbca-util.jar" depends="deprecated:check" description="Creates ejbca util classes for use in other projects.jar">
         <ant antfile="build.xml" dir="modules" target="ejbca-util" />
     </target>    	
 
@@ -597,7 +599,7 @@
     <!-- =================================================================== -->
     <!-- Build Javadoc part                                                  -->
     <!-- =================================================================== -->
-    <target name="javadoc" description="Build JavaDoc for all modules">
+    <target name="javadoc" description="Build JavaDoc for all modules" depends="deprecated:check">
         <mkdir dir="${apidoc}" />
     	<path id="javadoc-dependencies.classpath">
     		<fileset dir="${lib}" includes="**/*.jar"/>
@@ -673,22 +675,19 @@
     <!-- ======================================================================= -->
     <!-- Deploy EJBCA ear to JBoss                                               -->
     <!-- ======================================================================= -->
-    <target name="deploy" depends="cleanDistDir, failinproduction-ca,build, inputDatabasePassword" description="Deploy the main EJBCA application">       
+    <target name="deploy" depends="cleanDistDir, failinproduction-ca,build, inputDatabasePassword, deprecated:check" description="Deploy the main EJBCA application">       
     	<antcall target="jee:deploy" />
         <antcall target="showtime" />
     </target>
-    <target name="va-deploy" depends="failinproduction-va,va-ear,inputDatabasePassword" description="Deploy the stand alone Verification Authority (VA)" >
+    <target name="va-deploy" depends="failinproduction-va,va-ear,inputDatabasePassword,deprecated:check" description="Deploy the stand alone Verification Authority (VA)" >
         <antcall target="jee:deployva" />
         <antcall target="showtime" />
-    </target>
-    <target name="ocsp-deploy" depends="va-deploy" description="Deprecated, use va-deploy instead" >
-        <echo message="Deprecated use va-deploy instead." />
     </target>
 
     <!-- ======================================================================= -->
     <!-- Configure the web access for application servers.                       -->
     <!-- ======================================================================= -->
-    <target name="web-configure" description="Set-up the web confiugration for the application server (including changes related to setting-up SSL keystore/truststore).">
+    <target name="web-configure" depends="deprecated:check" description="Set-up the web confiugration for the application server (including changes related to setting-up SSL keystore/truststore).">
       <fail message="You cannot run the web configuration target since it has been explicitly disabled in the web.properties file.">
         <condition>
           <istrue value="${web.noconfigure}" />
@@ -701,7 +700,7 @@
     <!-- ======================================================================= -->
     <!-- Deploy the keystores to the application server.                         -->
     <!-- ======================================================================= -->
-    <target name="deploy-keystore" description="Deploy the keystore and truststore for the application server.">
+    <target name="deploy-keystore" depends="deprecated:check" description="Deploy the keystore and truststore for the application server.">
       <fail message="You cannot run the keystore deployment target since the SSL configuration has been explicitly disabled in the web.properties file.">
         <condition>
           <istrue property="${web.nosslconfigure}" />
@@ -713,7 +712,7 @@
     <!-- ======================================================================= -->
     <!-- Deploy the datasources to the application server.                       -->
     <!-- ======================================================================= -->
-    <target name="deploy-datasource" description="Deploy the datasources for the application server.">
+    <target name="deploy-datasource" depends="deprecated:check" description="Deploy the datasources for the application server.">
       <antcall target="jee:deployDS" />
       <antcall target="jee:deployOCSPDS" />
     </target>
@@ -721,12 +720,12 @@
     <!-- ======================================================================= -->
     <!-- Deploy the services to the application server.                          -->
     <!-- ======================================================================= -->
-    <target name="deploy-service" description="Deploy the services for the application server.">
+    <target name="deploy-service" depends="deprecated:check" description="Deploy the services for the application server.">
       <antcall target="jee:deployServices" />
     </target>
 
 
-	<target name="deploy-test" depends="failinproduction-ca,build, inputDatabasePassword, inputKeystorePassword" description="Deploy a test version of EJBCA.">		
+	<target name="deploy-test" depends="failinproduction-ca,build, inputDatabasePassword, inputKeystorePassword, deprecated:check" description="Deploy a test version of EJBCA.">		
 		<!-- Build the test EAR -->
 	   	<antcall target="jee:deployTestEar"/>
 	</target>
@@ -734,7 +733,7 @@
     <!-- ======================================================================= -->
     <!-- Renew the keystore used by the web interface on the application server. -->
     <!-- ======================================================================= -->
-    <target name="renew-keystore" depends="inputKeystorePassword" description="Renews the keystore for the application server web interface. Don't forget to deploy the new keystore afterwards. The old keystore in p12/tomcat.jks will be overwritten.">
+    <target name="renew-keystore" depends="inputKeystorePassword, deprecated:check" description="Renews the keystore for the application server web interface. Don't forget to deploy the new keystore afterwards. The old keystore in p12/tomcat.jks will be overwritten.">
       <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:renew-keystore" />
     </target>
 
@@ -742,7 +741,7 @@
     <!-- Make a ZIP release file of EJBCA, and a SHA1 checksum of the release    -->
 	<!-- The ZIP file contains all the files used, but not temporary or compile files etc -->
     <!-- ======================================================================= -->
-	<target name="ziprelease" description="Make a zip file for EJBCA release">
+	<target name="ziprelease" depends="deprecated:check" description="Make a zip file for EJBCA release">
 		<antcall target="clean" />
 
 	<!-- A small script that converts the version x.y.z to x_y_z to be used in the file. JavaScript does not work under Java 1.5. -->
@@ -802,14 +801,14 @@
     <!-- ======================================================================= -->
     <!-- Display application version string                                      -->
     <!-- ======================================================================= -->
-	<target name="ejbcaversion" description="Output application version string.">
+	<target name="ejbcaversion" depends="deprecated:check" description="Output application version string.">
 		<echo>${app.version}</echo>
 	</target>
 
     <!-- ======================================================================= -->
     <!-- Target updating svn revision string in propertiesAndPaths.xml           -->
     <!-- ======================================================================= -->
-	<target name="update-svnrev" description="Updates propertiesAndPaths.xmli file with current trunk SVN revision">
+	<target name="update-svnrev" depends="deprecated:check" description="Updates propertiesAndPaths.xmli file with current trunk SVN revision">
 		<echo>Trying to update src/internal.properties with SVN revision of COMMITTED.</echo>
         <property name="revision" value="COMMITTED"/>	
 		
@@ -888,7 +887,7 @@
     	<ant dir="modules" target="va-entity" />
     </target>
 
-    <target name="ejbca-db-cli" description="Build EJBCA JPA database CLI">
+    <target name="ejbca-db-cli" depends="deprecated:check" description="Build EJBCA JPA database CLI">
     	<ant dir="modules" target="ejbca-db-cli" />
     </target>
 
@@ -900,7 +899,7 @@
        	<ant dir="modules" target="va-ejb-interface" />
     </target>
 
-    <target name="ejbca-ejb-cli" description="Builds EJBCA command line interface">
+    <target name="ejbca-ejb-cli" depends="deprecated:check" description="Builds EJBCA command line interface">
     	<ant dir="modules" target="ejbca-ejb-cli" />
     </target>
 	
@@ -948,15 +947,15 @@
     	<ant dir="modules" target="webdist-war" />
     </target>
 
-	<target name="clientToolBox" description="Builds command line clients as separate toolbox that can be deployed separately">
+	<target name="clientToolBox" depends="deprecated:check" description="Builds command line clients as separate toolbox that can be deployed separately">
     	<ant dir="modules" target="clientToolBox" />
     </target>
     
-    <target name="validationtool" depends="doc" description="Builds the ValidationTool standalone client application">
+    <target name="validationtool" depends="doc, deprecated:check" description="Builds the ValidationTool standalone client application">
     	<ant dir="modules" target="validationtool" />
     </target>
     
-    <target name="validationtool-src" depends="doc" description="Builds source distribution of the ValidationTool">
+    <target name="validationtool-src" depends="doc, deprecated:check" description="Builds source distribution of the ValidationTool">
     	<ant dir="modules" target="validationtool-src" />
     </target>
 
@@ -964,11 +963,11 @@
     	<ant dir="modules" target="ejbca-cmp-tcp" />
     </target>
 	
-    <target name="cmpTcpProxy" description="Builds a CMP TCP proxy.">
+    <target name="cmpTcpProxy" depends="deprecated:check" description="Builds a CMP TCP proxy.">
     	<ant dir="modules" target="cmpTcpProxy" />
     </target>
 	
-    <target name="cmpHttpProxy" description="Builds a CMP HTTP proxy.">
+    <target name="cmpHttpProxy" depends="deprecated:check" description="Builds a CMP HTTP proxy.">
     	<ant dir="modules" target="cmpHttpProxy" />
     </target>
 	
@@ -979,23 +978,23 @@
 		<echo message="Task completed ${completiontime}."/>
 	</target>
 	
-    <target name="ejbcaws.client" description="Build the EJBCA WS-API client">
+    <target name="ejbcaws.client" depends="deprecated:check" description="Build the EJBCA WS-API client">
     	<ant dir="modules" target="ejbca-ws-cli" />
     </target>
 
-    <target name="ejbcaws.war" description="Build the EJBCA WS WAR">
+    <target name="ejbcaws.war" depends="deprecated:check" description="Build the EJBCA WS WAR">
     	<ant dir="modules" target="ejbca-ws"/>
     </target>
 
-    <target name="ejbca-ws-generate" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
+    <target name="ejbca-ws-generate" depends="deprecated:check" description="Generate the EJBCA Web Services client source code files (used by developers of new WS API calls)">
     	<ant dir="modules" target="ejbca-ws-generate"/>
     </target>
 
-    <target name="xkms.client" description="Build the EJBCA XKMS client">
+    <target name="xkms.client" depends="deprecated:check" description="Build the EJBCA XKMS client">
     	<ant dir="modules" target="ejbca-xkms-cli" />
     </target>
 
-    <target name="xkms.war" description="Build the EJBCA XKMS WAR">
+    <target name="xkms.war" depends="deprecated:check" description="Build the EJBCA XKMS WAR">
     	<ant dir="modules" target="ejbca-xkms"/>
     </target>
 	
@@ -1003,43 +1002,43 @@
     	<ant dir="modules" target="externalra-service"/>
 	</target>
 
-	<target name="externalra-client" description="Build the EJBCA External RA Service CLI">
+	<target name="externalra-client" depends="deprecated:check" description="Build the EJBCA External RA Service CLI">
     	<ant dir="modules" target="externalra-client"/>
 	</target>
 
-	<target name="externalra-scep" description="Build the EJBCA External RA StandAlone SCEP application">
+	<target name="externalra-scep" depends="deprecated:check" description="Build the EJBCA External RA StandAlone SCEP application">
     	<ant dir="modules" target="externalra-scep"/>
 	</target>
 
-	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application" depends="externalra-scep">
+	<target name="externalra-scep-deploy" description="Deploy the EJBCA External RA StandAlone SCEP application" depends="externalra-scep,deprecated:check">
         <antcall target="jee:deploy-scep-war" />
 	</target>
 
-	<target name="externalra-gui" description="Build the EJBCA External RA StandAlone GUI application">
+	<target name="externalra-gui" depends="deprecated:check" description="Build the EJBCA External RA StandAlone GUI application">
     	<ant dir="modules" target="externalra-gui"/>
 	</target>
 
-	<target name="externalra-gui-deploy" description="Deploy the EJBCA External RA StandAlone GUI application" depends="externalra-gui">
+	<target name="externalra-gui-deploy" description="Deploy the EJBCA External RA StandAlone GUI application" depends="externalra-gui, deprecated:check">
         <antcall target="jee:deploy-externalragui-war" />
 	</target>
 
-	<target name="batchenrollment-gui" description="Build the EJBCA Batch Enrollment StandAlone GUI application" depends="ejbcaws.client">
+	<target name="batchenrollment-gui" description="Build the EJBCA Batch Enrollment StandAlone GUI application" depends="ejbcaws.client, deprecated:check">
     	<ant dir="modules" target="batchenrollment-gui"/>
 	</target>
 
-	<target name="jbosslogsigning" description="Build signing Log4j appended for JBoss">
+	<target name="jbosslogsigning" depends="deprecated:check" description="Build signing Log4j appended for JBoss">
     	<ant dir="modules" target="appserver-ext-jbosslogsigning"/>
 	</target>
 
-	<target name="jbosslog4jsafer" description="Build Log4j ErrorHandler and Appender extensions for JBoss">
+	<target name="jbosslog4jsafer" depends="deprecated:check" description="Build Log4j ErrorHandler and Appender extensions for JBoss">
     	<ant dir="modules" target="appserver-ext-jbosslog4jsafer"/>
 	</target>
 
-    <target name="ejbca-util-signserver.jar" description="Creates util library for use in SignServer">
+    <target name="ejbca-util-signserver.jar" depends="deprecated:check" description="Creates util library for use in SignServer">
         <ant dir="modules/ejbca-ejb" target="build-util-signserver"/>
     </target>
 
-    <target name="oldlogexport-cli" description="Creates a CLI for exporting the log generated by OldLogDevice.">
+    <target name="oldlogexport-cli" depends="deprecated:check" description="Creates a CLI for exporting the log generated by OldLogDevice.">
         <ant dir="modules" target="oldlogexport-cli"/>
     </target>
 
