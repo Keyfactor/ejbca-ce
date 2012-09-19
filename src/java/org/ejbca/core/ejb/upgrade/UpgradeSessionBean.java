@@ -464,29 +464,27 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
             }
     
     	    
-    		Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
-    		Collection<AccessRuleData> rules = rulemap.values();
+    		final Map<Integer, AccessRuleData> rulemap = role.getAccessRules();
+    		final Collection<AccessRuleData> rules = rulemap.values();
     		for (AccessRuleData rule : rules) {
     			if (StringUtils.equals(AccessRulesConstants.ROLE_SUPERADMINISTRATOR, rule.getAccessRuleName()) && 
     					rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
     				// Now we add a new rule
-    		    	AccessRuleData slashrule = new AccessRuleData(role.getRoleName(), AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true);
-    		    	// Only add the rule if it does not already exist
-    		    	if (!rulemap.containsKey(slashrule.getPrimaryKey())) {
-        				log.info("Adding new access rule of '/' on role: "+role.getRoleName());
-        	        	Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
-        	        	newrules.add(slashrule);
-        	    		try {
-    						roleMgmtSession.addAccessRulesToRole(admin, role, newrules);
-    					} catch (AccessRuleNotFoundException e) {
-    						log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
-    					} catch (RoleNotFoundException e) {
-    						log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
-    					} catch (AuthorizationDeniedException e) {
-    						log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
-    					}    		    		
-    		    	}
-					break; // no need to continue with this role
+    				final AccessRuleData slashRule = new AccessRuleData(role.getRoleName(), AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true);
+    				log.info("Replacing all rules of rhe role '"+role.getRoleName()+"' with the rule '"+slashRule+"' since the role contained the '"+AccessRulesConstants.ROLE_SUPERADMINISTRATOR+"' rule.");
+    				final Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
+    				newrules.add(slashRule);
+    				try {
+    					// if one of the rules was "super administrator" then all other rules of the role was disregarded in version<5. So now it should only be the '/' rule for the role.
+    					this.roleMgmtSession.replaceAccessRulesInRole(admin, role, newrules);
+    				} catch (AccessRuleNotFoundException e) {
+    					log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
+    				} catch (RoleNotFoundException e) {
+    					log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
+    				} catch (AuthorizationDeniedException e) {
+    					log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
+    				}    		    		
+    				break; // no need to continue with this role
     			}
     		}
     	}
