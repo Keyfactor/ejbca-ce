@@ -67,8 +67,8 @@ For the certificate and CRL store service the sample file should be enough to un
 The validation authority is built and deployed with (keystore step is not required if you you have disabled SSL in web.properties):
 </p><source>
 ant va-deploy
-ant web-configure
 ant deploy-keystore
+ant web-configure
 </source>
 <p>
 on the VA server.

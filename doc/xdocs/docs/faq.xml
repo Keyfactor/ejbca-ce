@@ -104,8 +104,6 @@
       <li>Start JBoss and check that it starts without problems</li>
       <li>Run "ant install"</li>
       <li>Stop JBoss and check that it stops without problems</li>
-      <li>Run "ant web-configure"</li>
-      <li>Run "ant deploy-keystore"</li>
       <li>Start JBoss and check that it starts without problems</li>
       <li>Remove the old superadmin.p12 in you browser and import the newly generated one</li>
       </ul>
