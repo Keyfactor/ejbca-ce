@@ -34,6 +34,7 @@ import java.util.Properties;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.persistence.EntityTransaction;
 import javax.persistence.Query;
 
 import org.cesecore.audit.enums.EventStatus;
@@ -71,6 +72,8 @@ import org.easymock.EasyMock;
 import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
+import org.ejbca.database.DatabaseCliCommand;
+import org.ejbca.database.OutputFormat;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -391,15 +394,20 @@ public class DatabaseCliCommandTest {
         EasyMock.expect(queryMock.setParameter("primaryKey0", "0")).andReturn(queryMock).anyTimes();
         EasyMock.replay(queryMock);
 
+        EntityTransaction entityTransactionMock = EasyMock.createMock(EntityTransaction.class);
+        EasyMock.expect(entityTransactionMock.isActive()).andReturn(false).anyTimes();
+        EasyMock.replay(entityTransactionMock);
+        
         EntityManager entityManagerMock = EasyMock.createMock(EntityManager.class);
         EasyMock.expect(entityManagerMock.createQuery(EasyMock.anyObject(String.class))).andReturn(queryMock).anyTimes();
         entityManagerMock.clear();
         entityManagerMock.clear();
         entityManagerMock.close();
+        EasyMock.expect(entityManagerMock.getTransaction()).andReturn(entityTransactionMock).anyTimes();
         EasyMock.replay(entityManagerMock);
         command.setEntityManager(entityManagerMock, entityManagerFactoryMock, persistenceUnit);
         command.exportTable(CertificateProfileData.class, new String[] { "0" }, 1, exportFile, persistenceUnit, false, format);
-        EasyMock.verify(entityManagerMock, queryMock, entityManagerFactoryMock);
+        EasyMock.verify(entityTransactionMock, entityManagerMock, queryMock, entityManagerFactoryMock);
     }
 
 }

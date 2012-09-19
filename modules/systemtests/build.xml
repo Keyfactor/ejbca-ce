@@ -31,11 +31,13 @@
 	<path id="systemtests.classpath.nojee">
 		<path refid="lib.servlet.classpath"/>
 		<path refid="lib.mail.classpath"/>
+		<path refid="lib.easymock.classpath"/>
 		<path refid="lib.junit.classpath"/>
 		<path refid="lib.utils.classpath"/>
 		<path refid="lib.jpa.classpath"/>
 		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.ldap.classpath"/>
+		<path refid="lib.xstream.classpath"/>
 		<!-- TestPublisher uses this -->
 		<path refid="lib.xmlsec.classpath"/>
 		<!-- To parse XML Exceptions and for XKMS (includes XML libs)-->
@@ -48,6 +50,7 @@
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 		<pathelement location="${mod.ejbca-ws-ejb.jar}"/>
 		<pathelement location="${mod.ejbca-xkms-cli.lib}"/>
+		<pathelement location="${mod.ejbca-db-cli.lib}"/>
 		<pathelement location="${mod.clientToolBox.lib}"/>
 		<pathelement location="${mod.ejbca-ejb-cli.lib}"/>
 		<pathelement location="${mod.ejbca-util.lib}"/>
@@ -176,7 +179,7 @@
 	<target name="compile-tests" depends="assert-notinproduction, ejbca-properties, ejbca-ejb, ejbca-util, ejbca-ws-cli, ejbca-xkms-cli, ejbca-ejb-cli, clientToolBox, ejbca-ws">
 		<mkdir dir="${build.test.dir}" />
 		<javac srcdir="${src.test.dir}" destdir="${build.test.dir}" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" classpathref="systemtests-va.classpath" target="${java.target.version}">
+        	encoding="iso8859-1" classpathref="systemtests.classpath" target="${java.target.version}">
 			<exclude name="org/ejbca/core/protocol/xkms/**"/>
 			<exclude name="org/cesecore/certificates/ocsp/standalone/StandaloneOcspResponseGeneratorSessionTest.java"/>
 			<exclude name="org/ejbca/core/protocol/ocsp/OcspKeyRenewalTest.java"/>

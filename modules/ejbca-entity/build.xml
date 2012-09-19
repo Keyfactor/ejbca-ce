@@ -203,6 +203,10 @@
     	<condition property="databaseschemarest.ok" value="true"><not><isset property="databaseschemarest.failed"/></not></condition>
     	<echo message="If your test runs our of memory (for example during the CRL write), you might want to consider using ANT_OPTS like '-Xms1024m -Xmx2048m'." />
     </target>
+	
+	<target name="test-cli-commands" description="Test Database CLI commands." depends="compile-test, ejbca-db-cli">
+		
+	</target>
 
     <target name="test-ocspmon" description="Test ocsp monitoring." depends="compile-test, handlepersistence, handleorm">
     	<fail unless="jdbc.driver.dir" message="Use -Djdbc.driver.dir=/path-to-jdbc-jars/ to specify the directory with the JDBC driver JARs."/>
