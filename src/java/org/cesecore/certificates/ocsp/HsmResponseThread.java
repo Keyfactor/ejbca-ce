@@ -12,14 +12,12 @@
  *************************************************************************/
 package org.cesecore.certificates.ocsp;
 
-import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.concurrent.Callable;
 
-import org.bouncycastle.cert.jcajce.JcaX509CertificateHolder;
 import org.bouncycastle.cert.ocsp.BasicOCSPResp;
 import org.bouncycastle.cert.ocsp.BasicOCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.OCSPException;
@@ -56,7 +54,7 @@ public class HsmResponseThread implements Callable<BasicOCSPResp> {
     }
 
     @Override
-    public BasicOCSPResp call() throws NoSuchProviderException, OCSPException {
+    public BasicOCSPResp call() throws OCSPException {
         try {
             final ContentSigner signer = new JcaContentSignerBuilder(signingAlgorithm).setProvider(provider).build(signerKey);
             return basicRes.build(signer, OCSPUtil.convertCertificateChainToCertificateHolderChain(chain), new Date());
