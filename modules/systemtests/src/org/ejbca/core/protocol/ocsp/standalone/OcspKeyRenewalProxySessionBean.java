@@ -275,7 +275,9 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
 
          @Override
          public List<NameAndId> getAvailableCAs() throws AuthorizationDeniedException_Exception, EjbcaException_Exception {
-             return null;
+             List<NameAndId> result = new ArrayList<NameAndId>();
+             result.add(new NameAndId("AdminCA1", -1688117755));
+             return result;
          }
 
          @Override
