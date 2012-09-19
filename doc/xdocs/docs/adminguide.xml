@@ -640,7 +640,7 @@ http://127.0.0.1:8080/ejbca/publicweb/cmp
 <p>
 You can enable a CMP TCP service by changing the option 'cmp.tcp.enabled' in conf/cmp.properties.
 <br/>
-When re-deploying EJBCA and re-running the 'ant web-configure' for the application server this will start a TCP listener on the default port for CMP over TCP. You must run the application server as root to use the default port, since it is a low port (&lt;1024).
+When re-deploying EJBCA this will start a TCP listener on the default port for CMP over TCP. You must run the application server as root to use the default port, since it is a low port (&lt;1024).
 See the documentation in conf/cmp.properties for information about configuration options for TCP. We recommend using a non standard port > 1024.
 </p>
 </subsection>
@@ -5044,7 +5044,7 @@ This is a utility function to quickly and easily issue an initial administration
 </p><p>
 To change ports (default public http=8080, public https=8442, private https=8443) you must edit 
 conf/web.properties. Change the properties httpserver.pubhttp, httpserver.pubhttps and httpserver.privhttps.
-After changing, run 'ant deploy' and 'ant web-configure' and re-start the application server.
+After making the change, run 'ant deploy', 'ant web-configure', and re-start the application server.
 </p></subsection>
 
 <subsection name="Asn1Dump">
