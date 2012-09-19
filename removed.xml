@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="removed" basedir=".">
+  <description>
+    This build file checks for the removed properties, ant targets etc. Checks
+    made inside of this build script should fail hard (i.e. error-out as soon as
+    possible) so the user is forced to update his/her property files etc.
+
+    Once the item has been deprecated in one release, in the next release it
+    should be moved here from the deprecated list.
+  </description>
+
+  <!--========================================================================================-->
+  <!-- The property checks and failures should be added here directly (not inside of target). -->
+  <!--========================================================================================-->
+
+  <!--==============================================================================-->
+  <!-- Removed ant targets should be put in here with informative failure messages. -->
+  <!--==============================================================================-->
+</project>
+
