@@ -14,30 +14,54 @@
         build file), and set-up in such a way that it'll fail a build (using the
         "fail" ant task).
     </description>
-    
+
+    <!--=======================-->
+    <!-- Old property mangling -->
+    <!--=======================-->
+    <!-- Use old variables as default for new variables.  Since properties are
+         included before this file, a configured property will never be
+         overridden. Set the warning messages inside of deprecated:notify
+         target. -->
+
+    <!-- The j2ee.web-noconfigure option has been replaced with the
+         web.nosslconfigure, but the same values are valid, so we just copy
+         it. -->
+    <condition property="web.nosslconfigure" value="${j2ee.web-noconfigure}">
+        <isset property="j2ee.web-noconfigure"/>
+    </condition>
+
     <!--=======================-->
     <!-- Deprecation utilities -->
     <!--=======================-->
-    <target name="deprecated:sleep" if="deprecated.detected" description="Sleeps for 10 seconds in order to be visible (and annoying) to the user.">
+    <!-- Display the warning messages and sleep for 10 seconds in order to draw the user's attention. -->
+    <target name="deprecated:notify" if="deprecated.detected">
         <echo message="You're using deprecated features! Be aware that those features will be removed in the next release! Proceeding automatically in 10 seconds. You can stop the build process now by pressing Ctrl-C." />
+
+        <!-- j2ee.web-noconfigure warning message -->
+        <condition property="deprecated.j2ee.web-noconfigure.warning"
+                   value="You are still using the j2ee.web-noconfigure option in the ocsp.properties. This option is deprecated. It has been replaced by the 'web.nosslconfigure' option which can be found in the web.properties. Please review the 'web.properties.sample' file for more details." else="">
+            <isset property="j2ee.web-noconfigure"/>
+        </condition>
+    	<echo message="${deprecated.j2ee.web-noconfigure.warning}" level="warning"/>
+
         <sleep seconds="10" />
     </target>
 
     <!--===================-->
     <!-- Top-level targets -->
     <!--===================-->
-    <target name="deprecated:check" depends="deprecated:j2ee.web-noconfigure" description="A top-level target that should be called from outside of this build script. It should depend on all of the deprecation checks that should be performed.">
-        <!-- Sleep if any deprecations have been detected -->
-        <antcall target="deprecated:sleep"/>
-    </target>
-
-    <!--=====================================================-->
-    <!-- Targets running the checks on deprecated properties -->
-    <!--=====================================================-->
-    <target name="deprecated:j2ee.web-noconfigure" if="j2ee.web-noconfigure">
-        <property name="deprecated.detected" value="true" />
-        <property name="web.nosslconfigure" value="${j2ee.web-noconfigure}"/>
-        <echo message="You are still using the j2ee.web-noconfigure option. This option is deprecated. It has been replaced by the 'web.nosslconfigure' option which can be found in the web.properties. Please review the 'web.properties.sample' file for more details." level="warning" />
+    <!-- A top-level target that should be called from outside of this build
+         script.  It should depend on all of the deprecation checks that should
+         be performed. -->
+    <target name="deprecated:check">
+    	<condition property="deprecated.detected">
+            <or>
+                <isset property="j2ee.web-noconfigure"/>
+                <!-- isset ... -->
+            </or>
+    	</condition>
+        <!-- Notify user of any deprecations have been detected -->
+        <antcall target="deprecated:notify"/>
     </target>
 
     <!--=================================================================================-->
