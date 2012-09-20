@@ -24,9 +24,9 @@
     
     <fail message="The ocsphealthcheck.* properties have been renamed to healthcheck.*. Please update your configuration!" if="using-ocsphealthcheck-property" />
     
-    <fail message="The property &quot;log.maxqueryrowcount&quot; has been removed. Please update your configuration!" if="log.maxqueryrowcount" />
-    <fail message="The property &quot;logconfiguration.cachetime&quot; has been removed. Please update your configuration!" if="logconfiguration.cachetime" />
-    <fail message="The property &quot;web.promptForPassword&quot; has been removed. Please update your configuration!" if="web.promptForPassword" />
+    <fail message="The property &quot;log.maxqueryrowcount&quot; has been removed. It can safely be removed from your configuration." if="log.maxqueryrowcount" />
+    <fail message="The property &quot;logconfiguration.cachetime&quot; has been removed. It can safely be removed from your configuration." if="logconfiguration.cachetime" />
+    <fail message="The property &quot;web.promptForPassword&quot; has been removed. It can safely be removed from your configuration." if="web.promptForPassword" />
 
   <!--==============================================================================-->
   <!-- Removed ant targets should be put in here with informative failure messages. -->
