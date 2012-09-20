@@ -28,6 +28,33 @@
     <fail message="The property &quot;logconfiguration.cachetime&quot; has been removed. It can safely be removed from your configuration." if="logconfiguration.cachetime" />
     <fail message="The property &quot;web.promptForPassword&quot; has been removed. It can safely be removed from your configuration." if="web.promptForPassword" />
 
+  <!-- check for properties that have been moved from ejbca.properties to cesecore.properties -->
+  <loadproperties srcFile="conf/ejbca.properties">
+    <filterchain>
+      <prefixlines prefix="ejbca-properties-file." />
+    </filterchain>
+  </loadproperties>
+  
+  <fail message="The property &quot;ca.keystorepass&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.ca.keystorepass" />
+  <fail message="The property &quot;ca.serialnumberoctetsize&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.ca.serialnumberoctetsize" />
+  <fail message="The property &quot;ca.rngalgorithm&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.ca.rngalgorithm" />
+  <fail message="The property &quot;ca.toolateexpiredate&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.ca.toolateexpiredate" />
+  <fail message="The property &quot;ca.doPermitExtractablePrivateKeys&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.ca.doPermitExtractablePrivateKeys" />
+  <fail message="The property &quot;intresources.preferredlanguage&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.intresources.preferredlanguage" />
+  <fail message="The property &quot;intresources.secondarylanguage&quot; has been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="ejbca-properties-file.intresources.secondarylanguage" />
+  
+  <condition property="using-moved-ecdsaimplicitlyca-properties">
+      <or>
+          <isset property="ejbca-properties-file.ecdsa.implicitlyca.q" />
+          <isset property="ejbca-properties-file.ecdsa.implicitlyca.a" />
+          <isset property="ejbca-properties-file.ecdsa.implicitlyca.b" />
+          <isset property="ejbca-properties-file.ecdsa.implicitlyca.g" />
+          <isset property="ejbca-properties-file.ecdsa.implicitlyca.n" />
+      </or>
+  </condition>
+  
+  <fail message="The properties &quot;ecdsa.implicitlyca.*&quot; have been moved from &quot;ejbca.properties&quot; to &quot;cesecore.properties&quot;." if="using-moved-ecdsaimplicitlyca-properties" />
+  
   <!--==============================================================================-->
   <!-- Removed ant targets should be put in here with informative failure messages. -->
   <!--==============================================================================-->
