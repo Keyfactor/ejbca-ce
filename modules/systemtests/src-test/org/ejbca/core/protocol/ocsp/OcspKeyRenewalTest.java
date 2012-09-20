@@ -25,7 +25,7 @@ public class OcspKeyRenewalTest {
     OcspKeyRenewalProxySessionRemote ocspKeyRenewalProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(OcspKeyRenewalProxySessionRemote.class);
     
     
-    @Test
+  //  @Test
     public void testKeyRenewal() {
         ocspKeyRenewalProxySession.renewKeyStores("CN=ocspTestSigner");
     }
