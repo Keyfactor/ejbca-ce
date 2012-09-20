@@ -675,7 +675,7 @@
     <target name="deploy-keystore" depends="deprecated:check" description="Deploy the keystore and truststore for the application server.">
       <fail message="You cannot run the keystore deployment target since the SSL configuration has been explicitly disabled in the web.properties file.">
         <condition>
-          <istrue property="${web.nosslconfigure}" />
+          <istrue value="${web.nosslconfigure}" />
         </condition>
       </fail>
       <antcall target="jee:keystore" />
