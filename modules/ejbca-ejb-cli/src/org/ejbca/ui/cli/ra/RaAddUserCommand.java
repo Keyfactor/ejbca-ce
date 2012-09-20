@@ -261,7 +261,7 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
                 getLogger().info("CA Name: " + caname);
                 getLogger().info("SubjectAltName: " + subjectaltname);
                 getLogger().info("Email: " + email);
-                getLogger().info("Type: " + type);
+                getLogger().info("Type: " + type.getHexValue());
                 getLogger().info("Token: " + tokenname);
                 getLogger().info("Certificate profile: " + certificatetypeid);
                 getLogger().info("End entity profile: " + profileid);
