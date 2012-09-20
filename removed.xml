@@ -12,6 +12,21 @@
   <!--========================================================================================-->
   <!-- The property checks and failures should be added here directly (not inside of target). -->
   <!--========================================================================================-->
+    <condition property="using-ocsphealthcheck-property">
+        <or>
+            <isset property="ocsphealthcheck.amountfreemem"/>
+            <isset property="ocsphealthcheck.authorizedips"/>
+            <isset property="ocsphealthcheck.dbquery"/>
+            <isset property="ocsphealthcheck.maintenancefile"/>
+            <isset property="ocsphealthcheck.maintenancepropertyname"/>
+        </or>
+    </condition>
+    
+    <fail message="The ocsphealthcheck.* properties have been renamed to healthcheck.*. Please update your configuration!" if="using-ocsphealthcheck-property" />
+    
+    <fail message="The property &quot;log.maxqueryrowcount&quot; has been removed. Please update your configuration!" if="log.maxqueryrowcount" />
+    <fail message="The property &quot;logconfiguration.cachetime&quot; has been removed. Please update your configuration!" if="logconfiguration.cachetime" />
+    <fail message="The property &quot;web.promptForPassword&quot; has been removed. Please update your configuration!" if="web.promptForPassword" />
 
   <!--==============================================================================-->
   <!-- Removed ant targets should be put in here with informative failure messages. -->
