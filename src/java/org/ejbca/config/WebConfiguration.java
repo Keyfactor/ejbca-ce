@@ -88,19 +88,6 @@ public class WebConfiguration {
 		String value = EjbcaConfigurationHolder.getString("hardtoken.diplaysensitiveinfo");
 		return "true".equalsIgnoreCase(value) || "yes".equalsIgnoreCase(value);
 	}
-
-	/**
-	 * Setting to configure the maximum number of rows to be returned when viewing logs in the admin-GUI.
-	 */
-	public static int getLogMaxQueryRowCount() {
-		int value = 1000;
-		try {
-			value = Integer.parseInt(EjbcaConfigurationHolder.getString("log.maxqueryrowcount"));
-		} catch( NumberFormatException e ) {
-			log.warn("\"log.maxqueryrowcount\" is not a decimal number. Using default value: " + value);
-		}
-		return value;
-	}
 	
 	/**
 	 * Show links to the EJBCA documentation.
