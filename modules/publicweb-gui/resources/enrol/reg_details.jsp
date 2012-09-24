@@ -61,7 +61,7 @@
                         <input type="checkbox" checked="checked" disabled="disabled" />
                         <input type="hidden" name="emailindn" value="1" />
                     </c:if>
-                    Include e-mail
+                    Include e-mail in certificate
                 </c:when>
                 <c:otherwise>
                     <!-- Other field -->
@@ -97,7 +97,7 @@
                         <input type="checkbox" checked="checked" disabled="disabled" />
                         <input type="hidden" name="emailinaltname" value="${field.id}" />
                     </c:if>
-                    Include e-mail in altname
+                    Include e-mail in certificate altname
                 </c:when>
                 <c:when test="${field.modifiable}">
                     <!-- Free text -->
@@ -117,6 +117,7 @@
         <br />
         
         <!-- Subject directory attributes -->
+        <c:if test="${!empty reg.dirAttrFields}">Subject directory attributes<br /></c:if>
         <c:forEach var="field" items="${reg.dirAttrFields}">
             <c:set var="id" value="dirattrfield_${field.id}" />
             
@@ -154,6 +155,8 @@
         <c:if test="${!empty reg.dirAttrFields}"><br /></c:if>
         
         <!-- Username -->
+        <br />
+        <b>Certificate retrieval</b><br />
         <label for="username">Username *</label>
         <input name="username" id="username" type="text" size="20" accesskey="u" />
         <br />
@@ -175,6 +178,8 @@
                 </select>
             </c:when>
         </c:choose>
+        <br />
+        <small style="width: 50%">An auto-generated password will be sent to this e-mail adress once the request has been approved.</small>
         <br />
         <br />
         
