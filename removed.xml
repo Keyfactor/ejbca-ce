@@ -30,7 +30,12 @@
 
   <!-- check for properties that have been moved from ejbca.properties to cesecore.properties -->
   <loadproperties>
-    <fileset dir="conf" includes="ejbca.properties" />
+    <first>
+      <union>
+        <fileset dir="conf" includes="ejbca.properties" />
+        <string value="" />
+      </union>
+    </first>
     <filterchain>
       <prefixlines prefix="ejbca-properties-file." />
     </filterchain>
