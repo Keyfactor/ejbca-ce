@@ -13,6 +13,8 @@
 package org.cesecore.certificates.ocsp.cache;
 
 import java.io.Serializable;
+import java.security.KeyPair;
+import java.security.KeyStoreException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
@@ -85,6 +87,21 @@ public class CryptoTokenAndChain implements Serializable {
     
     public X509Certificate getCaCertificate() {
        return chain[caCertPosition];
+    }
+    
+    /**
+     * This method takes a brand new keypair and chain and uses them to update the wrapped CryptoToken
+     * and certificate chain objects.
+     * 
+     * @param keyPair a new keypair
+     * @param chain a new chain
+     * @param password password for the slot of this crypto token.
+     * 
+     * @throws KeyStoreException if keystore for this crypto token has not been initialized
+     */
+    public void renewTokenAndChain(KeyPair keyPair, X509Certificate[] chain, char[] password) throws KeyStoreException {
+        cryptoToken.storeKey(privateKeyAlias, keyPair.getPrivate(), chain, password);
+        this.chain = chain;
     }
 
 

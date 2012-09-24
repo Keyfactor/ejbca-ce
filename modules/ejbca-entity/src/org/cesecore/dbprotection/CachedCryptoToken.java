@@ -22,6 +22,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Enumeration;
@@ -186,5 +187,11 @@ public class CachedCryptoToken implements CryptoToken {
     @Override
     public Enumeration<String> getAliases() throws KeyStoreException, CryptoTokenOfflineException {
         return wrappedCryptoToken.getAliases();
+    }
+
+    @Override
+    public void storeKey(String alias, Key key, Certificate[] chain, char[] password) throws KeyStoreException {
+        wrappedCryptoToken.storeKey(alias, key, chain, password);
+        
     }
 }

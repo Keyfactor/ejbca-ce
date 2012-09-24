@@ -135,6 +135,7 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
                 final List<X509Certificate> lCertChain = Arrays.asList(tokenAndChain.getChain());
                 lCertChain.add(0, signedCertificate);
                 final X509Certificate certChain[] = lCertChain.toArray(new X509Certificate[0]);
+              //  tokenAndChain.renewTokenAndChain(keyPair, certChain);
             } catch (KeyRenewalFailedException e) {
                 //TODO: Audit log
                 continue;
