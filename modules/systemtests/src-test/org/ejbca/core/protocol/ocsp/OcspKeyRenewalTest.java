@@ -27,7 +27,7 @@ public class OcspKeyRenewalTest {
     
     @Test
     public void testKeyRenewal() {
-    //    ocspKeyRenewalProxySession.renewKeyStores("CN=ocspTestSigner");
+        ocspKeyRenewalProxySession.renewKeyStores("CN=ocspTestSigner");
     }
    
 }
