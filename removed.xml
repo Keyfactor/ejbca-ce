@@ -29,7 +29,8 @@
     <fail message="The property &quot;web.promptForPassword&quot; has been removed. It can safely be removed from your configuration." if="web.promptForPassword" />
 
   <!-- check for properties that have been moved from ejbca.properties to cesecore.properties -->
-  <loadproperties srcFile="conf/ejbca.properties">
+  <loadproperties>
+    <fileset dir="conf" includes="ejbca.properties" />
     <filterchain>
       <prefixlines prefix="ejbca-properties-file." />
     </filterchain>
