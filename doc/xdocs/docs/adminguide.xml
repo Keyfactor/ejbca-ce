@@ -2037,15 +2037,15 @@ Remember to configure mail-server settings in the mail.properties file.
 
 <section name="Self Registration">
 <p>
-It is possible to allow users of the public web to create approval requests for new end-entities (under 'Request Registration'). The users' choice of end-entity type and DN fields is confined, for instance it could be limited to end-user certificates with only the name and e-mail fields being available. The DN fields can then be verified by an administrator, especially the e-mail since the user's password is sent there. Setting up self registration consists of three steps: creating end-endity profiles that should be available, configuring <a href="#Email notifications">email notifications</a>, and configuring self registration in <code>web.properties</code>.
+It is possible to allow users of the public web to create approval requests for new end-entities (under 'Request Registration'). The users' choice of end-entity type and DN fields is confined, for instance it could be limited to end-user certificates with only the name and e-mail fields being available. The DN fields can then be verified by an administrator. Setting up self registration consists of three steps: creating end-endity profiles that should be available, configuring <a href="#Email notifications">email notifications</a>, and configuring self registration in <code>web.properties</code>.
 </p>
 <p>
 First, at least one <a href="userguide.html#End Entity profiles">end-entity profile</a> should be created as follows:
 </p>
 <ul>
 <li>The SubjectDN and SubjectAltName fields that should be available must be added. Fields that are marked as <em>modifiable</em> can be modified freely, otherwise only pre-defined values can be selected by the user. See <a href="userguide.html#Subject DN Fields">the user guide</a> for further information.</li>
-<li>The email domain field must be enabled with the <em>Use</em> checkbox, and auto-generated passwords must be enabled, since the user is authenticated by sending a password by email.</li>
-<li><em>Send Notification</em> should be enabled (check Use and Default), and the other notification fields should be filled in. See the section on <a href="#Email notifications">email notifications</a>.</li>
+<li>The user's e-mail can be verified by sending an auto-generated password to it (but this is not the only way to verify the user). The email domain field must be enabled with the <em>Use</em> checkbox, and auto-generated passwords must be enabled. Optionally the domain field may be constrained to particular choices, see the user guide section on end-entity profiles.</li>
+<li>E-mail validation works by sending the password in a notification message. For this reason, <em>Send Notification</em> must be enabled (check Use and Default), and the other notification fields below it should be filled in. See the section on <a href="#Email notifications">email notifications</a>.</li>
 </ul>
 <p>
 E-mail sending must be configured in <code>mail.properties</code> to work. You may also want to enable notifications to the administrators when there are new approval requests, under System Functions / System Configuration.
