@@ -344,6 +344,11 @@ public abstract class BaseCryptoToken implements CryptoToken {
             this.mJceProviderName = null;
         }
     }
+    
+    @Override
+    public void storeKey(String alias, Key key, Certificate[] chain, char[] password) throws KeyStoreException {
+       keyStore.setKeyEntry(alias, key, password, chain);
+    }
 
     /**
      * If we only have one provider to handle both JCA and JCE, and perhaps it is not so straightforward to create the provider (for example PKCS#11

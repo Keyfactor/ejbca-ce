@@ -23,6 +23,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.spec.AlgorithmParameterSpec;
 import java.util.Enumeration;
@@ -198,6 +199,17 @@ public interface CryptoToken extends Serializable {
      */
     void setProperties(Properties properties);
 
+    /**
+     * Stores a new key in this crypto token's keystore. 
+     * 
+     * @param alias The alias for the key
+     * @param key The key to be stored
+     * @param chain The associated key chain
+     * @param password Password to this slot.
+     * @throws KeyStoreException if keystore for this crypto token has not been initialized
+     */
+    void storeKey(String alias, Key key, Certificate chain[], char[] password) throws KeyStoreException;
+    
     /** Stores keystore data (if any) to be used when initializing a new (existing) token with the init method
      *
      * @return byte[] with keystore data, can be null if not needed for initialization

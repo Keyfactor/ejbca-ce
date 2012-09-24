@@ -13,8 +13,14 @@
 package org.ejbca.core.protocol.ocsp.standalone;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.Serializable;
+import java.math.BigInteger;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.spec.AlgorithmParameterSpec;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -23,7 +29,20 @@ import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
+import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.cesecore.certificates.ca.internal.SernoGeneratorRandom;
+import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.request.RequestMessage;
+import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.util.KeyTools;
 import org.ejbca.core.ejb.ocsp.standalone.StandaloneOcspKeyRenewalSessionLocal;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
@@ -107,7 +126,9 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
              UserDataVOWS resultValue = new UserDataVOWS();
              resultValue.setUsername("ocspTestSigner");
              resultValue.setPassword("foo123");
+             resultValue.setCaName("AdminCA1");
              result.add(resultValue);
+             
              return result;
          }
 
@@ -156,14 +177,36 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
                  AuthorizationDeniedException_Exception, CesecoreException_Exception, EjbcaException_Exception, WaitingForApprovalException_Exception {
              
          }
-
-         @Override
-         public CertificateResponse pkcs10Request(String arg0, String arg1, String arg2, String arg3, String arg4)
-                 throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, CesecoreException_Exception,
-                 EjbcaException_Exception, NotFoundException_Exception {
-
-             return null;
-         }
+     
+        @Override
+        public CertificateResponse pkcs10Request(final String username, final String password, final String pkcs10, final String hardTokenSN,
+                final String responseType) throws AuthorizationDeniedException_Exception, CADoesntExistsException_Exception,
+                CesecoreException_Exception, EjbcaException_Exception, NotFoundException_Exception {
+            try {
+                //Create a fake certificate to return
+                RequestMessage req = RequestMessageUtils.getSimpleRequestMessageFromType(username, password, pkcs10,
+                        CertificateConstants.CERT_REQ_TYPE_PKCS10);
+                final X500Name issuerDn =  new X500Name(req.getIssuerDN());
+                final BigInteger serialNumber =  SernoGeneratorRandom.instance().getSerno();
+                final Date notBefore = req.getRequestValidityNotBefore();
+                final Date notAfter = req.getRequestValidityNotAfter();
+                final X500Name subject = X500Name.getInstance(req.getRequestX509Name().toASN1Object());
+                SubjectPublicKeyInfo publicKey = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(
+                        req.getRequestPublicKey().getEncoded())).readObject());
+                X509v3CertificateBuilder certificateBuilder = new X509v3CertificateBuilder(issuerDn, serialNumber, notBefore, notAfter, subject,
+                        publicKey);
+                //Create a new keystore to pretend to be the CA
+                final AlgorithmParameterSpec algorithmParameterSpec = KeyTools.getKeyGenSpec(req.getRequestPublicKey());
+                KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA", "BC");
+                kpg.initialize(algorithmParameterSpec);
+                KeyPair caKeyPair = kpg.generateKeyPair();
+               X509CertificateHolder certificateHolder =  certificateBuilder.build(new JcaContentSignerBuilder("SHA1WithRSA").build(caKeyPair.getPrivate()));
+                byte[] data = new JcaX509CertificateConverter().getCertificate(certificateHolder).getEncoded();
+                return new CertificateResponse(responseType, data);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
 
          @Override
          public KeyStore pkcs12Req(String arg0, String arg1, String arg2, String arg3, String arg4) throws AuthorizationDeniedException_Exception,
