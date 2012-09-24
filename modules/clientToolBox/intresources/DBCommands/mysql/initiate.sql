@@ -2,7 +2,7 @@
 
 
 drop database if exists ${url.path};
-create database ${url.path};
+create database ${url.path} CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 revoke ALL PRIVILEGES, GRANT OPTION from '${database.username}'@'${url.host}';
 DROP USER '${database.username}'@'${url.host}';
