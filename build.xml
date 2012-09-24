@@ -59,7 +59,7 @@
 	  Installs EJBCA by creating an initial CA, configuring the web container and generating certs for
 	  SSL and the super administrator.
 	  -->
-    <target name="install" depends="fail-unless-appserver-detected, ejbca-ejb-cli, deprecated:check" description="Install EJBCA application (only once)">
+    <target name="install" depends="fail-unless-appserver-detected, ejbca-ejb-cli, deprecated:check, inputKeystorePassword" description="Install EJBCA application (only once)">
         <ant dir="${ejbca.home}/bin" antfile="cli.xml" target="ejbca:install" />
         <!-- By calling the jee targets we make sure that the target calls will succeed, but no changes will be made if web.noconfigure and web.nosslconfiugre properties have been set (unlike the plain web-configure/deploy-keystore targets which will fail hard with an error message). -->
         <antcall target="jee:web-configure"/>
