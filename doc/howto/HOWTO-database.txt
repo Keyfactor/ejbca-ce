@@ -120,7 +120,7 @@ It is recommended to configure my.cnf with at least the following:
  innodb_file_format = Barracuda
  innodb_flush_log_at_trx_commit = 1
  character-set-server = utf8
- default-collation = utf8_unicode_ci
+ default-collation = utf8_general_ci
  default-character-set = utf8
 
 The JDBC driver (e.g. mysql-connector-java-5.x.x.jar) can be downloaded from
@@ -136,7 +136,7 @@ Additionally you might want to specify a socket timeout for fail-over setups:
 
 Basic database, user, table and index creation:
   $ mysql -u root -p 
-  mysql> CREATE DATABASE ejbca CHARACTER SET utf8 COLLATE utf8_unicode_ci;
+  mysql> CREATE DATABASE ejbca CHARACTER SET utf8 COLLATE utf8_general_ci;
   mysql> GRANT ALL PRIVILEGES ON ejbca.* TO 'ejbca'@'<host>' IDENTIFIED BY '<password>';
   mysql> exit
   $ mysql -u root -p ejbca < doc/sql-scripts/create-tables-ejbca5-mysql.sql
