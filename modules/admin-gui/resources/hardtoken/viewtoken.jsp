@@ -256,7 +256,7 @@ function viewcopies(link){
   <div class="message alert"><c:out value='<%= message%>'/></div>
   <% } %>
   <form name="viewtoken" action="<%= THIS_FILENAME %>" method="post">
-     <input type="hidden" name='<%= USER_PARAMETER %>' value="<c:out value='<%=username %>'/>">
+     <input type="hidden" name='<%= USER_PARAMETER %>' value="<c:out value='<%=java.net.URLEncoder.encode(username,"UTF-8")%>'/>">
      <% if (tokensn != null){ %>
      <input type="hidden" name='<%= TOKENSN_PARAMETER %>' value="<c:out value='<%=token.getTokenSN() %>'/>">
      <% } %>
@@ -337,7 +337,7 @@ function viewcopies(link){
                  while(iter.hasNext()){ 
                     String copytokensn = (String) iter.next();%>
                    <br />
-                   <A  style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + username%>')">
+                   <A  style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copytokensn + "&" + USER_PARAMETER + "=" + java.net.URLEncoder.encode(username,"UTF-8")%>')">
                       <u><c:out value='<%= copytokensn %>'/></u> 
                    </A><%
                  }
@@ -345,7 +345,7 @@ function viewcopies(link){
             }else{
               out.write(ejbcawebbean.getText("THISISACOPYOF") + ":<br />");  
               String copyofsn = token.getCopyOf();%>
-                 <A style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + username%>')">
+                 <A style="cursor:pointer;" onclick="parent.location=encodeURI('<%= VIEWTOKEN_LINK + "?" + TOKENSN_PARAMETER + "=" + copyofsn + "&" + USER_PARAMETER + "=" + java.net.URLEncoder.encode(username,"UTF-8")%>')">
                    <u><c:out value='<%= copyofsn %>'/></u> 
                  </A><%
             } %>
