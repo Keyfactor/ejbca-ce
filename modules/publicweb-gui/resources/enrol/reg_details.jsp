@@ -157,7 +157,7 @@
         <!-- Username -->
         <br />
         <b>Certificate retrieval</b><br />
-        <c:if test="${req.usernameVisible}">
+        <c:if test="${reg.usernameVisible}">
             <label for="username">Username *</label>
             <input name="username" id="username" type="text" size="20" accesskey="u" />
             <br />
