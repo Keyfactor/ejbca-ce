@@ -157,9 +157,11 @@
         <!-- Username -->
         <br />
         <b>Certificate retrieval</b><br />
-        <label for="username">Username *</label>
-        <input name="username" id="username" type="text" size="20" accesskey="u" />
-        <br />
+        <c:if test="${req.usernameVisible}">
+            <label for="username">Username *</label>
+            <input name="username" id="username" type="text" size="20" accesskey="u" />
+            <br />
+        </c:if>
         
         <!-- E-mail -->
         <label for="email">E-mail *</label>
@@ -185,7 +187,10 @@
         
         <!-- CAPTCHA -->
         <b>Prevention of automatic registration (CAPTCHA)</b><br />
-        <label for="code" style="font-size: 85%">Last character in username *</label>
+        <label for="code" style="font-size: 85%">Last character in
+            <c:if test="${usernameVisible}">username</c:if>
+            <c:if test="${!usernameVisible}">e-mail</c:if>
+            *</label>
         <input name="code" id="code" type="text" size="3" accesskey="t" />
         <br />
         
