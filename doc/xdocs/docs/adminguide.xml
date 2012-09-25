@@ -3582,10 +3582,10 @@ certification authority (CA) that issued the key.
 In this situation the actual parameters appear in the ASN.1 encoding of the key as a DER encoded NULL.
 <br/>
 As the definition says, when the key is used, the parameters will have to come from elsewhere. 
-In EJBCA the parameters are configured in <i>conf/ejbca.properties</i>.
+In EJBCA the parameters are configured in <i>conf/cesecore.properties</i>.
 </p>
 <p>
-When creating a new CA using the implicitlyCA facility, you first configure your curve parameters in conf/ejbca.properties and issue commands:
+When creating a new CA using the implicitlyCA facility, you first configure your curve parameters in conf/cesecore.properties and issue commands:
 <ul>
 <li>ant clean</li>
 <li>ant deploy</li>
@@ -3602,7 +3602,7 @@ key length, since the parameters are defined elsewhere.
 See <a href="http://www.bouncycastle.org/wiki/">Bouncycastle wiki</a> for more information about the implicitlyCA facility.
 </p>
 <p>
-The curve parameters in <i>conf/ejbca.parameters</i> are configured in Bouncycastle using the following code:'
+The curve parameters in <i>conf/cesecore.parameters</i> are configured in Bouncycastle using the following code:'
 </p>
 <source>
 ECCurve curve = new ECCurve.Fp(
@@ -3626,7 +3626,7 @@ All certificates signed by an ECDSA CA will naturally use ECDSA signatures, rega
 <p>
 When batch generating client keys using the cli command 'bin/ejbca.sh batch' you configure the type of client keys that will 
 be generated in the file <i>bin/batchtool.properties</i>. The possible parameters are explained there. 
-If using the implicitlyCA facility the same parameters as configured for the ca in <i>conf/ejbca.properties</i> are used.
+If using the implicitlyCA facility the same parameters as configured for the ca in <i>conf/cesecore.properties</i> are used.
 </p>
 </subsection>
 <subsection name="Limitations">
@@ -4503,7 +4503,7 @@ It's also possible to translate internal log comments, some exception messages a
 This is done separately in it's own resource files since this is done internally in the core application
 and not in the web-layer. 
 </p><p>
-The language used internally is configured in the conf/web.properties file by setting the properties
+The language used internally is configured in the conf/cesecore.properties file by setting the properties
 intresources.preferredlanguage and intresources.secondarylanguage to the language you want to use.
 The letters should be the same as the xx name in the intresources.xx.properties files in the src/intresources 
 directory. The secondary resource file is used if the resource isn't found in the preferred language.
