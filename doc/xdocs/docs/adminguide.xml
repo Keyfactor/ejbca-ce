@@ -2046,12 +2046,13 @@ First, at least one <a href="userguide.html#End Entity profiles">end-entity prof
 <li>The SubjectDN and SubjectAltName fields that should be available must be added. Fields that are marked as <em>modifiable</em> can be modified freely, otherwise only pre-defined values can be selected by the user. See <a href="userguide.html#Subject DN Fields">the user guide</a> for further information.</li>
 <li>The user's e-mail can be verified by sending an auto-generated password to it (but this is not the only way to verify the user). The email domain field must be enabled with the <em>Use</em> checkbox, and auto-generated passwords must be enabled. Optionally the domain field may be constrained to particular choices, see the user guide section on end-entity profiles.</li>
 <li>E-mail validation works by sending the password in a notification message. For this reason, <em>Send Notification</em> must be enabled (check Use and Default), and the other notification fields below it should be filled in. See the section on <a href="#Email notifications">email notifications</a>.</li>
+<li>By the default the user will be prompted to fill in the username, but the username can also be generated from a field in the end-entity profile such as CN (common name), see below.</li>
 </ul>
 <p>
 E-mail sending must be configured in <code>mail.properties</code> to work. You may also want to enable notifications to the administrators when there are new approval requests, under System Functions / System Configuration.
 </p>
 <p>
-To make the end-entity profiles available in the user interface, <em>certificate types</em> must be added in <code>web.properties</code> using the <code>web.selfreg.certtypes.<em>&lt;identifier&gt;</em>.*</code> properties (the identifier can be chosen arbitrarily). Each certificate type defines an end-entity profile and a certificate profile, and what name should be displayed in the user interface. Finally, to enable self registration, the property <code>web.selfreg.enabled</code> must be set to true.
+To make the end-entity profiles available in the user interface, <em>certificate types</em> must be added in <code>web.properties</code> using the <code>web.selfreg.certtypes.<em>&lt;identifier&gt;</em>.*</code> properties (the identifier can be chosen arbitrarily). Each certificate type defines an end-entity profile and a certificate profile, and what name should be displayed in the user interface. If the username should be generated from a field, then this can be configured using the <code>usernamemapping</code> sub-property. Finally, to enable self registration, the property <code>web.selfreg.enabled</code> must be set to true.
 </p>
 <p>
 Note that the approval requests will be shown in the administration GUI as coming from a <em>Command Line Tool</em>. This is normal, since all actions that aren't initiated by an administrator are shown as coming from the command line.
