@@ -6,7 +6,19 @@
 
 
 <% if (!org.ejbca.config.WebConfiguration.getSelfRegistrationEnabled()) { %>
-  <p>Self-registration is disbled. For administrators: See the admin guide for instructions on how to configure self-registration.</p>
+  <p>Self-registration is disbled.
+  
+  <% if (!"disabled".equalsIgnoreCase(org.ejbca.config.WebConfiguration.getDocBaseUri())) { %>
+      For administrators: See the
+      <% if ("internal".equalsIgnoreCase(org.ejbca.config.WebConfiguration.getDocBaseUri())) { %>
+          <a href="../doc/adminguide.html#Self%20Registration" target="<%= org.ejbca.config.GlobalConfiguration.DOCWINDOW %>">admin guide</a>
+      <% } else { %>
+          <a href="<%= org.ejbca.config.WebConfiguration.getDocBaseUri() %>/adminguide.html#Self%20Registration" target="<%= org.ejbca.config.GlobalConfiguration.DOCWINDOW %>">admin guide</a>
+      <% } %>
+      for instructions on how to configure self-registration.
+  <% } %>
+  
+  </p>
 <% } else { %>
     <p>Please enter your information below. A request for approval will be sent to your administrator.</p>
     
