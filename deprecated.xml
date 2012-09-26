@@ -70,14 +70,14 @@
     <target name="bootstrap">
         <property name="deprecated.detected" value="true" />
         <echo message="The use of 'bootstrap' target in EJBCA is deprecated. It has been superseded by the 'deploy' target. This was part of the rewrite of the installation procedure for EJBCA. Please read the accompanying installation documentation with current release of EJBCA in order to get acquainted with the new installation procedure. This target will be removed in the next release." level="warning" />
-        <antcall target="deprecated:sleep" />
+        <antcall target="deprecated:notify" />
         <antcall target="deploy" />
     </target>
 
     <target name="ocsp-deploy">
         <property name="deprecated.detected" value="true" />
         <echo message="The use of 'ocsp-deploy' target in EJBCA is deprecated. It has been superseded by the 'va-deploy' target. This target will be removed in the next release." />
-        <antcall target="deprecated:sleep" />
+        <antcall target="deprecated:notify" />
         <antcall target="va-deploy" />
     </target>
 </project>
