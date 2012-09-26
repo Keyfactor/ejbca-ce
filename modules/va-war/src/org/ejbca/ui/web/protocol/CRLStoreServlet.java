@@ -32,7 +32,7 @@ import org.ejbca.util.HTMLTools;
 
 /** 
  * Servlet implementing server side of the CRL Store.
- * For a detailed description see rfc4378.
+ * For a detailed description see RFC 4387.
  * 
  * @author Lars Silven PrimeKey
  * @version  $Id$
