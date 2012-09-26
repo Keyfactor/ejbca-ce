@@ -188,8 +188,8 @@
         <!-- CAPTCHA -->
         <b>Prevention of automatic registration (CAPTCHA)</b><br />
         <label for="code" style="font-size: 85%">Last character in
-            <c:if test="${usernameVisible}">username</c:if>
-            <c:if test="${!usernameVisible}">e-mail</c:if>
+            <c:if test="${reg.usernameVisible}">username</c:if>
+            <c:if test="${!reg.usernameVisible}">e-mail</c:if>
             *</label>
         <input name="code" id="code" type="text" size="3" accesskey="t" />
         <br />
