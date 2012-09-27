@@ -2037,9 +2037,21 @@ Remember to configure mail-server settings in the mail.properties file.
 
 <section name="Self Registration">
 <p>
-It is possible to allow users of the public web to create approval requests for new end-entities (under 'Request Registration'). The users' choice of end-entity type and DN fields is confined, for instance it could be limited to end-user certificates with only the name and e-mail fields being available. The DN fields can then be verified by an administrator. Setting up self registration consists of three steps: creating end-endity profiles that should be available, configuring <a href="#Email notifications">email notifications</a>, and configuring self registration in <code>web.properties</code>.
+It is possible to allow users of the public web to create approval requests for new end-entities (under 'Request Registration'). The users' choice of end-entity type and DN fields is confined, for instance it could be limited to end-user certificates with only the name and e-mail fields being available. The DN fields can then be verified by an administrator. 
 </p>
 <p>
+    Note the following properties of the basic solution:
+    <ol>
+        <li>The approval process verifies end entity account creation.</li>
+        <li>The approval process does <strong>not</strong> verify CSR public key binding to a specific end entity.</li>
+    </ol>
+    Possible usages of self registration includes an almost unlimited set of use cases. The default solution is suitable and configurable for a large set of these use cases, and can function as a platform to customize other 
+    more specialized use cases. Customization of self registration work flows is a pretty straight forward process.
+</p>
+<subsection name="Configuration">
+<p>
+Setting up self registration consists of three steps: creating end-endity and certificate profiles that should be available, configuring <a href="#Email notifications">email notifications</a>, and configuring self registration in <code>web.properties</code>.
+<br/>
 First, at least one <a href="userguide.html#End Entity profiles">end-entity profile</a> should be created as follows:
 </p>
 <ul>
@@ -2049,11 +2061,15 @@ First, at least one <a href="userguide.html#End Entity profiles">end-entity prof
 <li>By the default the user will be prompted to fill in the username, but the username can also be generated from a field in the end-entity profile such as CN (common name), see below.</li>
 </ul>
 <p>
+    Note that sending of a password in an email is not the only way to do things. You can for example use multiple notifications where an enrollment link is sent to the user, but the password is sent to an administrator, or an out-of-band delivery service (through local email), or printed on paper. The solutions are highly configurable and adaptable. 
+</p>
+<p>
 E-mail sending must be configured in <code>mail.properties</code> to work. You may also want to enable notifications to the administrators when there are new approval requests, under System Functions / System Configuration.
 </p>
 <p>
 To make the end-entity profiles available in the user interface, <em>certificate types</em> must be added in <code>web.properties</code> using the <code>web.selfreg.certtypes.<em>&lt;identifier&gt;</em>.*</code> properties (the identifier can be chosen arbitrarily). Each certificate type defines an end-entity profile and a certificate profile, and what name should be displayed in the user interface. If the username should be generated from a field, then this can be configured using the <code>usernamemapping</code> sub-property. Finally, to enable self registration, the property <code>web.selfreg.enabled</code> must be set to true.
 </p>
+</subsection>
 <p>
 Note that the approval requests will be shown in the administration GUI as coming from a <em>Command Line Tool</em>. This is normal, since all actions that aren't initiated by an administrator are shown as coming from the command line.
 </p>
