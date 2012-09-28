@@ -1,3 +1,10 @@
+# Set to true to allow dynamic re-configuration using properties files in the file 
+# system. Using this you can place a file /etc/cesecore/conf/cesecore.properties in the file system and
+# override default values compiled into ejbca.ear.
+#
+# Default: false
+#allow.external-dynamic.configuration=false
+
 # ------------ Basic CA configuration ---------------------
 # When upgrading, the important options are:
 # - ca.keystorepass
@@ -6,8 +13,6 @@
 
 # This password is used internally to protect CA keystores in database (i.e. the CAs private key).
 # foo123 is to keep compatibility with default installations of EJBCA 3.0, please change this if possible
-# If upgrading from EJBCA 3.0.x, you should take this value from src/ca/ca/META-INF/ejb-jar.xml -> keyStorePass. 
-# The default value is the same for convenience.
 # Note! If changing this value AFTER installation of EJBCA you must do 'ant clean; ant bootstrap' in order to activate changes.
 #ca.keystorepass=foo123
 #ca.keystorepass=!secret!
@@ -59,13 +64,6 @@
 # I you want to use integrity protection of the audit log (in the IntegrityProtectedDevice) you
 # must also configure integrity protection in conf/databaseprotection.properties
 # 
-# Set to true to allow dynamic re-configuration using properties files in the file 
-# system. Using this you can place a file /etc/cesecore/conf/cesecore.properties in the file system and
-# override default values compiled into ejbca.ear.
-#
-# Default: false
-#allow.external-dynamic.configuration=false
-
 
 #### Secure audit log configuration.
 
