@@ -210,7 +210,7 @@ randompass() {
 	perl -pi -e "s/ca.name=AdminCA1/ca.name=${ejbcaadmincaname}/" /etc/ejbca/ejbca.properties
 	perl -pi -e "s/ca.dn=CN=AdminCA1,O=EJBCA Sample,C=SE/ca.dn=CN=${ejbcaadmincaname},O=EJBCA in Debian,C=ORG/" /etc/ejbca/ejbca.properties
 # TODO
-#	perl -pi -e "s/ca.keystorepass=foo123/ca.keystorepass=${cakeystorepass}/" /etc/ejbca/ejbca.properties
+#	perl -pi -e "s/ca.keystorepass=foo123/ca.keystorepass=${cakeystorepass}/" /etc/ejbca/cesecore.properties
 
 #database.properties
 	perl -pi -e "s/#database.name=mysql/database.name=mysql/" /etc/ejbca/database.properties
