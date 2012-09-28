@@ -471,7 +471,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     					rule.getInternalState().equals(AccessRuleState.RULE_ACCEPT)) {
     				// Now we add a new rule
     				final AccessRuleData slashRule = new AccessRuleData(role.getRoleName(), AccessRulesConstants.ROLE_ROOT, AccessRuleState.RULE_ACCEPT, true);
-    				log.info("Replacing all rules of rhe role '"+role.getRoleName()+"' with the rule '"+slashRule+"' since the role contained the '"+AccessRulesConstants.ROLE_SUPERADMINISTRATOR+"' rule.");
+    				log.info("Replacing all rules of the role '"+role.getRoleName()+"' with the rule '"+slashRule+"' since the role contained the '"+AccessRulesConstants.ROLE_SUPERADMINISTRATOR+"' rule.");
     				final Collection<AccessRuleData> newrules = new ArrayList<AccessRuleData>();
     				newrules.add(slashRule);
     				try {
