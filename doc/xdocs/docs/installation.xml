@@ -216,14 +216,14 @@ There is a bug in JBoss causing issues when using Oracle JDK. See this <a href="
 <subsubsection name="Configuration files">
 <p>The configuration of EJBCA that can not be configured in the Admin GUI is located in properties files in the <i>conf</i> directory.
 All properties are documented in sample files and to configure an option you copy the sample file, for example copy <i>conf/ejbca.properties.sample</i> to <i>conf/ejbca.properties</i>
-and configure <i>conf/ejbca.properties</i>. You should at least familiarize your self with the options in <i>conf/install.properties</i> and <i>conf/ejbca.properties</i>.
+and configure <i>conf/ejbca.properties</i>. You should at least familiarize your self with the options in <i>conf/install.properties</i>, <i>conf/ejbca.properties</i> and <i>conf/cesecore.properties</i>.
 Most options, except those in install.properties can be changed after installation.
 </p> 
 </subsubsection>
 
 <subsubsection name="EJBCA configuration">
 <p>
-1) Copy conf/install.properties.sample to conf/install.properties and conf/ejbca.properties.sample to conf/ejbca.properties
+1) Copy conf/install.properties.sample to conf/install.properties, conf/ejbca.properties.sample to conf/ejbca.properties and conf/cesecore.properties.sample to conf/cesecore.properties 
 Customize if needed. The default values works fine for a test installation. 
 </p>
 <p>
