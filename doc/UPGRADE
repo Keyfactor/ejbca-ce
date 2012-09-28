@@ -110,6 +110,9 @@ If should be possible to downgrade to 4.0.4 again after an 'ant post-upgrade' in
 You should be able to upgrade from EJBCA 3.11.x directly to 5.0.x, by following the same instructions
 as above (this upgrade is not thoroughly tested though).
 
+NOTE: Some configuration options in ejbca.properties has moved to cesecore.properties. You should migrate these configuration changes.
+You will be warned during build if you are using these options and have not migrated them.
+
 From EJBCA 4.0.x to EJBCA 4.0.x
 -------------------------------
 See release notes for details between certain versions. 
