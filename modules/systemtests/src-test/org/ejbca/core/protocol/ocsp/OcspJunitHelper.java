@@ -140,7 +140,7 @@ public class OcspJunitHelper {
 	 * @param nonce
 	 * @param respCode expected response code, OK = 0, if not 0, response checking will not continue after response code is checked.
 	 * @param httpCode, normally 200 for OK or OCSP error. Can be 400 is more than 1 million bytes is sent for example
-	 * @return a SingleResp or null if respCode != 0
+	 * @return a BasicOCSPResp or null if not found
 	 * @throws IOException
 	 * @throws OCSPException
 	 * @throws NoSuchProviderException
@@ -148,7 +148,7 @@ public class OcspJunitHelper {
 	 * @throws CertificateException on parsing errors.
 	 * @throws OperatorCreationException 
 	 */
-	protected SingleResp[] sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException, OperatorCreationException, CertificateException {
+	protected  BasicOCSPResp sendOCSPGet(byte[] ocspPackage, String nonce, int respCode, int httpCode) throws IOException, OCSPException, NoSuchProviderException, NoSuchAlgorithmException, OperatorCreationException, CertificateException {
 		// GET the OCSP request
 		String b64 = new String(Base64.encode(ocspPackage, false));
 		//String urls = URLEncoder.encode(b64, "UTF-8");	// JBoss/Tomcat will not accept escaped '/'-characters by default
@@ -183,8 +183,7 @@ public class OcspJunitHelper {
 			ASN1OctetString oct = ASN1OctetString.getInstance(ain.readObject());
 			assertEquals(nonce, new String(oct.getOctets()));
 		}
-		SingleResp[] singleResps = brep.getResponses();
-		return singleResps;
+		return brep;
 	}
 
 	private enum Status {

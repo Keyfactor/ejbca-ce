@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+
+<!-- 
+ @version $Id$
+ -->
+
+<document>
+
+  <properties>
+    <title>CertHash (German Certificate Hash)</title>
+  </properties>
+
+<body>
+
+<section name="CertHash">
+  <p>
+	CertHash is a method to qualify a positive OCSP response by including a secure hash of the certificate in question. This is a further tamper proofing
+	of the protocol, as the default reply is signed using only the certificate's serial number, leaving other fields open to abuse. Including a hash based
+	on all relevant values in the certificate increases security for the client. 
+	
+	The hash algorithm used in this extension is SHA256. 
+  </p>
+</section>
+
+<section name="Setting up the CertHash OCSP extension in the OCSP/VA server">
+  <p>This section describes how you set up handling of CertHash extensions using the <a href="architecture-ocsp.html">external OCSP responder</a>.
+  It should be read in combination with the <a href="installation-ocsp.html">OCSP installations guide</a>.</p>
+  <subsection name="Configuring the CertHash Extension">
+  	<p>
+	  The OCSP responder comes with an extension for including CertHash values in replies.
+	  To enable the CertHash extension you configure the options:
+	</p>
+	<source>
+	  ocsp.extensionoid=1.3.36.8.3.13
+	  ocsp.extensionclass=org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension
+	</source>
+	<p>
+	  in conf/ejbca.properties of the OCSP responder. All options are described in ejbca.properties.sample.
+	</p>
+  </subsection>
+</section>
+
+</body>
+</document>
+

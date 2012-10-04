@@ -154,7 +154,7 @@ public abstract class OcspResponseSessionBean implements OcspResponseGeneratorSe
             final X509Certificate[] requestCertificates, String remoteAddress, String remoteHost, StringBuffer requestUrl,
             final AuditLogger auditLogger, final TransactionLogger transactionLogger) throws MalformedRequestException, IOException, OCSPException {
         initiateIfNecessary();
-
+        OcspExtensionsCache.INSTANCE.reloadCache();
         //Check parameters
         if (auditLogger == null) {
             throw new InvalidParameterException("Illegal to pass a null audit logger to OcspResponseSession.getOcspResponse");
@@ -216,7 +216,6 @@ public abstract class OcspResponseSessionBean implements OcspResponseGeneratorSe
 
             // Add standard response extensions
             Hashtable<ASN1ObjectIdentifier, Extension> responseExtensions = getStandardResponseExtensions(req);
-
 
             // Look for extension OIDs
             final Collection<String> extensionOids = OcspConfiguration.getExtensionOids();
@@ -350,36 +349,43 @@ public abstract class OcspResponseSessionBean implements OcspResponseGeneratorSe
 
                 }
                 for (String oidstr : extensionOids) {
+                    boolean useAlways = false;
+                    if (oidstr.startsWith("*")) {
+                        oidstr = oidstr.substring(1, oidstr.length());
+                        useAlways = true;
+                    }
                     ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(oidstr);
-                 
+                    Extension ext = null;
                     if (req.hasExtensions()) {
-                        Extension ext = req.getExtension(oid);
-                        if (null != ext) {
-                            // We found an extension, call the extension class
-                            if (log.isDebugEnabled()) {
-                                log.debug("Found OCSP extension oid: " + oidstr);
-                            }
-                            OCSPExtension extObj = OcspExtensionsCache.INSTANCE.getExtensions().get(oidstr);
-                            if (extObj != null) {
-                                // Find the certificate from the certId
-                                X509Certificate cert = null;
-                                cert = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(subjectDn, certId.getSerialNumber());
-                                if (cert != null) {
-                                    // Call the OCSP extension
-                                    Map<ASN1ObjectIdentifier, Extension> retext = extObj.process(requestCertificates, remoteAddress, remoteHost,
-                                            cert, certStatus);
-                                    if (retext != null) {
-                                        // Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
-                                        responseExtensions.putAll(retext);
-                                    } else {
-                                        String errMsg = intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(),
-                                                Integer.valueOf(extObj.getLastErrorCode()));
-                                        log.error(errMsg);
-                                    }
+                        ext = req.getExtension(oid);
+                    }
+                    //If found, or if it should be used anyway
+                    if (null != ext || useAlways) {
+                        // We found an extension, call the extension class
+                        if (log.isDebugEnabled()) {
+                            log.debug("Found OCSP extension oid: " + oidstr);
+                        }
+                        OCSPExtension extObj = OcspExtensionsCache.INSTANCE.getExtensions().get(oidstr);
+                        if (extObj != null) {
+                            // Find the certificate from the certId
+                            X509Certificate cert = null;
+                            cert = (X509Certificate) certificateStoreSession.findCertificateByIssuerAndSerno(subjectDn, certId.getSerialNumber());
+                            if (cert != null) {
+                                // Call the OCSP extension
+                                Map<ASN1ObjectIdentifier, Extension> retext = extObj.process(requestCertificates, remoteAddress, remoteHost, cert,
+                                        certStatus);
+                                if (retext != null) {
+                                    // Add the returned X509Extensions to the responseExtension we will add to the basic OCSP response
+                                    responseExtensions.putAll(retext);
+                                } else {
+                                    String errMsg = intres.getLocalizedMessage("ocsp.errorprocessextension", extObj.getClass().getName(),
+                                            Integer.valueOf(extObj.getLastErrorCode()));
+                                    log.error(errMsg);
                                 }
                             }
                         }
                     }
+
                 }
             }
             if (signerTokenAndChain != null) {

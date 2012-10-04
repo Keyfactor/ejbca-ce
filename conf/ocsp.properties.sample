@@ -124,7 +124,8 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 #ocsp.999.maxAge = 100
 
 # Specifies OCSP extension oids that will result in a call to an extension class, 
-# separate multiple entries with ;"
+# separate multiple entries with ';'
+# For any entry that should be always used, preface with '*' (e.g. *2.16.578.1.16.3.2)
 # Leave out if you do not know what this is.
 # Example value: 2.16.578.1.16.3.2
 # Default: nothing 

@@ -53,6 +53,7 @@
     <li>On-line renewal of OCSP responder keys and certificates.</li>
     <li>OCSP client in Java (Client ToolBox).</li>
     <li>Support for Norwegian <a href="unid.html">Unid</a> extension.</li>
+    <li>Support for German <a href="certhash.html">CertHash</a> extension.</li>
     </ul>
     </p>
   </section>

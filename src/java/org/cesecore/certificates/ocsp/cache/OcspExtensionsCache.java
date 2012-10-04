@@ -31,11 +31,10 @@ public enum OcspExtensionsCache {
 
     private static final Logger log = Logger.getLogger(OcspExtensionsCache.class);
 
-    private final Map<String, OCSPExtension> extensionMap;
+    private Map<String, OCSPExtension> extensionMap;
 
-    private OcspExtensionsCache() {
-        extensionMap = new HashMap<String, OCSPExtension>();
-        initCache();
+    private OcspExtensionsCache() {    
+        reloadCache();
     }
 
     
@@ -43,13 +42,17 @@ public enum OcspExtensionsCache {
         return extensionMap;
     }
     
-    private void initCache() {
+    public void reloadCache() {
+        extensionMap = new HashMap<String, OCSPExtension>();
         Iterator<String> extensionClasses = OcspConfiguration.getExtensionClasses().iterator();
         Iterator<String> extensionOids = OcspConfiguration.getExtensionOids().iterator();
 
         while (extensionClasses.hasNext()) {
             String clazz = extensionClasses.next();
             String oid =  extensionOids.next();
+            if(oid.startsWith("*")) {
+                oid = oid.substring(1, oid.length());
+            }
             OCSPExtension ext = null;
             try {
                 ext = (OCSPExtension) Class.forName(clazz).newInstance();

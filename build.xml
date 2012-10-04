@@ -456,6 +456,7 @@
                 <include name="ejbca-common-web.jar" />
                 <include name="ejbca-interface.jar" />
                 <include name="ejbca-entity.jar" />
+        		<include name="ejbca-extensions.jar" />
                 <include name="ejbca-properties.jar" />
                 <include name="log4jconfig.jar" />
         		<include name="${in-test-mode-include}systemtests-interfaces.jar"/>
@@ -552,6 +553,7 @@
                 <include name="certstore.war" />
                 <include name="crlstore.war" />
                 <include name="va-ejb.jar" />
+            	<include name="ejbca-extensions.jar" />
             	<include name="va-systemtests.jar"/>
             	<include name="test-va-interface.jar"/>
             </fileset>

@@ -80,7 +80,9 @@
 	<target name="va-common-compile" depends="va-ejb">
 	</target>
 	<condition property="use.ocsp.extensionclass">
-		<equals arg1="${ocsp.extensionclass}" arg2="org.ejbca.core.protocol.ocsp.OCSPUnidExtension"/>
+			<not>
+				<equals arg1="${ocsp.extensionclass}" arg2=""/>
+			</not>
 	</condition>
 	<condition property="none.existing.ocsp.extensionclass">
 		<and>
@@ -96,17 +98,34 @@
 	<target name="use-ocsp-extensionclass" depends="none-existing-ocsp-extensionclass" if="use.ocsp.extensionclass">
 		<echo>Compiling ocsp.extensionclass ${ocsp.extensionclass}</echo>
 	</target>
+	
+	<target name="extensions-build">
+		<jar basedir="${build-status.dir}/WEB-INF/classes" jarfile="${mod.ejbca-extensions.lib}">
+			<include name="org/ejbca/core/protocol/ocsp/*.class"/>
+			<include name="org/ejbca/core/protocol/ocsp/extension/**/*.class"/>
+		</jar>
+	</target>
+	
+	<target name="va-extensions-build">
+			<jar basedir="${build-status-va.dir}/WEB-INF/classes" jarfile="${mod.ejbca-extensions.lib}">
+				<include name="org/ejbca/core/protocol/ocsp/*.class"/>
+				<include name="org/ejbca/core/protocol/ocsp/extension/**/*.class"/>
+			</jar>
+		</target>
+	
 	<target name="va-status-compile" depends="va-common-compile, use-ocsp-extensionclass" if="ocsp.enabled.if.defined">
 		<echo message="${mod.va-ejb.lib}"/>
 		<mkdir dir="${build-status-va.dir}/WEB-INF/classes" />
 		<javac destdir="${build-status-va.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			classpathref="compile-va.classpath">
+			<include name="org/cesecore/certificates/ocsp/extension/OCSPExtension.java" />
 			<include name="org/ejbca/ui/web/protocol/OCSPServletStandAlone.java"/>	
 			<include name="org/ejbca/ui/web/protocol/StandAloneOcspHealthCheckServlet.java"/>	
-			<include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" if="use.ocsp.extensionclass"/>
-			<include name="org/ejbca/core/protocol/ocsp/FnrFromUnidExtension.java" if="use.ocsp.extensionclass"/>
+			<include name="org/ejbca/core/protocol/ocsp/*Extension.java"/>
+			<include name="org/ejbca/core/protocol/ocsp/extension/**/*.java"/>
 			<src path="${src.dir}"/>
 		</javac>
+		<antcall target="extensions-build"/>
 	</target>
 	<target name="va-certstore-compile" depends="va-common-compile" if="certstore.enabled.if.defined">
     	<mkdir dir="${build-certstore-va.dir}/WEB-INF/classes" />
@@ -132,10 +151,11 @@
         <javac destdir="${build-status.dir}/WEB-INF/classes" debug="on" includeantruntime="no" encoding="iso8859-1" target="${java.target.version}"
 			classpathref="compile-ejbca.classpath">
         	<include name="org/ejbca/ui/web/protocol/OCSPServlet.java"/>
-        	<include name="org/ejbca/core/protocol/ocsp/OCSPUnidExtension.java" if="use.ocsp.extensionclass"/>
-        	<include name="org/ejbca/core/protocol/ocsp/FnrFromUnidExtension.java" if="use.ocsp.extensionclass"/>
+        	<include name="org/ejbca/core/protocol/ocsp/*.java"/>
+        	<include name="org/ejbca/core/protocol/ocsp/extension/**/*.java"/>
 			<src path="${src.dir}"/>
         </javac>
+		<antcall target="extensions-build"/>
 	</target>
 	<target name="ejbca-certstore-compile" depends="ejbca-common-compile-external-deps" if="certstore.enabled.if.defined">
     	<mkdir dir="${build-certstore.dir}/WEB-INF/classes" />
