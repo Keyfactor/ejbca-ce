@@ -216,6 +216,7 @@ public class OcspConfiguration {
 
     /**
      * Specifies OCSP extension OIDs that will result in a call to an extension class, separate multiple entries with ';'.
+     * For any entry that should be always used, preface with '*' (e.g. *2.16.578.1.16.3.2)
      * 
      * @return a List<String> of extension OIDs
      */
