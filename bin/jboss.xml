@@ -286,6 +286,10 @@
             <jboss:adm arg="/subsystem=web/connector=httpspub/ssl=configuration:write-attribute(name=password, value=${httpsserver.password})" />
             <jboss:adm arg="/subsystem=web/connector=httpspub/ssl=configuration:write-attribute(name=certificate-key-file, value=${jboss.server.home.dir}/${keystore.file})" />
             <jboss:adm arg="/subsystem=web/connector=httpspub/ssl=configuration:write-attribute(name=ca-certificate-file, value=${jboss.server.home.dir}/${keystore.file})" />
+            <!--  Configure WSDL web-host rewriting to use the request host. Needed for webservices to work correctly when requiring client certificate. -->
+            <jboss:adm arg="/subsystem=webservices:write-attribute(name=wsdl-host, value=jbossws.undefined.host)" />
+            <jboss:adm arg="/subsystem=webservices:write-attribute(name=modify-wsdl-address, value=true)" />
+            
             <jboss:adm arg=":reload" />
         </target>
 
