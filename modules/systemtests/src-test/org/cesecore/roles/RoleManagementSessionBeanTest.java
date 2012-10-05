@@ -469,4 +469,65 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
         }
     }
+    
+    /**
+     * This method tests isAuthorizedToEditRoleWithoutAspectAccess for a role that has access to another role's rule, but that
+     * rule happens to be recursive. 
+     * @throws AccessRuleExistsException 
+     */
+    @Test
+    public void testIsAuthorizedToEditRoleForRecursiveRuleAccess() throws RoleNotFoundException, AuthorizationDeniedException, RoleExistsException,
+            AccessUserAspectExistsException, AccessRuleExistsException {
+        final String unauthorizedRoleName = "Mom";
+        final String unauthorizedRoleDn = "CN=Mom";
+        final String authorizedRoleName = "Headless Body of Agnew";
+        AuthenticationToken unauthorizedRoleAuthenticationToken = createAuthenticationToken(unauthorizedRoleDn);
+        int caId = CertTools.getIssuerDN(((TestX509CertificateAuthenticationToken)unauthorizedRoleAuthenticationToken).getCertificate()).hashCode();      
+        RoleData unauthorizedRole = roleAccessSession.findRole(unauthorizedRoleName);
+        if (unauthorizedRole != null) {
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
+        }
+        unauthorizedRole = roleManagementSession.create(alwaysAllowAuthenticationToken, unauthorizedRoleName);
+        RoleData authorizedRole = roleAccessSession.findRole(authorizedRoleName);
+        if (authorizedRole != null) {
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
+        }
+        authorizedRole = roleManagementSession.create(alwaysAllowAuthenticationToken, authorizedRoleName);
+        try {
+            AccessUserAspectData unauthorizedRoleAspect = accessUserAspectManagerSession.create(unauthorizedRole, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                    AccessMatchType.TYPE_EQUALCASE, unauthorizedRoleName);
+            Collection<AccessUserAspectData> unauthorizedRoleSubjects = new ArrayList<AccessUserAspectData>();
+            unauthorizedRoleSubjects.add(unauthorizedRoleAspect);
+            unauthorizedRole = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, unauthorizedRole, unauthorizedRoleSubjects);
+            
+            Collection<AccessRuleData> unauthorizedRoleRules = new ArrayList<AccessRuleData>();
+            //We add the access to authorizedRole's CA to unauthorizedRole, that is tested in another test
+            unauthorizedRoleRules.add(new AccessRuleData(unauthorizedRoleName, StandardRules.CAACCESS.resource() + Integer.toString(caId), AccessRuleState.RULE_ACCEPT, true));
+            //We add the rule /bar to both roles just to check that vanilla authorization still works 
+            unauthorizedRoleRules.add(new AccessRuleData(unauthorizedRoleName, "/bar", AccessRuleState.RULE_ACCEPT, false));
+            unauthorizedRole = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, unauthorizedRole, unauthorizedRoleRules);
+           
+            Collection<AccessUserAspectData> authorizedRoleSubjects = new ArrayList<AccessUserAspectData>();
+            authorizedRoleSubjects.add(accessUserAspectManagerSession.create(authorizedRole, caId, X500PrincipalAccessMatchValue.WITH_COMMONNAME,
+                    AccessMatchType.TYPE_EQUALCASE, authorizedRoleName));
+            authorizedRole = roleManagementSession.addSubjectsToRole(alwaysAllowAuthenticationToken, authorizedRole, authorizedRoleSubjects);            
+            // Just a quick check here that CA access works. Not a test per say, so no assert. 
+            if(!roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole)) {
+                throw new RuntimeException("Authorization should have been allowed");
+            }
+            
+            Collection<AccessRuleData> authorizedRoleRules = new ArrayList<AccessRuleData>();
+            authorizedRoleRules.add(new AccessRuleData(authorizedRoleName, "/bar", AccessRuleState.RULE_ACCEPT, true));
+            authorizedRoleRules.add(new AccessRuleData(authorizedRoleName, "/bar/xyz", AccessRuleState.RULE_NOTUSED, false));
+            authorizedRole = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, authorizedRole, authorizedRoleRules);
+            /*
+             * unauthorizedRole does not have access to /bar/xyz
+             */
+            assertFalse("Unauthorized access to rule, had access to recursive subrule which should have been denied.",
+                    roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole));
+        } finally {
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
+            roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
+        }
+    }
 }
