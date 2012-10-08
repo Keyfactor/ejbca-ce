@@ -78,6 +78,11 @@ org.ejbca.ui.cli.Ocsp.
 The Unid functionality is described in a separate <a href="unid.html">document</a>. 
 </p>
 </section>
+<section name="Setting up the CertHash OCSP extension">
+  <p>
+  The CertHash functionality is described in a separate <a href="certhash.html">document</a>. 
+  </p>
+</section>
 <section name="OCSP extensions">
 <p>
 The standard allows the usage of extensions in OCSP requests and responses. 
