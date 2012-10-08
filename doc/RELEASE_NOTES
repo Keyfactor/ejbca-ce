@@ -4,6 +4,25 @@ EJBCA 5.1.0
 - The term 'Admin Group' has been mostly purged and replaced with 'Role'.
 - The installation work-flow and ant targets have changed.
 
+EJBCA 5.0.6
+-----------
+This is a maintenance release with a few bug fixes but also new features. In all, 34 issues have been resolved.
+
+* Noteworthy changes:
+- Support for German CertHash OCSP extension for Common PKI.
+- Add rate limit for health check queries.
+- Add Extended Key Usage for WiFi EAP.
+- Fixed download of CA certificates with plus character in CA DN.
+- Fixed key recovery when CA signed by External CA.
+- Fixed a few upgrade glitches when upgrading from EJBCA 4.
+- Fixed re-activation of suspended certificates through VA-publisher.
+- Fixed potential privilege escalation issue for certain, non default, configurations. 
+- Fixed many other minor issues making deployment smoother.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
+Please notice the upgrade of BC jars if you are using Oracle JDK.
+
 EJBCA 5.0.5
 -----------
 This is a maintenance release with a few bug fixes and new features. In all, 26 issues have been resolved.
