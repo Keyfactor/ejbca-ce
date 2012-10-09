@@ -75,7 +75,8 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
      */
     private static volatile AccessTreeCache accessTreeCache;
 
-    private boolean isAuthorized(final AuthenticationToken authenticationToken, final boolean doLogging, final String... resources) {
+    private boolean isAuthorized(final AuthenticationToken authenticationToken, final boolean doLogging, final boolean acceptRecursive,
+            final String... resources) {
         try {
             Map<String, Object> details = null;
             if (doLogging) {
@@ -83,7 +84,7 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
             }
             for (int i=0; i<resources.length; i++) {
                 final String resource = resources[i];
-                if (accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource)) {
+                if (accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource, acceptRecursive)) {
                     if (doLogging) {
                         details.put("resource"+i, resource);
                     }
@@ -128,16 +129,21 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
         if (updateNeccessary()) {
             updateAuthorizationTree();
         }
-        return isAuthorized(authenticationToken, true, resources);
+        return isAuthorized(authenticationToken, true, true, resources);
+    }
+    
+    @Override
+    public boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, boolean acceptRecursive, String... resources) {
+        if (updateNeccessary()) {
+            updateAuthorizationTree();
+        }
+        return isAuthorized(authenticationToken, false, acceptRecursive, resources);
     }
     
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isAuthorizedNoLogging(final AuthenticationToken authenticationToken, final String... resources) {
-        if (updateNeccessary()) {
-            updateAuthorizationTree();
-        }
-        return isAuthorized(authenticationToken, false, resources);
+      return isAuthorizedNoLogging(authenticationToken, true, resources);
     }
 
     @Override
