@@ -71,18 +71,6 @@ The <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA client toolbox</a> c
 org.ejbca.ui.cli.Ocsp.
 </p>
 </section>
-<section name="Fnr-Unid mapping">
-  <note>If you don't know what a Unid-Fnr mapping is, you are probably not interested in this part.
-  </note>
-<p>
-The Unid functionality is described in a separate <a href="unid.html">document</a>. 
-</p>
-</section>
-<section name="Setting up the CertHash OCSP extension">
-  <p>
-  The CertHash functionality is described in a separate <a href="certhash.html">document</a>. 
-  </p>
-</section>
 <section name="OCSP extensions">
 <p>
 The standard allows the usage of extensions in OCSP requests and responses. 
@@ -107,6 +95,18 @@ To use your custom OCSP extension you have to define a few properties in conf/oc
 To specify that an extension always be used in the reply regardless of what's specified in the request, preface the relevant ocsp.extensionoid-value with an 
 asterisk (e.g. *2.16.578.1.16.3.2)
 </p>
+</subsection>
+<subsection name="Fnr-Unid Mapping Extension">
+  <note>If you don't know what a Unid-Fnr mapping is, you are probably not interested in this part.
+  </note>
+<p>
+The Unid functionality is described in a separate <a href="unid.html">document</a>. 
+</p>
+</subsection>
+<subsection name="CertHash OCSP Extension">
+  <p>
+  The CertHash functionality is described in a separate <a href="certhash.html">document</a>. 
+  </p>
 </subsection>
 </section>
 
