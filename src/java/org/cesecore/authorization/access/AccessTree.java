@@ -57,6 +57,8 @@ public class AccessTree {
     /**
      * A method to check the authenticated user is authorized to view the given resource
      * 
+     * Will by default accept recursive accept values. 
+     * 
      * @param authenticationToken
      *            A token from a successfully performed authentication.
      * @param resource
@@ -65,13 +67,28 @@ public class AccessTree {
      * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
     public boolean isAuthorized(AuthenticationToken authenticationToken, String resource) throws AuthenticationFailedException {
+       return isAuthorized(authenticationToken, resource, true);
+    }
+    
+    /**
+     * A method to check the authenticated user is authorized to view the given resource
+     * 
+     * @param authenticationToken
+     *            A token from a successfully performed authentication.
+     * @param resource
+     *            The resource to check authorization for.
+     * @param acceptRecursive true of recursive values should be accepted. If false, only explicit accept rules will grant authorization. 
+     * @return true if authorization is granted.
+     * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
+     */
+    public boolean isAuthorized(AuthenticationToken authenticationToken, String resource, final boolean acceptRecursive) throws AuthenticationFailedException {
         String checkresource = resource;
         // Must begin with '/'.
         if ((checkresource.toCharArray())[0] != '/') {
             checkresource = "/" + checkresource;
         }
         // Check if user is authorized in the tree.
-        return rootNode.isAuthorized(authenticationToken, checkresource);
+        return rootNode.isAuthorized(authenticationToken, checkresource, acceptRecursive);
     }
 
 }

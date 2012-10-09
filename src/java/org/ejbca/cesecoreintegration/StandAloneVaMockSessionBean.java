@@ -73,4 +73,9 @@ public class StandAloneVaMockSessionBean implements AccessControlSessionLocal, S
 			String searchDetail1, String searchDetail2, Map<String, Object> additionalDetails) throws AuditRecordStorageException, AuthorizationDeniedException {
 		throw new UnsupportedOperationException();
 	}
+
+    @Override
+    public boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, boolean acceptRecursive, String... resources) {
+        throw new UnsupportedOperationException();
+    }
 }
