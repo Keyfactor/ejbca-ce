@@ -434,31 +434,26 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     }
     
     @Override
-    public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role, boolean acceptRecursive) {
+    public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
         if (role == null) {
             return false;
         }
         // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
         for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
-            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, acceptRecursive, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {
+            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, false, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {
                 return false;
             }
         }
         for (AccessRuleData accessRule : role.getAccessRules().values()) {
             String rule = accessRule.getAccessRuleName();
-            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, acceptRecursive, rule)) {
+            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, false, rule)) {
                 return false;
             }
         }
         // Everything's A-OK, role is good.
         return true;
     }
-
-    @Override
-    public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
-        return isAuthorizedToEditRole(authenticationToken, role, true);
-    }
-
+    
     @Override
     public Collection<RoleData> getAuthorizedRoles(AuthenticationToken admin, String resource) {
         ArrayList<RoleData> authissueingadmgrps = new ArrayList<RoleData>();
