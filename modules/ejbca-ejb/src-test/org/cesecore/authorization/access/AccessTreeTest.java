@@ -74,7 +74,7 @@ public class AccessTreeTest {
         AuthenticationToken authenticationToken = EasyMock.createMock(AuthenticationToken.class);
         AccessTree accessTree = new AccessTree();
         AccessTreeNode rootNode = EasyMock.createMock(AccessTreeNode.class);
-        EasyMock.expect(rootNode.isAuthorized(authenticationToken, "/fancypants")).andReturn(true);
+        EasyMock.expect(rootNode.isAuthorized(authenticationToken, "/fancypants", true)).andReturn(true);
         EasyMock.replay(rootNode);
         
         //Use reflection to inject our mocked rootNode.
