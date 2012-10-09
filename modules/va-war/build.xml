@@ -111,7 +111,7 @@
 				<include name="org/ejbca/core/protocol/ocsp/*.class"/>
 				<include name="org/ejbca/core/protocol/ocsp/extension/**/*.class"/>
 			</jar>
-		</target>
+	</target>
 	
 	<target name="va-status-compile" depends="va-common-compile, use-ocsp-extensionclass" if="ocsp.enabled.if.defined">
 		<echo message="${mod.va-ejb.lib}"/>
@@ -125,7 +125,7 @@
 			<include name="org/ejbca/core/protocol/ocsp/extension/**/*.java"/>
 			<src path="${src.dir}"/>
 		</javac>
-		<antcall target="extensions-build"/>
+		<antcall target="va-extensions-build"/>
 	</target>
 	<target name="va-certstore-compile" depends="va-common-compile" if="certstore.enabled.if.defined">
     	<mkdir dir="${build-certstore-va.dir}/WEB-INF/classes" />
