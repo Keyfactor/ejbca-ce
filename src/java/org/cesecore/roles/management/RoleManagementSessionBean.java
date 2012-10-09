@@ -432,26 +432,31 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         }
         return result;
     }
-
+    
     @Override
-    public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
+    public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role, boolean acceptRecursive) {
         if (role == null) {
             return false;
         }
         // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
         for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
-            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {
+            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, acceptRecursive, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {
                 return false;
             }
         }
         for (AccessRuleData accessRule : role.getAccessRules().values()) {
             String rule = accessRule.getAccessRuleName();
-            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, rule)) {
+            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, acceptRecursive, rule)) {
                 return false;
             }
         }
         // Everything's A-OK, role is good.
         return true;
+    }
+
+    @Override
+    public boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role) {
+        return isAuthorizedToEditRole(authenticationToken, role, true);
     }
 
     @Override

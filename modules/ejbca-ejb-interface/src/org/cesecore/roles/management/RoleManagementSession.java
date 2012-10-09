@@ -171,11 +171,24 @@ public interface RoleManagementSession {
      * Examines if the current user is authorized to edit a role. It checks all access user aspects (and checks access to the CA's issuing them), as
      * well as all CA based rules within the role.
      * 
+     * Will by default accept recursive accept values. 
+     * 
      * @param authenticationToken an authentication token for the subject to check
      * @param role the role to check against.
      * @return true if the subject has access.
      */
     boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role);
+    
+    /**
+     * Examines if the current user is authorized to edit a role. It checks all access user aspects (and checks access to the CA's issuing them), as
+     * well as all CA based rules within the role.
+     * 
+     * @param authenticationToken an authentication token for the subject to check
+     * @param role the role to check against.
+     * @param acceptRecursive true of recursive values should be accepted. If false, only explicit accept rules will grant authorization. 
+     * @return true if the subject has access.
+     */
+    boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role, boolean acceptRecursive);
     
     /**
      * Replaces the existing access rules in the given role by removing the old ones and adding the list of new ones.
