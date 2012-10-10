@@ -80,7 +80,7 @@ public class TimeMatch extends BasicMatch {
      */
     public TimeMatch(int type, Date startdate, Date enddate) {
         this.type = type;
-        this.matchwith = 0;
+        this.matchwith = MATCH_WITH_TIMECREATED;
         this.startdate = startdate;
         this.enddate = enddate;
     }
@@ -126,8 +126,8 @@ public class TimeMatch extends BasicMatch {
     }
 
     // Private Fields.
-    private int matchwith;
-    private int type;
-    private Date startdate;
-    private Date enddate;
+    final private int matchwith;
+    final private int type;
+    final private Date startdate;
+    final private Date enddate;
 }
