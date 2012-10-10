@@ -111,7 +111,7 @@
 		<pathelement location="${mod.ejbca-ws-cli.lib}"/>
 	</path>
 
-	<target name="build" description="Build this module" depends="build-libs, compile-tests" />
+	<target name="build" description="Build this module" depends="va-ejbca-war, build-libs, compile-tests" /> 
 	
 	<target name="build-va" description="Build this module" depends="build-libs, compile-tests-va" />
 
