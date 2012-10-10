@@ -584,7 +584,7 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
              * unauthorizedRole does not have recursive access, while authorizedRole does. 
              */
             assertFalse("Unauthorized access to rule, had access to recursive rule without being recursive itself.",
-                    roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole, false));
+                    roleManagementSession.isAuthorizedToEditRole(unauthorizedRoleAuthenticationToken, authorizedRole));
         } finally {
             roleManagementSession.remove(alwaysAllowAuthenticationToken, unauthorizedRole);
             roleManagementSession.remove(alwaysAllowAuthenticationToken, authorizedRole);
