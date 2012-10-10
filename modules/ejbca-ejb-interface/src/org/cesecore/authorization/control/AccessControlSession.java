@@ -40,7 +40,7 @@ public interface AccessControlSession {
      * Checks if the current user is authorized for the given resource.
      * Will not create any audit log. 
      * 
-     * Will by default accept recursive accept values. 
+     * Will by default accept recursive and non-recursive accept values. 
      * 
      * @param authenticationToken The {@link AuthenticationToken} to check access for.
      * @param resources String identifier(s) of the resource(s) in question.
@@ -53,11 +53,11 @@ public interface AccessControlSession {
      * Will not create any audit log. 
      * 
      * @param authenticationToken The {@link AuthenticationToken} to check access for.
-     * @param acceptRecursive true of recursive values should be accepted. If false, only explicit accept rules will grant authorization. 
+     * @param requireRecursive true if only accept recursive values should be accepted. 
      * @param resources String identifier(s) of the resource(s) in question.
      * @return True if user is authorized, false if not. 
      */
-    boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, boolean acceptRecursive, String... resources);
+    boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, boolean requireRecursive, String... resources);
 
     /**
      * Helper method to clear the local access control rule cache. Normally the cache expires after configured time, but when modifying access rules
