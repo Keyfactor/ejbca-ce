@@ -54,9 +54,9 @@ public class Query implements Serializable {
     static final String[] CONNECTOR_SQL_NAMES = { " AND ", " OR ", " AND NOT ", " OR NOT " };
 
     // Private fields.
-    private Vector<BasicMatch> matches = null; // Should only contain BasicMatch objects.
-    private Vector<Integer> connectors = null; // Should only containg CONNECTOR constants.
-    protected int type = 0;
+    final private Vector<BasicMatch> matches; // Should only contain BasicMatch objects.
+    final private Vector<Integer> connectors; // Should only containg CONNECTOR constants.
+    final protected int type;
     private boolean hasIllegalSqlChars = false;
     
     // Public methods.
