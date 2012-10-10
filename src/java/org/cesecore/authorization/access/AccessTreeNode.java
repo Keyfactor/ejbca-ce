@@ -81,19 +81,18 @@ public class AccessTreeNode {
     /**
      * Entrance method.
      * 
-     * Will by default accept recursive accept values. 
+     * Will by default accept recursive and non-recursive accept values. 
      * 
      * @param role
      *            Role to check access for.
      * @param resourcePath
      *            Resource to investigate
-     * @param acceptRecursive true of recursive values should be accepted. If false, only explicit accept rules will grant authorization. 
      * @return True if role is authorized to resource.
      * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
     public boolean isAuthorized(final AuthenticationToken authenticationToken, final String resourcePath)
             throws AuthenticationFailedException {
-        return isAuthorizedRecursive(authenticationToken, resourcePath, AccessTreeState.STATE_UNKNOWN, true);
+        return isAuthorizedRecursive(authenticationToken, resourcePath, AccessTreeState.STATE_UNKNOWN, false);
 
     }
     
@@ -106,13 +105,13 @@ public class AccessTreeNode {
      *            Role to check access for.
      * @param resourcePath
      *            Resource to investigate
-     * @param acceptRecursive true of recursive values should be accepted. If false, only explicit accept rules will grant authorization. 
+     * @param requireRecursive true if only accept recursive values should be accepted. 
      * @return True if role is authorized to resource.
      * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
-    public boolean isAuthorized(final AuthenticationToken authenticationToken, final String resourcePath, final boolean acceptRecursive)
+    public boolean isAuthorized(final AuthenticationToken authenticationToken, final String resourcePath, final boolean requireRecursive)
             throws AuthenticationFailedException {
-        return isAuthorizedRecursive(authenticationToken, resourcePath, AccessTreeState.STATE_UNKNOWN, acceptRecursive);
+        return isAuthorizedRecursive(authenticationToken, resourcePath, AccessTreeState.STATE_UNKNOWN, requireRecursive);
 
     }
 
@@ -125,12 +124,12 @@ public class AccessTreeNode {
      *            Resource to check.
      * @param legacyState
      *            The best state yet encountered.
-     * @param acceptRecursive true of recursive values should be accepted. If false, only explicit accept rules will grant authorization. 
+     * @param requireRecursive true if only accept recursive values should be accepted
      * @return True of role is authorized to resource.
      * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
     private boolean isAuthorizedRecursive(final AuthenticationToken authenticationToken, final String resourcePath, AccessTreeState legacyState,
-            final boolean acceptRecursive) throws AuthenticationFailedException {
+            final boolean requireRecursive) throws AuthenticationFailedException {
         if (log.isTraceEnabled()) {
         log.trace(">isAuthorizedRecursive("+authenticationToken.toString()+", "+resourcePath+", "+legacyState+"). Resource="+resource);
         }
@@ -146,13 +145,13 @@ public class AccessTreeNode {
                     log.trace("Rejecting because legaceState is AccessTreeState.STATE_DECLINE");
                 }
                 returnval = false;
-            } else if (legacyState == AccessTreeState.STATE_ACCEPT_RECURSIVE && acceptRecursive) {
+            } else if (legacyState == AccessTreeState.STATE_ACCEPT_RECURSIVE) {
                 // If this resource have state accept recursive state is given
                 if (internalstate != AccessTreeState.STATE_DECLINE) {
                     returnval = true;
                 }
             } else {
-                if(internalstate == AccessTreeState.STATE_ACCEPT || (internalstate == AccessTreeState.STATE_ACCEPT_RECURSIVE && acceptRecursive)) {
+                if((internalstate == AccessTreeState.STATE_ACCEPT && !requireRecursive) || internalstate == AccessTreeState.STATE_ACCEPT_RECURSIVE) {
                     returnval = true;
                 }
             }
@@ -171,32 +170,25 @@ public class AccessTreeNode {
             }
 
             final AccessTreeNode next = (AccessTreeNode) leafs.get(nextname);
-            if (next == null) { // resource path doesn't exist
-                if (acceptRecursive) { //If recursive is an acceptable state at alls
-                    // If internal state is accept recursive.
-                    if (internalstate == AccessTreeState.STATE_ACCEPT_RECURSIVE) {
-                        returnval = true;
-                    } else if (legacyState == AccessTreeState.STATE_ACCEPT_RECURSIVE && internalstate != AccessTreeState.STATE_DECLINE) {
-                        // If state accept recursive is given and internal state isn't decline .
-                        returnval = true;
-                    } else {
-                        if (log.isTraceEnabled()) {
-                            log.trace("Not accepting because state is not STATE_ACCEPT_RECURSIVE. Internalstate=" + internalstate + ", legacyState="
-                                    + legacyState);
-                        }
-                    }
+            if (next == null) { // resource path doesn't exist            
+                // If internal state is accept recursive.
+                if (internalstate == AccessTreeState.STATE_ACCEPT_RECURSIVE) {
+                    returnval = true;
+                } else if (legacyState == AccessTreeState.STATE_ACCEPT_RECURSIVE && internalstate != AccessTreeState.STATE_DECLINE) {
+                    // If state accept recursive is given and internal state isn't decline .
+                    returnval = true;
                 } else {
                     if (log.isTraceEnabled()) {
-                        log.trace("Not accepting because recursive accepts not allowed. Internalstate=" + internalstate + ", legacyState="
+                        log.trace("Not accepting because state is not STATE_ACCEPT_RECURSIVE. Internalstate=" + internalstate + ", legacyState="
                                 + legacyState);
                     }
-                }
+                }           
             } else { // resource path exists.
                      // If internalstate is accept recursive or decline.
                 if (internalstate == AccessTreeState.STATE_ACCEPT_RECURSIVE || internalstate == AccessTreeState.STATE_DECLINE) {
                     legacyState = internalstate;
                 }
-                returnval = next.isAuthorizedRecursive(authenticationToken, nextsubresource, legacyState, acceptRecursive);
+                returnval = next.isAuthorizedRecursive(authenticationToken, nextsubresource, legacyState, requireRecursive);
             }
         }
         if (log.isTraceEnabled()) {

@@ -39,6 +39,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.access.AccessTree;
+import org.cesecore.authorization.access.AccessTreeState;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
@@ -446,9 +447,16 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         }
         for (AccessRuleData accessRule : role.getAccessRules().values()) {
             String rule = accessRule.getAccessRuleName();
-            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, false, rule)) {
-                return false;
+            if(accessRule.getTreeState() == AccessTreeState.STATE_ACCEPT) {
+                if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, false, rule)) {
+                    return false;
+                }
+            } else if(accessRule.getTreeState() == AccessTreeState.STATE_ACCEPT_RECURSIVE) {
+                if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, true, rule)) {
+                    return false;
+                }
             }
+           
         }
         // Everything's A-OK, role is good.
         return true;

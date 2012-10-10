@@ -75,7 +75,7 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
      */
     private static volatile AccessTreeCache accessTreeCache;
 
-    private boolean isAuthorized(final AuthenticationToken authenticationToken, final boolean doLogging, final boolean acceptRecursive,
+    private boolean isAuthorized(final AuthenticationToken authenticationToken, final boolean doLogging, final boolean requireRecursive,
             final String... resources) {
         try {
             Map<String, Object> details = null;
@@ -84,7 +84,7 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
             }
             for (int i=0; i<resources.length; i++) {
                 final String resource = resources[i];
-                if (accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource, acceptRecursive)) {
+                if (accessTreeCache.getAccessTree().isAuthorized(authenticationToken, resource, requireRecursive)) {
                     if (doLogging) {
                         details.put("resource"+i, resource);
                     }
@@ -129,21 +129,21 @@ public class AccessControlSessionBean implements AccessControlSessionLocal, Acce
         if (updateNeccessary()) {
             updateAuthorizationTree();
         }
-        return isAuthorized(authenticationToken, true, true, resources);
+        return isAuthorized(authenticationToken, true, false, resources);
     }
     
     @Override
-    public boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, boolean acceptRecursive, String... resources) {
+    public boolean isAuthorizedNoLogging(AuthenticationToken authenticationToken, boolean requireRecursive, String... resources) {
         if (updateNeccessary()) {
             updateAuthorizationTree();
         }
-        return isAuthorized(authenticationToken, false, acceptRecursive, resources);
+        return isAuthorized(authenticationToken, false, requireRecursive, resources);
     }
     
     @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isAuthorizedNoLogging(final AuthenticationToken authenticationToken, final String... resources) {
-      return isAuthorizedNoLogging(authenticationToken, true, resources);
+      return isAuthorizedNoLogging(authenticationToken, false, resources);
     }
 
     @Override
