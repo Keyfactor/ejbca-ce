@@ -537,12 +537,11 @@
               }
 
               if(connectorrow4 != -1 && matchwithrow4 != -1 ){
-                   query.add(connectorrow4);
-                   query.add(startdate, enddate);
-              }
-
-              if(connectorrow4 == -1 && !matchadded && matchwithrow4 != -1 ){
-                   query.add(startdate, enddate);
+            	  if ( matchadded ) {
+                      query.add(matchwithrow4, startdate, enddate, connectorrow4);
+            	  } else {
+                      query.add(matchwithrow4, startdate, enddate);
+            	  }
               }
 
               if(query.isLegalQuery()){
@@ -741,12 +740,11 @@
               }
 
               if(connectorrow4 != -1 && matchwithrow4 != -1 ){
-                   query.add(connectorrow4);
-                   query.add(startdate, enddate);
-              }
-
-              if(connectorrow4 == -1 && !matchadded && matchwithrow4 != -1 ){
-                   query.add(startdate, enddate);
+            	  if ( matchadded ) {
+                      query.add(matchwithrow4, startdate, enddate, connectorrow4);
+            	  } else {
+                      query.add(matchwithrow4, startdate, enddate);
+            	  }
               }
 
               if(query.isLegalQuery()){
