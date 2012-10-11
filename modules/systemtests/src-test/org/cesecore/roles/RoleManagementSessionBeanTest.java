@@ -457,9 +457,9 @@ public class RoleManagementSessionBeanTest extends RoleUsingTestCase {
             }
             
             //The important bit is here. We add a rule to authorizedRole that unauthorizedRole doesn't have access to. 
-            Collection<AccessRuleData> newAgnewRules = new ArrayList<AccessRuleData>();
-            newAgnewRules.add(accessRuleManagementSession.createRule("/foo", authorizedRoleName, AccessRuleState.RULE_ACCEPT, true));
-            authorizedRole = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, authorizedRole, newAgnewRules);
+            Collection<AccessRuleData> newauthorizedRoleRules = new ArrayList<AccessRuleData>();
+            newauthorizedRoleRules.add(accessRuleManagementSession.createRule("/foo", authorizedRoleName, AccessRuleState.RULE_ACCEPT, true));
+            authorizedRole = roleManagementSession.addAccessRulesToRole(alwaysAllowAuthenticationToken, authorizedRole, newauthorizedRoleRules);
             //unAuthorizedRole doesn't have access to /foo, which authorizedRole does. 
             assertFalse("Authorization should have been denied." + " A role was given authorization for another role containing rules "
                     + "that that role itself didn't have access to.",
