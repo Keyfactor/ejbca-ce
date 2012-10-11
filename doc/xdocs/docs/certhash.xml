@@ -17,8 +17,10 @@
 	CertHash is a method to qualify a positive OCSP response by including a secure hash of the certificate in question. This is a further tamper proofing
 	of the protocol, as the default reply is signed using only the certificate's serial number, leaving other fields open to abuse. Including a hash based
 	on all relevant values in the certificate increases security for the client. 
-	
-	The hash algorithm used in this extension is SHA256. 
+	<br/>
+	The hash algorithm used in this extension is SHA256.
+	<br/>
+	CertHash is defined in the German Common PKI SigG-Profile (OCSP in Part9). 
   </p>
 </section>
 
