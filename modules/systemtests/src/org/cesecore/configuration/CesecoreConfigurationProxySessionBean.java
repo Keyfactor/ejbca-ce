@@ -16,7 +16,6 @@ import javax.ejb.Stateless;
 
 import org.cesecore.certificates.ocsp.cache.OcspConfigurationCache;
 import org.cesecore.config.ConfigurationHolder;
-import org.cesecore.config.OcspConfiguration;
 import org.cesecore.jndi.JndiConstants;
 
 /**
