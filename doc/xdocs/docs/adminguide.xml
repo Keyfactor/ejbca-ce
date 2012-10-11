@@ -1100,6 +1100,11 @@ See the <a href="installation-ocsp.html">OCSP Installation document</a> for info
 </p>
 </subsection>
 
+<subsection name="OCSP User Guide">
+    <p>More information about certain features, such as OCSP extensions, can be found in the <a href="userguide-ocsp.html">OCSP User Guide</a>.
+    </p>
+</subsection>
+
 <subsection name="Simple OCSP client">
 <p>
 To try out and test your OCSP installation you can use the EJBCA client toolbox, (see below). You can also use the API directly from your 
