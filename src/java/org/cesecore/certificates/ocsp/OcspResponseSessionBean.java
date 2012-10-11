@@ -154,7 +154,6 @@ public abstract class OcspResponseSessionBean implements OcspResponseGeneratorSe
             final X509Certificate[] requestCertificates, String remoteAddress, String remoteHost, StringBuffer requestUrl,
             final AuditLogger auditLogger, final TransactionLogger transactionLogger) throws MalformedRequestException, IOException, OCSPException {
         initiateIfNecessary();
-        OcspExtensionsCache.INSTANCE.reloadCache();
         //Check parameters
         if (auditLogger == null) {
             throw new InvalidParameterException("Illegal to pass a null audit logger to OcspResponseSession.getOcspResponse");
