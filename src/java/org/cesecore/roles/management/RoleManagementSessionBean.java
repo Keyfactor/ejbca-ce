@@ -441,7 +441,7 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         }
         // Firstly, make sure that authentication token authorized for all access user aspects in role, by checking against the CA that produced them.
         for (AccessUserAspectData accessUserAspect : role.getAccessUsers().values()) {
-            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, false, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {
+            if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, StandardRules.CAACCESS.resource() + accessUserAspect.getCaId())) {
                 return false;
             }
         }

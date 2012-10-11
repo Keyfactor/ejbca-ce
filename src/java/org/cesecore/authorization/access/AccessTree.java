@@ -67,7 +67,7 @@ public class AccessTree {
      * @throws AuthenticationFailedException if any authentication errors were encountered during authorization process
      */
     public boolean isAuthorized(AuthenticationToken authenticationToken, String resource) throws AuthenticationFailedException {
-       return isAuthorized(authenticationToken, resource, true);
+       return isAuthorized(authenticationToken, resource, false);
     }
     
     /**
