@@ -42,7 +42,7 @@ import org.junit.Test;
 /**
  * Unit tests for the OchCertHashExtension class.
  * 
- * TODO: This is really a unit test, could should be moved to a unit test package when such 
+ * TODO: This is really a unit test, could should be moved to a unit test package when such a module is created.
  * 
  * @version $Id$
  *
@@ -54,6 +54,11 @@ public class OcspCertHashExtensionTest {
         CryptoProviderTools.installBCProviderIfNotAvailable();
     }
     
+    /**
+     * This test runs a vanilla run through of the process method of OcspCertHashExtension, and simply verifies that 
+     * the certHash is correctly produced (i.e fingerprint by SHA256)
+     * 
+     */
     @Test
     public void testProcess() throws InvalidKeyException, CertificateEncodingException, NoSuchAlgorithmException, SignatureException,
             IllegalStateException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException {
