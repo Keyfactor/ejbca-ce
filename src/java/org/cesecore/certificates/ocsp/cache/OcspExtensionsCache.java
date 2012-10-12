@@ -23,6 +23,8 @@ import org.cesecore.config.OcspConfiguration;
 /**
  * Enum based singleton to contain a Map of OCSP extensions.
  * 
+ * Note that this class is currently not thread safe, and use of the reloadCache()-method should be extremely limited. 
+ * 
  * @version $Id$
  * 
  */
@@ -37,11 +39,18 @@ public enum OcspExtensionsCache {
         reloadCache();
     }
 
-    
+    /**
+     * 
+     * @return a map containing all loaded extensions. 
+     */
     public Map<String, OCSPExtension> getExtensions() {
         return extensionMap;
     }
     
+    /**
+     * Method to manually reload the cache. Note that this method is not thread safe, and should in the future
+     * be mutexed with the getExtensions() method. 
+     */
     public void reloadCache() {
         extensionMap = new HashMap<String, OCSPExtension>();
         Iterator<String> extensionClasses = OcspConfiguration.getExtensionClasses().iterator();
