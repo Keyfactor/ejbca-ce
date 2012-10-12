@@ -42,6 +42,7 @@ import org.cesecore.certificates.ocsp.extension.OCSPExtension;
 public class OcspCertHashExtension implements OCSPExtension{
 
     public static final String CERT_HASH_OID = "1.3.36.8.3.13";
+    public static final ASN1ObjectIdentifier SHA256 = new ASN1ObjectIdentifier("2.16.840.1.101.3.4.2.1");
 
     private static final Logger log = Logger.getLogger(OcspCertHashExtension.class);
     
