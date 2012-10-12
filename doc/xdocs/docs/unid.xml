@@ -53,7 +53,7 @@ ocsp.extensionoid=2.16.578.1.16.3.2
 ocsp.extensionclass=org.ejbca.core.protocol.ocsp.OCSPUnidExtension
 </source>
 <p>
-in conf/ejbca.properties of the OCSP responder. All options are described in ejbca.properties.sample.
+in conf/ocsp.properties of the OCSP responder. All options are described in ocsp.properties.sample.
 There are three options for the Unid extension itself:
 </p><p>
 <b>1. ocsp.uniddatsource</b>

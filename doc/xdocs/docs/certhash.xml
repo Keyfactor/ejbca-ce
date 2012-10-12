@@ -37,7 +37,7 @@
 	  ocsp.extensionclass=org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension
 	</source>
 	<p>
-	  in conf/ejbca.properties of the OCSP responder. All options are described in ejbca.properties.sample. Note that the extension OID
+	  in conf/ocsp.properties of the OCSP responder. All options are described in ocsp.properties.sample. Note that the extension OID
 	  is prefixed with an asterisk, meaning that it will always be included in the reply.
 	</p>
   </subsection>

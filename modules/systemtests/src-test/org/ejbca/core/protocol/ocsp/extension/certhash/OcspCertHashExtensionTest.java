@@ -29,7 +29,6 @@ import java.util.Map;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.isismtt.ocsp.CertHash;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
@@ -69,7 +68,7 @@ public class OcspCertHashExtensionTest {
         Extension extension = result.get(new ASN1ObjectIdentifier(OcspCertHashExtension.CERT_HASH_OID));
         ASN1Encodable derSequence = extension.getParsedValue();
         CertHash certHash = CertHash.getInstance(derSequence);
-        assertEquals("Algorithm was not extracted correctly from CertHash", PKCSObjectIdentifiers.sha256WithRSAEncryption, certHash.getHashAlgorithm().getAlgorithm());
+        assertEquals("Algorithm was not extracted correctly from CertHash", OcspCertHashExtension.SHA256, certHash.getHashAlgorithm().getAlgorithm());
         MessageDigest md = MessageDigest.getInstance("SHA256");
         String fingerprint = new String(Hex.encode(md.digest(cert.getEncoded())));
         String certificateHashAsString = new String(Hex.encode(certHash.getCertificateHash()));
