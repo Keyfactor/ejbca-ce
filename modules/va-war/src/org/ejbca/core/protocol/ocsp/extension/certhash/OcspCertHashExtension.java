@@ -64,7 +64,7 @@ public class OcspCertHashExtension implements OCSPExtension{
         }
         CertHash certHash;
         try {
-            certHash = new CertHash(new AlgorithmIdentifier(PKCSObjectIdentifiers.sha256WithRSAEncryption), md.digest(cert.getEncoded()));
+            certHash = new CertHash(new AlgorithmIdentifier(SHA256), md.digest(cert.getEncoded()));
         } catch (CertificateEncodingException e) {
             //This state can't be handled, shouldn't return null 
             log.error("Could not encode certificate " + cert, e);
