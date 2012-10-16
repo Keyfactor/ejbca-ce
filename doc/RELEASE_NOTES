@@ -6,7 +6,7 @@ EJBCA 5.1.0
 
 EJBCA 5.0.6
 -----------
-This is a maintenance release with a few bug fixes but also new features. In all, 34 issues have been resolved.
+This is a maintenance release with a few bug fixes but also new features. In all, 35 issues have been resolved.
 
 * Noteworthy changes:
 - Support for German CertHash OCSP extension for Common PKI.
