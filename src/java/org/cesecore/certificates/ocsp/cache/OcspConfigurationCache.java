@@ -20,7 +20,6 @@ import org.cesecore.config.OcspConfiguration;
  * This cache contains non persistent configuration elements that need to be cached in order to be shared between all 
  * beans and servlets.
  * 
- * Note that this class absolutely isn't thread safe, and use of the reload method should be highly restricted. 
  * 
  * @version $Id$
  *
