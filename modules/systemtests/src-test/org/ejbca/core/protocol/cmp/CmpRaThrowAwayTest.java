@@ -153,7 +153,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(bao.toByteArray(), 200);
         checkCmpResponseGeneral(resp, CertTools.getSubjectDN(caCertificate), subjectDN, caCertificate, nonce, transid, false, PBE_SECRET);
         X509Certificate cert = checkCmpCertRepMessage(subjectDN, caCertificate, resp, reqId);
-        assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistoryProxySessionRemote.class)
+        assertEquals("Certificate history data was or wasn't stored: ", useCertReqHistory, EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistoryProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST)
                 .retrieveCertReqHistory(CertTools.getSerialNumber(cert), CertTools.getIssuerDN(cert)) != null);
         assertEquals("User data was or wasn't stored: ", useUserStorage, EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).existsUser(username));
         assertEquals("Certificate data was or wasn't stored: ", useCertificateStorage, EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class)
@@ -190,7 +190,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
             EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class).deleteUser(ADMIN, username);
         }
         if (useCertReqHistory) {
-            EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistoryProxySessionRemote.class).removeCertReqHistoryData(CertTools.getFingerprintAsString(cert));
+            EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistoryProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST).removeCertReqHistoryData(CertTools.getFingerprintAsString(cert));
         }
         LOG.trace("<testIssueConfirmRevoke");
     }
