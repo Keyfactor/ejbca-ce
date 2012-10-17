@@ -145,7 +145,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
     private CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CertificateProfileSessionRemote.class);
     private CertReqHistoryProxySessionRemote certReqHistoryProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CertReqHistoryProxySessionRemote.class);
+            .getRemoteSession(CertReqHistoryProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);

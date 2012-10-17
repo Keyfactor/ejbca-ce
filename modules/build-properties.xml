@@ -184,7 +184,7 @@
 			<include name="client/jboss-metadata-ejb.jar"/>
 
 			<!-- JBoss 7.1.0 and EAP 6 -->
-			<include name="modules/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0.1*.jar"/>
+			<include name="modules/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0*.jar"/>
 			<include name="modules/org/jboss/metadata/main/jboss-metadata-ejb-7.0.0.*.jar"/>
 
 			<!-- glassfish v2.1.1 -->
@@ -260,7 +260,7 @@
 			<!-- JBoss 6.0.0 -->
 			<include name="common/lib/jboss-servlet-api_3.0_spec.jar"/>
 			<!-- JBoss 7.1.0 and EAP 6 -->
-			<include name="modules/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.0.*.jar"/>
+			<include name="modules/javax/servlet/api/main/jboss-servlet-api_3.0_spec-1.0.*.jar"/>
 			<!-- Glassfish 2.1.1 -->
 			<include name="lib/javaee.jar"/>
 			<!-- WebLogic 10.3.3 -->
@@ -391,6 +391,6 @@
     </condition>
     <property name="jndi.properties.file" location="${ejbca.home}/conf/jndi.properties.${appserver.type}" />
     <!-- jboss-ejb-client.properties is only used in JBoss 7 (or higher?), but it does not hurt to simply copy it for earlier versions either -->
-    <property name="jboss-ejb-client.properties" location="${ejbca.home}/conf/jboss-ejb-client.properties" />
+    <property name="jboss-ejb-client.properties" location="${ejbca.home}/src/appserver/jboss/jboss7/jboss-ejb-client.properties" />
 	<echo message="jndi.properties.file: ${jndi.properties.file}"/>
 </project>
