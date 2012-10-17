@@ -45,7 +45,7 @@ public class AdminPreferenceTest extends CaTestCase {
     private static final AuthenticationToken internalToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("AdminPreferenceTest"));
 
     private SimpleAuthenticationProviderSessionRemote simpleAuthenticationProvider = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class);
+            .getRemoteSession(SimpleAuthenticationProviderSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     private TestX509CertificateAuthenticationToken authenticatedToken;
 

@@ -104,7 +104,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
     private IntegratedOcspResponseGeneratorSessionRemote ocspResponseGeneratorSession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(IntegratedOcspResponseGeneratorSessionRemote.class);
     private IntegratedOcspResponseGeneratorProxySessionRemote integratedOcspResponseGeneratorProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(IntegratedOcspResponseGeneratorProxySessionRemote.class);
+            .getRemoteSession(IntegratedOcspResponseGeneratorProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);

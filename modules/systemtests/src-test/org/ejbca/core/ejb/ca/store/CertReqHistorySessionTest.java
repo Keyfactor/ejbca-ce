@@ -53,9 +53,8 @@ public class CertReqHistorySessionTest {
     private static String username = "";
     private static KeyPair keyPair;
 
-    private CertReqHistorySessionRemote certReqHistorySession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertReqHistorySessionRemote.class);
     private CertReqHistoryProxySessionRemote certReqHistoryProxySession = EjbRemoteHelper.INSTANCE
-            .getRemoteSession(CertReqHistoryProxySessionRemote.class);
+            .getRemoteSession(CertReqHistoryProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
     @BeforeClass
     public static void beforeClass() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
