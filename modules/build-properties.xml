@@ -185,7 +185,7 @@
 
 			<!-- JBoss 7.1.0 and EAP 6 -->
 			<include name="modules/javax/ejb/api/main/jboss-ejb-api_3.1_spec-1.0*.jar"/>
-			<include name="modules/org/jboss/metadata/main/jboss-metadata-ejb-7.0.0.*.jar"/>
+			<include name="modules/org/jboss/metadata/main/jboss-metadata-ejb-7.0.*.jar"/>
 
 			<!-- glassfish v2.1.1 -->
 			<include name="lib/javaee.jar"/>
@@ -299,6 +299,7 @@
 			<include name="common/lib/jsp-api.jar" /> <!-- 5.1.0 -->
 			<include name="server/default/deploy/jbossweb.sar/jstl.jar" /> <!-- 5.1.0 -->
 			<include name="common/lib/el-api.jar" /> <!-- 5.1.0 -->
+		    <include name="modules/javax/el/api/main/jboss-el-api_2.2_spec-1.0*.jar"/> <!-- 7.1.1 / EAP6 -->
 			<!-- Glassfish -->
 			<include name="lib/appserv-jstl.jar" /> <!-- 2.1.1 -->
 			<include name="modules/javax.servlet.jsp.jstl.jar" /> <!-- 3.1 -->
