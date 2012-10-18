@@ -615,16 +615,44 @@
 		<echo message=" ** Running stand-alone tests in parallel chunks. Console output will be a bit scrambled.. **"/>
 		<parallel>
 			<antcall target="test-subprocess">
-				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/**/*Test.class" />
+				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/ra/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
+			</antcall>
+			<antcall target="test-subprocess">
+				<param name="test-subprocess.include-pattern" value="org/ejbca/core/model/**/*Test.class" />
+				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/ra/*Test.class" />
 			</antcall>
 			<antcall target="test-subprocess">
 				<param name="test-subprocess.include-pattern" value="org/ejbca/util/**/*Test.class" />
 				<param name="test-subprocess.exclude-pattern" value="" />
 			</antcall>
 			<antcall target="test-subprocess">
+				<param name="test-subprocess.include-pattern" value="org/cesecore/certificates/ca/**/*Test.class" />
+				<param name="test-subprocess.exclude-pattern" value="${p11exclude}" />
+			</antcall>
+			<antcall target="test-subprocess">
+				<param name="test-subprocess.include-pattern" value="org/cesecore/certificates/util/**/*Test.class" />
+				<param name="test-subprocess.exclude-pattern" value="" />
+			</antcall>
+			<antcall target="test-subprocess">
+				<param name="test-subprocess.include-pattern" value="org/cesecore/certificates/**/*Test.class" />
+				<param name="test-subprocess.exclude-pattern" value="org/cesecore/certificates/ca/**/*Test.class org/cesecore/certificates/util/**/*Test.class" />
+			</antcall>
+			<antcall target="test-subprocess">
+				<param name="test-subprocess.include-pattern" value="org/cesecore/util/**/*Test.class" />
+				<param name="test-subprocess.exclude-pattern" value="" />
+			</antcall>
+			<antcall target="test-subprocess">
+				<param name="test-subprocess.include-pattern" value="org/cesecore/keys/**/*Test.class" />
+				<param name="test-subprocess.exclude-pattern" value="${p11exclude}" />
+			</antcall>
+			<antcall target="test-subprocess">
+				<param name="test-subprocess.include-pattern" value="org/ejbca/core/protocol/**/*Test.class" />
+				<param name="test-subprocess.exclude-pattern" value="" />
+			</antcall>
+			<antcall target="test-subprocess">
 				<param name="test-subprocess.include-pattern" value="**/*Test.class" />
-				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/**/*Test.class org/ejbca/util/**/*Test.class ${p11exclude}" />
+				<param name="test-subprocess.exclude-pattern" value="org/ejbca/core/model/**/*Test.class org/ejbca/util/**/*Test.class org/cesecore/certificates/**/*Test.class org/cesecore/util/**/*Test.class org/ejbca/core/protocol/**/*Test.class org/cesecore/keys/**/*Test.class ${p11exclude}" />
 			</antcall>
 		</parallel>
 		<antcall target="createreport"/>
