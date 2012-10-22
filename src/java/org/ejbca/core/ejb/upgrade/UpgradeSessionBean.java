@@ -491,14 +491,10 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     				newrules.add(slashRule);
     				try {
     					// if one of the rules was "super administrator" then all other rules of the role was disregarded in version<5. So now it should only be the '/' rule for the role.
-    					replaceAccessRulesInRole(admin, role, newrules);
-    				} catch (AccessRuleNotFoundException e) {
-    					log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
+    					replaceAccessRulesInRoleNoAuth(admin, role, newrules);
     				} catch (RoleNotFoundException e) {
     					log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
-    				} catch (AuthorizationDeniedException e) {
-    					log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
-    				}    		    		
+    				}  		    		
     				break; // no need to continue with this role
     			}
     		}
@@ -511,15 +507,12 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return ret;
     }
 
-    /**
-     * Required because the real method in RoleManagementSessionBean requires authorization to manipulate rules.
-     * A bit of a catch-22. 
-     * 
-     * @deprecated Remove this method once 4.0.x -> 5.0.x support has been dropped. 
-     */
+
     @Deprecated 
-    private RoleData replaceAccessRulesInRole(final AuthenticationToken authenticationToken, final RoleData role,
-            final Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    public RoleData replaceAccessRulesInRoleNoAuth(final AuthenticationToken authenticationToken, final RoleData role,
+            final Collection<AccessRuleData> accessRules) throws RoleNotFoundException {
         
         RoleData result = roleAccessSession.findRole(role.getPrimaryKey());
         if (result == null) {
