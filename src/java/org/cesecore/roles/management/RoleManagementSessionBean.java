@@ -243,7 +243,10 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
             throws RoleNotFoundException, AccessRuleNotFoundException, AuthorizationDeniedException {
         // Authorized to edit roles?
         authorizedToEditRole(authenticationToken, role.getRoleName());
-
+        //Check that current aspect is authorized to all the rules she's planning on replacing
+        if (!isAuthorizedToRules(authenticationToken, accessRules)) {
+            throw new AuthorizationDeniedException(authenticationToken + " not authorized to all access rules.");
+        }
         return addAccessRulesToRoleNoAuth(authenticationToken, role, accessRules);
     }
 
@@ -306,6 +309,10 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
         }
         // Authorized to edit roles?
         authorizedToEditRole(authenticationToken, result.getRoleName());
+        // Check authorization for rule
+        if(!isAuthorizedToRules(authenticationToken, accessRules)) {
+            throw new AuthorizationDeniedException(authenticationToken + " not authorized to all access rules.");
+        }     
         Map<Integer, AccessRuleData> resultAccessRules = result.getAccessRules();
         for (AccessRuleData accessRule : accessRules) {
             if (resultAccessRules.containsKey(accessRule.getPrimaryKey())) {
@@ -445,20 +452,34 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
                 return false;
             }
         }
-        for (AccessRuleData accessRule : role.getAccessRules().values()) {
+        if(!isAuthorizedToRules(authenticationToken, role.getAccessRules().values())) {
+            return false;
+        }
+        
+        // Everything's A-OK, role is good.
+        return true;
+    }
+    
+    @Override
+    public boolean isAuthorizedToRules(AuthenticationToken authenticationToken, Collection<AccessRuleData> rules) {
+        for (AccessRuleData accessRule : rules) {
             String rule = accessRule.getAccessRuleName();
+            /*
+             * Recursive rules and nonrecursive rules need to be checked differently. If the current rule being checked
+             * is recursive, then recursivity has to be matched as well.
+             */
             if(accessRule.getTreeState() == AccessTreeState.STATE_ACCEPT) {
                 if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, false, rule)) {
+                    log.debug(authenticationToken + " not not authorized to " + rule); 
                     return false;
                 }
             } else if(accessRule.getTreeState() == AccessTreeState.STATE_ACCEPT_RECURSIVE) {
                 if (!accessControlSession.isAuthorizedNoLogging(authenticationToken, true, rule)) {
+                    log.debug(authenticationToken + " not not authorized to " + rule + " (recursive)");
                     return false;
                 }
             }
-           
         }
-        // Everything's A-OK, role is good.
         return true;
     }
     
@@ -496,6 +517,10 @@ public class RoleManagementSessionBean implements RoleManagementSessionLocal, Ro
     public RoleData replaceAccessRulesInRole(final AuthenticationToken authenticationToken, final RoleData role,
             final Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
         authorizedToEditRole(authenticationToken, role.getRoleName());
+        //Check that current aspect is authorized to all the rules she's planning on replacing
+        if(!isAuthorizedToRules(authenticationToken, accessRules)) {
+            throw new AuthorizationDeniedException(authenticationToken + " not authorized to all access rules.");
+        }
 
         RoleData result = roleAccessSession.findRole(role.getPrimaryKey());
         if (result == null) {

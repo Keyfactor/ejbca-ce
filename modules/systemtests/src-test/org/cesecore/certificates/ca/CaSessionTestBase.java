@@ -35,6 +35,7 @@ import javax.security.auth.x500.X500Principal;
 import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
@@ -60,6 +61,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -89,6 +91,8 @@ public class CaSessionTestBase extends RoleUsingTestCase {
     private CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
     private InternalCertificateStoreSessionRemote internalCertStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
 
+    private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CaSessionTestBase"));
+    
     public CaSessionTestBase(CA x509ca, CA cvcca) {
     	this.testx509ca = x509ca;
     	this.testcvcca = cvcca;
@@ -109,14 +113,14 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECRL.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+        roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
 
         // Remove any lingering testca before starting the tests
         if (testx509ca != null) {
-            caSession.removeCA(roleMgmgToken, testx509ca.getCAId());        	
+            caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());        	
         }
         if (testcvcca != null) {
-        	caSession.removeCA(roleMgmgToken, testcvcca.getCAId());
+        	caSession.removeCA(alwaysAllowToken, testcvcca.getCAId());
         }
     }
 
@@ -124,10 +128,10 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         // Remove any testca before exiting tests
     	try {
             if (testx509ca != null) {
-                caSession.removeCA(roleMgmgToken, testx509ca.getCAId());        	
+                caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());        	
             }
             if (testcvcca != null) {
-            	caSession.removeCA(roleMgmgToken, testcvcca.getCAId());
+            	caSession.removeCA(alwaysAllowToken, testcvcca.getCAId());
             }
     	} finally {
     		// Be sure to to this, even if the above fails
