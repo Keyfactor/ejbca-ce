@@ -510,7 +510,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @Deprecated 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
     public RoleData replaceAccessRulesInRoleNoAuth(final AuthenticationToken authenticationToken, final RoleData role,
             final Collection<AccessRuleData> accessRules) throws RoleNotFoundException {
         
