@@ -180,6 +180,15 @@ public interface RoleManagementSession {
     boolean isAuthorizedToEditRole(AuthenticationToken authenticationToken, RoleData role);
     
     /**
+     * Checks that the given {@link AuthenticationToken} has access to all the rules it's planning use. 
+     * 
+     * @param authenticationToken an authentication token
+     * @param rules a list of rules to check against
+     * @return true if the authentication token had access to all the rules, false otherwise.
+     */
+    boolean isAuthorizedToRules(AuthenticationToken authenticationToken, Collection<AccessRuleData> rules);
+ 
+    /**
      * Replaces the existing access rules in the given role by removing the old ones and adding the list of new ones.
      * 
      * @param authenticationToken for authorization purposes.
