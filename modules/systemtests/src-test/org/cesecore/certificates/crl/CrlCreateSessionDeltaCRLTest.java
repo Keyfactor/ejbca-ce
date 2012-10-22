@@ -31,6 +31,8 @@ import java.util.Set;
 import org.apache.log4j.Logger;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.RoleUsingTestCase;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
@@ -49,6 +51,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
 import org.cesecore.keys.util.KeyTools;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -86,6 +89,9 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
 
     private static KeyPair keys;
     
+    private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSessionCRLTest"));
+
+    
     @BeforeClass
     public static void createProvider() throws Exception {
         CryptoProviderTools.installBCProvider();
@@ -107,12 +113,12 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAREMOVE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECRL.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+        roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
 
         // Remove any lingering testca before starting the tests
-        caSession.removeCA(roleMgmgToken, testx509ca.getCAId());
+        caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
         // Now add the test CA so it is available in the tests
-        caSession.addCA(roleMgmgToken, testx509ca);
+        caSession.addCA(alwaysAllowToken, testx509ca);
 
     }
 
@@ -123,14 +129,14 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
             byte[] crl;
             while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), false)) != null) {
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-                internalCertificateStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(x509crl));
+                internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
             }
             while ((crl = crlStoreSession.getLastCRL(testx509ca.getSubjectDN(), true)) != null) {
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
-                internalCertificateStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(x509crl));
+                internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
             }
 
-            caSession.removeCA(roleMgmgToken, testx509ca.getCAId());
+            caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
         } finally {
             // Be sure to to this, even if the above fails
             tearDownRemoveRole();

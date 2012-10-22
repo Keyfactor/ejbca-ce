@@ -21,11 +21,14 @@ import org.apache.log4j.Logger;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.audit.impl.integrityprotected.IntegrityProtectedDevice;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
@@ -51,6 +54,8 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
     
+    private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaAuditorSessionBeanTest"));
+    
     @Before
     public void setup() throws RoleExistsException, RoleNotFoundException, AccessRuleNotFoundException, AuthorizationDeniedException {
         // Set up base role that can edit roles
@@ -60,7 +65,7 @@ public class EjbcaAuditorSessionBeanTest extends RoleUsingTestCase {
         // Add rules to the role, for the resource
         final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(role.getRoleName(), AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+        roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
     }
 
     @After

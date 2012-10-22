@@ -17,12 +17,15 @@ import java.util.List;
 import java.util.Properties;
 
 import org.cesecore.RoleUsingTestCase;
+import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.control.AuditLogRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
@@ -46,6 +49,8 @@ public abstract class SecurityEventsBase extends RoleUsingTestCase {
     protected RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     protected RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
 
+    private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("SecurityEventsBase"));
+    
     public static final CryptoToken createTokenWithKeyPair() throws Exception {
 
         Properties props = new Properties();
@@ -73,7 +78,7 @@ public abstract class SecurityEventsBase extends RoleUsingTestCase {
         accessRules.add(new AccessRuleData(role.getRoleName(), AuditLogRules.VIEW.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), AuditLogRules.CONFIGURE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), AuditLogRules.LOG.resource(), AccessRuleState.RULE_ACCEPT, true));
-        roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
+        roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
     }
 
     @After
