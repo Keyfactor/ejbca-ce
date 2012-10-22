@@ -41,6 +41,11 @@ import javax.persistence.PersistenceContext;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -49,6 +54,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleData;
+import org.cesecore.authorization.rules.AccessRuleExistsException;
+import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -62,6 +69,7 @@ import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.roles.RoleData;
@@ -99,6 +107,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     private static final Logger log = Logger.getLogger(UpgradeSessionBean.class);
 
+    /** Internal localization of logs and errors */
+    private static final InternalResources INTERNAL_RESOURCES = InternalResources.getInstance();
+    
     @PersistenceContext(unitName = "ejbca")
     private EntityManager entityManager;
 
@@ -107,6 +118,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @EJB
     private AccessControlSessionLocal accessControlSession;
+    @EJB
+    private AccessRuleManagementSessionLocal accessRuleManagementSession;
     @EJB
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
     @EJB
@@ -119,6 +132,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private RoleManagementSessionLocal roleMgmtSession;
     @EJB
     private CertificateProfileSessionLocal certProfileSession;
+    @EJB
+    private SecurityEventsLoggerSessionLocal securityEventsLogger;
    
 
     private UpgradeSessionLocal upgradeSession;
@@ -476,7 +491,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     				newrules.add(slashRule);
     				try {
     					// if one of the rules was "super administrator" then all other rules of the role was disregarded in version<5. So now it should only be the '/' rule for the role.
-    					this.roleMgmtSession.replaceAccessRulesInRole(admin, role, newrules);
+    					replaceAccessRulesInRole(admin, role, newrules);
     				} catch (AccessRuleNotFoundException e) {
     					log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
     				} catch (RoleNotFoundException e) {
@@ -496,6 +511,109 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
         return ret;
     }
 
+    /**
+     * Required because the real method in RoleManagementSessionBean requires authorization to manipulate rules.
+     * A bit of a catch-22. 
+     * 
+     * @deprecated Remove this method once 4.0.x -> 5.0.x support has been dropped. 
+     */
+    @Deprecated 
+    private RoleData replaceAccessRulesInRole(final AuthenticationToken authenticationToken, final RoleData role,
+            final Collection<AccessRuleData> accessRules) throws AuthorizationDeniedException, RoleNotFoundException {
+        
+        RoleData result = roleAccessSession.findRole(role.getPrimaryKey());
+        if (result == null) {
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.errorrolenotexists", role.getRoleName());
+            throw new RoleNotFoundException(msg);
+        }
+
+        Map<Integer, AccessRuleData> rulesFromResult = result.getAccessRules();
+        Map<Integer, AccessRuleData> rulesToResult = new HashMap<Integer, AccessRuleData>();
+        //Lists for logging purposes.
+        Collection<AccessRuleData> newRules = new ArrayList<AccessRuleData>();
+        Collection<AccessRuleData> changedRules = new ArrayList<AccessRuleData>();
+        for (AccessRuleData rule : accessRules) {
+            if (AccessRuleData.generatePrimaryKey(role.getRoleName(), rule.getAccessRuleName()) != rule.getPrimaryKey()) {
+                throw new Error("Role " + role.getRoleName() + " did not match up with the role that created this rule.");
+            }
+            Integer ruleKey = rule.getPrimaryKey();
+            if (rulesFromResult.containsKey(ruleKey)) {
+                AccessRuleData oldRule = rulesFromResult.get(ruleKey);
+                if(!oldRule.equals(rule)) {
+                    changedRules.add(oldRule);
+                }
+                AccessRuleData newRule = accessRuleManagementSession.setState(rule, rule.getInternalState(), rule.getRecursive());
+                rulesFromResult.remove(ruleKey);
+                rulesToResult.put(newRule.getPrimaryKey(), newRule);         
+            } else {
+                try {
+                    newRules.add(accessRuleManagementSession.createRule(rule.getAccessRuleName(), result.getRoleName(), rule.getInternalState(),
+                            rule.getRecursive()));
+                } catch (AccessRuleExistsException e) {
+                    throw new Error("Access rule exists, but wasn't found in persistence in previous call.", e);
+                }
+                rulesToResult.put(rule.getPrimaryKey(), rule);
+            }
+
+        }
+        logAccessRulesAdded(authenticationToken, role.getRoleName(), newRules);
+        logAccessRulesChanged(authenticationToken, role.getRoleName(), changedRules);
+
+        //And for whatever remains:
+        accessRuleManagementSession.remove(rulesFromResult.values());
+        result.setAccessRules(rulesToResult);
+        result = entityManager.merge(result);
+        logAccessRulesRemoved(authenticationToken, role.getRoleName(), rulesFromResult.values());
+        accessTreeUpdateSession.signalForAccessTreeUpdate();
+        accessControlSession.forceCacheExpire();
+
+        return result;
+    }
+    
+    private void logAccessRulesAdded(AuthenticationToken authenticationToken, String rolename, Collection<AccessRuleData> addedRules) {
+        if (addedRules.size() > 0) {
+            StringBuilder addedRulesMsg = new StringBuilder();
+            for(AccessRuleData addedRule : addedRules) {
+                addedRulesMsg.append("[" + addedRule.toString() + "]");
+            }            
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.accessrulesadded", rolename, addedRulesMsg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_ADDITION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                    authenticationToken.toString(), null, null, null, details);
+        }
+    }
+    
+    private void logAccessRulesChanged(AuthenticationToken authenticationToken, String rolename, Collection<AccessRuleData> changedRules) {
+        if (changedRules.size() > 0) {
+            StringBuilder changedRulesMsg = new StringBuilder();
+            for(AccessRuleData changedRule : changedRules) {
+                changedRulesMsg.append("[" + changedRule.toString() + "]");
+            }
+       
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.accessruleschanged", rolename, changedRulesMsg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_CHANGE, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                    authenticationToken.toString(), null, null, null, details);
+        }
+
+    }
+
+    private void logAccessRulesRemoved(AuthenticationToken authenticationToken, String rolename, Collection<AccessRuleData> removedRules) {
+        if (removedRules.size() > 0) {
+            StringBuilder removedRulesMsg = new StringBuilder();
+            for(AccessRuleData removedRule : removedRules) {
+                removedRulesMsg.append("[" + removedRule.getAccessRuleName() + "]");
+            }      
+            final String msg = INTERNAL_RESOURCES.getLocalizedMessage("authorization.accessrulesremoved", rolename, removedRulesMsg);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            securityEventsLogger.log(EventTypes.ROLE_ACCESS_RULE_DELETION, EventStatus.SUCCESS, ModuleTypes.ROLES, ServiceTypes.CORE,
+                    authenticationToken.toString(), null, null, null, details);
+        }
+    }
+    
     /**
      * In EJBCA 5.0 we have changed classname for CertificatePolicy.
      * In order to allow us to remove the legacy class in the future we want to upgrade all certificate profiles to use the new classname
