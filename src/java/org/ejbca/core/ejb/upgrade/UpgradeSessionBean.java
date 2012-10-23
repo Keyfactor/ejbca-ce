@@ -491,7 +491,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     				newrules.add(slashRule);
     				try {
     					// if one of the rules was "super administrator" then all other rules of the role was disregarded in version<5. So now it should only be the '/' rule for the role.
-    					replaceAccessRulesInRoleNoAuth(admin, role, newrules);
+    					upgradeSession.replaceAccessRulesInRoleNoAuth(admin, role, newrules);
     				} catch (RoleNotFoundException e) {
     					log.error("Not possible to add new access rule to role: "+role.getRoleName(), e);
     				}  		    		
@@ -510,7 +510,7 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 
     @Deprecated 
     @Override
-    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    @TransactionAttribute(TransactionAttributeType.REQUIRES_NEW)
     public RoleData replaceAccessRulesInRoleNoAuth(final AuthenticationToken authenticationToken, final RoleData role,
             final Collection<AccessRuleData> accessRules) throws RoleNotFoundException {
         
