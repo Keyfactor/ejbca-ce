@@ -18,7 +18,6 @@ import java.util.List;
 import javax.ejb.Local;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
-import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
