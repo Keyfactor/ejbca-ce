@@ -547,6 +547,23 @@ If this is not done you will get SSL errors about missing client certificate, or
 </p>
 </subsubsection>
 
+<subsubsection name="JBoss 7/EAP 6 PKCS11">
+<p>
+JBoss 7/EAP 6 isolates away sun classes. That means you will not be able to send certificates through remote EJB calls, and will not be able to use the Sun PKCS#11 provider.
+These classes can be made available by editing the file:
+<br/>
+<i>modules/sun/jdk/main/module.xml</i>
+</p>
+<source>
+&lt;path name="sun/security/x509"/&gt;
+&lt;path name="sun/security/pkcs11"/&gt;
+</source> 
+<p>
+to force the location to be generated with info from the WSDL request. 
+If this is not done you will get SSL errors about missing client certificate, or "HTTP 302 Moved Temporarily" errors when running the WS client.  
+</p>
+</subsubsection>
+
 <subsubsection name="JBoss 7 and Oracle JDK BC issues">
 <p>
 When using Oracle JDK and JBoss 7 (Windows platform) you need to install BC jars as a module in JBoss 7.
