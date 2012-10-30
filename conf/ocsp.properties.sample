@@ -127,7 +127,8 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # separate multiple entries with ';'
 # For any entry that should be always used, preface with '*' (e.g. *2.16.578.1.16.3.2)
 # Leave out if you do not know what this is.
-# Example value: 2.16.578.1.16.3.2
+# Example value: 2.16.578.1.16.3.2 (Unid)
+# Example value: *1.3.36.8.3.13 (CertHash)
 # Default: nothing 
 #ocsp.extensionoid=
 
@@ -135,6 +136,7 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # separate multiple entries with ;"
 # Leave out if you do not know what this is.
 # Example value: org.ejbca.core.protocol.ocsp.OCSPUnidExtension
+# Example value: org.ejbca.core.protocol.ocsp.extension.certhash.OcspCertHashExtension
 # Default: nothing
 #ocsp.extensionclass=
 
