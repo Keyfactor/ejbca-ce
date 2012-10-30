@@ -1,3 +1,8 @@
+EJBCA 5.0.7, 2012-10-31
+---
+Bug
+    [ECA-2822] - SECURITY: Minor administrator escalation issue
+
 EJBCA 5.0.6, 2012-10-15
 ---
 ** Bug
@@ -21,7 +26,7 @@ EJBCA 5.0.6, 2012-10-15
     * [ECA-2766] - setclearpwd from CLI with non-existing user
     * [ECA-2778] - Plus character in CA DN breaks Download of Certificates
     * [ECA-2789] - The method for creating primary keys for access user aspects is broken 
-    * [ECA-2790] - Fix minor privilege escalation issue
+    * [ECA-2790] - SECURITY: Fix minor privilege escalation issue
     * [ECA-2797] - Only possible to view the newest hard token for an end entity.
     * [ECA-2799] - Improve RFC 4387 feature documentation
     * [ECA-2809] - Unable to use "modified" at the "Search End Entities" page.
