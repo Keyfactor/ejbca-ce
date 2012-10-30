@@ -34,8 +34,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -748,8 +748,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @return
      * @throws Exception
      */
-    public abstract Certificate generateCertificate(EndEntityInformation subject, X509Name requestX509Name, PublicKey publicKey, int keyusage,
-            Date notBefore, Date notAfter, CertificateProfile certProfile, X509Extensions extensions, String sequence) throws Exception;
+    public abstract Certificate generateCertificate(EndEntityInformation subject, X500Name requestX509Name, PublicKey publicKey, int keyusage,
+            Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence) throws Exception;
 
     public abstract X509CRLHolder generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) throws Exception;
 

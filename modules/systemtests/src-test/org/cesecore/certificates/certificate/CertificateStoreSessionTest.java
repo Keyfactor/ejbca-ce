@@ -17,6 +17,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -24,7 +25,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -39,6 +40,7 @@ import javax.ejb.CreateException;
 import javax.security.auth.x500.X500Principal;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -634,7 +636,7 @@ public class CertificateStoreSessionTest extends RoleUsingTestCase {
 //	}
 	
     private X509Certificate generateCert(final AuthenticationToken admin, final int status) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException,
-            SignatureException, InvalidKeyException, CertificateEncodingException, CreateException, AuthorizationDeniedException {
+            SignatureException, InvalidKeyException, CreateException, AuthorizationDeniedException, IllegalStateException, OperatorCreationException, CertificateException, IOException {
         // create a new self signed certificate
         X509Certificate xcert = CertTools.genSelfCert("C=SE,O=PrimeKey,OU=TestCertificateData,CN=MyNameIsFoo", 24, null, keys.getPrivate(), 
         		keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);

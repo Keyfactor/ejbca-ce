@@ -27,29 +27,33 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.DERInteger;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.cmp.CMPCertificate;
+import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
+import org.bouncycastle.asn1.cmp.CertRepMessage;
+import org.bouncycastle.asn1.cmp.CertResponse;
+import org.bouncycastle.asn1.cmp.ErrorMsgContent;
+import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIFreeText;
+import org.bouncycastle.asn1.cmp.PKIHeader;
+import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.PKIStatus;
+import org.bouncycastle.asn1.cmp.PKIStatusInfo;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.util.CertTools;
-
-import com.novosec.pkix.asn1.cmp.CertOrEncCert;
-import com.novosec.pkix.asn1.cmp.CertRepMessage;
-import com.novosec.pkix.asn1.cmp.CertResponse;
-import com.novosec.pkix.asn1.cmp.CertifiedKeyPair;
-import com.novosec.pkix.asn1.cmp.ErrorMsgContent;
-import com.novosec.pkix.asn1.cmp.PKIBody;
-import com.novosec.pkix.asn1.cmp.PKIFreeText;
-import com.novosec.pkix.asn1.cmp.PKIHeader;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
-import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
 
 /**
  * CMP certificate response message
@@ -197,9 +201,11 @@ public class CmpResponseMessage implements CertificateResponseMessage {
             subject = "CN=fooSubject";
         }
 
-		final GeneralName issuerName = new GeneralName(new X509Name(issuer));
-		final GeneralName subjectName = new GeneralName(new X509Name(subject));
-		final PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(issuerName, subjectName, senderNonce, recipientNonce, transactionId);
+		final GeneralName issuerName = new GeneralName(new X500Name(issuer));
+		final GeneralName subjectName = new GeneralName(new X500Name(subject));
+		final PKIHeaderBuilder myPKIHeader = CmpMessageHelper.createPKIHeaderBuilder(issuerName, subjectName, senderNonce, recipientNonce, transactionId);
+		PKIBody myPKIBody = null;
+		final PKIMessage myPKIMessage;
 
         try {
             if (status.equals(ResponseStatus.SUCCESS)) {
@@ -207,75 +213,69 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                     if (log.isDebugEnabled()) {
                         log.debug("Creating a CertRepMessage 'accepted'");
                     }
-                    PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(0)); // 0 = accepted
-                    CertResponse myCertResponse = new CertResponse(new DERInteger(requestId), myPKIStatusInfo);
-
-                    X509CertificateStructure struct = X509CertificateStructure.getInstance(new ASN1InputStream(new ByteArrayInputStream(cert
+                    PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.granted); // 0 = accepted
+                    CertResponse myCertResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo);
+                    CertResponse[] certRespos = {myCertResponse};
+                    
+                    CMPCertificate cmpcert = CMPCertificate.getInstance(new ASN1InputStream(new ByteArrayInputStream(cert
                             .getEncoded())).readObject());
-                    CertOrEncCert retCert = new CertOrEncCert(struct, 0);
-                    CertifiedKeyPair myCertifiedKeyPair = new CertifiedKeyPair(retCert);
-                    myCertResponse.setCertifiedKeyPair(myCertifiedKeyPair);
-                    // myCertResponse.setRspInfo(new DEROctetString(new byte[] { 101, 111, 121 }));
+                    CMPCertificate[] cmpCerts = {cmpcert};
 
-                    CertRepMessage myCertRepMessage = new CertRepMessage(myCertResponse);
+                    CertRepMessage myCertRepMessage = new CertRepMessage(cmpCerts, certRespos);
 
                     int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
                     if (log.isDebugEnabled()) {
                         log.debug("Creating response body of type " + respType);
                     }
-                    PKIBody myPKIBody = new PKIBody(myCertRepMessage, respType);
-                    PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
-
-                    if ((pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null)) {
-                        responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg,
-                                pbeIterationCount);
-                    } else {
-                        responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate) signCert, signKey, digestAlg, provider);
-                    }
-                    ret = true;
+                    myPKIBody = new PKIBody(respType, myCertRepMessage);
                 }
             } else if (status.equals(ResponseStatus.FAILURE)) {
                 if (log.isDebugEnabled()) {
                     log.debug("Creating a CertRepMessage 'rejected'");
                 }
                 // Create a failure message
-                PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(2)); // 2 = rejection
-                myPKIStatusInfo.setFailInfo(failInfo.getAsBitString());
+                ASN1EncodableVector statusInfoV = new ASN1EncodableVector();
+                statusInfoV.add(ASN1Integer.getInstance(PKIStatus.rejection.toASN1Primitive()));
                 if (failText != null) {
-                    myPKIStatusInfo.setStatusString(new PKIFreeText(new DERUTF8String(failText)));
+                    statusInfoV.add(new PKIFreeText(new DERUTF8String(failText)));
                 }
-                PKIBody myPKIBody = CmpMessageHelper.createCertRequestRejectBody(myPKIHeader, myPKIStatusInfo, requestId, requestType);
-                PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
-
-                if ((pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null)) {
-                    responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg,
-                            pbeIterationCount);
-                } else {
-                    responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate) signCert, signKey, digestAlg, provider);
-                }
-                ret = true;
+                statusInfoV.add(failInfo.getAsBitString());
+                PKIStatusInfo myPKIStatusInfo = PKIStatusInfo.getInstance(ASN1Sequence.getInstance(new DERSequence(statusInfoV)));
+                myPKIBody = CmpMessageHelper.createCertRequestRejectBody(myPKIStatusInfo, requestId, requestType);
+                
             } else {
                 if (log.isDebugEnabled()) {
                     log.debug("Creating a 'waiting' message?");
                 }
                 // Not supported, lets create a PKIError failure instead
                 // Create a failure message
-                PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(2)); // 2 = rejection
-                myPKIStatusInfo.setFailInfo(failInfo.getAsBitString());
+                ASN1EncodableVector statusInfoV = new ASN1EncodableVector();
+                statusInfoV.add(PKIStatus.rejection); // 2 = rejection
                 if (failText != null) {
-                    myPKIStatusInfo.setStatusString(new PKIFreeText(new DERUTF8String(failText)));
+                    statusInfoV.add(new PKIFreeText(new DERUTF8String(failText)));
                 }
+                statusInfoV.add(failInfo.getAsBitString());
+                PKIStatusInfo myPKIStatusInfo = PKIStatusInfo.getInstance(new DERSequence(statusInfoV));
+                
                 ErrorMsgContent myErrorContent = new ErrorMsgContent(myPKIStatusInfo);
-                PKIBody myPKIBody = new PKIBody(myErrorContent, 23); // 23 = error
-                PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
-                if ((pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null)) {
-                    responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg,
-                            pbeIterationCount);
-                } else {
-                    responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate) signCert, signKey, digestAlg, provider);
-                }
-                ret = true;
+                myPKIBody = new PKIBody(23, myErrorContent); // 23 = error                
             }
+            
+            if ((pbeKeyId != null) && (pbeKey != null) && (pbeDigestAlg != null) && (pbeMacAlg != null)) {
+                myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(CMPObjectIdentifiers.passwordBasedMac));
+                PKIHeader header = myPKIHeader.build();
+                myPKIMessage = new PKIMessage(header, myPKIBody);
+                responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, pbeKeyId, pbeKey, pbeDigestAlg, pbeMacAlg,
+                        pbeIterationCount);
+            } else {
+                myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(digestAlg));
+                PKIHeader header = myPKIHeader.build();
+                myPKIMessage = new PKIMessage(header, myPKIBody);                        
+                responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate) signCert, signKey, digestAlg, provider);
+            }
+            
+            ret = true;
+            
         } catch (CertificateEncodingException e) {
             log.error("Error creating CertRepMessage: ", e);
         } catch (InvalidKeyException e) {

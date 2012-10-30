@@ -22,7 +22,7 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -44,7 +44,7 @@ public class PrivateKeyUsagePeriod extends StandardCertificateExtension {
 
     @Override
     public void init(CertificateProfile certProf) {
-        super.setOID(X509Extensions.PrivateKeyUsagePeriod.getId());
+        super.setOID(Extension.privateKeyUsagePeriod.getId());
         super.setCriticalFlag(false);
     }
 

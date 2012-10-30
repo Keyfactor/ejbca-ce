@@ -14,14 +14,14 @@ package org.cesecore.certificates.util.dn;
 
 import java.io.IOException;
 
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERBMPString;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERUTF8String;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509NameEntryConverter;
+import org.ejbca.util.EjbcaNameStyle;
 
 /**
  * A converter for X509 DN entries that uses PrintableString where possible.
@@ -79,7 +79,7 @@ public class PrintableStringEntryConverter
                 throw new RuntimeException("can't recode value for oid " + oid.getId());
             }
         }
-        else if (oid.equals(X509Name.EmailAddress) || oid.equals(X509Name.DC))
+        else if (oid.equals(EjbcaNameStyle.EmailAddress) || oid.equals(EjbcaNameStyle.DC))
         {
             return new DERIA5String(value);
         }

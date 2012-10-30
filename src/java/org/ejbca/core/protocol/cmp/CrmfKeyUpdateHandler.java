@@ -23,7 +23,9 @@ import javax.ejb.FinderException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.crmf.CertReqMsg;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -176,11 +178,18 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                 String issuerDN = null;
 
                 if(CmpConfiguration.getRAOperationMode()) {
-                    X509Name dn = crmfreq.getPKIMessage().getBody().getKur().getCertReqMsg(0).getCertReq().getCertTemplate().getSubject();
+                    CertReqMessages kur = (CertReqMessages) crmfreq.getPKIMessage().getBody().getContent();
+                    CertReqMsg certmsg;
+                    try {
+                        certmsg = kur.toCertReqMsgArray()[0];
+                    } catch(Exception e) {
+                        certmsg = CmpMessageHelper.getNovosecCertReqMsg(kur);
+                    }
+                    X500Name dn = certmsg.getCertReq().getCertTemplate().getSubject();
                     if(dn != null) {
                         subjectDN = dn.toString();
                     }
-                    dn = crmfreq.getPKIMessage().getBody().getKur().getCertReqMsg(0).getCertReq().getCertTemplate().getIssuer();
+                    dn = certmsg.getCertReq().getCertTemplate().getIssuer();
                     if(dn != null) {
                         issuerDN = dn.toString();
                     }

@@ -12,7 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.protocol.ws;
 
-import java.net.MalformedURLException;
+import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -22,7 +22,6 @@ import java.security.SignatureException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -121,10 +120,10 @@ public class DnFieldsTest extends CommonEjbcaWS {
     }
     
     @Test
-    public void testEmailInBothSanAndDn() throws MalformedURLException, NoSuchAlgorithmException, NoSuchProviderException,
+    public void testEmailInBothSanAndDn() throws NoSuchAlgorithmException, NoSuchProviderException,
             InvalidAlgorithmParameterException, AuthorizationDeniedException_Exception, EjbcaException_Exception, IllegalQueryException_Exception,
             InvalidKeyException, SignatureException, ApprovalException_Exception, CADoesntExistsException_Exception, NotFoundException_Exception,
-            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception {
+            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IOException {
 
         UserMatch um = new UserMatch(UserMatch.MATCH_WITH_USERNAME, UserMatch.MATCH_TYPE_EQUALS, "tomcat");
         for (UserDataVOWS ud : ejbcaraws.findUser(um)) {
@@ -132,8 +131,8 @@ public class DnFieldsTest extends CommonEjbcaWS {
         }
 
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        String p10 = new String(Base64.encode(new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys
-                .getPublic(), new DERSet(), keys.getPrivate()).getEncoded()));
+        String p10 = new String(Base64.encode(CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys
+                .getPublic(), new DERSet(), keys.getPrivate(), null).toASN1Structure().getEncoded()));
         UserDataVOWS user = new UserDataVOWS();
         user.setUsername(TEST_USERNAME);
         user.setPassword("foo123");

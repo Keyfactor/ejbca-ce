@@ -31,8 +31,8 @@ import org.bouncycastle.asn1.DERGeneralizedTime;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x509.Attribute;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.util.CertTools;
 
 /**
@@ -82,7 +82,7 @@ public class SubjectDirAttrExtension extends CertTools {
         String result = "";
         if (certificate instanceof X509Certificate) {
 			X509Certificate x509cert = (X509Certificate) certificate;
-	        ASN1Primitive obj = CertTools.getExtensionValue(x509cert, X509Extensions.SubjectDirectoryAttributes.getId());
+	        ASN1Primitive obj = CertTools.getExtensionValue(x509cert, Extension.subjectDirectoryAttributes.getId());
 	        if (obj == null) {
 	            return null;
 	        }

@@ -88,9 +88,9 @@ public class RenewServlet extends HttpServlet {
     	request.setAttribute("certificate", certificate);
     	boolean isrevoked = certificateStoreSession.isRevoked(certificate.getIssuerDN().getName(), certificate.getSerialNumber());
     	if (isrevoked) {
-    		request.setAttribute("errorMessage", "User certificate with serial number "+certificate.getSerialNumber() + " from issuer \'"+certificate.getIssuerX500Principal()+"\' is revoked.");
+    		request.setAttribute("errorMessage", "User certificate with serial number "+certificate.getSerialNumber() + " from issuer \'"+certificate.getIssuerDN()+"\' is revoked.");
     	} else {
-	    	String username = certificateStoreSession.findUsernameByCertSerno(certificate.getSerialNumber(), certificate.getIssuerX500Principal().toString());
+	    	String username = certificateStoreSession.findUsernameByCertSerno(certificate.getSerialNumber(), certificate.getIssuerDN().toString());
 	    	if (username==null || username.length()==0) {
 	    		throw new ServletException(new ObjectNotFoundException("Not possible to retrieve user name"));
 	    	}

@@ -16,7 +16,7 @@ import java.security.PublicKey;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -38,7 +38,7 @@ public class KeyUsage extends StandardCertificateExtension {
 
     @Override
 	public void init(final CertificateProfile certProf) {
-		super.setOID(X509Extensions.KeyUsage.getId());
+		super.setOID(Extension.keyUsage.getId());
 		super.setCriticalFlag(certProf.getKeyUsageCritical());
 	}
     

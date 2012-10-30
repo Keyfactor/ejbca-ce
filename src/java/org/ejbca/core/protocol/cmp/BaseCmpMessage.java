@@ -20,10 +20,9 @@ import java.io.Serializable;
 
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OutputStream;
+import org.bouncycastle.asn1.cmp.PKIHeader;
+import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x509.GeneralName;
-
-import com.novosec.pkix.asn1.cmp.PKIHeader;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 public abstract class BaseCmpMessage implements Serializable {
 

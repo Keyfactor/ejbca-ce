@@ -38,9 +38,9 @@ import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -368,7 +368,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
         caSession.editCA(roleMgmgToken, cainfo);
         crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId());
         x509crl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
-        cdpDER = x509crl.getExtensionValue(X509Extensions.IssuingDistributionPoint.getId());
+        cdpDER = x509crl.getExtensionValue(Extension.issuingDistributionPoint.getId());
         assertNotNull("CRL has no distribution points", cdpDER);
 
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
@@ -385,7 +385,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
         caSession.editCA(roleMgmgToken, cainfo);
         crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId());
         x509crl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
-        assertNull("CRL has distribution points", x509crl.getExtensionValue(X509Extensions.CRLDistributionPoints.getId()));
+        assertNull("CRL has distribution points", x509crl.getExtensionValue(Extension.cRLDistributionPoints.getId()));
     }
 
     /**
@@ -405,7 +405,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
         caSession.editCA(roleMgmgToken, cainfo);
         crlCreateSession.forceCRL(roleMgmgToken, testx509ca.getCAId());
         x509crl = CertTools.getCRLfromByteArray(crlStoreSession.getLastCRL(cainfo.getSubjectDN(), false));
-        cFreshestDpDER = x509crl.getExtensionValue(X509Extensions.FreshestCRL.getId());
+        cFreshestDpDER = x509crl.getExtensionValue(Extension.freshestCRL.getId());
         assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
 
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER));

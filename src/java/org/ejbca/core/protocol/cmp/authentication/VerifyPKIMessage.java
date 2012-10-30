@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.cmp.authentication;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSession;
 import org.cesecore.certificates.ca.CAInfo;
@@ -24,8 +25,6 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * Verifies a CMP message using a suitable authentication module. The authentication modules 

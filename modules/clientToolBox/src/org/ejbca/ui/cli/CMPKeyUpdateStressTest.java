@@ -51,51 +51,59 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.cmp.CMPCertificate;
+import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
+import org.bouncycastle.asn1.cmp.CertConfirmContent;
+import org.bouncycastle.asn1.cmp.CertOrEncCert;
+import org.bouncycastle.asn1.cmp.CertRepMessage;
+import org.bouncycastle.asn1.cmp.CertResponse;
+import org.bouncycastle.asn1.cmp.CertStatus;
+import org.bouncycastle.asn1.cmp.CertifiedKeyPair;
+import org.bouncycastle.asn1.cmp.PBMParameter;
+import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIHeader;
+import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.PKIStatusInfo;
+import org.bouncycastle.asn1.crmf.AttributeTypeAndValue;
+import org.bouncycastle.asn1.crmf.CRMFObjectIdentifiers;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.crmf.CertReqMsg;
+import org.bouncycastle.asn1.crmf.CertRequest;
+import org.bouncycastle.asn1.crmf.CertTemplateBuilder;
+import org.bouncycastle.asn1.crmf.OptionalValidity;
+import org.bouncycastle.asn1.crmf.POPOSigningKey;
+import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.AttributeCertificate;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.protocol.cmp.CMPSendHTTP;
+import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.util.PerformanceTest;
 import org.ejbca.util.PerformanceTest.Command;
 import org.ejbca.util.PerformanceTest.CommandFactory;
 
-import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
-import com.novosec.pkix.asn1.cmp.CertConfirmContent;
-import com.novosec.pkix.asn1.cmp.CertOrEncCert;
-import com.novosec.pkix.asn1.cmp.CertRepMessage;
-import com.novosec.pkix.asn1.cmp.CertResponse;
-import com.novosec.pkix.asn1.cmp.CertifiedKeyPair;
-import com.novosec.pkix.asn1.cmp.PKIBody;
-import com.novosec.pkix.asn1.cmp.PKIHeader;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
-import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
-import com.novosec.pkix.asn1.crmf.AttributeTypeAndValue;
-import com.novosec.pkix.asn1.crmf.CRMFObjectIdentifiers;
-import com.novosec.pkix.asn1.crmf.CertReqMessages;
-import com.novosec.pkix.asn1.crmf.CertReqMsg;
-import com.novosec.pkix.asn1.crmf.CertRequest;
-import com.novosec.pkix.asn1.crmf.CertTemplate;
-import com.novosec.pkix.asn1.crmf.OptionalValidity;
-import com.novosec.pkix.asn1.crmf.PBMParameter;
-import com.novosec.pkix.asn1.crmf.POPOSigningKey;
-import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
 /**
  * Used to stress test the CMP interface.
@@ -145,30 +153,31 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
         }
 
         private CertRequest genKeyUpdateReq() throws IOException {
-            final OptionalValidity myOptionalValidity = new OptionalValidity();
+            ASN1EncodableVector optionalValidityV = new ASN1EncodableVector();
             final int day = 1000 * 60 * 60 * 24;
-            myOptionalValidity.setNotBefore(new org.bouncycastle.asn1.x509.Time(new Date(new Date().getTime() - day)));
-            myOptionalValidity.setNotAfter(new org.bouncycastle.asn1.x509.Time(new Date(new Date().getTime() + 10 * day)));
+            optionalValidityV.add(new DERTaggedObject(true, 0, new org.bouncycastle.asn1.x509.Time(new Date(new Date().getTime() - day))));
+            optionalValidityV.add(new DERTaggedObject(true, 1, new org.bouncycastle.asn1.x509.Time(new Date(new Date().getTime() + 10 * day))));
+            OptionalValidity myOptionalValidity = OptionalValidity.getInstance(new DERSequence(optionalValidityV));
 
-            final CertTemplate myCertTemplate = new CertTemplate();
+            final CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
             myCertTemplate.setValidity(myOptionalValidity);
             final byte[] bytes = this.newKeyPair.getPublic().getEncoded();
             final ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
             final ASN1InputStream dIn = new ASN1InputStream(bIn);
             final SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
+            dIn.close();
             myCertTemplate.setPublicKey(keyInfo);
-            return new CertRequest(new DERInteger(4), myCertTemplate);
+            return new CertRequest(4, myCertTemplate.build(), null);
         }
 
-        private PKIMessage genPKIMessage(final SessionData sessionData, final boolean raVerifiedPopo, final CertRequest keyUpdateRequest)
+        private PKIMessage genPKIMessage(final SessionData sessionData, final boolean raVerifiedPopo, 
+                final CertRequest keyUpdateRequest, final AlgorithmIdentifier pAlg, final DEROctetString senderKID)
                 throws NoSuchAlgorithmException, IOException, InvalidKeyException, SignatureException {
-
-            final CertReqMsg myCertReqMsg = new CertReqMsg(keyUpdateRequest);
 
             ProofOfPossession myProofOfPossession;
             if (raVerifiedPopo) {
                 // raVerified POPO (meaning there is no POPO)
-                myProofOfPossession = new ProofOfPossession(new DERNull(), 0);
+                myProofOfPossession = new ProofOfPossession();
             } else {
                 final ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 final DEROutputStream mout = new DEROutputStream(baos);
@@ -181,35 +190,36 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 
                 final DERBitString bs = new DERBitString(sig.sign());
 
-                final POPOSigningKey myPOPOSigningKey = new POPOSigningKey(new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption), bs);
-                //myPOPOSigningKey.setPoposkInput( myPOPOSigningKeyInput );
-                myProofOfPossession = new ProofOfPossession(myPOPOSigningKey, 1);
+                final POPOSigningKey myPOPOSigningKey = new POPOSigningKey(null, new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption), bs);
+                myProofOfPossession = new ProofOfPossession(myPOPOSigningKey);
             }
 
-            myCertReqMsg.setPop(myProofOfPossession);
+            final AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.id_regCtrl_regToken, new DERUTF8String("foo123"));
+            AttributeTypeAndValue[] avs = {av};
 
-            final AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.regCtrl_regToken, new DERUTF8String("foo123"));
-            myCertReqMsg.addRegInfo(av);
-
+            final CertReqMsg myCertReqMsg = new CertReqMsg(keyUpdateRequest, myProofOfPossession, avs);
+            
             final CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
 
-            final PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(CertTools.getSubjectDN(extraCert))),
-                    new GeneralName(new X509Name(this.cacert.getSubjectDN().getName())));
+            final PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(CertTools.getSubjectDN(extraCert))),
+                    new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
             myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
             myPKIHeader.setSenderNonce(new DEROctetString(sessionData.getNonce()));
             myPKIHeader.setSenderKID(new DEROctetString(sessionData.getNonce()));
             myPKIHeader.setTransactionID(new DEROctetString(sessionData.getTransId()));
+            myPKIHeader.setProtectionAlg(pAlg);
+            myPKIHeader.setSenderKID(senderKID);
 
-            final PKIBody myPKIBody = new PKIBody(myCertReqMessages, 7); // key update request
-            return new PKIMessage(myPKIHeader, myPKIBody);
+            final PKIBody myPKIBody = new PKIBody(7, myCertReqMessages); // key update request
+            return new PKIMessage(myPKIHeader.build(), myPKIBody);
         }
 
         private void addExtraCert(PKIMessage msg, Certificate cert) throws CertificateEncodingException, IOException {
-            ByteArrayInputStream bIn = new ByteArrayInputStream(cert.getEncoded());
-            ASN1InputStream dIn = new ASN1InputStream(bIn);
-            ASN1Sequence extraCertSeq = (ASN1Sequence) dIn.readObject();
-            X509CertificateStructure extraCert = new X509CertificateStructure(ASN1Sequence.getInstance(extraCertSeq));
-            msg.addExtraCert(extraCert);
+            ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());
+            ASN1Primitive pcert = ins.readObject();
+            CMPCertificate cmpcert = new CMPCertificate(new AttributeCertificate((ASN1Sequence) pcert));
+            CMPCertificate[] extraCerts = {cmpcert};
+            msg = new PKIMessage(msg.getHeader(), msg.getBody(), msg.getProtection(), extraCerts);
         }
 
         private PKIMessage signPKIMessage(final PKIMessage msg, PrivateKey signingKey) throws NoSuchAlgorithmException, NoSuchProviderException,
@@ -217,28 +227,27 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             PKIMessage message = msg;
             final Signature sig = Signature.getInstance(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), "BC");
             sig.initSign(signingKey);
-            sig.update(message.getProtectedBytes());
+            sig.update(CmpMessageHelper.getProtectedBytes(message));
             byte[] eeSignature = sig.sign();
-            message.setProtection(new DERBitString(eeSignature));
+            message = new PKIMessage(msg.getHeader(), msg.getBody(), new DERBitString(eeSignature), msg.getExtraCerts());
             return message;
         }
 
         private PKIMessage protectPKIMessage(final PKIMessage msg, final boolean badObjectId, final String password) throws NoSuchAlgorithmException,
                 InvalidKeyException {
             // SHA1
-            final AlgorithmIdentifier owfAlg = new AlgorithmIdentifier("1.3.14.3.2.26");
+            final AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.3.14.3.2.26"));
             // 567 iterations
             final int iterationCount = 567;
             // HMAC/SHA1
-            final AlgorithmIdentifier macAlg = new AlgorithmIdentifier("1.2.840.113549.2.7");
+            final AlgorithmIdentifier macAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.2.840.113549.2.7"));
             final byte[] salt = "foo123".getBytes();
             final DEROctetString derSalt = new DEROctetString(salt);
-            final PKIMessage ret;
             
             // Create the PasswordBased protection of the message
-            final PKIHeader head = msg.getHeader();
+            final PKIHeaderBuilder head = getHeaderBuilder(msg.getHeader());
             head.setSenderKID(new DEROctetString("EMPTY".getBytes()));
-            final DERInteger iteration = new DERInteger(iterationCount);
+            final ASN1Integer iteration = new ASN1Integer(iterationCount);
 
             // Create the new protected return message
             String objectId = "1.2.840.113533.7.66.13";
@@ -249,23 +258,20 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             final AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(objectId), pp);
             head.setProtectionAlg(pAlg);
 
-            final PKIBody body = msg.getBody();
-            ret = new PKIMessage(head, body);
-
             // Calculate the protection bits
             final byte[] raSecret = password.getBytes();
             byte basekey[] = new byte[raSecret.length + salt.length];
             System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
             System.arraycopy(salt, 0, basekey, raSecret.length, salt.length);
             // Construct the base key according to rfc4210, section 5.1.3.1
-            final MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId(), this.bcProvider);
+            final MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), this.bcProvider);
             for (int i = 0; i < iterationCount; i++) {
                 basekey = dig.digest(basekey);
                 dig.reset();
             }
             // For HMAC/SHA1 there is another oid, that is not known in BC, but the result is the same so...
-            final String macOid = macAlg.getObjectId().getId();
-            final byte[] protectedBytes = ret.getProtectedBytes();
+            final String macOid = macAlg.getAlgorithm().getId();
+            final byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(head.build(), msg.getBody());
             final Mac mac = Mac.getInstance(macOid, this.bcProvider);
             final SecretKey key = new SecretKeySpec(basekey, macOid);
             mac.init(key);
@@ -274,10 +280,22 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             final byte[] out = mac.doFinal();
             final DERBitString bs = new DERBitString(out);
 
-            // Finally store the protection bytes in the msg
-            ret.setProtection(bs);
-
-            return ret;
+            return new PKIMessage(head.build(), msg.getBody(), bs, msg.getExtraCerts());
+        }
+        
+        //TODO see if we could do this in a better way
+        private PKIHeaderBuilder getHeaderBuilder(PKIHeader header) {
+            PKIHeaderBuilder builder = new PKIHeaderBuilder(header.getPvno().getValue().intValue(), header.getSender(), header.getRecipient());
+            builder.setFreeText(header.getFreeText());
+            builder.setGeneralInfo(header.getGeneralInfo());
+            builder.setMessageTime(header.getMessageTime());
+            builder.setProtectionAlg(header.getProtectionAlg());
+            builder.setRecipKID(header.getRecipKID().getOctets());
+            builder.setRecipNonce(header.getRecipNonce());
+            builder.setSenderKID(header.getSenderKID());
+            builder.setSenderNonce(header.getSenderNonce());
+            builder.setTransactionID(header.getTransactionID());
+            return builder;
         }
 
         private byte[] sendCmpHttp(final byte[] message) throws Exception {
@@ -313,7 +331,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 return false;
             }
             // Check that the signer is the expected CA
-            final X509Name name = X509Name.getInstance(header.getSender().getName());
+            final X500Name name = X500Name.getInstance(header.getSender().getName());
             if (header.getSender().getTagNo() != 4 || name == null || !name.equals(this.cacert.getSubjectDN())) {
                 StressTest.this.performanceTest.getLog().error("Not signed by right issuer.");
             }
@@ -336,14 +354,14 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             
             // Check that the message is signed with the correct digest alg
             final AlgorithmIdentifier algId = header.getProtectionAlg();
-            if (algId == null || algId.getObjectId() == null || algId.getObjectId().getId() == null) {
+            if (algId == null || algId.getAlgorithm() == null || algId.getAlgorithm().getId() == null) {
                 if (requireProtection) {
                     StressTest.this.performanceTest.getLog().error("Not possible to get algorithm.");
                     return false;
                 }
                 return true;
             }
-            final String id = algId.getObjectId().getId();
+            final String id = algId.getAlgorithm().getId();
             if (id.equals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId())) {
                 if (this.firstTime) {
                     this.firstTime = false;
@@ -367,7 +385,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             
             if (this.isSign) {
                 // Verify the signature
-                byte[] protBytes = respObject.getProtectedBytes();
+                byte[] protBytes = CmpMessageHelper.getProtectedBytes(respObject);
                 final DERBitString bs = respObject.getProtection();
                 final Signature sig;
                 try {
@@ -395,14 +413,14 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 final byte[] salt = pp.getSalt().getOctets();
                 final byte[] raSecret = new String("password").getBytes();
                 // HMAC/SHA1 os normal 1.3.6.1.5.5.8.1.2 or 1.2.840.113549.2.7 
-                final String macOid = macAlg.getObjectId().getId();
+                final String macOid = macAlg.getAlgorithm().getId();
                 final SecretKey key;
 
                 byte[] basekey = new byte[raSecret.length + salt.length];
                 System.arraycopy(raSecret, 0, basekey, 0, raSecret.length);
                 System.arraycopy(salt, 0, basekey, raSecret.length, salt.length);
                 // Construct the base key according to rfc4210, section 5.1.3.1
-                final MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId(), this.bcProvider);
+                final MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), this.bcProvider);
                 for (int i = 0; i < iterationCount; i++) {
                     basekey = dig.digest(basekey);
                     dig.reset();
@@ -412,7 +430,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 final Mac mac = Mac.getInstance(macOid, this.bcProvider);
                 mac.init(key);
                 mac.reset();
-                final byte[] protectedBytes = respObject.getProtectedBytes();
+                final byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(respObject);
                 final DERBitString protection = respObject.getProtection();
                 mac.update(protectedBytes, 0, protectedBytes.length);
                 byte[] out = mac.doFinal();
@@ -438,16 +456,16 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("No PKIBody for certificate received.");
                 return null;
             }
-            if (body.getTagNo() != 8) {
+            if (body.getType() != 8) {
                 StressTest.this.performanceTest.getLog().error("Cert body tag not 8.");
                 return null;
             }
-            final CertRepMessage c = body.getKup();
+            final CertRepMessage c = (CertRepMessage) body.getContent();
             if (c == null) {
                 StressTest.this.performanceTest.getLog().error("No CertRepMessage for certificate received.");
                 return null;
             }
-            final CertResponse resp = c.getResponse(0);
+            final CertResponse resp = c.getResponse()[0];
             if (resp == null) {
                 StressTest.this.performanceTest.getLog().error("No CertResponse for certificate received.");
                 return null;
@@ -462,8 +480,8 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("No PKIStatusInfo for certificate received.");
                 return null;
             }
-            if (info.getStatus().getValue().intValue() != 0) {
-                StressTest.this.performanceTest.getLog().error("Received Status is " + info.getStatus().getValue().intValue() + " but should be 0");
+            if (info.getStatus().intValue() != 0) {
+                StressTest.this.performanceTest.getLog().error("Received Status is " + info.getStatus().intValue() + " but should be 0");
                 return null;
             }
             final CertifiedKeyPair kp = resp.getCertifiedKeyPair();
@@ -476,12 +494,12 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("No CertOrEncCert for certificate received.");
                 return null;
             }
-            final X509CertificateStructure struct = cc.getCertificate();
-            if (struct == null) {
+            final CMPCertificate cmpcert = cc.getCertificate();
+            if (cmpcert == null) {
                 StressTest.this.performanceTest.getLog().error("No X509CertificateStructure for certificate received.");
                 return null;
             }
-            final byte encoded[] = struct.getEncoded();
+            final byte encoded[] = cmpcert.getEncoded();
             if (encoded == null || encoded.length <= 0) {
                 StressTest.this.performanceTest.getLog().error("No encoded certificate received.");
                 return null;
@@ -492,7 +510,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 return null;
             }
             // Remove this test to be able to test unid-fnr
-            if (cert.getSubjectDN().hashCode() != new X509Name(CertTools.getSubjectDN(extraCert)).hashCode()) {
+            if (cert.getSubjectDN().hashCode() != new X500Name(CertTools.getSubjectDN(extraCert)).hashCode()) {
                 StressTest.this.performanceTest.getLog().error(
                         "Subject is '" + cert.getSubjectDN() + "' but should be '" + CertTools.getSubjectDN(extraCert) + '\'');
                 return null;
@@ -525,7 +543,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 return false;
             }
             {
-                final X509Name name = X509Name.getInstance(header.getSender().getName());
+                final X500Name name = X500Name.getInstance(header.getSender().getName());
                 String senderDN = name.toString().replaceAll(" ", "");
                 String caDN = this.cacert.getSubjectDN().toString().replaceAll(" ", "");
                 if (!StringUtils.equals(senderDN, caDN)) {
@@ -534,8 +552,8 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 }
             }
             {
-                final X509Name name = X509Name.getInstance(header.getRecipient().getName());
-                if (name.hashCode() != new X509Name(CertTools.getSubjectDN(extraCert)).hashCode()) {
+                final X500Name name = X500Name.getInstance(header.getRecipient().getName());
+                if (name.hashCode() != new X500Name(CertTools.getSubjectDN(extraCert)).hashCode()) {
                     StressTest.this.performanceTest.getLog().error(
                             "Wrong recipient DN. Is '" + name + "' should be '" + CertTools.getSubjectDN(extraCert) + "'.");
                     return false;
@@ -546,14 +564,15 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("No PKIBody for response received.");
                 return false;
             }
-            if (body.getTagNo() != 19) {
-                StressTest.this.performanceTest.getLog().error("Cert body tag not 19. It was " + body.getTagNo());
+            if (body.getType() != 19) {
+                StressTest.this.performanceTest.getLog().error("Cert body tag not 19. It was " + body.getType());
 
-                StressTest.this.performanceTest.getLog().error(body.getError().getPKIStatus().getStatusString().getString(0).getString());
+                PKIStatusInfo err = (PKIStatusInfo) body.getContent();
+                StressTest.this.performanceTest.getLog().error(err.getStatusString().getStringAt(0).getString());
 
                 return false;
             }
-            final DERNull n = body.getConf();
+            final DERNull n = (DERNull) body.getContent();
             if (n == null) {
                 StressTest.this.performanceTest.getLog().error("Confirmation is null.");
                 return false;
@@ -562,17 +581,18 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
         }
 
         private PKIMessage genCertConfirm(final SessionData sessionData, final String hash) {
-            PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name(CertTools.getSubjectDN(this.extraCert))),
-                    new GeneralName(new X509Name(this.cacert.getSubjectDN().getName())));
+            PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name(CertTools.getSubjectDN(this.extraCert))),
+                    new GeneralName(new X500Name(this.cacert.getSubjectDN().getName())));
             myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
             // senderNonce
             myPKIHeader.setSenderNonce(new DEROctetString(sessionData.getNonce()));
             // TransactionId
             myPKIHeader.setTransactionID(new DEROctetString(sessionData.getTransId()));
 
-            CertConfirmContent cc = new CertConfirmContent(new DEROctetString(hash.getBytes()), new DERInteger(sessionData.getReqId()));
-            PKIBody myPKIBody = new PKIBody(cc, 24); // Cert Confirm
-            PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
+            CertStatus cs = new CertStatus(hash.getBytes(), new BigInteger(Integer.toString(sessionData.getReqId())));
+            CertConfirmContent cc = CertConfirmContent.getInstance(cs);
+            PKIBody myPKIBody = new PKIBody(24, cc); // Cert Confirm
+            PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
             return myPKIMessage;
         }
 
@@ -587,14 +607,13 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 this.sessionData.newSession();
 
                 CertRequest keyUpdateReq = genKeyUpdateReq();
-                PKIMessage certMsg = genPKIMessage(this.sessionData, true, keyUpdateReq);
+                AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+                PKIMessage certMsg = genPKIMessage(this.sessionData, true, keyUpdateReq, pAlg, null);
                 if (certMsg == null) {
                     StressTest.this.performanceTest.getLog().error("No certificate request.");
                     return false;
                 }
-                AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
-                certMsg.getHeader().setProtectionAlg(pAlg);
-                //certMsg.getHeader().setSenderKID(new DEROctetString("EMPTY".getBytes()));
+
                 PKIMessage signedMsg = signPKIMessage(certMsg, oldKey);
                 addExtraCert(signedMsg, extraCert);
                 if (signedMsg == null) {
@@ -602,7 +621,8 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                     return false;
                 }
 
-                this.sessionData.setReqId(signedMsg.getBody().getKur().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue());
+                CertReqMessages kur = (CertReqMessages) signedMsg.getBody().getContent();
+                this.sessionData.setReqId(kur.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue());
                 final ByteArrayOutputStream bao = new ByteArrayOutputStream();
                 final DEROutputStream out = new DEROutputStream(bao);
                 out.writeObject(signedMsg);

@@ -25,11 +25,11 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.DisplayText;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.PolicyQualifierId;
 import org.bouncycastle.asn1.x509.PolicyQualifierInfo;
 import org.bouncycastle.asn1.x509.UserNotice;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -51,7 +51,7 @@ public class CertificatePolicies extends StandardCertificateExtension {
 	
     @Override
 	public void init(final CertificateProfile certProf) {
-		super.setOID(X509Extensions.CertificatePolicies.getId());
+		super.setOID(Extension.certificatePolicies.getId());
 		super.setCriticalFlag(certProf.getCertificatePoliciesCritical());
 	}
     

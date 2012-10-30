@@ -36,12 +36,10 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Vector;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
@@ -58,10 +56,11 @@ import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
@@ -144,11 +143,9 @@ public class X509CATest {
 		} catch (IOException e) {
 			throw new IllegalArgumentException("error encoding value: " + e);
 		}
-		Vector<ASN1ObjectIdentifier> oidvec = new Vector<ASN1ObjectIdentifier>();
-		oidvec.add(X509Extensions.SubjectAlternativeName);
-		Vector<X509Extension> valuevec = new Vector<X509Extension>();
-		valuevec.add(new X509Extension(false, new DEROctetString(extOut.toByteArray())));
-		X509Extensions exts = new X509Extensions(oidvec, valuevec);
+		ExtensionsGenerator extgen = new ExtensionsGenerator();
+		extgen.addExtension(Extension.subjectAlternativeName, false, new DEROctetString(extOut.toByteArray()) );
+		Extensions exts = extgen.generate();
 		altnameattr.add(new DERSet(exts));
         // Add a challenge password as well
         ASN1EncodableVector pwdattr = new ASN1EncodableVector();
@@ -234,7 +231,7 @@ public class X509CATest {
         assertEquals(CertTools.getSerialNumber(usercert).toString(), entry.getSerialNumber().toString());
         assertEquals(revDate.toString(), entry.getRevocationDate().toString());
         // Getting the revocation reason is a pita...
-        byte[] extval = entry.getExtensionValue(X509Extensions.ReasonCode.getId());
+        byte[] extval = entry.getExtensionValue(Extension.reasonCode.getId());
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(extval));
         ASN1OctetString octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
@@ -267,7 +264,7 @@ public class X509CATest {
         assertEquals(CertTools.getSerialNumber(usercert).toString(), entry.getSerialNumber().toString());
         assertEquals(revDate.toString(), entry.getRevocationDate().toString());
         // Getting the revocation reason is a pita...
-        extval = entry.getExtensionValue(X509Extensions.ReasonCode.getId());
+        extval = entry.getExtensionValue(Extension.reasonCode.getId());
         aIn = new ASN1InputStream(new ByteArrayInputStream(extval));
         octs = (ASN1OctetString) aIn.readObject();
         aIn = new ASN1InputStream(new ByteArrayInputStream(octs.getOctets()));
@@ -297,7 +294,7 @@ public class X509CATest {
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
 
-        byte[] cdpDER = xcrl.getExtensionValue(X509Extensions.IssuingDistributionPoint.getId());
+        byte[] cdpDER = xcrl.getExtensionValue(Extension.issuingDistributionPoint.getId());
         assertNotNull("CRL has no distribution points", cdpDER);
 
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cdpDER));
@@ -314,7 +311,7 @@ public class X509CATest {
         crl = ca.generateCRL(revcerts, 1);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
-        assertNull("CRL has distribution points", xcrl.getExtensionValue(X509Extensions.CRLDistributionPoints.getId()));
+        assertNull("CRL has distribution points", xcrl.getExtensionValue(Extension.cRLDistributionPoints.getId()));
     }
 
     /**
@@ -340,7 +337,7 @@ public class X509CATest {
         assertNotNull(crl);
         X509CRL xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
 
-        byte[] cFreshestDpDER = xcrl.getExtensionValue(X509Extensions.FreshestCRL.getId());
+        byte[] cFreshestDpDER = xcrl.getExtensionValue(Extension.freshestCRL.getId());
         assertNotNull("CRL has no Freshest Distribution Point", cFreshestDpDER);
 
         ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(cFreshestDpDER));
@@ -361,7 +358,7 @@ public class X509CATest {
         crl = ca.generateCRL(revcerts, 1);
         assertNotNull(crl);
         xcrl = CertTools.getCRLfromByteArray(crl.getEncoded());
-        assertNull("CRL has freshest crl extension", xcrl.getExtensionValue(X509Extensions.FreshestCRL.getId()));
+        assertNull("CRL has freshest crl extension", xcrl.getExtensionValue(Extension.freshestCRL.getId()));
     }
 
 	@Test

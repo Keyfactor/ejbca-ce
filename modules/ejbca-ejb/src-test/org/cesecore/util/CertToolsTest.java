@@ -58,12 +58,12 @@ import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.util.ASN1Dump;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
@@ -898,9 +898,9 @@ public class CertToolsTest {
         String revdn3 = CertTools.reverseDN(dn3);
         assertEquals("dc=tld,dc=domain,cn=titi,cn=toto", revdn3);
         
-        X509Name dn4 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), true);
+        X500Name dn4 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), true);
         assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn4.toString());
-        X509Name dn5 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), false);
+        X500Name dn5 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), false);
         assertEquals("DC=tld,DC=domain,CN=titi,CN=toto", dn5.toString());
         assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", CertTools.stringToBCDNString(dn3));
 
@@ -909,9 +909,9 @@ public class CertToolsTest {
         assertEquals("cn=toto,cn=titi,dc=domain,dc=tld", revdn6);
         assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", CertTools.stringToBCDNString(dn3));
 
-        X509Name dn7 = CertTools.stringToBcX509Name(dn6, new X509DefaultEntryConverter(), true);
+        X500Name dn7 = CertTools.stringToBcX509Name(dn6, new X509DefaultEntryConverter(), true);
         assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn7.toString());
-        X509Name revdn7 = CertTools.stringToBcX509Name(dn6, new X509DefaultEntryConverter(), false);
+        X500Name revdn7 = CertTools.stringToBcX509Name(dn6, new X509DefaultEntryConverter(), false);
         assertEquals("DC=tld,DC=domain,CN=titi,CN=toto", revdn7.toString());
 
         // Test the test strings from ECA-1699, to prove that we fixed this issue
@@ -921,12 +921,12 @@ public class CertToolsTest {
         assertEquals("cn=FOO Root CA,o=FOO,dc=foo,dc=org", revdn8);
         String revdn9 = CertTools.reverseDN(dn9);
         assertEquals("dc=org,dc=foo,o=FOO,cn=FOO Root CA", revdn9);
-        X509Name xdn8ldap = CertTools.stringToBcX509Name(dn8, new X509DefaultEntryConverter(), true);
-        X509Name xdn8x500 = CertTools.stringToBcX509Name(dn8, new X509DefaultEntryConverter(), false);
+        X500Name xdn8ldap = CertTools.stringToBcX509Name(dn8, new X509DefaultEntryConverter(), true);
+        X500Name xdn8x500 = CertTools.stringToBcX509Name(dn8, new X509DefaultEntryConverter(), false);
         assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", xdn8ldap.toString());
         assertEquals("DC=org,DC=foo,O=FOO,CN=FOO Root CA", xdn8x500.toString());
-        X509Name xdn9ldap = CertTools.stringToBcX509Name(dn9, new X509DefaultEntryConverter(), true);
-        X509Name xdn9x500 = CertTools.stringToBcX509Name(dn9, new X509DefaultEntryConverter(), false);
+        X500Name xdn9ldap = CertTools.stringToBcX509Name(dn9, new X509DefaultEntryConverter(), true);
+        X500Name xdn9x500 = CertTools.stringToBcX509Name(dn9, new X509DefaultEntryConverter(), false);
         assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", xdn9ldap.toString());
         assertEquals("DC=org,DC=foo,O=FOO,CN=FOO Root CA", xdn9x500.toString());
         assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", CertTools.stringToBCDNString(dn8));
@@ -934,17 +934,17 @@ public class CertToolsTest {
 
         // Test reversing DNs with multiple OU
         String dn10 = "CN=something,OU=A,OU=B,O=someO,C=SE";
-        X509Name x509dn10 = CertTools.stringToBcX509Name(dn10, new X509DefaultEntryConverter(), true);
+        X500Name x509dn10 = CertTools.stringToBcX509Name(dn10, new X509DefaultEntryConverter(), true);
         assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", x509dn10.toString());
         assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", CertTools.stringToBCDNString(dn10));
 
         // When we order forwards (LdapOrder) from the beginning, and request !LdapOrder, everything should be reversed
-        X509Name ldapdn11 = CertTools.stringToBcX509Name(dn10, new X509DefaultEntryConverter(), false);
+        X500Name ldapdn11 = CertTools.stringToBcX509Name(dn10, new X509DefaultEntryConverter(), false);
         assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", ldapdn11.toString());
 
         // When we order backwards (X.509, !LdapOrder) from the beginning, we should not reorder anything
         String dn11 = "C=SE,O=someO,OU=B,OU=A,CN=something";
-        X509Name x509dn11 = CertTools.stringToBcX509Name(dn11, new X509DefaultEntryConverter(), false);
+        X500Name x509dn11 = CertTools.stringToBcX509Name(dn11, new X509DefaultEntryConverter(), false);
         assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", x509dn11.toString());
         assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", CertTools.stringToBCDNString(dn11));
 
@@ -1126,7 +1126,7 @@ public class CertToolsTest {
 
         name = CertTools.getPartFromDN(altNames, CertTools.DIRECTORYNAME);
         assertEquals("CN=testDirName|dir|name", name);
-        assertEquals(name.substring("CN=".length()), new X509Name("CN=testDirName|dir|name").getValues().get(0));
+        assertEquals(name.substring("CN=".length()), new X500Name("CN=testDirName|dir|name").getRDNs()[0].getFirst().getValue());
 
         String altName = "rfc822name=foo@bar.se, uri=http://foo.bar.se, directoryName=" + LDAPDN.escapeRDN("CN=testDirName, O=Foo, OU=Bar, C=SE")
                 + ", dnsName=foo.bar.se";
@@ -1138,7 +1138,7 @@ public class CertToolsTest {
             if (tag == 4) {
                 found = true;
                 ASN1Encodable enc = gns[i].getName();
-                X509Name dir = (X509Name) enc;
+                X500Name dir = (X500Name) enc;
                 String str = dir.toString();
                 log.debug("DirectoryName: " + str);
                 assertEquals("CN=testDirName,O=Foo,OU=Bar,C=SE", str);
@@ -1227,8 +1227,8 @@ public class CertToolsTest {
             if (oid.equals(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)) {
                 // The object at position 1 is a SET of x509extensions
                 DERSet s = (DERSet) seq.getObjectAt(1);
-                X509Extensions exts = X509Extensions.getInstance(s.getObjectAt(0));
-                X509Extension ext = exts.getExtension(X509Extensions.SubjectAlternativeName);
+                Extensions exts = Extensions.getInstance(s.getObjectAt(0));
+                Extension ext = exts.getExtension(Extension.subjectAlternativeName);
                 if (ext != null) {
                     found = true;
                     String altNames = CertTools.getAltNameStringFromExtension(ext);
@@ -1252,8 +1252,8 @@ public class CertToolsTest {
             if (oid.equals(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)) {
                 // The object at position 1 is a SET of x509extensions
                 DERSet s = (DERSet) seq.getObjectAt(1);
-                X509Extensions exts = X509Extensions.getInstance(s.getObjectAt(0));
-                X509Extension ext = exts.getExtension(X509Extensions.SubjectAlternativeName);
+                Extensions exts = Extensions.getInstance(s.getObjectAt(0));
+                Extension ext = exts.getExtension(Extension.subjectAlternativeName);
                 if (ext != null) {
                     found = true;
                     String altNames = CertTools.getAltNameStringFromExtension(ext);

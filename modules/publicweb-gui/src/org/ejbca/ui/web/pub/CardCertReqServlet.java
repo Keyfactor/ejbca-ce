@@ -164,7 +164,7 @@ public class CardCertReqServlet extends HttpServlet {
                 if (isRevoked) {
                     throw new UserCertificateRevokedException(certs[0]);
                 }
-                username = certificateStoreSession.findUsernameByCertSerno(certs[0].getSerialNumber(), certs[0].getIssuerX500Principal().toString());
+                username = certificateStoreSession.findUsernameByCertSerno(certs[0].getSerialNumber(), certs[0].getIssuerDN().toString());
                 if ( username==null || username.length()==0 ) {
                     throw new ObjectNotFoundException("Not possible to retrieve user name");
                 }
@@ -327,7 +327,7 @@ public class CardCertReqServlet extends HttpServlet {
 
 		UserCertificateRevokedException(X509Certificate cert) {
             super("User certificate with serial number "+cert.getSerialNumber() +
-                  " from issuer \'"+cert.getIssuerX500Principal()+"\' is revoked.");
+                  " from issuer \'"+cert.getIssuerDN()+"\' is revoked.");
         }
     }
     private class CAID extends BaseID {

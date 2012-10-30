@@ -23,13 +23,13 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -52,7 +52,7 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 	
     @Override
 	public void init(final CertificateProfile certProf) {
-		super.setOID(X509Extensions.CRLDistributionPoints.getId());
+		super.setOID(Extension.cRLDistributionPoints.getId());
 		super.setCriticalFlag(certProf.getCRLDistributionPointCritical());
 	}
     
@@ -90,7 +90,7 @@ public class CrlDistributionPoints extends StandardCertificateExtension {
 			final StringTokenizer tokenizer = new StringTokenizer(crlissuer, ";", false);
 			while (tokenizer.hasMoreTokens()) {
 				final String issuer = tokenizer.nextToken();
-				final GeneralName gn = new GeneralName(new X509Name(issuer));
+				final GeneralName gn = new GeneralName(new X500Name(issuer));
 				if (log.isDebugEnabled()) {
 					log.debug("Added CRL issuer: "+issuer);
 				}

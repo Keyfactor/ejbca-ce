@@ -13,7 +13,6 @@
 
 package org.ejbca.core.protocol.cmp;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
 import javax.annotation.PostConstruct;
@@ -23,9 +22,13 @@ import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIHeader;
+import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.PKIMessages;
+import org.bouncycastle.asn1.util.ASN1Dump;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
@@ -44,11 +47,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
-import org.ejbca.ui.web.LimitLengthASN1Reader;
-
-import com.novosec.pkix.asn1.cmp.PKIBody;
-import com.novosec.pkix.asn1.cmp.PKIHeader;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * Class that receives a CMP message and passes it on to the correct message handler.
@@ -136,7 +134,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 		}
 		try {
 			final PKIBody body = req.getBody();
-			final int tagno = body.getTagNo();
+			final int tagno = body.getType();
 			if (log.isDebugEnabled()) {
 	            final PKIHeader header = req.getHeader();
 				log.debug("Received CMP message with pvno="+header.getPvno()+", sender="+header.getSender().toString()+", recipient="+header.getRecipient().toString());
@@ -188,11 +186,9 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                         log.debug("The NestedMessageContent was verifies successfully");
                     }
                     try {
-                        final ASN1Encodable nested = nestedMessage.getPKIMessage().getBody().getNested();
-                        final PKIMessages nestedMessages = PKIMessages.getInstance(nested);
-                        final org.bouncycastle.asn1.cmp.PKIMessage[] pkiMessages = nestedMessages.toPKIMessageArray();
-                        final ASN1Primitive msgDerObject = getDERObject(pkiMessages[0].toASN1Primitive().getEncoded());
-                        return dispatch(admin, msgDerObject, true);
+                        PKIMessages nestesMessages = (PKIMessages) nestedMessage.getPKIMessage().getBody().getContent();
+                        PKIMessage msg = nestesMessages.toPKIMessageArray()[0];
+                        return dispatch(admin, msg.toASN1Primitive(), true);
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getLocalizedMessage();
                         log.error(errMsg);
@@ -233,7 +229,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	}
 	
 	private ASN1Primitive getDERObject(byte[] ba) throws IOException {
-	       final ASN1Primitive derObject = new LimitLengthASN1Reader(new ByteArrayInputStream(ba), ba.length).readObject();
-	       return derObject;
+	       ASN1InputStream ins = new ASN1InputStream(ba);
+	       ASN1Primitive obj = ins.readObject();
+	       return obj;
 	}
 }

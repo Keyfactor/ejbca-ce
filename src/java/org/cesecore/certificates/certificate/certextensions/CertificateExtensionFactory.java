@@ -21,7 +21,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.certificate.certextensions.standard.AuthorityInformationAccess;
 import org.cesecore.certificates.certificate.certextensions.standard.AuthorityKeyIdentifier;
 import org.cesecore.certificates.certificate.certextensions.standard.BasicConstraint;
@@ -75,22 +75,22 @@ public class CertificateExtensionFactory {
 	private HashMap<Integer, CertificateExtension> certificateExtensions = new HashMap<Integer, CertificateExtension>();
 	private HashMap<String, String> standardCertificateExtensions = new HashMap<String, String>();
 	{
-		standardCertificateExtensions.put(X509Extensions.BasicConstraints.getId(), BasicConstraint.class.getName());
-		standardCertificateExtensions.put(X509Extensions.SubjectKeyIdentifier.getId(), SubjectKeyIdentifier.class.getName());
-		standardCertificateExtensions.put(X509Extensions.AuthorityKeyIdentifier.getId(), AuthorityKeyIdentifier.class.getName());
-		standardCertificateExtensions.put(X509Extensions.KeyUsage.getId(), KeyUsage.class.getName());
-		standardCertificateExtensions.put(X509Extensions.ExtendedKeyUsage.getId(), ExtendedKeyUsage.class.getName());
-		standardCertificateExtensions.put(X509Extensions.SubjectAlternativeName.getId(), SubjectAltNames.class.getName());
-		standardCertificateExtensions.put(X509Extensions.CRLDistributionPoints.getId(), CrlDistributionPoints.class.getName());
-		standardCertificateExtensions.put(X509Extensions.FreshestCRL.getId(), FreshestCrl.class.getName());
-		standardCertificateExtensions.put(X509Extensions.CertificatePolicies.getId(), CertificatePolicies.class.getName());
-		standardCertificateExtensions.put(X509Extensions.SubjectDirectoryAttributes.getId(), SubjectDirectoryAttributes.class.getName());
-		standardCertificateExtensions.put(X509Extensions.AuthorityInfoAccess.getId(), AuthorityInformationAccess.class.getName());
-		standardCertificateExtensions.put(X509Extensions.QCStatements.getId(), QcStatement.class.getName());
+		standardCertificateExtensions.put(Extension.basicConstraints.getId(), BasicConstraint.class.getName());
+		standardCertificateExtensions.put(Extension.subjectKeyIdentifier.getId(), SubjectKeyIdentifier.class.getName());
+		standardCertificateExtensions.put(Extension.authorityKeyIdentifier.getId(), AuthorityKeyIdentifier.class.getName());
+		standardCertificateExtensions.put(Extension.keyUsage.getId(), KeyUsage.class.getName());
+		standardCertificateExtensions.put(Extension.extendedKeyUsage.getId(), ExtendedKeyUsage.class.getName());
+		standardCertificateExtensions.put(Extension.subjectAlternativeName.getId(), SubjectAltNames.class.getName());
+		standardCertificateExtensions.put(Extension.cRLDistributionPoints.getId(), CrlDistributionPoints.class.getName());
+		standardCertificateExtensions.put(Extension.freshestCRL.getId(), FreshestCrl.class.getName());
+		standardCertificateExtensions.put(Extension.certificatePolicies.getId(), CertificatePolicies.class.getName());
+		standardCertificateExtensions.put(Extension.subjectDirectoryAttributes.getId(), SubjectDirectoryAttributes.class.getName());
+		standardCertificateExtensions.put(Extension.authorityInfoAccess.getId(), AuthorityInformationAccess.class.getName());
+		standardCertificateExtensions.put(Extension.qCStatements.getId(), QcStatement.class.getName());
 		standardCertificateExtensions.put(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck.getId(), OcspNoCheck.class.getName());
 		standardCertificateExtensions.put(CertTools.OID_MSTEMPLATE, MsTemplate.class.getName());
 		standardCertificateExtensions.put(SeisCardNumber.OID_CARDNUMBER, SeisCardNumber.class.getName());
-		standardCertificateExtensions.put(X509Extensions.PrivateKeyUsagePeriod.getId(), PrivateKeyUsagePeriod.class.getName());
+		standardCertificateExtensions.put(Extension.privateKeyUsagePeriod.getId(), PrivateKeyUsagePeriod.class.getName());
 	}
 	
 	private CertificateExtensionFactory(){}

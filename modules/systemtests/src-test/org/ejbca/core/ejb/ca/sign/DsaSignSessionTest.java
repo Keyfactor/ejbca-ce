@@ -26,7 +26,8 @@ import java.security.interfaces.DSAPublicKey;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CaSessionRemote;
@@ -139,14 +140,15 @@ public class DsaSignSessionTest extends SignSessionCommon {
         log.debug("Reset status of 'foodsa' to NEW");
         KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
         // Create certificate request
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foodsa"), dsakeys
-                .getPublic(), new DERSet(), dsakeys.getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foodsa"), dsakeys
+                .getPublic(), new DERSet(), dsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
-        dOut.writeObject(req);
+        dOut.writeObject(req.toASN1Structure());
         dOut.close();
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
-        boolean verify = req2.verify();
+        ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(dsakeys.getPublic());
+        boolean verify = req2.isSignatureValid(verifier);
         log.debug("Verify returned " + verify);
         assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");

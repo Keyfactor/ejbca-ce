@@ -26,6 +26,8 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -49,8 +51,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * Verify that CMP functionality works in RA mode, when any combination of - useCertReqHistory (Store copy of UserData at the time of certificate
@@ -144,10 +144,11 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         String username = "cmpRaThrowAwayTestUser" + RND.nextLong(); // This is what we expect from the CMP configuration
         String subjectDN = "CN=" + username;
         PKIMessage one = genCertReq(CertTools.getSubjectDN(caCertificate), subjectDN, keys, caCertificate, nonce, transid, true, null, notBefore,
-                notAfter, null);
+                notAfter, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBE_SECRET, "unusedKeyId", 567);
         assertNotNull("Request was not created properly.", req);
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         new DEROutputStream(bao).writeObject(req);
         byte[] resp = sendCmpHttp(bao.toByteArray(), 200);
@@ -174,7 +175,7 @@ public class CmpRaThrowAwayTest extends CmpTestCase {
         // TODO: ECA-1916 should remove dependency on useUserStorage
         if (useCertificateStorage && useUserStorage) {
             // Now revoke the bastard using the CMPv1 reason code!
-            PKIMessage rev = genRevReq(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, nonce, transid, false);
+            PKIMessage rev = genRevReq(CertTools.getSubjectDN(caCertificate), subjectDN, cert.getSerialNumber(), caCertificate, nonce, transid, false, null, null);
             PKIMessage revReq = protectPKIMessage(rev, false, PBE_SECRET, "unusedKeyId", 567);
             assertNotNull("Could not create revocation message.", revReq);
             bao = new ByteArrayOutputStream();

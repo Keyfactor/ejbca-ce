@@ -26,7 +26,7 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.SignatureException;
-import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
@@ -40,17 +40,22 @@ import java.util.Map;
 import java.util.Set;
 
 import org.bouncycastle.asn1.ASN1InputStream;
-import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.PolicyInformation;
 import org.bouncycastle.asn1.x509.SubjectKeyIdentifier;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.audit.AuditLogEntry;
 import org.cesecore.audit.audit.SecurityEventsAuditorSessionRemote;
 import org.cesecore.audit.enums.EventTypes;
@@ -194,8 +199,8 @@ public class WebAuthenticationProviderSessionBeanTest {
      * Code nastily stolen from CertTools.genSelfCertForPurpose
      */
     private static X509Certificate generateUnbornCert(String dn, String policyId, PrivateKey privKey, PublicKey pubKey, String sigAlg, boolean isCA)
-            throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, CertificateEncodingException, IllegalStateException,
-            NoSuchProviderException {
+            throws NoSuchAlgorithmException, SignatureException, InvalidKeyException, IllegalStateException,
+            NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
         int keyusage = X509KeyUsage.keyCertSign + X509KeyUsage.cRLSign;
         // Create self signed certificate
         Date firstDate = new Date();
@@ -204,8 +209,6 @@ public class WebAuthenticationProviderSessionBeanTest {
         Date lastDate = new Date();
         // Set Expiry in two days
         lastDate.setTime(lastDate.getTime() + ((2 * 24 * 60 * 60 * 1000)));
-
-        X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
 
         // Transform the PublicKey to be sure we have it in a format that the X509 certificate generator handles, it might be
         // a CVC public key that is passed as parameter
@@ -237,20 +240,18 @@ public class WebAuthenticationProviderSessionBeanTest {
         SecureRandom random = SecureRandom.getInstance("SHA1PRNG");
         random.setSeed(new Date().getTime());
         random.nextBytes(serno);
-        certgen.setSerialNumber(new java.math.BigInteger(serno).abs());
-        certgen.setNotBefore(firstDate);
-        certgen.setNotAfter(lastDate);
-        certgen.setSignatureAlgorithm(sigAlg);
-        certgen.setSubjectDN(CertTools.stringToBcX509Name(dn));
-        certgen.setIssuerDN(CertTools.stringToBcX509Name(dn));
-        certgen.setPublicKey(publicKey);
+        
+        final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX509Name(dn), new java.math.BigInteger(serno).abs(), firstDate, 
+                lastDate, CertTools.stringToBcX509Name(dn), pkinfo);
         // Basic constranits is always critical and MUST be present at-least in CA-certificates.
         BasicConstraints bc = new BasicConstraints(isCA);
-        certgen.addExtension(X509Extensions.BasicConstraints.getId(), true, bc);
+        certbuilder.addExtension(Extension.basicConstraints, true, bc);
+        
         // Put critical KeyUsage in CA-certificates
         if (isCA) {
             X509KeyUsage ku = new X509KeyUsage(keyusage);
-            certgen.addExtension(X509Extensions.KeyUsage.getId(), true, ku);
+            certbuilder.addExtension(Extension.keyUsage, true, ku);
         }
         // Subject and Authority key identifier is always non-critical and MUST be present for certificates to verify in Firefox.
         try {
@@ -263,8 +264,8 @@ public class WebAuthenticationProviderSessionBeanTest {
                         publicKey.getEncoded())).readObject());
                 AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
 
-                certgen.addExtension(X509Extensions.SubjectKeyIdentifier.getId(), false, ski);
-                certgen.addExtension(X509Extensions.AuthorityKeyIdentifier.getId(), false, aki);
+                certbuilder.addExtension(Extension.subjectKeyIdentifier, false, ski);
+                certbuilder.addExtension(Extension.authorityKeyIdentifier, false, aki);
             }
         } catch (IOException e) { // do nothing
         }
@@ -272,9 +273,12 @@ public class WebAuthenticationProviderSessionBeanTest {
         if (policyId != null) {
             PolicyInformation pi = new PolicyInformation(new ASN1ObjectIdentifier(policyId));
             DERSequence seq = new DERSequence(pi);
-            certgen.addExtension(X509Extensions.CertificatePolicies.getId(), false, seq);
+            certbuilder.addExtension(Extension.certificatePolicies, false, seq);
         }
-        X509Certificate selfcert = certgen.generate(privKey, "BC");
+        final ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").build(privKey);
+        final X509CertificateHolder certHolder = certbuilder.build(signer);
+        final X509Certificate selfcert = (X509Certificate) CertTools.getCertfromByteArray(certHolder.getEncoded());
+        
         return selfcert;
     }
 
