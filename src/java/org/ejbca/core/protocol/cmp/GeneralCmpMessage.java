@@ -14,18 +14,19 @@ package org.ejbca.core.protocol.cmp;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.cmp.CertConfirmContent;
+import org.bouncycastle.asn1.cmp.CertStatus;
+import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIHeader;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.PKIStatusInfo;
+import org.bouncycastle.asn1.cmp.RevDetails;
+import org.bouncycastle.asn1.cmp.RevReqContent;
+import org.bouncycastle.asn1.crmf.CertTemplate;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.util.Base64;
 import org.ejbca.core.model.InternalEjbcaResources;
-
-import com.novosec.pkix.asn1.cmp.CertConfirmContent;
-import com.novosec.pkix.asn1.cmp.PKIBody;
-import com.novosec.pkix.asn1.cmp.PKIHeader;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
-import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
-import com.novosec.pkix.asn1.cmp.RevDetails;
-import com.novosec.pkix.asn1.cmp.RevReqContent;
-import com.novosec.pkix.asn1.crmf.CertTemplate;
 
 /**
  * Message class for CMP PKI confirm and CertCOnf messages
@@ -51,7 +52,7 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 
 	public GeneralCmpMessage(final PKIMessage msg) {
 		final PKIBody body = msg.getBody();
-		final int tag = body.getTagNo();
+		final int tag = body.getType();
 		if (tag == 19) {
 			// this is a PKIConfirmContent
 			if (log.isDebugEnabled()) {
@@ -65,10 +66,16 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			if (log.isDebugEnabled()) {
 				log.debug("Received a Cert Confirm message");
 			}
-			final CertConfirmContent obj = body.getCertConf();
-			final PKIStatusInfo status = obj.getPKIStatus();
+			final CertConfirmContent obj = (CertConfirmContent) body.getContent();
+			CertStatus cs;
+			try {
+			    cs = CertStatus.getInstance(obj.toASN1Primitive());
+			} catch(Exception e) {
+			    cs = CertStatus.getInstance(((DERSequence) obj.toASN1Primitive()).getObjectAt(0));
+			}
+			final PKIStatusInfo status = cs.getStatusInfo();
 			if (status != null) {
-				final int st = status.getStatus().getValue().intValue();
+				final int st = status.getStatus().intValue();
 				if (st != 0) {
 					final String errMsg = intres.getLocalizedMessage("cmp.errorcertconfirmstatus", Integer.valueOf(st));
 					log.error(errMsg);
@@ -81,11 +88,16 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			if (log.isDebugEnabled()) {
 				log.debug("Received a RevReqContent");
 			}
-			final RevReqContent rr = body.getRr();
-			final RevDetails rd = rr.getRevDetails(0);
+			final RevReqContent rr = (RevReqContent) body.getContent();
+			RevDetails rd;
+			try {
+			    rd = rr.toRevDetailsArray()[0];
+			} catch(Exception e) {
+			    rd = CmpMessageHelper.getNovosecRevDetails(rr);
+			}
 			final CertTemplate ct = rd.getCertDetails();
 			final DERInteger serno = ct.getSerialNumber();
-			final X509Name issuer = ct.getIssuer();
+			final X500Name issuer = ct.getIssuer();
 			if ( (serno != null) && (issuer != null) ) {
 				final String errMsg = intres.getLocalizedMessage("cmp.receivedrevreq", issuer.toString(), serno.getValue().toString(16));
 				log.info(errMsg);

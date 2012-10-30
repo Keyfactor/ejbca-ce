@@ -13,7 +13,7 @@
 
 package org.ejbca.core.protocol.cmp.authentication;
 
-import com.novosec.pkix.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.PKIMessage;
 
 /**
  * Interface for authentication modules of CMP Messages

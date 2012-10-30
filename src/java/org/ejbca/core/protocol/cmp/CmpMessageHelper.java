@@ -36,19 +36,48 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1Integer;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.ASN1TaggedObject;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.cmp.CMPCertificate;
+import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
+import org.bouncycastle.asn1.cmp.CertRepMessage;
+import org.bouncycastle.asn1.cmp.CertResponse;
+import org.bouncycastle.asn1.cmp.PBMParameter;
+import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIHeader;
+import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.PKIStatusInfo;
+import org.bouncycastle.asn1.cmp.RevDetails;
+import org.bouncycastle.asn1.cmp.RevReqContent;
+import org.bouncycastle.asn1.crmf.AttributeTypeAndValue;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.crmf.CertReqMsg;
+import org.bouncycastle.asn1.crmf.CertRequest;
+import org.bouncycastle.asn1.crmf.CertTemplate;
+import org.bouncycastle.asn1.crmf.POPOPrivKey;
+import org.bouncycastle.asn1.crmf.POPOSigningKey;
+import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.bouncycastle.asn1.ocsp.BasicOCSPResponse;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
+import org.bouncycastle.asn1.x509.ReasonFlags;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.ocsp.BasicOCSPResp;
 import org.cesecore.certificates.ca.SignRequestException;
@@ -58,15 +87,6 @@ import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.core.model.InternalEjbcaResources;
-
-import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
-import com.novosec.pkix.asn1.cmp.CertRepMessage;
-import com.novosec.pkix.asn1.cmp.CertResponse;
-import com.novosec.pkix.asn1.cmp.PKIBody;
-import com.novosec.pkix.asn1.cmp.PKIHeader;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
-import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
-import com.novosec.pkix.asn1.crmf.PBMParameter;
 
 /**
  * Helper class to create different standard parts of CMP messages
@@ -80,12 +100,8 @@ public class CmpMessageHelper {
 
 	private static final String CMP_ERRORGENERAL = "cmp.errorgeneral";
 
-	public static PKIHeader createPKIHeader(GeneralName sender, GeneralName recipient, String senderNonce, String recipientNonce, String transactionId) {
-		PKIHeader myPKIHeader =
-			new PKIHeader(
-					new DERInteger(2),
-					sender,
-					recipient);
+	public static PKIHeaderBuilder createPKIHeaderBuilder(GeneralName sender, GeneralName recipient, String senderNonce, String recipientNonce, String transactionId) {
+		PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, sender, recipient);
 		myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
 		if (senderNonce != null) {
 			myPKIHeader.setSenderNonce(new DEROctetString(Base64.decode(senderNonce.getBytes())));					
@@ -103,8 +119,8 @@ public class CmpMessageHelper {
     	if (LOG.isTraceEnabled()) {
     		LOG.trace(">signPKIMessage()");
     	}
-		X509CertificateStructure signStruct = X509CertificateStructure.getInstance(new ASN1InputStream(new ByteArrayInputStream(signCert.getEncoded())).readObject());
-		CmpMessageHelper.buildCertBasedPKIProtection( myPKIMessage, signStruct, signKey, digestAlg, provider);
+		CMPCertificate signStruct = CMPCertificate.getInstance(new ASN1InputStream(new ByteArrayInputStream(signCert.getEncoded())).readObject());
+		myPKIMessage = CmpMessageHelper.buildCertBasedPKIProtection( myPKIMessage, signStruct, signKey, digestAlg, provider);
     	if (LOG.isTraceEnabled()) {
     		LOG.trace("<signPKIMessage()");
     	}
@@ -112,35 +128,59 @@ public class CmpMessageHelper {
 		return CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
     }
     
-	public static void buildCertBasedPKIProtection( PKIMessage pKIMessage, X509CertificateStructure cert, PrivateKey key, String digestAlg, String provider )
-	throws NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, InvalidKeyException
+	public static PKIMessage buildCertBasedPKIProtection( PKIMessage pKIMessage, CMPCertificate cert, PrivateKey key, String digestAlg, String provider )
+	throws NoSuchProviderException, NoSuchAlgorithmException, SecurityException, SignatureException, InvalidKeyException, IOException
 	{
 		// Select which signature algorithm we should use for the response, based on the digest algorithm.
 		ASN1ObjectIdentifier oid = PKCSObjectIdentifiers.sha1WithRSAEncryption;
-		if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA256)) {
-			oid = PKCSObjectIdentifiers.sha256WithRSAEncryption;			
-		}
-		if (digestAlg.equals(CMSSignedGenerator.DIGEST_MD5)) {
-			oid = PKCSObjectIdentifiers.md5WithRSAEncryption;			
+		if(digestAlg != null) {
+		    if (digestAlg.equals(CMSSignedGenerator.DIGEST_SHA256)) {
+		        oid = PKCSObjectIdentifiers.sha256WithRSAEncryption;			
+		    }
+		    if (digestAlg.equals(CMSSignedGenerator.DIGEST_MD5)) {
+		        oid = PKCSObjectIdentifiers.md5WithRSAEncryption;			
+		    }
 		}
     	if (LOG.isDebugEnabled()) {
     		LOG.debug("Selected signature alg oid: "+oid.getId());
     	}
     	// According to PKCS#1 AlgorithmIdentifier for RSA-PKCS#1 has null Parameters, this means a DER Null (asn.1 encoding of null), not Java null.
     	// For the RSA signature algorithms specified above RFC3447 states "...the parameters MUST be present and MUST be NULL."
-		pKIMessage.getHeader().setProtectionAlg(new AlgorithmIdentifier(oid, new DERNull()));
+    	PKIHeaderBuilder headerBuilder = getHeaderBuilder(pKIMessage.getHeader());
+    	AlgorithmIdentifier pAlg = new AlgorithmIdentifier(oid, new DERNull());
+		headerBuilder.setProtectionAlg(pAlg);
 		// Most PKCS#11 providers don't like to be fed an OID as signature algorithm, so 
 		// we use BC classes to translate it into a signature algorithm name instead
+		PKIHeader head = headerBuilder.build();
+		
 		final String sigAlg = new BasicOCSPResp(new BasicOCSPResponse(null, new AlgorithmIdentifier(oid), null, null)).getSignatureAlgName();
     	if (LOG.isDebugEnabled()) {
     		LOG.debug("Signing CMP message with signature alg: "+sigAlg);
     	}
 		Signature sig = Signature.getInstance(sigAlg , provider );
 		sig.initSign(key);
-		sig.update( pKIMessage.getProtectedBytes() );
+		sig.update( CmpMessageHelper.getProtectedBytes(head, pKIMessage.getBody()) );
 		
-		pKIMessage.setProtection( new DERBitString(sig.sign()) );
-		pKIMessage.addExtraCert( cert );
+		if(cert != null) {
+		    CMPCertificate[] extraCerts = {cert};
+		    pKIMessage = new PKIMessage(head, pKIMessage.getBody(), new DERBitString(sig.sign()), extraCerts);
+		} else {
+		    pKIMessage = new PKIMessage(head, pKIMessage.getBody(), new DERBitString(sig.sign()));
+		}
+		return pKIMessage;
+	}
+	
+	private static PKIHeaderBuilder getHeaderBuilder(PKIHeader head) throws IOException {
+	    PKIHeaderBuilder builder = new PKIHeaderBuilder(head.getPvno().getValue().intValue(), head.getSender(), head.getRecipient());
+	    builder.setFreeText(head.getFreeText());
+	    builder.setGeneralInfo(head.getGeneralInfo());
+	    builder.setMessageTime(head.getMessageTime());
+	    builder.setRecipKID((DEROctetString) head.getRecipKID());
+	    builder.setRecipNonce(head.getRecipNonce());
+	    builder.setSenderKID(head.getSenderKID());
+	    builder.setSenderNonce(head.getSenderNonce());
+	    builder.setTransactionID(head.getTransactionID());
+	    return builder;
 	}
 	
 	/** verifies signature protection on CMP PKI messages
@@ -156,11 +196,11 @@ public class CmpMessageHelper {
 	public static boolean verifyCertBasedPKIProtection(PKIMessage pKIMessage, PublicKey pubKey) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
 		AlgorithmIdentifier sigAlg = pKIMessage.getHeader().getProtectionAlg();
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Verifying signature with algorithm: "+sigAlg.getObjectId().getId());
+			LOG.debug("Verifying signature with algorithm: "+sigAlg.getAlgorithm().getId());
 		}
-		Signature sig = Signature.getInstance(sigAlg.getObjectId().getId(), "BC");
+		Signature sig = Signature.getInstance(sigAlg.getAlgorithm().getId(), "BC");
 		sig.initVerify(pubKey);
-		sig.update(pKIMessage.getProtectedBytes());
+		sig.update(CmpMessageHelper.getProtectedBytes(pKIMessage));
 		boolean result = sig.verify(pKIMessage.getProtection().getBytes());
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Verification result: "+result);
@@ -173,7 +213,7 @@ public class CmpMessageHelper {
     		LOG.trace(">protectPKIMessageWithPBE()");
     	}
 		// Create the PasswordBased protection of the message
-		PKIHeader head = msg.getHeader();
+		PKIHeaderBuilder head = getHeaderBuilder(msg.getHeader());
 		byte[] keyIdBytes;
 		try {
 			keyIdBytes = keyId.getBytes("UTF-8");			
@@ -186,7 +226,7 @@ public class CmpMessageHelper {
 		//AlgorithmIdentifier owfAlg = new AlgorithmIdentifier("1.3.14.3.2.26");
 		AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(digestAlgId);
 		// iterations, usually something like 1024
-		DERInteger iteration = new DERInteger(iterationCount);
+		ASN1Integer iteration = new ASN1Integer(iterationCount);
 		// HMAC/SHA1
 		//AlgorithmIdentifier macAlg = new AlgorithmIdentifier("1.2.840.113549.2.7");
 		AlgorithmIdentifier macAlg = new AlgorithmIdentifier(macAlgId);
@@ -200,8 +240,6 @@ public class CmpMessageHelper {
 		PBMParameter pp = new PBMParameter(derSalt, owfAlg, iteration, macAlg);
 		AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(objectId), pp);
 		head.setProtectionAlg(pAlg);
-		PKIBody body = msg.getBody();
-		PKIMessage ret = new PKIMessage(head, body);
 
 		// Calculate the protection bits
 		byte[] rasecret = raSecret.getBytes();
@@ -209,14 +247,16 @@ public class CmpMessageHelper {
         System.arraycopy(rasecret, 0, basekey, 0, rasecret.length);
         System.arraycopy(saltbytes, 0, basekey, rasecret.length, saltbytes.length);
 		// Construct the base key according to rfc4210, section 5.1.3.1
-		MessageDigest dig = MessageDigest.getInstance(owfAlg.getObjectId().getId(), "BC");
+		MessageDigest dig = MessageDigest.getInstance(owfAlg.getAlgorithm().getId(), "BC");
 		for (int i = 0; i < iterationCount; i++) {
 			basekey = dig.digest(basekey);
 			dig.reset();
 		}
+		
+		PKIHeader pkiHeader = head.build();
 		// Do the mac
-		String macOid = macAlg.getObjectId().getId();
-		byte[] protectedBytes = ret.getProtectedBytes();
+		String macOid = macAlg.getAlgorithm().getId();
+		byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(pkiHeader, msg.getBody()); //ret.getProtectedBytes();
 		Mac mac = Mac.getInstance(macOid, "BC");
 		SecretKey key = new SecretKeySpec(basekey, macOid);
 		mac.init(key);
@@ -225,14 +265,11 @@ public class CmpMessageHelper {
 		byte[] out = mac.doFinal();
 		DERBitString bs = new DERBitString(out);
 
-		// Finally store the protection bytes in the msg
-		ret.setProtection(bs);
-		
     	if (LOG.isTraceEnabled()) {
     		LOG.trace("<protectPKIMessageWithPBE()");
     	}
 		// Return response as byte array 
-		return CmpMessageHelper.pkiMessageToByteArray(ret);
+		return CmpMessageHelper.pkiMessageToByteArray(new PKIMessage(pkiHeader, msg.getBody(), bs, msg.getExtraCerts()));
 	}
 
 	public static byte[] pkiMessageToByteArray(PKIMessage msg) throws IOException {
@@ -355,32 +392,148 @@ public class CmpMessageHelper {
 	 * @param failInfo
 	 * @param failText
 	 * @return IResponseMessage that can be sent to user
+	 * @throws IOException 
 	 */
-	public static PKIBody createCertRequestRejectBody(PKIHeader header, PKIStatusInfo info, int requestId, int requestType) {
+	public static PKIBody createCertRequestRejectBody(PKIStatusInfo info, int requestId, int requestType) throws IOException {
 		// Create a failure message
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Creating a cert request rejection message");
 			LOG.debug("Creating a CertRepMessage 'rejected'");
 		}
 
-		/*
-		String senderNonce = new String(Base64.encode(CmpMessageHelper.createSenderNonce()));
-		String rcptNonce = null;
-		X509Name sender = CertTools.stringToBcX509Name("CN=Failure Sender");
-		X509Name rcpt = CertTools.stringToBcX509Name("CN=Failure Recipient");
-		String transactionId = msg.getTransactionId();
-		PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(sender, rcpt, senderNonce, rcptNonce, transactionId);
-		*/
-		
-		CertResponse myCertResponse = new CertResponse(new DERInteger(requestId), info);
-		CertRepMessage myCertRepMessage = new CertRepMessage(myCertResponse);
+		CertResponse myCertResponse = new CertResponse(new ASN1Integer(requestId), info);
+		CertResponse[] resps = {myCertResponse};
+		CertRepMessage myCertRepMessage = new CertRepMessage(null, resps);
 
 		int respType = requestType + 1; // 1 = intitialization response, 3 = certification response etc
 		if (LOG.isDebugEnabled()) {
 			LOG.debug("Creating response body of type "+respType);
 		}
-		PKIBody myPKIBody = new PKIBody(myCertRepMessage, respType); 
+		PKIBody myPKIBody = new PKIBody(respType, myCertRepMessage); 
 		
 		return myPKIBody;
+	}
+	
+	/**
+	 * Converts the header and the body of a PKIMessage to an ASN1Encodable and 
+     * returns the as a byte array
+     * 
+	 * @param msg
+	 * @return the PKIMessage's header and body in byte array
+	 */
+	public static byte[] getProtectedBytes(PKIMessage msg) {
+	    return getProtectedBytes(msg.getHeader(), msg.getBody());
+	}
+	
+	/**
+	 * Converts the header and the body of a PKIMessage to an ASN1Encodable and 
+	 * returns the as a byte array
+	 *  
+	 * @param header
+	 * @param body
+	 * @return the PKIMessage's header and body in byte array
+	 */
+	public static byte[] getProtectedBytes(PKIHeader header, PKIBody body) {
+	    byte[] res = null;
+        ASN1EncodableVector  v = new ASN1EncodableVector();
+        v.add( header );
+        v.add( body );
+        ASN1Encodable protectedPart = new DERSequence(v);
+	    try {
+	        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+	        DEROutputStream out = new DEROutputStream( bao );
+	        out.writeObject( protectedPart );
+	        res = bao.toByteArray();
+	    } catch(Exception ex){
+	        LOG.error(ex.getLocalizedMessage(), ex);
+	    }
+	    return res;
+	}
+	
+	/**
+	 * Parses a CRMF request created with novosec library classes and return a bouncycastle CertReqMsg object
+	 * 
+	 * @param messages
+	 * @return
+	 */
+	public static CertReqMsg getNovosecCertReqMsg(CertReqMessages messages) {
+	    // Reconstructing the CertRequest
+        ASN1Encodable o2 =  ((DERSequence) messages.toASN1Primitive()).getObjectAt(0);
+        ASN1Encodable o3 =  ((DERSequence) o2).getObjectAt(0);
+        CertRequest cr = CertRequest.getInstance(o3);
+    
+        // Reconstructing the proof-of-posession
+        ASN1TaggedObject o4 =  (ASN1TaggedObject) ((DERSequence) o2).getObjectAt(1);
+        ProofOfPossession pp;
+        int tagnr = o4.getTagNo();
+        ASN1Encodable o5;
+        switch(tagnr) {
+            case 0:
+                o5 = DERNull.INSTANCE;
+                pp = new ProofOfPossession();
+                break;
+            case 1:
+                o5 = POPOSigningKey.getInstance(o4.getObject());
+                pp = new ProofOfPossession( (POPOSigningKey) o5);
+                break;
+            case 2:
+            case 3:
+                o5 = POPOPrivKey.getInstance(o4, false);
+                pp = new ProofOfPossession( tagnr, (POPOPrivKey) o5);
+                break;
+            default:
+                throw new IllegalArgumentException("unknown tag: " + tagnr);
+        }     
+    
+        // Reconstructing the regToken
+        ASN1Sequence o6 =  (ASN1Sequence) ((ASN1Sequence) o2.toASN1Primitive()).getObjectAt(2);
+        final AttributeTypeAndValue av = AttributeTypeAndValue.getInstance( ((ASN1Sequence) o6).getObjectAt(0) ); 
+        final AttributeTypeAndValue[] avs = {av};
+    
+        // finally, recreating the CertReqMsg object
+        return new CertReqMsg(cr, pp, avs);
+	}
+	   
+	public static RevDetails getNovosecRevDetails(RevReqContent revContent) {
+	    ASN1Encodable o2 =  ((DERSequence) revContent.toASN1Primitive()).getObjectAt(0);
+	    ASN1Encodable o3 =  ((DERSequence) o2).getObjectAt(0);
+	    CertTemplate ct = CertTemplate.getInstance(o3);
+	    
+	    ReasonFlags reasonbits = null;
+	    Extensions crlEntryDetails = null;
+	    int seqSize = ((DERSequence) o2).size();
+	    for(int i=1; i<seqSize; i++) {
+	        ASN1Encodable o4 = ((DERSequence) o2).getObjectAt(i);
+	        if(o4 instanceof DERBitString) {
+	            reasonbits = new ReasonFlags( (DERBitString) o4);
+	        } else if(o4 instanceof DERGeneralizedTime) {
+	            DERGeneralizedTime.getInstance(o4); // bad since time, not used in the bouncycastle class
+	        } else if(o4 instanceof DERSequence) {
+	            crlEntryDetails = Extensions.getInstance(o4);
+	        }
+	    }
+	        
+	    if((crlEntryDetails != null) && (reasonbits != null)) {
+	        Extension reason = crlEntryDetails.getExtension(Extension.reasonCode);
+	        if(reason == null) {
+	            reason = new Extension(Extension.reasonCode, true, ASN1OctetString.getInstance(reasonbits.getBytes()));
+	        }
+	    } else if((crlEntryDetails==null) && (reasonbits != null)) {
+	        ExtensionsGenerator extgen = new ExtensionsGenerator();
+	        try {
+	            extgen.addExtension(Extension.reasonCode, true, ASN1OctetString.getInstance(reasonbits.getBytes()));
+	            crlEntryDetails = extgen.generate();
+	        } catch (IOException e) {
+	            LOG.error(e.getLocalizedMessage(), e);
+	        }      
+	    }
+	        
+	    //The constructor RevDetails(certTemplate, crlEntryDetails) only sets 'crlEntryDetails' and ignores 'certTemplate'
+	    //This is a reported bug in bouncycastle. For now, the only way to have both of them set is to create a ASN1/DERSequence 
+	    ASN1EncodableVector seq = new ASN1EncodableVector();
+	    seq.add(ct);
+	    seq.add(crlEntryDetails);
+	    RevDetails res = RevDetails.getInstance(new DERSequence(seq));
+	    return res;
 	}
 }

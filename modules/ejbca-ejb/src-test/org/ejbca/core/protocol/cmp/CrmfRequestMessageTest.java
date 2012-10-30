@@ -32,48 +32,51 @@ import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
-import java.util.Vector;
 
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERGeneralizedTime;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIHeader;
+import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.crmf.AttributeTypeAndValue;
+import org.bouncycastle.asn1.crmf.CRMFObjectIdentifiers;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.crmf.CertReqMsg;
+import org.bouncycastle.asn1.crmf.CertRequest;
+import org.bouncycastle.asn1.crmf.CertTemplateBuilder;
+import org.bouncycastle.asn1.crmf.OptionalValidity;
+import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.novosec.pkix.asn1.cmp.PKIBody;
-import com.novosec.pkix.asn1.cmp.PKIHeader;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
-import com.novosec.pkix.asn1.crmf.AttributeTypeAndValue;
-import com.novosec.pkix.asn1.crmf.CRMFObjectIdentifiers;
-import com.novosec.pkix.asn1.crmf.CertReqMessages;
-import com.novosec.pkix.asn1.crmf.CertReqMsg;
-import com.novosec.pkix.asn1.crmf.CertRequest;
-import com.novosec.pkix.asn1.crmf.CertTemplate;
-import com.novosec.pkix.asn1.crmf.OptionalValidity;
-import com.novosec.pkix.asn1.crmf.ProofOfPossession;
 
 /**
  * Test to verify that CrmfRequestMessage can be properly Serialized.
@@ -92,15 +95,17 @@ public class CrmfRequestMessageTest {
     public void testCrmfRequestMessageSerialization() throws IOException, ClassNotFoundException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException {
     	// Create a bogus PKIMessage
 		KeyPair keys = KeyTools.genKeys("1024", "RSA");
-		OptionalValidity myOptionalValidity = new OptionalValidity();
+		ASN1EncodableVector optionalValidityV = new ASN1EncodableVector();
 		org.bouncycastle.asn1.x509.Time nb = new org.bouncycastle.asn1.x509.Time(new DERGeneralizedTime("20030211002120Z"));
 		org.bouncycastle.asn1.x509.Time na = new org.bouncycastle.asn1.x509.Time(new Date()); 
-		myOptionalValidity.setNotBefore(nb);
-		myOptionalValidity.setNotAfter(na);
-		CertTemplate myCertTemplate = new CertTemplate();
+		optionalValidityV.add(new DERTaggedObject(true, 0, nb));
+		optionalValidityV.add(new DERTaggedObject(true, 1, na));
+		OptionalValidity myOptionalValidity = OptionalValidity.getInstance(new DERSequence(optionalValidityV));
+		
+		CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
 		myCertTemplate.setValidity( myOptionalValidity );
-		myCertTemplate.setIssuer(new X509Name("CN=bogusIssuer"));
-		myCertTemplate.setSubject(new X509Name("CN=bogusSubject"));
+		myCertTemplate.setIssuer(new X500Name("CN=bogusIssuer"));
+		myCertTemplate.setSubject(new X500Name("CN=bogusSubject"));
 		byte[]                  bytes = keys.getPublic().getEncoded();
         ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream         dIn = new ASN1InputStream(bIn);
@@ -108,31 +113,32 @@ public class CrmfRequestMessageTest {
 		myCertTemplate.setPublicKey(keyInfo);
 		ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
 		DEROutputStream         dOut = new DEROutputStream(bOut);
-		Vector<X509Extension> values = new Vector<X509Extension>();
-		Vector<ASN1ObjectIdentifier> oids = new Vector<ASN1ObjectIdentifier>();
+		ExtensionsGenerator extgen = new ExtensionsGenerator();
 		int bcku = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment | X509KeyUsage.nonRepudiation;
 		X509KeyUsage ku = new X509KeyUsage(bcku);
 		bOut = new ByteArrayOutputStream();
 		dOut = new DEROutputStream(bOut);
 		dOut.writeObject(ku);
 		byte[] value = bOut.toByteArray();
-		X509Extension kuext = new X509Extension(false, new DEROctetString(value));
-		values.add(kuext);
-		oids.add(X509Extensions.KeyUsage);
-        myCertTemplate.setExtensions(new X509Extensions(oids, values));
-        CertRequest myCertRequest = new CertRequest(new DERInteger(4), myCertTemplate);
-        CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest);
-        ProofOfPossession myProofOfPossession = new ProofOfPossession(new DERNull(), 0);
-        myCertReqMsg.setPop(myProofOfPossession);
-        AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.regCtrl_regToken, new DERUTF8String("foo123"));
-        myCertReqMsg.addRegInfo(av);
+		extgen.addExtension(Extension.keyUsage, false, new DEROctetString(value));
+		myCertTemplate.setExtensions(extgen.generate());
+		        
+		CertRequest myCertRequest = new CertRequest(4, myCertTemplate.build(), null);
+		        
+		ProofOfPossession myProofOfPossession = new ProofOfPossession();
+		AttributeTypeAndValue av = new AttributeTypeAndValue(CRMFObjectIdentifiers.id_regCtrl_regToken, new DERUTF8String("foo123"));
+		AttributeTypeAndValue[] avs = {av};
+		CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest, myProofOfPossession, avs);
         CertReqMessages myCertReqMessages = new CertReqMessages(myCertReqMsg);
-        PKIHeader myPKIHeader = new PKIHeader(new DERInteger(2), new GeneralName(new X509Name("CN=bogusSubject")), new GeneralName(new X509Name("CN=bogusIssuer")));
+        
+        PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, new GeneralName(new X500Name("CN=bogusSubject")), new GeneralName(new X500Name("CN=bogusIssuer")));
         myPKIHeader.setMessageTime(new DERGeneralizedTime(new Date()));
         myPKIHeader.setSenderNonce(new DEROctetString(CmpMessageHelper.createSenderNonce()));
         myPKIHeader.setTransactionID(new DEROctetString(CmpMessageHelper.createSenderNonce()));
-        PKIBody myPKIBody = new PKIBody(myCertReqMessages, 0);
-        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
+
+        PKIBody myPKIBody = new PKIBody(0, myCertReqMessages);
+        PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+        
     	// Create a bogus CrmfRequestMessage
     	CrmfRequestMessage crmf = new CrmfRequestMessage(myPKIMessage, "CN=SomeCA", true, null);
     	crmf.setPbeParameters("keyId", "key", "digestAlg", "macAlg", 100);
@@ -168,7 +174,7 @@ public class CrmfRequestMessageTest {
     	assertEquals("foo123", msg.getPassword());
     	// Verify PBE protection
     	PKIHeader head = msg.getHeader();
-    	final DEROctetString os = head.getSenderKID();
+    	final ASN1OctetString os = head.getSenderKID();
     	String keyId = new String(os.getOctets(), "UTF-8");
     	assertEquals("mykeyid", keyId);
     	final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
@@ -177,7 +183,7 @@ public class CrmfRequestMessageTest {
     }
 
 	@Test
-    public void testNovosecClientRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, CertificateEncodingException, SignatureException, IllegalStateException {
+    public void testNovosecClientRequest() throws IOException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, SignatureException, IllegalStateException, OperatorCreationException, CertificateException {
     	// Check that we can parse a request from  Novosec (patched by EJBCA).
     	// Read an initialization request with a signature POP and signature protection to see that we can process it
     	{
@@ -194,8 +200,8 @@ public class CrmfRequestMessageTest {
     		assertEquals("abc123rry2942812801980668853", msg.getUsername());
     		assertEquals("foo123", msg.getPassword());
     		// Verify signature protection
-    		AlgorithmIdentifier algId = msg.getMessage().getProtectedPart().getHeader().getProtectionAlg();
-    		String oid = algId.getObjectId().getId();
+    		AlgorithmIdentifier algId = msg.getMessage().getHeader().getProtectionAlg();
+    		String oid = algId.getAlgorithm().getId();
     		assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
     		// Check that this is an old message, created before ECA-2104, using null instead of DERNull as algorithm parameters.
     		ASN1Encodable pp = algId.getParameters();
@@ -226,8 +232,8 @@ public class CrmfRequestMessageTest {
     		in = new ASN1InputStream(newmsg);
     		derObject = in.readObject();
     		pkimsg = PKIMessage.getInstance(derObject);
-    		AlgorithmIdentifier algId = pkimsg.getProtectedPart().getHeader().getProtectionAlg();
-    		String oid = algId.getObjectId().getId();
+    		AlgorithmIdentifier algId = pkimsg.getHeader().getProtectionAlg();
+    		String oid = algId.getAlgorithm().getId();
     		assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
     		// Check that we have DERNull and not plain java null as algorithm parameters.
     		ASN1Encodable pp = algId.getParameters();
@@ -273,7 +279,7 @@ public class CrmfRequestMessageTest {
     	assertEquals("foo123", msg.getPassword());
     	// Verify PBE protection
     	PKIHeader head = msg.getHeader();
-    	final DEROctetString os = head.getSenderKID();
+    	final ASN1OctetString os = head.getSenderKID();
     	String keyId = new String(os.getOctets(), "UTF-8");
     	assertEquals("KeyId", keyId);
     	final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
@@ -309,8 +315,8 @@ public class CrmfRequestMessageTest {
     	assertEquals("user", msg.getUsername());
     	assertEquals("foo123", msg.getPassword());
     	// Check signature protection
-    	AlgorithmIdentifier algId = msg.getMessage().getProtectedPart().getHeader().getProtectionAlg();
-    	String oid = algId.getObjectId().getId();
+    	AlgorithmIdentifier algId = msg.getMessage().getHeader().getProtectionAlg();
+    	String oid = algId.getAlgorithm().getId();
     	assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
     	// Check that we have DERNull and not plain java null as algorithm parameters.
     	ASN1Encodable pp = algId.getParameters();
@@ -338,8 +344,8 @@ public class CrmfRequestMessageTest {
     	assertEquals("21030533610000000012 eNodeB", msg.getUsername());
     	// We would like a password here...
 		assertNull(msg.getPassword());
-		AlgorithmIdentifier algId = msg.getMessage().getProtectedPart().getHeader().getProtectionAlg();
-		String oid = algId.getObjectId().getId();
+		AlgorithmIdentifier algId = msg.getMessage().getHeader().getProtectionAlg();
+		String oid = algId.getAlgorithm().getId();
 		assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
 		// Check that we have DERNull and not plain java null as algorithm parameters.
 		ASN1Encodable pp = algId.getParameters();
@@ -358,8 +364,8 @@ public class CrmfRequestMessageTest {
 		PKIMessage certconf = PKIMessage.getInstance(derObject);
 		//log.info(certconf.toString());
 		GeneralCmpMessage conf = new GeneralCmpMessage(certconf);
-		algId = conf.getMessage().getProtectedPart().getHeader().getProtectionAlg();
-		oid = algId.getObjectId().getId();
+		algId = conf.getMessage().getHeader().getProtectionAlg();
+		oid = algId.getAlgorithm().getId();
 		assertEquals(PKCSObjectIdentifiers.sha1WithRSAEncryption.getId(), oid);
 		// Check that we have DERNull and not plain java null as algorithm parameters.
 		pp = algId.getParameters();

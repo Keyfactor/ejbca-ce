@@ -17,7 +17,7 @@
 		<path refid="lib.ejbca-util.classpath"/>
 		<pathelement location="${mod.ejbca-ws.lib}" /> 
 		<path refid="lib.cert-cvc.classpath"/>
-		<path refid="lib.bouncycastle-provonly.classpath"/>
+		<path refid="lib.bouncycastle.classpath"/>
 		<path refid="lib.log4j.classpath"/>
 		<path refid="lib.commons-lang.classpath"/>
 		<path refid="lib.commons-collections.classpath"/>

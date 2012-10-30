@@ -27,7 +27,10 @@ import java.util.Collection;
 
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCSException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
@@ -83,11 +86,11 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
     }
 
     protected void makeCertRequest(String dn, KeyPair rsaKeys, String reqfile) throws NoSuchAlgorithmException, IOException, NoSuchProviderException,
-            InvalidKeyException, SignatureException {
+            InvalidKeyException, SignatureException, OperatorCreationException, PKCSException {
         getLogger().trace(">makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
 
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name(dn), rsaKeys.getPublic(), new DERSet(),
-                rsaKeys.getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name(dn), rsaKeys.getPublic(), new DERSet(),
+                rsaKeys.getPrivate(), null);
 
         /*
          * We don't use these unnecessary attributes DERConstructedSequence kName
@@ -99,11 +102,12 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
          */
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
-        dOut.writeObject(req);
+        dOut.writeObject(req.toASN1Structure());
         dOut.close();
 
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
-        boolean verify = req2.verify();
+        ContentVerifierProvider contentVerifier = CertTools.genContentVerifierProvider(rsaKeys.getPublic());
+        boolean verify = req2.isSignatureValid(contentVerifier); //req2.verify();
         getLogger().info("Verify returned " + verify);
 
         if (verify == false) {

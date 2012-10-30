@@ -23,13 +23,19 @@ import javax.ejb.FinderException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.DEREnumerated;
 import org.bouncycastle.asn1.DERInteger;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.RevDetails;
+import org.bouncycastle.asn1.cmp.RevReqContent;
+import org.bouncycastle.asn1.crmf.CertTemplate;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSession;
@@ -60,12 +66,6 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.protocol.cmp.authentication.HMACAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.ICMPAuthenticationModule;
 import org.ejbca.core.protocol.cmp.authentication.VerifyPKIMessage;
-
-import com.novosec.pkix.asn1.cmp.PKIBody;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
-import com.novosec.pkix.asn1.cmp.RevDetails;
-import com.novosec.pkix.asn1.cmp.RevReqContent;
-import com.novosec.pkix.asn1.crmf.CertTemplate;
 
 /**
  * Message handler for the CMP revocation request messages
@@ -161,32 +161,40 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    // If authentication was correct, we will now try to find the certificate to revoke
 		    final PKIMessage pkimsg = msg.getMessage();
 		    final PKIBody body = pkimsg.getBody();
-		    final RevReqContent rr = body.getRr();
-		    final RevDetails rd = rr.getRevDetails(0);
+		    final RevReqContent rr = (RevReqContent) body.getContent();
+		    RevDetails rd;
+		    try {
+		        rd = rr.toRevDetailsArray()[0];
+		    } catch(Exception e) {
+		        rd = CmpMessageHelper.getNovosecRevDetails(rr);
+		    }
 		    final CertTemplate ct = rd.getCertDetails();
 		    final DERInteger serno = ct.getSerialNumber();
-		    final X509Name issuer = ct.getIssuer();
+		    final X500Name issuer = ct.getIssuer();
 		    // Get the revocation reason. 
 		    // For CMPv1 this can be a simple DERBitString or it can be a requested CRL Entry Extension
 		    // If there exists CRL Entry Extensions we will use that, because it's the only thing allowed in CMPv2
 		    int reason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED;
-		    final DERBitString reasonbits = rd.getRevocationReason();
+		    final ASN1OctetString reasonoctets = rd.getCrlEntryDetails().getExtension(Extension.reasonCode).getExtnValue();
+		    DERBitString reasonbits;
+            try {
+                reasonbits = new DERBitString(reasonoctets.getEncoded());
+            } catch (IOException e1) {
+                LOG.info(INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e1.getMessage()), e1);
+                return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.INCORRECT_DATA, e1.getMessage());
+            }
 		    if (reasonbits != null) {
 		        reason = CertTools.bitStringToRevokedCertInfo(reasonbits);
 		        if (LOG.isDebugEnabled()) {
 		            LOG.debug("CMPv1 revocation reason: "+reason);
 		        }
-		    } else {
-		        if (LOG.isDebugEnabled()) {
-		            LOG.debug("CMPv1 revocation reason is null");
-		        }
 		    }
-		    final X509Extensions crlExt = rd.getCrlEntryDetails();
+		    final Extensions crlExt = rd.getCrlEntryDetails();
 		    if (crlExt != null) {
-		        final X509Extension ext = crlExt.getExtension(X509Extensions.ReasonCode);
+		        final Extension ext = crlExt.getExtension(Extension.reasonCode);
 		        if (ext != null) {
 		            try {
-		                final ASN1InputStream ai = new ASN1InputStream(ext.getValue().getOctets());
+		                final ASN1InputStream ai = new ASN1InputStream(ext.getExtnValue().getOctets());
 		                final ASN1Primitive obj = ai.readObject();
 		                final DEREnumerated crlreason = DEREnumerated.getInstance(obj);
 		                // RevokedCertInfo.REVOCATION_REASON_AACOMPROMISE are the same integer values as the CRL reason extension code

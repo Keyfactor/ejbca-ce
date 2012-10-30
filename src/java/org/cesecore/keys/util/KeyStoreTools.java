@@ -47,15 +47,15 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.ECKeyUtil;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.util.Base64;
@@ -357,13 +357,15 @@ public class KeyStoreTools {
         } else {
             log.info("Using named curve parameter encoding for ECC key.");
         }
+        X500Name sDNName = sDN!=null ? new X500Name(sDN) : new X500Name("CN="+alias);
         final PKCS10CertificationRequest certReq =
-            new PKCS10CertificationRequest( sigAlg,
-                                            sDN!=null ? new X509Name(sDN) : new X509Name("CN="+alias),
+            CertTools.genPKCS10CertificationRequest( sigAlg,
+                                            sDNName,
                                             publicKey, new DERSet(),
                                             privateKey,
                                             this.keyStore.getProvider().getName() );
-        if ( !certReq.verify() ) {
+        ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(publicKey);
+        if ( !certReq.isSignatureValid(verifier) ) {
             String msg = intres.getLocalizedMessage("token.errorcertreqverify", alias);
             throw new Exception(msg);
         }

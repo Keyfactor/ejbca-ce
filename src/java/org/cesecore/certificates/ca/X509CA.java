@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -49,6 +48,7 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DERIA5String;
@@ -62,19 +62,21 @@ import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLNumber;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.asn1.x509.X509DefaultEntryConverter;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.X509NameEntryConverter;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509CRLHolder;
+import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v2CRLBuilder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSProcessable;
@@ -85,15 +87,13 @@ import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.cms.RecipientInformation;
 import org.bouncycastle.cms.RecipientInformationStore;
 import org.bouncycastle.cms.jcajce.JceKeyTransEnvelopedRecipient;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
-import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
-import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
@@ -473,12 +473,12 @@ public class X509CA extends CA implements Serializable {
         } else {
             converter = new X509DefaultEntryConverter();
         }
-        X509Name x509dn = CertTools.stringToBcX509Name(getSubjectDN(), converter, getUseLdapDNOrder());
+        X500Name x509dn = CertTools.stringToBcX509Name(getSubjectDN(), converter, getUseLdapDNOrder());
         PKCS10CertificationRequest req;
         try {
             CAToken catoken = getCAToken();
             KeyPair keyPair = new KeyPair(catoken.getPublicKey(signatureKeyPurpose), catoken.getPrivateKey(signatureKeyPurpose));
-            req = new PKCS10CertificationRequest(signAlg, x509dn, keyPair.getPublic(), attrset, keyPair.getPrivate(), catoken.getCryptoToken().getSignProviderName());
+            req = CertTools.genPKCS10CertificationRequest(signAlg, x509dn, keyPair.getPublic(), attrset, keyPair.getPrivate(), catoken.getCryptoToken().getSignProviderName());
             log.trace("<createRequest");
             return req.getEncoded();
         } catch (CryptoTokenOfflineException e) { // NOPMD, since we catch wide below
@@ -578,8 +578,8 @@ public class X509CA extends CA implements Serializable {
     }
 
     @Override
-    public Certificate generateCertificate(final EndEntityInformation subject, final X509Name requestX509Name, final PublicKey publicKey, final int keyusage, final Date notBefore,
-            final Date notAfter, final CertificateProfile certProfile, final X509Extensions extensions, final String sequence) throws Exception {
+    public Certificate generateCertificate(final EndEntityInformation subject, final X500Name requestX509Name, final PublicKey publicKey, final int keyusage, final Date notBefore,
+            final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence) throws Exception {
         // Before we start, check if the CA is off-line, we don't have to waste time
         // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline
         final CAToken catoken = getCAToken();
@@ -593,8 +593,8 @@ public class X509CA extends CA implements Serializable {
     /**
      * sequence is ignored by X509CA
      */
-    private Certificate generateCertificate(final EndEntityInformation subject, final X509Name requestX509Name, final PublicKey publicKey, final int keyusage, final Date notBefore,
-            final Date notAfter, final CertificateProfile certProfile, final X509Extensions extensions, final String sequence, final PublicKey caPublicKey,
+    private Certificate generateCertificate(final EndEntityInformation subject, final X500Name requestX509Name, final PublicKey publicKey, final int keyusage, final Date notBefore,
+            final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence, final PublicKey caPublicKey,
             final PrivateKey caPrivateKey, final String provider) throws Exception {
 
         // We must only allow signing to take place if the CA itself is on line, even if the token is on-line.
@@ -625,11 +625,10 @@ public class X509CA extends CA implements Serializable {
         // Get certificate validity time notBefore and notAfter
         final CertificateValidity val = new CertificateValidity(subject, certProfile, notBefore, notAfter, cacert, isRootCA);
 
-        final X509V3CertificateGenerator certgen = new X509V3CertificateGenerator();
+        final BigInteger serno;
         {
             // Serialnumber is either random bits, where random generator is initialized by the serno generator.
             // Or a custom serial number defined in the end entity object
-            final BigInteger serno;
             final ExtendedInformation ei = subject.getExtendedinformation();
             if (certProfile.getAllowCertSerialNumberOverride()) {
                 serno = (ei != null ? ei.certificateSerialNumber() : SernoGeneratorRandom.instance().getSerno());
@@ -640,11 +639,7 @@ public class X509CA extends CA implements Serializable {
                     log.info(msg);
                 }
             }
-            certgen.setSerialNumber(serno);
         }
-        certgen.setNotBefore(val.getNotBefore());
-        certgen.setNotAfter(val.getNotAfter());
-        certgen.setSignatureAlgorithm(sigAlg);
 
         // Make DNs
         String dn = subject.getCertificateDN();
@@ -669,7 +664,7 @@ public class X509CA extends CA implements Serializable {
         } else {
             ldapdnorder = true;
         }
-        final X509Name subjectDNName;
+        final X500Name subjectDNName;
         if (certProfile.getAllowDNOverride() && (requestX509Name != null)) {
             subjectDNName = requestX509Name;
             if (log.isDebugEnabled()) {
@@ -689,9 +684,10 @@ public class X509CA extends CA implements Serializable {
         if (log.isDebugEnabled()) {
             log.debug("Using subjectDN: " + subjectDNName.toString());
         }
-        certgen.setSubjectDN(subjectDNName);
+
         // We must take the issuer DN directly from the CA-certificate otherwise we risk re-ordering the DN
         // which many applications do not like.
+        X500Name issuerDNName;
         if (isRootCA) {
             // This will be an initial root CA, since no CA-certificate exists
             // Or it is a root CA, since the cert is self signed. If it is a root CA we want to use the same encoding for subject and issuer,
@@ -699,52 +695,51 @@ public class X509CA extends CA implements Serializable {
             if (log.isDebugEnabled()) {
                 log.debug("Using subject DN also as issuer DN, because it is a root CA");
             }
-            certgen.setIssuerDN(subjectDNName);
+            issuerDNName = subjectDNName;
         } else {
-            javax.security.auth.x500.X500Principal issuerPrincipal = cacert.getSubjectX500Principal();
+            issuerDNName = new X500Name(cacert.getSubjectDN().toString());
             if (log.isDebugEnabled()) {
-                log.debug("Using issuer DN directly from the CA certificate: " + issuerPrincipal.getName());
+                log.debug("Using issuer DN directly from the CA certificate: " + issuerDNName.toString());
             }
-            certgen.setIssuerDN(issuerPrincipal);
         }
-        certgen.setPublicKey(publicKey);
 
+        SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
+        final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(issuerDNName, serno, val.getNotBefore(), val.getNotAfter(), subjectDNName, pkinfo);
+        
         //
         // X509 Certificate Extensions
         //
 
         // Extensions we will add to the certificate, later when we have filled the structure with
         // everything we want.
-        final X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
+        final ExtensionsGenerator extgen = new ExtensionsGenerator();
 
         // First we check if there is general extension override, and add all extensions from
         // the request in that case
         if (certProfile.getAllowExtensionOverride() && extensions != null) {
-            @SuppressWarnings("rawtypes")
-            final Enumeration en = extensions.oids();
-            while (en != null && en.hasMoreElements()) {
-                final ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) en.nextElement();
-                final X509Extension ext = extensions.getExtension(oid);
+            ASN1ObjectIdentifier[] oids = extensions.getExtensionOIDs();
+            for(ASN1ObjectIdentifier oid : oids ) {
+                final Extension ext = extensions.getExtension(oid);
                 if (log.isDebugEnabled()) {
                     log.debug("Overriding extension with oid: " + oid);
                 }
-                extgen.addExtension(oid, ext.isCritical(), ext.getValue().getOctets());
+                    extgen.addExtension(oid, ext.isCritical(), ext.getParsedValue());
             }
         }
 
         // Second we see if there is Key usage override
-        X509Extensions overridenexts = extgen.generate();
+        Extensions overridenexts = extgen.generate();
         if (certProfile.getAllowKeyUsageOverride() && (keyusage >= 0)) {
             if (log.isDebugEnabled()) {
                 log.debug("AllowKeyUsageOverride=true. Using KeyUsage from parameter: " + keyusage);
             }
             if ((certProfile.getUseKeyUsage() == true) && (keyusage >= 0)) {
-                final X509KeyUsage ku = new X509KeyUsage(keyusage);
+                final KeyUsage ku = new KeyUsage(keyusage);
                 // We don't want to try to add custom extensions with the same oid if we have already added them
                 // from the request, if AllowExtensionOverride is enabled.
                 // Two extensions with the same oid is not allowed in the standard.
-                if (overridenexts.getExtension(X509Extensions.KeyUsage) == null) {
-                    extgen.addExtension(X509Extensions.KeyUsage, certProfile.getKeyUsageCritical(), ku);
+                if (overridenexts.getExtension(Extension.keyUsage) == null) {
+                    extgen.addExtension(Extension.keyUsage, certProfile.getKeyUsageCritical(), ku);
                 } else {
                     if (log.isDebugEnabled()) {
                         log.debug("KeyUsage was already overridden by an extension, not using KeyUsage from parameter.");
@@ -805,13 +800,11 @@ public class X509CA extends CA implements Serializable {
         }
 
         // Finally add extensions to certificate generator
-        final X509Extensions exts = extgen.generate();
-        @SuppressWarnings("rawtypes")
-        final Enumeration en = exts.oids();
-        while (en.hasMoreElements()) {
-            final ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) en.nextElement();
-            final X509Extension ext = exts.getExtension(oid);
-            certgen.addExtension(oid, ext.isCritical(), ext.getValue().getOctets());
+        final Extensions exts = extgen.generate();
+        ASN1ObjectIdentifier[] oids = exts.getExtensionOIDs();
+        for(ASN1ObjectIdentifier oid : oids) {
+            final Extension ext = exts.getExtension(oid);
+            certbuilder.addExtension(oid, ext.isCritical(), ext.getParsedValue());
         }
 
         //
@@ -821,7 +814,10 @@ public class X509CA extends CA implements Serializable {
         if (log.isTraceEnabled()) {
             log.trace(">certgen.generate");
         }
-        final X509Certificate cert = certgen.generate(caPrivateKey, provider);
+        
+        final ContentSigner signer = new JcaContentSignerBuilder(sigAlg).build(caPrivateKey);
+        final X509CertificateHolder certHolder = certbuilder.build(signer);
+        final X509Certificate cert = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
         if (log.isTraceEnabled()) {
             log.trace("<certgen.generate");
         }
@@ -926,10 +922,9 @@ public class X509CA extends CA implements Serializable {
                 converter = new X509DefaultEntryConverter();
             }
 
-            X509Name caname = CertTools.stringToBcX509Name(getSubjectDN(), converter, getUseLdapDNOrder());
-            issuer = X500Name.getInstance(caname.getEncoded());
+            issuer = CertTools.stringToBcX509Name(getSubjectDN(), converter, getUseLdapDNOrder());
         } else {
-            issuer = X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded());
+            issuer =  CertTools.stringToBcX509Name(cacert.getSubjectDN().getName());
         }
         final Date thisUpdate = new Date();
         final Date nextUpdate = new Date();
@@ -956,7 +951,7 @@ public class X509CA extends CA implements Serializable {
             SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(getCAToken()
                     .getPublicKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN).getEncoded())).readObject());
             AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
-            crlgen.addExtension(X509Extensions.AuthorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
+            crlgen.addExtension(Extension.authorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
         }
         
         // Authority Information Access  
@@ -972,19 +967,19 @@ public class X509CA extends CA implements Serializable {
         if(accessList.size() > 0) {
             AuthorityInformationAccess authorityInformationAccess = AuthorityInformationAccess.getInstance(new DERSequence(accessList));
             // "This CRL extension MUST NOT be marked critical." according to rfc4325
-            crlgen.addExtension(X509Extensions.AuthorityInfoAccess, false, authorityInformationAccess);
+            crlgen.addExtension(Extension.authorityInfoAccess, false, authorityInformationAccess);
         }
                 
         // CRLNumber extension
         if (getUseCRLNumber() == true) {
             CRLNumber crlnum = new CRLNumber(BigInteger.valueOf(crlnumber));
-            crlgen.addExtension(X509Extensions.CRLNumber, this.getCRLNumberCritical(), crlnum);
+            crlgen.addExtension(Extension.cRLNumber, this.getCRLNumberCritical(), crlnum);
         }
 
         if (isDeltaCRL) {
             // DeltaCRLIndicator extension
             CRLNumber basecrlnum = new CRLNumber(BigInteger.valueOf(basecrlnumber));
-            crlgen.addExtension(X509Extensions.DeltaCRLIndicator, true, basecrlnum);
+            crlgen.addExtension(Extension.deltaCRLIndicator, true, basecrlnum);
         }
         // CRL Distribution point URI and Freshest CRL DP
         if (getUseCrlDistributionPointOnCrl()) {
@@ -998,7 +993,7 @@ public class X509CA extends CA implements Serializable {
                 // According to the RFC, IDP must be a critical extension.
                 // Nonetheless, at the moment, Mozilla is not able to correctly
                 // handle the IDP extension and discards the CRL if it is critical.
-                crlgen.addExtension(X509Extensions.IssuingDistributionPoint, getCrlDistributionPointOnCrlCritical(), idp);
+                crlgen.addExtension(Extension.issuingDistributionPoint, getCrlDistributionPointOnCrlCritical(), idp);
             }
 
             if (!isDeltaCRL) {
@@ -1012,7 +1007,7 @@ public class X509CA extends CA implements Serializable {
                     // CRL must not be marked as critical. Therefore it is
                     // hardcoded as not critical and is independent of
                     // getCrlDistributionPointOnCrlCritical().
-                    crlgen.addExtension(X509Extensions.FreshestCRL, false, ext);
+                    crlgen.addExtension(Extension.freshestCRL, false, ext);
                 }
 
             }

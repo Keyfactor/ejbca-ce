@@ -170,8 +170,8 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
         	final X509Certificate x509 = (X509Certificate) certificate;
         	getLogger().info(new StringBuilder()
         		.append("  Serial number:  ").append(x509.getSerialNumber().toString(16)).append(NEWLINE)
-        		.append("  Issuer DN:      ").append(x509.getIssuerX500Principal().getName()).append(NEWLINE)
-        		.append("  Subject DN:     ").append(x509.getSubjectX500Principal().getName()).append(NEWLINE)
+        		.append("  Issuer DN:      ").append(x509.getIssuerDN().getName()).append(NEWLINE)
+        		.append("  Subject DN:     ").append(x509.getSubjectDN().getName()).append(NEWLINE)
         		.append("  Not Before:     ").append(format.format(x509.getNotBefore())).append(NEWLINE)
         		.append("  Not After:      ").append(format.format(x509.getNotAfter())).append(NEWLINE)
         		.append("  Subject key id: ").append(computeSubjectKeyIdentifier(x509)).append(NEWLINE)

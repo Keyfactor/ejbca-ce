@@ -176,7 +176,7 @@ public class CaImportCRLCommandTest {
             // Strict will do it
             caImportCrlCommand.execute(CAIMPORTCRL_STRICT_ARGS);
             info = certStoreSession.getCertificateInfo(fingerprint);
-            assertEquals("Cert should be revoked", info.getStatus(), CertificateConstants.CERT_REVOKED);
+            assertEquals("Cert should be revoked", CertificateConstants.CERT_REVOKED, info.getStatus());
             assertEquals("Revocation reason should be on hold", info.getRevocationReason(), RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD);
             // Now delete the certificate from the database an import the CRL, using ADAPTIVE a new certificate is created
             Certificate cert2 = certStoreSession.findCertificateByIssuerAndSerno(CertTools.getIssuerDN(cert), CertTools.getSerialNumber(cert));

@@ -16,7 +16,7 @@ import java.security.PublicKey;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.x509.BasicConstraints;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -36,7 +36,7 @@ public class BasicConstraint extends StandardCertificateExtension {
 	
     @Override
 	public void init(final CertificateProfile certProf) {
-		super.setOID(X509Extensions.BasicConstraints.getId());
+		super.setOID(Extension.basicConstraints.getId());
 		super.setCriticalFlag(certProf.getBasicConstraintsCritical());
 	}
     

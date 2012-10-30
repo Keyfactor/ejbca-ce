@@ -29,7 +29,7 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -465,7 +465,7 @@ public class LdapPublisher extends BasePublisher {
 			final X509CRL crl = CertTools.getCRLfromByteArray(incrl);
 			crldn = CertTools.stringToBCDNString(crl.getIssuerDN().toString());
 			// Is it a delta CRL?
-			if (crl.getExtensionValue(X509Extensions.DeltaCRLIndicator.getId()) != null) {
+			if (crl.getExtensionValue(Extension.deltaCRLIndicator.getId()) != null) {
 				isDeltaCRL = true;
 			} else {
 				isDeltaCRL = false;

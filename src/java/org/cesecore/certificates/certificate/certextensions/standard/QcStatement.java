@@ -24,8 +24,8 @@ import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.Iso4217CurrencyCode;
 import org.bouncycastle.asn1.x509.qualified.MonetaryValue;
@@ -53,7 +53,7 @@ public class QcStatement extends StandardCertificateExtension {
 	
     @Override
 	public void init(final CertificateProfile certProf) {
-		super.setOID(X509Extensions.QCStatements.getId());
+		super.setOID(Extension.qCStatements.getId());
 		super.setCriticalFlag(certProf.getQCStatementCritical());
 	}
     

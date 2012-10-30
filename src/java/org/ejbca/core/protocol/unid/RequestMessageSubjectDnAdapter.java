@@ -25,8 +25,8 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Date;
 
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.jce.X509Principal;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
@@ -56,7 +56,7 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 		final byte b[] = (byte[])stream.readObject();
 		this.dn = new X509Principal(b);
 	}
-	RequestMessageSubjectDnAdapter(RequestMessage req, X509Name _dn) {
+	RequestMessageSubjectDnAdapter(RequestMessage req, X500Name _dn) {
 		this.original = (ICrmfRequestMessage)req;
 		this.dn = new X509Principal(_dn);
 	}
@@ -78,15 +78,15 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 	}
 	@Override
 	public String getRequestDN() {
-		final X509Name name = getRequestX509Name();
+		final X500Name name = getRequestX509Name();
 		if ( name==null ) {
 			return null;
 		}
 		return CertTools.stringToBCDNString(name.toString());
 	}
 	@Override
-	public X509Name getRequestX509Name() {
-		return this.dn;
+	public X500Name getRequestX509Name() {
+		return new X500Name(this.dn.getName());
 	}
 	@Override
 	public String getRequestAltNames() {
@@ -101,7 +101,7 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 		return this.original.getRequestValidityNotAfter();
 	}
 	@Override
-	public X509Extensions getRequestExtensions() {
+	public Extensions getRequestExtensions() {
 		return this.original.getRequestExtensions();
 	}
 	@Override

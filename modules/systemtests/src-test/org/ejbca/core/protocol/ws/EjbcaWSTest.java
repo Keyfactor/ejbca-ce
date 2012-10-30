@@ -37,7 +37,7 @@ import java.util.TimeZone;
 import org.apache.commons.lang.time.FastDateFormat;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -677,9 +677,9 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     	
     	// Generate a CSR
     	KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        PKCS10CertificationRequest pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"),
-                keys.getPublic(), new DERSet(), keys.getPrivate());
-        final String csr = new String(Base64.encode(pkcs10.getEncoded()));
+        PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"),
+                keys.getPublic(), new DERSet(), keys.getPrivate(), null);
+        final String csr = new String(Base64.encode(pkcs10.toASN1Structure().getEncoded()));
         
         // Set some user data
         final UserDataVOWS userData = new UserDataVOWS();
@@ -769,8 +769,8 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         tokenUser1.setEndEntityProfileName("EMPTY");
         tokenUser1.setCertificateProfileName("ENDUSER");
         KeyPair basickeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        PKCS10CertificationRequest basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOTUSED"), basickeys
-                .getPublic(), new DERSet(), basickeys.getPrivate());
+        PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOTUSED"), basickeys
+                .getPublic(), new DERSet(), basickeys.getPrivate(), null);
         ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();
         TokenCertificateRequestWS tokenCertReqWS = new TokenCertificateRequestWS();
         tokenCertReqWS.setCAName(caName);

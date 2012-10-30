@@ -103,18 +103,19 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         }
         // String used in SQL so strip it
         final String dn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
+        final String issuerDN = CertTools.stringToBCDNString(StringTools.strip(issuerdn));
         if (log.isDebugEnabled()) {
-            log.debug("Looking for users with subjectdn: " + dn + ", issuerdn : " + issuerdn);
+            log.debug("Looking for users with subjectdn: " + dn + ", issuerdn : " + issuerDN);
         }
-        final UserData data = UserData.findBySubjectDNAndCAId(entityManager, dn, issuerdn.hashCode());
+        final UserData data = UserData.findBySubjectDNAndCAId(entityManager, dn, issuerDN.hashCode());
         if (data == null) {
             if (log.isDebugEnabled()) {
-                log.debug("Cannot find user with subjectdn: " + dn + ", issuerdn : " + issuerdn);
+                log.debug("Cannot find user with subjectdn: " + dn + ", issuerdn : " + issuerDN);
             }
         }
         final EndEntityInformation returnval = returnUserDataVO(admin, data, null);
         if (log.isTraceEnabled()) {
-            log.trace("<findUserBySubjectAndIssuerDN(" + subjectdn + ", " + issuerdn + ")");
+            log.trace("<findUserBySubjectAndIssuerDN(" + subjectdn + ", " + issuerDN + ")");
         }
         return returnval;
     }

@@ -36,7 +36,6 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -232,8 +231,8 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
             IOException, InvalidKeySpecException, ObjectNotFoundException, CreateException, CADoesntExistsException, CesecoreException {
         Certificate ret;
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); // Use short keys, since this will be done many times
-        byte[] rawPkcs10req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=ignored"), rsakeys.getPublic(),
-                new DERSet(), rsakeys.getPrivate()).getEncoded();
+        byte[] rawPkcs10req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=ignored"), rsakeys.getPublic(),
+                new DERSet(), rsakeys.getPrivate(), null).toASN1Structure().getEncoded();
         if (raw) {
             ret = CertTools.getCertfromByteArray(certificateRequestSession.processCertReq(admin, userData, new String(Base64.encode(rawPkcs10req)),
                     CertificateConstants.CERT_REQ_TYPE_PKCS10, null, CertificateConstants.CERT_RES_TYPE_CERTIFICATE));

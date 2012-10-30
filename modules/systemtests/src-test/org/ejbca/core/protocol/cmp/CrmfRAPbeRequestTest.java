@@ -34,6 +34,8 @@ import java.util.Random;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
@@ -82,8 +84,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA sends CMP messages authenticated using PBE (password based encryption)
@@ -181,6 +181,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         if (certificateProfileSession.getCertificateProfile(CPNAME) == null) {
             CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             cp.setAllowValidityOverride(true);
+            cp.setAllowExtensionOverride(true);
             try { // TODO: Fix this better
                 certificateProfileSession.addCertificateProfile(admin, CPNAME, cp);
             } catch (CertificateProfileExistsException e) {
@@ -248,11 +249,12 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // from above
             // In this test userDN contains special, escaped characters to verify
             // that that works with CMP RA as well
-            PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, notBefore, notAfter, null);
+            PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, notBefore, notAfter, null, null, null);
             PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
             assertNotNull(req);
-
-            int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent(); 
+            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
             DEROutputStream out = new DEROutputStream(bao);
             out.writeObject(req);
@@ -283,7 +285,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
             // Now revoke the bastard using the CMPv1 reason code!
-            PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, false);
+            PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, false, null, null);
             PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
@@ -298,7 +300,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE);
 
             // Create a revocation request for a non existing cert, should fail!
-            rev = genRevReq(issuerDN, userDN, new BigInteger("1"), cacert, nonce, transid, true);
+            rev = genRevReq(issuerDN, userDN, new BigInteger("1"), cacert, nonce, transid, true, null, null);
             revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
@@ -340,6 +342,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // First we will use "KeyId" for both profiles, and then we will use ProfileDefault for the cert profile
             CertificateProfile cp1 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             cp1.setUseSubjectAlternativeName(true);
+            cp1.setAllowExtensionOverride(true);
             // Add a weird CDP, so we are sure this is the profile used
             final String cdp1 = "http://keyidtest/crl.crl";
             cp1.setCRLDistributionPointURI(cdp1);
@@ -379,11 +382,12 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             
             // In this test userDN contains special, escaped characters to verify
             // that that works with CMP RA as well
-            PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
+            PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null, null, null);
             PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, keyId, 567);
             assertNotNull(req);
 
-            int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
             DEROutputStream out = new DEROutputStream(bao);
             out.writeObject(req);
@@ -402,11 +406,12 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ProfileDefault");
             
             // Make new request, the certificate should now be produced with the other certificate profile
-            PKIMessage two = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
+            PKIMessage two = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null, null, null);
             PKIMessage req2 = protectPKIMessage(two, false, PBEPASSWORD, keyId, 567);
             assertNotNull(req2);
 
-            reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             bao = new ByteArrayOutputStream();
             out = new DEROutputStream(bao);
             out.writeObject(req);
@@ -437,11 +442,12 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 10001);
         assertNotNull(req);
 
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
         out.writeObject(req);
@@ -485,7 +491,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             byte[] transid = CmpMessageHelper.createSenderNonce();
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
             DEROutputStream out = new DEROutputStream(bao);
-            PKIMessage rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid, true);
+            PKIMessage rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid, true, null, null);
             PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
@@ -502,7 +508,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             transid = CmpMessageHelper.createSenderNonce();
             bao = new ByteArrayOutputStream();
             out = new DEROutputStream(bao);
-            rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid, true);
+            rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid, true, null, null);
             revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();
@@ -525,7 +531,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             transid = CmpMessageHelper.createSenderNonce();
             bao = new ByteArrayOutputStream();
             out = new DEROutputStream(bao);
-            rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid, true);
+            rev = genRevReq(cainfo.getSubjectDN(), userdata.getDN(), cert.getSerialNumber(), newCACert, nonce, transid, true, null, null);
             revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
             assertNotNull(revReq);
             bao = new ByteArrayOutputStream();

@@ -41,9 +41,9 @@ import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.asn1.DLSet;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -646,14 +646,14 @@ public class BasicCertificateExtensionTest {
 
         	byte[] value = baseExt.getValueEncoded(null, null, null, null, null);
 
-        	X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
+        	ExtensionsGenerator extgen = new ExtensionsGenerator();
         	extgen.addExtension(new ASN1ObjectIdentifier(baseExt.getOID()), baseExt.isCriticalFlag(), value);
-        	X509Extensions exts = extgen.generate();
+        	Extensions exts = extgen.generate();
         	ASN1ObjectIdentifier oid = new ASN1ObjectIdentifier(baseExt.getOID());
-        	X509Extension ext = exts.getExtension(oid);
+        	Extension ext = exts.getExtension(oid);
         	assertNotNull(ext);
         	// Read the extension value, it's a DERIA5String wrapped in an ASN1OctetString
-        	ASN1OctetString str = ext.getValue();
+        	ASN1OctetString str = ext.getExtnValue();
         	ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(str.getOctets()));
         	DERIA5String ia5str = (DERIA5String)aIn.readObject();
         	assertEquals("This is a printable string", ia5str.getString());

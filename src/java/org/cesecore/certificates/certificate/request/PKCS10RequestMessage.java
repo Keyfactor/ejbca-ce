@@ -22,7 +22,6 @@ import java.security.PublicKey;
 import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.util.Date;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -34,9 +33,11 @@ import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.BCStrictStyle;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.util.CertTools;
@@ -209,15 +210,15 @@ public class PKCS10RequestMessage implements RequestMessage {
             if (values.size() == 0) {
                 return null;
             }
-            X509Extensions exts = X509Extensions.getInstance(values.getObjectAt(0));
-            X509Extension ext = exts.getExtension(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
+            Extensions exts = Extensions.getInstance(values.getObjectAt(0));
+            Extension ext = exts.getExtension(PKCSObjectIdentifiers.pkcs_9_at_challengePassword);
             if (ext == null) {
                 if (log.isDebugEnabled()) {
                 	log.debug("no challenge password extension");
                 }
                 return null;
             }
-            obj = ext.getValue();
+            obj = ext.getExtnValue();
         } else {
             // If it is a challengePassword directly, it's just to grab the value
             ASN1Set values = attr.getAttrValues();
@@ -262,17 +263,17 @@ public class PKCS10RequestMessage implements RequestMessage {
         // CN=pix.primekey.se + unstructuredAddress=pix.primekey.se
         // We only want the CN and not the oid-part.
         // Luckily for us this is handles automatically by BC X509Name class
-        X509Name xname = getRequestX509Name();
+        X500Name xname = getRequestX509Name();
         String ret = null;
         if (xname == null) {
         	log.info("No requestDN in request, probably we could not read/parse/decrypt request.");
         } else {
             @SuppressWarnings("unchecked")
-            Vector<String> cnValues = xname.getValues(X509Name.CN);
-            if (cnValues.size() == 0) {
+            RDN[] cnValues = xname.getRDNs(BCStrictStyle.CN);
+            if (cnValues.length == 0) {
             	log.info("No CN in DN: "+xname.toString());
             } else {
-                ret = cnValues.firstElement().toString();         	
+                ret = cnValues[0].getFirst().getValue().toString();         	
                 // If we have a CN with a normal name like "Test Testsson" we only want to 
                 // use the first part as the username
             	int index = ret.indexOf(' ');
@@ -331,7 +332,7 @@ public class PKCS10RequestMessage implements RequestMessage {
      */
     public String getRequestDN() {
     	String ret = null;
-    	X509Name name = getRequestX509Name();
+    	X500Name name = getRequestX509Name();
     	if (name != null) {
     		String dn = name.toString();
     		// We have to make special handling again for Cisco devices. 
@@ -352,7 +353,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     /**
      * @see RequestMessage#getRequestX509Name()
      */
-    public X509Name getRequestX509Name() {
+    public X500Name getRequestX509Name() {
         try {
             if (pkcs10 == null) {
                 init();
@@ -361,12 +362,12 @@ public class PKCS10RequestMessage implements RequestMessage {
             log.error("PKCS10 not inited!");
             return null;
         }
-        X509Name ret = null;
+        X500Name ret = null;
         // Get subject name from request
         CertificationRequestInfo info = pkcs10.getCertificationRequestInfo();
         if (info != null) {
             try {
-                X509Name name = X509Name.getInstance(info.getSubject().getEncoded());
+                X500Name name = X500Name.getInstance(info.getSubject().getEncoded());
                 ret = name;
             } catch (IOException e) {
                 log.warn("Error encoding/decoding request name: ", e);
@@ -378,9 +379,9 @@ public class PKCS10RequestMessage implements RequestMessage {
     public String getRequestAltNames() {
         String ret = null;
         try {
-        	X509Extensions exts = getRequestExtensions();
+        	Extensions exts = getRequestExtensions();
         	if (exts != null) {
-        		X509Extension ext = exts.getExtension(X509Extensions.SubjectAlternativeName);
+        		Extension ext = exts.getExtension(Extension.subjectAlternativeName);
                 if (ext != null) {
                     // Finally read the value
             		ret = CertTools.getAltNameStringFromExtension(ext);        	
@@ -415,7 +416,7 @@ public class PKCS10RequestMessage implements RequestMessage {
     /**
      * @see org.cesecore.certificates.certificate.request.RequestMessage.protocol.IRequestMessage
      */
-	public X509Extensions getRequestExtensions() {
+	public Extensions getRequestExtensions() {
         try {
             if (pkcs10 == null) {
                 init();
@@ -424,7 +425,7 @@ public class PKCS10RequestMessage implements RequestMessage {
             log.error("PKCS10 not inited!");
             return null;
         }
-        X509Extensions ret = null;
+        Extensions ret = null;
 
         // Get attributes
         // The X509 extension is in a a pkcs_9_at_extensionRequest
@@ -446,7 +447,7 @@ public class PKCS10RequestMessage implements RequestMessage {
                 ASN1Set values = attr.getAttrValues();
                 if (values.size() > 0) {
                     try {
-                        ret = X509Extensions.getInstance(values.getObjectAt(0));
+                        ret = Extensions.getInstance(values.getObjectAt(0));
                     } catch (IllegalArgumentException e) {
                         if (log.isDebugEnabled()) {
                         	log.debug("pkcs_9_extensionRequest does not contain Extensions that it should, ignoring invalid encoded extension request.");

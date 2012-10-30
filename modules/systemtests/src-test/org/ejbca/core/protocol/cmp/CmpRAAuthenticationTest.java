@@ -24,6 +24,8 @@ import java.util.Date;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
@@ -50,8 +52,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * This will test that different PBE shared secrets can be used to authenticate the RA to different CAs.
@@ -229,10 +229,11 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
         String subjectDN = "CN=" + USERNAME;
         try {
             PKIMessage one = genCertReq(issuerDN, subjectDN, keys, caCertificate, nonce, transid, true, null, notBefore,
-                    notAfter, null);
+                    notAfter, null, null, null);
             PKIMessage req = protectPKIMessage(one, false, pbeSecret, keyId, 567);
             assertNotNull("Request was not created properly.", req);
-            int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             ByteArrayOutputStream bao = new ByteArrayOutputStream();
             new DEROutputStream(bao).writeObject(req);
             byte[] ba = bao.toByteArray();
@@ -255,7 +256,7 @@ public class CmpRAAuthenticationTest extends CmpTestCase {
             checkCmpPKIConfirmMessage(subjectDN, caCertificate, resp);
 
             // Now revoke the bastard using the CMPv1 reason code!
-            PKIMessage rev = genRevReq(issuerDN, subjectDN, cert.getSerialNumber(), caCertificate, nonce, transid, false);
+            PKIMessage rev = genRevReq(issuerDN, subjectDN, cert.getSerialNumber(), caCertificate, nonce, transid, false, null, null);
             PKIMessage revReq = protectPKIMessage(rev, false, pbeSecret, keyId, 567);
             assertNotNull("Could not create revocation message.", revReq);
             bao = new ByteArrayOutputStream();

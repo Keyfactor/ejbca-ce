@@ -98,7 +98,7 @@ public class ValidateCertUseOCSP {
 	    if (ocspServer != null) {
 		Security.setProperty("ocsp.responderURL", args[1]);
 		Security.setProperty("ocsp.responderCertSubjectName",
-		    ocspCert.getSubjectX500Principal().getName());
+		    ocspCert.getSubjectDN().getName());
 	    }
 
 	    // perform validation

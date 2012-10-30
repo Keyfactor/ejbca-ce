@@ -72,7 +72,7 @@ class ValidationAuthorityTst {
 			throw new Error("this should never happen");
 		}
 		final String sBaseURI = "http://localhost:" + port + "/crls/search.cgi";
-		final String caSubjectDN = caCert.getSubjectX500Principal().getName();
+		final String caSubjectDN = caCert.getSubjectDN().getName();
 		{
 			final String sURI = urlType.appendQueryToURL(sBaseURI, id, isDelta);
 			testURI( pw, createCrlSession, sURI, caSubjectDN, isDelta );

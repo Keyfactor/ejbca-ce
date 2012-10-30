@@ -35,13 +35,16 @@ import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.misc.NetscapeCertType;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.KeyPurposeId;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -59,8 +62,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * This test requires:
@@ -193,10 +194,11 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
         // A message with the KeyId "foobarfoobar" should not be known by this
-        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null, null);
+        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "foobarfoobar", 567);
 
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         assertNotNull(req);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -216,10 +218,11 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null, null);
+        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId1", 567);
 
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         assertNotNull(req);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -263,7 +266,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(userDN1, cacert1, resp);
 
         // Now revoke the bastard!
-        PKIMessage rev = genRevReq(issuerDN1, userDN1, cert.getSerialNumber(), cacert1, nonce, transid, true);
+        PKIMessage rev = genRevReq(issuerDN1, userDN1, cert.getSerialNumber(), cacert1, nonce, transid, true, null, null);
         PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
         assertNotNull(revReq);
         bao = new ByteArrayOutputStream();
@@ -278,7 +281,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         assertEquals(reason, RevokedCertInfo.REVOCATION_REASON_CESSATIONOFOPERATION);
 
         // Create a revocation request for a non existing cert, chould fail!
-        rev = genRevReq(issuerDN1, userDN1, new BigInteger("1"), cacert1, nonce, transid, true);
+        rev = genRevReq(issuerDN1, userDN1, new BigInteger("1"), cacert1, nonce, transid, true, null, null);
         revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
         assertNotNull(revReq);
         bao = new ByteArrayOutputStream();
@@ -298,10 +301,11 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null, null);
+        PKIMessage one = genCertReq(issuerDN1, userDN1, keys, cacert1, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId1", 567);
 
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         assertNotNull(req);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -351,10 +355,11 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null, null);
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2", 567);
 
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         assertNotNull(req);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -404,10 +409,11 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null, null);
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2", 567);
 
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         assertNotNull(req);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -451,7 +457,7 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(userDN2, cacert2, resp);
 
         // Now revoke the bastard!
-        PKIMessage rev = genRevReq(issuerDN2, userDN2, cert.getSerialNumber(), cacert2, nonce, transid, true);
+        PKIMessage rev = genRevReq(issuerDN2, userDN2, cert.getSerialNumber(), cacert2, nonce, transid, true, null, null);
         PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
         assertNotNull(revReq);
         bao = new ByteArrayOutputStream();
@@ -472,10 +478,11 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null, null);
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId3", 567);
 
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         assertNotNull(req);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -533,20 +540,20 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         // Create some crazy extensions to see that we get them when using
         // extension override.
         // We should not get our values when not using extension override
-        X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
+        ExtensionsGenerator extgen = new ExtensionsGenerator();
         // SubjectAltName
         GeneralNames san = CertTools.getGeneralNamesFromAltName("dnsName=foo.bar.com");
-        extgen.addExtension(X509Extensions.SubjectAlternativeName, false, san);
+        extgen.addExtension(Extension.subjectAlternativeName, false, san);
         // KeyUsage
         int bcku = 0;
         bcku = X509KeyUsage.decipherOnly;
         X509KeyUsage ku = new X509KeyUsage(bcku);
-        extgen.addExtension(X509Extensions.KeyUsage, false, ku);
+        extgen.addExtension(Extension.keyUsage, false, ku);
         // Extended Key Usage
         Vector<KeyPurposeId> usage = new Vector<KeyPurposeId>();
         usage.add(KeyPurposeId.id_kp_codeSigning);
         ExtendedKeyUsage eku = new ExtendedKeyUsage(usage);
-        extgen.addExtension(X509Extensions.ExtendedKeyUsage, false, eku);
+        extgen.addExtension(Extension.extendedKeyUsage, false, eku);
         // OcspNoCheck
         extgen.addExtension(OCSPObjectIdentifiers.id_pkix_ocsp_nocheck, false, new DERNull());
         // Netscape cert type
@@ -555,13 +562,14 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
         extgen.addExtension(new ASN1ObjectIdentifier("1.1.1.1.1"), false, new DERIA5String("PrimeKey"));
 
         // Make the complete extension package
-        X509Extensions exts = extgen.generate();
+        Extensions exts = extgen.generate();
 
         // First test without extension override
-        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts, null, null, null);
+        PKIMessage one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId2", 567);
 
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         assertNotNull(req);
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
@@ -594,10 +602,11 @@ public class CrmfRAPbeMultipleKeyIdRequestTest extends CmpTestCase {
 
         //
         // Do the same with keyId4, that has full extension override
-        one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts, null, null, null);
+        one = genCertReq(issuerDN2, userDN2, keys, cacert2, nonce, transid, true, exts, null, null, null, null, null);
         req = protectPKIMessage(one, false, PBEPASSWORD, "KeyId4", 567);
 
-        reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        ir = (CertReqMessages) req.getBody().getContent();
+        reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         assertNotNull(req);
         bao = new ByteArrayOutputStream();
         out = new DEROutputStream(bao);

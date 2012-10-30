@@ -24,8 +24,8 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.MonetaryValue;
 import org.bouncycastle.asn1.x509.qualified.QCStatement;
@@ -64,7 +64,7 @@ public final class QCStatementExtension extends CertTools {
     	boolean ret = false;
         if (cert instanceof X509Certificate) {
         	final X509Certificate x509cert = (X509Certificate) cert;
-        	final ASN1Primitive obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
+        	final ASN1Primitive obj = getExtensionValue(x509cert, Extension.qCStatements.getId());
 	        if (obj != null) {
 	            ret = true;
 	        }
@@ -81,7 +81,7 @@ public final class QCStatementExtension extends CertTools {
     	final ArrayList<String> ret = new ArrayList<String>();
         if (cert instanceof X509Certificate) {
         	final X509Certificate x509cert = (X509Certificate) cert;
-        	final ASN1Primitive obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
+        	final ASN1Primitive obj = getExtensionValue(x509cert, Extension.qCStatements.getId());
             if (obj == null) {
                 return ret;
             }
@@ -106,7 +106,7 @@ public final class QCStatementExtension extends CertTools {
     	String ret = null;
         if (cert instanceof X509Certificate) {
         	final X509Certificate x509cert = (X509Certificate) cert;
-        	final ASN1Primitive obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
+        	final ASN1Primitive obj = getExtensionValue(x509cert, Extension.qCStatements.getId());
 	        if (obj == null) {
 	            return null;
 	        }
@@ -157,7 +157,7 @@ public final class QCStatementExtension extends CertTools {
         String ret = null;
         if (cert instanceof X509Certificate) {
         	final X509Certificate x509cert = (X509Certificate) cert;
-        	final ASN1Primitive obj = getExtensionValue(x509cert, X509Extensions.QCStatements.getId());
+        	final ASN1Primitive obj = getExtensionValue(x509cert, Extension.qCStatements.getId());
 	        if (obj == null) {
 	            return null;
 	        }

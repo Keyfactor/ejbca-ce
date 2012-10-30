@@ -1787,8 +1787,13 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
             AuthorizationDeniedException, CAExistsException {
         // Transform into token
         int tokenId = StringTools.strip(CertTools.getSubjectDN(signatureCertChain[0])).hashCode(); // caid
-        CAToken catoken = importKeysToCAToken(keystorepass, null, p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey,
-                p12PublicEncryptionKey, signatureCertChain, tokenId);
+        CAToken catoken = null;
+        try {
+            catoken = importKeysToCAToken(keystorepass, null, p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey,
+                    p12PublicEncryptionKey, signatureCertChain, tokenId);
+        } catch (OperatorCreationException e) {
+            log.error(e.getLocalizedMessage(), e);
+        }
         log.debug("CA-Info: " + catoken.getTokenInfo().getSignatureAlgorithm() + " " + catoken.getTokenInfo().getEncryptionAlgorithm());
         // Identify the key algorithms for extended CA services, OCSP, XKMS, CMS
         String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(p12PublicSignatureKey);
@@ -1810,10 +1815,11 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
     /**
      * Method that import CA token keys from a P12 file. Was originally used when upgrading from old EJBCA versions. Only supports SHA1 and SHA256
      * with RSA or ECDSA and SHA1 with DSA.
+     * @throws OperatorCreationException 
      */
     private CAToken importKeysToCAToken(String authenticationCode, Properties tokenProperties, PrivateKey privatekey, PublicKey publickey,
             PrivateKey privateEncryptionKey, PublicKey publicEncryptionKey, Certificate[] caSignatureCertChain, int tokenId)
-            throws CryptoTokenAuthenticationFailedException, IllegalCryptoTokenException {
+            throws CryptoTokenAuthenticationFailedException, IllegalCryptoTokenException, OperatorCreationException {
 
     	if (tokenProperties == null) {
     		tokenProperties = new Properties();

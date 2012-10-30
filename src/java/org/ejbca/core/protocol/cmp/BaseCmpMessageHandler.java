@@ -17,7 +17,8 @@ import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DEROctetString;
+import org.bouncycastle.asn1.ASN1OctetString;
+import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -30,8 +31,6 @@ import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
-
-import com.novosec.pkix.asn1.cmp.PKIHeader;
 
 /**
  * Base class for CMP message handlers that require RA mode secret verification.
@@ -73,7 +72,7 @@ public class BaseCmpMessageHandler {
 	/** @return SenderKeyId of in the header or null none was found. */
 	protected String getSenderKeyId(final PKIHeader head) {
 		String keyId = null;
-		final DEROctetString os = head.getSenderKID();
+		final ASN1OctetString os = head.getSenderKID();
 		if (os != null) {
 			try {
 				keyId = new String(os.getOctets(), "UTF-8");

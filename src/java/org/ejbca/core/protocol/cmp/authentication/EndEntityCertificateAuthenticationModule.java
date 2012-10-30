@@ -28,7 +28,8 @@ import java.util.Set;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.x509.X509CertificateStructure;
+import org.bouncycastle.asn1.cmp.CMPCertificate;
+import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -49,11 +50,10 @@ import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.util.passgen.IPasswordGenerator;
 import org.ejbca.util.passgen.PasswordGeneratorFactory;
-
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * Check the authentication of the PKIMessage by verifying the signature of the administrator who sent the message
@@ -171,8 +171,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
     public boolean verifyOrExtract(final PKIMessage msg, final String username, boolean authenticated) {
         
         //Check that there is a certificate in the extraCert field in msg
-        final X509CertificateStructure extraCertStruct = msg.getExtraCert(0);
-        if(extraCertStruct == null) {
+        final CMPCertificate[] extraCerts = msg.getExtraCerts();
+        if(extraCerts == null) {
             errorMessage = "There is no certificate in the extraCert field in the PKIMessage";
             log.info(errorMessage);
             return false;
@@ -183,8 +183,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         }
         
         //Read the extraCert and store it in a local variable
+        CMPCertificate cmpcert = extraCerts[0];
         try {
-            extraCert = CertTools.getCertfromByteArray(extraCertStruct.getEncoded());
+            extraCert = CertTools.getCertfromByteArray(cmpcert.getEncoded());
             if(log.isDebugEnabled()) {
                 log.debug("Obtaning the certificate from extraCert field was done successfully");
             }
@@ -317,9 +318,9 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         //Begin the signature verification process.
         //Verify the signature of msg using the public key of extraCert
         try {
-            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getObjectId().getId(), "BC");
+            final Signature sig = Signature.getInstance(msg.getHeader().getProtectionAlg().getAlgorithm().getId(), "BC");
             sig.initVerify(extraCert.getPublicKey());
-            sig.update(msg.getProtectedBytes());
+            sig.update(CmpMessageHelper.getProtectedBytes(msg));
             if (sig.verify(msg.getProtection().getBytes())) {
                 if (password == null) {
                     // If not set earlier
@@ -394,8 +395,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             return false;
         }
         
-        final int eeprofid = getUsedEndEntityProfileId(msg.getHeader().getSenderKID());
-        final int tagnr = msg.getBody().getTagNo();
+        final int eeprofid = getUsedEndEntityProfileId((DEROctetString) msg.getHeader().getSenderKID());
+        final int tagnr = msg.getBody().getType();
         if((tagnr == CmpPKIBodyConstants.CERTIFICATAIONREQUEST) || (tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST)) {
         
             if (!authorizedToEndEntityProfile(reqAuthToken, eeprofid, AccessRulesConstants.CREATE_RIGHTS)) {

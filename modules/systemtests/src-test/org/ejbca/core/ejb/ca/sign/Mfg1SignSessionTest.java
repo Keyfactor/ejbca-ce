@@ -25,7 +25,8 @@ import java.security.interfaces.RSAPublicKey;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
@@ -152,14 +153,15 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_MFG1_ENTITY_NAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // Create certificate request
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
-                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=" + RSA_MFG1_ENTITY_NAME), rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
+                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=" + RSA_MFG1_ENTITY_NAME), rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
-        dOut.writeObject(req);
+        dOut.writeObject(req.toASN1Structure());
         dOut.close();
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
-        boolean verify = req2.verify();
+        ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(rsakeys.getPublic());
+        boolean verify = req2.isSignatureValid(verifier);
         log.debug("Verify returned " + verify);
         assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");

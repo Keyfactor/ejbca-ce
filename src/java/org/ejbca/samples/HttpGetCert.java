@@ -27,7 +27,7 @@ import org.apache.log4j.BasicConfigurator;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
@@ -263,12 +263,12 @@ public class HttpGetCert {
         System.out.println("Keys generated.");
 
         // Generate PKCS10 certificate request
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA",
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA",
                 CertTools.stringToBcX509Name("C=SE,O=AnaTom,CN=HttpTest"), rsaKeys.getPublic(),
-                new DERSet(), rsaKeys.getPrivate());
+                new DERSet(), rsaKeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
-        dOut.writeObject(req);
+        dOut.writeObject(req.toASN1Structure());
         dOut.close();
 
         ByteArrayOutputStream bos1 = new ByteArrayOutputStream();

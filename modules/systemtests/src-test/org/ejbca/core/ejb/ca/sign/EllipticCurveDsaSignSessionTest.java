@@ -28,8 +28,9 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.jcajce.provider.asymmetric.ec.BCECPublicKey;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.provider.JCEECPublicKey;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
@@ -152,15 +153,16 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"),
-                ecdsakeys.getPublic(), new DERSet(), ecdsakeys.getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"),
+                ecdsakeys.getPublic(), new DERSet(), ecdsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
-        dOut.writeObject(req);
+        dOut.writeObject(req.toASN1Structure());
         dOut.close();
 
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
-        boolean verify = req2.verify();
+        ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(ecdsakeys.getPublic());
+        boolean verify = req2.isSignatureValid(verifier);
         log.debug("Verify returned " + verify);
         assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");
@@ -215,15 +217,16 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, ECDSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN="
-                + ECDSA_USERNAME), ecdsakeys.getPublic(), new DERSet(), ecdsakeys.getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN="
+                + ECDSA_USERNAME), ecdsakeys.getPublic(), new DERSet(), ecdsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
-        dOut.writeObject(req);
+        dOut.writeObject(req.toASN1Structure());
         dOut.close();
 
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
-        boolean verify = req2.verify();
+        ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(ecdsakeys.getPublic());
+        boolean verify = req2.isSignatureValid(verifier);
         log.debug("Verify returned " + verify);
         assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");
@@ -290,14 +293,15 @@ public class EllipticCurveDsaSignSessionTest extends SignSessionCommon {
             endEntityManagementSession.setUserStatus(internalAdmin, ecDsaImplicitCaUserName, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status of 'foo' to NEW");
             // Create certificate request
-            PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN="
-                    + ecDsaImplicitCaUserName), ecdsakeys.getPublic(), new DERSet(), ecdsakeys.getPrivate());
+            PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA256WithECDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN="
+                    + ecDsaImplicitCaUserName), ecdsakeys.getPublic(), new DERSet(), ecdsakeys.getPrivate(), null);
             ByteArrayOutputStream bOut = new ByteArrayOutputStream();
             DEROutputStream dOut = new DEROutputStream(bOut);
-            dOut.writeObject(req);
+            dOut.writeObject(req.toASN1Structure());
             dOut.close();
             PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
-            boolean verify = req2.verify();
+            ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(ecdsakeys.getPublic());
+            boolean verify = req2.isSignatureValid(verifier);
             log.debug("Verify returned " + verify);
             assertTrue(verify);
             log.debug("CertificationRequest generated successfully.");

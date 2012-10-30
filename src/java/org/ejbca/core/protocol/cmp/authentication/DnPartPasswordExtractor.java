@@ -15,12 +15,12 @@
 package org.ejbca.core.protocol.cmp.authentication;
 
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.crmf.CertReqMsg;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
-
-import com.novosec.pkix.asn1.cmp.PKIMessage;
-import com.novosec.pkix.asn1.crmf.CertReqMsg;
 
 /**
  * Extracts password from the request DN of a CMRF request message
@@ -80,10 +80,9 @@ public class DnPartPasswordExtractor implements ICMPAuthenticationModule {
     
     private CertReqMsg getReq(PKIMessage msg) {
         CertReqMsg req = null;
-        if(msg.getBody().getTagNo() == CmpPKIBodyConstants.INITIALIZATIONREQUEST) {
-            req = msg.getBody().getIr().getCertReqMsg(0);
-        } else if(msg.getBody().getTagNo() == CmpPKIBodyConstants.CERTIFICATAIONREQUEST) {
-            req = msg.getBody().getCr().getCertReqMsg(0);
+        int tagnr = msg.getBody().getType();
+        if(tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST || tagnr == CmpPKIBodyConstants.CERTIFICATAIONREQUEST) {
+            req = ((CertReqMessages) msg.getBody().getContent()).toCertReqMsgArray()[0];
         }
         return req;
     }

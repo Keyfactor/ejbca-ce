@@ -31,14 +31,16 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Vector;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROutputStream;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.BCStrictStyle;
 import org.bouncycastle.jce.X509Principal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -64,8 +66,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * Tests the unid-fnr plugin. Read the assert printout {@link #test01()} to understand how to set things up for the test.
@@ -195,27 +195,27 @@ public class CmpRAUnidTest extends CmpTestCase {
 
     @SuppressWarnings("unchecked")
     @Override
-    protected void checkDN(String sExpected, X509Name actual) {
-        final X509Name expected = new X509Name(sExpected);
-        final Vector<ASN1ObjectIdentifier> expectedOIDs = expected.getOIDs();
-        final Vector<String> expectedValues = expected.getValues();
-        final Vector<ASN1ObjectIdentifier> actualOIDs = actual.getOIDs();
-        final Vector<String> actualValues = actual.getValues();
-        assertEquals("Not the expected number of elements in the created certificate.", expectedOIDs.size(), actualOIDs.size());
-        for (int i = 0; i < expectedOIDs.size(); i++) {
-            final ASN1ObjectIdentifier oid = expectedOIDs.get(i);
-            final int j = actualOIDs.indexOf(oid);
-            if (!oid.equals(X509Name.SN)) {
-                log.debug("Check that " + oid.getId() + " is OK. Expected '" + expectedValues.get(i) + "'. Actual '" + actualValues.get(j) + "'.");
-                assertEquals("Not expected " + oid, expectedValues.get(i), actualValues.get(j));
+    protected void checkDN(String sExpected, X500Name actual) {
+        final X500Name expected = new X500Name(sExpected);
+        final ASN1ObjectIdentifier[] expectedOIDs = expected.getAttributeTypes();
+        final ASN1ObjectIdentifier[] actualOIDs = actual.getAttributeTypes();
+        assertEquals("Not the expected number of elements in the created certificate.", expectedOIDs.length, actualOIDs.length);
+        String expectedValue, actualValue;
+        for (int i = 0; i < expectedOIDs.length; i++) {
+            final ASN1ObjectIdentifier oid = expectedOIDs[i];
+            expectedValue = expected.getRDNs(oid)[0].getFirst().getValue().toString();
+            actualValue = actual.getRDNs(oid)[0].getFirst().getValue().toString();
+            if (!oid.equals(BCStrictStyle.SN)) {
+                log.debug("Check that " + oid.getId() + " is OK. Expected '" + expectedValue + "'. Actual '" + actualValue + "'.");
+                assertEquals("Not expected " + oid, expectedValue, actualValue);
                 continue;
             }
-            log.debug("Special handling of the SN " + oid.getId() + ". Input '" + expectedValues.get(i) + "'. Transformed '" + actualValues.get(j)
+            log.debug("Special handling of the SN " + oid.getId() + ". Input '" + expectedValue + "'. Transformed '" + actualValue
                     + "'.");
             final String expectedSNPrefix = UNIDPREFIX + LRA;
-            final String actualSNPrefix = actualValues.get(j).substring(0, expectedSNPrefix.length());
+            final String actualSNPrefix = actualValue.substring(0, expectedSNPrefix.length());
             assertEquals("New serial number prefix not as expected.", expectedSNPrefix, actualSNPrefix);
-            final String actualSNRandom = actualValues.get(j).substring(expectedSNPrefix.length());
+            final String actualSNRandom = actualValue.substring(expectedSNPrefix.length());
             assertTrue("Random in serial number not OK: " + actualSNRandom, Pattern.compile("^\\w{6}$").matcher(actualSNRandom).matches());
         }
     }
@@ -264,11 +264,12 @@ public class CmpRAUnidTest extends CmpTestCase {
         {
             // In this test SUBJECT_DN contains special, escaped characters to verify
             // that that works with CMP RA as well
-            final PKIMessage one = genCertReq(this.issuerDN, SUBJECT_DN, this.keys, this.cacert, nonce, transid, true, null, null, null, null);
+            final PKIMessage one = genCertReq(this.issuerDN, SUBJECT_DN, this.keys, this.cacert, nonce, transid, true, null, null, null, null, null, null);
             final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, CPNAME, 567);
             assertNotNull(req);
 
-            reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
             final DEROutputStream out = new DEROutputStream(bao);
             out.writeObject(req);
@@ -277,7 +278,7 @@ public class CmpRAUnidTest extends CmpTestCase {
             final byte[] resp = sendCmpHttp(ba, 200);
             checkCmpResponseGeneral(resp, this.issuerDN, SUBJECT_DN, this.cacert, nonce, transid, false, PBEPASSWORD);
             final X509Certificate cert = checkCmpCertRepMessage(SUBJECT_DN, this.cacert, resp, reqId);
-            unid = (String) new X509Principal(cert.getSubjectX500Principal().getEncoded()).getValues(X509Name.SN).get(0);
+            unid = (String) new X509Principal(cert.getSubjectX500Principal().getEncoded()).getValues(BCStrictStyle.SN).get(0);
             log.debug("Unid: " + unid);
         }
         {

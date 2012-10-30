@@ -25,17 +25,16 @@ import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
-
-import com.novosec.pkix.asn1.cmp.PKIBody;
-import com.novosec.pkix.asn1.cmp.PKIHeader;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
-
 
 /**
  * A very simple confirmation message, no protection and a nullbody
@@ -119,16 +118,19 @@ public class CmpConfirmResponseMessage extends BaseCmpMessage implements Respons
 			NoSuchAlgorithmException, NoSuchProviderException,
 			SignRequestException {
 
-		final PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
-		final PKIBody myPKIBody = new PKIBody(new DERNull(), 19);
-		final PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
+		final PKIHeaderBuilder myPKIHeader = CmpMessageHelper.createPKIHeaderBuilder(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
+		final PKIBody myPKIBody = new PKIBody(19, new DERNull());
+		PKIMessage myPKIMessage = null;
 
 		if ((getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ) {
+		    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(getPbeDigestAlg()));
+		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
 		} else {
-			//responseMessage = CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);
 			if ((signCert != null) && (signKey != null)) {
 				try {
+				    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(digestAlg));
+				    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
 					responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate)signCert, signKey, digestAlg, provider);
 				} catch (CertificateEncodingException e) {
 					log.error("Error creating CmpConfirmMessage: ", e);

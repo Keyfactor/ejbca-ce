@@ -29,6 +29,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
@@ -57,8 +59,6 @@ import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * @author tomas
@@ -190,10 +190,11 @@ public class CrmfRARequestCustomSerialNoTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
         {
-            final PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, customCertSerno);
+            final PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, customCertSerno, null, null);
             final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
 
-            reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             assertNotNull(req);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
             final DEROutputStream out = new DEROutputStream(bao);

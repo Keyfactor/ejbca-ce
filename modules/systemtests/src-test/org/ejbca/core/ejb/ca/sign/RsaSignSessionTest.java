@@ -20,7 +20,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.security.KeyPair;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
@@ -33,24 +32,23 @@ import java.util.Calendar;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.asn1.x509.qualified.ETSIQCObjectIdentifiers;
 import org.bouncycastle.asn1.x509.qualified.RFC3739QCObjectIdentifiers;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.bouncycastle.jce.X509KeyUsage;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAConstants;
@@ -337,14 +335,15 @@ public class RsaSignSessionTest extends SignSessionCommon {
         endEntityManagementSession.setUserStatus(internalAdmin, RSA_USERNAME, EndEntityConstants.STATUS_NEW);
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"),
-                rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"),
+                rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
-        dOut.writeObject(req);
+        dOut.writeObject(req.toASN1Structure());
         dOut.close();
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
-        boolean verify = req2.verify();
+        ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(rsakeys.getPublic());
+        boolean verify = req2.isSignatureValid(verifier);
         log.debug("Verify returned " + verify);
         assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");
@@ -908,11 +907,11 @@ public class RsaSignSessionTest extends SignSessionCommon {
         endEntityManagementSession.changeUser(internalAdmin, user, false);
         // Create a P10
         // Create PKCS#10 certificate request
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", new X509Name("C=SE,CN=testsigalg"), rsakeys.getPublic(), null, rsakeys
-                .getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", new X500Name("C=SE,CN=testsigalg"), rsakeys.getPublic(), null, rsakeys
+                .getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
-        dOut.writeObject(req);
+        dOut.writeObject(req.toASN1Structure());
         dOut.close();
         byte[] p10bytes = bOut.toByteArray();
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(p10bytes);
@@ -970,18 +969,9 @@ public class RsaSignSessionTest extends SignSessionCommon {
         ASN1EncodableVector extensionattr = new ASN1EncodableVector();
         extensionattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
         GeneralNames san = CertTools.getGeneralNamesFromAltName(altnames);
-        ByteArrayOutputStream extOut = new ByteArrayOutputStream();
-        DEROutputStream derOut = new DEROutputStream(extOut);
-        try {
-            derOut.writeObject(san);
-        } catch (IOException e) {
-            throw new IllegalArgumentException("error encoding value: " + e);
-        }
-        Vector<ASN1ObjectIdentifier> oidvec = new Vector<ASN1ObjectIdentifier>();
-        oidvec.add(X509Extensions.SubjectAlternativeName);
-        Vector<X509Extension> valuevec = new Vector<X509Extension>();
-        valuevec.add(new X509Extension(false, new DEROctetString(extOut.toByteArray())));
-        X509Extensions exts = new X509Extensions(oidvec, valuevec);
+        ExtensionsGenerator extgen = new ExtensionsGenerator();
+        extgen.addExtension(Extension.subjectAlternativeName, false, san);
+        Extensions exts = extgen.generate();        
         extensionattr.add(new DERSet(exts));
         // Complete the Attribute section of the request, the set (Attributes)
         // contains one sequence (Attribute)
@@ -989,11 +979,11 @@ public class RsaSignSessionTest extends SignSessionCommon {
         v.add(new DERSequence(extensionattr));
         DERSet attributes = new DERSet(v);
         // Create PKCS#10 certificate request
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", new X509Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
-                rsakeys.getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", new X500Name("C=SE,CN=extoverride"), rsakeys.getPublic(), attributes,
+                rsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
-        dOut.writeObject(req);
+        dOut.writeObject(req.toASN1Structure());
         dOut.close();
         byte[] p10bytes = bOut.toByteArray();
         // FileOutputStream fos = new FileOutputStream("/tmp/foo.der");
@@ -1003,7 +993,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
         p10.setUsername(RSA_USERNAME);
         p10.setPassword("foo123");
         // See if the request message works...
-        X509Extensions p10exts = p10.getRequestExtensions();
+        Extensions p10exts = p10.getRequestExtensions();
         assertNotNull(p10exts);
         ResponseMessage resp = signSession.createCertificate(internalAdmin, p10, X509ResponseMessage.class, null);
         X509Certificate cert = (X509Certificate) CertTools.getCertfromByteArray(resp.getResponseMessage());
@@ -1151,14 +1141,15 @@ public class RsaSignSessionTest extends SignSessionCommon {
             // Change a user that we know...
             endEntityManagementSession.changeUser(internalAdmin, user, false);
             // Create a P10 with strange order DN
-            PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", new X509Name("CN=foo,C=SE, Name=AnaTom, O=My org"),
-                    rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate());
+            PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", new X500Name("CN=foo,C=SE,NAME=AnaTom,O=My org"),
+                    rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
             ByteArrayOutputStream bOut = new ByteArrayOutputStream();
             DEROutputStream dOut = new DEROutputStream(bOut);
-            dOut.writeObject(req);
+            dOut.writeObject(req.toASN1Structure());
             dOut.close();
             PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
-            boolean verify = req2.verify();
+            ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(rsakeys.getPublic());
+            boolean verify = req2.isSignatureValid(verifier);
             log.debug("Verify returned " + verify);
             assertTrue(verify);
             log.debug("CertificationRequest generated successfully.");
@@ -1269,15 +1260,16 @@ public class RsaSignSessionTest extends SignSessionCommon {
         log.debug("Reset status of 'foo' to NEW");
         // Create certificate request
         KeyPair dsakeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_DSA);
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), dsakeys
-                .getPublic(), new DERSet(), dsakeys.getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithDSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"), dsakeys
+                .getPublic(), new DERSet(), dsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
-        dOut.writeObject(req);
+        dOut.writeObject(req.toASN1Structure());
         dOut.close();
 
         PKCS10CertificationRequest req2 = new PKCS10CertificationRequest(bOut.toByteArray());
-        boolean verify = req2.verify();
+        ContentVerifierProvider verifier = CertTools.genContentVerifierProvider(dsakeys.getPublic());
+        boolean verify = req2.isSignatureValid(verifier);
         log.debug("Verify returned " + verify);
         assertTrue(verify);
         log.debug("CertificationRequest generated successfully.");

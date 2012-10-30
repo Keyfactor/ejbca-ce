@@ -24,13 +24,12 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
+import org.bouncycastle.asn1.cmp.PBMParameter;
+import org.bouncycastle.asn1.cmp.PKIHeader;
+import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.ejbca.core.model.InternalEjbcaResources;
-
-import com.novosec.pkix.asn1.cmp.CMPObjectIdentifiers;
-import com.novosec.pkix.asn1.cmp.PKIHeader;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
-import com.novosec.pkix.asn1.crmf.PBMParameter;
 
 /**
  * Helper class to verify PBE of CMP messages, also extracts owf, mac Oids and iteration count.
@@ -54,19 +53,19 @@ public class CmpPbeVerifyer {
 	
 	public CmpPbeVerifyer(final PKIMessage msg) {
 		final PKIHeader head = msg.getHeader();
-		protectedBytes = msg.getProtectedBytes();
+		protectedBytes = CmpMessageHelper.getProtectedBytes(msg);
 		protection = msg.getProtection();
 		pAlg = head.getProtectionAlg();
 		final PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
 		iterationCount = pp.getIterationCount().getPositiveValue().intValue();
 		final AlgorithmIdentifier owfAlg = pp.getOwf();
 		// Normal OWF alg is 1.3.14.3.2.26 - SHA1
-		owfOid = owfAlg.getObjectId().getId();
+		owfOid = owfAlg.getAlgorithm().getId();
 		final AlgorithmIdentifier macAlg = pp.getMac();
 		// Normal mac alg is 1.3.6.1.5.5.8.1.2 - HMAC/SHA1
-		macOid = macAlg.getObjectId().getId();
+		macOid = macAlg.getAlgorithm().getId();
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Protection type is: "+pAlg.getObjectId().getId());
+			LOG.debug("Protection type is: "+pAlg.getAlgorithm().getId());
 			LOG.debug("Iteration count is: "+iterationCount);
 			LOG.debug("Owf type is: "+owfOid);
 			LOG.debug("Mac type is: "+macOid);
@@ -79,8 +78,8 @@ public class CmpPbeVerifyer {
 		lastUsedRaSecret = raAuthenticationSecret;
 		boolean ret = false;
 		// Verify the PasswordBased protection of the message
-		if (!pAlg.getObjectId().equals(CMPObjectIdentifiers.passwordBasedMac)) {
-			errMsg = INTRES.getLocalizedMessage("cmp.errorunknownprotalg", pAlg.getObjectId().getId());
+		if (!pAlg.getAlgorithm().equals(CMPObjectIdentifiers.passwordBasedMac)) {
+			errMsg = INTRES.getLocalizedMessage("cmp.errorunknownprotalg", pAlg.getAlgorithm().getId());
 			LOG.error(errMsg);
 			return ret;
 		} else {

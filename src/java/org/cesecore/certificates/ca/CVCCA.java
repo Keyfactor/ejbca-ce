@@ -34,8 +34,8 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -358,13 +358,13 @@ public class CVCCA extends CA implements Serializable {
      * requestX509Name is never used.
 	 */
 	public Certificate generateCertificate(EndEntityInformation subject, 
-    		X509Name requestX509Name,
+    		X500Name requestX509Name,
             PublicKey publicKey, 
 			int keyusage, 
 			Date notBefore,
 			Date notAfter,
 			CertificateProfile certProfile,
-			X509Extensions extensions,
+			Extensions extensions,
 			String sequence) throws Exception{
 		if (log.isTraceEnabled()) {
 			log.trace(">generateCertificate("+notBefore+", "+notAfter+")");

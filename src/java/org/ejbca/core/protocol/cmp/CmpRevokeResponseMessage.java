@@ -25,23 +25,24 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROutputStream;
-import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
+import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIFailureInfo;
+import org.bouncycastle.asn1.cmp.PKIFreeText;
+import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.PKIStatus;
+import org.bouncycastle.asn1.cmp.PKIStatusInfo;
+import org.bouncycastle.asn1.cmp.RevRepContent;
+import org.bouncycastle.asn1.cmp.RevRepContentBuilder;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
-
-import com.novosec.pkix.asn1.cmp.PKIBody;
-import com.novosec.pkix.asn1.cmp.PKIFreeText;
-import com.novosec.pkix.asn1.cmp.PKIHeader;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
-import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
-import com.novosec.pkix.asn1.cmp.RevRepContent;
-
 
 /**
  * A very simple confirmation message, no protection and a nullbody
@@ -133,27 +134,32 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 			NoSuchAlgorithmException, NoSuchProviderException,
 			SignRequestException {
 
-		final PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
+		final PKIHeaderBuilder myPKIHeader = CmpMessageHelper.createPKIHeaderBuilder(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
 
-		PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(0)); // 0 = accepted
+		PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.granted); // 0 = accepted
 		if (status != ResponseStatus.SUCCESS && status != ResponseStatus.GRANTED_WITH_MODS) {
 			if (log.isDebugEnabled()) {
 				log.debug("Creating a rejection message");
 			}
-			myPKIStatusInfo = new PKIStatusInfo(new DERInteger(2)); // 2 = rejection			
-			myPKIStatusInfo.setFailInfo(failInfo.getAsBitString());
-			if (failText != null) {
-				myPKIStatusInfo.setStatusString(new PKIFreeText(new DERUTF8String(failText)));					
+			myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, null, new PKIFailureInfo(failInfo.getAsBitString()));
+			if(failText != null && failInfo != null) {
+			    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(failText), new PKIFailureInfo(failInfo.getAsBitString()));
 			}
 		}
-		RevRepContent myRevrepMessage = new RevRepContent(myPKIStatusInfo);
+		RevRepContentBuilder revBuilder = new RevRepContentBuilder();
+		revBuilder.add(myPKIStatusInfo);
+		RevRepContent myRevrepMessage = revBuilder.build();
 
-		PKIBody myPKIBody = new PKIBody(myRevrepMessage, CmpPKIBodyConstants.REVOCATIONRESPONSE);
-		PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
+		PKIBody myPKIBody = new PKIBody(CmpPKIBodyConstants.REVOCATIONRESPONSE, myRevrepMessage);
+		PKIMessage myPKIMessage;
 
 		if ((getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ) {
+		    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(CMPObjectIdentifiers.passwordBasedMac));
+		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
 		} else {
+		    myPKIHeader.setProtectionAlg(new AlgorithmIdentifier(digestAlg));
+		    myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
             try {
                 responseMessage = CmpMessageHelper.signPKIMessage(myPKIMessage, (X509Certificate)signCert, signKey, digestAlg, provider);
             } catch (CertificateEncodingException e) {

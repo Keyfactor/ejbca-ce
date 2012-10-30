@@ -22,8 +22,8 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Date;
 
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x500.X500Name;
 
 
 /**
@@ -76,7 +76,7 @@ public interface RequestMessage extends Serializable {
      *
      * @return requested DN or null.
      */
-    public X509Name getRequestX509Name();
+    public X500Name getRequestX509Name();
 
     /**
      * Gets the requested altNames if contained in the request (the desired altNames for the user).
@@ -109,7 +109,7 @@ public interface RequestMessage extends Serializable {
 	 * 
 	 * @return X509Extensions or null
 	 */
-	public X509Extensions getRequestExtensions();
+	public Extensions getRequestExtensions();
 
     /**
      * Gets the issuer DN (of CA cert) from IssuerAndSerialNumber when this is a CRL request.

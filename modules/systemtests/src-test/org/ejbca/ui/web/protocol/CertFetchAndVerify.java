@@ -134,21 +134,21 @@ public class CertFetchAndVerify {
 		return (X509Certificate)this.cf.generateCertificate(connection.getInputStream());
 	}
 	private void checkIssuer( X509Certificate bottom ) throws IOException, CertificateException, URISyntaxException {
-		final String bottomName = bottom.getSubjectX500Principal().getName();
+		final String bottomName = bottom.getSubjectDN().getName();
 		final HashID keyID = HashID.getFromAuthorityKeyId(bottom);
 		if ( keyID==null ) {
 			log.info("No authority key ID in certificate: "+bottomName);
 			return; // can not be checked
 		}
 		final X509Certificate upper = getCert(RFC4387URL.sKIDHash, keyID);
-		final String upperName = upper.getSubjectX500Principal().getName();
+		final String upperName = upper.getSubjectDN().getName();
 		try {
 			bottom.verify(upper.getPublicKey());
 		} catch (GeneralSecurityException e) {
 			Assert.assertTrue("The certificate '"+bottomName+"' is not signed by '"+upperName+"'.", false);
 			return;
 		}
-		if ( upper.getSubjectX500Principal().equals(upper.getIssuerX500Principal()) ) {
+		if ( upper.getSubjectDN().equals(upper.getIssuerDN()) ) {
 			log.info("The old CA '"+bottomName+"' is signed by the old CA '"+upperName+"' which is a root CA.");
 			return;
 		}
@@ -175,7 +175,7 @@ public class CertFetchAndVerify {
 		log.debug("reloadcache returned code: "+connection.getResponseCode());
 		
 		// Now on to the actual tests, with fresh caches
-		log.info("Testing certificate: "+theCert.getSubjectX500Principal().getName());
+		log.info("Testing certificate: "+theCert.getSubjectDN().getName());
 
 		final HashID subjectID = HashID.getFromSubjectDN(theCert);
 		Assert.assertEquals("Certificate fetched by subject DN was wrong.", theCert, getCert(RFC4387URL.sHash, subjectID));
@@ -199,7 +199,7 @@ public class CertFetchAndVerify {
 			try {
 				cert.verify(theCert.getPublicKey());
 			} catch (GeneralSecurityException e) {
-				log.debug("CA '" + cert.getSubjectX500Principal().getName() +"' probably signed by an old not any longer existing CA. But this old CA certificate should still be in the DB. Let's check the chain.");
+				log.debug("CA '" + cert.getSubjectDN().getName() +"' probably signed by an old not any longer existing CA. But this old CA certificate should still be in the DB. Let's check the chain.");
 				checkIssuer(cert);
 				continue;
 			}

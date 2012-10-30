@@ -14,14 +14,17 @@
 package org.ejbca.core.protocol.unid;
 
 import java.sql.PreparedStatement;
-import java.util.Vector;
 import java.util.regex.Pattern;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x500.RDN;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
+import org.ejbca.util.EjbcaNameStyle;
 import org.ejbca.util.JDBCUtil;
 import org.ejbca.util.JDBCUtil.Preparer;
 import org.ejbca.util.passgen.LettersAndDigitsPasswordGenerator;
@@ -54,7 +57,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	
 	@Override
 	public RequestMessage processRequestMessage(RequestMessage req, String certificateProfileName) throws HandlerException {
-		final X509Name dn = req.getRequestX509Name();
+		final X500Name dn = req.getRequestX509Name();
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(">processRequestMessage:'"+dn+"' and '"+certificateProfileName+"'");
 		}
@@ -62,21 +65,24 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 		if ( unidPrefix==null ) {
 			return req;
 		}
-		@SuppressWarnings("unchecked")
-        final Vector<String> v = dn.getValues();
-		@SuppressWarnings("unchecked")
-        final Vector<Object> o = dn.getOIDs();
-		if( v.size()!=o.size() ) {
-			throw new HandlerException("the BC X509Name object is corrupt.");
-		}
-		for ( int i=0; i<v.size(); i++ ) {
-			if ( o.get(i).equals(X509Name.SERIALNUMBER) ) {
-				final String newSerial = storeUnidFrnAndGetNewSerialNr(v.get(i), unidPrefix);
+        final ASN1ObjectIdentifier[] oids = dn.getAttributeTypes();
+		X500NameBuilder nameBuilder = new X500NameBuilder(new EjbcaNameStyle());
+		boolean changed = false;
+		for ( int i=0; i<oids.length; i++ ) {
+			if ( oids[i].equals(EjbcaNameStyle.SERIALNUMBER) ) {
+			    RDN[] rdns = dn.getRDNs(oids[i]);
+			    String value = rdns[0].getFirst().getValue().toString();
+				final String newSerial = storeUnidFrnAndGetNewSerialNr(value, unidPrefix);
 				if ( newSerial!=null ) {
-					v.set(i, newSerial);
-					return new RequestMessageSubjectDnAdapter( req, new X509Name(o,v) );
+					nameBuilder.addRDN(oids[i], newSerial);
+					changed = true;
 				}
+			} else {
+			    nameBuilder.addRDN(dn.getRDNs(oids[i])[0].getFirst());
 			}
+		}
+		if(changed) {
+		    req = new RequestMessageSubjectDnAdapter( req, nameBuilder.build());
 		}
 		return req;
 	}

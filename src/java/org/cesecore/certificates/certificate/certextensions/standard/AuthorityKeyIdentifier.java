@@ -27,7 +27,7 @@ import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -49,7 +49,7 @@ public class AuthorityKeyIdentifier extends StandardCertificateExtension {
 
     @Override
     public void init(final CertificateProfile certProf) {
-        super.setOID(X509Extensions.AuthorityKeyIdentifier.getId());
+        super.setOID(Extension.authorityKeyIdentifier.getId());
         super.setCriticalFlag(certProf.getAuthorityKeyIdentifierCritical());
     }
 

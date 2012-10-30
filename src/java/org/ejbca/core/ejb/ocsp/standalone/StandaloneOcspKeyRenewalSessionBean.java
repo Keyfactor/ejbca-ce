@@ -13,6 +13,7 @@
 package org.ejbca.core.ejb.ocsp.standalone;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.InvalidAlgorithmParameterException;
@@ -45,7 +46,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
 import org.cesecore.certificates.ocsp.standalone.StandaloneOcspResponseGeneratorSessionLocal;
@@ -139,6 +140,8 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
             } catch (KeyRenewalFailedException e) {
                 //TODO: Audit log
                 continue;
+            } catch (IOException e) {
+                log.error(e.getLocalizedMessage(), e);
             }
 
         }
@@ -252,9 +255,10 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
      * @param keyPair the {@link KeyPair} to sign
      * @return a certificate that has been signed by the CA. 
      * @throws KeyRenewalFailedException if any error occurs during signing
+     * @throws IOException 
      */
     @SuppressWarnings("unchecked")
-    private X509Certificate signCertificateByCa(CryptoTokenAndChain tokenAndChain, KeyPair keyPair) throws KeyRenewalFailedException {
+    private X509Certificate signCertificateByCa(CryptoTokenAndChain tokenAndChain, KeyPair keyPair) throws KeyRenewalFailedException, IOException {
         /* Construct a certification request in order to have the new keystore certified by the CA. 
          */
         final int caId = CertTools.stringToBCDNString(tokenAndChain.getCaCertificate().getSubjectDN().toString()).hashCode();
@@ -267,7 +271,7 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
         }
         final PKCS10CertificationRequest pkcs10;
         try {
-            pkcs10 = new PKCS10CertificationRequest(SIGNATURE_ALGORITHM, CertTools.stringToBcX509Name("CN=NOUSED"), keyPair.getPublic(),
+            pkcs10 = CertTools.genPKCS10CertificationRequest(SIGNATURE_ALGORITHM, CertTools.stringToBcX509Name("CN=NOUSED"), keyPair.getPublic(),
                     new DERSet(), keyPair.getPrivate(), tokenAndChain.getSignProviderName());
 
         } catch (NoSuchAlgorithmException e) {
