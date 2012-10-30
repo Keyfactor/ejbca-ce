@@ -26,21 +26,20 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.SignatureException;
-import java.util.Vector;
 
 import org.bouncycastle.asn1.ASN1EncodableVector;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -65,7 +64,7 @@ public class RequestMessageTest {
 	 }
 
 	 @Test
-	 public void test01Pkcs10RequestMessage() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException {
+	 public void test01Pkcs10RequestMessage() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException {
 		 
 		 // Create a P10 with extensions, in this case altNames with a DNS name
 		 ASN1EncodableVector altnameattr = new ASN1EncodableVector();
@@ -85,11 +84,9 @@ public class RequestMessageTest {
 		 // An X509Extensions is a sequence of Extension which is a sequence of
 		 // {oid, X509Extension}
 		 // ASN1EncodableVector extvalue = new ASN1EncodableVector();
-		 Vector<ASN1ObjectIdentifier> oidvec = new Vector<ASN1ObjectIdentifier>();
-		 oidvec.add(X509Extensions.SubjectAlternativeName);
-		 Vector<X509Extension> valuevec = new Vector<X509Extension>();
-		 valuevec.add(new X509Extension(false, new DEROctetString(extOut.toByteArray())));
-		 X509Extensions exts = new X509Extensions(oidvec, valuevec);
+		 ExtensionsGenerator extgen = new ExtensionsGenerator();
+		 extgen.addExtension(Extension.subjectAlternativeName, false, new DEROctetString(extOut.toByteArray()) );
+		 Extensions exts = extgen.generate();
 		 altnameattr.add(new DERSet(exts));
 		 
 		 // Add a challenge password as well
@@ -107,11 +104,11 @@ public class RequestMessageTest {
 		 DERSet attributes = new DERSet(v);
 
 		 // Create the PKCS10
-		 X509Name dn = new X509Name("CN=Test,OU=foo");
-		 PKCS10CertificationRequest basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), attributes, keyPair.getPrivate());
+		 X500Name dn = new X500Name("CN=Test,OU=foo");
+		 PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), attributes, keyPair.getPrivate(), null);
 
-		 PKCS10RequestMessage msg = new PKCS10RequestMessage(basicpkcs10);
+		 PKCS10RequestMessage msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 String username = msg.getUsername();
 		 assertEquals("Test", username);
 		 assertEquals("CN=Test,OU=foo", msg.getRequestDN());
@@ -141,11 +138,11 @@ public class RequestMessageTest {
 		}
 		 
 		 // Try different DNs and DN oids
-		 dn = new X509Name("C=SE, O=Foo, CN=Test Testsson");
-		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+		 dn = new X500Name("C=SE, O=Foo, CN=Test Testsson");
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
-		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 		 assertEquals("C=SE,O=Foo,CN=Test Testsson", msg.getRequestDN());
@@ -153,100 +150,100 @@ public class RequestMessageTest {
 		 assertEquals(null, msg.getPassword());
 
 		 // oid for unstructuredName, will be handles specially by EJBCA
-		 dn = new X509Name("CN=Test + 1.2.840.113549.1.9.2=AttrValue1");
-		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+		 dn = new X500Name("CN=Test + 1.2.840.113549.1.9.2=AttrValue1");
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
-		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 		 assertEquals("CN=Test,unstructuredName=AttrValue1", msg.getRequestDN());
 
-		 dn = new X509Name("CN=Test + 1.2.840.113549.1.9.2=AttrValue1 AttrValue2");
-		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+		 dn = new X500Name("CN=Test + 1.2.840.113549.1.9.2=AttrValue1 AttrValue2");
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
-		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 		 assertEquals("CN=Test,unstructuredName=AttrValue1 AttrValue2", msg.getRequestDN());
 
-		 dn = new X509Name("CN=Test+1.2.840.113549.1.9.2=AttrValue1");
-		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+		 dn = new X500Name("CN=Test+1.2.840.113549.1.9.2=AttrValue1");
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
-		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 		 assertEquals("CN=Test,unstructuredName=AttrValue1", msg.getRequestDN());
 
-		 dn = new X509Name("CN=Test+1.2.840.113549.1.9.2=AttrValue1 AttrValue2");
-		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+		 dn = new X500Name("CN=Test+1.2.840.113549.1.9.2=AttrValue1 AttrValue2");
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
-		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 		 assertEquals("CN=Test,unstructuredName=AttrValue1 AttrValue2", msg.getRequestDN());
 
 		 // Completely unknown oid
-		 dn = new X509Name("CN=Test + 1.2.840.113549.1.9.3=AttrValue1");
-		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+		 dn = new X500Name("CN=Test + 1.2.840.113549.1.9.3=AttrValue1");
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
-		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 		 assertEquals("CN=Test+1.2.840.113549.1.9.3=AttrValue1", msg.getRequestDN());
 
-		 dn = new X509Name("CN=Test + 1.2.840.113549.1.9.3=AttrValue1 AttrValue2");
-		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+		 dn = new X500Name("CN=Test + 1.2.840.113549.1.9.3=AttrValue1 AttrValue2");
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
-		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 		 assertEquals("CN=Test+1.2.840.113549.1.9.3=AttrValue1 AttrValue2", msg.getRequestDN());
 
-		 dn = new X509Name("CN=Test+1.2.840.113549.1.9.3=AttrValue1");
-		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+		 dn = new X500Name("CN=Test+1.2.840.113549.1.9.3=AttrValue1");
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
-		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 		 assertEquals("CN=Test+1.2.840.113549.1.9.3=AttrValue1", msg.getRequestDN());
 
-		 dn = new X509Name("CN=Test+1.2.840.113549.1.9.3=AttrValue1 AttrValue2");
-		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+		 dn = new X500Name("CN=Test+1.2.840.113549.1.9.3=AttrValue1 AttrValue2");
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
-		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 		 assertEquals("CN=Test+1.2.840.113549.1.9.3=AttrValue1 AttrValue2", msg.getRequestDN());
 
-		 dn = new X509Name("1.2.840.113549.1.9.3=AttrValue1 AttrValue2+CN=Test");
-		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+		 dn = new X500Name("1.2.840.113549.1.9.3=AttrValue1 AttrValue2+CN=Test");
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
-		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 
-		 dn = new X509Name("1.2.840.113549.1.9.3=AttrValue1 AttrValue2+CN=Test+O=abc");
-		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+		 dn = new X500Name("1.2.840.113549.1.9.3=AttrValue1 AttrValue2+CN=Test+O=abc");
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
-		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 
-		 dn = new X509Name("1.2.840.113549.1.9.3=AttrValue1\\+\\= AttrValue2+CN=Test+O=abc");	// very strange, but should still be valid 
-		 basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", dn, 
-				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate());
+		 dn = new X500Name("1.2.840.113549.1.9.3=AttrValue1\\+\\= AttrValue2+CN=Test+O=abc");	// very strange, but should still be valid 
+		 basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", dn, 
+				 keyPair.getPublic(), new DERSet(), keyPair.getPrivate(), null);
 
-		 msg = new PKCS10RequestMessage(basicpkcs10);
+		 msg = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
 		 username = msg.getUsername();
 		 assertEquals("Test", username);
 	 }

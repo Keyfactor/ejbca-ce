@@ -33,8 +33,10 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.bouncycastle.asn1.x509.GeneralName;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -66,8 +68,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * This test runs in 'normal' CMP mode
@@ -174,9 +174,10 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
         // userDN = userDN + ", serialNumber=01234567";
-        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null);
+        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null, null, null);
         assertNotNull(req);
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
         out.writeObject(req);
@@ -196,12 +197,13 @@ public class CrmfRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null);
+        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null, null, null);
         assertNotNull(req);
         X509Certificate signCert = CertTools.genSelfCert("CN=CMP Sign Test", 3650, null, keys.getPrivate(), keys.getPublic(), "SHA1WithRSA", false);
         CmpMessageHelper.signPKIMessage(req, signCert, keys.getPrivate(), CMSSignedGenerator.DIGEST_SHA1, "BC");
         // PKIMessage req = protectPKIMessage(req1, false, "foo123", "mykeyid", 567);
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
         out.writeObject(req);
@@ -217,14 +219,15 @@ public class CrmfRequestTest extends CmpTestCase {
     public void test03CrmfHttpOkUser() throws Exception {
         log.trace(">test02CrmfHttpOkUser");
         // Create a new good user
-        createCmpUser();
+        createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest");
 
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null);
+        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null, null, null);
         assertNotNull(req);
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
         out.writeObject(req);
@@ -250,14 +253,14 @@ public class CrmfRequestTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
         // Now revoke the bastard!
-        PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true);
+        PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true, null, null);
         assertNotNull(rev);
-        bao = new ByteArrayOutputStream();
-        out = new DEROutputStream(bao);
-        out.writeObject(rev);
-        ba = bao.toByteArray();
+        ByteArrayOutputStream baorev = new ByteArrayOutputStream();
+        DEROutputStream outrev = new DEROutputStream(baorev);
+        outrev.writeObject(rev);
+        byte[] barev = baorev.toByteArray();
         // Send request and receive response
-        resp = sendCmpHttp(ba, 200);
+        resp = sendCmpHttp(barev, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, 1);
         log.trace("<test02CrmfHttpOkUser");
@@ -268,7 +271,7 @@ public class CrmfRequestTest extends CmpTestCase {
         log.trace(">test03BlueXCrmf");
         byte[] resp = sendCmpHttp(bluexir, 200);
         assertNotNull(resp);
-        checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 512, null); // 4=BAD_REQUEST, 512=BAD_POP,
+        checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 64, null); // 4=BAD_REQUEST, 512=BAD_POP,
                                                                                                                // 64=WRONG_AUTHORITY
         log.trace("<test03BlueXCrmf");
     }
@@ -342,25 +345,90 @@ public class CrmfRequestTest extends CmpTestCase {
         log.trace(">test07SignedConfirmationMessage()");
         CmpConfirmResponseMessage cmpConfRes = new CmpConfirmResponseMessage();
         cmpConfRes.setSignKeyInfo(cacert, keys.getPrivate(), null);
-        cmpConfRes.setSender(new GeneralName(new X509Name(userDN)));
-        cmpConfRes.setRecipient(new GeneralName(new X509Name("CN=cmpRecipient, O=TEST")));
+        cmpConfRes.setSender(new GeneralName(new X500Name(userDN)));
+        cmpConfRes.setRecipient(new GeneralName(new X500Name("CN=cmpRecipient, O=TEST")));
         cmpConfRes.setSenderNonce("DAxFSkJDQSBTYW");
         cmpConfRes.setRecipientNonce("DAxFSkJDQSBTYY");
         cmpConfRes.setTransactionId("DAxFS");
         cmpConfRes.create();
         byte[] resp = cmpConfRes.getResponseMessage();
-        PKIMessage msg = new PKIMessage(ASN1Sequence.getInstance(ASN1Sequence.fromByteArray(resp)));
+        PKIMessage msg = PKIMessage.getInstance(ASN1Sequence.fromByteArray(resp));
         boolean veriStatus = CmpMessageHelper.verifyCertBasedPKIProtection(msg, keys.getPublic());
         assertTrue("Verification failed.", veriStatus);
         log.trace("<test07SignedConfirmationMessage()");
     }
 
-    private void createCmpUser() throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
+    @Test
+    public void test08SubjectDNSerialnumber() throws Exception {
+        log.trace(">test02CrmfHttpOkUser");
+        // Create a new good user
+        createCmpUser("cmpsntest", "C=SE,SN=12234567,CN=cmpsntest");
+
+        byte[] nonce = CmpMessageHelper.createSenderNonce();
+        byte[] transid = CmpMessageHelper.createSenderNonce();
+        
+        PKIMessage req = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, false, null, null, null, null, null, null);
+        assertNotNull(req);
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        DEROutputStream out = new DEROutputStream(bao);
+        out.writeObject(req);
+        byte[] ba = bao.toByteArray();
+        // Send request and receive response
+        byte[] resp = sendCmpHttp(ba, 200);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
+        X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+        
+        // Now revoke the certificate!
+        PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true, null, null);
+        assertNotNull(rev);
+        ByteArrayOutputStream baorev = new ByteArrayOutputStream();
+        DEROutputStream outrev = new DEROutputStream(baorev);
+        outrev.writeObject(rev);
+        byte[] barev = baorev.toByteArray();
+        // Send request and receive response
+        resp = sendCmpHttp(barev, 200);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
+        checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, 1);
+
+        // Create another user with the subjectDN serialnumber spelled "SERIALNUMBER" instead of "SN"
+        KeyPair keys2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        createCmpUser("cmpsntest2", "C=SE,SERIALNUMBER=123456789,CN=cmpsntest2");
+        req = genCertReq(issuerDN, userDN, keys2, cacert, nonce, transid, false, null, null, null, null, null, null);
+        assertNotNull(req);
+        ir = (CertReqMessages) req.getBody().getContent();
+        reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+        bao = new ByteArrayOutputStream();
+        out = new DEROutputStream(bao);
+        out.writeObject(req);
+        ba = bao.toByteArray();
+        // Send request and receive response
+        resp = sendCmpHttp(ba, 200);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
+        cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+        
+        // Now revoke this certificate too
+        rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true, null, null);
+        assertNotNull(rev);
+        baorev = new ByteArrayOutputStream();
+        outrev = new DEROutputStream(baorev);
+        outrev.writeObject(rev);
+        barev = baorev.toByteArray();
+        // Send request and receive response
+        resp = sendCmpHttp(barev, 200);
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
+        checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, 1);
+        log.trace("<test02CrmfHttpOkUser");
+    }
+
+    
+    private void createCmpUser(String username, String dn) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
             EjbcaException, FinderException, CADoesntExistsException {
         // Make user that we know...
         boolean userExists = false;
-        userDN = "C=SE,O=PrimeKey,CN=cmptest";
-        EndEntityInformation user = new EndEntityInformation("cmptest", userDN, caid, null, "cmptest@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
+        userDN = dn;
+        EndEntityInformation user = new EndEntityInformation(username, userDN, caid, null, username + "@primekey.se", new EndEntityType(EndEntityTypes.ENDUSER),
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         try {
@@ -373,7 +441,7 @@ public class CrmfRequestTest extends CmpTestCase {
         if (userExists) {
             log.debug("User cmptest already exists.");
             endEntityManagementSession.changeUser(admin, user, false);
-            endEntityManagementSession.setUserStatus(admin, "cmptest", EndEntityConstants.STATUS_NEW);
+            endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
     }

@@ -27,6 +27,8 @@ import java.util.Iterator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
@@ -54,8 +56,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * These tests test RA functionality with the CMP protocol, i.e. a "trusted" RA sends CMP messages authenticated using PBE (password based encryption)
@@ -202,11 +202,12 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         byte[] nonce = CmpMessageHelper.createSenderNonce();
         byte[] transid = CmpMessageHelper.createSenderNonce();
 
-        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null, null, null);
         PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
         assertNotNull(req);
 
-        int reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        int reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         ByteArrayOutputStream bao = new ByteArrayOutputStream();
         DEROutputStream out = new DEROutputStream(bao);
         out.writeObject(req);
@@ -232,7 +233,7 @@ public class CrmfRAPbeTcpRequestTest extends CmpTestCase {
         checkCmpPKIConfirmMessage(userDN, cacert, resp);
 
         // Now revoke the bastard using the CMPv2 CRL entry extension!
-        PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true);
+        PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true, null, null);
         PKIMessage revReq = protectPKIMessage(rev, false, PBEPASSWORD, 567);
         assertNotNull(revReq);
         bao = new ByteArrayOutputStream();

@@ -22,7 +22,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
-import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Map;
 
@@ -30,6 +30,7 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.isismtt.ocsp.CertHash;
 import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.util.KeyTools;
@@ -56,11 +57,13 @@ public class OcspCertHashExtensionTest {
     /**
      * This test runs a vanilla run through of the process method of OcspCertHashExtension, and simply verifies that 
      * the certHash is correctly produced (i.e fingerprint by SHA256)
+     * @throws CertificateException 
+     * @throws OperatorCreationException 
      * 
      */
     @Test
-    public void testProcess() throws InvalidKeyException, CertificateEncodingException, NoSuchAlgorithmException, SignatureException,
-            IllegalStateException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException {
+    public void testProcess() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException,
+            IllegalStateException, NoSuchProviderException, InvalidAlgorithmParameterException, IOException, OperatorCreationException, CertificateException {
         OcspCertHashExtension ocspCertHashExtension = new OcspCertHashExtension();
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         X509Certificate cert = CertTools.genSelfCert("CN=CertHashTest", 365, null, keys.getPrivate(), keys.getPublic(), AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);

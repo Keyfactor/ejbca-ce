@@ -20,7 +20,12 @@ import java.security.cert.Certificate;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.cmp.CertConfirmContent;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.RevReqContent;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.crmf.CertTemplate;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAInfo;
@@ -33,10 +38,6 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSession;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
 import org.ejbca.core.protocol.cmp.CmpPbeVerifyer;
-
-import com.novosec.pkix.asn1.cmp.CertConfirmContent;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
-import com.novosec.pkix.asn1.crmf.CertTemplate;
 
 /**
  * Checks the authentication of the PKIMessage.
@@ -278,7 +279,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                 // serialNo fingerprint instead
                 final CertConfirmContent certConf = getCertConfirm(msg);
                 if (certConf != null) {
-                    byte[] certhash = certConf.getCertHash().getOctets();
+                    byte[] certhash = certConf.toCertStatusArray()[0].getCertHash().getOctets();
                     //final String fp = new String(Hex.encode(certhash));
                     final String fphex = new String(certhash);
                     if (LOG.isDebugEnabled()) {
@@ -294,7 +295,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                 }
             } else {
                 subjectDN = certTemp.getSubject().toString();
-                final X509Name issuer = certTemp.getIssuer();
+                final X500Name issuer = certTemp.getIssuer();
                 if (issuer != null) {
                     issuerDN = issuer.toString();
                 }
@@ -373,15 +374,14 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      * @return the certificate template imbeded in msg. Null if no such template was found.
      */
     private CertTemplate getCertTemplate(final PKIMessage msg) {
-        final int tagnr = msg.getBody().getTagNo();
-        if(tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST) {
-            return msg.getBody().getIr().getCertReqMsg(0).getCertReq().getCertTemplate();
-        }
-        if(tagnr==CmpPKIBodyConstants.CERTIFICATAIONREQUEST) {
-            return msg.getBody().getCr().getCertReqMsg(0).getCertReq().getCertTemplate();
+        final int tagnr = msg.getBody().getType();
+        if(tagnr == CmpPKIBodyConstants.INITIALIZATIONREQUEST || tagnr==CmpPKIBodyConstants.CERTIFICATAIONREQUEST) {
+            CertReqMessages reqmsgs = (CertReqMessages) msg.getBody().getContent();
+            return reqmsgs.toCertReqMsgArray()[0].getCertReq().getCertTemplate();
         }
         if(tagnr==CmpPKIBodyConstants.REVOCATIONREQUEST) {
-            return msg.getBody().getRr().getRevDetails(0).getCertDetails();
+            RevReqContent rev  =(RevReqContent) msg.getBody().getContent();
+            return rev.toRevDetailsArray()[0].getCertDetails();
         }
         return null;
     }
@@ -393,9 +393,8 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
      * @return the certificate confirmation embedded in msg. Null if no such confirmation was found.
      */
     private CertConfirmContent getCertConfirm(final PKIMessage msg) {
-        final int tagnr = msg.getBody().getTagNo();
-        if(tagnr == CmpPKIBodyConstants.CERTIFICATECONFIRM) {
-            return msg.getBody().getCertConf();
+        if(msg.getBody().getType() == CmpPKIBodyConstants.CERTIFICATECONFIRM) {
+            return (CertConfirmContent) msg.getBody().getContent();
         }
         return null;
     }

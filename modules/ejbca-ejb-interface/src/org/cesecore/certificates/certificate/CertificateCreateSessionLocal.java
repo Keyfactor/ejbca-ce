@@ -18,8 +18,8 @@ import java.util.Date;
 
 import javax.ejb.Local;
 
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -107,8 +107,8 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      * @throws CesecoreException (no rollback) if certificate with same subject DN or key already exists for a user, if these limitations are enabled
      *             in CA.
      */
-    Certificate createCertificate(AuthenticationToken admin, EndEntityInformation data, CA ca, X509Name requestX509Name, PublicKey pk, int keyusage, Date notBefore, Date notAfter,
-            X509Extensions extensions, String sequence) throws CustomCertSerialNumberException, IllegalKeyException,
+    Certificate createCertificate(AuthenticationToken admin, EndEntityInformation data, CA ca, X500Name requestX509Name, PublicKey pk, int keyusage, Date notBefore, Date notAfter,
+            Extensions extensions, String sequence) throws CustomCertSerialNumberException, IllegalKeyException,
             AuthorizationDeniedException, CertificateCreateException, CesecoreException;
 
 }

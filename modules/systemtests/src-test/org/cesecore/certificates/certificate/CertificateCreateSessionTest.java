@@ -33,8 +33,8 @@ import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x509.X509Name;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.RoleUsingTestCase;
@@ -654,11 +654,12 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             user.setStatus(EndEntityConstants.STATUS_NEW);
 
             final KeyPair keyPair = KeyTools.genKeys("512", "RSA"); 
-            final X509Name x509dn = new X509Name(dn);
-            PKCS10CertificationRequest basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", x509dn, 
-                    keyPair.getPublic(), null, keyPair.getPrivate());
-            assertTrue("Request must verify (POP)", basicpkcs10.verify());
-            PKCS10RequestMessage req = new PKCS10RequestMessage(basicpkcs10);
+            final X500Name x509dn = new X500Name(dn);
+            PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", x509dn, 
+                    keyPair.getPublic(), null, keyPair.getPrivate(), null);
+            ContentVerifierProvider cvp = CertTools.genContentVerifierProvider(keyPair.getPublic());
+            assertTrue("Request must verify (POP)", basicpkcs10.isSignatureValid(cvp) );
+            PKCS10RequestMessage req = new PKCS10RequestMessage(basicpkcs10.toASN1Structure().getEncoded());
             assertTrue("Request must verify (POP)", req.verify());
             X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
             assertNotNull("Creating a cert should have worked", resp);
@@ -667,9 +668,9 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
             
             // Create a request with invalid PoP
             final KeyPair keyPair2 = KeyTools.genKeys("512", "RSA"); 
-            PKCS10CertificationRequest invalidpoppkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", x509dn, 
-                    keyPair.getPublic(), null, keyPair2.getPrivate());
-            req = new PKCS10RequestMessage(invalidpoppkcs10);
+            PKCS10CertificationRequest invalidpoppkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", x509dn, 
+                    keyPair.getPublic(), null, keyPair2.getPrivate(), null);
+            req = new PKCS10RequestMessage(invalidpoppkcs10.toASN1Structure().getEncoded());
             try {
                 resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, X509ResponseMessage.class);
                 fail("Creating a cert from a request with invalid PoP (proof of possession) should not work");

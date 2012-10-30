@@ -3,7 +3,7 @@
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
 <%@page errorPage="/errorpage.jsp" import="java.util.*, java.io.*, java.security.cert.Certificate, org.apache.commons.fileupload.*, org.ejbca.ui.web.admin.configuration.EjbcaWebBean,org.ejbca.config.GlobalConfiguration, org.cesecore.util.FileTools, org.cesecore.util.CertTools, org.cesecore.CesecoreException, org.cesecore.authorization.AuthorizationDeniedException,
     org.ejbca.ui.web.RequestHelper, org.ejbca.ui.web.admin.cainterface.CAInterfaceBean, org.cesecore.certificates.ca.CAInfo, org.cesecore.certificates.ca.X509CAInfo, org.cesecore.certificates.ca.CVCCAInfo, org.cesecore.certificates.ca.catoken.CATokenInfo, org.cesecore.certificates.ca.CAConstants, org.ejbca.core.model.SecConst, org.cesecore.certificates.ca.catoken.CATokenConstants, org.cesecore.certificates.ca.catoken.CAToken, org.ejbca.ui.web.admin.cainterface.CADataHandler,
-               org.ejbca.ui.web.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x509.X509Name, org.ejbca.core.EjbcaException,
+               org.ejbca.ui.web.RevokedInfoView, org.ejbca.ui.web.admin.configuration.InformationMemory, org.bouncycastle.asn1.x500.X500Name, org.ejbca.core.EjbcaException,
                org.cesecore.certificates.certificate.request.PKCS10RequestMessage, org.cesecore.certificates.certificate.request.RequestMessage, org.cesecore.certificates.certificate.request.RequestMessageUtils, org.cesecore.certificates.certificate.request.CVCRequestMessage, org.cesecore.certificates.ca.CAExistsException, org.cesecore.certificates.ca.CADoesntExistsException, org.cesecore.keys.token.CryptoTokenOfflineException, org.cesecore.keys.token.CryptoTokenAuthenticationFailedException,
                org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo,org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo, org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo, org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo, org.cesecore.certificates.ca.internal.CATokenCacheManager, org.cesecore.keys.token.AvailableCryptoToken, org.cesecore.certificates.ca.catoken.CATokenConstants,
                org.cesecore.certificates.util.DNFieldExtractor,org.cesecore.certificates.util.DnComponents,org.cesecore.keys.token.CryptoToken,org.cesecore.keys.token.BaseCryptoToken, org.cesecore.keys.token.NullCryptoToken, org.cesecore.keys.token.SoftCryptoToken, org.cesecore.keys.token.PKCS11CryptoToken, org.cesecore.certificates.certificateprofile.CertificateProfile, org.cesecore.certificates.certificateprofile.CertificatePolicy, org.ejbca.ui.web.admin.cainterface.CAInfoView, org.bouncycastle.jce.exception.ExtCertPathValidatorException,
@@ -463,7 +463,7 @@
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          String subjectdn = request.getParameter(TEXTFIELD_SUBJECTDN);
          try{
-             X509Name dummy = CertTools.stringToBcX509Name(subjectdn);
+             X500Name dummy = CertTools.stringToBcX509Name(subjectdn);
          }catch(Exception e){
              illegaldnoraltname = true;
          }
@@ -1405,7 +1405,7 @@
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          String subjectdn = request.getParameter(TEXTFIELD_SUBJECTDN);
          try{
-             X509Name dummy = CertTools.stringToBcX509Name(subjectdn);
+             X500Name dummy = CertTools.stringToBcX509Name(subjectdn);
          }catch(Exception e){
            illegaldnoraltname = true;
          }

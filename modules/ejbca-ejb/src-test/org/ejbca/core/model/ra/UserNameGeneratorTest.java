@@ -16,7 +16,7 @@ package org.ejbca.core.model.ra;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.junit.Test;
 
 /**
@@ -39,11 +39,11 @@ public class UserNameGeneratorTest {
 		UsernameGenerator usernameGenerator = UsernameGenerator.getInstance(usernameGeneratorParams);
 
 		final String errorMessage = "Did not generate an expected username.";
-		assertEquals(errorMessage, "test", usernameGenerator.generateUsername(new X509Name("CN=test").toString()));
+		assertEquals(errorMessage, "test", usernameGenerator.generateUsername(new X500Name("CN=test").toString()));
 		assertEquals(errorMessage, null, usernameGenerator.generateUsername("".toString()));
 		assertEquals(errorMessage, null, usernameGenerator.generateUsername(" ".toString()));
-		assertEquals(errorMessage, "test", usernameGenerator.generateUsername(new X509Name("CN=test, serialNumber=1234").toString()));
-		assertEquals(errorMessage, null, usernameGenerator.generateUsername(new X509Name("O=org").toString()));
+		assertEquals(errorMessage, "test", usernameGenerator.generateUsername(new X500Name("CN=test, serialNumber=1234").toString()));
+		assertEquals(errorMessage, null, usernameGenerator.generateUsername(new X500Name("O=org").toString()));
 		assertEquals(errorMessage, "12345", usernameGenerator.generateUsername("CN=test, SN=12345"));
 		assertEquals(errorMessage, "1234", usernameGenerator.generateUsername("SN=1234"));
 		

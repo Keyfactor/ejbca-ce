@@ -20,7 +20,7 @@ import javax.persistence.PersistenceException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -149,10 +149,10 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         BigInteger serno = SernoGeneratorRandom.instance().getSerno();
         log.debug("serno: " + serno);
 
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"),
-                rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"),
+                rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
 
-        PKCS10RequestMessage p10 = new PKCS10RequestMessage(req);
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(req.toASN1Structure().getEncoded());
         p10.setUsername("foo");
         p10.setPassword("foo123");
 
@@ -186,10 +186,10 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         BigInteger serno = ((X509Certificate) certificateStoreSession.findCertificatesByUsername("foo").iterator().next()).getSerialNumber();
         log.debug("foo serno: " + serno);
 
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo2"),
-                rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo2"),
+                rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
 
-        PKCS10RequestMessage p10 = new PKCS10RequestMessage(req);
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(req.toASN1Structure().getEncoded());
         p10.setUsername("foo2");
         p10.setPassword("foo123");
 
@@ -220,10 +220,10 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         BigInteger serno = ((X509Certificate) certificateStoreSession.findCertificatesByUsername("foo").iterator().next()).getSerialNumber();
         log.debug("foo serno: " + serno);
 
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo3"),
-                rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo3"),
+                rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
 
-        PKCS10RequestMessage p10 = new PKCS10RequestMessage(req);
+        PKCS10RequestMessage p10 = new PKCS10RequestMessage(req.toASN1Structure().getEncoded());
         p10.setUsername("foo3");
         p10.setPassword("foo123");
 
@@ -256,8 +256,8 @@ public class CustomCertSerialnumberTest extends CaTestCase {
         BigInteger serno = SernoGeneratorRandom.instance().getSerno();
         log.debug("serno: " + serno);
 
-        PKCS10CertificationRequest req = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"),
-                rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate());
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=foo"),
+                rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
 
         PKCS10RequestMessage p10 = new PKCS10RequestMessage(req.getEncoded());
         p10.setUsername("foo");

@@ -21,8 +21,8 @@ import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Date;
 
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cms.CMSSignedGenerator;
 
 
@@ -74,7 +74,7 @@ public class SimpleRequestMessage implements RequestMessage {
     private String requestDN = null;
 
     /** Requested certificate extensions */
-    private X509Extensions x509Extensions = null;
+    private Extensions x509Extensions = null;
     
     /**
      * Constructs a new Simple message handler object.
@@ -178,11 +178,11 @@ public class SimpleRequestMessage implements RequestMessage {
     /**
      * @see RequestMessage#getRequestX509Name()
      */
-    public X509Name getRequestX509Name() {
+    public X500Name getRequestX509Name() {
     	if (this.requestDN == null) {
     		return null;
     	}
-    	return new X509Name(this.requestDN);
+    	return new X500Name(this.requestDN);
     }
 
     public void setRequestDN(String dn) {
@@ -210,12 +210,12 @@ public class SimpleRequestMessage implements RequestMessage {
     /**
      * @see org.cesecore.certificates.certificate.request.RequestMessage
      */
-	public X509Extensions getRequestExtensions() {
+	public Extensions getRequestExtensions() {
 	    return x509Extensions;
 	}
 	
 	/** Sets request extensions, if any */
-	public void setRequestExtensions(final X509Extensions extensions) {
+	public void setRequestExtensions(final Extensions extensions) {
 	    this.x509Extensions = extensions;
 	}
 	

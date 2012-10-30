@@ -261,7 +261,7 @@ public class EndEntityManagementSessionTest extends CaTestCase {
         } catch (EjbcaException e) {
             assertEquals(ErrorCode.SUBJECTDN_SERIALNUMBER_ALREADY_EXISTS, e.getErrorCode());
         }
-        assertFalse(endEntityManagementSession.existsUser(thisusername));
+        assertFalse("Succeeded in adding another end entity with the same serialnumber", endEntityManagementSession.existsUser(thisusername));
 
         // Set the CA to NOT enforcing unique subjectDN serialnumber
         cainfo.setDoEnforceUniqueSubjectDNSerialnumber(false);

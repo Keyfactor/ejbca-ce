@@ -24,6 +24,8 @@ import java.util.Iterator;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
@@ -62,8 +64,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.novosec.pkix.asn1.cmp.PKIMessage;
 
 /**
  * @author tomas
@@ -194,10 +194,11 @@ public class CrmfRARequestTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
         {
-            final PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, customCertSerno);
+            final PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, customCertSerno, null, null);
             final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, 567);
 
-            reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             Assert.assertNotNull(req);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
             final DEROutputStream out = new DEROutputStream(bao);
@@ -310,10 +311,11 @@ public class CrmfRARequestTest extends CmpTestCase {
         final byte[] transid = CmpMessageHelper.createSenderNonce();
         final int reqId;
         
-        final PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
+        final PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null, null, null);
         final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, null, 567);
         Assert.assertNotNull(req);
-        reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
         
         final ByteArrayOutputStream bao = new ByteArrayOutputStream();
         final DEROutputStream out = new DEROutputStream(bao);
@@ -327,7 +329,7 @@ public class CrmfRARequestTest extends CmpTestCase {
         BigInteger serialnumber = cert.getSerialNumber();
         
         // Revoke the created certificate
-        final PKIMessage con = genRevReq(issuerDN, userDN, serialnumber, cacert, nonce, transid, false);
+        final PKIMessage con = genRevReq(issuerDN, userDN, serialnumber, cacert, nonce, transid, false, null, null);
         Assert.assertNotNull(con);
         PKIMessage revmsg = protectPKIMessage(con, false, PBEPASSWORD, null, 567);
         final ByteArrayOutputStream baorev = new ByteArrayOutputStream();
@@ -405,10 +407,11 @@ public class CrmfRARequestTest extends CmpTestCase {
         }
         
         try {
-            final PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null);
+            final PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null, null, null);
             final PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
 
-            reqId = req.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+            reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             Assert.assertNotNull(req);
             final ByteArrayOutputStream bao = new ByteArrayOutputStream();
             final DEROutputStream out = new DEROutputStream(bao);
@@ -429,10 +432,11 @@ public class CrmfRARequestTest extends CmpTestCase {
             final byte[] transid2 = CmpMessageHelper.createSenderNonce();
             final int reqId2;
 
-            final PKIMessage one2 = genCertReq(issuerDN, userDN, keys2, cacert, nonce2, transid2, true, null, null, null, null);
+            final PKIMessage one2 = genCertReq(issuerDN, userDN, keys2, cacert, nonce2, transid2, true, null, null, null, null, null, null);
             final PKIMessage req2 = protectPKIMessage(one2, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
 
-            reqId2 = req2.getBody().getIr().getCertReqMsg(0).getCertReq().getCertReqId().getValue().intValue();
+            ir = (CertReqMessages) req2.getBody().getContent();
+            reqId2 = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
             Assert.assertNotNull(req2);
             final ByteArrayOutputStream bao2 = new ByteArrayOutputStream();
             final DEROutputStream out2 = new DEROutputStream(bao2);
@@ -449,7 +453,7 @@ public class CrmfRARequestTest extends CmpTestCase {
             Assert.assertEquals("Wrong certificate profile", cpId, ee.getCertificateProfileId());
 
             // Revoke the created certificate and use keyid
-            final PKIMessage con = genRevReq(issuerDN, userDN, serialnumber, cacert, nonce2, transid2, false);
+            final PKIMessage con = genRevReq(issuerDN, userDN, serialnumber, cacert, nonce2, transid2, false, null, null);
             Assert.assertNotNull(con);
             PKIMessage revmsg = protectPKIMessage(con, false, PBEPASSWORD, "CMPKEYIDTESTPROFILE", 567);
             final ByteArrayOutputStream baorev = new ByteArrayOutputStream();
@@ -473,6 +477,81 @@ public class CrmfRARequestTest extends CmpTestCase {
                 // NOPMD
             }
         }        
+    }
+    
+    @Test
+    public void test04SubjectSerialNumber() throws Exception {
+
+        // Set requirement of unique subjectDN serialnumber to be true
+        CAInfo cainfo = caSession.getCAInfo(admin, caid);
+        boolean requiredUniqueSerialnumber = cainfo.isDoEnforceUniqueSubjectDNSerialnumber();
+        // Set the CA to enforce unique serialnumber
+        cainfo.setDoEnforceUniqueSubjectDNSerialnumber(true);
+        CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
+        caAdminSession.editCA(admin, cainfo);
+        
+        // Create a new good user
+
+        String userDN = "CN=subjectsnuser,SN=1234567,C=SE";
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        final byte[] nonce = CmpMessageHelper.createSenderNonce();
+        final byte[] transid = CmpMessageHelper.createSenderNonce();
+        int reqId;
+        
+        PKIMessage one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null, null, null);
+        PKIMessage req = protectPKIMessage(one, false, PBEPASSWORD, null, 567);
+        Assert.assertNotNull(req);
+        CertReqMessages ir = (CertReqMessages) req.getBody().getContent();
+        reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+        
+        ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        DEROutputStream out = new DEROutputStream(bao);
+        out.writeObject(req);
+        byte[] ba = bao.toByteArray();
+        // Send request and receive response
+        byte[] resp = sendCmpHttp(ba, 200);
+        // do not check signing if we expect a failure (sFailMessage==null)
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, true, null);
+        X509Certificate cert = checkCmpCertRepMessage(userDN, cacert, resp, reqId);
+        BigInteger serialnumber = cert.getSerialNumber();
+        
+        // create a second user with the same serialnumber, but spelled "SERIALNUMBER" instead of "SN"
+        userDN = "CN=subjectsnuser2,SERIALNUMBER=1234567,C=SE";
+        keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+        
+        one = genCertReq(issuerDN, userDN, keys, cacert, nonce, transid, true, null, null, null, null, null, null);
+        req = protectPKIMessage(one, false, PBEPASSWORD, null, 567);
+        Assert.assertNotNull(req);
+        ir = (CertReqMessages) req.getBody().getContent();
+        reqId = ir.toCertReqMsgArray()[0].getCertReq().getCertReqId().getValue().intValue();
+        
+        bao = new ByteArrayOutputStream();
+        out = new DEROutputStream(bao);
+        out.writeObject(req);
+        ba = bao.toByteArray();
+        // Send request and receive response
+        resp = sendCmpHttp(ba, 200);
+        // do not check signing if we expect a failure (sFailMessage==null)
+        checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
+        checkCmpFailMessage(resp, "Error: SubjectDN Serialnumber already exists.", CmpPKIBodyConstants.ERRORMESSAGE, reqId, FailInfo.BAD_REQUEST.hashCode());
+
+        
+        // Revoke the created certificate
+        final PKIMessage con = genRevReq(issuerDN, userDN, serialnumber, cacert, nonce, transid, false, null, null);
+        Assert.assertNotNull(con);
+        PKIMessage revmsg = protectPKIMessage(con, false, PBEPASSWORD, null, 567);
+        final ByteArrayOutputStream baorev = new ByteArrayOutputStream();
+        final DEROutputStream outrev = new DEROutputStream(baorev);
+        outrev.writeObject(revmsg);
+        final byte[] barev = baorev.toByteArray();
+        // Send request and receive response
+        final byte[] resprev = sendCmpHttp(barev, 200);
+        checkCmpResponseGeneral(resprev, issuerDN, userDN, cacert, nonce, transid, false, null);
+        int revstatus = checkRevokeStatus(issuerDN, serialnumber);
+        Assert.assertEquals("Certificate revocation failed.", RevokedCertInfo.REVOCATION_REASON_KEYCOMPROMISE, revstatus);
+        
+        cainfo.setDoEnforceUniqueSubjectDNSerialnumber(requiredUniqueSerialnumber);
+        caAdminSession.editCA(admin, cainfo);
     }
     
     @After

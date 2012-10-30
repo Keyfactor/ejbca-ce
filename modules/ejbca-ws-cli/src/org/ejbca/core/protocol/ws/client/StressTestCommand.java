@@ -13,6 +13,7 @@
 package org.ejbca.core.protocol.ws.client;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -31,7 +32,7 @@ import java.util.List;
 import javax.xml.bind.DatatypeConverter;
 
 import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.util.CertTools;
@@ -147,7 +148,8 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		final private PKCS10CertificationRequest pkcs10;
 		Pkcs10RequestCommand(EjbcaWS _ejbcaWS, KeyPair keys, JobData _jobData) throws Exception {
 			super(_jobData);
-			this.pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate());
+			this.pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(),
+	                keys.getPrivate(), null);
 			this.ejbcaWS = _ejbcaWS;
 		}
 		@Override
@@ -398,7 +400,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		final private UserDataVOWS user;
 		final private boolean doCreateNewUser;
 		final private int bitsInCertificateSN;
-		final private PKCS10CertificationRequest pkcs10;
+		private PKCS10CertificationRequest pkcs10;
 		CertificateRequestCommand(EjbcaWS _ejbcaWS, String caName, String endEntityProfileName, String certificateProfileName,
 						JobData _jobData, boolean _doCreateNewUser, int _bitsInCertificateSN, KeyPair keys) throws SignatureException, InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException {
 			super(_jobData);
@@ -414,7 +416,12 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.user.setEndEntityProfileName(endEntityProfileName);
 			this.user.setCertificateProfileName(certificateProfileName);
 			this.bitsInCertificateSN = _bitsInCertificateSN;
-			this.pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate());			
+			try {
+                this.pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
+            } catch (IOException e) {
+                getPrintStream().println(e.getLocalizedMessage());
+                e.printStackTrace(getPrintStream());
+            }
 		}
 		@Override
 		public boolean doIt() throws Exception {

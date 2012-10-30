@@ -40,7 +40,6 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
-import java.util.Vector;
 
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
@@ -51,19 +50,21 @@ import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.asn1.crmf.CertReqMessages;
+import org.bouncycastle.asn1.crmf.CertReqMsg;
+import org.bouncycastle.asn1.crmf.CertRequest;
+import org.bouncycastle.asn1.crmf.CertTemplateBuilder;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509ExtensionsGenerator;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSSignedData;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -166,10 +167,6 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.HolderReferenceField;
 import org.ejbca.ui.cli.batch.BatchMakeP12;
 
-import com.novosec.pkix.asn1.crmf.CertReqMessages;
-import com.novosec.pkix.asn1.crmf.CertReqMsg;
-import com.novosec.pkix.asn1.crmf.CertRequest;
-import com.novosec.pkix.asn1.crmf.CertTemplate;
 
 /**
  * 
@@ -699,15 +696,13 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // Add a custom extension (dummy)
         ASN1EncodableVector attr = new ASN1EncodableVector();
         attr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
-        Vector<ASN1ObjectIdentifier> oidvec = new Vector<ASN1ObjectIdentifier>();
-        oidvec.add(new ASN1ObjectIdentifier("1.2.3.4"));
-        Vector<X509Extension> valuevec = new Vector<X509Extension>();
-        valuevec.add(new X509Extension(false, new DEROctetString("foo123".getBytes())));
-        X509Extensions exts = new X509Extensions(oidvec, valuevec);
+        ExtensionsGenerator extgen = new ExtensionsGenerator();
+        extgen.addExtension(new ASN1ObjectIdentifier("1.2.3.4"), false, new DEROctetString("foo123".getBytes()));
+        Extensions exts = extgen.generate();
         attr.add(new DERSet(exts));
         attributes.add(new DERSequence(attr));
-        PKCS10CertificationRequest pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"),
-                keys.getPublic(), new DERSet(attributes), keys.getPrivate());
+        PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"),
+                keys.getPublic(), new DERSet(attributes), keys.getPrivate(), null);
         return pkcs10;
     }
 
@@ -941,20 +936,20 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     }
 
     private CertReqMsg createCrmfRequest(final String issuerDN, final String userDN, final KeyPair keys, final String extensionOid) throws IOException {
-        CertTemplate myCertTemplate = new CertTemplate();
-        myCertTemplate.setIssuer(new X509Name(issuerDN));
-        myCertTemplate.setSubject(new X509Name(userDN));
+        CertTemplateBuilder myCertTemplate = new CertTemplateBuilder();
+        myCertTemplate.setIssuer(new X500Name(issuerDN));
+        myCertTemplate.setSubject(new X500Name(userDN));
         byte[] bytes = keys.getPublic().getEncoded();
         ByteArrayInputStream bIn = new ByteArrayInputStream(bytes);
         ASN1InputStream dIn = new ASN1InputStream(bIn);
         SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence) dIn.readObject());
         myCertTemplate.setPublicKey(keyInfo);
         // If we did not pass any extensions as parameter, we will create some of our own, standard ones
-        X509ExtensionsGenerator extgen = new X509ExtensionsGenerator();
+        ExtensionsGenerator extgen = new ExtensionsGenerator();
         extgen.addExtension(new ASN1ObjectIdentifier(extensionOid), false, "foo123".getBytes());
         myCertTemplate.setExtensions(extgen.generate());
-        CertRequest myCertRequest = new CertRequest(new DERInteger(4), myCertTemplate);
-        CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest);
+        CertRequest myCertRequest = new CertRequest(4, myCertTemplate.build(), null);
+        CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest, null, null);
         return myCertReqMsg;
     }
     
@@ -1373,8 +1368,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         tokenUser1.setCertificateProfileName("ENDUSER");
 
         KeyPair basickeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        PKCS10CertificationRequest basicpkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"),
-                basickeys.getPublic(), new DERSet(), basickeys.getPrivate());
+        PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"),
+                basickeys.getPublic(), new DERSet(), basickeys.getPrivate(), null);
 
         ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();
         TokenCertificateRequestWS tokenCertReqWS = new TokenCertificateRequestWS();
@@ -1573,8 +1568,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         ejbcaraws.editUser(userdatas.get(0));
 
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        PKCS10CertificationRequest pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"),
-                keys.getPublic(), new DERSet(), keys.getPrivate());
+        PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"),
+                keys.getPublic(), new DERSet(), keys.getPrivate(), null);
 
         CertificateResponse certenv = ejbcaraws.pkcs10Request(CA1_WSTESTUSER1, PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
                 CertificateHelper.RESPONSETYPE_CERTIFICATE);
@@ -2092,8 +2087,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
         // ///// Check Error.LOGIN_ERROR ///////
         keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=WSTESTUSER30"), keys.getPublic(), new DERSet(),
-                keys.getPrivate());
+        pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=WSTESTUSER30"), keys.getPublic(), new DERSet(),
+                keys.getPrivate(), null);
 
         try {
             ejbcaraws.pkcs10Request("WSTESTUSER30", PASSWORD, new String(Base64.encode(pkcs10.getEncoded())), null,
@@ -2112,8 +2107,8 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         ejbcaraws.editUser(user1);
 
         keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        pkcs10 = new PKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=WSTESTUSER30"), keys.getPublic(), new DERSet(),
-                keys.getPrivate());
+        pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=WSTESTUSER30"), keys.getPublic(), new DERSet(),
+                keys.getPrivate(), null);
 
         try {
             ejbcaraws.pkcs10Request("WSTESTUSER30", "foo1234", new String(Base64.encode(pkcs10.getEncoded())), null,

@@ -24,7 +24,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.crl.RevokedCertInfo;
@@ -320,7 +320,7 @@ public class ValidationAuthorityPublisher extends BasePublisher implements ICust
 			try {
 				crl = CertTools.getCRLfromByteArray(incrl);
 				// Is it a delta CRL?
-				this.deltaCRLIndicator = crl.getExtensionValue(X509Extensions.DeltaCRLIndicator.getId())!=null ? 1 : -1;
+				this.deltaCRLIndicator = crl.getExtensionValue(Extension.deltaCRLIndicator.getId())!=null ? 1 : -1;
 				this.issuerDN = userDN;
 				this.cRLNumber = number;
 				this.cAFingerprint = cafp;

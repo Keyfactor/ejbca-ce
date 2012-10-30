@@ -27,13 +27,14 @@ import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.SignatureException;
-import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.security.auth.x500.X500Principal;
 
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.AccessUserAspectData;
@@ -70,7 +71,7 @@ public class X509CertificateAuthenticationTokenTest {
 
     @Before
     public void setUp() throws NoSuchAlgorithmException, NoSuchProviderException, InvalidAlgorithmParameterException, InvalidKeyException,
-            CertificateEncodingException, SignatureException, IllegalStateException {
+            SignatureException, IllegalStateException, OperatorCreationException, CertificateException, IOException {
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
         certificate = CertTools.genSelfCert(
                 "C=Test,O=Test,CN=Test,DC=Test,L=Test,SN=Test,ST=Test,OU=Test,T=Test,UID=Test,E=Test,RFC822NAME=Test,UPN=Test", 365, null,
@@ -118,12 +119,13 @@ public class X509CertificateAuthenticationTokenTest {
      * @throws IllegalStateException
      * @throws SignatureException
      * @throws NoSuchAlgorithmException
-     * @throws CertificateEncodingException
      * @throws InvalidKeyException
+     * @throws IOException 
+     * @throws CertificateException 
+     * @throws OperatorCreationException 
      */
     @Test
-    public void testCreateAuthenticationTokenWithMultipleCredentials() throws InvalidKeyException, CertificateEncodingException,
-            NoSuchAlgorithmException, SignatureException, IllegalStateException, NoSuchProviderException {
+    public void testCreateAuthenticationTokenWithMultipleCredentials() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException {
         X509CertificateAuthenticationToken authenticationToken = null;
 
         X509Certificate secondCertificate = CertTools.genSelfCert("C=SE,O=Monkey,CN=Monkey", 365, null, keys.getPrivate(), keys.getPublic(),

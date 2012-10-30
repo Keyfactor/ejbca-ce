@@ -12,7 +12,6 @@
  *************************************************************************/
 package org.cesecore.certificates.certificate;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidKeyException;
@@ -36,13 +35,11 @@ import javax.ejb.TransactionAttributeType;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.cesecore.CesecoreException;
 import org.cesecore.ErrorCode;
 import org.cesecore.audit.enums.EventStatus;
@@ -166,24 +163,17 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
             final Date notBefore = req.getRequestValidityNotBefore(); // Optionally requested validity
             final Date notAfter = req.getRequestValidityNotAfter(); // Optionally requested validity
-            final X509Extensions exts = req.getRequestExtensions(); // Optionally requested extensions
+            final Extensions exts = req.getRequestExtensions(); // Optionally requested extensions
             int keyusage = -1;
             if (exts != null) {
                 if (log.isDebugEnabled()) {
                     log.debug("we have extensions, see if we can override KeyUsage by looking for a KeyUsage extension in request");
                 }
-                final X509Extension ext = exts.getExtension(X509Extensions.KeyUsage);
+                final Extension ext = exts.getExtension(Extension.keyUsage);
                 if (ext != null) {
-                    final ASN1OctetString os = ext.getValue();
-                    final ByteArrayInputStream bIs = new ByteArrayInputStream(os.getOctets());
-                    final ASN1InputStream dIs = new ASN1InputStream(bIs);
-                    try {
-                        final ASN1Primitive dob = dIs.readObject();
-                        final DERBitString bs = DERBitString.getInstance(dob);
+                    final ASN1OctetString os = ext.getExtnValue();
+                        final DERBitString bs = new DERBitString(os.getEncoded());
                         keyusage = bs.intValue();
-                    } catch (IOException e) {
-                        log.warn("Invalid KeyUsage extension in request, extensionbytes: " + new String(Base64.encode(exts.getEncoded())));
-                    }
                     if (log.isDebugEnabled()) {
                         log.debug("We have a key usage request extension: " + keyusage);
                     }
@@ -318,8 +308,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca,
-            final X509Name requestX509Name, final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter,
-            final X509Extensions extensions, final String sequence) throws CustomCertSerialNumberException, IllegalKeyException,
+            final X500Name requestX509Name, final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter,
+            final Extensions extensions, final String sequence) throws CustomCertSerialNumberException, IllegalKeyException,
             AuthorizationDeniedException, CertificateCreateException, CesecoreException {
         if (log.isTraceEnabled()) {
             log.trace(">createCertificate(EndEntityInformation, CA, X509Name, pk, ku, notBefore, notAfter, extesions, sequence)");

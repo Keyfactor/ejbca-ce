@@ -38,21 +38,21 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.Random;
-import java.util.Vector;
 
 import org.apache.commons.lang.StringUtils;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.ASN1String;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSException;
 import org.bouncycastle.cms.CMSProcessable;
@@ -170,21 +170,18 @@ class SCEPTest extends ClientToolBox {
                 return "Get certificate chain";
             }
         }
-        private X509Extensions generateExtensions(int bcKeyUsage) throws IOException {
+        private Extensions generateExtensions(int bcKeyUsage) throws IOException {
             // Extension request attribute is a set of X509Extensions
             // ASN1EncodableVector x509extensions = new ASN1EncodableVector();
             // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
-            final Vector<ASN1ObjectIdentifier> oidvec = new Vector<ASN1ObjectIdentifier>();
-            final Vector<X509Extension> valuevec = new Vector<X509Extension>();
+            ExtensionsGenerator extgen = new ExtensionsGenerator();
             { // KeyUsage
                 final X509KeyUsage ku = new X509KeyUsage(bcKeyUsage);
                 final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                 final DEROutputStream dOut = new DEROutputStream(bOut);
                 dOut.writeObject(ku);
                 final byte value[] = bOut.toByteArray();
-                final X509Extension kuext = new X509Extension(false, new DEROctetString(value));
-                valuevec.add(kuext);
-                oidvec.add(X509Extensions.KeyUsage);     
+                extgen.addExtension(Extension.keyUsage, false, new DEROctetString(value));
             }
             {// Requested extensions attribute
                 // AltNames
@@ -192,10 +189,9 @@ class SCEPTest extends ClientToolBox {
                 ByteArrayOutputStream bOut = new ByteArrayOutputStream();
                 DEROutputStream dOut = new DEROutputStream(bOut);
                 dOut.writeObject(san);
-                valuevec.add(new X509Extension(false, new DEROctetString(bOut.toByteArray())));
-                oidvec.add(X509Extensions.SubjectAlternativeName);
+                extgen.addExtension(Extension.subjectAlternativeName, false, new DEROctetString(bOut.toByteArray()));
             }
-            return new X509Extensions(oidvec,valuevec);
+            return extgen.generate();
         }
         /** Class with command to get certificate using SCEP.
          * It will detect if it is a CA that returns the certificate immediately, or an

@@ -24,14 +24,18 @@ import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.Set;
 
-import javax.security.auth.x500.X500Principal;
-
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
+import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEREnumerated;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.x509.X509V3CertificateGenerator;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CertificateHolder;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -130,16 +134,15 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                    }
 	                    final Date time = new Date();              // time from which certificate is valid
 	                    final KeyPair key_pair = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);     
-	                    final X509V3CertificateGenerator certGen = new X509V3CertificateGenerator();
-	                    final X500Principal dnName = new X500Principal("CN=Dummy Missing in Imported CRL, serialNumber=" + serialHex);
-	                    certGen.setSerialNumber(serialNr);
-	                    certGen.setIssuerDN(cacert.getSubjectX500Principal());
-	                    certGen.setNotBefore(time);
-	                    certGen.setNotAfter(new Date (time.getTime() + 1000L * 60 * 60 * 24 * 365 * 10));  // 10 years of life
-	                    certGen.setSubjectDN(dnName);                       // note: same as issuer
-	                    certGen.setPublicKey(key_pair.getPublic());
-	                    certGen.setSignatureAlgorithm("SHA1withRSA");
-	                    final X509Certificate certificate = certGen.generate(key_pair.getPrivate(), "BC");
+
+	                    final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(key_pair.getPublic().getEncoded()));
+	                    final X500Name dnName = new X500Name("CN=Dummy Missing in Imported CRL, serialNumber=" + serialHex);
+	                    final Date notAfter = new Date (time.getTime() + 1000L * 60 * 60 * 24 * 365 * 10); // 10 years of life
+	                    final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(new X500Name(cacert.getSubjectDN().getName()), serialNr, time, notAfter, dnName, pkinfo);
+	                    final ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").build(key_pair.getPrivate());
+	                    final X509CertificateHolder certHolder = certbuilder.build(signer);
+	                    final X509Certificate certificate = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
+	                    
 	                    final String fingerprint = CertTools.getFingerprintAsString(certificate);
 	                    // We add all certificates that does not have a user already to "missing_user_name"
 	                    final EndEntityInformation missingUserDataVO = ejb.getRemoteSession(EndEntityAccessSessionRemote.class).findUser(getAdmin(cliUserName, cliPassword), missing_user_name);
@@ -215,7 +218,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
     private int getCRLReasonValue(final X509CRLEntry entry) throws IOException {
         int reason = RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED; 
         if ((entry != null) && entry.hasExtensions()) {
-            final byte[] bytes = entry.getExtensionValue(X509Extensions.ReasonCode.getId());
+            final byte[] bytes = entry.getExtensionValue(Extension.reasonCode.getId());
             if (bytes != null) {
                 ASN1InputStream aIn = new ASN1InputStream(new ByteArrayInputStream(bytes));
                 final ASN1OctetString octs = (ASN1OctetString) aIn.readObject();

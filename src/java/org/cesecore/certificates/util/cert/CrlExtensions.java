@@ -22,7 +22,7 @@ import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.x509.CRLNumber;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extension;
 
 /**
  * A class for reading values from CRL extensions.
@@ -44,7 +44,7 @@ public class CrlExtensions {
     public static BigInteger getCrlNumber(X509CRL crl) {
     	BigInteger ret = BigInteger.valueOf(0);
         try {
-			ASN1Primitive obj = CrlExtensions.getExtensionValue(crl, X509Extensions.CRLNumber.getId());
+			ASN1Primitive obj = CrlExtensions.getExtensionValue(crl, Extension.cRLNumber.getId());
 			if (obj != null) {
 				CRLNumber crlnum = CRLNumber.getInstance(obj);
 				if (crlnum != null) {
@@ -64,7 +64,7 @@ public class CrlExtensions {
     public static BigInteger getDeltaCRLIndicator(X509CRL crl) {
     	BigInteger ret = BigInteger.valueOf(-1);
         try {
-			ASN1Primitive obj = CrlExtensions.getExtensionValue(crl, X509Extensions.DeltaCRLIndicator.getId());
+			ASN1Primitive obj = CrlExtensions.getExtensionValue(crl, Extension.deltaCRLIndicator.getId());
 			if (obj != null) {
 			    CRLNumber crlnum = CRLNumber.getInstance(obj);
 	            if (crlnum != null) {

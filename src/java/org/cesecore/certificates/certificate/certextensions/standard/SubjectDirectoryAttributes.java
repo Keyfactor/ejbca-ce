@@ -22,7 +22,7 @@ import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1EncodableVector;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.Attribute;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtentionConfigurationException;
@@ -43,7 +43,7 @@ public class SubjectDirectoryAttributes extends StandardCertificateExtension {
 
     @Override
 	public void init(final CertificateProfile certProf) {
-		super.setOID(X509Extensions.SubjectDirectoryAttributes.getId());
+		super.setOID(Extension.subjectDirectoryAttributes.getId());
 		// Subject Directory Attributes must always be non-critical
 		super.setCriticalFlag(false);
 	}

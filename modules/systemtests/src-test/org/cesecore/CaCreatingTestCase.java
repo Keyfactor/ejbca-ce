@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Properties;
 
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
@@ -57,7 +58,7 @@ import org.cesecore.util.StringTools;
 public abstract class CaCreatingTestCase extends RoleUsingTestCase {
     
     protected CA createX509Ca(String cadn) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, SignatureException, KeyStoreException, CertificateException, CryptoTokenOfflineException, IOException, InvalidAlgorithmException {
+            InvalidAlgorithmParameterException, SignatureException, KeyStoreException, CertificateException, CryptoTokenOfflineException, IOException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException {
         // Create catoken
         Properties prop = new Properties();
         prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);

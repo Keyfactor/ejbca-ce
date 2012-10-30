@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.mock.authentication;
 
+import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
@@ -20,6 +21,7 @@ import java.security.NoSuchProviderException;
 import java.security.Principal;
 import java.security.SignatureException;
 import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashSet;
 import java.util.Set;
@@ -31,6 +33,7 @@ import javax.security.auth.x500.X500Principal;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.InvalidAuthenticationTokenException;
@@ -145,6 +148,12 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
                 throw new CertificateCreationException("Error encountered when creating certificate", e);
             } catch (NoSuchProviderException e) {
                 throw new CertificateCreationException("Error encountered when creating certificate", e);
+            } catch (OperatorCreationException e) {
+                log.error(e.getLocalizedMessage(), e);
+            } catch (CertificateException e) {
+                log.error(e.getLocalizedMessage(), e);
+            } catch (IOException e) {
+                log.error(e.getLocalizedMessage(), e);
             }        	
             if (log.isDebugEnabled()) {
                 log.debug("Creates a self signed authentication certificate, fp="+CertTools.getFingerprintAsString(certificate));

@@ -23,17 +23,17 @@ import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.Date;
-import java.util.Vector;
 
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.X500NameBuilder;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.core.protocol.unid.UnidFnrHandler.Storage;
+import org.ejbca.util.EjbcaNameStyle;
 import org.junit.Test;
 
 /**
@@ -52,7 +52,7 @@ public class UnidFnrHandlerTest {
     	final RequestMessage reqIn = new MyIRequestMessage(fnr+'-'+lra);
     	final UnidFnrHandler handler = new UnidFnrHandler(storage);
     	final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name");
-    	assertEquals(storage.unid, reqOut.getRequestX509Name().getValues(X509Name.SN).firstElement());
+    	assertEquals(storage.unid, reqOut.getRequestX509Name().getRDNs(EjbcaNameStyle.SN)[0].getFirst().getValue());
     }
     
 	private static class MyStorage implements Storage {
@@ -75,14 +75,12 @@ public class UnidFnrHandlerTest {
 	}
 	private static class MyIRequestMessage implements ICrmfRequestMessage {
 		private static final long serialVersionUID = -2303591921932083436L;
-        final X509Name dn;
+        final X500Name dn;
 
 		MyIRequestMessage(String serialNumber) {
-			final Vector<ASN1ObjectIdentifier> oids = new Vector<ASN1ObjectIdentifier>();
-			final Vector<String> values = new Vector<String>();
-			oids.add(X509Name.SN);
-			values.add(serialNumber);
-			this.dn = new X509Name(oids, values);
+		    X500NameBuilder nameBuilder = new X500NameBuilder(new EjbcaNameStyle());
+			nameBuilder.addRDN(EjbcaNameStyle.SN, serialNumber);
+			this.dn = nameBuilder.build();
 		}
 		@Override
 		public String getUsername() {
@@ -105,7 +103,7 @@ public class UnidFnrHandlerTest {
 			return null;
 		}
 		@Override
-		public X509Name getRequestX509Name() {
+		public X500Name getRequestX509Name() {
 			return this.dn;
 		}
 
@@ -122,7 +120,7 @@ public class UnidFnrHandlerTest {
 			return null;
 		}
 		@Override
-		public X509Extensions getRequestExtensions() {
+		public Extensions getRequestExtensions() {
 			return null;
 		}
 		@Override

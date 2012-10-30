@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.x509.X509Extensions;
+import org.bouncycastle.asn1.x509.Extension;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.endentity.ExtendedInformation;
@@ -178,7 +178,7 @@ public class GeneralPurposeCustomPublisher implements ICustomPublisher {
             X509CRL crl;
             try {
                 crl = CertTools.getCRLfromByteArray(incrl);
-                additionalArguments.add(Boolean.toString(crl.getExtensionValue(X509Extensions.DeltaCRLIndicator.getId()) != null));
+                additionalArguments.add(Boolean.toString(crl.getExtensionValue(Extension.deltaCRLIndicator.getId()) != null));
             } catch (CRLException e) {
                 log.error("Byte array does not contain a correct CRL.", e);
             }

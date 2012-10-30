@@ -24,9 +24,9 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.DistributionPoint;
 import org.bouncycastle.asn1.x509.DistributionPointName;
+import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.certificate.certextensions.CertificateExtensionException;
@@ -48,7 +48,7 @@ public class FreshestCrl extends StandardCertificateExtension {
 	
     @Override
 	public void init(final CertificateProfile certProf) {
-		super.setOID(X509Extensions.FreshestCRL.getId());
+		super.setOID(Extension.freshestCRL.getId());
 		super.setCriticalFlag(false);
 	}
     

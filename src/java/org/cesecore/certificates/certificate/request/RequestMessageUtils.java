@@ -31,9 +31,10 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERBitString;
+import org.bouncycastle.asn1.crmf.CertRequest;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
-import org.bouncycastle.asn1.x509.X509Extensions;
 import org.bouncycastle.jce.netscape.NetscapeCertRequest;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.certificate.CertificateConstants;
@@ -46,9 +47,6 @@ import org.ejbca.cvc.CVCertificate;
 import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
-
-import com.novosec.pkix.asn1.crmf.CertRequest;
-
 
 /**
  * Utility class to gather a few functions
@@ -137,6 +135,7 @@ public class RequestMessageUtils {
 		}		
 		return new PKCS10RequestMessage(buffer);
 	} // genPKCS10RequestMessageFromPEM
+	
 
 	public static CVCRequestMessage genCVCRequestMessage(byte[] bytes) { 
 		byte[] buffer = getDecodedBytes(bytes);
@@ -208,7 +207,7 @@ public class RequestMessageUtils {
             final RequestMessage pkcs10req = RequestMessageUtils.genPKCS10RequestMessage(req.getBytes());
             final PublicKey pubKey = pkcs10req.getRequestPublicKey();
             SimpleRequestMessage simplereq = new SimpleRequestMessage(pubKey, username, password);
-            final X509Extensions ext = pkcs10req.getRequestExtensions();
+            final Extensions ext = pkcs10req.getRequestExtensions();
             simplereq.setRequestExtensions(ext);
             ret = simplereq;
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_SPKAC) {
@@ -244,13 +243,13 @@ public class RequestMessageUtils {
             ASN1InputStream in = new ASN1InputStream(request);
             ASN1Sequence    crmfSeq = (ASN1Sequence) in.readObject();
             ASN1Sequence reqSeq =  (ASN1Sequence) ((ASN1Sequence) crmfSeq.getObjectAt(0)).getObjectAt(0);
-            CertRequest certReq = new CertRequest( reqSeq );
+            CertRequest certReq = CertRequest.getInstance( reqSeq );
             SubjectPublicKeyInfo pKeyInfo = certReq.getCertTemplate().getPublicKey();
             KeyFactory keyFact = KeyFactory.getInstance("RSA", "BC");
             KeySpec keySpec = new X509EncodedKeySpec( pKeyInfo.getEncoded() );
             PublicKey pubKey = keyFact.generatePublic(keySpec); // just check it's ok
             SimpleRequestMessage simplereq = new SimpleRequestMessage(pubKey, username, password);
-            X509Extensions ext = certReq.getCertTemplate().getExtensions();
+            Extensions ext = certReq.getCertTemplate().getExtensions();
             simplereq.setRequestExtensions(ext);
             ret = simplereq;
             // a simple crmf is not a complete PKI message, as desired by the CrmfRequestMessage class
@@ -274,9 +273,9 @@ public class RequestMessageUtils {
             }
             final ASN1InputStream in = new ASN1InputStream(request);
             final SubjectPublicKeyInfo keyInfo = SubjectPublicKeyInfo.getInstance(in.readObject());
-            final AlgorithmIdentifier keyAlg = keyInfo.getAlgorithmId();
+            final AlgorithmIdentifier keyAlg = keyInfo.getAlgorithm();
             final X509EncodedKeySpec xKeySpec = new X509EncodedKeySpec(new DERBitString(keyInfo).getBytes());
-            final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getObjectId().getId(), "BC");
+            final KeyFactory keyFact = KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), "BC");
             final PublicKey pubKey = keyFact.generatePublic(xKeySpec);
             ret = new SimpleRequestMessage(pubKey, username, password);
         } else if (reqType == CertificateConstants.CERT_REQ_TYPE_CVC) {

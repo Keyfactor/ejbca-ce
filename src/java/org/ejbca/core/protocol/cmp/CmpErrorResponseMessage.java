@@ -22,21 +22,23 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.asn1.DERInteger;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
+import org.bouncycastle.asn1.cmp.ErrorMsgContent;
+import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIFailureInfo;
+import org.bouncycastle.asn1.cmp.PKIFreeText;
+import org.bouncycastle.asn1.cmp.PKIHeader;
+import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
+import org.bouncycastle.asn1.cmp.PKIMessage;
+import org.bouncycastle.asn1.cmp.PKIStatus;
+import org.bouncycastle.asn1.cmp.PKIStatusInfo;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.certificate.request.FailInfo;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
-
-import com.novosec.pkix.asn1.cmp.ErrorMsgContent;
-import com.novosec.pkix.asn1.cmp.PKIBody;
-import com.novosec.pkix.asn1.cmp.PKIFreeText;
-import com.novosec.pkix.asn1.cmp.PKIHeader;
-import com.novosec.pkix.asn1.cmp.PKIMessage;
-import com.novosec.pkix.asn1.cmp.PKIStatusInfo;
-
 
 /**
  * A very simple error message, no protection, or PBE protection
@@ -118,24 +120,30 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 	public boolean create() throws IOException, InvalidKeyException,
 			NoSuchAlgorithmException, NoSuchProviderException,
 			SignRequestException {
-		final PKIHeader myPKIHeader = CmpMessageHelper.createPKIHeader(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
-		final PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(new DERInteger(2)); // 2 = rejection
-		if (failInfo != null) {
-			myPKIStatusInfo.setFailInfo(failInfo.getAsBitString());			
+		final PKIHeaderBuilder myPKIHeaderBuilder = CmpMessageHelper.createPKIHeaderBuilder(getSender(), getRecipient(), getSenderNonce(), getRecipientNonce(), getTransactionId());
+		boolean pbeProtected = (getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ;
+		if(pbeProtected) {
+		    myPKIHeaderBuilder.setProtectionAlg(new AlgorithmIdentifier(CMPObjectIdentifiers.passwordBasedMac));
 		}
-		if (failText != null) {		
-			myPKIStatusInfo.setStatusString(new PKIFreeText(new DERUTF8String(failText)));
+		final PKIHeader myPKIHeader = myPKIHeaderBuilder.build();
+		
+		PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection);
+		if(failInfo != null && failText != null) {
+		    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(new DERUTF8String(failText)), new PKIFailureInfo(failInfo.getAsBitString()));
+		} else if(failText != null) {
+		    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(new DERUTF8String(failText)));
 		}
+		
 		PKIBody myPKIBody = null;
 		log.debug("Create error message from requestType: "+requestType);
 		if (requestType==0 || requestType==2) {
-			myPKIBody = CmpMessageHelper.createCertRequestRejectBody(myPKIHeader, myPKIStatusInfo, requestId, requestType);
+			myPKIBody = CmpMessageHelper.createCertRequestRejectBody(myPKIStatusInfo, requestId, requestType);
 		} else {
 			ErrorMsgContent myErrorContent = new ErrorMsgContent(myPKIStatusInfo);
-			myPKIBody = new PKIBody(myErrorContent, 23); // 23 = error						
+			myPKIBody = new PKIBody(23, myErrorContent); // 23 = error						
 		}
 		PKIMessage myPKIMessage = new PKIMessage(myPKIHeader, myPKIBody);
-		if ((getPbeDigestAlg() != null) && (getPbeMacAlg() != null) && (getPbeKeyId() != null) && (getPbeKey() != null) ) {
+		if ( pbeProtected ) {
 			responseMessage = CmpMessageHelper.protectPKIMessageWithPBE(myPKIMessage, getPbeKeyId(), getPbeKey(), getPbeDigestAlg(), getPbeMacAlg(), getPbeIterationCount());
 		} else {
 			responseMessage = CmpMessageHelper.pkiMessageToByteArray(myPKIMessage);			

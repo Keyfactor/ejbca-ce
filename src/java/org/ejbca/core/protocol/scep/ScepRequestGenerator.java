@@ -11,12 +11,11 @@ import java.security.SecureRandom;
 import java.security.SignatureException;
 import java.security.cert.CertStore;
 import java.security.cert.CertStoreException;
-import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Vector;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1EncodableVector;
@@ -32,10 +31,11 @@ import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.cms.IssuerAndSerialNumber;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.smime.SMIMECapability;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralNames;
-import org.bouncycastle.asn1.x509.X509Extension;
-import org.bouncycastle.asn1.x509.X509Extensions;
-import org.bouncycastle.asn1.x509.X509Name;
 import org.bouncycastle.cms.CMSEnvelopedData;
 import org.bouncycastle.cms.CMSEnvelopedDataGenerator;
 import org.bouncycastle.cms.CMSException;
@@ -44,7 +44,8 @@ import org.bouncycastle.cms.CMSProcessableByteArray;
 import org.bouncycastle.cms.CMSSignedData;
 import org.bouncycastle.cms.CMSSignedDataGenerator;
 import org.bouncycastle.cms.CMSSignedGenerator;
-import org.bouncycastle.jce.PKCS10CertificationRequest;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -89,10 +90,10 @@ public class ScepRequestGenerator {
         return senderNonce;
     }
 
-    public byte[] generateCrlReq(String dn, String transactionId, X509Certificate ca) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException, CertificateEncodingException, IllegalStateException {
+    public byte[] generateCrlReq(String dn, String transactionId, X509Certificate ca) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException, IllegalStateException, OperatorCreationException, CertificateException {
         this.cacert = ca;
         this.reqdn = dn;
-        X509Name name = CertTools.stringToBcX509Name(cacert.getIssuerDN().getName());
+        X500Name name = CertTools.stringToBcX509Name(cacert.getIssuerDN().getName());
         IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());
         // Create self signed cert, validity 1 day
         cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),AlgorithmConstants.SIGALG_SHA1_WITH_RSA,false);
@@ -101,12 +102,11 @@ public class ScepRequestGenerator {
         byte[] msg = wrap(ias.getEncoded(), "22", transactionId);        
         return msg;
     }
-    public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException, CertificateEncodingException, IllegalStateException {
+    public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException, IllegalStateException, OperatorCreationException, CertificateException {
         // Extension request attribute is a set of X509Extensions
         // ASN1EncodableVector x509extensions = new ASN1EncodableVector();
         // An X509Extensions is a sequence of Extension which is a sequence of {oid, X509Extension}
-        final Vector<ASN1ObjectIdentifier> oidvec = new Vector<ASN1ObjectIdentifier>();
-        final Vector<X509Extension> valuevec = new Vector<X509Extension>();
+        ExtensionsGenerator extgen = new ExtensionsGenerator();
         // Requested extensions attribute
         // AltNames
         final GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo.bar.com,iPAddress=10.0.0.1");
@@ -117,11 +117,10 @@ public class ScepRequestGenerator {
         } catch (IOException e) {
             throw new IllegalArgumentException("error encoding value: " + e);
         }
-        valuevec.add(new X509Extension(false, new DEROctetString(bOut.toByteArray())));
-        oidvec.add(X509Extensions.SubjectAlternativeName);
-        return generateCertReq( dn, password, transactionId, ca, new X509Extensions(oidvec,valuevec) );
+        extgen.addExtension(Extension.subjectAlternativeName, false, new DEROctetString(bOut.toByteArray()));
+        return generateCertReq( dn, password, transactionId, ca, extgen.generate() );
     }
-    public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, X509Extensions exts) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException, CertificateEncodingException, IllegalStateException {
+    public byte[] generateCertReq(String dn, String password, String transactionId, X509Certificate ca, Extensions exts) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException, IllegalStateException, OperatorCreationException, CertificateException {
         this.cacert = ca;
         this.reqdn = dn;
         // Generate keys
@@ -148,8 +147,8 @@ public class ScepRequestGenerator {
         v.add(new DERSequence(extensionattr));
         DERSet attributes = new DERSet(v);
         // Create PKCS#10 certificate request
-        final PKCS10CertificationRequest p10request = new PKCS10CertificationRequest("SHA1WithRSA",
-                CertTools.stringToBcX509Name(reqdn), keys.getPublic(), attributes, keys.getPrivate());
+        final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA1WithRSA",
+                CertTools.stringToBcX509Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
         
         // Create self signed cert, validity 1 day
         this.cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),AlgorithmConstants.SIGALG_SHA1_WITH_RSA,false);
