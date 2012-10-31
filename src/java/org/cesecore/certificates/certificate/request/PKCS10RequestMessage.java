@@ -33,14 +33,15 @@ import org.bouncycastle.asn1.cms.Attribute;
 import org.bouncycastle.asn1.cms.AttributeTable;
 import org.bouncycastle.asn1.pkcs.CertificationRequestInfo;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
+import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x500.style.BCStrictStyle;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.util.CertTools;
+import org.ejbca.util.EjbcaNameStyle;
 
 /**
  * Class to handle PKCS10 request messages sent to the CA.
@@ -269,11 +270,17 @@ public class PKCS10RequestMessage implements RequestMessage {
         	log.info("No requestDN in request, probably we could not read/parse/decrypt request.");
         } else {
             @SuppressWarnings("unchecked")
-            RDN[] cnValues = xname.getRDNs(BCStrictStyle.CN);
+            RDN[] cnValues = xname.getRDNs(EjbcaNameStyle.CN);
             if (cnValues.length == 0) {
             	log.info("No CN in DN: "+xname.toString());
             } else {
-                ret = cnValues[0].getFirst().getValue().toString();         	
+                AttributeTypeAndValue[] tavs = cnValues[0].getTypesAndValues();
+                for(AttributeTypeAndValue tav : tavs) {
+                    if(tav.getType().equals(EjbcaNameStyle.CN)) {
+                        ret = tav.getValue().toString();
+                        break;
+                    }
+                }
                 // If we have a CN with a normal name like "Test Testsson" we only want to 
                 // use the first part as the username
             	int index = ret.indexOf(' ');
