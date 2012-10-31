@@ -20,8 +20,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.SignatureException;
@@ -46,8 +44,6 @@ import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.ASN1Set;
 import org.bouncycastle.asn1.DEREnumerated;
 import org.bouncycastle.asn1.DERIA5String;
-import org.bouncycastle.asn1.DEROctetString;
-import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.DERUTF8String;
@@ -136,15 +132,8 @@ public class X509CATest {
 		ASN1EncodableVector altnameattr = new ASN1EncodableVector();
 		altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
 		GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foobar.bar.com");
-		ByteArrayOutputStream extOut = new ByteArrayOutputStream();
-		DEROutputStream derOut = new DEROutputStream(extOut);
-		try {
-			derOut.writeObject(san);
-		} catch (IOException e) {
-			throw new IllegalArgumentException("error encoding value: " + e);
-		}
 		ExtensionsGenerator extgen = new ExtensionsGenerator();
-		extgen.addExtension(Extension.subjectAlternativeName, false, new DEROctetString(extOut.toByteArray()) );
+		extgen.addExtension(Extension.subjectAlternativeName, false, san);
 		Extensions exts = extgen.generate();
 		altnameattr.add(new DERSet(exts));
         // Add a challenge password as well
@@ -556,7 +545,6 @@ public class X509CATest {
         assertEquals("A list was returned without any values present.", 0, result.size());        
     }
 	
-
 	private static X509CA createTestCA(final String cadn) throws Exception {
 		return createTestCA(cadn, AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
 	}
