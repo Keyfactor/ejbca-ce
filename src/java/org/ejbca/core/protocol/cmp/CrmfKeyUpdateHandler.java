@@ -328,13 +328,18 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
 
         // Read the CA from the properties file first
         String parameter = CmpConfiguration.getAuthenticationParameter(CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
-        if(!StringUtils.equals("-", parameter)) {
+        if(!StringUtils.equals("-", parameter) && (parameter != null) && StringUtils.isNotEmpty(parameter)) {
             return parameter;
         }
     	
     	// The CA is not set in the cmp.authenticationparameters. Set the CA depending on the operation mode
     	if(CmpConfiguration.getRAOperationMode()) {
-    	    return CmpConfiguration.getDefaultCA();
+    	    String defaultCA = CmpConfiguration.getDefaultCA();
+    	    if((defaultCA != null) && StringUtils.isNotEmpty(defaultCA) ) {
+    	        return defaultCA;
+    	    } else {
+    	        return "-";
+    	    }
     	} else {
     	    return "-";
     	}

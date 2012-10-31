@@ -277,8 +277,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 return false;
             }
             
-        } else if(CmpConfiguration.getRAOperationMode() && !isCASet && !authenticated) { // RA mode, extraCert can be given by any CA and the CMP message has not already been authenticated
-            errorMessage = "The CMP message lacks authentication. The CMP message has to be a signed NestedMessageContent";
+        } else if(CmpConfiguration.getRAOperationMode() && !isCASet && !authenticated) { // RA mode, extraCert can be given by any CA and the CMP message has not already been authenticated (aka. is not a NestedMessageContent)
+            errorMessage = "The CMP message could not be authenticated in RA mode. No CA has been set in the configuration file and the message has not been authenticated previously";
             if(log.isDebugEnabled()) {
                 log.debug(errorMessage);
             }
@@ -566,7 +566,8 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 cainfo = caSession.getCAInfo(this.admin, CertTools.getIssuerDN(extracert).hashCode());
             }
         } catch (CADoesntExistsException e) {
-            errorMessage = "CA does not exist";
+            String canamelog = isCASet ? this.authenticationParameterCAName : String.valueOf(CertTools.getIssuerDN(extracert).hashCode());
+            errorMessage = "CA does not exist: " + canamelog;
             if(log.isDebugEnabled()) {
                 log.debug(errorMessage, e);
             }
