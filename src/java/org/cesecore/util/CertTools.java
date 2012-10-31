@@ -57,6 +57,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
+import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -96,6 +97,7 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x509.AccessDescription;
+import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -1829,17 +1831,21 @@ public class CertTools {
     public static String getAltNameStringFromExtension(Extension ext) {
         String altName = null;
         // GeneralNames
-        ASN1OctetString octs = ext.getExtnValue();
-        if (octs != null) {
+        ASN1Encodable gnames = ext.getParsedValue();
+        if (gnames != null) {
             try {
-                X500NameBuilder builder = new X500NameBuilder(new EjbcaNameStyle());
-                builder.addRDN(ext.getExtnId(), ext.getParsedValue());
-                X500Name xname = builder.build();
-                GeneralName gn = new GeneralName(xname);
-                int tag = gn.getTagNo();
-                ASN1Encodable name = gn.getName();
-                String str = CertTools.getGeneralNameString(tag, name);
-                altName = str;
+                GeneralNames names = GeneralNames.getInstance(gnames);
+                GeneralName[] gns = names.getNames();
+                for (GeneralName gn : gns) {
+                    int tag = gn.getTagNo();
+                    ASN1Encodable name = gn.getName();
+                    String str = CertTools.getGeneralNameString(tag, name);
+                    if (altName == null) {
+                        altName = str;
+                    } else {
+                        altName += ", " + str;
+                    }
+                }
             } catch (IOException e) {
                 log.error("IOException parsing altNames: ", e);
                 return null;
@@ -3084,5 +3090,20 @@ public class CertTools {
     public static ContentVerifierProvider genContentVerifierProvider(PublicKey pubkey) throws IOException, OperatorCreationException {
         return new JcaContentVerifierProviderBuilder().build(pubkey);
     }
-
+    
+    public static PublicKey getPublicKeyFromSubjectPKInfo(SubjectPublicKeyInfo subjectPKInfo, String provider) throws InvalidKeySpecException, 
+                        NoSuchAlgorithmException, NoSuchProviderException {
+        X509EncodedKeySpec      xspec = new X509EncodedKeySpec(new DERBitString(subjectPKInfo).getBytes());
+        AlgorithmIdentifier     keyAlg = subjectPKInfo.getAlgorithm();
+        
+        if (provider == null)
+        {
+            return KeyFactory.getInstance(keyAlg.getAlgorithm().getId()).generatePublic(xspec);
+        }
+        else
+        {
+            return KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), provider).generatePublic(xspec);
+        }
+    }
+    
 }

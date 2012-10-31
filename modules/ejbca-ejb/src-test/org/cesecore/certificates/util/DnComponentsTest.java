@@ -80,7 +80,7 @@ public class DnComponentsTest {
     @Test
     public void test02() {
         String dn = CertTools.stringToBCDNString("uri=fff,CN=oid,SN=12345,NAME=name,C=se");
-        assertEquals("CN=oid,Name=name,SERIALNUMBER=12345,C=se", dn);
+        assertEquals("CN=oid,Name=name,SN=12345,C=se", dn);
     }
 
 }

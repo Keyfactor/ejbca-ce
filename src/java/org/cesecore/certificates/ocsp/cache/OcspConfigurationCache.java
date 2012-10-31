@@ -65,15 +65,15 @@ public enum OcspConfigurationCache {
 
     public boolean isNonExistingGood(StringBuffer url) {
         if (nonExistingIsGood) {
-            return !isRegexFulFilled(url.toString(), nonExistingIsBadOverideRegex);
+            return !isRegexFulFilled(url, nonExistingIsBadOverideRegex);
         }
-        return isRegexFulFilled(url.toString(), nonExistingIsGoodOverideRegex);
+        return isRegexFulFilled(url, nonExistingIsGoodOverideRegex);
     }
 
-    private boolean isRegexFulFilled(String target, Pattern pattern) {
+    private boolean isRegexFulFilled(StringBuffer target, Pattern pattern) {
         if (pattern == null || target == null) {
             return false;
         }
-        return pattern.matcher(target).matches();
+        return pattern.matcher(target.toString()).matches();
     }
 }

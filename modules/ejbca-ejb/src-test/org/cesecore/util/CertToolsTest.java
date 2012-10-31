@@ -752,7 +752,7 @@ public class CertToolsTest {
         String bcdn1 = CertTools.stringToBCDNString(dn1);
         log.debug("dn1: " + dn1);
         log.debug("bcdn1: " + bcdn1);
-        assertEquals(bcdn1, "CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE");
+        assertEquals("CN=CommonName,SN=SerialNumber,GIVENNAME=GivenName,INITIALS=Initials,SURNAME=SurName,OU=OrgUnit,O=Org,C=SE", bcdn1);
 
         dn1 = "CN=CommonName, O=Org, OU=OrgUnit, SerialNumber=SerialNumber, SurName=SurName, GivenName=GivenName, Initials=Initials, C=SE, 1.1.1.1=1111Oid, 2.2.2.2=2222Oid";
         bcdn1 = CertTools.stringToBCDNString(dn1);
@@ -1126,7 +1126,7 @@ public class CertToolsTest {
 
         name = CertTools.getPartFromDN(altNames, CertTools.DIRECTORYNAME);
         assertEquals("CN=testDirName|dir|name", name);
-        assertEquals(name.substring("CN=".length()), new X500Name("CN=testDirName|dir|name").getRDNs()[0].getFirst().getValue());
+        assertEquals(name.substring("CN=".length()), (new X500Name("CN=testDirName|dir|name").getRDNs()[0].getFirst().getValue()).toString());
 
         String altName = "rfc822name=foo@bar.se, uri=http://foo.bar.se, directoryName=" + LDAPDN.escapeRDN("CN=testDirName, O=Foo, OU=Bar, C=SE")
                 + ", dnsName=foo.bar.se";
