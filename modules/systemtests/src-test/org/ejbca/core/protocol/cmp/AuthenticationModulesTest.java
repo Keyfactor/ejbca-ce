@@ -733,7 +733,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        assertEquals("The CMP message lacks authentication. The CMP message has to be a signed NestedMessageContent", errMsg);
+        assertEquals("The CMP message could not be authenticated in RA mode. No CA has been set in the configuration file and the message has not been authenticated previously", errMsg);
 
         removeAuthenticationToken(adminToken, admCert, adminName);
     }
