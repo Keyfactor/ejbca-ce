@@ -528,6 +528,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             // See if we can get issuerDN directly from request
             if (req.getIssuerDN() != null) {
                 String dn = CertificateCreateSessionBean.getCADnFromRequest(req, certificateStoreSession);
+                // Since we always store the DN in LDAP order (=CN first), we should use this ordering to get the caid
+                dn = CertTools.stringToBCDNString(dn);
                 try {
                     if (doLog) {
                         ca = caSession.getCA(admin, dn.hashCode());

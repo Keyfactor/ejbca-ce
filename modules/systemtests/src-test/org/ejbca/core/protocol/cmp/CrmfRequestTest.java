@@ -271,7 +271,7 @@ public class CrmfRequestTest extends CmpTestCase {
         log.trace(">test03BlueXCrmf");
         byte[] resp = sendCmpHttp(bluexir, 200);
         assertNotNull(resp);
-        checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 64, null); // 4=BAD_REQUEST, 512=BAD_POP,
+        checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 512, null); // 4=BAD_REQUEST, 512=BAD_POP,
                                                                                                                // 64=WRONG_AUTHORITY
         log.trace("<test03BlueXCrmf");
     }
