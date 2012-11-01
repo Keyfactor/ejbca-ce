@@ -188,6 +188,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_ENDENTITYPROFILE, "EMPTY");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RA_CERTIFICATEPROFILE, "ENDUSER");
         updatePropertyOnServer(CmpConfiguration.CONFIG_RACANAME, "AdminCA1");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_DEFAULTCA, "AdminCA1");
         updatePropertyOnServer(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
 
     }
@@ -1088,6 +1089,7 @@ public class CrmfKeyUpdateTest extends CmpTestCase {
         updatePropertyOnServer(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "OU");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWAUTOMATICKEYUPDATE, "true");
         updatePropertyOnServer(CmpConfiguration.CONFIG_ALLOWUPDATEWITHSAMEKEY, "true");
+        updatePropertyOnServer(CmpConfiguration.CONFIG_DEFAULTCA, "");
 
         //------------------ create the user and issue his first certificate -------------
         createUser(username, userDN, "foo123");
