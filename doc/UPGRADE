@@ -113,6 +113,13 @@ as above (this upgrade is not thoroughly tested though).
 NOTE: Some configuration options in ejbca.properties has moved to cesecore.properties. You should migrate these configuration changes.
 You will be warned during build if you are using these options and have not migrated them.
 
+If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
+Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
+
+Note for upgrade to 5.0.6:
+In EJBCA 5.0.6 new versions of BouncyCastle jars are included. If you have been copying ejbca/lib/bc*.jar files to JBoss 
+(jboss/server/default/lib), you must remove the old jars from JBoss and copy new jars from EJBCA.
+ 
 From EJBCA 4.0.x to EJBCA 4.0.x
 -------------------------------
 See release notes for details between certain versions. 
