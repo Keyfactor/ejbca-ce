@@ -116,6 +116,11 @@ You will be warned during build if you are using these options and have not migr
 If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
 Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
+NOTE: You may see 'new' administrator roles after upgrade.
+* DEFAULT - This role can be safely deleted. It was used internally by EJBCA.
+* Public Web Users - This role can be safely deleted. It was used internally by EJBCA.
+* Super Administrator Role - This role contains the ejbca cli user. If you remove rights for the ejbca user you will not be able to use the CLI.
+
 Note for upgrade to 5.0.6:
 In EJBCA 5.0.6 new versions of BouncyCastle jars are included. If you have been copying ejbca/lib/bc*.jar files to JBoss 
 (jboss/server/default/lib), you must remove the old jars from JBoss and copy new jars from EJBCA.
