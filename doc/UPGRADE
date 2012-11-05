@@ -19,6 +19,12 @@ After this you must do:
 - ant clean
 - ant deploy
 
+If you have switched the application server (either for a new version, or just
+unpacked fresh installation of it), you must in addition run the commands:
+
+- ant deploy-keystore
+- ant web-configure
+
 All database upgrades require CREATE and ALTER TABLE privileges besides the regular SELECT, UPDATE,
 INSERT and DELETE. The SQL executed by database upgrades code is available in
 "src/upgrade/<oldversion>_<newversion>/<oldversion>_<newversion>-upgrade-<database>.sql".
@@ -33,7 +39,22 @@ In EJBCA 5.1.0 new versions of BouncyCastle jars are included. If you have been 
 
 The class CliAuthenticationToken and associated classes have been moved from the CLI module to reside next to the other 
 authentication classes under src. This means that approval requests using the CliAuthenticationToken created in 5.0.x will not 
-be forwards compatible.  
+be forwards compatible.
+
+The 'ant bootstrap' target has been deprecated, and now it's covered by the 'ant
+deploy' target. You can build and deploy the new version of EJBCA software with:
+
+- ant clean
+- ant deploy
+
+Afterwards, if you have changed the application server versions, or have
+unpacked a fresh installation of the application server, you must run:
+
+- ant deploy-keystore
+- ant web-configure
+
+For more information about new deployment instructions and ant targets, please
+refer to EJBCA administration and installation guides.
 
 From EJBCA 5.0.x to EJBCA 5.0.x
 -------------------------------
