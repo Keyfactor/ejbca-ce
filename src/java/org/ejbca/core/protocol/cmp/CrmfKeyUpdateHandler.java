@@ -335,7 +335,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
     	// The CA is not set in the cmp.authenticationparameters. Set the CA depending on the operation mode
     	if(CmpConfiguration.getRAOperationMode()) {
     	    String defaultCA = CmpConfiguration.getDefaultCA();
-    	    if((defaultCA != null) && StringUtils.isNotEmpty(defaultCA) ) {
+    	    if( StringUtils.isNotEmpty(defaultCA) ) {
     	        return defaultCA;
     	    } else {
     	        return "-";
