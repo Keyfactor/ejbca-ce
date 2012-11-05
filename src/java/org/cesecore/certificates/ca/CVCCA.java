@@ -355,10 +355,10 @@ public class CVCCA extends CA implements Serializable {
 	
 	/**
      * @param sequence an optional requested sequence number (serial number) for the certificate. If null a random sequence will be generated.
-     * requestX509Name is never used.
+     * requestX500Name is never used.
 	 */
 	public Certificate generateCertificate(EndEntityInformation subject, 
-    		X500Name requestX509Name,
+    		X500Name requestX500Name,
             PublicKey publicKey, 
 			int keyusage, 
 			Date notBefore,

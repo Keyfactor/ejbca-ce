@@ -158,7 +158,7 @@ public class CACertReqServlet extends HttpServlet {
                     // Apparently it wasn't a X.509 certificate, was it a certificate request?
             		try {
                 		PKCS10RequestMessage p10 = RequestMessageUtils.genPKCS10RequestMessage(request);
-                		filename = CertTools.getPartFromDN(p10.getRequestX509Name().toString(), "CN");
+                		filename = CertTools.getPartFromDN(p10.getRequestX500Name().toString(), "CN");
             		} catch (Exception e1) { // NOPMD
             			// Nope, not a certificate request either, see if it was an X.509 certificate
             			Certificate cert = CertTools.getCertfromByteArray(request);

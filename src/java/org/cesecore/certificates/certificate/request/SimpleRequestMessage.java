@@ -70,7 +70,7 @@ public class SimpleRequestMessage implements RequestMessage {
     /** Issue DN, if set manually */
     private String issuerDN = null;
     
-    /** request X509Name, if set manually */
+    /** request X500Name, if set manually */
     private String requestDN = null;
 
     /** Requested certificate extensions */
@@ -176,9 +176,9 @@ public class SimpleRequestMessage implements RequestMessage {
     }
 
     /**
-     * @see RequestMessage#getRequestX509Name()
+     * @see RequestMessage#getRequestX500Name()
      */
-    public X500Name getRequestX509Name() {
+    public X500Name getRequestX500Name() {
     	if (this.requestDN == null) {
     		return null;
     	}

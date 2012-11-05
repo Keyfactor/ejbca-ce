@@ -227,7 +227,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 	}
 	private X509Certificate getMyCertificate() throws GeneralSecurityException, AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, NotFoundException_Exception, CesecoreException_Exception, IOException {
 		final KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-		final PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(),
+		final PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(),
 				new DERSet(), keys.getPrivate(), null);
 
 		final CertificateResponse certenv;

@@ -83,7 +83,7 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      * @param admin administrator performing this task
      * @param data auth data for user to get the certificate
      * @param ca the CA that will sign the certificate
-     * @param requestX509Name if the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN
+     * @param requestX500Name if the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN
      * @param pk the users public key to be put in the certificate
      * @param keyUsage integer with bit mask describing desired keys usage, may be ignored by the CA. Bit mask is packed in in integer using constants
      *            from CertificateConstants. ex. int keyusage = CertificateConstants.digitalSignature | CertificateConstants.nonRepudiation; gives
@@ -107,7 +107,7 @@ public interface CertificateCreateSessionLocal extends CertificateCreateSession 
      * @throws CesecoreException (no rollback) if certificate with same subject DN or key already exists for a user, if these limitations are enabled
      *             in CA.
      */
-    Certificate createCertificate(AuthenticationToken admin, EndEntityInformation data, CA ca, X500Name requestX509Name, PublicKey pk, int keyusage, Date notBefore, Date notAfter,
+    Certificate createCertificate(AuthenticationToken admin, EndEntityInformation data, CA ca, X500Name requestX500Name, PublicKey pk, int keyusage, Date notBefore, Date notAfter,
             Extensions extensions, String sequence) throws CustomCertSerialNumberException, IllegalKeyException,
             AuthorizationDeniedException, CertificateCreateException, CesecoreException;
 

@@ -264,7 +264,7 @@ public class HttpGetCert {
 
         // Generate PKCS10 certificate request
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA",
-                CertTools.stringToBcX509Name("C=SE,O=AnaTom,CN=HttpTest"), rsaKeys.getPublic(),
+                CertTools.stringToBcX500Name("C=SE,O=AnaTom,CN=HttpTest"), rsaKeys.getPublic(),
                 new DERSet(), rsaKeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);

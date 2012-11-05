@@ -52,7 +52,7 @@ public class UnidFnrHandlerTest {
     	final RequestMessage reqIn = new MyIRequestMessage(fnr+'-'+lra);
     	final UnidFnrHandler handler = new UnidFnrHandler(storage);
     	final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name");
-    	assertEquals(storage.unid, (reqOut.getRequestX509Name().getRDNs(EjbcaNameStyle.SN)[0].getFirst().getValue()).toString());
+    	assertEquals(storage.unid, (reqOut.getRequestX500Name().getRDNs(EjbcaNameStyle.SN)[0].getFirst().getValue()).toString());
     }
     
 	private static class MyStorage implements Storage {
@@ -103,7 +103,7 @@ public class UnidFnrHandlerTest {
 			return null;
 		}
 		@Override
-		public X500Name getRequestX509Name() {
+		public X500Name getRequestX500Name() {
 			return this.dn;
 		}
 

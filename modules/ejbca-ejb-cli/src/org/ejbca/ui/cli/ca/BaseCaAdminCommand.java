@@ -89,7 +89,7 @@ public abstract class BaseCaAdminCommand extends BaseCommand {
             InvalidKeyException, SignatureException, OperatorCreationException, PKCSException {
         getLogger().trace(">makeCertRequest: dn='" + dn + "', reqfile='" + reqfile + "'.");
 
-        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name(dn), rsaKeys.getPublic(), new DERSet(),
+        PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name(dn), rsaKeys.getPublic(), new DERSet(),
                 rsaKeys.getPrivate(), null);
 
         /*

@@ -148,7 +148,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 		final private PKCS10CertificationRequest pkcs10;
 		Pkcs10RequestCommand(EjbcaWS _ejbcaWS, KeyPair keys, JobData _jobData) throws Exception {
 			super(_jobData);
-			this.pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(),
+			this.pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(),
 	                keys.getPrivate(), null);
 			this.ejbcaWS = _ejbcaWS;
 		}
@@ -417,7 +417,7 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			this.user.setCertificateProfileName(certificateProfileName);
 			this.bitsInCertificateSN = _bitsInCertificateSN;
 			try {
-                this.pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
+                this.pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
             } catch (IOException e) {
                 getPrintStream().println(e.getLocalizedMessage());
                 e.printStackTrace(getPrintStream());
