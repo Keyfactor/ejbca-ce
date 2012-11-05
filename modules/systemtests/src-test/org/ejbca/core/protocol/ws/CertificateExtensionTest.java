@@ -34,6 +34,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Primitive;
 import org.bouncycastle.asn1.ASN1Sequence;
+import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
@@ -180,7 +181,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 			assertTrue(asn1o instanceof ASN1OctetString);
 			octets = ((ASN1OctetString)asn1o).getOctets();
 			if ( values.length==1 ) {
-				assertArrayEquals(values[0], octets);
+				assertArrayEquals( (new DEROctetString(values[0])).getEncoded(), octets);
 				return;
 			}
 		}
@@ -194,7 +195,7 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 		for ( int i=0; i<seq.size(); i++ ) {
 			final ASN1Primitive derO = seq.getObjectAt(i).toASN1Primitive();
 			assertTrue(derO instanceof ASN1OctetString);
-			assertArrayEquals(values[i], ((ASN1OctetString)derO).getOctets());
+			assertArrayEquals((new DEROctetString(values[i])).getEncoded(), ((ASN1OctetString)derO).getOctets());
 		}
 	}
 	private byte[][] getRandomValues( int nr) {
@@ -212,13 +213,13 @@ public class CertificateExtensionTest extends CommonEjbcaWS {
 		for( int i=0; i<values.length; i++ ){
 			final ExtendedInformationWS ei = new ExtendedInformationWS();
 			ei.setName( sOID_several + ".value" + Integer.toString(i+1) );
-			ei.setValue(new String(Hex.encode(values[i])));
+			ei.setValue(new String( Hex.encode( (new DEROctetString(values[i])).getEncoded() ) ));
 			lei.add(ei);
 		}
-		if ( value!=null ){
+		if ( value!=null && value.length > 0){
 			final ExtendedInformationWS ei = new ExtendedInformationWS();
 			ei.setName( sOID_one );
-			ei.setValue(new String(Hex.encode(value)));
+			ei.setValue(new String( Hex.encode( (new DEROctetString(value)).getEncoded() ) ));
 			lei.add(ei);
 		}
 		userData.setExtendedInformation(lei);
