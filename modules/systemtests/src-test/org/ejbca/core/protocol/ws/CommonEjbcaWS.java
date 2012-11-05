@@ -927,7 +927,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             ext = cert.getExtensionValue("1.2.3.4");
             assertNotNull("there should be an extension", ext);
             DEROctetString oct = (DEROctetString) (new ASN1InputStream(new ByteArrayInputStream(ext)).readObject());
-            assertEquals("Extension did not have the correct value", "foo123", new String(oct.getOctets()));
+            assertEquals("Extension did not have the correct value", "foo123", (new String(oct.getOctets()).trim()));
         } finally {
             // restore
             profile.setAllowExtensionOverride(false);
@@ -946,7 +946,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         myCertTemplate.setPublicKey(keyInfo);
         // If we did not pass any extensions as parameter, we will create some of our own, standard ones
         ExtensionsGenerator extgen = new ExtensionsGenerator();
-        extgen.addExtension(new ASN1ObjectIdentifier(extensionOid), false, "foo123".getBytes());
+        extgen.addExtension(new ASN1ObjectIdentifier(extensionOid), false, new DEROctetString("foo123".getBytes()));
         myCertTemplate.setExtensions(extgen.generate());
         CertRequest myCertRequest = new CertRequest(4, myCertTemplate.build(), null);
         CertReqMsg myCertReqMsg = new CertReqMsg(myCertRequest, null, null);
