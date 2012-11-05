@@ -271,7 +271,7 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
         }
         final PKCS10CertificationRequest pkcs10;
         try {
-            pkcs10 = CertTools.genPKCS10CertificationRequest(SIGNATURE_ALGORITHM, CertTools.stringToBcX509Name("CN=NOUSED"), keyPair.getPublic(),
+            pkcs10 = CertTools.genPKCS10CertificationRequest(SIGNATURE_ALGORITHM, CertTools.stringToBcX500Name("CN=NOUSED"), keyPair.getPublic(),
                     new DERSet(), keyPair.getPrivate(), tokenAndChain.getSignProviderName());
 
         } catch (NoSuchAlgorithmException e) {

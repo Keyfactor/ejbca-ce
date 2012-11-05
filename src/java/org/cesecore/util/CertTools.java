@@ -229,34 +229,34 @@ public class CertTools {
 	public static final String END_PUBLIC_KEY                     = "-----END PUBLIC KEY-----";
 
     /**
-     * See stringToBcX509Name(String, X509NameEntryConverter, boolean), this method uses the default BC converter (X509DefaultEntryConverter) and ldap
+     * See stringToBcX500Name(String, X509NameEntryConverter, boolean), this method uses the default BC converter (X509DefaultEntryConverter) and ldap
      * order
      * 
-     * @see #stringToBcX509Name(String, X509NameEntryConverter, boolean)
-     * @param dn String containing DN that will be transformed into X509Name, The DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
+     * @see #stringToBcX500Name(String, X509NameEntryConverter, boolean)
+     * @param dn String containing DN that will be transformed into X500Name, The DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
      *            the string will be added to the end positions of OID array.
      * 
-     * @return X509Name or null if input is null
+     * @return X500Name or null if input is null
      */
-    public static X500Name stringToBcX509Name(final String dn) {
+    public static X500Name stringToBcX500Name(final String dn) {
         final X509NameEntryConverter converter = new X509DefaultEntryConverter();
-        return stringToBcX509Name(dn, converter, true);
+        return stringToBcX500Name(dn, converter, true);
     }
 
     /**
-     * Creates a (Bouncycastle) X509Name object from a string with a DN. Known OID (with order) are:
+     * Creates a (Bouncycastle) X500Name object from a string with a DN. Known OID (with order) are:
      * <code> EmailAddress, UID, CN, SN (SerialNumber), GivenName, Initials, SurName, T, OU,
      * O, L, ST, DC, C </code> To change order edit 'dnObjects' in this source file. Important NOT to mess with the ordering within this class, since
      * cert vierification on some clients (IE :-() might depend on order.
      * 
-     * @param dn String containing DN that will be transformed into X509Name, The DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
+     * @param dn String containing DN that will be transformed into X500Name, The DN string has the format "CN=zz,OU=yy,O=foo,C=SE". Unknown OIDs in
      *            the string will be added to the end positions of OID array.
      * @param converter BC converter for DirectoryStrings, that determines which encoding is chosen
      * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500
      *            order is the reverse
-     * @return X509Name or null if input is null
+     * @return X500Name or null if input is null
      */
-    public static X500Name stringToBcX509Name(final String dn, final X509NameEntryConverter converter, final boolean ldaporder) {
+    public static X500Name stringToBcX500Name(final String dn, final X509NameEntryConverter converter, final boolean ldaporder) {
 
         if (dn == null) {
             return null;
@@ -300,11 +300,11 @@ public class CertTools {
         final X500Name x500Name = nameBuilder.build();
 
         // -- Reorder fields
-        final X500Name orderedX509Name = getOrderedX509Name(x500Name, ldaporder, converter);
+        final X500Name orderedX500Name = getOrderedX500Name(x500Name, ldaporder, converter);
 
-        // log.trace("<stringToBcX509Name");
-        return orderedX509Name;
-    } // stringToBcX509Name
+        // log.trace("<stringToBcX500Name");
+        return orderedX500Name;
+    } // stringToBcX500Name
 
     // Remove extra '+' character escaping
     private static String getUnescapedPlus(final String value) {
@@ -363,7 +363,7 @@ public class CertTools {
             dn = reverseDN(dn);
         }
         String ret = null;
-        final X500Name name = stringToBcX509Name(dn);
+        final X500Name name = stringToBcX500Name(dn);
         if (name != null) {
             ret = name.toString();
         }
@@ -1379,7 +1379,7 @@ public class CertTools {
         random.nextBytes(serno);
 
         final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
-        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX509Name(dn), new java.math.BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX509Name(dn), pkinfo);
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(dn), new java.math.BigInteger(serno).abs(), firstDate, lastDate, CertTools.stringToBcX500Name(dn), pkinfo);
         
         
         // Basic constranits is always critical and MUST be present at-least in CA-certificates.
@@ -2789,15 +2789,15 @@ public class CertTools {
     }
 
     /**
-     * Obtain a X509Name reordered, if some fields from original X509Name doesn't appear in "ordering" parameter, they will be added at end in the
+     * Obtain a X500Name reordered, if some fields from original X500Name doesn't appear in "ordering" parameter, they will be added at end in the
      * original order.
      * 
-     * @param x509Name the X509Name that is unordered
+     * @param x500Name the X500Name that is unordered
      * @param ldaporder true if LDAP ordering of DN should be used (default in EJBCA), false for X.500 order, ldap order is CN=A,OU=B,O=C,C=SE, x.500
      *            order is the reverse
-     * @return X509Name with ordered conmponents according to the orcering vector
+     * @return X500Name with ordered conmponents according to the orcering vector
      */
-    private static X500Name getOrderedX509Name(final X500Name x500Name, boolean ldaporder, final X509NameEntryConverter converter) {
+    private static X500Name getOrderedX500Name(final X500Name x500Name, boolean ldaporder, final X509NameEntryConverter converter) {
         // -- Null prevent
         // Guess order of the input name
         final boolean isLdapOrder = !isDNReversed(x500Name.toString());
@@ -2850,7 +2850,7 @@ public class CertTools {
         for(int i=0; i<newOrdering.size(); i++) {
             nameBuilder.addRDN(newOrdering.get(i), (ASN1Encodable) newValues.get(i));
         }
-        // -- Return X509Name with the ordered fields
+        // -- Return X500Name with the ordered fields
         return nameBuilder.build();
     } //
 

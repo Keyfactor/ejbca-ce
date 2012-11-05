@@ -49,7 +49,7 @@ public class DnComponents {
     /** This class should be instantiated immediately */
     private static DnComponents obj = new DnComponents();
     
-    /** BC X509Name contains some lookup tables that could maybe be used here. 
+    /** BC X500Name contains some lookup tables that could maybe be used here. 
      * 
      * This map is used in CertTools so sort and order DN strings so they all look the same in the database.
      * */

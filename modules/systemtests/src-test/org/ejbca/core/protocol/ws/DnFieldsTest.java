@@ -131,7 +131,7 @@ public class DnFieldsTest extends CommonEjbcaWS {
         }
 
         KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        String p10 = new String(Base64.encode(CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"), keys
+        String p10 = new String(Base64.encode(CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys
                 .getPublic(), new DERSet(), keys.getPrivate(), null).toASN1Structure().getEncoded()));
         UserDataVOWS user = new UserDataVOWS();
         user.setUsername(TEST_USERNAME);

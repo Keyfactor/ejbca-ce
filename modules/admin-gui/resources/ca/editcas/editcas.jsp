@@ -463,7 +463,7 @@
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          String subjectdn = request.getParameter(TEXTFIELD_SUBJECTDN);
          try{
-             X500Name dummy = CertTools.stringToBcX509Name(subjectdn);
+             X500Name dummy = CertTools.stringToBcX500Name(subjectdn);
          }catch(Exception e){
              illegaldnoraltname = true;
          }
@@ -1405,7 +1405,7 @@
          catype  = Integer.parseInt(request.getParameter(HIDDEN_CATYPE));
          String subjectdn = request.getParameter(TEXTFIELD_SUBJECTDN);
          try{
-             X500Name dummy = CertTools.stringToBcX509Name(subjectdn);
+             X500Name dummy = CertTools.stringToBcX500Name(subjectdn);
          }catch(Exception e){
            illegaldnoraltname = true;
          }

@@ -61,7 +61,7 @@ public class NonEjbTestTools {
         DERSet set = new DERSet(v);
         // Create PKCS#10 certificate request
         PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA1WithRSA",
-                CertTools.stringToBcX509Name(dn), keys.getPublic(), set, keys.getPrivate(), null);
+                CertTools.stringToBcX500Name(dn), keys.getPublic(), set, keys.getPrivate(), null);
         return p10request.toASN1Structure().getEncoded();        
     }
 }

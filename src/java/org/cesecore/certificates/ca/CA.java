@@ -735,7 +735,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /**
      * 
      * @param subject
-     * @param requestX509Name if the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN
+     * @param requestX500Name if the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN
      * @param publicKey
      * @param keyusage BouncyCastle key usage {@link X509KeyUsage}, e.g. X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment
      * @param notBefore
@@ -748,7 +748,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @return
      * @throws Exception
      */
-    public abstract Certificate generateCertificate(EndEntityInformation subject, X500Name requestX509Name, PublicKey publicKey, int keyusage,
+    public abstract Certificate generateCertificate(EndEntityInformation subject, X500Name requestX500Name, PublicKey publicKey, int keyusage,
             Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence) throws Exception;
 
     public abstract X509CRLHolder generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) throws Exception;

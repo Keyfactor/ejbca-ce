@@ -473,7 +473,7 @@ public class X509CA extends CA implements Serializable {
         } else {
             converter = new X509DefaultEntryConverter();
         }
-        X500Name x509dn = CertTools.stringToBcX509Name(getSubjectDN(), converter, getUseLdapDNOrder());
+        X500Name x509dn = CertTools.stringToBcX500Name(getSubjectDN(), converter, getUseLdapDNOrder());
         PKCS10CertificationRequest req;
         try {
             CAToken catoken = getCAToken();
@@ -578,7 +578,7 @@ public class X509CA extends CA implements Serializable {
     }
 
     @Override
-    public Certificate generateCertificate(final EndEntityInformation subject, final X500Name requestX509Name, final PublicKey publicKey, final int keyusage, final Date notBefore,
+    public Certificate generateCertificate(final EndEntityInformation subject, final X500Name requestX500Name, final PublicKey publicKey, final int keyusage, final Date notBefore,
             final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence) throws Exception {
         // Before we start, check if the CA is off-line, we don't have to waste time
         // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline
@@ -586,14 +586,14 @@ public class X509CA extends CA implements Serializable {
         final PublicKey caPublicKey = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
         final PrivateKey caPrivateKey = catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
         final String provider = catoken.getCryptoToken().getSignProviderName();
-        return generateCertificate(subject, requestX509Name, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence,
+        return generateCertificate(subject, requestX500Name, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence,
                 caPublicKey, caPrivateKey, provider);
     }
 
     /**
      * sequence is ignored by X509CA
      */
-    private Certificate generateCertificate(final EndEntityInformation subject, final X500Name requestX509Name, final PublicKey publicKey, final int keyusage, final Date notBefore,
+    private Certificate generateCertificate(final EndEntityInformation subject, final X500Name requestX500Name, final PublicKey publicKey, final int keyusage, final Date notBefore,
             final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence, final PublicKey caPublicKey,
             final PrivateKey caPrivateKey, final String provider) throws Exception {
 
@@ -665,13 +665,13 @@ public class X509CA extends CA implements Serializable {
             ldapdnorder = true;
         }
         final X500Name subjectDNName;
-        if (certProfile.getAllowDNOverride() && (requestX509Name != null)) {
-            subjectDNName = requestX509Name;
+        if (certProfile.getAllowDNOverride() && (requestX500Name != null)) {
+            subjectDNName = requestX500Name;
             if (log.isDebugEnabled()) {
                 log.debug("Using X509Name from request instead of user's registered.");
             }
         } else {
-            subjectDNName = CertTools.stringToBcX509Name(dn, converter, ldapdnorder);
+            subjectDNName = CertTools.stringToBcX500Name(dn, converter, ldapdnorder);
         }
         // Make sure the DN does not contain dangerous characters
         if (StringTools.hasStripChars(subjectDNName.toString())) {
@@ -922,9 +922,9 @@ public class X509CA extends CA implements Serializable {
                 converter = new X509DefaultEntryConverter();
             }
 
-            issuer = CertTools.stringToBcX509Name(getSubjectDN(), converter, getUseLdapDNOrder());
+            issuer = CertTools.stringToBcX500Name(getSubjectDN(), converter, getUseLdapDNOrder());
         } else {
-            issuer =  CertTools.stringToBcX509Name(cacert.getSubjectDN().getName());
+            issuer =  CertTools.stringToBcX500Name(cacert.getSubjectDN().getName());
         }
         final Date thisUpdate = new Date();
         final Date nextUpdate = new Date();

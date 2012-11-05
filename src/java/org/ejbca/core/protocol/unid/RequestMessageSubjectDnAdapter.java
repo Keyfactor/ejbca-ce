@@ -78,14 +78,14 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 	}
 	@Override
 	public String getRequestDN() {
-		final X500Name name = getRequestX509Name();
+		final X500Name name = getRequestX500Name();
 		if ( name==null ) {
 			return null;
 		}
 		return CertTools.stringToBCDNString(name.toString());
 	}
 	@Override
-	public X500Name getRequestX509Name() {
+	public X500Name getRequestX500Name() {
 		return new X500Name(this.dn.getName());
 	}
 	@Override

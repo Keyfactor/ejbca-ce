@@ -341,7 +341,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			final UsernameGenerator gen = UsernameGenerator.getInstance(this.usernameGenParams);
 			// Don't convert this DN to an ordered EJBCA DN string with CertTools.stringToBCDNString because we don't want double escaping of some characters
 			final RequestMessage req =  this.extendedUserDataHandler!=null ? this.extendedUserDataHandler.processRequestMessage(crmfreq, certProfileName) : crmfreq;
-			final X500Name dnname = req.getRequestX509Name();
+			final X500Name dnname = req.getRequestX500Name();
 			if (LOG.isDebugEnabled()) {
 				LOG.debug("Creating username from base dn: "+dnname.toString());
 			}

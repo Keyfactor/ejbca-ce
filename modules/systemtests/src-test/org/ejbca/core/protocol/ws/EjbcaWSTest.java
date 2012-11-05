@@ -677,7 +677,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
     	
     	// Generate a CSR
     	KeyPair keys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOUSED"),
+        PKCS10CertificationRequest pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"),
                 keys.getPublic(), new DERSet(), keys.getPrivate(), null);
         final String csr = new String(Base64.encode(pkcs10.toASN1Structure().getEncoded()));
         
@@ -769,7 +769,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         tokenUser1.setEndEntityProfileName("EMPTY");
         tokenUser1.setCertificateProfileName("ENDUSER");
         KeyPair basickeys = KeyTools.genKeys("1024", AlgorithmConstants.KEYALGORITHM_RSA);
-        PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX509Name("CN=NOTUSED"), basickeys
+        PKCS10CertificationRequest basicpkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOTUSED"), basickeys
                 .getPublic(), new DERSet(), basickeys.getPrivate(), null);
         ArrayList<TokenCertificateRequestWS> requests = new ArrayList<TokenCertificateRequestWS>();
         TokenCertificateRequestWS tokenCertReqWS = new TokenCertificateRequestWS();

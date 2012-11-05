@@ -93,7 +93,7 @@ public class ScepRequestGenerator {
     public byte[] generateCrlReq(String dn, String transactionId, X509Certificate ca) throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, IOException, CMSException, InvalidAlgorithmParameterException, CertStoreException, IllegalStateException, OperatorCreationException, CertificateException {
         this.cacert = ca;
         this.reqdn = dn;
-        X500Name name = CertTools.stringToBcX509Name(cacert.getIssuerDN().getName());
+        X500Name name = CertTools.stringToBcX500Name(cacert.getIssuerDN().getName());
         IssuerAndSerialNumber ias = new IssuerAndSerialNumber(name, cacert.getSerialNumber());
         // Create self signed cert, validity 1 day
         cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),AlgorithmConstants.SIGALG_SHA1_WITH_RSA,false);
@@ -148,7 +148,7 @@ public class ScepRequestGenerator {
         DERSet attributes = new DERSet(v);
         // Create PKCS#10 certificate request
         final PKCS10CertificationRequest p10request = CertTools.genPKCS10CertificationRequest("SHA1WithRSA",
-                CertTools.stringToBcX509Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
+                CertTools.stringToBcX500Name(reqdn), keys.getPublic(), attributes, keys.getPrivate(), null);
         
         // Create self signed cert, validity 1 day
         this.cert = CertTools.genSelfCert(reqdn,24*60*60*1000,null,keys.getPrivate(),keys.getPublic(),AlgorithmConstants.SIGALG_SHA1_WITH_RSA,false);

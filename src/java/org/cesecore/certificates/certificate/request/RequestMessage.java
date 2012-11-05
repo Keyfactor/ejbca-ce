@@ -76,7 +76,7 @@ public interface RequestMessage extends Serializable {
      *
      * @return requested DN or null.
      */
-    public X500Name getRequestX509Name();
+    public X500Name getRequestX500Name();
 
     /**
      * Gets the requested altNames if contained in the request (the desired altNames for the user).
