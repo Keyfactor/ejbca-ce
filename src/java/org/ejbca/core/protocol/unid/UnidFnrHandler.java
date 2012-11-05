@@ -57,7 +57,7 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 	
 	@Override
 	public RequestMessage processRequestMessage(RequestMessage req, String certificateProfileName) throws HandlerException {
-		final X500Name dn = req.getRequestX509Name();
+		final X500Name dn = req.getRequestX500Name();
 		if (LOG.isDebugEnabled()) {
 			LOG.debug(">processRequestMessage:'"+dn+"' and '"+certificateProfileName+"'");
 		}

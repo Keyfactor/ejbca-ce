@@ -326,7 +326,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     @Override
     public String getRequestDN() {
         String ret = null;
-        final X500Name name = getRequestX509Name();
+        final X500Name name = getRequestX500Name();
         if (name != null) {
             ret = CertTools.stringToBCDNString(name.toString());
         }
@@ -337,11 +337,11 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
     }
 
     @Override
-    public X500Name getRequestX509Name() {
+    public X500Name getRequestX500Name() {
         final CertTemplate templ = getReq().getCertReq().getCertTemplate();
         final X500Name name = templ.getSubject();
         if (log.isDebugEnabled()) {
-            log.debug("Request X509Name is: " + name);
+            log.debug("Request X500Name is: " + name);
         }
         return name;
     }

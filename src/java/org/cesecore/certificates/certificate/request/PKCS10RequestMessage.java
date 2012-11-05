@@ -263,8 +263,8 @@ public class PKCS10RequestMessage implements RequestMessage {
         // Special if the DN contains unstructuredAddress where it becomes: 
         // CN=pix.primekey.se + unstructuredAddress=pix.primekey.se
         // We only want the CN and not the oid-part.
-        // Luckily for us this is handles automatically by BC X509Name class
-        X500Name xname = getRequestX509Name();
+        // Luckily for us this is handles automatically by BC X500Name class
+        X500Name xname = getRequestX500Name();
         String ret = null;
         if (xname == null) {
         	log.info("No requestDN in request, probably we could not read/parse/decrypt request.");
@@ -339,7 +339,7 @@ public class PKCS10RequestMessage implements RequestMessage {
      */
     public String getRequestDN() {
     	String ret = null;
-    	X500Name name = getRequestX509Name();
+    	X500Name name = getRequestX500Name();
     	if (name != null) {
     		String dn = name.toString();
     		// We have to make special handling again for Cisco devices. 
@@ -358,9 +358,9 @@ public class PKCS10RequestMessage implements RequestMessage {
     }
 
     /**
-     * @see RequestMessage#getRequestX509Name()
+     * @see RequestMessage#getRequestX500Name()
      */
-    public X500Name getRequestX509Name() {
+    public X500Name getRequestX500Name() {
         try {
             if (pkcs10 == null) {
                 init();

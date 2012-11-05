@@ -242,8 +242,8 @@ public class WebAuthenticationProviderSessionBeanTest {
         random.nextBytes(serno);
         
         final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(publicKey.getEncoded()));
-        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX509Name(dn), new java.math.BigInteger(serno).abs(), firstDate, 
-                lastDate, CertTools.stringToBcX509Name(dn), pkinfo);
+        X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(CertTools.stringToBcX500Name(dn), new java.math.BigInteger(serno).abs(), firstDate, 
+                lastDate, CertTools.stringToBcX500Name(dn), pkinfo);
         // Basic constranits is always critical and MUST be present at-least in CA-certificates.
         BasicConstraints bc = new BasicConstraints(isCA);
         certbuilder.addExtension(Extension.basicConstraints, true, bc);

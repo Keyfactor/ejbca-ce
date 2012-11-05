@@ -898,9 +898,9 @@ public class CertToolsTest {
         String revdn3 = CertTools.reverseDN(dn3);
         assertEquals("dc=tld,dc=domain,cn=titi,cn=toto", revdn3);
         
-        X500Name dn4 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), true);
+        X500Name dn4 = CertTools.stringToBcX500Name(dn3, new X509DefaultEntryConverter(), true);
         assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn4.toString());
-        X500Name dn5 = CertTools.stringToBcX509Name(dn3, new X509DefaultEntryConverter(), false);
+        X500Name dn5 = CertTools.stringToBcX500Name(dn3, new X509DefaultEntryConverter(), false);
         assertEquals("DC=tld,DC=domain,CN=titi,CN=toto", dn5.toString());
         assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", CertTools.stringToBCDNString(dn3));
 
@@ -909,9 +909,9 @@ public class CertToolsTest {
         assertEquals("cn=toto,cn=titi,dc=domain,dc=tld", revdn6);
         assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", CertTools.stringToBCDNString(dn3));
 
-        X500Name dn7 = CertTools.stringToBcX509Name(dn6, new X509DefaultEntryConverter(), true);
+        X500Name dn7 = CertTools.stringToBcX500Name(dn6, new X509DefaultEntryConverter(), true);
         assertEquals("CN=toto,CN=titi,DC=domain,DC=tld", dn7.toString());
-        X500Name revdn7 = CertTools.stringToBcX509Name(dn6, new X509DefaultEntryConverter(), false);
+        X500Name revdn7 = CertTools.stringToBcX500Name(dn6, new X509DefaultEntryConverter(), false);
         assertEquals("DC=tld,DC=domain,CN=titi,CN=toto", revdn7.toString());
 
         // Test the test strings from ECA-1699, to prove that we fixed this issue
@@ -921,12 +921,12 @@ public class CertToolsTest {
         assertEquals("cn=FOO Root CA,o=FOO,dc=foo,dc=org", revdn8);
         String revdn9 = CertTools.reverseDN(dn9);
         assertEquals("dc=org,dc=foo,o=FOO,cn=FOO Root CA", revdn9);
-        X500Name xdn8ldap = CertTools.stringToBcX509Name(dn8, new X509DefaultEntryConverter(), true);
-        X500Name xdn8x500 = CertTools.stringToBcX509Name(dn8, new X509DefaultEntryConverter(), false);
+        X500Name xdn8ldap = CertTools.stringToBcX500Name(dn8, new X509DefaultEntryConverter(), true);
+        X500Name xdn8x500 = CertTools.stringToBcX500Name(dn8, new X509DefaultEntryConverter(), false);
         assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", xdn8ldap.toString());
         assertEquals("DC=org,DC=foo,O=FOO,CN=FOO Root CA", xdn8x500.toString());
-        X500Name xdn9ldap = CertTools.stringToBcX509Name(dn9, new X509DefaultEntryConverter(), true);
-        X500Name xdn9x500 = CertTools.stringToBcX509Name(dn9, new X509DefaultEntryConverter(), false);
+        X500Name xdn9ldap = CertTools.stringToBcX500Name(dn9, new X509DefaultEntryConverter(), true);
+        X500Name xdn9x500 = CertTools.stringToBcX500Name(dn9, new X509DefaultEntryConverter(), false);
         assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", xdn9ldap.toString());
         assertEquals("DC=org,DC=foo,O=FOO,CN=FOO Root CA", xdn9x500.toString());
         assertEquals("CN=FOO Root CA,O=FOO,DC=foo,DC=org", CertTools.stringToBCDNString(dn8));
@@ -934,18 +934,18 @@ public class CertToolsTest {
 
         // Test reversing DNs with multiple OU
         String dn10 = "CN=something,OU=A,OU=B,O=someO,C=SE";
-        X500Name x509dn10 = CertTools.stringToBcX509Name(dn10, new X509DefaultEntryConverter(), true);
-        assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", x509dn10.toString());
+        X500Name x500dn10 = CertTools.stringToBcX500Name(dn10, new X509DefaultEntryConverter(), true);
+        assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", x500dn10.toString());
         assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", CertTools.stringToBCDNString(dn10));
 
         // When we order forwards (LdapOrder) from the beginning, and request !LdapOrder, everything should be reversed
-        X500Name ldapdn11 = CertTools.stringToBcX509Name(dn10, new X509DefaultEntryConverter(), false);
+        X500Name ldapdn11 = CertTools.stringToBcX500Name(dn10, new X509DefaultEntryConverter(), false);
         assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", ldapdn11.toString());
 
         // When we order backwards (X.509, !LdapOrder) from the beginning, we should not reorder anything
         String dn11 = "C=SE,O=someO,OU=B,OU=A,CN=something";
-        X500Name x509dn11 = CertTools.stringToBcX509Name(dn11, new X509DefaultEntryConverter(), false);
-        assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", x509dn11.toString());
+        X500Name x500dn11 = CertTools.stringToBcX500Name(dn11, new X509DefaultEntryConverter(), false);
+        assertEquals("C=SE,O=someO,OU=B,OU=A,CN=something", x500dn11.toString());
         assertEquals("CN=something,OU=A,OU=B,O=someO,C=SE", CertTools.stringToBCDNString(dn11));
 
         log.trace("<test09TestReverse()");
@@ -1225,7 +1225,7 @@ public class CertToolsTest {
             ASN1Sequence seq = ASN1Sequence.getInstance(en.nextElement());
             ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) seq.getObjectAt(0);
             if (oid.equals(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)) {
-                // The object at position 1 is a SET of x509extensions
+                // The object at position 1 is a SET of extensions
                 DERSet s = (DERSet) seq.getObjectAt(1);
                 Extensions exts = Extensions.getInstance(s.getObjectAt(0));
                 Extension ext = exts.getExtension(Extension.subjectAlternativeName);
@@ -1250,7 +1250,7 @@ public class CertToolsTest {
             ASN1Sequence seq = ASN1Sequence.getInstance(en.nextElement());
             ASN1ObjectIdentifier oid = (ASN1ObjectIdentifier) seq.getObjectAt(0);
             if (oid.equals(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest)) {
-                // The object at position 1 is a SET of x509extensions
+                // The object at position 1 is a SET of extensions
                 DERSet s = (DERSet) seq.getObjectAt(1);
                 Extensions exts = Extensions.getInstance(s.getObjectAt(0));
                 Extension ext = exts.getExtension(Extension.subjectAlternativeName);
@@ -1559,7 +1559,7 @@ public class CertToolsTest {
 
     @Test
     public void testNullInput() {
-        assertNull(CertTools.stringToBcX509Name(null));
+        assertNull(CertTools.stringToBcX500Name(null));
         assertNull(CertTools.stringToBCDNString(null));
         assertNull(CertTools.reverseDN(null));
         assertFalse(CertTools.isDNReversed(null));

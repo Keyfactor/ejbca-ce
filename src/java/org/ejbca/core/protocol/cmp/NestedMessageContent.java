@@ -324,7 +324,7 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
     }
 
     @Override
-    public X500Name getRequestX509Name() {
+    public X500Name getRequestX500Name() {
         return null;
     }
 

@@ -639,9 +639,9 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
      * @throws AuthorizationDeniedException 
      * @throws CertificateCreateException 
      * @throws IllegalKeyException 
-     * @see org.cesecore.certificates.certificate.CertificateCreateSessionLocal#createCertificate(AuthenticationToken, EndEntityInformation, CA, X509Name, PublicKey, int, Date, Date, X509Extensions, String)
+     * @see org.cesecore.certificates.certificate.CertificateCreateSessionLocal#createCertificate(AuthenticationToken, EndEntityInformation, CA, X500Name, PublicKey, int, Date, Date, X509Extensions, String)
      */
-    private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final X500Name requestX509Name, final CA ca, final PublicKey pk,
+    private Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final X500Name requestX500Name, final CA ca, final PublicKey pk,
             final int keyusage, final Date notBefore, final Date notAfter, final Extensions extensions, final String sequence) throws IllegalKeyException,
             CertificateCreateException, AuthorizationDeniedException, CesecoreException {
         if (log.isTraceEnabled()) {
@@ -649,7 +649,7 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
 
         // Create the certificate. Does access control checks (with audit log) on the CA and create_certificate.
-        final Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, requestX509Name, pk, keyusage, notBefore, notAfter,
+        final Certificate cert = certificateCreateSession.createCertificate(admin, data, ca, requestX500Name, pk, keyusage, notBefore, notAfter,
                 extensions, sequence);
 
         postCreateCertificate(admin, data, ca, cert);

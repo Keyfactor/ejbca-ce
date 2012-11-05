@@ -154,7 +154,7 @@ public class Mfg1SignSessionTest extends SignSessionCommon {
         log.debug("Reset status of 'foorsamgf1ca' to NEW");
         // Create certificate request
         PKCS10CertificationRequest req = CertTools.genPKCS10CertificationRequest(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1,
-                CertTools.stringToBcX509Name("C=SE, O=AnaTom, CN=" + RSA_MFG1_ENTITY_NAME), rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
+                CertTools.stringToBcX500Name("C=SE, O=AnaTom, CN=" + RSA_MFG1_ENTITY_NAME), rsakeys.getPublic(), new DERSet(), rsakeys.getPrivate(), null);
         ByteArrayOutputStream bOut = new ByteArrayOutputStream();
         DEROutputStream dOut = new DEROutputStream(bOut);
         dOut.writeObject(req.toASN1Structure());

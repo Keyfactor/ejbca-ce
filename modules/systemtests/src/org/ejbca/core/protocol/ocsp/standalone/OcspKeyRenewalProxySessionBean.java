@@ -190,7 +190,7 @@ public class OcspKeyRenewalProxySessionBean implements OcspKeyRenewalProxySessio
                 final BigInteger serialNumber =  SernoGeneratorRandom.instance().getSerno();
                 final Date notBefore = req.getRequestValidityNotBefore();
                 final Date notAfter = req.getRequestValidityNotAfter();
-                final X500Name subject = X500Name.getInstance(req.getRequestX509Name().toASN1Object());
+                final X500Name subject = X500Name.getInstance(req.getRequestX500Name().toASN1Object());
                 SubjectPublicKeyInfo publicKey = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(
                         req.getRequestPublicKey().getEncoded())).readObject());
                 X509v3CertificateBuilder certificateBuilder = new X509v3CertificateBuilder(issuerDn, serialNumber, notBefore, notAfter, subject,

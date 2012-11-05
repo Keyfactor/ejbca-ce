@@ -316,8 +316,8 @@ public class CmpMessageHelper {
 			resp.setTransactionId(msg.getTransactionId());			
 		} else {
 			// We didn't even have a request the get these from, so send back some dummy values
-			resp.setSender(new GeneralName(CertTools.stringToBcX509Name("CN=Failure Sender")));
-			resp.setRecipient(new GeneralName(CertTools.stringToBcX509Name("CN=Failure Recipient")));
+			resp.setSender(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Sender")));
+			resp.setRecipient(new GeneralName(CertTools.stringToBcX500Name("CN=Failure Recipient")));
 		}
 		resp.setFailInfo(failInfo);
 		resp.setStatus( status);

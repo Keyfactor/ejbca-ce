@@ -189,7 +189,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
                     sequence = new String(ki);                  
                 }
             }
-            Certificate cert = createCertificate(admin, userData, ca, req.getRequestX509Name(), reqpk, keyusage, notBefore, notAfter, exts, sequence);
+            Certificate cert = createCertificate(admin, userData, ca, req.getRequestX500Name(), reqpk, keyusage, notBefore, notAfter, exts, sequence);
 
             // Create the response message with all nonces and checks etc
             ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
@@ -308,11 +308,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
 
     @Override
     public Certificate createCertificate(final AuthenticationToken admin, final EndEntityInformation data, final CA ca,
-            final X500Name requestX509Name, final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter,
+            final X500Name requestX500Name, final PublicKey pk, final int keyusage, final Date notBefore, final Date notAfter,
             final Extensions extensions, final String sequence) throws CustomCertSerialNumberException, IllegalKeyException,
             AuthorizationDeniedException, CertificateCreateException, CesecoreException {
         if (log.isTraceEnabled()) {
-            log.trace(">createCertificate(EndEntityInformation, CA, X509Name, pk, ku, notBefore, notAfter, extesions, sequence)");
+            log.trace(">createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)");
         }
         
         // Even though CA is passed as an argument to this method, we do check authorization on that.
@@ -326,7 +326,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         // Audit log that we received the request
         final Map<String, Object> details = new LinkedHashMap<String, Object>();
         details.put("subjectdn", data.getDN());
-        details.put("requestX509name", requestX509Name == null ? "null" : requestX509Name.toString());
+        details.put("requestX500name", requestX500Name == null ? "null" : requestX500Name.toString());
         details.put("certprofile", data.getCertificateProfileId());
         details.put("keyusage", keyusage);
         details.put("notbefore", notBefore);
@@ -381,7 +381,7 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             Exception storeEx = null; // this will not be null if stored == false after the below passage
             for (int retrycounter = 0; retrycounter < maxRetrys; retrycounter++) {
-                cert = ca.generateCertificate(data, requestX509Name, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
+                cert = ca.generateCertificate(data, requestX500Name, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
                 serialNo = CertTools.getSerialNumberAsString(cert);
                 cafingerprint = CertTools.getFingerprintAsString(cacert);
                 // Store certificate in the database, if this CA is configured to do so.
@@ -450,39 +450,39 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             		issuedetails);
 
             if (log.isTraceEnabled()) {
-                log.trace("<createCertificate(EndEntityInformation, CA, X509Name, pk, ku, notBefore, notAfter, extesions, sequence)");
+                log.trace("<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)");
             }
             return cert;
             // We need to catch and re-throw all of these exception just because we need to audit log all failures
         } catch (CryptoTokenOfflineException e) {
             final String msg = intres.getLocalizedMessage("error.catokenoffline", ca.getCAId());
             log.info(msg);
-            auditFailure(admin, e, e.getMessage(), "<createCertificate(EndEntityInformation, CA, X509Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+            auditFailure(admin, e, e.getMessage(), "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
             throw e;
         } catch (AuthorizationDeniedException e) {
             log.info(e.getMessage());
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X509Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
             throw e;
         } catch (CustomCertSerialNumberException e) {
             log.info(e.getMessage());
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X509Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
             throw e;
         } catch (IllegalKeyException e) {
             log.info(e.getMessage());
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X509Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
             throw e;
         } catch (CertificateCreateException e) {
             log.info(e.getMessage());
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X509Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
             // Rollback
             throw e;
         } catch (CesecoreException e) {
             log.info(e.getMessage());
-            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X509Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+            auditFailure(admin, e, null, "<createCertificate(EndEntityInformation, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
             throw e;
         } catch (Exception e) {
             log.error("Error creating certificate", e);
-            auditFailure(admin, e, null, "<createCertificate(UserDataVO, CA, X509Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
+            auditFailure(admin, e, null, "<createCertificate(UserDataVO, CA, X500Name, pk, ku, notBefore, notAfter, extesions, sequence)", ca.getCAId(), data.getUsername());
             // Rollback
             throw new CertificateCreateException(e);
         }

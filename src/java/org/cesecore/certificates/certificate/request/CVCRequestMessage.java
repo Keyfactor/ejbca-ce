@@ -198,10 +198,9 @@ public class CVCRequestMessage implements RequestMessage {
     }
 
     @Override
-    public X500Name getRequestX509Name() {
+    public X500Name getRequestX500Name() {
     	String dn = getRequestDN();
-    	X500Name name = new X500Name(dn);
-    	return name;
+    	return new X500Name(dn);
     }
 
     @Override
