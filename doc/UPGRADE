@@ -31,30 +31,59 @@ INSERT and DELETE. The SQL executed by database upgrades code is available in
 
 From EJBCA 5.0.x to EJBCA 5.1.x
 -------------------------------
-See release notes for details between certain versions. 
-
-Note for upgrade to 5.1.0:
-In EJBCA 5.1.0 new versions of BouncyCastle jars are included. If you have been copying ejbca/lib/bc*.jar files to JBoss 
-(jboss/server/default/lib), you must remove the old jars from JBoss and copy new jars from EJBCA.
+See release notes for more details on changes.
 
 The class CliAuthenticationToken and associated classes have been moved from the CLI module to reside next to the other 
 authentication classes under src. This means that approval requests using the CliAuthenticationToken created in 5.0.x will not 
 be forwards compatible.
 
 The 'ant bootstrap' target has been deprecated, and now it's covered by the 'ant
-deploy' target. You can build and deploy the new version of EJBCA software with:
+deploy' target. Behaviour for the 'ant deploy' has been changed, and the old
+command is equivalent to the following sequence:
 
-- ant clean
 - ant deploy
-
-Afterwards, if you have changed the application server versions, or have
-unpacked a fresh installation of the application server, you must run:
-
 - ant deploy-keystore
 - ant web-configure
 
 For more information about new deployment instructions and ant targets, please
 refer to EJBCA administration and installation guides.
+
+Backup your database first! If the upgrade fails, you can always go back to the earlier version.
+If you are upgrading a cluster, update the software on all the nodes.
+
+1. Copy conf/*.properties from the earlier installation into the conf directory of the new release.
+   Or better yet, use the ejbca-custom feature for easier upgrades, see User Guide.
+
+2. Copy the directory 'p12' from the earlier installation. 
+
+3. Shut down JBoss.
+
+4. Run the 'ant deploy' target with new version.
+
+5. Run the 'ant deploy-keystore' target with new version.
+
+6. Run the 'ant web-configure' target with new version.
+
+7. Start up JBoss.
+
+8. If you are running in a cluster, you should now upgrade on all cluster nodes.
+   The newly deployed nodes should be running now.
+   
+8. Stop JBoss, clear the tmp and work directories in the servers, then start JBoss again to flush all caches.
+
+9. Go into the Admin GUI and verify your settings.
+
+NOTE: Some configuration options in ocsp.properties have moved to (or been
+deprecated by) web.properties. You should migrate these configuration changes.
+You will be warned during build if you are using these options and have not
+migrated them.
+
+NOTE: In EJBCA 5.1.0 new versions of BouncyCastle jars are included. If you have
+been copying ejbca/lib/bc*.jar files to JBoss (jboss/server/default/lib), you
+must remove the old jars from JBoss and copy new jars from EJBCA.
+
+If you get a "java.lang.NoSuchMethodError" in the admin GUI it is because JBoss does not clean temporary files very good.
+Delete the directories JBOSS_HOME/server/default/tmp and JBOSS_HOME/server/default/work and restart JBoss to get it working.
 
 From EJBCA 5.0.x to EJBCA 5.0.x
 -------------------------------
