@@ -64,7 +64,7 @@ by running the <i>bin/ejbca.sh batch</i> command on the EJBCA server, or by fetc
 </subsubsection>
 <subsubsection name="PKCS#11 HSMs">
 <p>
-A PKCS#11 key and certificate is created like this:
+A PKCS#11 key and certificate is created like this (example for Thales/nCipher, change accordingly for your HSM):
 </p>
 <source>
 ejbcaClientToolBox.sh PKCS11HSMKeyTool generate ./sunpkcs11.cfg 2048 ocsp
