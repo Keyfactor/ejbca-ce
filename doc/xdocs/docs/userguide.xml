@@ -483,6 +483,13 @@ regards to DN-contents, extensions etc.
 <li>Under "Type", select "End Entity".</li>
 <li>Press "Save"</li>
 </ul> 
+<p>Another way of creating a new Certificate Profile is to use an existing profile as template:</p>
+<ul>
+<li>In the list of certificate profiles, select the filed profile SERVER.</li>
+<li>Enter a name for your end entity certificate profile e.g. "SSLServerCertificateProfile", and press "Use selected as template".</li>
+<li>Press "Save"</li>
+</ul> 
+
 </subsection>
 <subsection name="Certificate Profile fields">
 <subsubsection name="Validity">
@@ -792,7 +799,7 @@ certificates from the specified CertificateProfile.
 </p>
 <subsection name="Create an End Entity Profile for SSL servers">
 <p>This section will show you how to create an end entity profile suitable for SSL/TLS servers, such as web servers.
-You should previously have created the certificate profile for SSL servers. 
+You should previously have created the certificate profile for SSL servers in the section "Create a Certificate Profile for SSL servers". 
 </p>
 <ul>
 <li>Under "RA Functions", press "Edit End Entity Profiles".</li>
@@ -808,8 +815,8 @@ You should previously have created the certificate profile for SSL servers.
 <li>Under "Available Certificate Profiles", choose "SSLServerEndEntityCertificateProfile".</li>
 <li>Under "Default CA", choose "AdminCA1" (the CA you use to issue server certificates).</li>
 <li>Under "Available CAs", choose "AdminCA1" (same as above).</li>
-<li>Under "Default Token", choose "P12".</li>
-<li>Under "Available Tokens", choose "P12", "JKS" and "PEM" (ctrl-click to select multiple).</li>
+<li>Under "Default Token", choose "User Generated".</li>
+<li>Under "Available Tokens", choose "User Generated", "P12", "JKS" and "PEM" (ctrl-click to select multiple).</li>
 <li>Press "Save".</li> 
 </ul>
 </subsection>
@@ -995,60 +1002,10 @@ The users DN is normally entered in the CLI as "C=SE,O=MyOrg,OU=MyOrgUnit,CN=MyN
 If a ',' is needed in the DN the comma must be escaped using '\,'.
 </p></subsection>
 
-<subsection name="Issue a new end entity certificate for an SSL server">
-<p>This section will show you how to issue a certificates suitable for SSL/TLS servers, such as web servers.
-You should previously have created the certificate profile and end entity profile for SSL servers. 
-</p>
-<ul>
-<li>Goto "RA Functions" -> "Add End Entity".</li>
-<li>Choose the end entity profile "SSLServerEndEntityProfile".</li>
-<li>At "Username" enter "testsrv.domain.com".</li>
-<li>At Password enter a password.</li>
-<li>Under "CN, Common Name" enter "testsrv.domain.com".</li>
-<li>And at "DNS Name" enter "testsrv.domain.com".</li>
-<li>Under "Certificate Profile" you should not be able to choose anything but the default "SSLServerCertificateProfile".</li>
-<li>Under "CA" you should not be able to choose anything but the default "AdminCA1".</li>
-<li>Under "Token", choose "P12".</li>
-<li>Press "Add End Entity".</li>
-<li>Goto "Public Web" and then  "Create Keystore".</li>
-<li>Enter the username, testsrv.domain.com, and password for the user you created, and press "OK".</li>
-<li>Choose "Key length" "1024".</li> 
-<li>Under "Certificate Profile" you should not be able to choose anything but the default "SSLServerCertificateProfile" .</li> 
-<li>Press "OK".</li>
-<li>A new certificate will be generated and downloaded to your desktop.</li>
-<li>If you like you can import the P12 file (double-click it on windows) to look at the certificate inside.</li>
-</ul> 
-</subsection>
-
-<subsection name="Create User certificates">
-<p>
-To enroll for a certificate using a browser, go to http://your_server_name:servlet_container_port/ejbca/
-(e.g. http://127.0.0.1:8080/ejbca/) and select &quot;Create Browser Certificate&quot;.
-Enter username and password, click the &quot;OK&quot;-button and follow the instructions.
-</p><p>
-To enroll for certificates manually (e.g. for server certificates), go to
-http://your_server_name:servlet_container_port/ejbca/, select
-&quot;Create Server Certificate&quot; and fill out the form.
-</p><p>
-Note that application for certificates only work when the status of a user is
-NEW, FAILED or INPROCESS (one time password thing). The
-status is set to
-GENERATED after a certificate has been issued. To issue a new
-certificate, the
-status must be reset to NEW, which can be done through
-the Admin GUI or the CLI.
-</p><p>
-During batch generation of certificates, users with status NEW
-or FAILED are
-generated. This is due to the possibility that a batch generation for some
-reason failed. If it fails status is set to FAILED and you can try again after fixing the
-error.
-</p></subsection>
-
 <subsection name="Create server certificates">
 <p>
-The best way to create server certificates is to generate a
-PKCS12, JKS or PEM file for the server, depending on what server it is.
+A good way to create server certificates is to generate a
+PKCS12, JKS or PEM file for the server, depending on what server it is. This means that the private key is generated by the CA, you do not have to generate a CSR on your server for this.
 To do this:
 <ol>
 <li>
@@ -1128,6 +1085,78 @@ hostname. In this case, the iPAddress subjectAltName must be present
 in the certificate and must exactly match the IP in the URI.
 </source>
 </subsection>
+
+<subsection name="Issue a new PKCS#12 keystore for an SSL server">
+<p>This section will show you how to issue a PKCS#12 keystore suitable for SSL/TLS servers, such as web servers.
+You should previously have created the certificate profile and end entity profile for SSL servers in the sections above. 
+</p>
+<ul>
+<li>Goto "RA Functions" -> "Add End Entity".</li>
+<li>Choose the end entity profile "SSLServerEndEntityProfile".</li>
+<li>At "Username" enter "testsrv.domain.com".</li>
+<li>At Password enter a password.</li>
+<li>Under "CN, Common Name" enter "testsrv.domain.com".</li>
+<li>And at "DNS Name" enter "testsrv.domain.com".</li>
+<li>Under "Certificate Profile" you should not be able to choose anything but the default "SSLServerCertificateProfile".</li>
+<li>Under "CA" you should not be able to choose anything but the default "AdminCA1".</li>
+<li>Under "Token", choose "P12".</li>
+<li>Press "Add End Entity".</li>
+<li>Goto "Public Web" and then  "Create Keystore".</li>
+<li>Enter the username, testsrv.domain.com, and password for the user you created, and press "OK".</li>
+<li>Choose "Key length" "1024".</li> 
+<li>Under "Certificate Profile" you should not be able to choose anything but the default "SSLServerCertificateProfile" .</li> 
+<li>Press "OK".</li>
+<li>A new certificate will be generated and downloaded to your desktop.</li>
+<li>If you like you can import the P12 file (double-click it on windows) to look at the certificate inside.</li>
+</ul> 
+</subsection>
+
+<subsection name="Issue a new server certificate from a CSR">
+<p>This section will show you how to issue a certificate suitable for SSL/TLS servers from a CSR generated by the server.
+You should previously have created the certificate profile and end entity profile for SSL servers in the sections above. 
+</p>
+<ul>
+<li>Goto "RA Functions" -> "Add End Entity".</li>
+<li>Choose the end entity profile "SSLServerEndEntityProfile".</li>
+<li>At "Username" enter "testsrv.domain.com".</li>
+<li>At Password enter a password.</li>
+<li>Under "CN, Common Name" enter "testsrv.domain.com".</li>
+<li>And at "DNS Name" enter "testsrv.domain.com".</li>
+<li>Under "Certificate Profile" you should not be able to choose anything but the default "SSLServerCertificateProfile".</li>
+<li>Under "CA" you should not be able to choose anything but the default "AdminCA1".</li>
+<li>Under "Token", choose "User Generated".</li>
+<li>Press "Add End Entity".</li>
+<li>Goto "Public Web" and then  "Create Certificate from CSR".</li>
+<li>Enter the username, testsrv.domain.com, and password for the user you created. Paste the CSR from the server and press "OK".</li>
+<li>A new certificate will be generated so you can download it to your desktop.</li>
+</ul> 
+</subsection>
+
+<subsection name="Create User certificates">
+<p>
+To enroll for a certificate using a browser, go to http://your_server_name:servlet_container_port/ejbca/
+(e.g. http://127.0.0.1:8080/ejbca/) and select &quot;Create Browser Certificate&quot;.
+Enter username and password, click the &quot;OK&quot;-button and follow the instructions.
+</p><p>
+To enroll for certificates manually (e.g. for server certificates), go to
+http://your_server_name:servlet_container_port/ejbca/, select
+&quot;Create Server Certificate&quot; and fill out the form.
+</p><p>
+Note that application for certificates only work when the status of a user is
+NEW, FAILED or INPROCESS (one time password thing). The
+status is set to
+GENERATED after a certificate has been issued. To issue a new
+certificate, the
+status must be reset to NEW, which can be done through
+the Admin GUI or the CLI.
+</p><p>
+During batch generation of certificates, users with status NEW
+or FAILED are
+generated. This is due to the possibility that a batch generation for some
+reason failed. If it fails status is set to FAILED and you can try again after fixing the
+error.
+</p></subsection>
+
 <subsection name="Certificate Renewal">
 <p>Certificate renewal is a often missunderstood term. Certificate renewal simply means issuance of a new certificate containing the same public key as an already issued certificate.
 It does not mean issuing a new certificate with the same certificate serial number, and it does not mean that the CA in some magical way has access to the end entitys private key.</p>
