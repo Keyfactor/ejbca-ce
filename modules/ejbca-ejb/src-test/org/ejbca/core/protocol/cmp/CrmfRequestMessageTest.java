@@ -175,7 +175,7 @@ public class CrmfRequestMessageTest {
     	// Verify PBE protection
     	PKIHeader head = msg.getHeader();
     	final ASN1OctetString os = head.getSenderKID();
-    	String keyId = new String(os.getOctets(), "UTF-8");
+    	String keyId = CmpMessageHelper.getStringFromOctets(os);
     	assertEquals("mykeyid", keyId);
     	final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
     	assertTrue(verifyer.verify("foo123"));
@@ -280,7 +280,7 @@ public class CrmfRequestMessageTest {
     	// Verify PBE protection
     	PKIHeader head = msg.getHeader();
     	final ASN1OctetString os = head.getSenderKID();
-    	String keyId = new String(os.getOctets(), "UTF-8");
+    	String keyId = CmpMessageHelper.getStringFromOctets(os);
     	assertEquals("KeyId", keyId);
     	final CmpPbeVerifyer verifyer = new CmpPbeVerifyer(msg.getMessage());
     	assertTrue(verifyer.verify("password"));
