@@ -69,32 +69,6 @@ public class BaseCmpMessageHandler {
 		this.certificateProfileSession = certificateProfileSession;
 	}
 
-	/** @return SenderKeyId of in the header or null none was found. */
-	protected String getSenderKeyId(final PKIHeader head) {
-		String keyId = null;
-		final ASN1OctetString os = head.getSenderKID();
-		if (os != null) {
-			try {
-				keyId = new String(os.getOctets(), "UTF-8");
-			} catch (UnsupportedEncodingException e2) {
-				keyId = new String(os.getOctets());
-				LOG.info("UTF-8 not available, using platform default encoding for keyId.");
-			}
-
-            if (!StringUtils.isAsciiPrintable(keyId)) {
-                keyId = new String(Hex.encode(os.getOctets()));
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("keyId is not asciiPrintable, converting to hex: " + keyId);
-                }
-            }
-            
-			if (LOG.isDebugEnabled()) {
-				LOG.debug("Found a sender keyId: "+keyId);
-			}
-		}
-		return keyId;
-	}
-
 	/** @return the end entity profile id to use for a request based on the current configuration and keyId. */
 	protected int getUsedEndEntityProfileId(final String keyId) throws NotFoundException {
 		int ret = 0;

@@ -314,7 +314,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 	    final int requestId = crmfreq.getRequestId();
         final int requestType = crmfreq.getRequestType();
         // Try to find a HMAC/SHA1 protection key
-        final String keyId = getSenderKeyId(crmfreq.getHeader());
+        final String keyId = CmpMessageHelper.getStringFromOctets(crmfreq.getHeader().getSenderKID());
         int caId = 0; // The CA to user when adding users in RA mode
         try {
             eeProfileId = getUsedEndEntityProfileId(keyId);
