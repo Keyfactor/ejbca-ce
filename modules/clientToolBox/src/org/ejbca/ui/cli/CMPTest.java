@@ -456,7 +456,7 @@ class CMPTest extends ClientToolBox {
             } else {
                 //final DEROctetString os = header.getSenderKID();
                 //if ( os!=null )
-                //    StressTest.this.performanceTest.getLog().info("Found a sender keyId: "+new String(os.getOctets()));
+                //    StressTest.this.performanceTest.getLog().info("Found a sender keyId: "+ CmpMessageHelper.getStringFromOctets(os) );
                 // Verify the PasswordBased protection of the message
                 final PBMParameter pp; {
                     final AlgorithmIdentifier pAlg = header.getProtectionAlg();

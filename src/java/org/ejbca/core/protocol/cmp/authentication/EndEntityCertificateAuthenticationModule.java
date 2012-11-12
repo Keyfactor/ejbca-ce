@@ -491,7 +491,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
             if (log.isDebugEnabled()) {
                 log.debug("Using End Entity Profile with same name as KeyId in request: "+keyId);
             }
-            endEntityProfile = keyId.toString();
+            endEntityProfile = CmpMessageHelper.getStringFromOctets(keyId);
         } 
         ret = eeProfileSession.getEndEntityProfileId(endEntityProfile);
         if (ret == 0) {
