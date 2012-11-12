@@ -29,6 +29,7 @@ import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.Base64;
+import org.cesecore.util.StringTools;
 
 /**
  * This file handles configuration from conf/databaseprotection.properties. It is a Singleton.
@@ -219,7 +220,7 @@ public final class ProtectedDataConfiguration {
 	        					final String pin = conf.getString(pinstr+i);
 	        					try {
 	        						if (StringUtils.isNotEmpty(pin)) {
-	        							token.activate(pin.toCharArray());
+	        							token.activate(StringTools.passwordDecryption(pin,"PIN: "+pin).toCharArray());
 	        						}
 	        						cryptoTokens.put(Integer.parseInt(keyid), new CachedCryptoToken(token));
 	        						keyLabels.put(Integer.parseInt(keyid), label);
