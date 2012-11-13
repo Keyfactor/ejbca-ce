@@ -133,7 +133,7 @@
      int reason = Integer.parseInt(request.getParameter(SELECT_REVOKE_REASON));
      certificatedata = rabean.getCertificate(currentindex);
      if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS) 
-        && !certificatedata.isRevoked()) {
+        && (!certificatedata.isRevoked()||certificatedata.isRevokedAndOnHold()) ) {
 		try {
 	    	rabean.revokeCert(certificatedata.getSerialNumberBigInt(), certificatedata.getIssuerDNUnEscaped(), certificatedata.getUsername(),reason);
 		} catch (org.ejbca.core.model.approval.ApprovalException e) {
@@ -613,7 +613,7 @@ function confirmrepublish(){
           <td>
        <%  try{
             if(!cacerts && rabean.authorizedToRevokeCert(certificatedata.getUsername()) && ejbcawebbean.isAuthorizedNoLog(EjbcaWebBean.AUTHORIZED_RA_REVOKE_RIGHTS)){
-				if ( !certificatedata.isRevoked() ){
+				if ( !certificatedata.isRevoked() || certificatedata.isRevokedAndOnHold() ){
 					//-- Certificate can be revoked or suspended
 		%>    
         <select name="<%=SELECT_REVOKE_REASON %>" >
@@ -626,9 +626,11 @@ function confirmrepublish(){
         <input type="submit" name="<%=BUTTON_REVOKE %>" value="<%= ejbcawebbean.getText("REVOKE") %>"
                onClick='return confirmrevocation()'>
 <% 
-			  }else if ( certificatedata.isRevokedAndOnHold() ){
+			  }
+			  if ( certificatedata.isRevokedAndOnHold() ){
 				//-- Certificate can be unrevoked
 %>
+				<br/><br/>
 				<input type="submit" name="<%=BUTTON_UNREVOKE %>" value="<%= ejbcawebbean.getText("UNREVOKE") %>"
                 onClick='return confirmunrevocation()'><br />	
 <%

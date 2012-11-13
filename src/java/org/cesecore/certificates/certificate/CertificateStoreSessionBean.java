@@ -617,10 +617,12 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
 
         boolean returnVal = false;
         // A normal revocation
-        if ((rev.getStatus() != CertificateConstants.CERT_REVOKED) && (reason != RevokedCertInfo.NOT_REVOKED)
-                && (reason != RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL)) {
-            rev.setStatus(CertificateConstants.CERT_REVOKED);
-            rev.setRevocationDate(revokeDate);
+        if ( (rev.getStatus()!=CertificateConstants.CERT_REVOKED || rev.getRevocationReason()==RevokedCertInfo.REVOCATION_REASON_CERTIFICATEHOLD) &&
+        		reason!=RevokedCertInfo.NOT_REVOKED && reason!=RevokedCertInfo.REVOCATION_REASON_REMOVEFROMCRL ) {
+        	if ( rev.getStatus()!=CertificateConstants.CERT_REVOKED ) {
+        		rev.setStatus(CertificateConstants.CERT_REVOKED);
+        		rev.setRevocationDate(revokeDate); // keep date if certificate on hold.
+        	}
             rev.setUpdateTime(now.getTime());
             rev.setRevocationReason(reason);
             
