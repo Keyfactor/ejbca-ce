@@ -488,10 +488,10 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         int ret = 0;
         String endEntityProfile = CmpConfiguration.getRAEndEntityProfile();
         if (StringUtils.equals(endEntityProfile, "KeyId") && (keyId != null)) {
-            if (log.isDebugEnabled()) {
-                log.debug("Using End Entity Profile with same name as KeyId in request: "+keyId);
-            }
             endEntityProfile = CmpMessageHelper.getStringFromOctets(keyId);
+            if (log.isDebugEnabled()) {
+                log.debug("Using End Entity Profile with same name as KeyId in request: "+endEntityProfile);
+            }
         } 
         ret = eeProfileSession.getEndEntityProfileId(endEntityProfile);
         if (ret == 0) {
