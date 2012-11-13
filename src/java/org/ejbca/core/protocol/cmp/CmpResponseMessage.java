@@ -35,8 +35,10 @@ import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cmp.CMPCertificate;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
+import org.bouncycastle.asn1.cmp.CertOrEncCert;
 import org.bouncycastle.asn1.cmp.CertRepMessage;
 import org.bouncycastle.asn1.cmp.CertResponse;
+import org.bouncycastle.asn1.cmp.CertifiedKeyPair;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIFreeText;
@@ -214,11 +216,14 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                         log.debug("Creating a CertRepMessage 'accepted'");
                     }
                     PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.granted); // 0 = accepted
-                    CertResponse myCertResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo);
-                    CertResponse[] certRespos = {myCertResponse};
                     
                     CMPCertificate cmpcert = CMPCertificate.getInstance(new ASN1InputStream(new ByteArrayInputStream(cert
                             .getEncoded())).readObject());
+                    CertOrEncCert retCert = new CertOrEncCert(cmpcert);
+                    CertifiedKeyPair myCertifiedKeyPair = new CertifiedKeyPair(retCert);
+                    CertResponse myCertResponse = new CertResponse(new ASN1Integer(requestId), myPKIStatusInfo, myCertifiedKeyPair, null);
+                    
+                    CertResponse[] certRespos = {myCertResponse};
                     CMPCertificate[] cmpCerts = {cmpcert};
 
                     CertRepMessage myCertRepMessage = new CertRepMessage(cmpCerts, certRespos);
