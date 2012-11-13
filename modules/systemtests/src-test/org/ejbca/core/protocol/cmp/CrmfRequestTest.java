@@ -454,7 +454,7 @@ public class CrmfRequestTest extends CmpTestCase {
         user.setPassword("foo123");
         try {
             endEntityManagementSession.addUser(admin, user, false); 
-            log.debug("created user: cmptest, foo123, " + userDN);
+            log.debug("created user: " + username + ", foo123, " + userDN);
         } catch (Exception e) {
             userExists = true;
         }

@@ -65,6 +65,7 @@ import org.bouncycastle.asn1.cmp.CertStatus;
 import org.bouncycastle.asn1.cmp.CertifiedKeyPair;
 import org.bouncycastle.asn1.cmp.PBMParameter;
 import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIConfirmContent;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
@@ -174,21 +175,13 @@ class CMPTest extends ClientToolBox {
                 ExtensionsGenerator extgen = new ExtensionsGenerator();
                 {
                     final GeneralNames san = CertTools.getGeneralNamesFromAltName("UPN=fooupn@bar.com,rfc822Name=rfc822Name@my.com");
-                    final ByteArrayOutputStream   bOut = new ByteArrayOutputStream();
-                    final DEROutputStream         dOut = new DEROutputStream(bOut);
-                    dOut.writeObject(san);
-                    final byte value[] = bOut.toByteArray();
-                    extgen.addExtension(Extension.subjectAlternativeName, false, new DEROctetString(value));
+                    extgen.addExtension(Extension.subjectAlternativeName, false, san);
                 }
                 {
                     // KeyUsage
                     final int bcku = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment | X509KeyUsage.nonRepudiation;
                     final X509KeyUsage ku = new X509KeyUsage(bcku);
-                    final ByteArrayOutputStream bOut = new ByteArrayOutputStream();
-                    final DEROutputStream dOut = new DEROutputStream(bOut);
-                    dOut.writeObject(ku);
-                    final byte value[] = bOut.toByteArray();
-                    extgen.addExtension(Extension.keyUsage, false, new DEROctetString(value));
+                    extgen.addExtension(Extension.keyUsage, false, ku);
                 }
                 // Make the complete extension package
                 myCertTemplate.setExtensions(extgen.generate());
@@ -254,11 +247,12 @@ class CMPTest extends ClientToolBox {
             final byte[] salt = "foo123".getBytes();
             final DEROctetString derSalt = new DEROctetString(salt);
             final PKIMessage ret;
-            final PKIHeaderBuilder head;
+            final PKIHeaderBuilder headbuilder;
+            final PKIHeader head;
             {
                 // Create the PasswordBased protection of the message
-                head = getHeaderBuilder(msg.getHeader());
-                head.setSenderKID(new DEROctetString(this.keyId.getBytes()));
+                headbuilder = getHeaderBuilder(msg.getHeader());
+                headbuilder.setSenderKID(new DEROctetString(this.keyId.getBytes()));
                 final ASN1Integer iteration = new ASN1Integer(iterationCount);
 
                 // Create the new protected return message
@@ -268,8 +262,8 @@ class CMPTest extends ClientToolBox {
                 }
                 final PBMParameter pp = new PBMParameter(derSalt, owfAlg, iteration, macAlg);
                 final AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(objectId), pp);
-                head.setProtectionAlg(pAlg);
-
+                headbuilder.setProtectionAlg(pAlg);
+                head = headbuilder.build();
             }
             {
                 // Calculate the protection bits
@@ -285,7 +279,7 @@ class CMPTest extends ClientToolBox {
                 }
                 // For HMAC/SHA1 there is another oid, that is not known in BC, but the result is the same so...
                 final String macOid = macAlg.getAlgorithm().getId();
-                final byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(head.build(), msg.getBody());
+                final byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(head, msg.getBody());
                 final Mac mac = Mac.getInstance(macOid, this.bcProvider);
                 final SecretKey key = new SecretKeySpec(basekey, macOid);
                 mac.init(key);
@@ -294,7 +288,7 @@ class CMPTest extends ClientToolBox {
                 final byte[] out = mac.doFinal();
                 final DERBitString bs = new DERBitString(out);
 
-                ret = new PKIMessage(head.build(), msg.getBody(), bs);
+                ret = new PKIMessage(head, msg.getBody(), bs);
             }
             return ret;
         }
@@ -306,7 +300,9 @@ class CMPTest extends ClientToolBox {
             builder.setGeneralInfo(header.getGeneralInfo());
             builder.setMessageTime(header.getMessageTime());
             builder.setProtectionAlg(header.getProtectionAlg());
-            builder.setRecipKID(header.getRecipKID().getOctets());
+            if(header.getRecipKID() != null) {
+                builder.setRecipKID(header.getRecipKID().getOctets());
+            }
             builder.setRecipNonce(header.getRecipNonce());
             builder.setSenderKID(header.getSenderKID());
             builder.setSenderNonce(header.getSenderNonce());
@@ -626,11 +622,16 @@ class CMPTest extends ClientToolBox {
                 StressTest.this.performanceTest.getLog().error("Cert body tag not 19.");
                 return false;
             }
-            final DERNull n = (DERNull) body.getContent();
+            final PKIConfirmContent n = (PKIConfirmContent) body.getContent();
             if ( n==null ) {
                 StressTest.this.performanceTest.getLog().error("Confirmation is null.");
                 return false;
             }
+            if(!n.toASN1Primitive().equals(new DERNull())) {
+                StressTest.this.performanceTest.getLog().error("Confirmation is not DERNull.");
+                return false;
+            }
+            
             return true;
         }
         private PKIMessage genCertConfirm(final SessionData sessionData, final String hash) {
