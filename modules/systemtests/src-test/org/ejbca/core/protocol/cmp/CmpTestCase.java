@@ -324,8 +324,11 @@ public abstract class CmpTestCase extends CaTestCase {
         myPKIHeader.setTransactionID(new DEROctetString(transid));
 
         CertStatus cs = new CertStatus(hash.getBytes(), new BigInteger(Integer.toString(certReqId)));
-        ASN1Sequence seq = ASN1Sequence.getInstance(cs);
-        CertConfirmContent cc = CertConfirmContent.getInstance(seq); //CertConfirmContent.getInstance(cs);
+        
+        ASN1EncodableVector v = new ASN1EncodableVector();
+        v.add(cs);
+        CertConfirmContent cc = CertConfirmContent.getInstance(new DERSequence(v));
+        
         PKIBody myPKIBody = new PKIBody(24, cc); // Cert Confirm
         PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
         return myPKIMessage;
