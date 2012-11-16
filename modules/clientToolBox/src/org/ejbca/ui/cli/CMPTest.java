@@ -387,7 +387,7 @@ class CMPTest extends ClientToolBox {
             }
             // Check that the signer is the expected CA
             final X500Name name = X500Name.getInstance(header.getSender().getName()); 
-            if ( header.getSender().getTagNo()!=4 || name==null || !name.equals(this.cacert.getSubjectDN()) ) {
+            if ( header.getSender().getTagNo()!=4 || name==null || !name.equals(X500Name.getInstance(this.cacert.getSubjectX500Principal().getEncoded())) ) {
                 StressTest.this.performanceTest.getLog().error("Not signed by right issuer.");
             }
 
@@ -648,9 +648,13 @@ class CMPTest extends ClientToolBox {
             myPKIHeader.setTransactionID(new DEROctetString(sessionData.getTransId()));
             
             CertStatus cs = new CertStatus(hash.getBytes(), new BigInteger(Integer.toString(sessionData.getReqId())));
-            CertConfirmContent cc = CertConfirmContent.getInstance(cs);
+            
+            ASN1EncodableVector v = new ASN1EncodableVector();
+            v.add(cs);
+            CertConfirmContent cc = CertConfirmContent.getInstance(new DERSequence(v));
+            
             PKIBody myPKIBody = new PKIBody(24, cc); // Cert Confirm
-            PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);   
+            PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
             return myPKIMessage;
         }
         private class GetCertificate implements Command {
