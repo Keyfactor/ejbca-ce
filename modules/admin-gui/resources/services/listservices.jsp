@@ -26,7 +26,7 @@
 <f:view>
 <body>
 
-<h1><h:outputText value="#{web.text.EDITSERVICES}"/></h1>
+<h1><h:outputText value="#{web.text.MANAGESERVICES}"/></h1>
 
 <p>
 	<h:messages styleClass="alert" layout="table"/>

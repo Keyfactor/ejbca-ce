@@ -29,7 +29,7 @@ function checkselected(){
 </script>
 
 
-<h1><%= ejbcawebbean.getText("EDITHARDTOKENISSUERS") %></h1>
+<h1><%= ejbcawebbean.getText("MANAGEHARDTOKENISSUERS") %></h1>
 
 <!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("hardtoken_help.html") + "#edithardtokenissuers"%>")'>
      <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->

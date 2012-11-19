@@ -8,7 +8,7 @@
 
 <body>
 
-<h1><%= ejbcawebbean.getText("EDITCAS") %></h1>
+<h1><%= ejbcawebbean.getText("MANAGECAS") %></h1>
 
 <!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ca_help.html") + "#certificateprofiles"%>")'>
      <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->

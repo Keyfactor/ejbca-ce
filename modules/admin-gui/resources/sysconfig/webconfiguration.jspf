@@ -50,7 +50,7 @@ function checkuseautoenroll(){
 
 <body>
 
-<h1><c:out value="<%= ejbcawebbean.getText(\"EJBCAWEBCONFIGURATION\") %>"/></h1> 
+<h1><c:out value="<%= ejbcawebbean.getText(\"SYSTEMCONFIGURATION\") %>"/></h1> 
 
 <form name="webconfiguration" method="post" action="<%= gc.getConfigPath() + "/" + THIS_FILENAME %>">
   <table width="100%" border="0" cellspacing="3" cellpadding="3">
@@ -307,7 +307,7 @@ function checkuseautoenroll(){
           </select><br/>
           <input type="submit" name="<%=BUTTON_NODES_REMOVE %>" value="<c:out value="<%= ejbcawebbean.getText(\"REMOVENODESINCLUSTER\") %>"/>" %><br/>
           <br/>
-          <c:out value="<%= ejbcawebbean.getText(\"ADDNODEINCLUSTER:\") %>"/> <input type="text" name="<%=TEXTFIELD_NODES_ADD %>"> <input type="submit" name="<%= BUTTON_NODES_ADD %>" value="<c:out value="<%= ejbcawebbean.getText(\"ADD\") %>"/>" %>
+          <c:out value="<%= ejbcawebbean.getText(\"ADDNODEINCLUSTER\") %>"/> <input type="text" name="<%=TEXTFIELD_NODES_ADD %>"> <input type="submit" name="<%= BUTTON_NODES_ADD %>" value="<c:out value="<%= ejbcawebbean.getText(\"ADD\") %>"/>" %>
         
       </td>
     </tr>

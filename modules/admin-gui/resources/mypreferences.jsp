@@ -93,7 +93,7 @@
 
 <body>
 
-<h1><c:out value="<%= ejbcawebbean.getText(\"EJBCAADMINPREFERENCES\") %>" /></h1>
+<h1><c:out value="<%= ejbcawebbean.getText(\"ADMINISTRATORPREFERENCES\") %>" /></h1>
 
 <h2><c:out value="<%= ejbcawebbean.getText(\"FORADMIN\")+\" \" + ejbcawebbean.getUsersCommonName() %>" /></h2>
 
