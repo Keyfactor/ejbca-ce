@@ -41,7 +41,7 @@
 
 <body>
 
-<h1><h:outputText value="#{web.text.ADMINPRIVILEGES}" /></h1>
+<h1><h:outputText value="#{web.text.MANAGEROLES}" /></h1>
 
 <div>
 	<p><h:messages layout="table" errorClass="alert"/></p>
