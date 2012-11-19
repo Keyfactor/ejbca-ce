@@ -1,14 +1,26 @@
-<!--
+<%--
     <tr id="Row0"> 
       <td width="50%" valign="top"> 
         &nbsp; 
       </td>
-      <td width="50%" valign="top"> 
-        <div align="right"><A  onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("configuration_help.html") + "#defaultuserpreference"%>")'>
-        <u><c:out value="<%= ejbcawebbean.getText(\"HELP\") %>"/></u> </A></div>
+      <td width="50%" valign="top" align="right">
+        <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("configuration_help.html") + "#defaultuserpreference"%>")'>
+        <c:out value="<%= ejbcawebbean.getText(\"HELP\") %>"/></a>
       </td>
     </tr>
--->
+--%>
+
+    <%-- Default administrator preferences --%>
+
+    <tr id="Row0" class="section">
+      <td width="50%" valign="top">
+        <strong><c:out value="<%= ejbcawebbean.getText(\"DEFAULTADMINPREFERENCES\") %>"/></strong>
+      </td>
+      <td width="50%" valign="top">
+        &nbsp;
+      </td>
+    </tr>
+
     <tr  id="Row1">
       <td width="50%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"PREFEREDLANGUAGE\") %>"/></h3>
@@ -25,6 +37,7 @@
         </select>
       </td>
     </tr>
+
     <tr id="Row0">
       <td width="50%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"SECONDARYLANGUAGE\") %>"/></h3>
@@ -41,6 +54,7 @@
         </select>
       </td>
     </tr>
+
     <tr  id="Row1">
       <td width="50%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"THEME\") %>"/></h3>
@@ -59,6 +73,7 @@
         </select>
       </td>
     </tr>
+
     <tr  id="Row0">
       <td width="49%" valign="top"> 
         <h3><c:out value="<%= ejbcawebbean.getText(\"NUMBEROFRECORDSPERPAGE\") %>"/></h3>
@@ -75,6 +90,7 @@
         </select>
       </td>
     </tr>
+
     <tr  id="Row1">
       <td width="49%" valign="top">&nbsp;</td>
       <td width="51%" valign="top">&nbsp;</td>

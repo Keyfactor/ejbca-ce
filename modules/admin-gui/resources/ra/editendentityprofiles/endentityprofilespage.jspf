@@ -4,7 +4,7 @@
 %>
 
 
-<h1><%= ejbcawebbean.getText("ENDENTITYPROFILES") %></h1>
+<h1><%= ejbcawebbean.getText("MANAGEENDENTITYPROFILES") %></h1>
 
 <!-- <a onclick='displayHelpWindow("<%= ejbcawebbean.getHelpfileInfix("ra_help.html") + "#profiles"%>")'>
      <u><%= ejbcawebbean.getText("HELP") %></u> </a> -->
