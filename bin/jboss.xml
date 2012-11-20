@@ -336,7 +336,7 @@
 	</target>
 
 	<target name="jee:deployear" depends="jee:check">
-		<copy todir="${jboss.farm.dir}">
+		<copy todir="${jboss.farm.dir}" overwrite="true">
 			<fileset dir="${dist.dir}" includes="ejbca.ear"/>
 		</copy>
 		<chmod file="${dist.dir}/ejbca.ear" perm="600"/>
