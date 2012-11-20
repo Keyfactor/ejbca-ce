@@ -54,6 +54,11 @@ $Id$
 
       <!-- example of how to specify a class that determines a connection is valid before it is handed out from the pool
          <valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.DummyValidConnectionChecker</valid-connection-checker-class-name>
+         <valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.MySQLValidConnectionChecker</valid-connection-checker-class-name>
+         <valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.PostgreSQLValidConnectionChecker</valid-connection-checker-class-name>
+         <valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.OracleValidConnectionChecker</valid-connection-checker-class-name>
+         <valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.DB2ValidConnectionChecker</valid-connection-checker-class-name>
+         <valid-connection-checker-class-name>org.jboss.resource.adapter.jdbc.vendor.MSSQLValidConnectionChecker</valid-connection-checker-class-name>
       -->
 
       <!-- Whether to check all statements are closed when the connection is returned to the pool,
