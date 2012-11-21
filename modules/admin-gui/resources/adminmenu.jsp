@@ -283,7 +283,7 @@
     try{
       if(ejbcawebbean.isAuthorizedNoLog(SYSTEMCONFIGURATION_RESOURCE)){ 
         systemheaderprinted = true;%>
-		<li id="cat7" class="section"><strong><%=ejbcawebbean.getText("SYSTEMFUNCTIONS") %></strong>
+		<li id="cat7" class="section"><strong><%=ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS") %></strong>
 			<ul>
 				<li><a href="<%= CONFIGURATION_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SYSTEMCONFIGURATION") %></a></li>
 <%   }
@@ -293,7 +293,7 @@
    try{
      if(ejbcawebbean.isAuthorizedNoLog(SERVICES_RESOURCE)){
        if(!systemheaderprinted){
-         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("SYSTEMFUNCTIONS")+"</strong><ul>"); 
+         out.write("<li id=\"cat7\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_SYSTEMFUNCTIONS")+"</strong><ul>"); 
          systemheaderprinted=true;
          }  %>
 				<li><a href="<%= SERVICES_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_SERVICES") %></a></li>
