@@ -293,7 +293,7 @@ public class CertTools {
                 }
 
             } else {
-                log.warn("Huh, what's this? DN: " + dn + " PAIR: " + pair);
+                log.warn("No 'key=value' pair encountered in token '" + pair + "' while converting subject DN '" + dn + "' into X509Name.");
             }
         }
 
