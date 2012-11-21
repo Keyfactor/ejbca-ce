@@ -178,16 +178,72 @@ This works automatically if the sub CA and root CA is handled by the same EJBCA 
 </section>
 
 
-<section name="Import users">
+<section name="Importing Certificates">
 <p>
-Users from another CA can be imported with the CLI command:
+EJBCA supports importing certificates into the existing database. This can be used for migrating data from other systems, or for importing the external administration certificates into EJBCA. Certificates can be imported induvidually or in bulk.
+</p>
+<subsection name="Importing a Single Certificate">
+<p>
+In order to import a single certificate, use the command:
 </p>
 <source>
-bin/ejbca.sh ca importcert
+bin/ejbca.sh ca importcert &lt;username&gt; &lt;password&gt; &lt;caname&gt; &lt;status&gt; &lt;email&gt; &lt;certificate file&gt; &lt;endentityprofile&gt; [&lt;certificateprofile&gt;]
 </source>
 <p>
-You have to give several parameters to the command. Running the command without parameters will print instructions.
+The parameters are as follows:
 </p>
+<ul>
+    <li><em>username</em> - Username of the end entity which should be owner of the certificate. If the end entity does not exist, it will be created automatically. If the end entity already exists, the imported certificate will be associated with it, and the end entity properties (subject, subject alternative names) will be updated.</li>
+    <li><em>password</em> - Password that will be set for the end entity.</li>
+    <li><em>caname</em> - The name of the CA which has issued the certificate. The certificate's issuer signature will be verified against this CA. If the signature does not match, the certificate will not be imported. The CA certificate must be present in the database (at least as an external CA).</li>
+    <li><em>status</em> - Status that should be set for the imported certificate. Supported values are <em>ACTIVE</em> (for valid certificate), and <em>REVOKED</em> (for revoked certificate). The revocation reason for <em>REVOKED</em> certificate will be set to <em>Unspecified</em>.</li>
+    <li><em>email</em> - E-mail that will be used for the end entity. If the e-mail is set to string <em>null</em>, it will be taken from the certificate itself.</li>
+    <li><em>certificate file</em> - Path to BASE64-encoded PEM file containing the end entity certificate.</li>
+    <li><em>endentityprofile</em> - End entity profile used for the certificate. The certificate will be verified against the constraints set forth by this end entity profile. If the constraints are violated by the certificate, it will not be imported.</li>
+    <li><em>certificateprofile</em> - Certificate profile used for the certificate. Once the certificate is imported, it will be marked as belonging to the specified certificate profile. If the certificate profile is not specified, the fixed <em>ENDUSER</em> certificate profile will be used instead.</li>
+</ul>
+<p>
+Running the command without any parameters will display basic usage help, and a list of acceptable parameter values (for <em>caname</em>, <em>status</em>, <em>endentityprofile</em>, and <em>certificateprofile</em>).
+</p>
+<p>
+Here's an example usage of the <em>importcert</em> command:
+</p>
+<source>
+bin/ejbca.sh ca importcert myuser mypassword SomeCAName ACTIVE mymail@example.com mycertificate.pem EMPTY ENDUSER
+</source>
+<p>
+This command would create a new end entity (or use the existing one) in EJBCA called <em>myuser</em> with the supplied password, and add a new active (non-revoked) certificate for this user under the end entity profile <em>EMPTY</em>, using the certificate profile <em>ENDUSER</em>.
+</p>
+</subsection>
+<subsection name="Importing Certificates in Bulk">
+<p>
+In order to import certificates in bulk, use the commnad:
+</p>
+<source>
+bin/ejbca.sh ca importcertdir &lt;username-source&gt; &lt;caname&gt; &lt;status&gt; &lt;certificate dir&gt; &lt;endentityprofile&gt; &lt;certificateprofile&gt;
+</source>
+<p>
+The parameters are as follows:
+</p>
+<ul>
+    <li><em>username-source</em> - Specifies how to derive the username of the end entity that will own the certificate. Supported values are <em>CN</em>, <em>DN</em>, and <em>FILE</em>. If set to <em>CN</em>, the username will be equal to the common name attribute present in the certificate subject. If set to <em>DN</em>, the username will be equal to the entire distinguished name (subject) of the certificate. If set to <em>FILE</em>, the username will be the same as the name of the file (extension included). If set to CN, and CN is not present in the subject, the import will first fall back to using DN, or if that is not available as well, to file name. If set to DN, and the subject is not present in the certificate, the import will fall back to using the file name as the username. The end entity will be automatically created if it does not exist already. If the end entity already exists, the imported certificate will be associated with it, and end entity properties will be updated.</li>
+    <li><em>caname</em> - The name of the CA which has issued the certificates. The certificate issuer signature will be verified against this CA. If the signature does not match, the certificate will not be imported. The CA certificate must be present in the database (at least as an external CA).</li>
+    <li><em>status</em> - Status that should be set for the imported certificates. Supported values are <em>ACTIVE</em> (for valid certificates), and <em>REVOKED</em> (for revoked certificates). The revocation reason for <em>REVOKED</em> certificates will be set to <em>Unspecified</em>.</li>
+    <li><em>certificate dir</em> - Path to the directory containing the certificate files. Each file should contain a single certificate. The directory should not contain subdirectories, or non-certificates. The file extension does not matter - all the files will be processed.</li>
+    <li><em>endentityprofile</em> - End entity profile used for the certificates. The certificates will be verified against the constraints set forth by the end entity profile. If the constraints are violated by the certificate, it will not be imported.</li>
+    <li><em>certificateprofile</em> - Certificate profile used for the certificates. Once the certificate is imported, it will be marked as belonging to the specified certificate profile.</li>
+</ul>
+<p>
+Running the command without any parameters will display basic usage help, and a list of acceptable parameter values (for <em>username-source</em>, <em>status</em>, <em>endentityprofile</em>, and <em>certificateprofile</em>).
+</p>
+<p>
+Certificates that are already present in the database will be skipped during the import. Certificates that belong to a different CA than the one specified will be skipped as well. Any other discrepancy (like invalid file format, subdirectory, or violated end entity constraints) will stop the import operation. Certificates that have been imported up until the discrepancy will still remain in the database. For each certificate that has been skipped, the command will output its serial number and name of the file. The same information will be displayed for errors.
+</p>
+<p>
+Once the import has finished, a short summary is displayed about the number of imported certificates, number of redundant (already present) certificates, and number of rejected certificates (that were not signed by the requested CA). No summary will be displayed if abnormal errors are encountered (i.e. anything besides the already present certificate or mismatched CA).
+</p>
+</subsection>
+
 </section>
 
 <section name="CRL generation">
