@@ -183,7 +183,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                 final NestedMessageContent nestedMessage = new NestedMessageContent(req);
                 if(nestedMessage.verify()) {
                     if(log.isDebugEnabled()) {
-                        log.debug("The NestedMessageContent was verifies successfully");
+                        log.debug("The NestedMessageContent was verified successfully");
                     }
                     try {
                         PKIMessages nestesMessages = (PKIMessages) nestedMessage.getPKIMessage().getBody().getContent();
@@ -191,12 +191,12 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                         return dispatch(admin, msg.toASN1Primitive(), true);
                     } catch (IllegalArgumentException e) {
                         final String errMsg = e.getLocalizedMessage();
-                        log.error(errMsg);
+                        log.info(errMsg, e);
                         cmpMessage = new NestedMessageContent(req);
                         return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg); 
                     }
                 } else {
-                    final String errMsg = "Could not verify the RA";
+                    final String errMsg = "Could not verify the RA, signature verification on NestedMessageContent failed.";
                     log.info(errMsg);
                     cmpMessage = new NestedMessageContent(req);
                     return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg);
