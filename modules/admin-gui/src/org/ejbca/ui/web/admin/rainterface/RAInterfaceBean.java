@@ -61,8 +61,8 @@ import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
-import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.EndEntityManagementConstants;
+import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -373,7 +373,7 @@ public class RAInterfaceBean implements Serializable {
     	return returnval;
     }
 
-    /** Method that checks if a certificate serialnumber is revoked and returns the user(s), else a null value. */
+    /** Method that fetches a certificate by serialnumber and returns the user(s), else a null value if no certificate/user exists. */
     public UserView[] filterByCertificateSerialNumber(String serialnumber, int index, int size) throws NumberFormatException {
     	serialnumber = StringTools.stripWhitespace(serialnumber);
     	BigInteger serno = new BigInteger(serialnumber,16);
@@ -385,16 +385,19 @@ public class RAInterfaceBean implements Serializable {
     		while (iter.hasNext()) {
     			try {
     				Certificate next = iter.next();
-    				EndEntityInformation user = endEntityAccessSession.findUserBySubjectAndIssuerDN(administrator, CertTools.getSubjectDN(next), CertTools.getIssuerDN(next));
-    				if (user != null) {
-    					userlist.add(user);
-    				}
     				String username = certificatesession.findUsernameByCertSerno(serno, CertTools.getIssuerDN(next));
-    				if ( (user == null) || (!StringUtils.equals(username, user.getUsername())) ) {
-    					user = endEntityAccessSession.findUser(administrator, username);
+    				if (username != null) {
+    				    EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
     					if (user != null) {
     						userlist.add(user);
     					}            	 
+    				}
+    				if (userlist.isEmpty()) {
+    				    // Perhaps it's such an old installation that we don't have username in the CertificateData table (has it even ever been like that?, I don't think so)
+                        EndEntityInformation user = endEntityAccessSession.findUserBySubjectAndIssuerDN(administrator, CertTools.getSubjectDN(next), CertTools.getIssuerDN(next));
+                        if (user != null) {
+                            userlist.add(user);
+                        }
     				}
     			} catch(AuthorizationDeniedException e) {}
     		}
