@@ -342,19 +342,52 @@ table.view tr td .attribute {
 }
 
 /* Page: ALL Edit forms */
+form#edit table,                        /* Services */
+ 	form#basicRules table,          /* Admin privileges */
+ 	table.edit {
+ 	        margin-top: .75em;
+ 	        margin-left: -2px;
+ 	        border-spacing: 3px 1px;
+ 	}
 form#edit table tr td,			/* Services */
 form#basicRules table tr td,	/* Admin privileges */
 table.edit tr td {
+        padding: .25em .5em;
 	line-height: 1.55em;
 }
-form#edit table tr td.title,	/* Services */
-table.edit tr td.title {
-	font-size: 1.1em;
+/* --- Sections, Headers, and Footers */
+ 	form#edit table tr:first-child td,      /* Services */
+ 	form#edit table tr.section td,          /* Services */
+ 	table.edit tr:first-child td,
+ 	table.edit tr.section td {
+ 	        background-color: #FEEECD;
+ 	        border-top: 3px solid #FEDD9A;
+ 	        color: #A00;
 }
+form#edit table tr:last-child td,       /* Services */
+ 	table.edit tr:last-child td {
+ 	        background-color: #FEEECD;
+ 	        border-bottom: 3px solid #FEDD9A;
+ 	        color: #A00;
+ 	}
+ 	/* --- Titles */
+ 	form#edit table tr.section td,          /* Services */
+ 	table.edit tr.section td,
+ 	form#edit table tr.title td,            /* Services */
+ 	table.edit tr.title td {
+ 	        font-size: 1.25em;
+ 	}
+ 	form#edit table tr td.title,            /* Services */          /* OLD TO KEEP */
+ 	table.edit tr td.title {                                                                /* OLD TO KEEP */
+ 	        font-size: 1.25em;
+ 	}
+
+/* --- Others */
+
 table.edit tr td .attribute {
 	white-space: pre !important;
 }
-table.edit tr td table tr td {
+table.edit tr td table tr td {  /* OLD TO KEEP */
 	line-height: 1.75em;
 }
 
@@ -669,7 +702,7 @@ body.popup {
 .alert { color: red; font-size: 11pt; font-weight: bold; background-color: white; }
 .info { color: black; font-size: 11pt; font-weight: bold; background-color: white; }
 
-#Row0 { color: black; font-size: 9pt; background-color: white; }
+#Row0 { color: black; font-size: 9pt; background-color: #f7f9ff; }
 #Row1 { color: black; font-size: 9pt; background-color: #e5ecff; }
 
 td#InfoRow0 { color: black; font-size: 9pt; background-color: white; }
