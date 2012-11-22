@@ -150,10 +150,19 @@ public class NestedMessageContent extends BaseCmpMessage implements RequestMessa
                     continue;
                 }
                 
-                Signature sig = Signature.getInstance(cert.getSigAlgName(), "BC");
-                sig.initVerify(cert.getPublicKey());
-                sig.update(CmpMessageHelper.getProtectedBytes(raSignedMessage));
                 if(raSignedMessage.getProtection() != null) {
+                    final String algId; 
+                    if (raSignedMessage.getHeader().getProtectionAlg() != null) {
+                        algId = raSignedMessage.getHeader().getProtectionAlg().getAlgorithm().getId();    
+                    } else {
+                        algId = cert.getSigAlgName();
+                    }
+                    if (log.isDebugEnabled()) {
+                        log.debug("Verifying message signature using algorithm id: "+algId);
+                    }
+                    Signature sig = Signature.getInstance(algId, "BC");
+                    sig.initVerify(cert.getPublicKey());
+                    sig.update(CmpMessageHelper.getProtectedBytes(raSignedMessage));
                     ret = sig.verify(raSignedMessage.getProtection().getBytes());
                     if(log.isDebugEnabled()) {
                         log.debug("Verifying the NestedMessageContent using the RA certificate with subjectDN '" + cert.getSubjectDN() + "' returned " + ret);
