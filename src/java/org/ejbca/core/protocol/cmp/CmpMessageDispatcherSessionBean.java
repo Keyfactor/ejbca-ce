@@ -197,7 +197,7 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
                     }
                 } else {
                     final String errMsg = "Could not verify the RA";
-                    log.error(errMsg);
+                    log.info(errMsg);
                     cmpMessage = new NestedMessageContent(req);
                     return CmpMessageHelper.createUnprotectedErrorMessage(cmpMessage, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, errMsg);
                 }
