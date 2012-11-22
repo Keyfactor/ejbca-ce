@@ -220,7 +220,7 @@ This command would create a new end entity (or use the existing one) in EJBCA ca
 In order to import certificates in bulk, use the commnad:
 </p>
 <source>
-bin/ejbca.sh ca importcertdir &lt;username-source&gt; &lt;caname&gt; &lt;status&gt; &lt;certificate dir&gt; &lt;endentityprofile&gt; &lt;certificateprofile&gt;
+bin/ejbca.sh ca importcertdir &lt;username-source&gt; &lt;caname&gt; &lt;status&gt; &lt;certificate dir&gt; &lt;endentityprofile&gt; &lt;certificateprofile&gt; [-resumeonerror]
 </source>
 <p>
 The parameters are as follows:
@@ -232,16 +232,25 @@ The parameters are as follows:
     <li><em>certificate dir</em> - Path to the directory containing the certificate files. Each file should contain a single certificate. The directory should not contain subdirectories, or non-certificates. The file extension does not matter - all the files will be processed.</li>
     <li><em>endentityprofile</em> - End entity profile used for the certificates. The certificates will be verified against the constraints set forth by the end entity profile. If the constraints are violated by the certificate, it will not be imported.</li>
     <li><em>certificateprofile</em> - Certificate profile used for the certificates. Once the certificate is imported, it will be marked as belonging to the specified certificate profile.</li>
+    <li><em>-resumeonerror</em> - This optional switch can be used in order to force the import to proceed even if more serious errors are encountered. By default this option is <em>not</em> enabled. The errors that are covered by this switch, amongst others, are end entity profile constraint violations, problems with reading/parsing of certificate files etc.
 </ul>
 <p>
 Running the command without any parameters will display basic usage help, and a list of acceptable parameter values (for <em>username-source</em>, <em>status</em>, <em>endentityprofile</em>, and <em>certificateprofile</em>).
 </p>
 <p>
-Certificates that are already present in the database will be skipped during the import. Certificates that belong to a different CA than the one specified will be skipped as well. Any other discrepancy (like invalid file format, subdirectory, or violated end entity constraints) will stop the import operation. Certificates that have been imported up until the discrepancy will still remain in the database. For each certificate that has been skipped, the command will output its serial number and name of the file. The same information will be displayed for errors.
+Certificates that are already present in the database will be skipped during the import. Certificates that belong to a different CA than the one specified will be skipped as well. Any other discrepancy (like invalid file format, subdirectory, or violated end entity constraints) will stop the import operation, unless the <em>-resumeonerror</em> switch has been enabled. Certificates that have been imported up until the discrepancy will still remain in the database. For each certificate that has been skipped, the command will output its serial number and name of the file. The same information will be displayed for errors.
 </p>
 <p>
-Once the import has finished, a short summary is displayed about the number of imported certificates, number of redundant (already present) certificates, and number of rejected certificates (that were not signed by the requested CA). No summary will be displayed if abnormal errors are encountered (i.e. anything besides the already present certificate or mismatched CA).
+Once the import has finished, a short summary is displayed about the number of imported certificates, number of redundant (already present) certificates, and number of rejected certificates (that were not signed by the requested CA). No summary will be displayed if abnormal errors are encountered (i.e. anything besides the already present certificate or mismatched CA), unless the <em>-resumeonerror</em> switch has been enabled.
 </p>
+<p>
+If the <em>-resumeonerror</em> switch has been enabled, the import will continue until all of the entries from the directory are processed. Errors will still be printed-out, and the summary will contain the following additional information:
+</p>
+<ul>
+    <li>Number of certificates that could not be read (because of malformed format or because they're directories).</li>
+    <li>Number of certificates that have violated the end entity constraints (invalid number of subject/subject alternative name fields, wrong values for non-modifiable fields etc).
+    <li>Number of certificates that could not be read because of other errors.</li>
+</ul>
 </subsection>
 
 </section>
