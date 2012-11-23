@@ -17,6 +17,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -134,38 +135,28 @@ public class CARepublishCommand extends BaseCaAdminCommand {
                         getLogger().error("Can not get certificate profile with id: " + data.getCertificateProfileId());
                         continue;
                     }
-                    Collection<Certificate> certCol = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findCertificatesByUsername(data.getUsername());
-                    Iterator<Certificate> certIter = certCol.iterator();
-                    X509Certificate cert = null;
-                    if (certIter.hasNext()) {
-                        cert = (X509Certificate) certIter.next();
-                    }
-                    X509Certificate tmpCert = null;
-                    while (certIter.hasNext()) {
-                        // Make sure we get the latest certificate of them all
-                        // (if there are more than one for this user).
-                        tmpCert = (X509Certificate) certIter.next();
-                        if (tmpCert.getNotBefore().compareTo(cert.getNotBefore()) > 0) {
-                            cert = tmpCert;
-                        }
-                    }
-                    if (cert != null) {
-                        if (certProfile.getPublisherList() != null) {
-                            getLogger().info("Re-publishing user " + data.getUsername());
-                            if (addAll) {
-                                getLogger().info("Re-publishing all certificates (" + certCol.size() + ").");
-                                Iterator<Certificate> i = certCol.iterator();
-                                while (i.hasNext()) {
-                                    X509Certificate c = (X509Certificate) i.next();
-                                    publishCert(getAdmin(cliUserName, cliPassword), data, certProfile, c);
+                    // Get an ordered list of certificates, last expire date first
+                    List<Certificate> certCol = ejb.getRemoteSession(CertificateStoreSessionRemote.class).findCertificatesByUsername(data.getUsername());
+                    if ((certCol != null) && certCol.iterator().hasNext()) {
+                            if (certProfile.getPublisherList() != null) {
+                                getLogger().info("Re-publishing user " + data.getUsername());
+                                if (addAll) {
+                                    getLogger().info("Re-publishing all certificates (" + certCol.size() + ").");
+                                    // Reverse the collection so we publish the latest certificate last
+                                    Collections.reverse(certCol); // now the latest (last expire date) certificate is last in the List
+                                    Iterator<Certificate> i = certCol.iterator();
+                                    while (i.hasNext()) {
+                                        X509Certificate c = (X509Certificate) i.next();
+                                        publishCert(getAdmin(cliUserName, cliPassword), data, certProfile, c);
+                                    }
+                                } else {
+                                    // Only publish the latest one (last expire date)
+                                    // The latest one is the first in the List according to findCertificatesByUsername()
+                                    publishCert(getAdmin(cliUserName, cliPassword), data, certProfile, (X509Certificate)certCol.iterator().next());
                                 }
+                            } else {
+                                getLogger().info("Not publishing user " + data.getUsername() + ", no publisher in certificate profile.");
                             }
-                            // Publish the latest again, last to make sure that
-                            // is the one stuck in LDAP for example
-                            publishCert(getAdmin(cliUserName, cliPassword), data, certProfile, cert);
-                        } else {
-                            getLogger().info("Not publishing user " + data.getUsername() + ", no publisher in certificate profile.");
-                        }
                     } else {
                         getLogger().info("No certificate to publish for user " + data.getUsername());
                     }
@@ -183,12 +174,15 @@ public class CARepublishCommand extends BaseCaAdminCommand {
             String fingerprint = CertTools.getFingerprintAsString(cert);
             CertificateInfo certinfo = ejb.getRemoteSession(CertificateStoreSessionRemote.class).getCertificateInfo(fingerprint);
             final String userDataDN = data.getCertificateDN();
-            ejb.getRemoteSession(PublisherSessionRemote.class).storeCertificate(authenticationToken, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), userDataDN,
+            boolean ret = ejb.getRemoteSession(PublisherSessionRemote.class).storeCertificate(authenticationToken, certProfile.getPublisherList(), cert, data.getUsername(), data.getPassword(), userDataDN,
                     fingerprint, certinfo.getStatus(), certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(), certinfo
                             .getTag(), certinfo.getCertificateProfileId(), certinfo.getUpdateTime().getTime(), null);
+            if (!ret) {
+                getLogger().error("Failed to publish certificate for user " + data.getUsername() + ", continuing with next user. Publish returned false.");
+            }
         } catch (Exception e) {
             // catch failure to publish one user and continue with the rest
-            getLogger().error("Failed to publish certificate for user " + data.getUsername() + ", continuing with next user.");
+            getLogger().error("Failed to publish certificate for user " + data.getUsername() + ", continuing with next user. "+e.getMessage());
         }
     }
 }

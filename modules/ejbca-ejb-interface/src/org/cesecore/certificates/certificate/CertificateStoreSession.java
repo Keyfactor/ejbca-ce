@@ -17,6 +17,7 @@ import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Set;
 
 import javax.ejb.CreateException;
@@ -189,7 +190,7 @@ public interface CertificateStoreSession {
      * @return Collection of Certificates ordered by expire date, with last
      *         expire date first, or null if none found.
      */
-    Collection<Certificate> findCertificatesByUsername(String username);
+    List<Certificate> findCertificatesByUsername(String username);
 
     /**
      * Finds certificate(s) for a given username and status.
