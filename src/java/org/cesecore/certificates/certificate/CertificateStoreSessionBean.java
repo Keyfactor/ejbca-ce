@@ -438,12 +438,12 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
-    public Collection<Certificate> findCertificatesByUsername(String username) {
+    public List<Certificate> findCertificatesByUsername(String username) {
         if (log.isTraceEnabled()) {
             log.trace(">findCertificatesByUsername(),  username=" + username);
         }
         // This method on the entity bean does the ordering in the database
-        Collection<CertificateData> coll = CertificateData.findByUsernameOrdered(entityManager, username);
+        List<CertificateData> coll = CertificateData.findByUsernameOrdered(entityManager, username);
         ArrayList<Certificate> ret = new ArrayList<Certificate>();
         Iterator<CertificateData> iter = coll.iterator();
         while (iter.hasNext()) {
