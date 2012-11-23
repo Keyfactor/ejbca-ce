@@ -35,6 +35,7 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.FileTools;
+import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
@@ -264,6 +265,10 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			getLogger ().info("SKIP: Certificate with serial '" + CertTools.getSerialNumberAsString(certificate) + "' is already present, file: " +filename);
 			return STATUS_REDUNDANT;
 		}
+
+		// Strip the username of dangerous characters before using it.
+		username = StringTools.strip(username);
+
 		final Date now = new Date();
 		// Certificate has expired, but we are obviously keeping it for archival purposes
 		if (CertTools.getNotAfter(certificate).compareTo(now) < 0) {
