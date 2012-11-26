@@ -433,7 +433,7 @@ public class CrmfRequestMessage extends BaseCmpMessage implements ICrmfRequestMe
                 // Use of POPOSigningKeyInput or not, as described in RFC4211, section 4.1.
                 if (pski == null) {
                     if (log.isDebugEnabled()) {
-                        log.debug("Using CertRequest as POPO input.");
+                        log.debug("Using CertRequest as POPO input because POPOSigningKeyInput is missing.");
                     }
                     protObject = getReq().getCertReq();
                 } else {
