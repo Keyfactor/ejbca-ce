@@ -354,8 +354,9 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                         LOG.error(errorMessage, e);
                     }
                 } else {
-                    if(LOG.isDebugEnabled()) {
-                        LOG.debug("No clear text password for user '"+userdata.getUsername()+"', not possible to check authentication.");
+                    errorMessage = "No clear text password for user '"+userdata.getUsername()+"', not possible to check authentication.";
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug(errorMessage);
                     }
                 }
             } else {
