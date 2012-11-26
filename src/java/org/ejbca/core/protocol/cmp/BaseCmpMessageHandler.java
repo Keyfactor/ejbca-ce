@@ -69,7 +69,8 @@ public class BaseCmpMessageHandler {
 		this.certificateProfileSession = certificateProfileSession;
 	}
 
-	/** @return the end entity profile id to use for a request based on the current configuration and keyId. */
+	/** @return the end entity profile id to use for a request based on the current configuration and keyId. 
+	 * @throws NotFoundException */
 	protected int getUsedEndEntityProfileId(final String keyId) throws NotFoundException {
 		int ret = 0;
 		String endEntityProfile = CmpConfiguration.getRAEndEntityProfile();
