@@ -601,7 +601,11 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             PKIHeader header = myPKIHeader.build();
             
             CertStatus cs = new CertStatus(hash.getBytes(), new BigInteger(Integer.toString(sessionData.getReqId())));
-            CertConfirmContent cc = CertConfirmContent.getInstance(cs);
+            
+            ASN1EncodableVector v = new ASN1EncodableVector();
+            v.add(cs);
+            CertConfirmContent cc = CertConfirmContent.getInstance(new DERSequence(v));
+            
             PKIBody myPKIBody = new PKIBody(24, cc); // Cert Confirm
             PKIMessage myPKIMessage = new PKIMessage(header, myPKIBody);
             return myPKIMessage;
