@@ -232,7 +232,7 @@ The parameters are as follows:
     <li><em>certificate dir</em> - Path to the directory containing the certificate files. Each file should contain a single certificate. The directory should not contain subdirectories, or non-certificates. The file extension does not matter - all the files will be processed.</li>
     <li><em>endentityprofile</em> - End entity profile used for the certificates. The certificates will be verified against the constraints set forth by the end entity profile. If the constraints are violated by the certificate, it will not be imported.</li>
     <li><em>certificateprofile</em> - Certificate profile used for the certificates. Once the certificate is imported, it will be marked as belonging to the specified certificate profile.</li>
-    <li><em>-resumeonerror</em> - This optional switch can be used in order to force the import to proceed even if more serious errors are encountered. By default this option is <em>not</em> enabled. The errors that are covered by this switch, amongst others, are end entity profile constraint violations, problems with reading/parsing of certificate files etc.
+    <li><em>-resumeonerror</em> - This optional switch can be used in order to force the import to proceed even if more serious errors are encountered. By default this option is <em>not</em> enabled. The errors that are covered by this switch, amongst others, are end entity profile constraint violations, problems with reading/parsing of certificate files etc.</li>
 </ul>
 <p>
 Running the command without any parameters will display basic usage help, and a list of acceptable parameter values (for <em>username-source</em>, <em>status</em>, <em>endentityprofile</em>, and <em>certificateprofile</em>).
@@ -248,7 +248,7 @@ If the <em>-resumeonerror</em> switch has been enabled, the import will continue
 </p>
 <ul>
     <li>Number of certificates that could not be read (because of malformed format or because they're directories).</li>
-    <li>Number of certificates that have violated the end entity constraints (invalid number of subject/subject alternative name fields, wrong values for non-modifiable fields etc).
+    <li>Number of certificates that have violated the end entity constraints (invalid number of subject/subject alternative name fields, wrong values for non-modifiable fields etc).</li>
     <li>Number of certificates that could not be read because of other errors.</li>
 </ul>
 </subsection>
