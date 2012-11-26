@@ -172,7 +172,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         
         //Check that there is a certificate in the extraCert field in msg
         final CMPCertificate[] extraCerts = msg.getExtraCerts();
-        if(extraCerts == null) {
+        if ((extraCerts == null) || (extraCerts.length == 0)) {
             errorMessage = "There is no certificate in the extraCert field in the PKIMessage";
             log.info(errorMessage);
             return false;
@@ -300,6 +300,7 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 
                 //set the password of the request to this user's password so it can later be used when issuing the certificate
                 if (log.isDebugEnabled()) {
+                    log.debug("The End Entity certificate attached to the PKIMessage in the extraCert field belongs to user '"+username+"'.");
                     log.debug("Extracting and setting password for user '"+username+"'.");
                 }
                 try {
