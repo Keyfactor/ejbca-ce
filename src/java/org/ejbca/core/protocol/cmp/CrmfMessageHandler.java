@@ -197,7 +197,10 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			CrmfRequestMessage crmfreq = null;
 			if (msg instanceof CrmfRequestMessage) {
 				crmfreq = (CrmfRequestMessage) msg;
-				crmfreq.getMessage();				
+				
+				//TODO: Does this line do any good?
+				crmfreq.getMessage();
+
 				// If we have usernameGeneratorParams we want to generate usernames automagically for requests
 				// If we are not in RA mode, usernameGeneratorParams will be null
 				if (usernameGenParams != null) {
