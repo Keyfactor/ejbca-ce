@@ -75,6 +75,7 @@ import org.bouncycastle.asn1.cmp.CertStatus;
 import org.bouncycastle.asn1.cmp.CertifiedKeyPair;
 import org.bouncycastle.asn1.cmp.PBMParameter;
 import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIConfirmContent;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
@@ -91,7 +92,6 @@ import org.bouncycastle.asn1.crmf.ProofOfPossession;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
-import org.bouncycastle.asn1.x509.AttributeCertificate;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -214,12 +214,14 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             return new PKIMessage(myPKIHeader.build(), myPKIBody);
         }
 
-        private void addExtraCert(PKIMessage msg, Certificate cert) throws CertificateEncodingException, IOException {
+        private PKIMessage addExtraCert(PKIMessage msg, Certificate cert) throws CertificateEncodingException, IOException {
             ASN1InputStream ins = new ASN1InputStream(cert.getEncoded());
             ASN1Primitive pcert = ins.readObject();
-            CMPCertificate cmpcert = new CMPCertificate(new AttributeCertificate((ASN1Sequence) pcert));
+            org.bouncycastle.asn1.x509.Certificate c = org.bouncycastle.asn1.x509.Certificate.getInstance(pcert.toASN1Primitive());
+            CMPCertificate cmpcert = new CMPCertificate(c);
             CMPCertificate[] extraCerts = {cmpcert};
             msg = new PKIMessage(msg.getHeader(), msg.getBody(), msg.getProtection(), extraCerts);
+            return msg;
         }
 
         private PKIMessage signPKIMessage(final PKIMessage msg, PrivateKey signingKey) throws NoSuchAlgorithmException, NoSuchProviderException,
@@ -245,8 +247,8 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             final DEROctetString derSalt = new DEROctetString(salt);
             
             // Create the PasswordBased protection of the message
-            final PKIHeaderBuilder head = getHeaderBuilder(msg.getHeader());
-            head.setSenderKID(new DEROctetString("EMPTY".getBytes()));
+            final PKIHeaderBuilder headBuilder = getHeaderBuilder(msg.getHeader());
+            headBuilder.setSenderKID(new DEROctetString("EMPTY".getBytes()));
             final ASN1Integer iteration = new ASN1Integer(iterationCount);
 
             // Create the new protected return message
@@ -256,7 +258,8 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             }
             final PBMParameter pp = new PBMParameter(derSalt, owfAlg, iteration, macAlg);
             final AlgorithmIdentifier pAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier(objectId), pp);
-            head.setProtectionAlg(pAlg);
+            headBuilder.setProtectionAlg(pAlg);
+            PKIHeader header = headBuilder.build();
 
             // Calculate the protection bits
             final byte[] raSecret = password.getBytes();
@@ -271,7 +274,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             }
             // For HMAC/SHA1 there is another oid, that is not known in BC, but the result is the same so...
             final String macOid = macAlg.getAlgorithm().getId();
-            final byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(head.build(), msg.getBody());
+            final byte[] protectedBytes = CmpMessageHelper.getProtectedBytes(header, msg.getBody());
             final Mac mac = Mac.getInstance(macOid, this.bcProvider);
             final SecretKey key = new SecretKeySpec(basekey, macOid);
             mac.init(key);
@@ -279,8 +282,8 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             mac.update(protectedBytes, 0, protectedBytes.length);
             final byte[] out = mac.doFinal();
             final DERBitString bs = new DERBitString(out);
-
-            return new PKIMessage(head.build(), msg.getBody(), bs, msg.getExtraCerts());
+            
+            return new PKIMessage(header, msg.getBody(), bs, msg.getExtraCerts());
         }
         
         //TODO see if we could do this in a better way
@@ -290,7 +293,9 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             builder.setGeneralInfo(header.getGeneralInfo());
             builder.setMessageTime(header.getMessageTime());
             builder.setProtectionAlg(header.getProtectionAlg());
-            builder.setRecipKID(header.getRecipKID().getOctets());
+            if(header.getRecipKID() != null) {
+                builder.setRecipKID(header.getRecipKID().getOctets());
+            }
             builder.setRecipNonce(header.getRecipNonce());
             builder.setSenderKID(header.getSenderKID());
             builder.setSenderNonce(header.getSenderNonce());
@@ -332,7 +337,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             }
             // Check that the signer is the expected CA
             final X500Name name = X500Name.getInstance(header.getSender().getName());
-            if (header.getSender().getTagNo() != 4 || name == null || !name.equals(this.cacert.getSubjectDN())) {
+            if (header.getSender().getTagNo() != 4 || name == null || !name.equals(X500Name.getInstance(this.cacert.getSubjectX500Principal().getEncoded())) ) {
                 StressTest.this.performanceTest.getLog().error("Not signed by right issuer.");
             }
 
@@ -572,11 +577,16 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
 
                 return false;
             }
-            final DERNull n = (DERNull) body.getContent();
-            if (n == null) {
+            final PKIConfirmContent n = (PKIConfirmContent) body.getContent();
+            if ( n==null ) {
                 StressTest.this.performanceTest.getLog().error("Confirmation is null.");
                 return false;
             }
+            if(!n.toASN1Primitive().equals(new DERNull())) {
+                StressTest.this.performanceTest.getLog().error("Confirmation is not DERNull.");
+                return false;
+            }
+
             return true;
         }
 
@@ -588,11 +598,12 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
             myPKIHeader.setSenderNonce(new DEROctetString(sessionData.getNonce()));
             // TransactionId
             myPKIHeader.setTransactionID(new DEROctetString(sessionData.getTransId()));
-
+            PKIHeader header = myPKIHeader.build();
+            
             CertStatus cs = new CertStatus(hash.getBytes(), new BigInteger(Integer.toString(sessionData.getReqId())));
             CertConfirmContent cc = CertConfirmContent.getInstance(cs);
             PKIBody myPKIBody = new PKIBody(24, cc); // Cert Confirm
-            PKIMessage myPKIMessage = new PKIMessage(myPKIHeader.build(), myPKIBody);
+            PKIMessage myPKIMessage = new PKIMessage(header, myPKIBody);
             return myPKIMessage;
         }
 
@@ -615,7 +626,7 @@ public class CMPKeyUpdateStressTest extends ClientToolBox {
                 }
 
                 PKIMessage signedMsg = signPKIMessage(certMsg, oldKey);
-                addExtraCert(signedMsg, extraCert);
+                signedMsg = addExtraCert(signedMsg, extraCert);
                 if (signedMsg == null) {
                     StressTest.this.performanceTest.getLog().error("No protected message.");
                     return false;
