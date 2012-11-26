@@ -487,7 +487,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			} else {
 				errMsg = "Unrecognized authentication modules";
 			}
-			LOG.error(errMsg);
+			LOG.info(errMsg);
 			return CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_MESSAGE_CHECK, errMsg);
 		}
 		return authenticationModule;
