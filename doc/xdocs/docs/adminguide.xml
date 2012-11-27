@@ -1043,14 +1043,14 @@ cmp.ra.authenticationsecret=password
 <p>
 You can then use cmpclient (as an RA):</p>
 <source>
-./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.der --ir --user mykeyid --password password --newclcert clcert.der --newkey key.pem --subject "CN=User Name;O=My Organization;C=SE"
+./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --srvcert AdminCA1.der --ir --user mykeyid --password password --newclcert clcert.der --newkey key.pem --subject "CN=User Name,O=My Organization,C=SE"
 </source>
 <p>This requests a certificate, defining the subject DN that will be used. The CA used to sign the certificate is specified in the EJBCA cmp configuration, and can be taken from the keyid.
 EJBCA authenticated the request using the HMAC protection with the password, and accepts any request upon correct authentication. See the CMP documentation above for more advanced configuration.
 </p>
-<p><strong>Client mode</strong></p>
+<p><strong>Client mode, HMAC password authentication</strong></p>
 <p>
-Cmpforopenssl works with with EJBCA in client mode with the following EJBCA configuration (cmp.properties, unset properties = default):</p>
+Cmpforopenssl works with with EJBCA in client mode, with HMAC password authentication, using the following EJBCA configuration (cmp.properties, unset properties = default):</p>
 <source>
 cmp.authenticationmodule=HMAC
 cmp.extractusernamecomponent=CN
@@ -1059,14 +1059,41 @@ cmp.extractusernamecomponent=CN
 <source>
 bin/ejbca.sh ra adduser user1 password "CN=user1,O=My Organization,C=SE" null AdminCA1 null 1 USERGENERATED
 bin/ejbca.sh ra setclearpwd user1 password
+bin/ejbca.sh ra setuserstatus user1 10
 </source>
 <p>
 You can then use cmpclient (as a client):</p>
 <source>
-./cmpclient --server localhost --port 8080 --path ejbca/publicweb/cmp --cacert AdminCA1.der --ir --user mykeyid --password password --newclcert clcert.der --newkey key.pem --subject "CN=user1;O=My Organization;C=SE"
+./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert AdminCA1.cacert.pem -user user1 -pass password -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
 </source>
 <p>This requests a certificate, and the requested subject DN must match the registered subject DN.
 EJBCA authenticates the request using the HMAC protection with the password of the registered user. See the CMP documentation above for more advanced configuration.</p>
+
+<p><strong>Client mode, client certificate authentication</strong></p>
+<p>
+Cmpforopenssl works with with EJBCA in client mode, with certificate authentication, using the following EJBCA configuration (cmp.properties, unset properties = default):</p>
+<source>
+cmp.authenticationmodule=EndEntityCertificate
+cmp.authenticationparameters=AdminCA1 (use the CA that issues your client authentication certificate)
+cmp.extractusernamecomponent=CN
+</source>
+<p>You can now issue a certificate using certificate authentication in EJBCA (the end entity needs a certificate before so we re-use user1 from above):</p>
+<source>
+bin/ejbca.sh ra setclearpwd user1 password
+bin/ejbca.sh ra setuserstatus user1 10
+</source>
+<p>
+You can then use cmpclient (as a client):</p>
+<source>
+./openssl cmp -cmd ir -server localhost:8080 -path ejbca/publicweb/cmp -srvcert AdminCA1.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
+</source>
+<p>This requests a certificate, and the requested subject DN must match the registered subject DN.
+EJBCA authenticates the request using the signature protection with the certificate of the registered user. See the CMP documentation above for more advanced configuration.</p>
+<p>You can also use a 'cr' instead of an 'ir';</p>
+<source>
+bin/ejbca.sh ra setuserstatus user1 10
+./openssl cmp -cmd cr -server localhost:8080 -path ejbca/publicweb/cmp -srvcert AdminCA1.cacert.pem -cert clcert.pem -key key.pem -certout clcert1.pem -newkey key1.pem -keyfmt PEM -certfmt PEM -subject "/CN=user1/O=My Organization/C=SE"
+</source>
 </subsubsection>
 </subsection>
 <subsection name="Custom handling of certificate request">

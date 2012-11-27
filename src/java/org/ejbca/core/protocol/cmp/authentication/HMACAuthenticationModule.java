@@ -174,7 +174,7 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
         try {   
             verifyer = new CmpPbeVerifyer(msg);
         } catch(Exception e) {
-            errorMessage = "Could not create CmpPbeVerifyer";
+            errorMessage = "Could not create CmpPbeVerifyer. "+e.getMessage();
             if(LOG.isDebugEnabled()) {
                 LOG.debug(errorMessage, e);
             }
