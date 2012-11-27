@@ -22,7 +22,9 @@ import javax.crypto.Mac;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.DERBitString;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.PBMParameter;
@@ -56,6 +58,11 @@ public class CmpPbeVerifyer {
 		protectedBytes = CmpMessageHelper.getProtectedBytes(msg);
 		protection = msg.getProtection();
 		pAlg = head.getProtectionAlg();
+		final ASN1ObjectIdentifier algId = pAlg.getAlgorithm();
+		if (!StringUtils.equals(algId.getId(), CMPObjectIdentifiers.passwordBasedMac.getId())) {
+            final String errMsg = "Protection algorithm id expected '"+CMPObjectIdentifiers.passwordBasedMac.getId()+"' (passwordBasedMac) but was '"+algId.getId()+"'.";
+            throw new IllegalArgumentException(errMsg);   
+		}
 		final PBMParameter pp = PBMParameter.getInstance(pAlg.getParameters());
 		iterationCount = pp.getIterationCount().getPositiveValue().intValue();
 		final AlgorithmIdentifier owfAlg = pp.getOwf();
@@ -65,7 +72,7 @@ public class CmpPbeVerifyer {
 		// Normal mac alg is 1.3.6.1.5.5.8.1.2 - HMAC/SHA1
 		macOid = macAlg.getAlgorithm().getId();
 		if (LOG.isDebugEnabled()) {
-			LOG.debug("Protection type is: "+pAlg.getAlgorithm().getId());
+			LOG.debug("Protection type is: "+algId.getId());
 			LOG.debug("Iteration count is: "+iterationCount);
 			LOG.debug("Owf type is: "+owfOid);
 			LOG.debug("Mac type is: "+macOid);
