@@ -1257,7 +1257,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         ArrayList<Integer> crlpublishers = new ArrayList<Integer>();
         long crlperiod = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
         long crlIssueInterval = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
-        long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_HOUR;
+        long crlOverlapTime = 10 * SimpleTime.MILLISECONDS_PER_MINUTE;
         long deltacrlperiod = 0 * SimpleTime.MILLISECONDS_PER_HOUR;
         int certprofileid = CertTools.isSelfSigned(caCertificate) ?
                 CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA :
@@ -2055,7 +2055,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
                     null, // PolicyId
                     24 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLPeriod
                     0 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLIssuePeriod
-                    10 * SimpleTime.MILLISECONDS_PER_HOUR, // CRLOverlapTime
+                    10 * SimpleTime.MILLISECONDS_PER_MINUTE, // CRLOverlapTime
                     0 * SimpleTime.MILLISECONDS_PER_HOUR, // DeltaCRLPeriod
                     crlpublishers, // CRL publishers
                     true, // Authority Key Identifier
