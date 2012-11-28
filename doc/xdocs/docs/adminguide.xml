@@ -3343,6 +3343,27 @@ crlSignKey=myECCKey
 defaultKey=default
 </source>
 </subsubsection>
+<subsubsection name="Some useful Luna commands">
+<p>Here are some useful native Luna cmu commands.
+</p><p> 
+List objects and their handles:
+</p>
+<source>
+./cmu list -display=index,handle,class,keyType,label
+</source>
+<p>
+If you have created keys with natvie commands, or imported keys, there is probably no certificate object as required by Java PKCS#11 provider.
+Create a self signed certificate referencing the private handle:
+</p>
+<source>
+./cmu selfSign -privatehandle=87 -CN="caSign00001" -startDate=20020101
+-endDate=20451231 -serialNum=0133337f
+</source>
+<p>
+Notice that they will have to replace 87 with the handle of the private
+key they found when running the list command.
+</p>
+</subsubsection>
 </subsection>
 
 <subsection name="SafeNet ProtectServer">
