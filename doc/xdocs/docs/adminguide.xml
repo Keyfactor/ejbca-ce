@@ -2468,6 +2468,19 @@ Since EJBCA 3.6 the recommended HSM connector is to use the PKCS#11 interface. O
 <p>
 PrimeKey Solutions is selling a module called PrimeCardHSM that implements a flexible HSM using low cost smart cards. 
 </p>
+<subsection name="Testing PKCS#11 keys for use by EJBCA">
+<p>
+To test keys on the HSM for use by EJBCA you can use the <a href="userguide.html#EJBCA%20client%20toolbox">EJBCA Client Toolbox</a>. 
+</p>
+<source>
+ant clientToolBox
+cd dist/clientToolBox
+./ejbcaClientToolBox.sh PKCS11HSMKeyTool test
+</source>
+<p>
+The command will give further instructions about the parameters requires, PKCS#11 library and slot.
+</p>
+</subsection>
 <subsection name="Auto-activation of CA tokens">
 <p>
 The 'pin' property is used to be able to automatically activate a CA token. The activation code may be specified in the property field with the keyword 'pin'. 
