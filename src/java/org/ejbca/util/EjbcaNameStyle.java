@@ -15,6 +15,7 @@ package org.ejbca.util;
 
 import java.util.Hashtable;
 
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.x500.AttributeTypeAndValue;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
@@ -22,30 +23,32 @@ import org.bouncycastle.asn1.x500.X500NameStyle;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
 
+/**
+ * 
+ * @version $Id$
+ *
+ */
 public class EjbcaNameStyle extends BCStyle {
-    
-    
-    
+
     public static final X500NameStyle INSTANCE = new EjbcaNameStyle();
-    
+
     /**
      * default look up table translating OID values into their common symbols following
      * the convention in RFC 2253 with a few extras
      */
-    public static final Hashtable DefaultSymbols = new Hashtable();
+    public static final Hashtable<ASN1ObjectIdentifier, String> DefaultSymbols = new Hashtable<ASN1ObjectIdentifier, String>();
 
     /**
      * look up table translating common symbols into their OIDS.
      */
-    private static final Hashtable DefaultLookUp = new Hashtable();
-    
+    private static final Hashtable<String, ASN1ObjectIdentifier> DefaultLookUp = new Hashtable<String, ASN1ObjectIdentifier>();
+
     /**
      * look up table translating common symbols into their OIDS.
      */
-    public static final Hashtable DefaultStringStringLookUp = new Hashtable();
-    
-    static
-    {
+    public static final Hashtable<String, String> DefaultStringStringLookUp = new Hashtable<String, String>();
+
+    static {
         DefaultSymbols.put(C, "C");
         DefaultSymbols.put(O, "O");
         DefaultSymbols.put(T, "T");
@@ -78,7 +81,7 @@ public class EjbcaNameStyle extends BCStyle {
         DefaultSymbols.put(BUSINESS_CATEGORY, "BusinessCategory");
         DefaultSymbols.put(TELEPHONE_NUMBER, "TelephoneNumber");
         DefaultSymbols.put(NAME, "Name");
-        
+
         DefaultLookUp.put("c", C);
         DefaultLookUp.put("o", O);
         DefaultLookUp.put("t", T);
@@ -113,7 +116,7 @@ public class EjbcaNameStyle extends BCStyle {
         DefaultLookUp.put("businesscategory", BUSINESS_CATEGORY);
         DefaultLookUp.put("telephonenumber", TELEPHONE_NUMBER);
         DefaultLookUp.put("name", NAME);
-        
+
         DefaultStringStringLookUp.put("C", C.getId());
         DefaultStringStringLookUp.put("O", O.getId());
         DefaultStringStringLookUp.put("T", T.getId());
@@ -150,50 +153,33 @@ public class EjbcaNameStyle extends BCStyle {
         DefaultStringStringLookUp.put("NAME", NAME.getId());
     }
 
-    public EjbcaNameStyle()
-    {
-
-    }
-
-    public String toString(X500Name name)
-    {
+    public String toString(X500Name name) {
         StringBuffer buf = new StringBuffer();
         boolean first = true;
 
         RDN[] rdns = name.getRDNs();
 
-        for (int i = 0; i < rdns.length; i++)
-        {
-            if (first)
-            {
+        for (int i = 0; i < rdns.length; i++) {
+            if (first) {
                 first = false;
-            }
-            else
-            {
+            } else {
                 buf.append(',');
             }
 
-            if (rdns[i].isMultiValued())
-            {
+            if (rdns[i].isMultiValued()) {
                 AttributeTypeAndValue[] atv = rdns[i].getTypesAndValues();
                 boolean firstAtv = true;
 
-                for (int j = 0; j != atv.length; j++)
-                {
-                    if (firstAtv)
-                    {
+                for (int j = 0; j != atv.length; j++) {
+                    if (firstAtv) {
                         firstAtv = false;
-                    }
-                    else
-                    {
+                    } else {
                         buf.append('+');
                     }
-                    
+
                     IETFUtils.appendTypeAndValue(buf, atv[j], DefaultSymbols);
                 }
-            }
-            else
-            {
+            } else {
                 IETFUtils.appendTypeAndValue(buf, rdns[i].getFirst(), DefaultSymbols);
             }
         }
@@ -201,7 +187,4 @@ public class EjbcaNameStyle extends BCStyle {
         return buf.toString();
     }
 
-    
-    
-    
 }
