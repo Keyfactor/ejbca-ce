@@ -105,7 +105,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 			getLogger().info("CA: " + issuer);
 			// Read the supplied CRL and verify that it is issued by the specified CA
 			final X509CRL x509crl = (X509CRL) CertTools.getCertificateFactory().generateCRL(new FileInputStream (crl_file));
-	        if (!x509crl.getIssuerX500Principal().getName().equals(cacert.getSubjectX500Principal().getName())){
+	        if (!x509crl.getIssuerX500Principal().equals(cacert.getSubjectX500Principal())){
 	        	throw new IOException ("CRL wasn't issued by this CA");
 	        }
 	        x509crl.verify(cacert.getPublicKey());
@@ -138,7 +138,7 @@ public class CaImportCRLCommand extends BaseCaAdminCommand {
 	                    final SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo((ASN1Sequence)ASN1Primitive.fromByteArray(key_pair.getPublic().getEncoded()));
 	                    final X500Name dnName = new X500Name("CN=Dummy Missing in Imported CRL, serialNumber=" + serialHex);
 	                    final Date notAfter = new Date (time.getTime() + 1000L * 60 * 60 * 24 * 365 * 10); // 10 years of life
-	                    final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(new X500Name(cacert.getSubjectDN().getName()), serialNr, time, notAfter, dnName, pkinfo);
+	                    final X509v3CertificateBuilder certbuilder = new X509v3CertificateBuilder(X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded()), serialNr, time, notAfter, dnName, pkinfo);
 	                    final ContentSigner signer = new JcaContentSignerBuilder("SHA1withRSA").build(key_pair.getPrivate());
 	                    final X509CertificateHolder certHolder = certbuilder.build(signer);
 	                    final X509Certificate certificate = (X509Certificate)CertTools.getCertfromByteArray(certHolder.getEncoded());
