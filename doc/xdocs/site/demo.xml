@@ -42,7 +42,7 @@ function validateForm() {
 <p>The demo certificate enrolment currently works only for Firefox. 
 You can get a certificate for Firefox and then export it and import it in other browsers like IE and Safari.
 </p>  
-<form name="demoreq" action="http://demo.primekey.se/ejbca/democertreq" enctype="x-www-form-encoded" method="POST">
+<form name="demoreq" action="http://demo.primekey.se:8080/ejbca/democertreq" enctype="x-www-form-encoded" method="POST">
   Please fill out the form and click <b>Enroll</b> to receive your certificate.
   <input name="user" type="hidden"/>
   <input name="dn" type="hidden" value="C=SE,O=PrimeKey Solutions AB,OU=Demo,CN="/>
