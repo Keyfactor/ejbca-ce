@@ -15,6 +15,9 @@ package org.cesecore.certificates.util;
 
 import static org.junit.Assert.assertEquals;
 
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.cesecore.util.CertTools;
 import org.junit.Test;
 
@@ -80,7 +83,23 @@ public class DnComponentsTest {
     @Test
     public void test02() {
         String dn = CertTools.stringToBCDNString("uri=fff,CN=oid,SN=12345,NAME=name,C=se");
+        final X500Name name = CertTools.stringToBcX500Name(dn);
+        ASN1ObjectIdentifier[] oids = name.getAttributeTypes();
+        assertEquals(BCStyle.CN, oids[0]);
+        assertEquals(BCStyle.NAME, oids[1]);
+        assertEquals(BCStyle.SERIALNUMBER, oids[2]);
+        assertEquals(BCStyle.C, oids[3]);
         assertEquals("CN=oid,Name=name,SN=12345,C=se", dn);
+
+        String dn1 = CertTools.stringToBCDNString("SURNAME=Json,=fff,CN=oid,SN=12345,NAME=name,C=se");
+        final X500Name name1 = CertTools.stringToBcX500Name(dn1);
+        ASN1ObjectIdentifier[] oids1 = name1.getAttributeTypes();
+        assertEquals(BCStyle.CN, oids1[0]);
+        assertEquals(BCStyle.NAME, oids1[1]);
+        assertEquals(BCStyle.SERIALNUMBER, oids1[2]);
+        assertEquals(BCStyle.SURNAME, oids1[3]);
+        assertEquals(BCStyle.C, oids1[4]);
+        assertEquals("CN=oid,Name=name,SN=12345,SURNAME=Json,C=se", dn1);
     }
 
 }
