@@ -31,6 +31,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
+import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
@@ -90,7 +91,7 @@ public class RenewServlet extends HttpServlet {
     	if (isrevoked) {
     		request.setAttribute("errorMessage", "User certificate with serial number "+certificate.getSerialNumber() + " from issuer \'"+certificate.getIssuerDN()+"\' is revoked.");
     	} else {
-	    	String username = certificateStoreSession.findUsernameByCertSerno(certificate.getSerialNumber(), certificate.getIssuerDN().toString());
+	    	String username = certificateStoreSession.findUsernameByCertSerno(certificate.getSerialNumber(), CertTools.getIssuerDN(certificate));
 	    	if (username==null || username.length()==0) {
 	    		throw new ServletException(new ObjectNotFoundException("Not possible to retrieve user name"));
 	    	}

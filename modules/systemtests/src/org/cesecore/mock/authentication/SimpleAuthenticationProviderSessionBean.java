@@ -149,11 +149,11 @@ public class SimpleAuthenticationProviderSessionBean implements SimpleAuthentica
             } catch (NoSuchProviderException e) {
                 throw new CertificateCreationException("Error encountered when creating certificate", e);
             } catch (OperatorCreationException e) {
-                log.error(e.getLocalizedMessage(), e);
+                throw new CertificateCreationException("Error encountered when creating certificate", e);
             } catch (CertificateException e) {
-                log.error(e.getLocalizedMessage(), e);
+                throw new CertificateCreationException("Error encountered when creating certificate", e);
             } catch (IOException e) {
-                log.error(e.getLocalizedMessage(), e);
+                throw new CertificateCreationException("Error encountered when creating certificate", e);
             }        	
             if (log.isDebugEnabled()) {
                 log.debug("Creates a self signed authentication certificate, fp="+CertTools.getFingerprintAsString(certificate));
