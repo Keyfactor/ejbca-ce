@@ -342,7 +342,6 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
             // First we will use "KeyId" for both profiles, and then we will use ProfileDefault for the cert profile
             CertificateProfile cp1 = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
             cp1.setUseSubjectAlternativeName(true);
-            cp1.setAllowExtensionOverride(true);
             // Add a weird CDP, so we are sure this is the profile used
             final String cdp1 = "http://keyidtest/crl.crl";
             cp1.setCRLDistributionPointURI(cdp1);
