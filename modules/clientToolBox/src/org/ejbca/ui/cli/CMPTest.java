@@ -167,6 +167,7 @@ class CMPTest extends ClientToolBox {
             final ByteArrayInputStream    bIn = new ByteArrayInputStream(bytes);
             final ASN1InputStream         dIn = new ASN1InputStream(bIn);
             final SubjectPublicKeyInfo keyInfo = new SubjectPublicKeyInfo((ASN1Sequence)dIn.readObject());
+            dIn.close();
             myCertTemplate.setPublicKey(keyInfo);
             // If we did not pass any extensions as parameter, we will create some of our own, standard ones
             if (extensions == null) {
