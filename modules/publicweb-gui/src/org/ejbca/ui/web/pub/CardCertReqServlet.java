@@ -160,11 +160,11 @@ public class CardCertReqServlet extends HttpServlet {
                 else {
                     throw new AuthLoginException("No authenicating certificate");
                 }
-                boolean isRevoked = certificateStoreSession.isRevoked(certs[0].getIssuerDN().getName(),certs[0].getSerialNumber());
+                boolean isRevoked = certificateStoreSession.isRevoked(CertTools.getIssuerDN(certs[0]),certs[0].getSerialNumber());
                 if (isRevoked) {
                     throw new UserCertificateRevokedException(certs[0]);
                 }
-                username = certificateStoreSession.findUsernameByCertSerno(certs[0].getSerialNumber(), certs[0].getIssuerDN().toString());
+                username = certificateStoreSession.findUsernameByCertSerno(certs[0].getSerialNumber(), CertTools.getIssuerDN(certs[0]));
                 if ( username==null || username.length()==0 ) {
                     throw new ObjectNotFoundException("Not possible to retrieve user name");
                 }
