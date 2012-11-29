@@ -221,7 +221,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
     @Test
     public void test03CrmfHttpOkUser() throws Exception {
-        log.trace(">test02CrmfHttpOkUser");
+        log.trace(">test03CrmfHttpOkUser");
         // Create a new good user
         createCmpUser("cmptest", "C=SE,O=PrimeKey,CN=cmptest");
 
@@ -267,22 +267,22 @@ public class CrmfRequestTest extends CmpTestCase {
         resp = sendCmpHttp(barev, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, 1);
-        log.trace("<test02CrmfHttpOkUser");
+        log.trace("<test03CrmfHttpOkUser");
     }
 
     @Test
     public void test04BlueXCrmf() throws Exception {
-        log.trace(">test03BlueXCrmf");
+        log.trace(">test04BlueXCrmf");
         byte[] resp = sendCmpHttp(bluexir, 200);
         assertNotNull(resp);
         checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 512, null); // 4=BAD_REQUEST, 512=BAD_POP,
                                                                                                                // 64=WRONG_AUTHORITY
-        log.trace("<test03BlueXCrmf");
+        log.trace("<test04BlueXCrmf");
     }
 
     @Test
     public void test05BadBytes() throws Exception {
-        log.trace(">test04BadBytes");
+        log.trace(">test05BadBytes");
         byte[] msg = bluexir;
         // Change some bytes to make the message bad
         msg[10] = 0;
@@ -293,7 +293,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Bad request will return HTTP 400 (bad request)
         byte[] resp = sendCmpHttp(msg, 400);
         assertNull(resp);
-        log.trace("<test04BadBytes");
+        log.trace("<test05BadBytes");
     }
 
     /*
@@ -364,7 +364,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
     @Test
     public void test08SubjectDNSerialnumber() throws Exception {
-        log.trace(">test02CrmfHttpOkUser");
+        log.trace(">test08SubjectDNSerialnumber");
         // Create a new good user
         createCmpUser("cmpsntest", "C=SE,SN=12234567,CN=cmpsntest");
 
@@ -423,7 +423,7 @@ public class CrmfRequestTest extends CmpTestCase {
         resp = sendCmpHttp(barev, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
         checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, 1);
-        log.trace("<test02CrmfHttpOkUser");
+        log.trace("<test08SubjectDNSerialnumber");
     }
 
     
