@@ -653,7 +653,17 @@
     	<antcall target="jee:deploy" />
         <antcall target="showtime" />
     </target>
-    <target name="deployear" description="Deploy the EJBCA application (ejbca.ear) without building and without deploying datasources or any configuration">       
+    <!-- Check if there exist a dist/ejbca.ear, if it exists deployear can just deploy it directly, if not we have to build it before deployear can deploy it -->
+	<condition property="ejbcaear.built">	
+        <resourceexists>
+            <file file="${dist.dir}/ejbca.ear"/>
+        </resourceexists>
+    </condition>
+	<target name="buildifnotbuilt" unless="ejbcaear.built">
+		<antcall target="clean"/>
+		<antcall target="build"/>
+	</target>
+    <target name="deployear" depends="buildifnotbuilt" description="Deploy the EJBCA application (ejbca.ear) without building and without deploying datasources or any configuration">       
 		<fail message="File '${dist.dir}/ejbca.ear' to deploy does not exist. You must build the file using the 'ant' command.">
             <condition>
                 <not>
