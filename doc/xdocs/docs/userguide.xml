@@ -734,7 +734,7 @@ There are two places in EJBCA where this can be configured:
 <li>In the Certificate profile (Edit certificate profiles)</li>
 <li>In the CA configuration (Edit Certificate Authorities)</li>
 </ul>
-The relationship between the settings is that they are both evaluated in an OR expression. 
+The relationship between the settings is that they are both evaluated in a logical AND expression. 
 This means that if both are true the DN will have Ldap DN order, but if any one of them is false the DN will have X.500 order.
 </p>
 </subsubsection>
