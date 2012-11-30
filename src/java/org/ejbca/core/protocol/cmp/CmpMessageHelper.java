@@ -171,7 +171,8 @@ public class CmpMessageHelper {
 		return pKIMessage;
 	}
 	
-	private static PKIHeaderBuilder getHeaderBuilder(PKIHeader head) throws IOException {
+	//TODO see if we could do this in a better way
+	public static PKIHeaderBuilder getHeaderBuilder(PKIHeader head) throws IOException {
 	    PKIHeaderBuilder builder = new PKIHeaderBuilder(head.getPvno().getValue().intValue(), head.getSender(), head.getRecipient());
 	    builder.setFreeText(head.getFreeText());
 	    builder.setGeneralInfo(head.getGeneralInfo());
@@ -562,4 +563,5 @@ public class CmpMessageHelper {
         }
         return str;
     }
+
 }
