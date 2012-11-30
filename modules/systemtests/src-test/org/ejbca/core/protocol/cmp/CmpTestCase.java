@@ -344,7 +344,7 @@ public abstract class CmpTestCase extends CaTestCase {
     protected PKIMessage protectPKIMessage(PKIMessage msg, boolean badObjectId, String password, String keyId, int iterations)
             throws NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, IOException {
         // Create the PasswordBased protection of the message
-        PKIHeaderBuilder head = getHeaderBuilder(msg.getHeader());
+        PKIHeaderBuilder head = CmpMessageHelper.getHeaderBuilder(msg.getHeader());
         if(keyId != null) {
             head.setSenderKID(new DEROctetString(keyId.getBytes()));
         }
@@ -394,22 +394,6 @@ public abstract class CmpTestCase extends CaTestCase {
         DERBitString bs = new DERBitString(out);
         
         return new PKIMessage(header, body, bs);
-    }
-    
-    //TODO find a better way to do this
-    private PKIHeaderBuilder getHeaderBuilder(PKIHeader head) throws IOException {
-        PKIHeaderBuilder builder = new PKIHeaderBuilder(head.getPvno().getValue().intValue(), head.getSender(), head.getRecipient());
-        builder.setFreeText(head.getFreeText());
-        builder.setGeneralInfo(head.getGeneralInfo());
-        builder.setMessageTime(head.getMessageTime());
-        if(head.getRecipKID() != null) {
-            builder.setRecipKID(head.getRecipKID().getEncoded());
-        }
-        builder.setRecipNonce(head.getRecipNonce());
-        builder.setSenderKID(head.getSenderKID());
-        builder.setSenderNonce(head.getSenderNonce());
-        builder.setTransactionID(head.getTransactionID());
-        return builder;
     }
 
     protected byte[] sendCmpHttp(byte[] message, int httpRespCode) throws IOException, NoSuchProviderException {
@@ -686,7 +670,7 @@ public abstract class CmpTestCase extends CaTestCase {
 
         PKIBody body = respObject.getBody();
         int tag = body.getType();
-        assertEquals(tag, 1);
+        assertEquals(1, tag);
         CertRepMessage c = (CertRepMessage) body.getContent();
         assertNotNull(c);
         CertResponse resp = c.getResponse()[0];

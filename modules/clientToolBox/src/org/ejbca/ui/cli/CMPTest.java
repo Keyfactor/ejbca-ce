@@ -238,7 +238,7 @@ class CMPTest extends ClientToolBox {
         
         private PKIMessage protectPKIMessage(final PKIMessage msg,
                                              final boolean badObjectId,
-                                             final String password) throws NoSuchAlgorithmException, InvalidKeyException {
+                                             final String password) throws NoSuchAlgorithmException, InvalidKeyException, IOException {
             // SHA1
             final AlgorithmIdentifier owfAlg = new AlgorithmIdentifier(new ASN1ObjectIdentifier("1.3.14.3.2.26"));
             // 567 iterations
@@ -252,7 +252,7 @@ class CMPTest extends ClientToolBox {
             final PKIHeader head;
             {
                 // Create the PasswordBased protection of the message
-                headbuilder = getHeaderBuilder(msg.getHeader());
+                headbuilder = CmpMessageHelper.getHeaderBuilder(msg.getHeader());
                 headbuilder.setSenderKID(new DEROctetString(this.keyId.getBytes()));
                 final ASN1Integer iteration = new ASN1Integer(iterationCount);
 
@@ -292,23 +292,6 @@ class CMPTest extends ClientToolBox {
                 ret = new PKIMessage(head, msg.getBody(), bs);
             }
             return ret;
-        }
-        
-        //TODO see if we could do this in a better way
-        private PKIHeaderBuilder getHeaderBuilder(PKIHeader header) {
-            PKIHeaderBuilder builder = new PKIHeaderBuilder(header.getPvno().getValue().intValue(), header.getSender(), header.getRecipient());
-            builder.setFreeText(header.getFreeText());
-            builder.setGeneralInfo(header.getGeneralInfo());
-            builder.setMessageTime(header.getMessageTime());
-            builder.setProtectionAlg(header.getProtectionAlg());
-            if(header.getRecipKID() != null) {
-                builder.setRecipKID(header.getRecipKID().getOctets());
-            }
-            builder.setRecipNonce(header.getRecipNonce());
-            builder.setSenderKID(header.getSenderKID());
-            builder.setSenderNonce(header.getSenderNonce());
-            builder.setTransactionID(header.getTransactionID());
-            return builder;
         }
         
         private byte[] sendCmp(final byte[] message, final SessionData sessionData) throws Exception {
