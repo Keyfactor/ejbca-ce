@@ -269,7 +269,6 @@ public class PKCS10RequestMessage implements RequestMessage {
         if (xname == null) {
         	log.info("No requestDN in request, probably we could not read/parse/decrypt request.");
         } else {
-            @SuppressWarnings("unchecked")
             RDN[] cnValues = xname.getRDNs(EjbcaNameStyle.CN);
             if (cnValues.length == 0) {
             	log.info("No CN in DN: "+xname.toString());
