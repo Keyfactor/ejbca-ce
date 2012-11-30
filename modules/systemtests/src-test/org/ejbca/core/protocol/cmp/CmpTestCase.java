@@ -76,6 +76,7 @@ import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PBMParameter;
 import org.bouncycastle.asn1.cmp.PKIBody;
 import org.bouncycastle.asn1.cmp.PKIConfirmContent;
+import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIFreeText;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
@@ -790,14 +791,14 @@ public abstract class CmpTestCase extends CaTestCase {
             assertNotNull(info);
             assertEquals(ResponseStatus.FAILURE.getValue(), info.getStatus().intValue());
             int i = info.getFailInfo().intValue();
-            assertEquals(i, 1 << err);
+            assertEquals(err, i);
         } else if (exptag == CmpPKIBodyConstants.REVOCATIONRESPONSE) {
             RevRepContent rrc = (RevRepContent) body.getContent();
             assertNotNull(rrc);
             info = rrc.getStatus()[0];
             assertNotNull(info);
             assertEquals(ResponseStatus.FAILURE.getValue(), info.getStatus().intValue());
-            assertEquals(FailInfo.BAD_REQUEST.getAsBitString(), info.getFailInfo());
+            assertEquals(PKIFailureInfo.badRequest, info.getFailInfo().intValue());
         } else {
             CertRepMessage c = null;
             if (exptag == CmpPKIBodyConstants.INITIALIZATIONRESPONSE || exptag == CmpPKIBodyConstants.CERTIFICATIONRESPONSE) {
@@ -812,7 +813,7 @@ public abstract class CmpTestCase extends CaTestCase {
             int error = info.getStatus().intValue();
             assertEquals(ResponseStatus.FAILURE.getValue(), error); // 2 is
                                                                     // rejection
-            assertEquals(FailInfo.INCORRECT_DATA.getAsBitString(), info.getFailInfo());
+            assertEquals(PKIFailureInfo.incorrectData, info.getFailInfo().intValue());
         }
         log.debug("expected fail message: '" + failMsg + "'. received fail message: '" + info.getStatusString().getStringAt(0).getString() + "'.");
         assertEquals(failMsg, info.getStatusString().getStringAt(0).getString());

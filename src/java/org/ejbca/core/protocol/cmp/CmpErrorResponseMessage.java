@@ -129,7 +129,7 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 		
 		PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection);
 		if(failInfo != null && failText != null) {
-		    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(new DERUTF8String(failText)), new PKIFailureInfo(failInfo.getAsBitString()));
+		    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(new DERUTF8String(failText)), new PKIFailureInfo(failInfo.getCMPValue()));
 		} else if(failText != null) {
 		    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(new DERUTF8String(failText)));
 		}
