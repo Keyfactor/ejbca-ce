@@ -139,8 +139,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				log.debug("Received CMP message with pvno="+header.getPvno()+", sender="+header.getSender().toString()+", recipient="+header.getRecipient().toString());
 				log.debug("The CMP message is already authenticated: " + authenticated);
 				log.debug("Body is of type: "+tagno);
-				log.debug(req);
-				//log.debug(ASN1Dump.dumpAsString(req));				
+				log.debug("Transaction id: "+header.getTransactionID());
+				//log.debug(ASN1Dump.dumpAsString(req));
 			}
 
 			BaseCmpMessage cmpMessage = null;
