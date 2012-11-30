@@ -53,6 +53,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
+import org.ejbca.core.model.ca.AuthLoginException;
 import org.ejbca.core.model.ra.UsernameGenerator;
 import org.ejbca.core.model.ra.UsernameGeneratorParams;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
@@ -279,6 +280,10 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
             resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.BAD_REQUEST, e.getMessage());
+        } catch (AuthLoginException e) {
+            final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
+            LOG.info(errMsg, e);           
+            resp = CmpMessageHelper.createUnprotectedErrorMessage(msg, ResponseStatus.FAILURE, FailInfo.NOT_AUTHORIZED, e.getMessage());
         } catch (EjbcaException e) {
             final String errMsg = INTRES.getLocalizedMessage(CMP_ERRORGENERAL, e.getMessage());
             LOG.info(errMsg, e);           
