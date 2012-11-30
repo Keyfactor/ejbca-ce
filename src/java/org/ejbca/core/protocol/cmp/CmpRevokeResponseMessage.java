@@ -141,9 +141,9 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 			if (log.isDebugEnabled()) {
 				log.debug("Creating a rejection message");
 			}
-			myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, null, new PKIFailureInfo(failInfo.getAsBitString()));
+			myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, null, new PKIFailureInfo(failInfo.getCMPValue()));
 			if(failText != null && failInfo != null) {
-			    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(failText), new PKIFailureInfo(failInfo.getAsBitString()));
+			    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(failText), new PKIFailureInfo(failInfo.getCMPValue()));
 			}
 		}
 		RevRepContentBuilder revBuilder = new RevRepContentBuilder();
