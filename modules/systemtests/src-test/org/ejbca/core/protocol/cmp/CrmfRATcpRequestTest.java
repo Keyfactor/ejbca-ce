@@ -34,6 +34,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -255,7 +256,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "PKI Message is not athenticated properly. No HMAC protection was found.");
+        checkCmpPKIErrorMessage(resp, issuerDN, userDN, PKIFailureInfo.badRequest, "PKI Message is not athenticated properly. No HMAC protection was found.");
     }
 
     @Test
@@ -275,7 +276,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        checkCmpPKIErrorMessage(resp, issuerDN, userDN, 2, "Could not create CmpPbeVerifyer. Protection algorithm id expected '1.2.840.113533.7.66.13' (passwordBasedMac) but was '1.2.840.113533.7.66.13.7'.");
+        checkCmpPKIErrorMessage(resp, issuerDN, userDN, PKIFailureInfo.badRequest, "Could not create CmpPbeVerifyer. Protection algorithm id expected '1.2.840.113533.7.66.13' (passwordBasedMac) but was '1.2.840.113533.7.66.13.7'.");
     }
 
     /**

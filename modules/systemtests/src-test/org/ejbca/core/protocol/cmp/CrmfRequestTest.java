@@ -36,6 +36,7 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DEROctetString;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
@@ -268,7 +269,7 @@ public class CrmfRequestTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(barev, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, 1);
+        checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, PKIFailureInfo.badMessageCheck);
         log.trace("<test03CrmfHttpOkUser");
     }
 
@@ -277,8 +278,7 @@ public class CrmfRequestTest extends CmpTestCase {
         log.trace(">test04BlueXCrmf");
         byte[] resp = sendCmpHttp(bluexir, 200);
         assertNotNull(resp);
-        checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", 512, null); // 4=BAD_REQUEST, 512=BAD_POP,
-                                                                                                               // 64=WRONG_AUTHORITY
+        checkCmpPKIErrorMessage(resp, "C=NL,O=A.E.T. Europe B.V.,OU=Development,CN=Test CA 1", "", PKIFailureInfo.badPOP, null); // expecting a bad_pop
         log.trace("<test04BlueXCrmf");
     }
 

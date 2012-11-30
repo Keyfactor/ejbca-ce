@@ -34,6 +34,7 @@ import java.util.Random;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
+import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.crmf.CertReqMessages;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -455,8 +456,7 @@ public class CrmfRAPbeRequestTest extends CmpTestCase {
         byte[] resp = sendCmpHttp(ba, 200);
         assertNotNull(resp);
         assertTrue(resp.length > 0);
-        checkCmpFailMessage(resp, "Iteration count can not exceed 10000", 23, reqId, 1); // We
-        // expect a FailInfo.BAD_MESSAGE_CHECK
+        checkCmpFailMessage(resp, "Iteration count can not exceed 10000", 23, reqId, PKIFailureInfo.badMessageCheck); // We expect a FailInfo.BAD_MESSAGE_CHECK
     }
 
     @Test
