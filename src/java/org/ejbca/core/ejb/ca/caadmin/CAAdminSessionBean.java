@@ -1788,12 +1788,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         // Transform into token
         int tokenId = StringTools.strip(CertTools.getSubjectDN(signatureCertChain[0])).hashCode(); // caid
         CAToken catoken = null;
-        try {
-            catoken = importKeysToCAToken(keystorepass, null, p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey,
+        catoken = importKeysToCAToken(keystorepass, null, p12PrivateSignatureKey, p12PublicSignatureKey, p12PrivateEncryptionKey,
                     p12PublicEncryptionKey, signatureCertChain, tokenId);
-        } catch (OperatorCreationException e) {
-            log.error(e.getLocalizedMessage(), e);
-        }
         log.debug("CA-Info: " + catoken.getTokenInfo().getSignatureAlgorithm() + " " + catoken.getTokenInfo().getEncryptionAlgorithm());
         // Identify the key algorithms for extended CA services, OCSP, XKMS, CMS
         String keyAlgorithm = AlgorithmTools.getKeyAlgorithm(p12PublicSignatureKey);
@@ -1819,7 +1815,7 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
      */
     private CAToken importKeysToCAToken(String authenticationCode, Properties tokenProperties, PrivateKey privatekey, PublicKey publickey,
             PrivateKey privateEncryptionKey, PublicKey publicEncryptionKey, Certificate[] caSignatureCertChain, int tokenId)
-            throws CryptoTokenAuthenticationFailedException, IllegalCryptoTokenException, OperatorCreationException {
+            throws CryptoTokenAuthenticationFailedException, IllegalCryptoTokenException {
 
     	if (tokenProperties == null) {
     		tokenProperties = new Properties();
@@ -1924,6 +1920,8 @@ public class CAAdminSessionBean implements CAAdminSessionLocal, CAAdminSessionRe
         } catch (IllegalStateException e) {
             throw new IllegalCryptoTokenException(e);
         } catch (InvalidAlgorithmParameterException e) {
+            throw new IllegalCryptoTokenException(e);
+        } catch (OperatorCreationException e) {
             throw new IllegalCryptoTokenException(e);
         }
     } // importKeys
