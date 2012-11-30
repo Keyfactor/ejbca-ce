@@ -14,8 +14,7 @@ package org.cesecore.certificates.certificate.request;
 
 import java.io.Serializable;
 
-import org.bouncycastle.asn1.DERBitString;
-import org.bouncycastle.asn1.x509.ReasonFlags;
+import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 
 /**
  * Encapsulates the possible values for the failinfo part of a SCEP FAILURE response.
@@ -68,6 +67,17 @@ public class FailInfo implements Serializable {
      * Not authorized
      */
     public static final FailInfo NOT_AUTHORIZED = new FailInfo(23);
+    
+    /** Array that converts our error codes to CMP BITString error codes. We use plain integer codes, which are
+     * the same as positions in the CMP bit string
+     * @see org.bouncycastle.asn1.cmp.PKIFailureInfo
+     */
+    private static int[] bcconversion = { PKIFailureInfo.badAlg,PKIFailureInfo.badMessageCheck,PKIFailureInfo.badRequest,PKIFailureInfo.badTime,PKIFailureInfo.badCertId
+        ,PKIFailureInfo.badDataFormat,PKIFailureInfo.wrongAuthority,PKIFailureInfo.incorrectData,PKIFailureInfo.missingTimeStamp,PKIFailureInfo.badPOP
+        ,PKIFailureInfo.certRevoked,PKIFailureInfo.certConfirmed,PKIFailureInfo.wrongIntegrity,PKIFailureInfo.badRecipientNonce,PKIFailureInfo.timeNotAvailable
+        ,PKIFailureInfo.unacceptedPolicy,PKIFailureInfo.unacceptedExtension,PKIFailureInfo.addInfoNotAvailable,PKIFailureInfo.badSenderNonce,PKIFailureInfo.badCertTemplate
+        ,PKIFailureInfo.signerNotTrusted,PKIFailureInfo.transactionIdInUse,PKIFailureInfo.unsupportedVersion,PKIFailureInfo.notAuthorized,PKIFailureInfo.systemUnavail
+        ,PKIFailureInfo.systemFailure,PKIFailureInfo.duplicateCertReq};
     /**
      * The value actually encoded into the response message as the failinfo attribute
      */
@@ -85,15 +95,13 @@ public class FailInfo implements Serializable {
         return Integer.toString(value);
     }
 
-    /** Returns the FailInfo value as a bit string, where the value represents the bit that is set
+    /** Returns the FailInfo value as an int that is the correct format for CMP, i.e. a DERBitString as specified in PKIFailureInfo.
+     * @see org.bouncycastle.asn1.cmp.PKIFailureInfo
      * 
-     * @return DERBitString
+     * @return int
      */
-    public DERBitString getAsBitString() {
-    	int i = 1 << value;
-    	// Use reasonflags, because it already has convertion between int and BitString in it
-    	DERBitString str = new ReasonFlags(i);
-    	return str;
+    public int getCMPValue() {
+        return bcconversion[value];
     }
 
     public boolean equals(Object o) {
