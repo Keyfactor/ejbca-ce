@@ -86,7 +86,7 @@ class RequestMessageSubjectDnAdapter implements ICrmfRequestMessage {
 	}
 	@Override
 	public X500Name getRequestX500Name() {
-		return new X500Name(this.dn.getName());
+	    return X500Name.getInstance(this.dn.getEncoded());
 	}
 	@Override
 	public String getRequestAltNames() {
