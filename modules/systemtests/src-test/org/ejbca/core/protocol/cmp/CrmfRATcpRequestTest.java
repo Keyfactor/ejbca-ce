@@ -256,7 +256,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        checkCmpPKIErrorMessage(resp, issuerDN, userDN, PKIFailureInfo.badRequest, "PKI Message is not athenticated properly. No HMAC protection was found.");
+        checkCmpPKIErrorMessage(resp, issuerDN, userDN, PKIFailureInfo.badMessageCheck, "PKI Message is not athenticated properly. No HMAC protection was found.");
     }
 
     @Test
@@ -276,7 +276,7 @@ public class CrmfRATcpRequestTest extends CmpTestCase {
         // Send request and receive response
         byte[] resp = sendCmpTcp(ba, 5);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        checkCmpPKIErrorMessage(resp, issuerDN, userDN, PKIFailureInfo.badRequest, "Could not create CmpPbeVerifyer. Protection algorithm id expected '1.2.840.113533.7.66.13' (passwordBasedMac) but was '1.2.840.113533.7.66.13.7'.");
+        checkCmpPKIErrorMessage(resp, issuerDN, userDN, PKIFailureInfo.badMessageCheck, "Could not create CmpPbeVerifyer. Protection algorithm id expected '1.2.840.113533.7.66.13' (passwordBasedMac) but was '1.2.840.113533.7.66.13.7'.");
     }
 
     /**
