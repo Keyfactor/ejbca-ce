@@ -24,6 +24,7 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SignatureException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.spec.AlgorithmParameterSpec;
@@ -235,5 +236,13 @@ public class PublicCryptoToken implements CryptoToken {
 		v.add("dummy");
 		return v.elements();
 	}
+
+    @Override
+    public void storeKey(String alias, Key key, Certificate[] chain, char[] password) throws KeyStoreException {
+        if ( chain==null || chain.length<1 ) {
+            return;
+        }
+        this.pk = chain[0].getPublicKey();
+    }
 
 }
