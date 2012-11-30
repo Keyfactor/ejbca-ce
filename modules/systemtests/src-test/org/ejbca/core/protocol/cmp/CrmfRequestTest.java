@@ -15,6 +15,7 @@ package org.ejbca.core.protocol.cmp;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -49,6 +50,7 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
@@ -386,6 +388,8 @@ public class CrmfRequestTest extends CmpTestCase {
         
         // Now revoke the certificate!
         PKIMessage rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true, null, null);
+        assertNotNull(rev);        
+        rev = protectPKIMessage(rev, false, "foo123", 567);
         assertNotNull(rev);
         ByteArrayOutputStream baorev = new ByteArrayOutputStream();
         DEROutputStream outrev = new DEROutputStream(baorev);
@@ -394,7 +398,8 @@ public class CrmfRequestTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(barev, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, 1);
+        int revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
+        assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
 
         // Create another user with the subjectDN serialnumber spelled "SERIALNUMBER" instead of "SN"
         KeyPair keys2 = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -415,6 +420,8 @@ public class CrmfRequestTest extends CmpTestCase {
         // Now revoke this certificate too
         rev = genRevReq(issuerDN, userDN, cert.getSerialNumber(), cacert, nonce, transid, true, null, null);
         assertNotNull(rev);
+        rev = protectPKIMessage(rev, false, "foo123", 567);
+        assertNotNull(rev);
         baorev = new ByteArrayOutputStream();
         outrev = new DEROutputStream(baorev);
         outrev.writeObject(rev);
@@ -422,11 +429,13 @@ public class CrmfRequestTest extends CmpTestCase {
         // Send request and receive response
         resp = sendCmpHttp(barev, 200);
         checkCmpResponseGeneral(resp, issuerDN, userDN, cacert, nonce, transid, false, null);
-        checkCmpFailMessage(resp, "PKI Message is not athenticated properly. No HMAC protection was found.", 23, reqId, 1);
+        revStatus = checkRevokeStatus(issuerDN, CertTools.getSerialNumber(cert));
+        assertNotSame("Revocation request failed to revoke the certificate", RevokedCertInfo.NOT_REVOKED, revStatus);
+        
         log.trace("<test08SubjectDNSerialnumber");
     }
 
-    
+
     @Test
     public void test09KeyIdTest() {
         log.trace(">test09KeyIdTest()");
@@ -443,7 +452,7 @@ public class CrmfRequestTest extends CmpTestCase {
         
         log.trace("<test09KeyIdTest()");
     }
-    
+
     private void createCmpUser(String username, String dn) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, WaitingForApprovalException,
             EjbcaException, FinderException, CADoesntExistsException {
         // Make user that we know...
@@ -453,7 +462,7 @@ public class CrmfRequestTest extends CmpTestCase {
                 SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, SecConst.TOKEN_SOFT_PEM, 0, null);
         user.setPassword("foo123");
         try {
-            endEntityManagementSession.addUser(admin, user, false); 
+            endEntityManagementSession.addUser(admin, user, true); 
             log.debug("created user: " + username + ", foo123, " + userDN);
         } catch (Exception e) {
             userExists = true;
@@ -461,7 +470,7 @@ public class CrmfRequestTest extends CmpTestCase {
 
         if (userExists) {
             log.debug("User cmptest already exists.");
-            endEntityManagementSession.changeUser(admin, user, false);
+            endEntityManagementSession.changeUser(admin, user, true);
             endEntityManagementSession.setUserStatus(admin, username, EndEntityConstants.STATUS_NEW);
             log.debug("Reset status to NEW");
         }
