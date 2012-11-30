@@ -3051,7 +3051,22 @@ public class CertTools {
         return ret;
     }
     
-    
+    /**
+     * Generates a PKCS10CertificateRequest
+     * 
+     * @param signatureAlgorithm
+     * @param subject
+     * @param key
+     * @param attributes
+     * @param signingKey
+     * @param provider
+     * @return
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     * @throws InvalidKeyException
+     * @throws SignatureException
+     */
     public static PKCS10CertificationRequest genPKCS10CertificationRequest(String signatureAlgorithm, X500Name subject, PublicKey key, ASN1Set attributes, 
             PrivateKey signingKey, String provider) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
     
@@ -3087,10 +3102,28 @@ public class CertTools {
         return new PKCS10CertificationRequest(req);
     }
 
+    /**
+     * Generated Generates a ContentVerifierProvider.
+     * 
+     * @param pubkey
+     * @return
+     * @throws IOException
+     * @throws OperatorCreationException
+     */
     public static ContentVerifierProvider genContentVerifierProvider(PublicKey pubkey) throws IOException, OperatorCreationException {
         return new JcaContentVerifierProviderBuilder().build(pubkey);
     }
     
+    /**
+     * Extracts the publickey from a SubjectPublicKeyInfo object.
+     * 
+     * @param subjectPKInfo
+     * @param provider
+     * @return
+     * @throws InvalidKeySpecException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     */
     public static PublicKey getPublicKeyFromSubjectPKInfo(SubjectPublicKeyInfo subjectPKInfo, String provider) throws InvalidKeySpecException, 
                         NoSuchAlgorithmException, NoSuchProviderException {
         X509EncodedKeySpec      xspec = new X509EncodedKeySpec(new DERBitString(subjectPKInfo).getBytes());
