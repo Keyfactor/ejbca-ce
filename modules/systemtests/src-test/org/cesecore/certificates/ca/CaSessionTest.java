@@ -77,7 +77,8 @@ public class CaSessionTest extends RoleUsingTestCase {
     private static final String UTIMACO_PKCS11_LINUX_LIB = "/etc/utimaco/libcs2_pkcs11.so";
     private static final String UTIMACO_PKCS11_WINDOWS_LIB = "C:/Program Files/Utimaco/SafeGuard CryptoServer/Lib/cs2_pkcs11.dll";
     private static final String LUNASA_PKCS11_LINUX_LIB = "/usr/lunasa/lib/libCryptoki2_64.so";
-    private static final String PROTECTSERVER_PKCS11_LINUX_LIB = "/opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so";
+    private static final String PROTECTSERVER_PKCS11_LINUX64_LIB = "/opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so";
+    private static final String PROTECTSERVER_PKCS11_LINUX_LIB = "/opt/PTK/lib/libcryptoki.so"; // this symlink is set by safeNet-install.sh->"5 Set the default cryptoki and/or hsm link". Use it instead of symlinking manually.
 
     @BeforeClass
     public static void setUpProviderAndCreateCA() throws Exception {
@@ -331,7 +332,8 @@ public class CaSessionTest extends RoleUsingTestCase {
         final File utimacoCSLinux = new File(UTIMACO_PKCS11_LINUX_LIB);
         final File utimacoCSWindows = new File(UTIMACO_PKCS11_WINDOWS_LIB);
         final File lunaSALinux64 = new File(LUNASA_PKCS11_LINUX_LIB);
-        final File protectServerLinux64 = new File(PROTECTSERVER_PKCS11_LINUX_LIB);
+        final File protectServerLinux64 = new File(PROTECTSERVER_PKCS11_LINUX64_LIB);
+        final File protectServerLinux = new File(PROTECTSERVER_PKCS11_LINUX_LIB);
         String ret = null;
         if (utimacoCSLinux.exists()) {
             ret = utimacoCSLinux.getAbsolutePath();
@@ -341,6 +343,8 @@ public class CaSessionTest extends RoleUsingTestCase {
             ret = lunaSALinux64.getAbsolutePath();
         } else if (protectServerLinux64.exists()) {
             ret = protectServerLinux64.getAbsolutePath();
+        } else if (protectServerLinux.exists()) {
+            ret = protectServerLinux.getAbsolutePath();
         }
         return ret;
     }
