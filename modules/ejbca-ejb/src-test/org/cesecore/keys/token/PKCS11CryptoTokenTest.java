@@ -52,7 +52,8 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 	private static final String UTIMACO_PKCS11_WINDOWS_LIB = "C:/Program Files/Utimaco/SafeGuard CryptoServer/Lib/cs2_pkcs11.dll";
 	private static final String LUNASA_PKCS11_LINUX_LIB = "/usr/lunasa/lib/libCryptoki2_64.so";
     private static final String LUNASA_PKCS11_LINUX32_LIB = "/usr/lunasa/lib/libCryptoki2.so";
-    private static final String PROTECTSERVER_PKCS11_LINUX_LIB = "/opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so";
+    private static final String PROTECTSERVER_PKCS11_LINUX_LIB = "/opt/PTK/lib/libcryptoki.so"; // this symlink is set by safeNet-install.sh->"5 Set the default cryptoki and/or hsm link". Use it instead of symlinking manually.
+    private static final String PROTECTSERVER_PKCS11_LINUX64_LIB = "/opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so";
     private static final String PROTECTSERVER_PKCS11_LINUX32_LIB = "/opt/ETcpsdk/lib/linux-i386/libcryptoki.so";
     private static final String PROTECTSERVER_PKCS11_WINDOWS_LIB = "C:/Program Files/SafeNet/ProtectToolkit C SDK/bin/sw/cryptoki.dll";
 
@@ -206,7 +207,8 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 	    final File utimacoCSWindows = new File(UTIMACO_PKCS11_WINDOWS_LIB);
 	    final File lunaSALinux64 = new File(LUNASA_PKCS11_LINUX_LIB);
         final File lunaSALinux32 = new File(LUNASA_PKCS11_LINUX32_LIB);
-	    final File protectServerLinux64 = new File(PROTECTSERVER_PKCS11_LINUX_LIB);
+	    final File protectServerLinux = new File(PROTECTSERVER_PKCS11_LINUX_LIB);
+	    final File protectServerLinux64 = new File(PROTECTSERVER_PKCS11_LINUX64_LIB);
 	    final File protectServerLinux32 = new File(PROTECTSERVER_PKCS11_LINUX32_LIB);
 	    final File protectServerWindows = new File(PROTECTSERVER_PKCS11_WINDOWS_LIB);
 	    String ret = null;
@@ -218,9 +220,7 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
 	        ret = "SunPKCS11-libCryptoki2_64.so-slot1";
 	    } else if (lunaSALinux32.exists()) {
 	        ret = "SunPKCS11-libCryptoki2.so-slot1";
-	    } else if (protectServerLinux64.exists()) {
-	        ret = "SunPKCS11-libcryptoki.so-slot1";
-	    } else if (protectServerLinux32.exists()) {
+	    } else if ( protectServerLinux32.exists() || protectServerLinux64.exists() ||  protectServerLinux.exists()) {
 	        ret = "SunPKCS11-libcryptoki.so-slot1";
 	    } else if (protectServerWindows.exists()) {
 	        ret = "SunPKCS11-cryptoki.dll-slot1";
@@ -265,7 +265,8 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
         final File utimacoCSWindows = new File(UTIMACO_PKCS11_WINDOWS_LIB);
         final File lunaSALinux64 = new File(LUNASA_PKCS11_LINUX_LIB);
         final File lunaSALinux32 = new File(LUNASA_PKCS11_LINUX32_LIB);
-        final File protectServerLinux64 = new File(PROTECTSERVER_PKCS11_LINUX_LIB);
+        final File protectServerLinux = new File(PROTECTSERVER_PKCS11_LINUX_LIB);
+        final File protectServerLinux64 = new File(PROTECTSERVER_PKCS11_LINUX64_LIB);
         final File protectServerLinux32 = new File(PROTECTSERVER_PKCS11_LINUX32_LIB);
         final File protectServerWindows = new File(PROTECTSERVER_PKCS11_WINDOWS_LIB);
         String ret = null;
@@ -281,6 +282,8 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
             ret = protectServerLinux64.getAbsolutePath();
         } else if (protectServerLinux32.exists()) {
             ret = protectServerLinux32.getAbsolutePath();
+        } else if (protectServerLinux.exists()) {
+            ret = protectServerLinux.getAbsolutePath();
         } else if (protectServerWindows.exists()) {
             ret = protectServerWindows.getAbsolutePath();
         }
