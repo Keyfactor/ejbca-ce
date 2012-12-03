@@ -256,8 +256,8 @@
             <jboss:admsilent arg="/subsystem=web/connector=httpspriv:remove" failonerror="false" />
             <jboss:admsilent arg="/socket-binding-group=standard-sockets/socket-binding=http:remove" failonerror="false" />
             <jboss:admsilent arg="/subsystem=web/connector=http:remove" failonerror="false" />
-            <jboss:admsilent arg="/system-property=org.apache.catalina.connector.URI_ENCODING:remove" />
-            <jboss:admsilent arg="/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:remove" />
+            <jboss:admsilent arg="/system-property=org.apache.catalina.connector.URI_ENCODING:remove" failonerror="false" />
+            <jboss:admsilent arg="/system-property=org.apache.catalina.connector.USE_BODY_ENCODING_FOR_QUERY_STRING:remove" failonerror="false" />
             <jboss:admsilent arg=":reload" />
         </target>
 
