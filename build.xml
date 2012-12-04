@@ -660,7 +660,6 @@
         </resourceexists>
     </condition>
 	<target name="buildifnotbuilt" unless="ejbcaear.built">
-		<antcall target="clean"/>
 		<antcall target="build"/>
 	</target>
     <target name="deployear" depends="buildifnotbuilt" description="Deploy the EJBCA application (ejbca.ear) without building and without deploying datasources or any configuration">       
