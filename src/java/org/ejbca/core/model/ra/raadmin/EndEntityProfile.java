@@ -873,14 +873,14 @@ public class EndEntityProfile extends UpgradeableDataHashMap implements Serializ
     	}
     	// Checks related to the use of clear text passwords
     	if (!getUse(CLEARTEXTPASSWORD,0) && clearpwd) {
-    		throw new UserDoesntFullfillEndEntityProfile("Clearpassword (used in batch proccessing) cannot be used.");
+    		throw new UserDoesntFullfillEndEntityProfile("Clearpassword (used in batch processing) cannot be used.");
     	}
     	if (isRequired(CLEARTEXTPASSWORD,0)) {
     		if (getValue(CLEARTEXTPASSWORD,0).equals(TRUE) && !clearpwd) {
-    			throw new UserDoesntFullfillEndEntityProfile("Clearpassword (used in batch proccessing) cannot be false.");
+    			throw new UserDoesntFullfillEndEntityProfile("Clearpassword (used in batch processing) cannot be false.");
     		}
     		if (getValue(CLEARTEXTPASSWORD,0).equals(FALSE) && clearpwd) {
-    			throw new UserDoesntFullfillEndEntityProfile("Clearpassword (used in batch proccessing) cannot be true.");
+    			throw new UserDoesntFullfillEndEntityProfile("Clearpassword (used in batch processing) cannot be true.");
     		}
     	}
     	doesUserFullfillEndEntityProfileWithoutPassword(username, dn, subjectaltname, subjectdirattr, email,
