@@ -697,7 +697,7 @@ public class X509CA extends CA implements Serializable {
             }
             issuerDNName = subjectDNName;
         } else {
-            issuerDNName = new X500Name(cacert.getSubjectDN().toString());
+            issuerDNName = X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded());
             if (log.isDebugEnabled()) {
                 log.debug("Using issuer DN directly from the CA certificate: " + issuerDNName.toString());
             }
@@ -924,7 +924,7 @@ public class X509CA extends CA implements Serializable {
 
             issuer = CertTools.stringToBcX500Name(getSubjectDN(), converter, getUseLdapDNOrder());
         } else {
-            issuer =  CertTools.stringToBcX500Name(cacert.getSubjectDN().getName());
+            issuer = X500Name.getInstance(cacert.getSubjectX500Principal().getEncoded());
         }
         final Date thisUpdate = new Date();
         final Date nextUpdate = new Date();
