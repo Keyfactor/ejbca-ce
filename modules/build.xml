@@ -102,7 +102,7 @@
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build" inheritall="false"><property name="runoncesetup.hasrun" value="true"/><property name="external-deps-satfisfied" value="isset"/></ant>
 	</target>
 
-	<target name="va-ejb-interface" description="Build OCSP EJB interfaces library">
+	<target name="va-ejb-interface" description="Build OCSP EJB interfaces library" depends="ejbca-ws-cli">
 		<ant antfile="${mod.ejbca-ejb-interface.path}/build.xml" target="build-va" inheritall="false"><property name="runoncesetup.hasrun" value="true"/></ant>
 	</target>
 				
