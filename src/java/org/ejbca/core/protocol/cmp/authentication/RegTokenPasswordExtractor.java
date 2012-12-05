@@ -130,7 +130,9 @@ public class RegTokenPasswordExtractor implements ICMPAuthenticationModule {
             try {
                 req = msgs.toCertReqMsgArray()[0];
             } catch(Exception e) {
+                log.debug("Could not parse the revocation request. Trying to parse it as novosec generated message.");
                 req = CmpMessageHelper.getNovosecCertReqMsg(msgs);
+                log.debug("Succeeded in pasring the novosec generated request.");
             }
         }
         return req;
