@@ -166,7 +166,9 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    try {
 		        rd = rr.toRevDetailsArray()[0];
 		    } catch(Exception e) {
+                LOG.debug("Could not parse the revocation request. Trying to parse it as novosec generated message.");
 		        rd = CmpMessageHelper.getNovosecRevDetails(rr);
+		        LOG.debug("Succeeded in pasring the novosec generated request.");
 		    }
 		    final CertTemplate ct = rd.getCertDetails();
 		    final DERInteger serno = ct.getSerialNumber();
