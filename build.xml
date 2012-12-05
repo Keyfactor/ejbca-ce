@@ -655,9 +655,7 @@
     </target>
     <!-- Check if there exist a dist/ejbca.ear, if it exists deployear can just deploy it directly, if not we have to build it before deployear can deploy it -->
 	<condition property="ejbcaear.built">	
-        <resourceexists>
-            <file file="${dist.dir}/ejbca.ear"/>
-        </resourceexists>
+        <available file="${dist.dir}/ejbca.ear" type="file"/>
     </condition>
 	<target name="buildifnotbuilt" unless="ejbcaear.built">
 		<antcall target="build"/>
@@ -666,9 +664,7 @@
 		<fail message="File '${dist.dir}/ejbca.ear' to deploy does not exist. You must build the file using the 'ant' command.">
             <condition>
                 <not>
-                <resourceexists>
-                    <file file="${dist.dir}/ejbca.ear"/>
-                </resourceexists>
+                    <available file="${dist.dir}/ejbca.ear" type="file"/>
                 </not>
             </condition>
         </fail>
