@@ -40,7 +40,6 @@
 </head>
 
 <body>
-
 <div align="center">
 
 	<h2><h:outputText value="#{web.text.ADMINSINROLE} #{rolesManagedBean.currentRole}"
@@ -69,10 +68,10 @@
 	<div align="center">
 	<h:messages layout="table" errorClass="alert"/>
 
-	<h:form id="adminListForm" rendered="#{not empty rolesManagedBean.currentRole}">
+	<h:form id="adminListForm" rendered="#{not empty rolesManagedBean.currentRole}" prependId="false">
 	<h:inputHidden id="currentRole" value="#{rolesManagedBean.currentRole}" />
-	<h:dataTable value="#{rolesManagedBean.admins}" var="admin" style="width: 100%;"
-		headerClass="listHeader" rowClasses="listRow1,listRow2" columnClasses="caColumn,withColumn,typeColumn,valueColumn,commandColumn">
+	<h:dataTable value="#{rolesManagedBean.admins}" var="admin" style="width: 100%;" id="adminsTable" 
+		headerClass="listHeader" rowClasses="listRow1,listRow2" columnClasses="caColumn,typeColumn,withColumn,typeColumn,valueColumn,commandColumn">
 		<h:column>
 			<f:facet name="header">
 				<h:panelGroup>
@@ -89,8 +88,8 @@
 			<f:facet name="header">
 				<h:panelGroup>
 					<h:outputText value="#{web.text.MATCHWITH}" /><br />
-					<h:selectOneMenu id="matchWith" value="#{rolesManagedBean.matchWith}">
-						<f:selectItems value="#{rolesManagedBean.matchWithTexts}" />
+					<h:selectOneMenu id="matchWith" binding="#{rolesManagedBean.matchWithMenu}">
+						<f:selectItems value="#{rolesManagedBean.matchWithItems}" />
 					</h:selectOneMenu> 
 					<br /><h:outputText value="&nbsp;" escape="false"/>
 				</h:panelGroup>
@@ -120,7 +119,7 @@
 					<br /><h:outputText value="&nbsp;" escape="false"/>
 				</h:panelGroup>
 			</f:facet>
-			<h:outputText value="#{admin.matchValue}" rendered="#{rolesManagedBean.accessMatchValuesAsMap.WITH_SERIALNUMBER ne admin.matchWith}"/>
+		    <h:outputText value="#{admin.matchValue}" rendered="#{rolesManagedBean.accessMatchValuesAsMap.WITH_SERIALNUMBER ne admin.matchWith}"/> 
 			<h:outputLink
 				value="#{web.ejbcaWebBean.baseUrl}#{web.ejbcaWebBean.globalConfiguration.raPath}/listendentities.jsp?action=listusers&buttonisrevoked=value&textfieldserialnumber=#{admin.matchValue}"
 				rendered="#{rolesManagedBean.accessMatchValuesAsMap.WITH_SERIALNUMBER eq admin.matchWith}">

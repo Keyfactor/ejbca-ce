@@ -32,7 +32,7 @@ public class AccessMatchValueReverseLookupRegistryTest {
     public void testVanillaMatchValue() throws SecurityException, NoSuchMethodException {
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(VanillaAccessMatchValueMock.TOKEN_TYPE,
-                    VanillaAccessMatchValueMock.class.getMethod("lookup", Integer.class));
+                    VanillaAccessMatchValueMock.class.getMethod("lookup", Integer.class), null, null);
         } catch (InvalidMatchValueException e) {
             fail("Exception was caught for vanilla AccessMatchValue, test can't proceed");
         }
@@ -40,7 +40,7 @@ public class AccessMatchValueReverseLookupRegistryTest {
         //Test that you can't add twice.
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(VanillaAccessMatchValueMock.TOKEN_TYPE,
-                    VanillaAccessMatchValueMock.class.getMethod("lookup", Integer.class));
+                    VanillaAccessMatchValueMock.class.getMethod("lookup", Integer.class), null, null);
             fail("Added the same lookup method twice"); // NOPMD
         } catch (InvalidMatchValueException e) {
             //Ignore
@@ -61,7 +61,7 @@ public class AccessMatchValueReverseLookupRegistryTest {
     public void testInstanceCheck() throws Exception {
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(IncorrectInstanceAccessMatchValueMock.TOKEN_TYPE,
-                    IncorrectInstanceAccessMatchValueMock.class.getMethod("lookup"));
+                    IncorrectInstanceAccessMatchValueMock.class.getMethod("lookup"), null, null);
             fail("Should have caught exception for method with invalid return type.");
         } catch (InvalidMatchValueException e) {
             //Ignore
@@ -78,7 +78,7 @@ public class AccessMatchValueReverseLookupRegistryTest {
     public void testPublicCheck() throws Exception {
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(PrivateAccessMatchValueMock.TOKEN_TYPE,
-                    PrivateAccessMatchValueMock.class.getDeclaredMethod("lookup"));
+                    PrivateAccessMatchValueMock.class.getDeclaredMethod("lookup"), null, null);
             fail("Should have caught exception with private method.");
         } catch (InvalidMatchValueException e) {
             //Ignore
@@ -94,7 +94,7 @@ public class AccessMatchValueReverseLookupRegistryTest {
     public void testStaticCheck() throws Exception {
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(UnstaticAccessMatchValueMock.TOKEN_TYPE,
-                    UnstaticAccessMatchValueMock.class.getMethod("lookup"));
+                    UnstaticAccessMatchValueMock.class.getMethod("lookup"), null, null);
             fail("Should have caught exception private method.");
         } catch (InvalidMatchValueException e) {
             //Ignore
@@ -109,7 +109,8 @@ public class AccessMatchValueReverseLookupRegistryTest {
     @Test
     public void testRegisterLookupMethodParameterNullCheck() throws SecurityException, NoSuchMethodException {
         try {
-            AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(null, VanillaAccessMatchValueMock.class.getMethod("lookup", Integer.class));
+            AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(null,
+                    VanillaAccessMatchValueMock.class.getMethod("lookup", Integer.class), null, null);
             fail("Should not have been able to set tokenType parameter null");
         } catch (InvalidParameterException e) {
             //Ignore
@@ -144,6 +145,11 @@ public class AccessMatchValueReverseLookupRegistryTest {
         public static AccessMatchValue lookup(Integer value) {
             return FOO;
         }
+        @Override
+        public boolean isIssuedByCa() {
+            // TODO Auto-generated method stub
+            return false;
+        }
     }
 
     public enum PrivateAccessMatchValueMock implements AccessMatchValue {
@@ -160,6 +166,10 @@ public class AccessMatchValueReverseLookupRegistryTest {
         @SuppressWarnings("unused")
         private static AccessMatchValue lookup() {
             return FOO;
+        }
+        @Override
+        public boolean isIssuedByCa() {
+            return false;
         }
     }
 
@@ -178,6 +188,10 @@ public class AccessMatchValueReverseLookupRegistryTest {
         public AccessMatchValue lookup() {
             return FOO;
         }
+        @Override
+        public boolean isIssuedByCa() {
+            return false;
+        }
     }
 
     private enum IncorrectInstanceAccessMatchValueMock implements AccessMatchValue {
@@ -194,6 +208,10 @@ public class AccessMatchValueReverseLookupRegistryTest {
         @SuppressWarnings("unused")
         public static String lookup() {
             return "foo";
+        }
+        @Override
+        public boolean isIssuedByCa() {
+            return false;
         }
     }
 

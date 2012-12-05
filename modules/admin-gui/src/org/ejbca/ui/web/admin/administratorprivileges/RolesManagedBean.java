@@ -17,14 +17,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
+import javax.faces.component.html.HtmlSelectOneMenu;
 import javax.faces.context.FacesContext;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
+import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
@@ -33,7 +37,6 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
-import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
@@ -69,14 +72,23 @@ public class RolesManagedBean extends BaseManagedBean {
     private List<Integer> currentOtherRules = null;
     private List<Integer> currentEndEntityRules = null;
     
+    
     private String currentRoleName = null;
     private String matchCaId = null;
-    private X500PrincipalAccessMatchValue matchWith = X500PrincipalAccessMatchValue.WITH_SERIALNUMBER;
-    private AccessMatchType matchType = null;
+    
+    private HtmlSelectOneMenu matchWithMenu;
+    
+    private List<SelectItem> matchWithItems;
+    
+    private AccessMatchType matchType;
+   
     private String matchValue = null;
 
     private String newRoleName = "new";
 
+
+    private AccessRulesView accessRulesViewCache = null;
+    
     // Simple from backing
     public String getNewRoleName() {
         return this.newRoleName;
@@ -151,13 +163,38 @@ public class RolesManagedBean extends BaseManagedBean {
         return list;
     }
 
-    /** @return a viewable list of 'match with'-texts */
-    public List<SelectItem> getMatchWithTexts() {
+    public List<SelectItem> getTokenTypeItems() {
         List<SelectItem> list = new ArrayList<SelectItem>();
-        for (AccessMatchValue current : X500PrincipalAccessMatchValue.values()) {       
-            list.add(new SelectItem(current, getEjbcaWebBean().getText(current.toString())));
+        Iterator<String> tokenTypeIterator =  AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes().iterator();
+        while(tokenTypeIterator.hasNext()) {
+            list.add(new SelectItem(tokenTypeIterator.next()));
         }
         return list;
+     }
+    
+    /** @return a viewable list of 'match with'-texts 
+     * @throws IllegalAccessException if the class defined by currentAccessMatchValue doesn't have a public constructor.
+     * @throws InstantiationException if the class defined by currentAccessMatchValue can't be instantiated
+     */
+    public List<SelectItem> getMatchWithItems() throws InstantiationException, IllegalAccessException {
+        //Lazy initialization
+        if (matchWithItems == null) {
+            matchWithItems = new ArrayList<SelectItem>();
+            List<String> tokenTypes = new ArrayList<String>(AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes());
+            Collections.sort(tokenTypes);
+            for (String tokenType : tokenTypes) {             
+                List<AccessMatchValue> accessMatchValues = new ArrayList<AccessMatchValue>(AccessMatchValueReverseLookupRegistry.INSTANCE
+                        .getNameLookupRegistryForTokenType(tokenType).values());
+                Set<AccessMatchValue> treeSet = new TreeSet<AccessMatchValue>();
+                treeSet.addAll(accessMatchValues);
+                for (AccessMatchValue current : treeSet) {
+                    matchWithItems.add(new SelectItem(tokenType + ":" + current.name(), 
+                            getEjbcaWebBean().getText(tokenType) + ": " + getEjbcaWebBean().getText(current.name())));
+                }
+            }
+        }
+       
+        return matchWithItems;
     }
 
     /** @return a viewable list of 'match type'-texts */
@@ -171,8 +208,10 @@ public class RolesManagedBean extends BaseManagedBean {
 
     public Map<String, Integer> getAccessMatchValuesAsMap() {
         Map<String, Integer> result = new HashMap<String, Integer>();
-        for (X500PrincipalAccessMatchValue value : X500PrincipalAccessMatchValue.values()) {
-            result.put(value.name(), value.getNumericValue());
+        for (String tokenType : AccessMatchValueReverseLookupRegistry.INSTANCE.getAllTokenTypes()) {
+            for (AccessMatchValue value : AccessMatchValueReverseLookupRegistry.INSTANCE.getNameLookupRegistryForTokenType(tokenType).values()) {
+                result.put(tokenType + ":" + value.name(), value.getNumericValue());
+            }
         }
         return result;
     }
@@ -181,20 +220,30 @@ public class RolesManagedBean extends BaseManagedBean {
     public String getMatchCaId() {
         return matchCaId;
     }
-
+    
     public void setMatchCaId(String matchCaId) {
         this.matchCaId = matchCaId;
     }
 
-    public X500PrincipalAccessMatchValue getMatchWith() {
-        return matchWith;
+    public HtmlSelectOneMenu getMatchWithMenu() {
+        if(matchWithMenu == null) {
+            matchWithMenu = new HtmlSelectOneMenu();
+        }
+        if(matchWithMenu.getValue() == null) {
+            matchWithMenu.setValue(getDefaultMatchWith());
+        }
+        return matchWithMenu;
     }
 
-    public void setMatchWith(X500PrincipalAccessMatchValue matchWith) {
-        this.matchWith = matchWith;
+    public void setMatchWithMenu(HtmlSelectOneMenu matchWithMenu) {
+        this.matchWithMenu = matchWithMenu;
     }
 
     public AccessMatchType getMatchType() {
+        if(matchType == null) {
+            //Default value
+            setMatchType(AccessMatchType.TYPE_EQUALCASE);
+        }
         return matchType;
     }
 
@@ -216,7 +265,9 @@ public class RolesManagedBean extends BaseManagedBean {
      * @throws RoleNotFoundException
      */
     public void addAdmin() throws RoleNotFoundException {
-        X500PrincipalAccessMatchValue matchWith = getMatchWith();
+        String[] matchWithMenuItems = ((String) matchWithMenu.getValue()).split(":");
+        AccessMatchValue matchWith = AccessMatchValueReverseLookupRegistry.INSTANCE.lookupMatchValueFromTokenTypeAndName(matchWithMenuItems[0],
+                matchWithMenuItems[1]);
         AccessMatchType matchType = getMatchType();
         String matchValue = getMatchValue();
         if (matchValue == null || "".equals(matchValue)) {
@@ -226,7 +277,7 @@ public class RolesManagedBean extends BaseManagedBean {
         int caid = Integer.parseInt(getMatchCaId());
         AccessUserAspectData adminEntity = new AccessUserAspectData(getCurrentRoleObject().getRoleName(), caid, matchWith, matchType,
                 matchValue);
-        // TODO: Check if adminentity exist and add a nice errormessage instead of being silent
+        // TODO: Check if adminentity exists and add a nice errormessage instead of being silent
         Collection<AccessUserAspectData> adminEntities = new ArrayList<AccessUserAspectData>();
         adminEntities.add(adminEntity);
         try {
@@ -276,6 +327,11 @@ public class RolesManagedBean extends BaseManagedBean {
         return list;
     }
 
+    public String getDefaultMatchWith() {
+        String defaultToken = X509CertificateAuthenticationToken.TOKEN_TYPE;
+        return defaultToken + ":" + AccessMatchValueReverseLookupRegistry.INSTANCE.getDefaultValueForTokenType(defaultToken);
+    }
+    
     /** @return the name of the CA that has issued the certificate for the admin in the current row of the datatable */
     public String getIssuingCA() {
         AccessUserAspectData adminEntity = getAdminForEach();
@@ -283,13 +339,26 @@ public class RolesManagedBean extends BaseManagedBean {
         if (caName == null) {
             caName = "Unknown CA with hash " + adminEntity.getCaId();
         }
-        return caName;
+        if (AccessMatchValueReverseLookupRegistry.INSTANCE.getDefaultValueForTokenType(adminEntity.getTokenType()).isIssuedByCa()) {
+            return caName;
+        } else {
+            return "";
+        }
     }
 
+    public String getAdminsTokenType() {
+        AccessUserAspectData userAspect = getAdminForEach();
+        return getEjbcaWebBean().getText(userAspect.getTokenType());
+    }
+    
     /** @return the 'match with'-text for the admin in the current row of the datatable */
     public String getAdminsMatchWith() {
         AccessUserAspectData userAspect = getAdminForEach();
-        return getEjbcaWebBean().getText(getMatchValueFromTokenType(userAspect.getTokenType(), userAspect.getMatchWith()).name());
+        return getAdminsTokenType()
+                + ":"
+                + getEjbcaWebBean().getText(
+                        AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(userAspect.getTokenType(), userAspect.getMatchWith())
+                                .name());
     }
 
     /** @return the 'match type'-text for the admin in the current row of the datatable */
@@ -303,10 +372,6 @@ public class RolesManagedBean extends BaseManagedBean {
         return (AccessUserAspectData) FacesContext.getCurrentInstance().getExternalContext().getRequestMap().get("admin");
     }
 
-    private AccessMatchValue getMatchValueFromTokenType(String tokenType, int databaseValue) {
-        return AccessMatchValueReverseLookupRegistry.INSTANCE.performReverseLookup(tokenType, databaseValue);
-    }
-    
     //
     // Edit basic access rules (mostly used by editbasicaccessrules.jsp)
     //
@@ -471,7 +536,6 @@ public class RolesManagedBean extends BaseManagedBean {
     // Advanced access rules (mostly used by editadvancedaccessrules.jsp)
     //
 
-    private AccessRulesView accessRulesViewCache = null;
 
     /** @return a cached list of all the available access rules holding the current state */
     private AccessRulesView getAccessRules() {

@@ -98,6 +98,11 @@ public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken
         public String getTokenType() {           
             return TOKEN_TYPE;
         }
+
+        @Override
+        public boolean isIssuedByCa() {
+            return false;
+        }
         
     }
     
@@ -114,6 +119,11 @@ public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken
         @Override
         public String getTokenType() {           
             return TOKEN_TYPE;
+        }
+
+        @Override
+        public boolean isIssuedByCa() {
+            return false;
         }    
     }
 }

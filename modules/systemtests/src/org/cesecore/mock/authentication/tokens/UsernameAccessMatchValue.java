@@ -38,7 +38,7 @@ public enum UsernameAccessMatchValue implements AccessMatchValue {
          */  
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(UsernameBasedAuthenticationToken.TOKEN_TYPE,
-                    UsernameAccessMatchValue.class.getMethod("matchFromDatabase", Integer.class));
+                    UsernameAccessMatchValue.class.getMethod("matchFromDatabase", Integer.class), null, USERNAME);
         } catch (SecurityException e) {
             log.error("Failure when registering method", e);
         } catch (NoSuchMethodException e) {
@@ -71,6 +71,11 @@ public enum UsernameAccessMatchValue implements AccessMatchValue {
 
     public static UsernameAccessMatchValue matchFromDatabase(Integer numericValue) {
         return databaseLookup.get(numericValue);
+    }
+
+    @Override
+    public boolean isIssuedByCa() {
+        return false;
     }
 
 }
