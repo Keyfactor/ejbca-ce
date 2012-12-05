@@ -220,7 +220,6 @@ ocsp.defaultresponder=CN=AdminCA1,O=EJBCA Sample,C=SE
 # A certificate for the new key will be fetched by WS from EJBCA.
 
 # URL to webservice from which the certificate for a newly generated OCSP responder key should be fetched.
-# The re-keying feature is disabled if this property is not defined.
 # Default: null
 #ocsp.rekeying.wsurl = https://milton:8443/ejbca/ejbcaws/ejbcaws
 
