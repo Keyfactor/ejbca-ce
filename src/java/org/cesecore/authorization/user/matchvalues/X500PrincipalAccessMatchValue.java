@@ -31,32 +31,32 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     private static final Logger log = Logger.getLogger(X500PrincipalAccessMatchValue.class);
     
     private static Map<Integer, X500PrincipalAccessMatchValue> databaseLookup;
-    private static Map<String, X500PrincipalAccessMatchValue> nameLookup;
+    private static Map<String, AccessMatchValue> nameLookup;
     private int numericValue;
     
     static {
+        /**
+         * Create internal mappings to translate from the database representation of this match value (an int) or
+         * to GUI representation (a String) to an actual match value.
+         */
+        databaseLookup = new HashMap<Integer, X500PrincipalAccessMatchValue>();
+        nameLookup = new HashMap<String, AccessMatchValue>();
+        for(X500PrincipalAccessMatchValue value : X500PrincipalAccessMatchValue.values()) {
+            databaseLookup.put(value.numericValue, value);
+            nameLookup.put(value.name(), value);
+        }
+        
         /*
          * This match value is registered with the token reverse lookup registry, which will allow it to be looked up from the string
          * return by the getTokenType method implemented from AccessMatchValue.  
          */
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(X509CertificateAuthenticationToken.TOKEN_TYPE,
-                    X500PrincipalAccessMatchValue.class.getMethod("matchFromDatabase", Integer.class));
+                    X500PrincipalAccessMatchValue.class.getMethod("matchFromDatabase", Integer.class), nameLookup, WITH_SERIALNUMBER);
         } catch (SecurityException e) {
             log.error("Failure when registering method", e);
         } catch (NoSuchMethodException e) {
             log.error("Failure when registering method", e);
-        }
-        
-        /**
-         * Create internal mappings to translate from the database representation of this match value (an int) or
-         * to GUI representation (a String) to an actual match value.
-         */
-        databaseLookup = new HashMap<Integer, X500PrincipalAccessMatchValue>();
-        nameLookup = new HashMap<String, X500PrincipalAccessMatchValue>();
-        for(X500PrincipalAccessMatchValue value : X500PrincipalAccessMatchValue.values()) {
-            databaseLookup.put(value.numericValue, value);
-            nameLookup.put(value.name(), value);
         }
     }
     
@@ -73,7 +73,7 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
         return databaseLookup.get(numericValue);
     }
     
-    public static X500PrincipalAccessMatchValue matchFromName(String name) {
+    public static AccessMatchValue matchFromName(String name) {
         return nameLookup.get(name);
     }
 
@@ -81,4 +81,10 @@ public enum X500PrincipalAccessMatchValue implements AccessMatchValue {
     public String getTokenType() {
         return X509CertificateAuthenticationToken.TOKEN_TYPE;
     }
+
+    @Override
+    public boolean isIssuedByCa() {
+        return true;
+    }
+
 }

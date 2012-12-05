@@ -40,4 +40,10 @@ public interface AccessMatchValue {
      * @return the name of the implementing enumeration.
      */
     String name();
+    
+    /**
+     * 
+     * @return true of this AccessMatchValue is issued by a CA 
+     */
+    boolean isIssuedByCa();
 }

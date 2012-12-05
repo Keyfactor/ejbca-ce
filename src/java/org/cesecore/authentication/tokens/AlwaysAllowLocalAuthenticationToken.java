@@ -97,6 +97,11 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
         public String getTokenType() {           
             return TOKEN_TYPE;
         }
+
+        @Override
+        public boolean isIssuedByCa() {
+            return false;
+        }
         
     }
     
@@ -113,6 +118,11 @@ public class AlwaysAllowLocalAuthenticationToken extends LocalJvmOnlyAuthenticat
         @Override
         public String getTokenType() {           
             return TOKEN_TYPE;
+        }
+
+        @Override
+        public boolean isIssuedByCa() {
+            return false;
         }
         
     }

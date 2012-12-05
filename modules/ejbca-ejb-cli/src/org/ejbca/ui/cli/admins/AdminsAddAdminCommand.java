@@ -99,7 +99,7 @@ public class AdminsAddAdminCommand extends BaseAdminsCommand {
                 return;
             }
             int caid = caInfo.getCAId();
-            X500PrincipalAccessMatchValue matchWith = X500PrincipalAccessMatchValue.matchFromName(args[3]);
+            AccessMatchValue matchWith = X500PrincipalAccessMatchValue.matchFromName(args[3]);
             if (matchWith == null) {
                 getLogger().error("No such thing to match with as \"" + args[3] + "\".");
                 return;
