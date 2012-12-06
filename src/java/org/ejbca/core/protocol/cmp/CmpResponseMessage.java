@@ -41,7 +41,6 @@ import org.bouncycastle.asn1.cmp.CertResponse;
 import org.bouncycastle.asn1.cmp.CertifiedKeyPair;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
-import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIFreeText;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
@@ -245,7 +244,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 if (failText != null) {
                     statusInfoV.add(new PKIFreeText(new DERUTF8String(failText)));
                 }
-                statusInfoV.add(new PKIFailureInfo(failInfo.getCMPValue()));
+                statusInfoV.add(CmpMessageHelper.getPKIFailureInfo(failInfo.intValue()));
                 PKIStatusInfo myPKIStatusInfo = PKIStatusInfo.getInstance(ASN1Sequence.getInstance(new DERSequence(statusInfoV)));
                 myPKIBody = CmpMessageHelper.createCertRequestRejectBody(myPKIStatusInfo, requestId, requestType);
                 
@@ -260,7 +259,7 @@ public class CmpResponseMessage implements CertificateResponseMessage {
                 if (failText != null) {
                     statusInfoV.add(new PKIFreeText(new DERUTF8String(failText)));
                 }
-                statusInfoV.add(new PKIFailureInfo(failInfo.getCMPValue()));
+                statusInfoV.add(CmpMessageHelper.getPKIFailureInfo(failInfo.intValue()));
                 PKIStatusInfo myPKIStatusInfo = PKIStatusInfo.getInstance(new DERSequence(statusInfoV));
                 
                 ErrorMsgContent myErrorContent = new ErrorMsgContent(myPKIStatusInfo);

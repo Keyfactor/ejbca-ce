@@ -26,7 +26,6 @@ import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.ErrorMsgContent;
 import org.bouncycastle.asn1.cmp.PKIBody;
-import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIFreeText;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
@@ -129,7 +128,7 @@ public class CmpErrorResponseMessage extends BaseCmpMessage implements ResponseM
 		
 		PKIStatusInfo myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection);
 		if(failInfo != null && failText != null) {
-		    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(new DERUTF8String(failText)), new PKIFailureInfo(failInfo.getCMPValue()));
+		    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(new DERUTF8String(failText)), CmpMessageHelper.getPKIFailureInfo(failInfo.intValue()));
 		} else if(failText != null) {
 		    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(new DERUTF8String(failText)));
 		}
