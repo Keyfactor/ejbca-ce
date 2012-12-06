@@ -38,7 +38,7 @@ public enum UsernameAccessMatchValue implements AccessMatchValue {
          */  
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(UsernameBasedAuthenticationToken.TOKEN_TYPE,
-                    UsernameAccessMatchValue.class.getMethod("matchFromDatabase", Integer.class), null, USERNAME);
+                    UsernameAccessMatchValue.class.getMethod("matchFromDatabase", Integer.class), new HashMap<String, AccessMatchValue>(), USERNAME);
         } catch (SecurityException e) {
             log.error("Failure when registering method", e);
         } catch (NoSuchMethodException e) {
