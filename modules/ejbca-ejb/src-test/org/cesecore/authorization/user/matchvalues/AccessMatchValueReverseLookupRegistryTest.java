@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import java.security.InvalidParameterException;
+import java.util.HashMap;
 
 import org.junit.Test;
 
@@ -32,7 +33,7 @@ public class AccessMatchValueReverseLookupRegistryTest {
     public void testVanillaMatchValue() throws SecurityException, NoSuchMethodException {
         try {
             AccessMatchValueReverseLookupRegistry.INSTANCE.registerLookupMethod(VanillaAccessMatchValueMock.TOKEN_TYPE,
-                    VanillaAccessMatchValueMock.class.getMethod("lookup", Integer.class), null, null);
+                    VanillaAccessMatchValueMock.class.getMethod("lookup", Integer.class), new HashMap<String, AccessMatchValue>(), VanillaAccessMatchValueMock.FOO);
         } catch (InvalidMatchValueException e) {
             fail("Exception was caught for vanilla AccessMatchValue, test can't proceed");
         }
@@ -147,7 +148,6 @@ public class AccessMatchValueReverseLookupRegistryTest {
         }
         @Override
         public boolean isIssuedByCa() {
-            // TODO Auto-generated method stub
             return false;
         }
     }
