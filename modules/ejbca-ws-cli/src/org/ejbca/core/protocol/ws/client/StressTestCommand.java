@@ -32,6 +32,7 @@ import java.util.List;
 import javax.xml.bind.DatatypeConverter;
 
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -419,6 +420,9 @@ public class StressTestCommand extends EJBCAWSRABaseCommand implements IAdminCom
 			try {
                 this.pkcs10 = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=NOUSED"), keys.getPublic(), new DERSet(), keys.getPrivate(), null);
             } catch (IOException e) {
+                getPrintStream().println(e.getLocalizedMessage());
+                e.printStackTrace(getPrintStream());
+            } catch (OperatorCreationException e) {
                 getPrintStream().println(e.getLocalizedMessage());
                 e.printStackTrace(getPrintStream());
             }

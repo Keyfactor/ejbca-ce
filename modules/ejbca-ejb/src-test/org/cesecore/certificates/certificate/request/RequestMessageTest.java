@@ -36,6 +36,7 @@ import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.ExtensionsGenerator;
 import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
@@ -61,7 +62,7 @@ public class RequestMessageTest {
 	 }
 
 	 @Test
-	 public void test01Pkcs10RequestMessage() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException {
+	 public void test01Pkcs10RequestMessage() throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException, SignatureException, IOException, OperatorCreationException {
 		 
 		 // Create a P10 with extensions, in this case altNames with a DNS name
 		 ASN1EncodableVector altnameattr = new ASN1EncodableVector();

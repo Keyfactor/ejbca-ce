@@ -22,6 +22,7 @@ import java.security.SignatureException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -123,7 +124,7 @@ public class DnFieldsTest extends CommonEjbcaWS {
     public void testEmailInBothSanAndDn() throws NoSuchAlgorithmException, NoSuchProviderException,
             InvalidAlgorithmParameterException, AuthorizationDeniedException_Exception, EjbcaException_Exception, IllegalQueryException_Exception,
             InvalidKeyException, SignatureException, ApprovalException_Exception, CADoesntExistsException_Exception, NotFoundException_Exception,
-            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IOException {
+            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IOException, OperatorCreationException {
 
         UserMatch um = new UserMatch(UserMatch.MATCH_WITH_USERNAME, UserMatch.MATCH_TYPE_EQUALS, "tomcat");
         for (UserDataVOWS ud : ejbcaraws.findUser(um)) {

@@ -46,6 +46,7 @@ import javax.xml.namespace.QName;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Base64;
 import org.cesecore.certificates.ocsp.cache.CryptoTokenAndChain;
@@ -293,6 +294,10 @@ public class StandaloneOcspKeyRenewalSessionBean implements StandaloneOcspKeyRen
             final String msg = "Signature algorithm " + SIGNATURE_ALGORITHM + " was not valid. Could not create signature.";
             log.error(msg, e);
             throw new KeyRenewalFailedException("Private key was invalid", e);
+        } catch (OperatorCreationException e) {
+            final String msg = "Could not create a ContentSigner";
+            log.error(msg, e);
+            throw new KeyRenewalFailedException(msg, e);
         }
 
         CertificateResponse certificateResponse;
