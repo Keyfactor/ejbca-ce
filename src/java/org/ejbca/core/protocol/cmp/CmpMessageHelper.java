@@ -56,6 +56,7 @@ import org.bouncycastle.asn1.cmp.CertRepMessage;
 import org.bouncycastle.asn1.cmp.CertResponse;
 import org.bouncycastle.asn1.cmp.PBMParameter;
 import org.bouncycastle.asn1.cmp.PKIBody;
+import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIHeader;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
@@ -100,6 +101,28 @@ public class CmpMessageHelper {
     private static final InternalEjbcaResources INTRES = InternalEjbcaResources.getInstance();
 
 	private static final String CMP_ERRORGENERAL = "cmp.errorgeneral";
+
+    /** Array that converts our error codes from FailInfo to CMP BITString error codes. FailInfo use plain integer codes, which are
+     * the same as positions in the CMP bit string
+     * @see org.bouncycastle.asn1.cmp.PKIFailureInfo
+     */
+    private static int[] bcconversion = { PKIFailureInfo.badAlg,PKIFailureInfo.badMessageCheck,PKIFailureInfo.badRequest,PKIFailureInfo.badTime,PKIFailureInfo.badCertId
+        ,PKIFailureInfo.badDataFormat,PKIFailureInfo.wrongAuthority,PKIFailureInfo.incorrectData,PKIFailureInfo.missingTimeStamp,PKIFailureInfo.badPOP
+        ,PKIFailureInfo.certRevoked,PKIFailureInfo.certConfirmed,PKIFailureInfo.wrongIntegrity,PKIFailureInfo.badRecipientNonce,PKIFailureInfo.timeNotAvailable
+        ,PKIFailureInfo.unacceptedPolicy,PKIFailureInfo.unacceptedExtension,PKIFailureInfo.addInfoNotAvailable,PKIFailureInfo.badSenderNonce,PKIFailureInfo.badCertTemplate
+        ,PKIFailureInfo.signerNotTrusted,PKIFailureInfo.transactionIdInUse,PKIFailureInfo.unsupportedVersion,PKIFailureInfo.notAuthorized,PKIFailureInfo.systemUnavail
+        ,PKIFailureInfo.systemFailure,PKIFailureInfo.duplicateCertReq};
+
+    /** Returns the PKIFailureInfo that is the correct format for CMP, i.e. a DERBitString as specified in PKIFailureInfo.
+     * @see org.bouncycastle.asn1.cmp.PKIFailureInfo
+     * @see org.cesecore.certificates.certificate.request.FailInfo
+     * 
+     * @param failInfo
+     * @return PKIFailureInfo for use in CMP error messages
+     */
+    public static PKIFailureInfo getPKIFailureInfo(int failInfo) {
+        return new PKIFailureInfo(bcconversion[failInfo]);
+    }
 
 	public static PKIHeaderBuilder createPKIHeaderBuilder(GeneralName sender, GeneralName recipient, String senderNonce, String recipientNonce, String transactionId) {
 		PKIHeaderBuilder myPKIHeader = new PKIHeaderBuilder(2, sender, recipient);

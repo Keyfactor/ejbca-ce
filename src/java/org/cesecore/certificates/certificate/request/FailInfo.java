@@ -14,8 +14,6 @@ package org.cesecore.certificates.certificate.request;
 
 import java.io.Serializable;
 
-import org.bouncycastle.asn1.cmp.PKIFailureInfo;
-
 /**
  * Encapsulates the possible values for the failinfo part of a SCEP FAILURE response.
  *
@@ -67,17 +65,6 @@ public class FailInfo implements Serializable {
      * Not authorized
      */
     public static final FailInfo NOT_AUTHORIZED = new FailInfo(23);
-    
-    /** Array that converts our error codes to CMP BITString error codes. We use plain integer codes, which are
-     * the same as positions in the CMP bit string
-     * @see org.bouncycastle.asn1.cmp.PKIFailureInfo
-     */
-    private static int[] bcconversion = { PKIFailureInfo.badAlg,PKIFailureInfo.badMessageCheck,PKIFailureInfo.badRequest,PKIFailureInfo.badTime,PKIFailureInfo.badCertId
-        ,PKIFailureInfo.badDataFormat,PKIFailureInfo.wrongAuthority,PKIFailureInfo.incorrectData,PKIFailureInfo.missingTimeStamp,PKIFailureInfo.badPOP
-        ,PKIFailureInfo.certRevoked,PKIFailureInfo.certConfirmed,PKIFailureInfo.wrongIntegrity,PKIFailureInfo.badRecipientNonce,PKIFailureInfo.timeNotAvailable
-        ,PKIFailureInfo.unacceptedPolicy,PKIFailureInfo.unacceptedExtension,PKIFailureInfo.addInfoNotAvailable,PKIFailureInfo.badSenderNonce,PKIFailureInfo.badCertTemplate
-        ,PKIFailureInfo.signerNotTrusted,PKIFailureInfo.transactionIdInUse,PKIFailureInfo.unsupportedVersion,PKIFailureInfo.notAuthorized,PKIFailureInfo.systemUnavail
-        ,PKIFailureInfo.systemFailure,PKIFailureInfo.duplicateCertReq};
     /**
      * The value actually encoded into the response message as the failinfo attribute
      */
@@ -95,15 +82,14 @@ public class FailInfo implements Serializable {
         return Integer.toString(value);
     }
 
-    /** Returns the FailInfo value as an int that is the correct format for CMP, i.e. a DERBitString as specified in PKIFailureInfo.
-     * @see org.bouncycastle.asn1.cmp.PKIFailureInfo
-     * 
-     * @return int
+    /**
+     * Gets the error integer value
+     * @return the error code
      */
-    public int getCMPValue() {
-        return bcconversion[value];
+    public int intValue() {
+        return value;
     }
-
+    
     public boolean equals(Object o) {
         if (this == o) {
         	return true;
