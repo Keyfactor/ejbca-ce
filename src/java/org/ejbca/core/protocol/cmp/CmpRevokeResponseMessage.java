@@ -28,7 +28,6 @@ import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DEROutputStream;
 import org.bouncycastle.asn1.cmp.CMPObjectIdentifiers;
 import org.bouncycastle.asn1.cmp.PKIBody;
-import org.bouncycastle.asn1.cmp.PKIFailureInfo;
 import org.bouncycastle.asn1.cmp.PKIFreeText;
 import org.bouncycastle.asn1.cmp.PKIHeaderBuilder;
 import org.bouncycastle.asn1.cmp.PKIMessage;
@@ -141,9 +140,9 @@ public class CmpRevokeResponseMessage extends BaseCmpMessage implements Response
 			if (log.isDebugEnabled()) {
 				log.debug("Creating a rejection message");
 			}
-			myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, null, new PKIFailureInfo(failInfo.getCMPValue()));
+			myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, null, CmpMessageHelper.getPKIFailureInfo(failInfo.intValue()));
 			if(failText != null && failInfo != null) {
-			    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(failText), new PKIFailureInfo(failInfo.getCMPValue()));
+			    myPKIStatusInfo = new PKIStatusInfo(PKIStatus.rejection, new PKIFreeText(failText), CmpMessageHelper.getPKIFailureInfo(failInfo.intValue()));
 			}
 		}
 		RevRepContentBuilder revBuilder = new RevRepContentBuilder();
