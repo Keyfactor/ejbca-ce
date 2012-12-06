@@ -32,7 +32,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Signature;
 import java.security.SignatureException;
 import java.security.cert.CRL;
 import java.security.cert.CRLException;
@@ -3066,9 +3065,10 @@ public class CertTools {
      * @throws NoSuchProviderException
      * @throws InvalidKeyException
      * @throws SignatureException
+     * @throws OperatorCreationException 
      */
     public static PKCS10CertificationRequest genPKCS10CertificationRequest(String signatureAlgorithm, X500Name subject, PublicKey key, ASN1Set attributes, 
-            PrivateKey signingKey, String provider) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException {
+            PrivateKey signingKey, String provider) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, OperatorCreationException {
     
         ASN1Sequence seq = (ASN1Sequence)ASN1Primitive.fromByteArray(key.getEncoded());
         SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo(seq);
@@ -3078,26 +3078,11 @@ public class CertTools {
             provider = BouncyCastleProvider.PROVIDER_NAME;
         }
 
-        //TODO we should probably use ContentSigner instead of signing this way
-        Signature sig = Signature.getInstance(signatureAlgorithm, provider);
-        sig.initSign(signingKey);
-
-        try
-        {
-            sig.update(reqInfo.getEncoded(ASN1Encoding.DER));
-        }
-        catch (Exception e)
-        {
-            throw new IllegalArgumentException("exception encoding TBS cert request - " + e);
-        }
-        DERBitString sigBits = new DERBitString(sig.sign());
-    
-        ContentSigner signer = null;
-        try {
-            signer = new JcaContentSignerBuilder(signatureAlgorithm).build(signingKey);
-        } catch (OperatorCreationException e) {
-            log.error(e.getLocalizedMessage(), e);
-        }        
+        ContentSigner signer = new JcaContentSignerBuilder(signatureAlgorithm).build(signingKey);
+        signer.getOutputStream().write(reqInfo.getEncoded(ASN1Encoding.DER));
+        byte[] sig = signer.getSignature();
+        DERBitString sigBits = new DERBitString(sig);
+       
         CertificationRequest req = new CertificationRequest(reqInfo, signer.getAlgorithmIdentifier(), sigBits);
         return new PKCS10CertificationRequest(req);
     }

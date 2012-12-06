@@ -36,6 +36,7 @@ import javax.ejb.RemoveException;
 
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.DERSet;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -150,12 +151,13 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
      * 
      * @throws CesecoreException
      * @throws CADoesntExistsException
+     * @throws OperatorCreationException 
      */
     private void generateCertificatePkcs10(boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, boolean raw)
             throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, EjbcaException, InvalidKeyException, NoSuchAlgorithmException,
             NoSuchProviderException, SignatureException, InvalidAlgorithmParameterException, CertificateEncodingException, CertificateException,
             IOException, RemoveException, InvalidKeySpecException, ObjectNotFoundException, CreateException, CADoesntExistsException,
-            CesecoreException {
+            CesecoreException, OperatorCreationException {
         LOG.trace(">generateCertificatePkcs10");
         LOG.info("useCertReqHistory=" + useCertReqHistory + " useUserStorage=" + useUserStorage + " useCertificateStorage=" + useCertificateStorage);
         reconfigureCA(useCertReqHistory, useUserStorage, useCertificateStorage);
@@ -224,11 +226,12 @@ public class CertificateRequestThrowAwayTest extends CaTestCase {
      * @param raw true if an encoded request should be sent, false if an EJBCA PKCS10RequestMessage should be used.
      * @throws CesecoreException
      * @throws CADoesntExistsException
+     * @throws OperatorCreationException 
      */
     private Certificate doPkcs10Request(EndEntityInformation userData, boolean raw) throws AuthorizationDeniedException,
             UserDoesntFullfillEndEntityProfile, EjbcaException, NoSuchAlgorithmException, NoSuchProviderException,
             InvalidAlgorithmParameterException, InvalidKeyException, SignatureException, CertificateEncodingException, CertificateException,
-            IOException, InvalidKeySpecException, ObjectNotFoundException, CreateException, CADoesntExistsException, CesecoreException {
+            IOException, InvalidKeySpecException, ObjectNotFoundException, CreateException, CADoesntExistsException, CesecoreException, OperatorCreationException {
         Certificate ret;
         KeyPair rsakeys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA); // Use short keys, since this will be done many times
         byte[] rawPkcs10req = CertTools.genPKCS10CertificationRequest("SHA1WithRSA", CertTools.stringToBcX500Name("CN=ignored"), rsakeys.getPublic(),
