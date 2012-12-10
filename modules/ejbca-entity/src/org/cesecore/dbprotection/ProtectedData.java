@@ -209,7 +209,9 @@ public abstract class ProtectedData {
 			throwException( data, realprot, null );
 			return;
 		}
-		log.trace("Verifying row string ok");
+		if ( log.isTraceEnabled() ) {
+			log.trace("Verifying row string ok");
+		}
 	}
 
 	private static boolean verifyHmac(final String macInHex, final String data, final int keyid, final int protectVersion) {
