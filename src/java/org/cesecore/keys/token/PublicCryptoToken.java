@@ -237,12 +237,12 @@ public class PublicCryptoToken implements CryptoToken {
 		return v.elements();
 	}
 
-    @Override
-    public void storeKey(String alias, Key key, Certificate[] chain, char[] password) throws KeyStoreException {
-        if ( chain==null || chain.length<1 ) {
-            return;
-        }
-        this.pk = chain[0].getPublicKey();
-    }
+	@Override
+	public void storeKey(String alias, Key key, Certificate[] chain, char[] password) throws KeyStoreException {
+		if ( chain==null || chain.length<1 ) {
+			return;
+		}
+		this.pk = chain[0].getPublicKey();
+	}
 
 }
