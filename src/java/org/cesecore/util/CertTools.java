@@ -56,7 +56,6 @@ import java.security.interfaces.RSAPublicKey;
 import java.security.spec.ECPublicKeySpec;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.RSAPublicKeySpec;
-import java.security.spec.X509EncodedKeySpec;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -96,7 +95,6 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x509.AccessDescription;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.AuthorityKeyIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -3127,31 +3125,6 @@ public class CertTools {
      */
     public static ContentVerifierProvider genContentVerifierProvider(PublicKey pubkey) throws IOException, OperatorCreationException {
         return new JcaContentVerifierProviderBuilder().build(pubkey);
-    }
-    
-    /**
-     * Extracts the publickey from a SubjectPublicKeyInfo object.
-     * 
-     * @param subjectPKInfo
-     * @param provider
-     * @return
-     * @throws InvalidKeySpecException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
-     */
-    public static PublicKey getPublicKeyFromSubjectPKInfo(SubjectPublicKeyInfo subjectPKInfo, String provider) throws InvalidKeySpecException, 
-                        NoSuchAlgorithmException, NoSuchProviderException {
-        X509EncodedKeySpec      xspec = new X509EncodedKeySpec(new DERBitString(subjectPKInfo).getBytes());
-        AlgorithmIdentifier     keyAlg = subjectPKInfo.getAlgorithm();
-        
-        if (provider == null)
-        {
-            return KeyFactory.getInstance(keyAlg.getAlgorithm().getId()).generatePublic(xspec);
-        }
-        else
-        {
-            return KeyFactory.getInstance(keyAlg.getAlgorithm().getId(), provider).generatePublic(xspec);
-        }
     }
     
 }
