@@ -185,7 +185,7 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     } catch(Exception e) {
                         LOG.debug("Could not parse the revocation request. Trying to parse it as novosec generated message.");
                         certmsg = CmpMessageHelper.getNovosecCertReqMsg(kur);
-                        LOG.debug("Succeeded in pasring the novosec generated request.");
+                        LOG.debug("Succeeded in parsing the novosec generated request.");
                     }
                     X500Name dn = certmsg.getCertReq().getCertTemplate().getSubject();
                     if(dn != null) {
