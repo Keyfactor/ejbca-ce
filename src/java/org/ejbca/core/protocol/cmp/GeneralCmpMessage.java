@@ -95,7 +95,7 @@ public class GeneralCmpMessage extends BaseCmpMessage {
 			} catch(Exception e) {
 			    log.debug("Could not parse the revocation request. Trying to parse it as novosec generated message.");
 			    rd = CmpMessageHelper.getNovosecRevDetails(rr);
-			    log.debug("Succeeded in pasring the novosec generated request.");
+			    log.debug("Succeeded in parsing the novosec generated request.");
 			}
 			final CertTemplate ct = rd.getCertDetails();
 			final DERInteger serno = ct.getSerialNumber();
