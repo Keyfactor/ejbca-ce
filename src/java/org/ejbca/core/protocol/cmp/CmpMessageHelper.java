@@ -542,6 +542,26 @@ public class CmpMessageHelper {
 	}
 	   
 	public static RevDetails getNovosecRevDetails(RevReqContent revContent) {
+	    // Novosec implements RFC2510, while bouncycastle 1.47 implements RFC4210.
+	    //
+	    // In RFC2510/novosec, the RevDetails structure looks like this:
+	    //              RevDetails ::= SEQUENCE {
+        //                                  certDetails         CertTemplate,
+        //                                  revocationReason    ReasonFlags      OPTIONAL,
+        //                                  badSinceDate        GeneralizedTime  OPTIONAL,
+        //                                  crlEntryDetails     Extensions       OPTIONAL
+	    //             }
+	    //
+	    // In RFC4210/bouncycastle, the REVDetails structure looks like this:
+	    //                 RevDetails ::= SEQUENCE {
+        //                                  certDetails         CertTemplate,
+        //                                  crlEntryDetails     Extensions       OPTIONAL
+        //                  }
+	    //
+	    // This means that there is a chance that the request generated using novosec specifies the revocation reason in 'revocationReason' and not
+	    // as an extension, leading to Ejbca not being able to parse the request using bouncycastle OR not setting the correct revocation reason.
+	    
+	    
 	    ASN1Encodable o2 =  ((DERSequence) revContent.toASN1Primitive()).getObjectAt(0);
 	    ASN1Encodable o3 =  ((DERSequence) o2).getObjectAt(0);
 	    CertTemplate ct = CertTemplate.getInstance(o3);
