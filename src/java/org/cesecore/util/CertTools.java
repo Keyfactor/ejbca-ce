@@ -3053,13 +3053,43 @@ public class CertTools {
     /**
      * Generates a PKCS10CertificateRequest
      * 
+     * Code Example:
+     * -------------
+     * An example of putting AltName and a password challenge in an 'attributes' set (taken from RequestMessageTest.test01Pkcs10RequestMessage() ):
+     *       
+     *      {@code
+     *      // Create a P10 with extensions, in this case altNames with a DNS name
+     *      ASN1EncodableVector altnameattr = new ASN1EncodableVector();
+     *      altnameattr.add(PKCSObjectIdentifiers.pkcs_9_at_extensionRequest);
+     *      // AltNames
+     *      GeneralNames san = CertTools.getGeneralNamesFromAltName("dNSName=foo1.bar.com");
+     *      ExtensionsGenerator extgen = new ExtensionsGenerator();
+     *      extgen.addExtension(Extension.subjectAlternativeName, false, san );
+     *      Extensions exts = extgen.generate();
+     *      altnameattr.add(new DERSet(exts));
+     *    
+     *      // Add a challenge password as well
+     *      ASN1EncodableVector pwdattr = new ASN1EncodableVector();
+     *      pwdattr.add(PKCSObjectIdentifiers.pkcs_9_at_challengePassword); 
+     *      ASN1EncodableVector pwdvalues = new ASN1EncodableVector();
+     *      pwdvalues.add(new DERUTF8String("foo123"));
+     *      pwdattr.add(new DERSet(pwdvalues));
+     *    
+     *      // Complete the Attribute section of the request, the set (Attributes)
+     *      // contains one sequence (Attribute)
+     *      ASN1EncodableVector v = new ASN1EncodableVector();
+     *      v.add(new DERSequence(altnameattr));
+     *      v.add(new DERSequence(pwdattr));
+     *      DERSet attributes = new DERSet(v);
+     *      }
+     * 
      * @param signatureAlgorithm
-     * @param subject
-     * @param key
-     * @param attributes
+     * @param subject   The request's subjectDN
+     * @param publickey
+     * @param attributes    A set of attributes, for example, extensions, challenge password, etc.
      * @param signingKey
      * @param provider
-     * @return
+     * @return a PKCS10CertificateRequest based on the input parameters.
      * @throws IOException
      * @throws NoSuchAlgorithmException
      * @throws NoSuchProviderException
@@ -3067,10 +3097,10 @@ public class CertTools {
      * @throws SignatureException
      * @throws OperatorCreationException 
      */
-    public static PKCS10CertificationRequest genPKCS10CertificationRequest(String signatureAlgorithm, X500Name subject, PublicKey key, ASN1Set attributes, 
+    public static PKCS10CertificationRequest genPKCS10CertificationRequest(String signatureAlgorithm, X500Name subject, PublicKey publickey, ASN1Set attributes, 
             PrivateKey signingKey, String provider) throws IOException, NoSuchAlgorithmException, NoSuchProviderException, InvalidKeyException, SignatureException, OperatorCreationException {
     
-        ASN1Sequence seq = (ASN1Sequence)ASN1Primitive.fromByteArray(key.getEncoded());
+        ASN1Sequence seq = (ASN1Sequence)ASN1Primitive.fromByteArray(publickey.getEncoded());
         SubjectPublicKeyInfo pkinfo = new SubjectPublicKeyInfo(seq);
         CertificationRequestInfo reqInfo = new CertificationRequestInfo(subject, pkinfo, attributes);
     
@@ -3091,7 +3121,7 @@ public class CertTools {
      * Generated Generates a ContentVerifierProvider.
      * 
      * @param pubkey
-     * @return
+     * @return a JcaContentVerifierProvider. Useful for verifying the signiture in a PKCS10CertificationRequest
      * @throws IOException
      * @throws OperatorCreationException
      */
