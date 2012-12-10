@@ -482,6 +482,28 @@ public class CmpMessageHelper {
 	 * @return
 	 */
 	public static CertReqMsg getNovosecCertReqMsg(CertReqMessages messages) {
+	    // The encoding of the ProofOfPosession in bouncycastle and novosec is different.
+	    // Novosec generator explicitly tags the PopoSigningKey while it should be implicitly tagged.
+	    // Through novosec, the ProofOfPosession comes through as:
+	    //         Sequence
+	    //             DERSequence
+	    //                 DERSequence
+	    //                     ObjectIdentifier(1.2.840.113549.1.1.5)
+	    //                 DERBitString[64,0]
+	    //
+	    // But it should be:
+	    //         DERSequence
+	    //             DERSequence
+	    //                 ObjectIdentifier(1.2.840.113549.1.1.5)
+	    //             DERBitString[64,0]
+	    //
+	    // The bouncycastle parser expects an implicit tag, so to it, it looks like the sequence is containing a single element.
+	    //--------------------------------------
+	    // A comment from bouncycastle that might not effect anything here but maybe effect something else in the future: 
+	    //         What's happened is the novosec generator has explicitly tagged the PopoSigningKey structure, it should be 
+	    //         implicitly tagged (this isn't true if it's a POPOPrivKey, but that's because it's a CHOICE item so the tag 
+	    //         has to be preserved, but that is a different story).
+	    
 	    // Reconstructing the CertRequest
         ASN1Encodable o2 =  ((DERSequence) messages.toASN1Primitive()).getObjectAt(0);
         ASN1Encodable o3 =  ((DERSequence) o2).getObjectAt(0);
