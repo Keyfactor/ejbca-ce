@@ -1042,8 +1042,10 @@ There is a property you can change:</p>
 
 <section name="Files deployed">
 <p>
-Here we describe shortly which files are copied during various ant targets that are called . These targets only modified files automatically on the JBoss platforms,
+Here we describe shortly which files are copied during various ant targets that are called . These targets only modified files automatically on the platforms,
 but it will give an indication as well for other platforms what configuration steps are needed.
+</p>
+<p>Below shows (configuration) files updated for JBoss 5 platform. For JBoss 7/EAP6 there is only one unified configuration file and all configuration is done using the JBoss 7 command line interface.
 </p>
 <p>
 <strong>ant deploy</strong>
