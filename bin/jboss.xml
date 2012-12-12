@@ -220,8 +220,10 @@
             <jboss:adm arg='/subsystem=mail/mail-session="${mail.jndi-name}":add(jndi-name="${mail.jndi-name}"' />
             <jboss:adm arg='/subsystem=mail/mail-session="${mail.jndi-name}"/server=smtp:add(${jboss7.ejbca-mail-smtp.params})' />
             <jboss:admsilent arg=":reload" />
-            <!-- This is a workaround since when calling service deployment and reloading, we can get some ugly race conditions. The problem is that :reload is non-blocking operation, and we have no way to figure out if the redeployment is done or not. @TODO: Find a better solution for this. -->
-            <sleep seconds="10"/>
+            <!-- We must wait until the ejbca.ear has been redeployed, or some race conditions could happen. The problem is that :reload is a non-blocking operation. -->
+            <waitfor maxwait="20000">
+                <available file="${jboss.farm.dir}/ejbca.ear.deployed"/>
+            </waitfor>
         </target>
 
 	<target name="jee:deployDSJBoss7" if="jboss7" depends="set-paths,jee:assert-runJBoss7">
