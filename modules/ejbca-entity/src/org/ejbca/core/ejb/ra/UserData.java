@@ -551,24 +551,31 @@ public class UserData extends ProtectedData implements Serializable {
     }
 
     /**
-     * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
-     * @return the found entity instance or null if the entity does not exist
+     * 
+     * @param entityManager an entity manager
+     * @param subjectDN the subject DN to search for 
+     * @param caId the CA ID to search for
+     * @return a list if found UserData objects, or an empty list if none found.
      */
-    public static UserData findBySubjectDNAndCAId(EntityManager entityManager, String subjectDN, int caId) {
+    @SuppressWarnings("unchecked")
+    public static List<UserData> findBySubjectDNAndCAId(EntityManager entityManager, String subjectDN, int caId) {
         final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN AND a.caId=:caId");
         query.setParameter("subjectDN", subjectDN);
         query.setParameter("caId", caId);
-        return (UserData) QueryResultWrapper.getSingleResult(query);
+        return query.getResultList();
     }
 
     /**
-     * @throws javax.persistence.NonUniqueResultException if more than one entity with the name exists
-     * @return the found entity instance or null if the entity does not exist
+     * 
+     * @param entityManager an entity manager
+     * @param subjectDN the subject DN to check for.
+     * @return a list of all users matching the given subject DN, or  an empty list if none are found.
      */
-    public static UserData findBySubjectDN(EntityManager entityManager, String subjectDN) {
+    @SuppressWarnings("unchecked")
+    public static List<UserData> findBySubjectDN(EntityManager entityManager, String subjectDN) {
         final Query query = entityManager.createQuery("SELECT a FROM UserData a WHERE a.subjectDN=:subjectDN");
         query.setParameter("subjectDN", subjectDN);
-        return (UserData) QueryResultWrapper.getSingleResult(query);
+        return query.getResultList();
     }
 
     /** @return return the query results as a List. */

@@ -18,6 +18,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
 import javax.ejb.FinderException;
 
@@ -65,12 +66,13 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
     /** strings for error messages defined in internal resources */
     private static final String CMP_ERRORGENERAL = "cmp.errorgeneral";
 
-    private final SignSession signSession;
-    private final EndEntityAccessSession endEntityAccessSession;
-    private final CertificateStoreSession certStoreSession;
     private final AccessControlSession authorizationSession;
-    private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
+    private final CertificateStoreSession certStoreSession;
+    private final EndEntityAccessSession endEntityAccessSession;
     private final EndEntityManagementSession endEntityManagementSession;
+    private final SignSession signSession;
+    private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
+   
 
     /**
      * Used only by unit test.
@@ -216,9 +218,18 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                     if(LOG.isDebugEnabled()) {
                         LOG.debug("The CMP KeyUpdateRequest did not specify an issuer");
                     }
-                    userdata = endEntityAccessSession.findUserBySubjectDN(admin, subjectDN);
+                    List<EndEntityInformation> userdataList = endEntityAccessSession.findUserBySubjectDN(admin, subjectDN);
+                    userdata = userdataList.get(0);
+                    if (userdataList.size() > 1) {
+                        LOG.warn("Multiple end entities with subject DN " + subjectDN + " were found. This may lead to unexpected behavior.");
+                    }
                 } else {
-                    userdata = endEntityAccessSession.findUserBySubjectAndIssuerDN(admin, subjectDN, issuerDN);
+                    List<EndEntityInformation> userdataList = endEntityAccessSession.findUserBySubjectAndIssuerDN(admin, subjectDN, issuerDN);
+                    userdata = userdataList.get(0);
+                    if (userdataList.size() > 1) {
+                        LOG.warn("Multiple end entities with subject DN " + subjectDN + " and issuer DN" + issuerDN
+                                + " were found. This may lead to unexpected behavior.");
+                    }
                 }
 
                 if(userdata == null) {

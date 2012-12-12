@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
+import java.util.List;
 import java.util.TreeMap;
 
 import javax.ejb.FinderException;
@@ -381,10 +382,8 @@ public class RAInterfaceBean implements Serializable {
     	ArrayList<EndEntityInformation> userlist = new ArrayList<EndEntityInformation>();
     	UserView[] returnval = null;
     	if (certs != null) {
-    		Iterator<Certificate> iter = certs.iterator();
-    		while (iter.hasNext()) {
+    		for(Certificate next : certs) {
     			try {
-    				Certificate next = iter.next();
     				String username = certificatesession.findUsernameByCertSerno(serno, CertTools.getIssuerDN(next));
     				if (username != null) {
     				    EndEntityInformation user = endEntityAccessSession.findUser(administrator, username);
@@ -394,15 +393,13 @@ public class RAInterfaceBean implements Serializable {
     				}
     				if (userlist.isEmpty()) {
     				    // Perhaps it's such an old installation that we don't have username in the CertificateData table (has it even ever been like that?, I don't think so)
-                        EndEntityInformation user = endEntityAccessSession.findUserBySubjectAndIssuerDN(administrator, CertTools.getSubjectDN(next), CertTools.getIssuerDN(next));
-                        if (user != null) {
-                            userlist.add(user);
-                        }
+                        List<EndEntityInformation> users = endEntityAccessSession.findUserBySubjectAndIssuerDN(administrator, CertTools.getSubjectDN(next), CertTools.getIssuerDN(next));     
+                            userlist.addAll(users);
     				}
     			} catch(AuthorizationDeniedException e) {}
     		}
     		usersView.setUsers(userlist, informationmemory.getCAIdToNameMap());
-    		returnval= usersView.getUsers(index,size);
+    		returnval = usersView.getUsers(index,size);
     	}
     	return returnval;
     }

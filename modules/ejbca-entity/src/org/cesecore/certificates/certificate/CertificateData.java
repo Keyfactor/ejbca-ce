@@ -817,6 +817,13 @@ public class CertificateData extends ProtectedData implements Serializable {
         return new HashSet<String>(query.getResultList());
     }
 
+    public static final String findUsernameByIssuerDnAndSerialNumber(EntityManager entityManager, String issuerDn, String serialNumber) {
+        final Query query = entityManager.createQuery("SELECT a.username FROM CertificateData a WHERE a.issuerDN=:issuerDN AND a.serialNumber=:serialNumber");
+        query.setParameter("issuerDN", issuerDn);
+        query.setParameter(serialNumber, serialNumber);
+        return (String) query.getSingleResult();
+    }
+    
     /** @return return the query results as a List. */
     @SuppressWarnings("unchecked")
     public static Set<String> findUsernamesBySubjectKeyIdOrDnAndIssuer(EntityManager entityManager, String issuerDN, String subjectKeyId, String subjectDN) {

@@ -72,7 +72,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public EndEntityInformation findUserBySubjectDN(final AuthenticationToken admin, final String subjectdn) throws AuthorizationDeniedException {
+    public List<EndEntityInformation> findUserBySubjectDN(final AuthenticationToken admin, final String subjectdn) throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">findUserBySubjectDN(" + subjectdn + ")");
         }
@@ -81,22 +81,25 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         if (log.isDebugEnabled()) {
             log.debug("Looking for users with subjectdn: " + dn);
         }
-        final UserData data = UserData.findBySubjectDN(entityManager, dn);
-        if (data == null) {
+        final List<UserData> dataList = UserData.findBySubjectDN(entityManager, dn);
+        if (dataList.size() == 0) {
             if (log.isDebugEnabled()) {
-                log.debug("Cannot find user with subjectdn: " + dn);
+                log.debug("Cannot find userd with subjectdn: " + dn);
             }
         }
-        final EndEntityInformation returnval = returnUserDataVO(admin, data, null);
+        final List<EndEntityInformation> result = new ArrayList<EndEntityInformation>();
+        for(UserData data : dataList) {
+            result.add(convertUserDataToEndEntityInformation(admin, data, null));
+        }
         if (log.isTraceEnabled()) {
             log.trace("<findUserBySubjectDN(" + subjectdn + ")");
         }
-        return returnval;
+        return result;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public EndEntityInformation findUserBySubjectAndIssuerDN(final AuthenticationToken admin, final String subjectdn, final String issuerdn)
+    public List<EndEntityInformation> findUserBySubjectAndIssuerDN(final AuthenticationToken admin, final String subjectdn, final String issuerdn)
             throws AuthorizationDeniedException {
         if (log.isTraceEnabled()) {
             log.trace(">findUserBySubjectAndIssuerDN(" + subjectdn + ", " + issuerdn + ")");
@@ -107,17 +110,20 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
         if (log.isDebugEnabled()) {
             log.debug("Looking for users with subjectdn: " + dn + ", issuerdn : " + issuerDN);
         }
-        final UserData data = UserData.findBySubjectDNAndCAId(entityManager, dn, issuerDN.hashCode());
-        if (data == null) {
+        final List<UserData> dataList = UserData.findBySubjectDNAndCAId(entityManager, dn, issuerDN.hashCode());
+        if (dataList.size() == 0) {
             if (log.isDebugEnabled()) {
                 log.debug("Cannot find user with subjectdn: " + dn + ", issuerdn : " + issuerDN);
             }
         }
-        final EndEntityInformation returnval = returnUserDataVO(admin, data, null);
+        final List<EndEntityInformation> result = new ArrayList<EndEntityInformation>();
+        for(UserData data : dataList) {
+            result.add(convertUserDataToEndEntityInformation(admin, data, null));
+        }
         if (log.isTraceEnabled()) {
             log.trace("<findUserBySubjectAndIssuerDN(" + subjectdn + ", " + issuerDN + ")");
         }
-        return returnval;
+        return result;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -132,7 +138,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
                 log.debug("Cannot find user with username='" + username + "'");
             }
         }
-        final EndEntityInformation ret = returnUserDataVO(admin, data, username);
+        final EndEntityInformation ret = convertUserDataToEndEntityInformation(admin, data, username);
         if (log.isTraceEnabled()) {
             log.trace("<findUser(" + username + "): " + (ret == null ? "null" : ret.getDN()));
         }
@@ -174,7 +180,7 @@ public class EndEntityAccessSessionBean implements EndEntityAccessSessionLocal, 
     }
 
     /** @return the userdata value object if admin is authorized. Does not leak username if auth fails. */
-    private EndEntityInformation returnUserDataVO(final AuthenticationToken admin, final UserData data, final String requestedUsername)
+    private EndEntityInformation convertUserDataToEndEntityInformation(final AuthenticationToken admin, final UserData data, final String requestedUsername)
             throws AuthorizationDeniedException {
         if (data != null) {
             if (globalConfigurationSession.getCachedGlobalConfiguration().getEnableEndEntityProfileLimitations()) {

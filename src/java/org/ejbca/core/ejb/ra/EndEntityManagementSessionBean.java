@@ -17,6 +17,7 @@ import java.awt.print.PrinterException;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -1779,13 +1780,11 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
                         EndEntityInformation approvalAdmin = null;
                         if (admin instanceof X509CertificateAuthenticationToken) {
                             final X509CertificateAuthenticationToken xtok = (X509CertificateAuthenticationToken) admin;
-                            final Certificate adminCert = xtok.getCertificate();
-                            approvalAdminDN = CertTools.getSubjectDN(adminCert);
-                            if (log.isDebugEnabled()) {
-                                log.debug("approvalAdminDN: " + approvalAdminDN);
-                            }
-                            approvalAdmin = endEntityAccessSession.findUserBySubjectAndIssuerDN(new AlwaysAllowLocalAuthenticationToken(
-                                    new UsernamePrincipal("EndEntityManagementSession")), CertTools.getSubjectDN(adminCert), CertTools.getIssuerDN(adminCert));
+                            final X509Certificate adminCert = xtok.getCertificate();
+                            String username = certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(CertTools.getIssuerDN(adminCert),
+                                    adminCert.getSerialNumber());
+                            approvalAdmin = endEntityAccessSession.findUser(new AlwaysAllowLocalAuthenticationToken(new UsernamePrincipal(
+                                    "EndEntityManagementSession")), username);
                         }
                         final UserNotificationParamGen paramGen = new UserNotificationParamGen(data, approvalAdminDN, approvalAdmin);
                         /*
