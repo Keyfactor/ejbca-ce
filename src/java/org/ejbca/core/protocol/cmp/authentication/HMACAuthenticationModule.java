@@ -17,6 +17,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
 import java.security.cert.Certificate;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
@@ -309,12 +310,21 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                 } else {
                     // No username given, so we try to find from subject/issuerDN from the certificate request
                     if (issuerDN != null) {
-                        userdata = this.eeAccessSession.findUserBySubjectAndIssuerDN(this.admin, subjectDN, issuerDN);
+                        List<EndEntityInformation> userdataList = eeAccessSession.findUserBySubjectAndIssuerDN(this.admin, subjectDN, issuerDN);
+                        userdata = userdataList.get(0);
+                        if (userdataList.size() > 1) {
+                            LOG.warn("Multiple end entities with subject DN " + subjectDN + " and issuer DN" + issuerDN
+                                    + " were found. This may lead to unexpected behavior.");
+                        }
                     } else if (subjectDN != null) {
-                        if(LOG.isDebugEnabled()) {
+                        if (LOG.isDebugEnabled()) {
                             LOG.debug("Searching for an end entity with SubjectDN='" + subjectDN + "'.");
                         }
-                        userdata = this.eeAccessSession.findUserBySubjectDN(admin, subjectDN);
+                        List<EndEntityInformation> userdataList = this.eeAccessSession.findUserBySubjectDN(admin, subjectDN);
+                        userdata = userdataList.get(0);
+                        if (userdataList.size() > 1) {
+                            LOG.warn("Multiple end entities with subject DN " + subjectDN + " were found. This may lead to unexpected behavior.");
+                        }
                     }                    
                 }
             } catch (AuthorizationDeniedException e) {

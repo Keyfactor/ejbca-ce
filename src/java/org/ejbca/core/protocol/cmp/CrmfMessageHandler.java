@@ -211,6 +211,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// if extractUsernameComponent is null, we have to find the user from the DN
 					// if not empty the message will find the username itself, in the getUsername method
 					final String dn = crmfreq.getSubjectDN();
+					
 					final EndEntityInformation data;
 					/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
 					final String usernameComp = CmpConfiguration.getExtractUsernameComponent();
@@ -221,7 +222,11 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 						if (LOG.isDebugEnabled()) {
 							LOG.debug("looking for user with dn: "+dn);
 						}
-						data = endEntityAccessSession.findUserBySubjectDN(admin, dn);
+						List<EndEntityInformation> dataList = endEntityAccessSession.findUserBySubjectDN(admin, dn);
+						data = dataList.get(0);
+						if(dataList.size() > 1) {
+						    LOG.warn("Multiple end entities with subject DN " + dn + " were found. This may lead to unexpected behavior.");
+						}
 					} else {
 						final String username = CertTools.getPartFromDN(dn,usernameComp);
 						if (LOG.isDebugEnabled()) {

@@ -350,16 +350,16 @@ public class KRSSResponseGenerator extends
 		return GeneralizedKRSSMessageHelper.getAuthenticationType(req).getKeyBindingAuthentication() != null;
 	}
 	
-	protected EndEntityInformation findUserData(String subjectDN) {
-		EndEntityInformation retval = null;
+	protected List<EndEntityInformation> findUserData(String subjectDN) {
+		List<EndEntityInformation> retval = new ArrayList<EndEntityInformation>();
 		
 		if(subjectDN != null){
 			try {
-				retval = endEntityAccessSession.findUserBySubjectDN(pubAdmin, subjectDN);
+				retval.addAll(endEntityAccessSession.findUserBySubjectDN(pubAdmin, subjectDN));
 			} catch (AuthorizationDeniedException e) {
 				log.error(intres.getLocalizedMessage("xkms.errorinprivs"),e);				
 			}		
-			if(retval==null){
+			if(retval.size() == 0){
 				resultMajor = XKMSConstants.RESULTMAJOR_SENDER;
 				resultMinor = XKMSConstants.RESULTMINOR_NOMATCH;
 			}
@@ -467,9 +467,7 @@ public class KRSSResponseGenerator extends
     protected String getSubjectDN(RequestAbstractType req) {
 	    String retval = null;
 		
-	    Iterator<UseKeyWithType> iter = GeneralizedKRSSMessageHelper.getKeyBindingAbstractType(req).getUseKeyWith().iterator();
-	    while(iter.hasNext()){
-	    	UseKeyWithType next = iter.next();
+	    for(UseKeyWithType next : GeneralizedKRSSMessageHelper.getKeyBindingAbstractType(req).getUseKeyWith()){
 	    	if(next.getApplication().equals(XKMSConstants.USEKEYWITH_PKIX)){
 	    		retval = CertTools.stringToBCDNString(next.getIdentifier());
 	    		break;
