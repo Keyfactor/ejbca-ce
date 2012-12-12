@@ -16,6 +16,7 @@ import java.security.Principal;
 import java.util.HashSet;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
+import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.user.AccessUserAspect;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 
@@ -42,6 +43,10 @@ public class TestAlwaysAllowLocalAuthenticationToken extends AuthenticationToken
             }
         }, null);
 
+    }
+    
+    public TestAlwaysAllowLocalAuthenticationToken(final String username) {
+        this(new UsernamePrincipal(username));
     }
 
     @Override

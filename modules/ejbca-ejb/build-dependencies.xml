@@ -313,6 +313,8 @@
 			<copy todir="${src-temp.dir}/approval">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/ejbca/core/ejb/approval/ApprovalSession*.java"/>
+					<!-- Unneeded dependency -->
+					<include name="org/cesecore/certificates/certificate/CertificateStoreSession*.java"/>
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">
 					<include name="org/ejbca/core/ejb/approval/*.java"/>
@@ -320,6 +322,9 @@
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/core/ejb/approval/ApprovalSessionBean.java"/>
 					<include name="org/ejbca/core/model/approval/**/*.java"/>
+					<include name="org/cesecore/certificates/certificate/CertificateInfo.java"/>
+					<include name="org/cesecore/certificates/certificate/CertificateRevokeException.java"/>
+					<include name="org/cesecore/certificates/certificate/CertificateStatus.java"/>
 					<!-- GlobalConfiguration is more of RA/AdminGUI component, but is hard to get rid of w/o database changes.. -->
 					<include name="org/ejbca/core/model/ra/raadmin/GlobalConfiguration.java"/>
 					<include name="org/ejbca/config/WebConfiguration.java"/>                
@@ -364,10 +369,9 @@
 				<fileset dir="${src.dir}">
 					<include name="org/ejbca/core/ejb/ca/publisher/PublisherQueueSessionBean.java"/>
 					<include name="org/ejbca/core/model/ca/publisher/*.java"/>
+					<include name="org/cesecore/certificates/certificate/CertificateInfo.java"/>
 					<!-- Use by the LDAP Publisher -->
 					<include name="org/ejbca/util/TCPTool.java"/>
-					<!-- Use by the OCSP Publisher -->
-					<include name="org/cesecore/certificates/certificate/CertificateInfo.java"/>
 					<!-- RA classes that maybe shouldn't be here.. -->
 					<include name="org/ejbca/core/model/ra/UserDataVO.java"/>
 					<include name="org/ejbca/core/model/ra/ExtendedInformation.java"/>

@@ -251,6 +251,11 @@ public class CertificateStoreSessionBean implements CertificateStoreSessionRemot
     }
 
     @Override
+    public String findUsernameByIssuerDnAndSerialNumber(String issuerDn, BigInteger serialNumber) {
+        return CertificateData.findUsernameByIssuerDnAndSerialNumber(entityManager, issuerDn, serialNumber.toString());
+    }
+    
+    @Override
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     public boolean isOnlyUsernameForSubjectKeyIdOrDnAndIssuerDN(final String issuerDN, final byte subjectKeyId[], final String subjectDN, final String username) {
         if (log.isTraceEnabled()) {

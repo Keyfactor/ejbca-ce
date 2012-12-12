@@ -43,6 +43,7 @@ import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.StandardRules;
+import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64;
@@ -86,6 +87,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
     @EJB
     private AccessControlSessionLocal authorizationSession;
+    @EJB
+    private CertificateStoreSessionLocal certificateStoreSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
@@ -410,21 +413,14 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
         }
         try {
             AuthenticationToken sendAdmin = admin;
-            /* TODO: Commented out during code changes. Remove later.
-            if (admin.getAdminType() == Admin.TYPE_CLIENTCERT_USER) {
-                
-                sendAdmin = new ApprovedActionAdmin(admin.getAdminInformation().getX509Certificate(), admin.getUsername(), admin.getEmail());
-            }
-            */
             Certificate requestAdminCert = approvalRequest.getRequestAdminCert();
             String requestAdminDN = null;
             String requestAdminUsername = null;
             if (requestAdminCert != null) {
                 requestAdminDN = CertTools.getSubjectDN(requestAdminCert);
                 // Try to get username from database
-                EndEntityInformation endEntityInformation = endEntityAccessSession.findUserBySubjectAndIssuerDN(admin,
-                        CertTools.getSubjectDN(requestAdminCert), CertTools.getIssuerDN(requestAdminCert));
-                requestAdminUsername = endEntityInformation.getUsername();
+                requestAdminUsername = certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(CertTools.getIssuerDN(requestAdminCert),
+                        CertTools.getSerialNumber(requestAdminCert));
             } else {
                 requestAdminUsername = intres.getLocalizedMessage("CLITOOL");
                 requestAdminDN = "CN=" + requestAdminUsername;
@@ -445,9 +441,8 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 						X509CertificateAuthenticationToken xtoken = (X509CertificateAuthenticationToken) approval.getAdmin();
 	                    approvalAdminDN = CertTools.getSubjectDN(xtoken.getCertificate());
 	                    // Try to get username from database
-	                    EndEntityInformation endEntityInformation = endEntityAccessSession.findUserBySubjectAndIssuerDN(admin,
-	                            CertTools.getSubjectDN(xtoken.getCertificate()), CertTools.getIssuerDN(xtoken.getCertificate()));
-	                    approvalAdminUsername = endEntityInformation.getUsername();						
+	                    approvalAdminUsername = certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(CertTools.getIssuerDN(xtoken.getCertificate()),
+	                            CertTools.getSerialNumber(xtoken.getCertificate()));				
 					} else {
 	                    approvalAdminUsername = approval.getAdmin().toString();						
 					}
@@ -467,10 +462,12 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 	                sendAdminEmail = CertTools.getEMailAddress(xtoken.getCertificate());
 	                if (sendAdminEmail == null) {
 	                    // Secondly, see if it exists locally
-	                    EndEntityInformation endEntityInformation = endEntityAccessSession.findUserBySubjectAndIssuerDN(admin,
-	                            CertTools.getSubjectDN(xtoken.getCertificate()), CertTools.getIssuerDN(xtoken.getCertificate()));
-	                    if(endEntityInformation != null) {
-	                        sendAdminEmail = endEntityInformation.getEmail();
+                        Certificate certificate = xtoken.getCertificate();
+                        String username = certificateStoreSession.findUsernameByIssuerDnAndSerialNumber(CertTools.getIssuerDN(certificate),
+                                CertTools.getSerialNumber(certificate));
+                        EndEntityInformation endEntityInformation = endEntityAccessSession.findUser(admin, username);
+                        if (endEntityInformation != null) {
+                            sendAdminEmail = endEntityInformation.getEmail();
 	                    }
 	                }
 				}

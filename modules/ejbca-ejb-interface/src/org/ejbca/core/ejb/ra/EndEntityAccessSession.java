@@ -35,16 +35,16 @@ public interface EndEntityAccessSession {
     public EndEntityInformation findUser(AuthenticationToken admin, String username) throws AuthorizationDeniedException;
 
     /**
-     * Finds a user by its subject and issuer DN.
-     * @return EndEntityInformation or null if the user is not found.
+     * Find users by their subject and issuer DN.
+     * @return A list of all EndEntityInformations found matching those DNs, or an empty list
      */
-    public EndEntityInformation findUserBySubjectAndIssuerDN(AuthenticationToken admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException;
+    public List<EndEntityInformation> findUserBySubjectAndIssuerDN(AuthenticationToken admin, String subjectdn, String issuerdn) throws AuthorizationDeniedException;
 
     /**
-     * Finds a user by its subject DN.
-     * @return EndEntityInformation or null if the user is not found.
+     * Find users by their subject DN.
+     * @return A list of all EndEntityInformations matching the given DN, or an empty list
      */
-    public EndEntityInformation findUserBySubjectDN(AuthenticationToken admin, String subjectdn) throws AuthorizationDeniedException;
+    public List<EndEntityInformation> findUserBySubjectDN(AuthenticationToken admin, String subjectdn) throws AuthorizationDeniedException;
 
     /**
      * Finds a users by subject email.

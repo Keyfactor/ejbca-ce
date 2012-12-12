@@ -103,6 +103,16 @@ public interface CertificateStoreSession {
     Set<String> findUsernamesByIssuerDNAndSubjectKeyId(String issuerDN, byte[] subjectKeyId);
 
     /**
+     * Return the username of a certificate data object matching the given issuer DN and serial 
+     * number (there may be only one). 
+     * 
+     * @param issuerDn The DN of the issuing CA
+     * @param serialNumber the serial number of the sought certificate. 
+     * @return the matching username,
+     */
+    String findUsernameByIssuerDnAndSerialNumber(String issuerDn, BigInteger serialNumber);
+    
+    /**
      * Lists certificates for a given subject.
      * 
      * @param subjectDN the DN of the subject whos certificates will be retrieved.

@@ -15,7 +15,9 @@ package org.ejbca.core.protocol.xkms.generators;
 
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
+import java.util.List;
 
+import org.apache.log4j.Logger;
 import org.cesecore.certificates.ca.CaSession;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.crl.CrlStoreSession;
@@ -42,7 +44,7 @@ import org.w3c.dom.Document;
  */
 
 public class RegisterResponseGenerator extends KRSSResponseGenerator {
-	//private static Logger log = Logger.getLogger(RegisterResponseGenerator.class);
+	private static final Logger log = Logger.getLogger(RegisterResponseGenerator.class);
 
 	public RegisterResponseGenerator(String remoteIP, RegisterRequestType req, Document requestDoc,
     		CaSession casession, EndEntityAuthenticationSession authenticationSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
@@ -66,30 +68,32 @@ public class RegisterResponseGenerator extends KRSSResponseGenerator {
 				resultMinor = XKMSConstants.RESULTMINOR_MESSAGENOTSUPPORTED;
 			}
 			if(resultMajor == null){ 
-				if(resultMajor == null){ 	// TODO: Bug??
-					PublicKey publicKey = getPublicKey(req);					
-					if(confirmPOP(publicKey)){
-						String subjectDN = getSubjectDN(req);
-						EndEntityInformation userData = findUserData(subjectDN);
-						if(userData != null){
-							String password = "";	
-							boolean encryptedPassword = isPasswordEncrypted(req);
-							if(encryptedPassword){
-								password = getEncryptedPassword(requestDoc, userData.getPassword());
-							}else{
-								password = getClearPassword(req, userData.getPassword());
-							}
-							String revocationCode = getRevocationCode(req);
-							if(password != null ){
-								X509Certificate cert = registerReissueOrRecover(false,false, result, userData,password, publicKey, revocationCode);
-								if(cert != null){
-									KeyBindingAbstractType keyBinding = getResponseValues(req.getPrototypeKeyBinding(), cert, false, true);
-									result.getKeyBinding().add((KeyBindingType) keyBinding);
-								}
-							}
-						}
-					}
-				}
+                PublicKey publicKey = getPublicKey(req);
+                if (confirmPOP(publicKey)) {
+                    String subjectDN = getSubjectDN(req);
+                    List<EndEntityInformation> userDataList = findUserData(subjectDN);
+                    EndEntityInformation userData = userDataList.get(0);
+                    if(userDataList.size() > 1) {
+                        log.warn("Multiple end entities with subject DN " + subjectDN + " were found. This may lead to unexpected behavior.");
+                    }
+                    if (userData != null) {
+                        String password = "";
+                        boolean encryptedPassword = isPasswordEncrypted(req);
+                        if (encryptedPassword) {
+                            password = getEncryptedPassword(requestDoc, userData.getPassword());
+                        } else {
+                            password = getClearPassword(req, userData.getPassword());
+                        }
+                        String revocationCode = getRevocationCode(req);
+                        if (password != null) {
+                            X509Certificate cert = registerReissueOrRecover(false, false, result, userData, password, publicKey, revocationCode);
+                            if (cert != null) {
+                                KeyBindingAbstractType keyBinding = getResponseValues(req.getPrototypeKeyBinding(), cert, false, true);
+                                result.getKeyBinding().add((KeyBindingType) keyBinding);
+                            }
+                        }
+                    }
+                }
 			}
 		}
 		if(resultMajor == null){ 
