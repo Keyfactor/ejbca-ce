@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.Iterator;
 
 import org.cesecore.certificates.endentity.EndEntityInformation;
-import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
