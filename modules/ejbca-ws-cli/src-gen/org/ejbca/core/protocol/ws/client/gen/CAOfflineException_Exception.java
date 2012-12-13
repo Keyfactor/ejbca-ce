@@ -15,6 +15,7 @@ public class CAOfflineException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = 9215921873384762485L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

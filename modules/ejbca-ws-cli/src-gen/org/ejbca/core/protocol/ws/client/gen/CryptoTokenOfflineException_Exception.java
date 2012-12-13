@@ -15,6 +15,7 @@ public class CryptoTokenOfflineException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = -4848084999811097432L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 
