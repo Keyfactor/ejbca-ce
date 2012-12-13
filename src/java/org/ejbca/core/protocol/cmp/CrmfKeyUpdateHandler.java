@@ -219,13 +219,17 @@ public class CrmfKeyUpdateHandler extends BaseCmpMessageHandler implements ICmpM
                         LOG.debug("The CMP KeyUpdateRequest did not specify an issuer");
                     }
                     List<EndEntityInformation> userdataList = endEntityAccessSession.findUserBySubjectDN(admin, subjectDN);
-                    userdata = userdataList.get(0);
+                    if (userdataList.size() > 0) {
+                        userdata = userdataList.get(0);
+                    }
                     if (userdataList.size() > 1) {
                         LOG.warn("Multiple end entities with subject DN " + subjectDN + " were found. This may lead to unexpected behavior.");
                     }
                 } else {
                     List<EndEntityInformation> userdataList = endEntityAccessSession.findUserBySubjectAndIssuerDN(admin, subjectDN, issuerDN);
-                    userdata = userdataList.get(0);
+                    if (userdataList.size() > 0) {
+                        userdata = userdataList.get(0);
+                    }
                     if (userdataList.size() > 1) {
                         LOG.warn("Multiple end entities with subject DN " + subjectDN + " and issuer DN" + issuerDN
                                 + " were found. This may lead to unexpected behavior.");

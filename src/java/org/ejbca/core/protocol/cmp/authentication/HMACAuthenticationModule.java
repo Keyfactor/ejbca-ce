@@ -321,7 +321,9 @@ public class HMACAuthenticationModule implements ICMPAuthenticationModule {
                             LOG.debug("Searching for an end entity with SubjectDN='" + subjectDN + "'.");
                         }
                         List<EndEntityInformation> userdataList = this.eeAccessSession.findUserBySubjectDN(admin, subjectDN);
-                        userdata = userdataList.get(0);
+                        if (userdataList.size() > 0) {
+                            userdata = userdataList.get(0);
+                        }
                         if (userdataList.size() > 1) {
                             LOG.warn("Multiple end entities with subject DN " + subjectDN + " were found. This may lead to unexpected behavior.");
                         }
