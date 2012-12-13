@@ -15,6 +15,7 @@ public class RevokeBackDateNotAllowedForProfileException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = 5837449504577379214L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 

@@ -15,6 +15,7 @@ public class DateNotValidException_Exception
     extends Exception
 {
 
+    private static final long serialVersionUID = 2051344598764947576L;
     /**
      * Java type that goes as soapenv:Fault detail element.
      * 
