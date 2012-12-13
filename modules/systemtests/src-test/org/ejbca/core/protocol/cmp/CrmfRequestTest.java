@@ -79,7 +79,6 @@ import org.junit.Test;
 /**
  * This test runs in 'normal' CMP mode
  * 
- * @author tomas
  * @version $Id$
  * 
  */

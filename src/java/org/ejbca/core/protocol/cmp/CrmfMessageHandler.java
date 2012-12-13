@@ -67,7 +67,7 @@ import org.ejbca.util.passgen.PasswordGeneratorFactory;
 
 /**
  * Message handler for certificate request messages in the CRMF format
- * @author tomas
+ * 
  * @version $Id$
  */
 public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMessageHandler {
@@ -212,7 +212,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 					// if not empty the message will find the username itself, in the getUsername method
 					final String dn = crmfreq.getSubjectDN();
 					
-					final EndEntityInformation data;
+					EndEntityInformation data = null;
 					/** Defines which component from the DN should be used as username in EJBCA. Can be DN, UID or nothing. Nothing means that the DN will be used to look up the user. */
 					final String usernameComp = CmpConfiguration.getExtractUsernameComponent();
 					if (LOG.isDebugEnabled()) {
@@ -223,7 +223,9 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 							LOG.debug("looking for user with dn: "+dn);
 						}
 						List<EndEntityInformation> dataList = endEntityAccessSession.findUserBySubjectDN(admin, dn);
-						data = dataList.get(0);
+                        if (dataList.size() > 0) {
+                            data = dataList.get(0);
+                        }
 						if(dataList.size() > 1) {
 						    LOG.warn("Multiple end entities with subject DN " + dn + " were found. This may lead to unexpected behavior.");
 						}
