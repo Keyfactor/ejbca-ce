@@ -632,7 +632,7 @@ public class AuthenticationModulesTest extends CmpTestCase {
         assertEquals(23, body.getType());
         ErrorMsgContent err = (ErrorMsgContent) body.getContent();
         final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
-        final String expectedErrMsg = "Unrecognized authentication module '" + CmpConfiguration.AUTHMODULE_DN_PART_PWD + "'";
+        final String expectedErrMsg = "The authentication module 'DnPartPwd' cannot be used in RA mode";
         assertEquals(expectedErrMsg, errMsg);
     }
 
@@ -1208,6 +1208,97 @@ public class AuthenticationModulesTest extends CmpTestCase {
         }
     }
 
+    /**
+     * Test the error message returned when CMP request missing a PBE protection in RA mode (operationmode=ra) and HMAC authentication is configured. 
+     * 
+     * @throws Exception on some errors
+     */
+    @Test
+    public void test19NoHMACAuthentication() throws Exception {
+
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_HMAC);
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_HMAC));
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "foo123");
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "foo123"));
+        confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "ra"));
+        EjbcaConfigurationHolder.updateConfiguration(CmpConfiguration.CONFIG_OPERATIONMODE, "ra");
+        assertTrue("The CMP Authentication module was not configured correctly.", CmpConfiguration.getRAOperationMode());
+
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        PKIMessage msg = genCertReq(issuerDN, USER_DN, keys, cacert, nonce, transid, false, null, null, null, null, null, null);
+        assertNotNull("Generating CrmfRequest failed.", msg);
+
+        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        final DEROutputStream out = new DEROutputStream(bao);
+        out.writeObject(msg);
+        final byte[] ba = bao.toByteArray();
+        // Send request and receive response
+        final byte[] resp = sendCmpHttp(ba, 200);
+        checkCmpResponseGeneral(resp, issuerDN, USER_DN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader().getTransactionID()
+                .getOctets(), false, null);
+        
+        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        assertNotNull(respObject);
+
+        final PKIBody body = respObject.getBody();
+        assertEquals(23, body.getType());
+        ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+        final String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        final String expectedErrMsg = "PKI Message is not athenticated properly. No HMAC protection was found.";
+        assertEquals(expectedErrMsg, errMsg);
+    }
+
+    /**
+     * Test the error message returned when CMP request missing a signature in RA mode (operationmode=ra) and EndEntityCertificate authentication is configured. 
+     * 
+     * @throws Exception on some errors
+     */
+    @Test
+    public void test20NoEECAuthentication() throws Exception {
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE);
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONMODULE, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE));
+        confSession.updateProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1");   
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_AUTHENTICATIONPARAMETERS, "AdminCA1"));
+        confSession.updateProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal");
+        assertTrue("The CMP Authentication module was not configured correctly.",
+                confSession.verifyProperty(CmpConfiguration.CONFIG_OPERATIONMODE, "normal"));
+
+        KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
+
+        AlgorithmIdentifier pAlg = new AlgorithmIdentifier(PKCSObjectIdentifiers.sha1WithRSAEncryption);
+        PKIMessage msg = genCertReq(issuerDN, USER_DN, keys, cacert, nonce, transid, false, null, null, null, null, pAlg, new DEROctetString(nonce));
+        assertNotNull("Generating CrmfRequest failed.", msg);
+
+        final ByteArrayOutputStream bao = new ByteArrayOutputStream();
+        final DEROutputStream out = new DEROutputStream(bao);
+        out.writeObject(msg);
+        final byte[] ba = bao.toByteArray();
+        // Send request and receive response
+        final byte[] resp = sendCmpHttp(ba, 200);
+        checkCmpResponseGeneral(resp, issuerDN, USER_DN, cacert, msg.getHeader().getSenderNonce().getOctets(), msg.getHeader()
+                .getTransactionID().getOctets(), false, null);
+        
+        PKIMessage respObject = PKIMessage.getInstance(new ASN1InputStream(new ByteArrayInputStream(resp)).readObject());
+        assertNotNull(respObject);
+
+        PKIBody body = respObject.getBody();
+        assertEquals(23, body.getType());
+        ErrorMsgContent err = (ErrorMsgContent) body.getContent();
+        String errMsg = err.getPKIStatusInfo().getStatusString().getStringAt(0).getString();
+        String expectedErrMsg = "PKI Message is not athenticated properly. No PKI protection is found.";
+        assertEquals(expectedErrMsg, errMsg);
+        
+    }
+
+    
+    
     @AfterClass
     public static void restoreConf() {
         EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);

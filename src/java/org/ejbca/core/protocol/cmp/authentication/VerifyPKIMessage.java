@@ -155,6 +155,12 @@ public class VerifyPKIMessage {
      * @return The authentication module whose name is 'module'. Null if no such module is implemented.
      */
     private ICMPAuthenticationModule getAuthModule(final String module, final String parameter, final PKIMessage pkimsg) {
+        
+        if(CmpConfiguration.getRAOperationMode() && (StringUtils.equals(module, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD) || StringUtils.equals(module, CmpConfiguration.AUTHMODULE_DN_PART_PWD))) {
+            errMsg = "The authentication module '" + module + "' cannot be used in RA mode";
+            return null;
+        }
+        
         if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_HMAC)) {
             final HMACAuthenticationModule hmacmodule = new HMACAuthenticationModule(parameter);
             hmacmodule.setSession(this.admin, this.eeAccessSession, this.certificateStoreSession);
@@ -164,14 +170,12 @@ public class VerifyPKIMessage {
             final EndEntityCertificateAuthenticationModule eemodule = new EndEntityCertificateAuthenticationModule(parameter);
             eemodule.setSession(this.admin, this.caSession, this.certificateStoreSession, this.authorizationSessoin, this.eeProfileSession, this.eeAccessSession, authenticationProviderSession);
             return eemodule;
+        } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD)){
+            return new RegTokenPasswordExtractor();
+        } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_DN_PART_PWD)) {
+            return new DnPartPasswordExtractor(parameter);
         }
-        if(!CmpConfiguration.getRAOperationMode()) {
-            if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD)){
-                return new RegTokenPasswordExtractor();
-            } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_DN_PART_PWD)) {
-                return new DnPartPasswordExtractor(parameter);
-            }
-        }           
+
         errMsg = "Unrecognized authentication module '" + module + "'";
         return null;
     }
