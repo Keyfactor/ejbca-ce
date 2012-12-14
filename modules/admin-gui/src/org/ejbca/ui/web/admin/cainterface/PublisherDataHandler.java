@@ -165,6 +165,6 @@ public class PublisherDataHandler implements Serializable {
      * Help function that checks if administrator is authorized to edit publisher.
      */    
     private boolean authorizedToEditPublishers() {
-        return authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+        return authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.ROLE_ROOT);
     } 
 }

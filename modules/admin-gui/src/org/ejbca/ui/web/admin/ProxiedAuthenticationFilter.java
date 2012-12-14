@@ -93,7 +93,7 @@ public class ProxiedAuthenticationFilter implements Filter {
 	                    credentials.add(tempCerts[0]);
 	                    final AuthenticationToken admin = new X509CertificateAuthenticationToken(null, credentials);
 	                    if (ejb.getAccessControlSession().isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT) ||
-	                            ejb.getAccessControlSession().isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+	                            ejb.getAccessControlSession().isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
 	                        final String msg = "Authentication failed. Superadmin login is only allowed using client certificate. Subject was '"+username+"'.";
 	                        log.info(msg);
 	                        showError((HttpServletResponse)response, msg);

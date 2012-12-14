@@ -156,7 +156,7 @@ public class EditPublisherJSPHelper implements java.io.Serializable {
             initialized = true;
             issuperadministrator = false;
             try{
-                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.ROLE_ROOT);
             }catch(AuthorizationDeniedException ade){}
         }
     }

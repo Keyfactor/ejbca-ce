@@ -17,7 +17,7 @@
   String includefile = "publisherspage.jspf"; 
 
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_SUPERADMINISTRATOR); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ROOT); 
                                             cabean.initialize(request, ejbcawebbean); 
                                             publisherhelper.initialize(request,ejbcawebbean, cabean);
   String THIS_FILENAME            =  globalconfiguration.getCaPath()  + "/editpublishers/editpublishers.jsp";

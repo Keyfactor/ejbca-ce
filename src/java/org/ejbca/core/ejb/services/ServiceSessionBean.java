@@ -323,7 +323,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
     public Collection<Integer> getAuthorizedVisibleServiceIds(AuthenticationToken admin) {
         Collection<Integer> allVisibleServiceIds = new ArrayList<Integer>();
         // If superadmin return all visible services
-        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
             Collection<Integer> allServiceIds = getServiceIdToNameMap().keySet();
             Iterator<Integer> i = allServiceIds.iterator();
             while (i.hasNext()) {
@@ -335,7 +335,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
             }
         } else {
             if (log.isDebugEnabled()) {
-                log.debug("Authorization denied for admin " + admin + " for resouce " + AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+                log.debug("Authorization denied for admin " + admin + " for resouce " + AccessRulesConstants.ROLE_ROOT);
             }
         }
         return allVisibleServiceIds;
@@ -922,7 +922,7 @@ public class ServiceSessionBean implements ServiceSessionLocal, ServiceSessionRe
      */
     private boolean isAuthorizedToEditService(AuthenticationToken admin) {
 
-        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
             return true;
         }
 

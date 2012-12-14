@@ -142,7 +142,7 @@ public class BasicAccessRuleSetEncoder implements Serializable {
         namesOfAvailableRoles.add(DefaultRoles.RAADMINISTRATOR.getName());
         namesOfAvailableRoles.add(DefaultRoles.SUPERVISOR.getName());
         // Check if administrator can create superadministrators
-        if (availableruleset.contains(AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+        if (availableruleset.contains(AccessRulesConstants.ROLE_ROOT)) {
             namesOfAvailableRoles.add(DefaultRoles.SUPERADMINISTRATOR.getName());
         }
 

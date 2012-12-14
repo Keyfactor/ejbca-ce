@@ -185,8 +185,8 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
         if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ROLE_ROOT)) {
             accessrules.add(AccessRulesConstants.ROLE_ROOT);
         }
-        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
-            accessrules.add(AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+        if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ROLE_ROOT)) {
+            accessrules.add(AccessRulesConstants.ROLE_ROOT);
         }
 
         // Insert Standard Access Rules.
@@ -226,7 +226,7 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
                 accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
             } else {
                 // Add it to SuperAdministrator anyway
-                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, AccessRulesConstants.ROLE_ROOT)) {
                     accessrules.add(AccessRulesConstants.ENDENTITYPROFILEBASE);
                 }
             }

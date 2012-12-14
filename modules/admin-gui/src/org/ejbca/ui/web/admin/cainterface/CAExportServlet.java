@@ -77,7 +77,7 @@ public class CAExportServlet extends HttpServlet {
 	       req.getSession().setAttribute("ejbcawebbean", ejbcawebbean);
 	    }
 	    try{
-	    	ejbcawebbean.initialize(req, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+	    	ejbcawebbean.initialize(req, AccessRulesConstants.ROLE_ROOT);
 	    } catch(Exception e) {
 	    	throw new java.io.IOException("Authorization Denied");
 	    }

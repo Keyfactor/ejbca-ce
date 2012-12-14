@@ -333,7 +333,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
         HashSet<Integer> returnval = new HashSet<Integer>();
         boolean superadmin = false;
         // If superadmin return all available user data sources
-        superadmin = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+        superadmin = authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT);
         Collection<Integer> authorizedcas = caSession.getAvailableCAs(admin);
         Iterator<UserDataSourceData> i = UserDataSourceData.findAll(entityManager).iterator();
         while (i.hasNext()) {
@@ -457,7 +457,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
      * @return true if the administrator is authorized
      */
     private boolean isAuthorizedToUserDataSource(AuthenticationToken admin, int id,  BaseUserDataSource userdatasource,boolean remove) {    	
-    	if(authorizationSession.isAuthorizedNoLogging(admin,AccessRulesConstants.ROLE_SUPERADMINISTRATOR)){
+    	if(authorizationSession.isAuthorizedNoLogging(admin,AccessRulesConstants.ROLE_ROOT)){
     		return true;
         }
         if (remove) {
@@ -495,7 +495,7 @@ public class UserDataSourceSessionBean implements UserDataSourceSessionLocal, Us
     private void authorizedToEditUserDataSource(final AuthenticationToken admin, final String name, final BaseUserDataSource userdatasource) throws AuthorizationDeniedException {
 
         boolean ret = false;
-        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+        if (authorizationSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
             ret = true;
         }
 

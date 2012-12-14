@@ -132,7 +132,7 @@ public class EditUserDataSourceJSPHelper implements java.io.Serializable {
             admin = ejbcawebbean.getAdminObject();
             this.ejbcawebbean = ejbcawebbean;
             try{
-                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+                issuperadministrator = ejbcawebbean.isAuthorizedNoLog(AccessRulesConstants.ROLE_ROOT);
             }catch(AuthorizationDeniedException ade){}
         }
     }

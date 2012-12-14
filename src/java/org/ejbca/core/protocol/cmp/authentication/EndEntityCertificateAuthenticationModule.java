@@ -473,10 +473,10 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
         if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
                 && (rights.equals(AccessRulesConstants.CREATE_RIGHTS) || rights.equals(AccessRulesConstants.EDIT_RIGHTS))) {
 
-            if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR)) {
+            if (authSession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT)) {
                 returnval = true;
             } else {
-                errorMessage = "Admin " + admin.toString() + " was not authorized to resource " + AccessRulesConstants.ROLE_SUPERADMINISTRATOR; 
+                errorMessage = "Admin " + admin.toString() + " was not authorized to resource " + AccessRulesConstants.ROLE_ROOT; 
                 log.info(errorMessage);
             }
         } else {
