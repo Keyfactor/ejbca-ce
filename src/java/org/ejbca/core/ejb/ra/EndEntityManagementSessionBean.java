@@ -203,7 +203,7 @@ public class EndEntityManagementSessionBean implements EndEntityManagementSessio
         final boolean returnval;
         if (profileid == SecConst.EMPTY_ENDENTITYPROFILE
                 && (rights.equals(AccessRulesConstants.CREATE_RIGHTS) || rights.equals(AccessRulesConstants.EDIT_RIGHTS))) {
-            returnval = authorizationSession.isAuthorized(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+            returnval = authorizationSession.isAuthorized(admin, AccessRulesConstants.ROLE_ROOT);
         } else {
             returnval = authorizationSession.isAuthorized(admin, AccessRulesConstants.ENDENTITYPROFILEPREFIX + profileid + rights, AccessRulesConstants.REGULAR_RAFUNCTIONALITY + rights);
         }

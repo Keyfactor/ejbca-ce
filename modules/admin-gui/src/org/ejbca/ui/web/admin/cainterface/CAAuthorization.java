@@ -124,7 +124,7 @@ public class CAAuthorization implements Serializable {
             // check if administrator
             boolean superadministrator = false;
 
-            superadministrator = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+            superadministrator = authorizationsession.isAuthorizedNoLogging(admin, AccessRulesConstants.ROLE_ROOT);
 
             allprofilenames = new TreeMap<String, Integer>();
         Iterator<Integer> iter= null;  

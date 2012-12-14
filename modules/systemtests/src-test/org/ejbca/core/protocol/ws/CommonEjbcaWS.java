@@ -1985,9 +1985,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
     protected void isAuthorized(boolean authorized) throws Exception {
         // This is a superadmin keystore, improve in the future
         if (authorized) {
-            assertTrue(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_SUPERADMINISTRATOR));
+            assertTrue(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_ROOT));
         } else {
-            assertFalse(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_SUPERADMINISTRATOR));            
+            assertFalse(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_ROOT));            
         }
     }
 

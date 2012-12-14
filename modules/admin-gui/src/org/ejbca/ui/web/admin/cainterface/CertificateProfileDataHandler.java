@@ -156,7 +156,7 @@ public class CertificateProfileDataHandler implements Serializable {
     private boolean authorizedToProfile(CertificateProfile profile, boolean editcheck) {
         boolean returnval = false;
 
-        boolean issuperadministrator = authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.ROLE_SUPERADMINISTRATOR);
+        boolean issuperadministrator = authorizationsession.isAuthorizedNoLogging(administrator, AccessRulesConstants.ROLE_ROOT);
 
         boolean editauth = true; // will be set to false if we should check it and we are not authorized
         if (editcheck) {
