@@ -22,7 +22,7 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.cesecore.certificates.certificate.request.RequestMessage;
-import org.cesecore.util.EjbcaNameStyle;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.protocol.ExtendedUserDataHandler;
 import org.ejbca.util.JDBCUtil;
@@ -66,10 +66,10 @@ public class UnidFnrHandler implements ExtendedUserDataHandler {
 			return req;
 		}
         final ASN1ObjectIdentifier[] oids = dn.getAttributeTypes();
-		X500NameBuilder nameBuilder = new X500NameBuilder(new EjbcaNameStyle());
+		X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
 		boolean changed = false;
 		for ( int i=0; i<oids.length; i++ ) {
-			if ( oids[i].equals(EjbcaNameStyle.SERIALNUMBER) ) {
+			if ( oids[i].equals(CeSecoreNameStyle.SERIALNUMBER) ) {
 			    RDN[] rdns = dn.getRDNs(oids[i]);
 			    String value = rdns[0].getFirst().getValue().toString();
 				final String newSerial = storeUnidFrnAndGetNewSerialNr(value, unidPrefix);
