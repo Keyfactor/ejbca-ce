@@ -1,3 +1,25 @@
+EJBCA 5.0.8, 2012-12-17
+---
+Bug
+    [ECA-2376] - Republishing certificates to LDAP when multiple certificates per user are allowed fails if certificate is already present
+    [ECA-2710] - Last certificate gets republished twice when using '-all' in cli
+    [ECA-2781] - Searching by certificate serial number fails if certificate has same subject DN across multiple end entities
+    [ECA-2839] - CMP certificate authentication with KeyId for End Entity profile uses wrong string
+    [ECA-2845] - End entity presence (existing username) not checked properly during import
+
+Improvement
+    [ECA-2655] - Do not require private key to verify audit logs with ejbca-db-cli
+    [ECA-2708] - Can not revoke certificates that are on hold
+    [ECA-2824] - Not possible to obfuscate log signer key password.
+    [ECA-2846] - Make the bin/ejbca.sh ca importcertdir comand output filenames in case of errors
+    [ECA-2875] - Able to use unlimited no of arguments for clientToolBox on Windows
+
+New Feature
+    [ECA-2847] - Add an option to 'bin/ejbca.sh ca importcertdir' command to ignore errors
+
+Task
+    [ECA-2869] - Ensure EJBCA builds with ant 1.7
+
 EJBCA 5.0.7, 2012-10-31
 ---
 Bug
@@ -341,6 +363,42 @@ Task
     [ECA-2318] - Merge revision #1208 from CESECORE-266 into EJBCA
     [ECA-2320] - Merge changes from CESECORE-197
     [ECA-2324] - Merge changes from CESECORE-269 to EJBCA
+
+EJBCA 4.0.13, 2012-12-17
+---
+Bug
+
+    [ECA-2376] - Republishing certificates to LDAP when multiple certificates per user are allowed fails if certificate is already present
+    [ECA-2704] - Error in usage text for 'ejbca.sh ra listusers'
+    [ECA-2710] - Last certificate gets republished twice when using '-all' in cli
+    [ECA-2745] - GUI: Request Browser Certificate Renewal page update
+    [ECA-2750] - GUI: Logout links miss on some Web Public pages
+    [ECA-2759] - Unexpected form closing, when editing Certificate Profile
+    [ECA-2761] - Downgraded EJBCA from 5 to 4 get NULL CA Token
+    [ECA-2778] - Plus character in CA DN breaks Download of Certificates
+    [ECA-2786] - GUI: Remove "OCSP" text in navigation menu of Public Web
+    [ECA-2809] - Unable to use "modified" at the "Search End Entities" page.
+
+Improvement
+    [ECA-2746] - Clean up message keys, and some titles
+    [ECA-2753] - GUI: Web Public pages improvement
+    [ECA-2755] - GUI: Administration pages improvement (adding home link)
+    [ECA-2769] - GUI: Key Usage form improvement
+    [ECA-2776] - Disable jasper compilation in default build
+    [ECA-2802] - Clean up message keys, and section titles
+    [ECA-2813] - Class RequestInstance should allow to provide a password
+    [ECA-2823] - Backport ECA-2244, don't require javascript to build
+    [ECA-2829] - GUI: Update Renew title in the Public Web navigation
+    [ECA-2832] - GUI: Fix 'Fetch CA certificate' title in the Public Web page
+    [ECA-2875] - Able to use unlimited no of arguments for clientToolBox on Windows
+
+New Feature
+    [ECA-2727] - Self-registration with admin approval
+    [ECA-2740] - Ant target for renewing application server keystore
+    [ECA-2747] - Extended Key Usage for WiFi EAP authentication
+
+Task
+    [ECA-2624] - Clean up message keys
 
 EJBCA 4.0.12, 2012-08-16
 ---
