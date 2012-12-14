@@ -30,10 +30,10 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
+import org.cesecore.util.EjbcaNameStyle;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.core.protocol.unid.UnidFnrHandler.Storage;
-import org.ejbca.util.EjbcaNameStyle;
 import org.junit.Test;
 
 /**
