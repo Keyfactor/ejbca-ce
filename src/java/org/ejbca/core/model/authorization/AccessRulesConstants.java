@@ -56,10 +56,6 @@ public abstract class AccessRulesConstants {
 
     public static final String ROLE_PUBLICWEBUSER                         = "/public_web_user";
     public static final String ROLE_ADMINISTRATOR                         = "/administrator";
-    /**
-     * @deprecated ROLE_SUPERADMINISTRATOR is only kept here for legacy reasons. Use ROLE_ROOT instead. Deprecated since 5.0.0
-     */
-    public static final String ROLE_SUPERADMINISTRATOR                    = "/super_administrator";
     public static final String ROLE_ROOT                                  = "/";
     
     
@@ -134,7 +130,7 @@ public abstract class AccessRulesConstants {
                                                            REGULAR_EDITSYSTEMCONFIGURATION};
                                                        
     // Role Access Rules
-    public static final  String[] ROLEACCESSRULES = {ROLE_PUBLICWEBUSER, ROLE_ADMINISTRATOR, ROLE_SUPERADMINISTRATOR};
+    public static final  String[] ROLEACCESSRULES = {ROLE_PUBLICWEBUSER, ROLE_ADMINISTRATOR, ROLE_ROOT};
                                                         
     // Hard Token specific accessrules used in authorization module.
     public static final String[] HARDTOKENACCESSRULES = 

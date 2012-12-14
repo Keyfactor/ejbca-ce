@@ -171,7 +171,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         setUpNonAdmin();
 
         // This is a superadmin keystore, improve in the future
-        assertFalse(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_SUPERADMINISTRATOR));
+        assertFalse(ejbcaraws.isAuthorized(AccessRulesConstants.ROLE_ROOT));
 
         try {
             editUser();

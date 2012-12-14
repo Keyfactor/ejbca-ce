@@ -205,7 +205,7 @@
   String errormessage = null;
   
 
-  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.ROLE_SUPERADMINISTRATOR); 
+  GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.ROLE_ROOT); 
                                             cabean.initialize(request, ejbcawebbean); 
 
   CADataHandler cadatahandler     = cabean.getCADataHandler(); 
