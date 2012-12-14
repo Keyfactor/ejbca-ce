@@ -41,7 +41,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.util.CertTools;
-import org.ejbca.util.EjbcaNameStyle;
+import org.cesecore.util.EjbcaNameStyle;
 
 /**
  * Class to handle PKCS10 request messages sent to the CA.
