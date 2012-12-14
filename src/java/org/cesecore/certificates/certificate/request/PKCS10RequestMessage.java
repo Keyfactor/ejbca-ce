@@ -41,7 +41,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cms.CMSSignedGenerator;
 import org.bouncycastle.jce.PKCS10CertificationRequest;
 import org.cesecore.util.CertTools;
-import org.cesecore.util.EjbcaNameStyle;
+import org.cesecore.util.CeSecoreNameStyle;
 
 /**
  * Class to handle PKCS10 request messages sent to the CA.
@@ -269,13 +269,13 @@ public class PKCS10RequestMessage implements RequestMessage {
         if (xname == null) {
         	log.info("No requestDN in request, probably we could not read/parse/decrypt request.");
         } else {
-            RDN[] cnValues = xname.getRDNs(EjbcaNameStyle.CN);
+            RDN[] cnValues = xname.getRDNs(CeSecoreNameStyle.CN);
             if (cnValues.length == 0) {
             	log.info("No CN in DN: "+xname.toString());
             } else {
                 AttributeTypeAndValue[] tavs = cnValues[0].getTypesAndValues();
                 for(AttributeTypeAndValue tav : tavs) {
-                    if(tav.getType().equals(EjbcaNameStyle.CN)) {
+                    if(tav.getType().equals(CeSecoreNameStyle.CN)) {
                         ret = tav.getValue().toString();
                         break;
                     }

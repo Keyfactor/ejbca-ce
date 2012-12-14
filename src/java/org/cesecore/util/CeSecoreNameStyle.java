@@ -28,9 +28,9 @@ import org.bouncycastle.asn1.x500.style.IETFUtils;
  * @version $Id$
  *
  */
-public class EjbcaNameStyle extends BCStyle {
+public class CeSecoreNameStyle extends BCStyle {
 
-    public static final X500NameStyle INSTANCE = new EjbcaNameStyle();
+    public static final X500NameStyle INSTANCE = new CeSecoreNameStyle();
 
     /**
      * default look up table translating OID values into their common symbols following
