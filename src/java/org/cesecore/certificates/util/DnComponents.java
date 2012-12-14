@@ -27,7 +27,7 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.cesecore.util.EjbcaNameStyle;
+import org.cesecore.util.CeSecoreNameStyle;
 
 /** Class holding information and utilities for handling different DN components, CN, O etc
  * 
@@ -56,34 +56,34 @@ public class DnComponents {
     private static HashMap<String, ASN1ObjectIdentifier> oids = new HashMap<String, ASN1ObjectIdentifier>();
     // Default values
     static {
-        oids.put("c", EjbcaNameStyle.C);
-        oids.put("dc", EjbcaNameStyle.DC);
-        oids.put("st", EjbcaNameStyle.ST);
-        oids.put("l", EjbcaNameStyle.L);
-        oids.put("o", EjbcaNameStyle.O);
-        oids.put("ou", EjbcaNameStyle.OU);
-        oids.put("t", EjbcaNameStyle.T);
-        oids.put("surname", EjbcaNameStyle.SURNAME);
-        oids.put("initials", EjbcaNameStyle.INITIALS);
-        oids.put("givenname", EjbcaNameStyle.GIVENNAME);
-        oids.put("gn", EjbcaNameStyle.GIVENNAME);
-        oids.put("sn", EjbcaNameStyle.SN);
-        oids.put("serialnumber", EjbcaNameStyle.SERIALNUMBER);
-        oids.put("cn", EjbcaNameStyle.CN);
-        oids.put("uid", EjbcaNameStyle.UID);
-        oids.put("dn", EjbcaNameStyle.DN_QUALIFIER);
-        oids.put("emailaddress", EjbcaNameStyle.EmailAddress);
-        oids.put("e", EjbcaNameStyle.EmailAddress);
-        oids.put("email", EjbcaNameStyle.EmailAddress);
-        oids.put("unstructuredname", EjbcaNameStyle.UnstructuredName); //unstructuredName 
-        oids.put("unstructuredaddress", EjbcaNameStyle.UnstructuredAddress); //unstructuredAddress
-        oids.put("postalcode", EjbcaNameStyle.POSTAL_CODE);
-        oids.put("businesscategory", EjbcaNameStyle.BUSINESS_CATEGORY);
-        oids.put("postaladdress", EjbcaNameStyle.POSTAL_ADDRESS);
-        oids.put("telephonenumber", EjbcaNameStyle.TELEPHONE_NUMBER);
-        oids.put("pseudonym", EjbcaNameStyle.PSEUDONYM);
-        oids.put("street", EjbcaNameStyle.STREET);
-        oids.put("name", EjbcaNameStyle.NAME);
+        oids.put("c", CeSecoreNameStyle.C);
+        oids.put("dc", CeSecoreNameStyle.DC);
+        oids.put("st", CeSecoreNameStyle.ST);
+        oids.put("l", CeSecoreNameStyle.L);
+        oids.put("o", CeSecoreNameStyle.O);
+        oids.put("ou", CeSecoreNameStyle.OU);
+        oids.put("t", CeSecoreNameStyle.T);
+        oids.put("surname", CeSecoreNameStyle.SURNAME);
+        oids.put("initials", CeSecoreNameStyle.INITIALS);
+        oids.put("givenname", CeSecoreNameStyle.GIVENNAME);
+        oids.put("gn", CeSecoreNameStyle.GIVENNAME);
+        oids.put("sn", CeSecoreNameStyle.SN);
+        oids.put("serialnumber", CeSecoreNameStyle.SERIALNUMBER);
+        oids.put("cn", CeSecoreNameStyle.CN);
+        oids.put("uid", CeSecoreNameStyle.UID);
+        oids.put("dn", CeSecoreNameStyle.DN_QUALIFIER);
+        oids.put("emailaddress", CeSecoreNameStyle.EmailAddress);
+        oids.put("e", CeSecoreNameStyle.EmailAddress);
+        oids.put("email", CeSecoreNameStyle.EmailAddress);
+        oids.put("unstructuredname", CeSecoreNameStyle.UnstructuredName); //unstructuredName 
+        oids.put("unstructuredaddress", CeSecoreNameStyle.UnstructuredAddress); //unstructuredAddress
+        oids.put("postalcode", CeSecoreNameStyle.POSTAL_CODE);
+        oids.put("businesscategory", CeSecoreNameStyle.BUSINESS_CATEGORY);
+        oids.put("postaladdress", CeSecoreNameStyle.POSTAL_ADDRESS);
+        oids.put("telephonenumber", CeSecoreNameStyle.TELEPHONE_NUMBER);
+        oids.put("pseudonym", CeSecoreNameStyle.PSEUDONYM);
+        oids.put("street", CeSecoreNameStyle.STREET);
+        oids.put("name", CeSecoreNameStyle.NAME);
         
     }
     /** Default values used when constructing DN strings that are put in the database

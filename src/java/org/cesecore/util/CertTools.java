@@ -259,7 +259,7 @@ public class CertTools {
         }
         
         final X509NameTokenizer x509NameTokenizer = new X509NameTokenizer(dn);
-        X500NameBuilder nameBuilder = new X500NameBuilder(new EjbcaNameStyle());
+        X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
         
         while (x509NameTokenizer.hasMoreTokens()) {
             // This is a pair key=val (CN=xx)
@@ -2842,7 +2842,7 @@ public class CertTools {
             Collections.reverse(newValues);
         }
         
-        X500NameBuilder nameBuilder = new X500NameBuilder(new EjbcaNameStyle());
+        X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
         for(int i=0; i<newOrdering.size(); i++) {
             nameBuilder.addRDN(newOrdering.get(i), (ASN1Encodable) newValues.get(i));
         }

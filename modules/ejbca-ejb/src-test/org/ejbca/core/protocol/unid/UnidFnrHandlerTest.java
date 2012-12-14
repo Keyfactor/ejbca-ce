@@ -30,7 +30,7 @@ import org.bouncycastle.asn1.x509.Extensions;
 import org.cesecore.certificates.certificate.request.CertificateResponseMessage;
 import org.cesecore.certificates.certificate.request.RequestMessage;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
-import org.cesecore.util.EjbcaNameStyle;
+import org.cesecore.util.CeSecoreNameStyle;
 import org.ejbca.core.protocol.ExtendedUserDataHandler.HandlerException;
 import org.ejbca.core.protocol.cmp.ICrmfRequestMessage;
 import org.ejbca.core.protocol.unid.UnidFnrHandler.Storage;
@@ -52,7 +52,7 @@ public class UnidFnrHandlerTest {
     	final RequestMessage reqIn = new MyIRequestMessage(fnr+'-'+lra);
     	final UnidFnrHandler handler = new UnidFnrHandler(storage);
     	final RequestMessage reqOut = handler.processRequestMessage(reqIn, unidPrefix+"_a_profile_name");
-    	assertEquals(storage.unid, (reqOut.getRequestX500Name().getRDNs(EjbcaNameStyle.SN)[0].getFirst().getValue()).toString());
+    	assertEquals(storage.unid, (reqOut.getRequestX500Name().getRDNs(CeSecoreNameStyle.SN)[0].getFirst().getValue()).toString());
     }
     
 	private static class MyStorage implements Storage {
@@ -78,8 +78,8 @@ public class UnidFnrHandlerTest {
         final X500Name dn;
 
 		MyIRequestMessage(String serialNumber) {
-		    X500NameBuilder nameBuilder = new X500NameBuilder(new EjbcaNameStyle());
-			nameBuilder.addRDN(EjbcaNameStyle.SN, serialNumber);
+		    X500NameBuilder nameBuilder = new X500NameBuilder(new CeSecoreNameStyle());
+			nameBuilder.addRDN(CeSecoreNameStyle.SN, serialNumber);
 			this.dn = nameBuilder.build();
 		}
 		@Override

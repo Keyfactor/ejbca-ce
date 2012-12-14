@@ -21,7 +21,7 @@ import org.bouncycastle.asn1.DERIA5String;
 import org.bouncycastle.asn1.DERPrintableString;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x509.X509NameEntryConverter;
-import org.cesecore.util.EjbcaNameStyle;
+import org.cesecore.util.CeSecoreNameStyle;
 
 /**
  * A converter for X509 DN entries that uses PrintableString where possible.
@@ -79,7 +79,7 @@ public class PrintableStringEntryConverter
                 throw new RuntimeException("can't recode value for oid " + oid.getId());
             }
         }
-        else if (oid.equals(EjbcaNameStyle.EmailAddress) || oid.equals(EjbcaNameStyle.DC))
+        else if (oid.equals(CeSecoreNameStyle.EmailAddress) || oid.equals(CeSecoreNameStyle.DC))
         {
             return new DERIA5String(value);
         }
