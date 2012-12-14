@@ -24,7 +24,6 @@ import org.ejbca.core.model.SecConst;
  * reqadmincertissuerdn, reqadmincertsn, status, approvals (Collection),
  * requestdata, requestdate, expiredate, remainingapprovals
  * 
- * @author Philip Vendil
  * @version $Id$
  */
 public class ApprovalDataVO implements Serializable { 	

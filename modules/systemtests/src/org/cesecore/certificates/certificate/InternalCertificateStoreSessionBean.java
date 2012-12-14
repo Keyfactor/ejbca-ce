@@ -17,7 +17,9 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -28,10 +30,18 @@ import javax.persistence.PersistenceContext;
 import javax.persistence.Query;
 
 import org.apache.log4j.Logger;
+import org.cesecore.audit.enums.EventStatus;
+import org.cesecore.audit.enums.EventTypes;
+import org.cesecore.audit.enums.ModuleTypes;
+import org.cesecore.audit.enums.ServiceTypes;
+import org.cesecore.audit.log.SecurityEventsLoggerSessionLocal;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.crl.CRLData;
 import org.cesecore.config.CesecoreConfiguration;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -43,13 +53,19 @@ import org.cesecore.util.CertTools;
 @TransactionAttribute(TransactionAttributeType.REQUIRED)
 public class InternalCertificateStoreSessionBean implements InternalCertificateStoreSessionRemote {
 
+    /** Internal localization of logs and errors */
+    private static final InternalResources INTRES = InternalResources.getInstance();
     private static final Logger log = Logger.getLogger(InternalCertificateStoreSessionBean.class);
 
     @PersistenceContext(unitName = CesecoreConfiguration.PERSISTENCE_UNIT)
     private EntityManager entityManager;
 
     @EJB
+    private AccessControlSessionLocal accessSession;
+    @EJB
     CertificateStoreSessionLocal certStore;
+    @EJB
+    private SecurityEventsLoggerSessionLocal logSession;
 
     @Override
     public void removeCertificate(BigInteger serno) {
@@ -124,4 +140,40 @@ public class InternalCertificateStoreSessionBean implements InternalCertificateS
         }
     }
 
+    @Override
+    @TransactionAttribute(TransactionAttributeType.REQUIRED)
+    public boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws IllegalArgumentException, AuthorizationDeniedException {
+
+        CertificateData data = CertificateData.findByFingerprint(entityManager, fingerprint);
+        if (data != null) {
+            if (log.isDebugEnabled()) {
+                log.debug("Set status " + status + " for certificate with fp: " + fingerprint);
+            }
+            
+            // Must be authorized to CA in order to change status is certificates issued by the CA
+            String bcdn = CertTools.stringToBCDNString(data.getIssuerDN());
+            int caid = bcdn.hashCode();
+            authorizedToCA(admin, caid);
+
+            data.setStatus(status);
+            final String serialNo = CertTools.getSerialNumberAsString(data.getCertificate());
+            final String msg = INTRES.getLocalizedMessage("store.setstatus", data.getUsername(), fingerprint, status, data.getSubjectDN(), data.getIssuerDN(), serialNo);
+            Map<String, Object> details = new LinkedHashMap<String, Object>();
+            details.put("msg", msg);
+            logSession.log(EventTypes.CERT_CHANGEDSTATUS, EventStatus.SUCCESS, ModuleTypes.CERTIFICATE, ServiceTypes.CORE, admin.toString(), String.valueOf(caid), serialNo, data.getUsername(), details);            
+        } else {
+            if (log.isDebugEnabled()) {
+                final String msg = INTRES.getLocalizedMessage("store.setstatusfailed", fingerprint, status);
+                log.debug(msg);
+            }           
+        }
+        return (data != null);
+    }
+    
+    private void authorizedToCA(final AuthenticationToken admin, final int caid) throws AuthorizationDeniedException {
+        if (!accessSession.isAuthorized(admin, StandardRules.CAACCESS.resource() + caid)) {
+            final String msg = INTRES.getLocalizedMessage("caadmin.notauthorizedtoca", admin.toString(), caid);
+            throw new AuthorizationDeniedException(msg);
+        }
+    }
 }

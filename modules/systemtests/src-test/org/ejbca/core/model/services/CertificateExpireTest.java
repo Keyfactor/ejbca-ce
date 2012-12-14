@@ -168,7 +168,6 @@ public class CertificateExpireTest extends CaTestCase {
         createCertificate();
         long seconds = (cert.getNotAfter().getTime() - new Date().getTime()) / 1000l;
         log.debug("ceritificate OK in store, expires in " + seconds + " seconds");
-
         // Create a new UserPasswordExpireService
         ServiceConfiguration config = new ServiceConfiguration();
         config.setActive(true);
@@ -221,6 +220,7 @@ public class CertificateExpireTest extends CaTestCase {
      */
     @Test
     public void testExpireCertificateWithAllCAs() throws Exception {
+        try {
         createCertificate();
         long seconds = (cert.getNotAfter().getTime() - new Date().getTime()) / 1000l;
         // Create a new UserPasswordExpireService
@@ -266,6 +266,14 @@ public class CertificateExpireTest extends CaTestCase {
         }
         info = certificateStoreSession.getCertificateInfo(fingerprint);
         assertEquals("Status does not match.", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION, info.getStatus());
+        } finally {
+            //Restore superadmin CA if it got screwed up.
+            List<Certificate> certs = certificateStoreSession.findCertificatesByUsername("superadmin");
+            for (Certificate certificate : certs) {
+                String superAdminFingerprint = CertTools.getFingerprintAsString(certificate);
+                internalCertificateStoreSession.setStatus(admin, superAdminFingerprint, CertificateConstants.CERT_ACTIVE);
+            }
+        }
     }
     
     /**
