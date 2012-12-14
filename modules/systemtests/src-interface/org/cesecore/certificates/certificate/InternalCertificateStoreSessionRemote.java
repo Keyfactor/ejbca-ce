@@ -67,5 +67,13 @@ public interface InternalCertificateStoreSessionRemote {
      * @throws AuthorizationDeniedException (rollback) if admin was not authorized to remove CRL
 	 */
 	void removeCRL(final AuthenticationToken admin, final String fingerprint) throws AuthorizationDeniedException;
+	
+	 /**
+     * Update the status of a cert in the database. Whatever status you want...
+     * @param fingerprint
+     * @param status one of CertificateConstants.CERT_...
+     * @return true if the status was updated, false if not, for example if the certificate did not exist
+     */
+    boolean setStatus(AuthenticationToken admin, String fingerprint, int status) throws AuthorizationDeniedException;
 
 }
