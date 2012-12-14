@@ -131,7 +131,6 @@ import org.ejbca.cvc.CertificateParser;
 import org.ejbca.cvc.ReferenceField;
 import org.ejbca.cvc.exception.ConstructionException;
 import org.ejbca.cvc.exception.ParseException;
-import org.ejbca.util.EjbcaNameStyle;
 
 /**
  * Tools to handle common certificate operations.
@@ -290,7 +289,7 @@ public class CertTools {
                 }
 
             } else {
-                log.warn("No 'key=value' pair encountered in token '" + pair + "' while converting subject DN '" + dn + "' into X509Name.");
+                log.warn("No 'key=value' pair encountered in token '" + pair + "' while converting subject DN '" + dn + "' into X500Name.");
             }
         }
 
