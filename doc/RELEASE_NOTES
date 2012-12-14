@@ -6,10 +6,13 @@ EJBCA 5.1.0
 
 EJBCA 5.0.8
 -----------
-This is a maintenance release with a few improvement fixes.
+This is a maintenance release with improvements and bug fixes. In all 12 issues have been fixed.
 
 * Noteworthy changes:
-- todo
+- Improved robustness of 'ejbca.sh ca importcertdir' command.
+- It is now possible to obfuscate log signer key password.
+- Fixed a but with CMP certificate authentication.
+- Minor bugfixes.
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE.
@@ -160,6 +163,20 @@ upgrade to 5.0, verify your roles and privileges.
 
 Read the full Changelog for details.
 For upgrade instructions, please see UPGRADE
+
+EJBCA 4.0.13
+------------
+This is a maintenance release containing a few new features and improvements. In all 25 issues have been resolved.
+
+* Noteworthy changes: 
+- New self-registration work-flow available in the public web.
+- Added extended key usage for WiFi EAP authentication. 
+- Some build improvements to avoid issues on some platforms (no javascript, no jasper).
+- More minor GUI improvements by David Carella of Linagora.
+- Minor bug fixes.
+
+Read the full Changelog for details.
+For upgrade instructions, please see UPGRADE.
 
 EJBCA 4.0.12
 ------------
