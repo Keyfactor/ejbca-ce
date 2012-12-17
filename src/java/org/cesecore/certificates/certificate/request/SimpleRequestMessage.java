@@ -81,7 +81,6 @@ public class SimpleRequestMessage implements RequestMessage {
      * @param pubkey the public key to be certified
      * @param username username of the EJBCA user
      * @param password password of the EJBCA user
-     * @param extensions requested certificate extensions, or null
      */
     public SimpleRequestMessage(final PublicKey pubkey, final String username, final String password) {
         this.pubkey = pubkey;
