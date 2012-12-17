@@ -97,8 +97,8 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
             final CertificateInfo certificateInfo = certificateStoreSession.findFirstCertificateInfo(CertTools.getIssuerDN(certificate), CertTools.getSerialNumber(certificate));
             if (certificateInfo != null) {
                 // The certificate is present in the database.
-                if (certificateInfo.getStatus() != CertificateConstants.CERT_ACTIVE) {
-                    // The certificate is revoked, archived or similar
+                if (!(certificateInfo.getStatus() == CertificateConstants.CERT_ACTIVE || certificateInfo.getStatus() == CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION)) {
+                    // The certificate is neither active, nor active (but user is notified of coming revocation)
                     final String msg = intres.getLocalizedMessage("authentication.revokedormissing", CertTools.getSubjectDN(certificate));
                     LOG.info(msg);
                     final Map<String, Object> details = new LinkedHashMap<String, Object>();
