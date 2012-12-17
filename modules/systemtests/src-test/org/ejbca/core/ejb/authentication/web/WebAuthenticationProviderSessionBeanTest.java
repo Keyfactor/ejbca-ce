@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.ejbca.core.ejb.authentication.web;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -39,6 +40,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ejb.CreateException;
+
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Primitive;
@@ -62,6 +65,7 @@ import org.cesecore.audit.enums.EventTypes;
 import org.cesecore.authentication.tokens.AuthenticationSubject;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
@@ -104,6 +108,28 @@ public class WebAuthenticationProviderSessionBeanTest {
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
+    /**
+     * Regression test. Makes sure that CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION
+     * is considered a valid state as well. 
+     * 
+     */
+    @Test
+    public void testAuthenticateWithNotifiedAboutExpiration() throws InvalidKeyException, NoSuchAlgorithmException, SignatureException, IllegalStateException, NoSuchProviderException, OperatorCreationException, CertificateException, IOException, CreateException, AuthorizationDeniedException  {
+        X509Certificate certificate = CertTools.genSelfCert("CN=Foo", 1, null, keys.getPrivate(), keys.getPublic(),
+                AlgorithmConstants.SIGALG_SHA1_WITH_RSA, false);
+        Set<X509Certificate> credentials = new HashSet<X509Certificate>();
+        credentials.add(certificate);
+        AuthenticationSubject subject = new AuthenticationSubject(null, credentials);
+        try {
+            certificateStoreSession.storeCertificate(internalToken, certificate, "foo", "1234", CertificateConstants.CERT_NOTIFIEDABOUTEXPIRATION,
+                    CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", new Date().getTime());
+            AuthenticationToken authenticationToken = authenticationProviderProxy.authenticate(subject);
+            assertNotNull("Authentication was not returned for active (but soon to expire) cert", authenticationToken);
+        } finally {
+            internalCertificateStoreSession.removeCertificate(certificate);
+        }
+    }
+    
     @Test
     public void testAuthenticateWithCertificateExpired() throws Exception {
         X509Certificate certificate = CertTools.genSelfCert("CN=Foo", -1, null, keys.getPrivate(), keys.getPublic(),
