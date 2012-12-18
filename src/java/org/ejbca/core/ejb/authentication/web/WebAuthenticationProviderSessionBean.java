@@ -74,7 +74,7 @@ public class WebAuthenticationProviderSessionBean implements WebAuthenticationPr
      */
     @Override
     public AuthenticationToken authenticate(AuthenticationSubject subject) {
-        final Set<X509Certificate> certs = (Set<X509Certificate>)subject.getCredentials();
+        final Set<X509Certificate> certs = (Set<X509Certificate>) subject.getCredentials();
         if (certs.size() != 1) {
             if (LOG.isDebugEnabled()) {
                 LOG.debug("certificateArray contains "+certs.size()+" certificates, instead of 1 that is required.");
