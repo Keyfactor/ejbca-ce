@@ -109,8 +109,6 @@ import org.w3._2002._03.xkms_.UseKeyWithType;
  * "CN=AdminCA1,O=EJBCA Sample,C=SE", and it must have XKMS service enabled.
  * Also you have to enable XKMS in conf/xkms.properties.
  * 
- * @author Philip Vendil 2006 sep 27
- * 
  * @version $Id$
  */
 
