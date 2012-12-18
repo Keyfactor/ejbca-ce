@@ -136,7 +136,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 
 		//Verify the authenticity of the message
 		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(ca.getCAInfo(), admin, caSession, endEntityAccessSession, certificateStoreSession, 
-		        authorizationSession, endEntityProfileSession, authenticationProviderSession);
+		        authorizationSession, endEntityProfileSession, authenticationProviderSession, endEntityManagementSession);
 		ICMPAuthenticationModule authenticationModule = null;
 		if(messageVerifyer.verify(msg.getMessage(), null, authenticated)) {
 		    authenticationModule = messageVerifyer.getUsedAuthenticationModule();
@@ -204,6 +204,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		                if (LOG.isDebugEnabled()) {
 		                    LOG.debug("CRLReason extension: "+reason);
 		                }
+		                ai.close();
 		            } catch (IOException e) {
 		                LOG.info("Exception parsin CRL reason extension: ", e);
 		            }

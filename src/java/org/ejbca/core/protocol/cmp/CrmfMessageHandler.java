@@ -49,6 +49,7 @@ import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLoc
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ra.CertificateRequestSession;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.SecConst;
@@ -97,6 +98,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
     private final CertificateStoreSession certStoreSession;
     private final AccessControlSession authorizationSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
+    private final EndEntityManagementSession eeManagementSession;
 
 	/**
 	 * Used only by unit test.
@@ -107,6 +109,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		this.userPwdParams = "random";
 		this.responseProt = null;
 		this.allowCustomCertSerno = false;
+		
 		this.signSession =null;
 		this.certificateRequestSession = null;
 		this.extendedUserDataHandler = null;
@@ -114,6 +117,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		this.certStoreSession = null;
 		this.authorizationSession = null;
 		this.authenticationProviderSession = null;
+		this.eeManagementSession = null;
 	}
 	
 	/**
@@ -133,7 +137,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
     public CrmfMessageHandler(final AuthenticationToken admin, CaSessionLocal caSession, CertificateProfileSession certificateProfileSession,
             CertificateRequestSession certificateRequestSession, EndEntityAccessSession endEntityAccessSession,
             EndEntityProfileSessionLocal endEntityProfileSession, SignSession signSession, CertificateStoreSession certStoreSession,
-            AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession) {
+            AccessControlSession authSession, WebAuthenticationProviderSessionLocal authProviderSession, EndEntityManagementSession endEntityManagementSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		this.signSession = signSession;
 		this.certificateRequestSession = certificateRequestSession;
@@ -141,6 +145,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 		this.certStoreSession = certStoreSession;
 		this.authorizationSession = authSession;
 		this.authenticationProviderSession = authProviderSession;
+		this.eeManagementSession = endEntityManagementSession;
 
 		if (CmpConfiguration.getRAOperationMode()) {
 			// create UsernameGeneratorParams
@@ -198,9 +203,6 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 			CrmfRequestMessage crmfreq = null;
 			if (msg instanceof CrmfRequestMessage) {
 				crmfreq = (CrmfRequestMessage) msg;
-				
-				//TODO: Does this line do any good?
-				crmfreq.getMessage();
 
 				// If we have usernameGeneratorParams we want to generate usernames automagically for requests
 				// If we are not in RA mode, usernameGeneratorParams will be null
@@ -429,7 +431,6 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
 				    LOG.debug("responseProt="+this.responseProt+", pbeDigestAlg="+pbeDigestAlg+", pbeMacAlg="+pbeMacAlg+", keyId="+keyId+", raSecret="+(raSecret == null ? "null":"not null"));
 			    }
 			    
-			    //TODO check whether this code (crmfreq.setPbeParameters()) does anything useful
 			    if (StringUtils.equals(this.responseProt, "pbe")) {
 				    crmfreq.setPbeParameters(keyId, raSecret, pbeDigestAlg, pbeMacAlg, pbeIterationCount);
                 }
@@ -487,7 +488,7 @@ public class CrmfMessageHandler extends BaseCmpMessageHandler implements ICmpMes
             caInfo = this.caSession.getCAInfoInternal(caId, null, true);   
         }
 		final VerifyPKIMessage messageVerifyer = new VerifyPKIMessage(caInfo, admin, caSession, endEntityAccessSession, certStoreSession, authorizationSession, 
-		                endEntityProfileSession, authenticationProviderSession);
+		                endEntityProfileSession, authenticationProviderSession, eeManagementSession);
 		ICMPAuthenticationModule authenticationModule = null;
 		if(messageVerifyer.verify(crmfreq.getPKIMessage(), username, authenticated)) {
 			authenticationModule = messageVerifyer.getUsedAuthenticationModule();
