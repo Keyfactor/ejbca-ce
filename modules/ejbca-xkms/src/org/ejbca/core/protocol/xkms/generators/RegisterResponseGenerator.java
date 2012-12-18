@@ -72,7 +72,7 @@ public class RegisterResponseGenerator extends KRSSResponseGenerator {
                 if (confirmPOP(publicKey)) {
                     String subjectDN = getSubjectDN(req);
                     List<EndEntityInformation> userDataList = findUserData(subjectDN);
-                    EndEntityInformation userData = userDataList.get(0);
+                    EndEntityInformation userData = (userDataList.size() > 0 ? userDataList.get(0) : null);
                     if(userDataList.size() > 1) {
                         log.warn("Multiple end entities with subject DN " + subjectDN + " were found. This may lead to unexpected behavior.");
                     }

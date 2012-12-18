@@ -89,9 +89,6 @@ import org.w3c.dom.Element;
 
 /**
  * Class generating a common response for register, reissue and recover calls
- * 
- * 
- * @author Philip Vendil 
  *
  * @version $Id$
  */
