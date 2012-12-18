@@ -1,4 +1,4 @@
-EJBCA 5.0.8, 2012-12-17
+EJBCA 5.0.8, 2012-12-18
 ---
 Bug
     [ECA-2376] - Republishing certificates to LDAP when multiple certificates per user are allowed fails if certificate is already present
@@ -6,6 +6,7 @@ Bug
     [ECA-2781] - Searching by certificate serial number fails if certificate has same subject DN across multiple end entities
     [ECA-2839] - CMP certificate authentication with KeyId for End Entity profile uses wrong string
     [ECA-2845] - End entity presence (existing username) not checked properly during import
+    [ECA-2878] - Setting a certificate's status to CERT_NOTIFIEDABOUTEXPIRATION (21) locks out user from admin GUI
 
 Improvement
     [ECA-2655] - Do not require private key to verify audit logs with ejbca-db-cli
