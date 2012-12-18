@@ -24,6 +24,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSession;
+import org.ejbca.core.ejb.ra.EndEntityManagementSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 
 /**
@@ -47,6 +48,7 @@ public class VerifyPKIMessage {
     private AccessControlSession authorizationSessoin;
     private EndEntityProfileSession eeProfileSession;
     private WebAuthenticationProviderSessionLocal authenticationProviderSession;
+    private EndEntityManagementSession eeManagementSession;
     
     private String errMsg;
 
@@ -61,12 +63,14 @@ public class VerifyPKIMessage {
         this.authorizationSessoin = null;
         this.eeProfileSession = null;
         this.authenticationProviderSession = null;
+        this.eeManagementSession = null;
         
         this.errMsg = null;
     }
     
-    public VerifyPKIMessage(final CAInfo cainfo, final AuthenticationToken admin, final CaSession casession, final EndEntityAccessSession userSession, final CertificateStoreSession certSession,
-            final AccessControlSession authSession, final EndEntityProfileSession eeprofSession, final WebAuthenticationProviderSessionLocal authProvSession) {
+    public VerifyPKIMessage(final CAInfo cainfo, final AuthenticationToken admin, final CaSession casession, final EndEntityAccessSession userSession, 
+            final CertificateStoreSession certSession, final AccessControlSession authSession, final EndEntityProfileSession eeprofSession, 
+            final WebAuthenticationProviderSessionLocal authProvSession, final EndEntityManagementSession endEntityManagementSession) {
         this.cainfo = cainfo;
         this.authModule = null;
         
@@ -77,6 +81,7 @@ public class VerifyPKIMessage {
         this.authorizationSessoin = authSession;
         this.eeProfileSession = eeprofSession;
         this.authenticationProviderSession = authProvSession;
+        this.eeManagementSession = endEntityManagementSession;
         
     }
     
@@ -168,7 +173,8 @@ public class VerifyPKIMessage {
             return hmacmodule;
         } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_ENDENTITY_CERTIFICATE)) {
             final EndEntityCertificateAuthenticationModule eemodule = new EndEntityCertificateAuthenticationModule(parameter);
-            eemodule.setSession(this.admin, this.caSession, this.certificateStoreSession, this.authorizationSessoin, this.eeProfileSession, this.eeAccessSession, authenticationProviderSession);
+            eemodule.setSession(this.admin, this.caSession, this.certificateStoreSession, this.authorizationSessoin, this.eeProfileSession, 
+                        this.eeAccessSession, authenticationProviderSession, eeManagementSession);
             return eemodule;
         } else if(StringUtils.equals(module, CmpConfiguration.AUTHMODULE_REG_TOKEN_PWD)){
             return new RegTokenPasswordExtractor();

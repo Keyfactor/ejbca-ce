@@ -149,11 +149,11 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 			switch (tagno) {
 			case 0:
 				// 0 (ir, Initialization Request) and 2 (cr, Certification Req) are both certificate requests
-				handler = new CrmfMessageHandler(admin, caSession,  certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession);
+				handler = new CrmfMessageHandler(admin, caSession,  certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession);
 				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(), CmpConfiguration.getAllowRAVerifyPOPO(), CmpConfiguration.getExtractUsernameComponent());
 				break;
 			case 2:
-				handler = new CrmfMessageHandler(admin, caSession, certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession);
+				handler = new CrmfMessageHandler(admin, caSession, certificateProfileSession, certificateRequestSession, endEntityAccessSession, endEntityProfileSession, signSession, certificateStoreSession, authSession, authenticationProviderSession, endEntityManagementSession);
 				cmpMessage = new CrmfRequestMessage(req, CmpConfiguration.getDefaultCA(), CmpConfiguration.getAllowRAVerifyPOPO(), CmpConfiguration.getExtractUsernameComponent());
 				break;
 			case 7:
