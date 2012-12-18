@@ -82,9 +82,6 @@ import org.w3c.dom.Document;
 /**
  * Helper class that performs the prefix replacements
  * and does the dispatch invokation. 
- * 
- * 
- * @author Philip Vendil 2006 dec 19
  *
  * @version $Id$
  */
