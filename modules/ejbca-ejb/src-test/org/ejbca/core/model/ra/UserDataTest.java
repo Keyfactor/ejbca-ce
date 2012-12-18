@@ -46,7 +46,7 @@ public class UserDataTest {
     	assertTrue(hash1.startsWith("$2"));
     	assertFalse(hash1.equals(hash));
 
-    	// Now check that we can still use old password hashes transparently usgin the old fixed sha1 hash of foo123
+    	// Now check that we can still use old password hashes transparently using the old fixed sha1 hash of foo123
     	data.setPasswordHash("3b303d8b0364d9265c06adc8584258376150c9b5");
     	assertEquals("3b303d8b0364d9265c06adc8584258376150c9b5", data.getPasswordHash());
     	assertFalse(data.comparePassword("bar123"));
