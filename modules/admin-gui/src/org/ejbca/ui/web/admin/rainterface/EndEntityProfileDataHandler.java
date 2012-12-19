@@ -13,12 +13,15 @@
  
 package org.ejbca.ui.web.admin.rainterface;
 
+import java.io.Serializable;
+
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.web.admin.configuration.InformationMemory;
 
 /**
@@ -26,7 +29,7 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
  *
  * @version $Id$
  */
-public class EndEntityProfileDataHandler implements java.io.Serializable {
+public class EndEntityProfileDataHandler implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -48,8 +51,10 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
         this.info.endEntityProfilesEdited();
     }
       
-    /** Method to change a end entity profile. */     
-    public void changeEndEntityProfile(String name, EndEntityProfile profile) throws AuthorizationDeniedException{
+    /** Method to change a end entity profile. 
+     * @throws EndEntityProfileNotFoundException if sought end entity profile was not found
+     */     
+    public void changeEndEntityProfile(String name, EndEntityProfile profile) throws AuthorizationDeniedException, EndEntityProfileNotFoundException{
         endEntityProfileSession.changeEndEntityProfile(administrator, name,profile);   
         this.info.endEntityProfilesEdited();
     }
@@ -83,8 +88,12 @@ public class EndEntityProfileDataHandler implements java.io.Serializable {
         return profile;
     }
    
-      
-    public int getEndEntityProfileId(String profilename){
+    /**  
+     * @param profilename the name of the sought profile
+     * @return the ID of the sought profile
+     * @throws EndEntityProfileNotFoundException if no such profile exists
+     */
+    public int getEndEntityProfileId(String profilename) throws EndEntityProfileNotFoundException{
       return endEntityProfileSession.getEndEntityProfileId(profilename);  
     }
        

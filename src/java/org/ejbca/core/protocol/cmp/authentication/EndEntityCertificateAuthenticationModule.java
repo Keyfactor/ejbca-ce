@@ -54,6 +54,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.NotFoundException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.cmp.CmpMessageHelper;
 import org.ejbca.core.protocol.cmp.CmpPKIBodyConstants;
@@ -531,7 +532,6 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
      * @throws NotFoundException
      */
     private int getUsedEndEntityProfileId(final DEROctetString keyId) throws NotFoundException {
-        int ret = 0;
         String endEntityProfile = CmpConfiguration.getRAEndEntityProfile();
         if (StringUtils.equals(endEntityProfile, "KeyId") && (keyId != null)) {
             endEntityProfile = CmpMessageHelper.getStringFromOctets(keyId);
@@ -539,13 +539,13 @@ public class EndEntityCertificateAuthenticationModule implements ICMPAuthenticat
                 log.debug("Using End Entity Profile with same name as KeyId in request: "+endEntityProfile);
             }
         } 
-        ret = eeProfileSession.getEndEntityProfileId(endEntityProfile);
-        if (ret == 0) {
+        try {
+            return eeProfileSession.getEndEntityProfileId(endEntityProfile);
+        } catch (EndEntityProfileNotFoundException e) {
             errorMessage = "No end entity profile found with name: "+endEntityProfile;
             log.info(errorMessage);
-            throw new NotFoundException(errorMessage);
+            throw new NotFoundException(errorMessage, e);
         }
-        return ret;
     }
     
     private boolean isCertValid(final String fp) {

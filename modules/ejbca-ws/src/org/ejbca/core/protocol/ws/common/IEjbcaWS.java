@@ -32,6 +32,7 @@ import org.ejbca.core.model.hardtoken.HardTokenExistsException;
 import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
@@ -110,10 +111,11 @@ public interface IEjbcaWS {
 	 * @throws AuthorizationDeniedException if client isn't authorized to request
 	 * @throws IllegalQueryException if query isn't valid
 	 * @throws EjbcaException 
+	 * @throws EndEntityProfileNotFoundException 
 	 * @throws CesecoreException 
 	 */
 	public abstract List<UserDataVOWS> findUser(UserMatch usermatch)
-			throws AuthorizationDeniedException, IllegalQueryException, EjbcaException;
+			throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, EndEntityProfileNotFoundException;
 
 	/**
 	 * Retrieves a collection of certificates generated for a user.
