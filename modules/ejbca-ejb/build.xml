@@ -212,7 +212,6 @@
 		<include name="org/ejbca/core/model/ca/publisher/PublisherQueueData.java"/>
 		<include name="org/ejbca/core/model/ca/publisher/Publisher*Exception.java"/>
 		<include name="org/ejbca/core/model/ca/IllegalKeyException.java"/>
-		<include name="org/ejbca/core/model/authorization/AuthenticationFailedException.java"/>
 		<include name="org/ejbca/core/model/hardtoken/HardTokenIssuerData.java"/>
 		<include name="org/ejbca/core/model/hardtoken/UnavailableTokenException.java"/>
 		<include name="org/ejbca/core/model/hardtoken/HardTokenData.java"/>
@@ -223,6 +222,8 @@
 		<include name="org/ejbca/core/model/ra/AlreadyRevokedException.java"/>
        	<include name="org/ejbca/core/model/ra/RevokeBackDateNotAllowedForProfileException.java"/>
 		<include name="org/ejbca/core/model/ra/NotFoundException.java"/>
+		<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfileExistsException.java"/>
+		<include name="org/ejbca/core/model/ra/raadmin/EndEntityProfileNotFoundException.java"/>
 		<include name="org/ejbca/core/model/ra/userdatasource/UserDataSourceExistsException.java"/>
 		<include name="org/ejbca/core/model/services/ServiceExistsException.java"/>
 		<!-- Dependency from SCEP modules (ejbca-scep-war, externalra-scep)-->

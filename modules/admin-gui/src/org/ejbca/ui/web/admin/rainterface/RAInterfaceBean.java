@@ -66,6 +66,7 @@ import org.ejbca.core.model.ra.EndEntityManagementConstants;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
@@ -491,7 +492,13 @@ public class RAInterfaceBean implements Serializable {
     	return this.informationmemory.getEndEntityProfileNameProxy().getEndEntityProfileName(profileid);
     }
 
-    public int getEndEntityProfileId(String profilename){
+    /**
+     * 
+     * @param profilename the name of the sought profile
+     * @return the ID of the sought profile
+     * @throws EndEntityProfileNotFoundException if no such profile exists
+     */
+    public int getEndEntityProfileId(String profilename) throws EndEntityProfileNotFoundException{
     	return profiles.getEndEntityProfileId(profilename);
     }
     
@@ -527,12 +534,19 @@ public class RAInterfaceBean implements Serializable {
     	profiles.addEndEntityProfile(name, profile);
     }
 
-    public void changeEndEntityProfile(String name, EndEntityProfile profile) throws AuthorizationDeniedException {
+    public void changeEndEntityProfile(String name, EndEntityProfile profile) throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
     	profiles.changeEndEntityProfile(name, profile);
     }
 
-    /** Returns false if profile is used by any user or in authorization rules. */
-    public boolean removeEndEntityProfile(String name) throws AuthorizationDeniedException {
+    /**
+     * Removes an end entity profile
+     * 
+     * @param name the name of the profile to be removed
+     * @return false if profile is used by any user or in authorization rules. 
+     * @throws AuthorizationDeniedException
+     * @throws EndEntityProfileNotFoundException if no such end entity profile was found
+     */
+    public boolean removeEndEntityProfile(String name) throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
         boolean profileused = false;
         int profileid = endEntityProfileSession.getEndEntityProfileId(name);
         // Check if any users or authorization rule use the profile.

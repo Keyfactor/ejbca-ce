@@ -22,6 +22,7 @@ import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.cli.BaseCommand;
 
 /**
@@ -77,8 +78,9 @@ public abstract class BaseAdminsCommand extends BaseCommand {
         return resource;
     }
 
-    protected String getOriginalAccessRule(AuthenticationToken authenticationToken, String resource) throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
-        // Check if it is a profile rule, then replace profile id with profile
+    protected String getOriginalAccessRule(AuthenticationToken authenticationToken, String resource) throws NumberFormatException,
+            CADoesntExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException {
+     // Check if it is a profile rule, then replace profile id with profile
         // name.
         if (resource.startsWith(AccessRulesConstants.ENDENTITYPROFILEPREFIX)) {
             if (resource.lastIndexOf('/') < AccessRulesConstants.ENDENTITYPROFILEPREFIX.length()) {
