@@ -29,6 +29,7 @@ import org.ejbca.core.ejb.authorization.ComplexAccessControlSessionRemote;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.ejb.ra.userdatasource.UserDataSourceSessionRemote;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -93,7 +94,13 @@ public class AdminsChangeRuleCommand extends BaseAdminsCommand {
                 getLogger().error("No such role \"" + groupName + "\".");
                 return;
             }
-            String accessRule = getOriginalAccessRule(getAdmin(cliUserName, cliPassword), args[2]);
+            String accessRule;
+            try {
+                accessRule = getOriginalAccessRule(getAdmin(cliUserName, cliPassword), args[2]);
+            } catch(EndEntityProfileNotFoundException e) {
+                getLogger().error(e.getMessage());
+                return;
+            }
             GlobalConfiguration globalConfiguration = ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedGlobalConfiguration();
             Collection<String> authorizedAvailableAccessRules = ejb.getRemoteSession(ComplexAccessControlSessionRemote.class).getAuthorizedAvailableAccessRules(getAdmin(cliUserName, cliPassword),
                     globalConfiguration.getEnableEndEntityProfileLimitations(), globalConfiguration.getIssueHardwareTokens(),

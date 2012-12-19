@@ -48,6 +48,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 
 /**
  * Session bean for handling EndEntityProfiles
@@ -116,7 +117,7 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public void changeEndEntityProfile(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) throws AuthorizationDeniedException {
+    public void changeEndEntityProfile(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
         internalChangeEndEntityProfileNoFlushCache(admin, profilename, profile);
         flushProfileCache();
     }
@@ -348,19 +349,16 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
     @Override
-    public int getEndEntityProfileId(final String profilename) {
+    public int getEndEntityProfileId(final String profilename) throws EndEntityProfileNotFoundException {
         if (LOG.isTraceEnabled()) {
             LOG.trace(">getEndEntityProfileId(" + profilename + ")");
-        }
-        int returnval = 0;
+        };
         final Integer id = profileCache.getNameIdMapCache(entityManager).get(profilename.trim());
         if (id != null) {
-            returnval = id.intValue();
+            return id.intValue();
+        } else {
+            throw new EndEntityProfileNotFoundException("End Entity Profile of name \"" + profilename + "\" was not found");
         }
-        if (LOG.isTraceEnabled()) {
-            LOG.trace("<getEndEntityProfileId(" + profilename + "): " + returnval);
-        }
-        return returnval;
     }
 
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
@@ -401,11 +399,13 @@ public class EndEntityProfileSessionBean implements EndEntityProfileSessionLocal
     }
 
     @Override
-    public void internalChangeEndEntityProfileNoFlushCache(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile) throws AuthorizationDeniedException {
-    	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
+    public void internalChangeEndEntityProfileNoFlushCache(final AuthenticationToken admin, final String profilename, final EndEntityProfile profile)
+            throws AuthorizationDeniedException, EndEntityProfileNotFoundException {
+	final EndEntityProfileData pdl = EndEntityProfileData.findByProfileName(entityManager, profilename);
         if (pdl == null) {
         	final String msg = INTRES.getLocalizedMessage("ra.errorchangeprofile", profilename);
         	LOG.info(msg);
+        	throw new EndEntityProfileNotFoundException("End entity profile of name \"" + profilename + "\" not found.");
         } else {
             // Check authorization before editing
             authorizedToProfile(admin, profile);

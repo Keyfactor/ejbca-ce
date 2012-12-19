@@ -49,6 +49,7 @@ import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 import org.ejbca.ui.web.admin.rainterface.RAInterfaceBean;
@@ -234,10 +235,12 @@ public class AdminCertReqServlet extends HttpServlet {
         String tmp = null;
         int eProfileId = SecConst.EMPTY_ENDENTITYPROFILE;
         if ((tmp = request.getParameter("entityprofile")) != null) {
-            int reqId = rabean.getEndEntityProfileId(tmp);
-            if (reqId == 0) {
-                throw new ServletException("No such end entity profile: " + tmp);
-            }
+            int reqId;
+            try {
+                reqId = rabean.getEndEntityProfileId(tmp);
+            } catch (EndEntityProfileNotFoundException e) {
+                throw new ServletException("No such end entity profile: " + tmp, e);
+            }       
             eProfileId = reqId;
         }
         newuser.setEndEntityProfileId(eProfileId);

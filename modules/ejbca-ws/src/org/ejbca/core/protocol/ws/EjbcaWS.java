@@ -155,6 +155,7 @@ import org.ejbca.core.model.ra.AlreadyRevokedException;
 import org.ejbca.core.model.ra.NotFoundException;
 import org.ejbca.core.model.ra.RevokeBackDateNotAllowedForProfileException;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.model.ra.userdatasource.MultipleMatchException;
 import org.ejbca.core.model.ra.userdatasource.UserDataSourceException;
@@ -310,10 +311,11 @@ public class EjbcaWS implements IEjbcaWS {
 	}
 
 	/**
+	 * @throws EndEntityProfileNotFoundException 
 	 * @see org.ejbca.core.protocol.ws.common.IEjbcaWS#findUser(org.ejbca.core.protocol.ws.objects.UserMatch)
 	 */
 	@TransactionAttribute(TransactionAttributeType.NOT_SUPPORTED)
-	public List<UserDataVOWS> findUser(UserMatch usermatch) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException {		
+	public List<UserDataVOWS> findUser(UserMatch usermatch) throws AuthorizationDeniedException, IllegalQueryException, EjbcaException, EndEntityProfileNotFoundException {		
     	List<UserDataVOWS> retval = null;
     	if (log.isDebugEnabled()) {
             log.debug("Find user with match '"+usermatch.getMatchvalue()+"'.");
@@ -1445,11 +1447,12 @@ public class EjbcaWS implements IEjbcaWS {
 			endEntityProfileId = userDataVO.getEndEntityProfileId();
 			userExists = true;
 		}else{
-			endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(userDataWS.getEndEntityProfileName());	    	  
-			if(endEntityProfileId == 0){
-				throw EjbcaWSHelper.getEjbcaException("Error given end entity profile : " + userDataWS.getEndEntityProfileName() +" could not be found",
-						logger, ErrorCode.EE_PROFILE_NOT_EXISTS, null);
-			}
+		    try {
+			endEntityProfileId = endEntityProfileSession.getEndEntityProfileId(userDataWS.getEndEntityProfileName());	
+		    } catch(EndEntityProfileNotFoundException e) {
+		        throw EjbcaWSHelper.getEjbcaException("Error given end entity profile : " + userDataWS.getEndEntityProfileName() +" could not be found",
+                        logger, ErrorCode.EE_PROFILE_NOT_EXISTS, null);
+		    }
 		}
 			
 		// Approval request if we require approvals to generate token certificates

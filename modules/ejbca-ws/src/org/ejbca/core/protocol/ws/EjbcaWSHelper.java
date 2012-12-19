@@ -83,6 +83,7 @@ import org.ejbca.core.model.hardtoken.HardTokenData;
 import org.ejbca.core.model.hardtoken.types.EnhancedEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.SwedishEIDHardToken;
 import org.ejbca.core.model.hardtoken.types.TurkishEIDHardToken;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.core.protocol.ws.logger.TransactionTags;
 import org.ejbca.core.protocol.ws.objects.Certificate;
@@ -371,11 +372,13 @@ public class EjbcaWSHelper {
 			throw new CADoesntExistsException("Error CA " + userdata.getCaName() + " have caid 0, which is impossible.");
 		}
 		
-		final int endentityprofileid = endEntityProfileSession.getEndEntityProfileId(userdata.getEndEntityProfileName());
-		if(endentityprofileid == 0){
-			throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, 
-                "Error End Entity profile " + userdata.getEndEntityProfileName() + " does not exist.");
-		}
+		int endentityprofileid;
+        try {
+            endentityprofileid = endEntityProfileSession.getEndEntityProfileId(userdata.getEndEntityProfileName());
+        } catch (EndEntityProfileNotFoundException e) {
+            throw new EjbcaException(ErrorCode.EE_PROFILE_NOT_EXISTS, 
+                    "Error End Entity profile " + userdata.getEndEntityProfileName() + " does not exist.", e);
+        }
 
 		final int certificateprofileid = certificateProfileSession.getCertificateProfileId(userdata.getCertificateProfileName());
 		if(certificateprofileid == 0){
@@ -616,16 +619,18 @@ public class EjbcaWSHelper {
 	}
 	
 	/**
-	 * Method that converts profilenames etc to corresponding Id's
+	 * Method that converts profile names etc to corresponding ID's
 	 * @param admin
 	 * @param usermatch a usermatch containing names of profiles
 	 * @return a query containing id's of profiles.
 	 * @throws NumberFormatException
 	 * @throws AuthorizationDeniedException 
 	 * @throws CADoesntExistsException 
+	 * @throws EndEntityProfileNotFoundException if usermatch was for and end entity profile, and that profile didn't exist
 	 */
-	protected Query convertUserMatch(AuthenticationToken admin, UserMatch usermatch) throws NumberFormatException, CADoesntExistsException, AuthorizationDeniedException {
-		Query retval = new Query(Query.TYPE_USERQUERY);		  		
+    protected Query convertUserMatch(AuthenticationToken admin, UserMatch usermatch) throws CADoesntExistsException,
+            AuthorizationDeniedException, EndEntityProfileNotFoundException {
+	Query retval = new Query(Query.TYPE_USERQUERY);		  		
 		switch(usermatch.getMatchwith()){
 		  case UserMatch.MATCH_WITH_ENDENTITYPROFILE:
 			  String endentityprofilename = Integer.toString(endEntityProfileSession.getEndEntityProfileId(usermatch.getMatchvalue()));

@@ -10,33 +10,32 @@
  *  See terms of license at gnu.org.                                     *
  *                                                                       *
  *************************************************************************/
- 
 package org.ejbca.core.model.ra.raadmin;
 
 /**
- * An exception thrown when someone tries to add an end entity profile that already exits
- *
- * @author Philip Vendil 2002-06-13
+ * Thrown when an end entity profile was not found. 
+ * 
  * @version $Id$
+ *
  */
-public class EndEntityProfileDoesntExistsException extends java.lang.Exception {
-    private static final long serialVersionUID = 8013494910881102216L;
+public class EndEntityProfileNotFoundException extends Exception {
 
-    /**
-     * Creates a new instance of <code>EndEntityProfileDoesntExistsException</code> without detail
-     * message.
-     */
-    public EndEntityProfileDoesntExistsException() {
+    private static final long serialVersionUID = 1901011578701643327L;
+
+    public EndEntityProfileNotFoundException() {
         super();
     }
 
-    /**
-     * Constructs an instance of <code>EndEntityProfileDoesntExistsException</code> with the
-     * specified detail message.
-     *
-     * @param msg the detail message.
-     */
-    public EndEntityProfileDoesntExistsException(String msg) {
-        super(msg);
+    public EndEntityProfileNotFoundException(String message, Throwable cause) {
+        super(message, cause);
     }
+
+    public EndEntityProfileNotFoundException(String message) {
+        super(message);
+    }
+
+    public EndEntityProfileNotFoundException(Throwable cause) {
+        super(cause);
+    } 
+
 }

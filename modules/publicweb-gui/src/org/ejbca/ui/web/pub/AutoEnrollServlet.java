@@ -56,6 +56,7 @@ import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferenceSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.protocol.MSPKCS10RequestMessage;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.util.ActiveDirectoryTools;
@@ -184,15 +185,25 @@ public class AutoEnrollServlet extends HttpServlet {
 	            fetchedSubjectDN = ActiveDirectoryTools.getUserDNFromActiveDirectory(globalConfiguration, usernameShort);
 	        }
 	        int certProfileId = MSCertTools.getOrCreateCertificateProfile(internalAdmin, templateIndex, certificateProfileSession);
-	        int endEntityProfileId;
-	        endEntityProfileId = MSCertTools.getOrCreateEndEndtityProfile(internalAdmin, templateIndex, certProfileId, caid, usernameShort, fetchedSubjectDN,
-	                raAdminSession, endEntityProfileSession);
-	        if (endEntityProfileId == -1) {
-	            String msg = "Could not retrieve required information from AD.";
-	            log.error(msg);
-	            response.getOutputStream().println(msg);
-	            return;
-	        }
+	        
+            int endEntityProfileId;
+            try {
+                endEntityProfileId = MSCertTools.getOrCreateEndEndtityProfile(internalAdmin, templateIndex, certProfileId, caid, usernameShort,
+                        fetchedSubjectDN, raAdminSession, endEntityProfileSession);
+            } catch (EndEntityProfileNotFoundException e) {
+                String msg = "Could not retrieve required information from AD.";
+                log.error(msg, e);
+                response.getOutputStream().println(msg);
+                return;
+            } catch(IllegalArgumentException e) {
+                String msg = "Could not retrieve required information from AD.";
+                log.error(msg, e);
+                response.getOutputStream().println(msg);
+                return;
+            }
+	       
+	  
+	        
 	        // Create user
 
 	        // The CA needs to use non-LDAP order and we need to have the SAN like "CN=Users, CN=Username, DC=com, DC=company".. why??

@@ -346,13 +346,13 @@ public class EndEntityProfileSessionBeanTest extends RoleUsingTestCase {
     
     /**
      * Test if the cardnumber is required in an end entity profile, and if check it is set if it was required.
-     * @throws UserDoesntFullfillEndEntityProfile 
      * @throws CertificateProfileExistsException 
      * @throws AuthorizationDeniedException 
+     * @throws EndEntityProfileNotFoundException 
      */
     @Test
-    public void testCardnumberRequired() throws CertificateProfileExistsException, AuthorizationDeniedException {
-    	log.trace(">test10CardnumberRequired()");
+    public void testCardnumberRequired() throws CertificateProfileExistsException, AuthorizationDeniedException, EndEntityProfileNotFoundException {
+ 	log.trace(">test10CardnumberRequired()");
 
     	try {
     	    int caid = "CN=TEST EndEntityProfile,O=PrimeKey,C=SE".hashCode();
