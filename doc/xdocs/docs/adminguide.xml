@@ -5405,9 +5405,10 @@ A collection of samples are available in the directory src/java/org/ejbca/sample
 <section name="Troubleshooting">
 <p>
 <ul>
-<li>Check the documentation. Double-check so everything really is configured the way it should and that you did not skip any step that didn't seem important.</li>
-<li>Enable DEBUG logging according to the Log4J configuration described above and check the log file.</li>
+<li>To find cause and description of errors look in the JBoss server log. For JBoss 5 this is located in server/default/log/server.log.<li>
+<li>If this does not display enough information, enable DEBUG logging according to the Log4J configuration described above and check the log file.</li>
 <li>Don't get intimidated by long stack-traces. Try to look for the message text and additional clues on lines starting with "Casued by:"</li>
+<li>Check the documentation. Double-check so everything really is configured the way it should and that you did not skip any step that didn't seem important.</li>
 <li>Try to reproduce this in a test environment with full DEBUG logging.</li>
 <li>Find out under what circumstances this occurs: seemingly spontanious or as a response to a certain set of actions or input</li>
 <li>Search for a solution. Perhaps someone else has had this problem and discussed it somewhere?</li>
