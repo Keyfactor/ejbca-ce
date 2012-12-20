@@ -37,6 +37,7 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
@@ -112,8 +113,6 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 				}
 			}
 			
-			//CertTools.verify(certificate, cainfo.getCertificateChain());
-			
 			if (email.equalsIgnoreCase("null")) {
 				email = CertTools.getEMailAddress(certificate);				
 			}
@@ -121,11 +120,12 @@ public class CaImportCertCommand extends BaseCaAdminCommand {
 			int endentityprofileid = SecConst.EMPTY_ENDENTITYPROFILE;
 			if (eeprofile != null) {
 				getLogger().debug("Searching for End Entity Profile " + eeprofile);
-				endentityprofileid = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(eeprofile);
-				if (endentityprofileid == 0) {
-					getLogger().error("End Entity Profile " + eeprofile + " does not exist.");
-					throw new Exception("End Entity Profile '" + eeprofile + "' does not exist.");
-				}
+				try {
+                    endentityprofileid = ejb.getRemoteSession(EndEntityProfileSessionRemote.class) .getEndEntityProfileId(eeprofile);
+                } catch (EndEntityProfileNotFoundException e) {
+                    getLogger().error("End Entity Profile " + eeprofile + " does not exist.");
+                    throw new Exception("End Entity Profile '" + eeprofile + "' does not exist.", e);
+                }
 			}
 			
 			int certificateprofileid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;

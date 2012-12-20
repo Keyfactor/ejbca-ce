@@ -30,6 +30,7 @@ import org.cesecore.roles.RoleData;
 import org.cesecore.roles.access.RoleAccessSessionRemote;
 import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -39,6 +40,7 @@ import org.ejbca.core.model.hardtoken.HardTokenIssuer;
 import org.ejbca.core.model.hardtoken.profiles.IPINEnvelopeSettings;
 import org.ejbca.core.model.hardtoken.profiles.SwedishEIDProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.ui.cli.BaseCommand;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -58,7 +60,6 @@ import org.ejbca.ui.cli.ErrorAdminCommandException;
  * 
  * After run have been executed should it be easy to run primecard locally to just issue the first card.
  * 
- * @author Philip Vendil
  * @version $Id$
  * 
  */
@@ -227,7 +228,12 @@ public class InitializeHardTokenIssuing extends BaseCommand {
      * @throws Exception
      */
     private void createSuperAdminTokenUser(String cliUserName, String cliPassword, int caid) throws Exception {
-        int endentityprofileid = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(ADMINTOKENENDENTITYPROFILE);
+        int endentityprofileid;
+        try {
+            endentityprofileid = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(ADMINTOKENENDENTITYPROFILE);
+        } catch (EndEntityProfileNotFoundException e) {
+            throw new EjbcaException("Predefined end entity profile " + ADMINTOKENENDENTITYPROFILE + " was not found.", e);
+        }
         int certificateprofileid = CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER;
         int tokenid = ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenProfileId(ADMINTOKENPROFILENAME);
         int hardtokenissuerid = ejb.getRemoteSession(HardTokenSessionRemote.class).getHardTokenIssuerId(ISSUERALIAS);

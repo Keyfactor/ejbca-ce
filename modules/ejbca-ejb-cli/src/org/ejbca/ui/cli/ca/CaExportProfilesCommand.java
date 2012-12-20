@@ -87,9 +87,8 @@ public class CaExportProfilesCommand extends BaseCaAdminCommand {
                 }
             }
             getLogger().info("Exporting non-fixed end entity profiles: ");
-            iter = endentityprofids.iterator();
-            while (iter.hasNext()){                
-                int profileid = ((Integer) iter.next()).intValue();
+            
+            for(int profileid : endentityprofids){                
                 if (profileid == SecConst.PROFILE_NO_PROFILE) { // Entity profile not found i database.
                 	getLogger().error("Error : Couldn't find entity profile '"+profileid+"' in database.");
                 } else if (profileid == SecConst.EMPTY_ENDENTITYPROFILE) {

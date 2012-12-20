@@ -35,6 +35,7 @@ import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -199,8 +200,13 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
 
             if (args.length > 10) {
                 // Use certificate type and end entity profile.
-                profileid = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(args[10]);
-                getLogger().info("Using entity profile: " + args[10] + ", with id: " + profileid);
+                try {
+                    profileid = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(args[10]);
+                    getLogger().info("Using entity profile: " + args[10] + ", with id: " + profileid);
+                } catch (EndEntityProfileNotFoundException e) {
+                    getLogger().error("Could not find end entity profile in database.", e);
+                    error = true;
+                }
             }
 
             if (args.length == 12 && usehardtokens) {
@@ -219,11 +225,6 @@ public class RaAddUserCommand extends BaseRaAdminCommand {
             if (certificatetypeid == CertificateProfileConstants.CERTPROFILE_NO_PROFILE) { 
             	// Certificate profile not found in database.
                 getLogger().error("Could not find certificate profile in database.");
-                error = true;
-            }
-
-            if (profileid == 0) { // End entity profile not found i database.
-                getLogger().error("Could not find end entity profile in database.");
                 error = true;
             }
 
