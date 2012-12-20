@@ -165,8 +165,8 @@ PostgreSQL specifics
 EJBCA have been tested with PostgreSQL 7.x and 8.x.
 
 JDBC driver: 
-For v7.x the 7.4 driver is needed to support the JDBC used by JBoss.
 For v8.x the 8.4 driver works fine.
+For v9.x the 9.1 driver works fine.
 
 Download JDBC driver for PostgreSQL from http://jdbc.postgresql.org/.
 
