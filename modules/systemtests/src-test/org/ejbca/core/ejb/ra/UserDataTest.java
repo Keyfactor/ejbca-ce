@@ -18,6 +18,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -43,6 +44,7 @@ import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ra.ExtendedInformationFields;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.junit.After;
 import org.junit.Before;
@@ -525,10 +527,12 @@ public class UserDataTest extends CaTestCase {
         endEntityProfileSession.removeEndEntityProfile(admin, PROFILE_CACHE_NAME_1);
         profile = endEntityProfileSession.getEndEntityProfile(pid1);
         assertNull(profile);
-        int pid5 = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_1);
-        assertEquals(0, pid5);
-        String name5 = endEntityProfileSession.getEndEntityProfileName(pid5);
-        assertNull(name5);
+        try {
+         endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_1);
+         fail();
+        } catch(EndEntityProfileNotFoundException e) {
+            //We should end up here.
+        }
 
         // But the other, non-removed profile should still be there
         int pid6 = endEntityProfileSession.getEndEntityProfileId(PROFILE_CACHE_NAME_2);

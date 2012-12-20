@@ -40,6 +40,7 @@ import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionRemote;
 import org.ejbca.core.model.SecConst;
+import org.ejbca.core.model.ra.raadmin.EndEntityProfileNotFoundException;
 import org.ejbca.core.model.ra.raadmin.UserDoesntFullfillEndEntityProfile;
 import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
@@ -48,7 +49,6 @@ import org.ejbca.util.CliTools;
 /**
  * Imports certificate files to the database for a given CA
  *
- * @author Anders Rundgren
  * @version $Id$
  */
 public class CaImportCertDirCommand extends BaseCaAdminCommand {
@@ -118,10 +118,12 @@ public class CaImportCertDirCommand extends BaseCaAdminCommand {
 			getLogger().info("CA: " + issuer);
 			// Fetch End Entity Profile info
 			getLogger().debug("Searching for End Entity Profile " + eeProfile);
-			final int endEntityProfileId = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(eeProfile);
-			if (endEntityProfileId == 0) {
-				getLogger().error("ERROR: End Entity Profile " + eeProfile + " does not exist.");
-				throw new Exception("End Entity Profile '" + eeProfile + "' does not exist.");
+			final int endEntityProfileId;
+			try {
+			    endEntityProfileId = ejb.getRemoteSession(EndEntityProfileSessionRemote.class).getEndEntityProfileId(eeProfile);
+			} catch(EndEntityProfileNotFoundException e) {
+			    getLogger().error("ERROR: End Entity Profile " + eeProfile + " does not exist.");
+                throw new Exception("End Entity Profile '" + eeProfile + "' does not exist.", e);
 			}
 			// Fetch Certificate Profile info
 			getLogger().debug("Searching for Certificate Profile " + certificateProfile);

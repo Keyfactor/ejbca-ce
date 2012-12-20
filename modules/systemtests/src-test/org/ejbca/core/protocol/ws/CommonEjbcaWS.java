@@ -68,6 +68,7 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
+import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionRemote;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
@@ -75,10 +76,12 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.X500PrincipalAccessMatchValue;
 import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.ca.catoken.CATokenInfo;
@@ -89,6 +92,7 @@ import org.cesecore.certificates.certificate.request.PKCS10RequestMessage;
 import org.cesecore.certificates.certificate.request.RequestMessageUtils;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
+import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -99,6 +103,8 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
 import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
@@ -131,6 +137,7 @@ import org.ejbca.core.model.hardtoken.HardTokenConstants;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfile;
 import org.ejbca.core.model.ra.raadmin.EndEntityProfileExistsException;
 import org.ejbca.core.protocol.ws.client.gen.AlreadyRevokedException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.ApprovalException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.AuthorizationDeniedException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.CADoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.Certificate;
@@ -143,6 +150,7 @@ import org.ejbca.core.protocol.ws.client.gen.ExtendedInformationWS;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDataWS;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenDoesntExistsException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.HardTokenExistsException_Exception;
+import org.ejbca.core.protocol.ws.client.gen.IllegalQueryException_Exception;
 import org.ejbca.core.protocol.ws.client.gen.KeyStore;
 import org.ejbca.core.protocol.ws.client.gen.NameAndId;
 import org.ejbca.core.protocol.ws.client.gen.NotFoundException_Exception;
@@ -152,7 +160,9 @@ import org.ejbca.core.protocol.ws.client.gen.RevokeStatus;
 import org.ejbca.core.protocol.ws.client.gen.TokenCertificateRequestWS;
 import org.ejbca.core.protocol.ws.client.gen.TokenCertificateResponseWS;
 import org.ejbca.core.protocol.ws.client.gen.UserDataVOWS;
+import org.ejbca.core.protocol.ws.client.gen.UserDoesntFullfillEndEntityProfile_Exception;
 import org.ejbca.core.protocol.ws.client.gen.UserMatch;
+import org.ejbca.core.protocol.ws.client.gen.WaitingForApprovalException_Exception;
 import org.ejbca.core.protocol.ws.common.CertificateHelper;
 import org.ejbca.core.protocol.ws.common.IEjbcaWS;
 import org.ejbca.core.protocol.ws.common.KeyStoreHelper;
@@ -360,8 +370,10 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         return "O=" + userName.charAt(userName.length() - 1) + "Test,CN=" + userName;
     }
 
-    private void editUser(String userName, String caName) throws Exception {
-        // Test to add a user.
+    private void editUser(String userName, String caName) throws ApprovalException_Exception, AuthorizationDeniedException_Exception,
+            CADoesntExistsException_Exception, EjbcaException_Exception, UserDoesntFullfillEndEntityProfile_Exception,
+            WaitingForApprovalException_Exception, IllegalQueryException_Exception {
+   // Test to add a user.
         final UserDataVOWS user = new UserDataVOWS();
         user.setUsername(userName);
         user.setPassword(PASSWORD);
@@ -469,7 +481,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         assertTrue(userdata2.getSubjectDN().equals(subjectDN));
     }
 
-    protected void editUser() throws Exception {
+    protected void editUser() throws CADoesntExistsException, CAExistsException, CryptoTokenOfflineException,
+            CryptoTokenAuthenticationFailedException, InvalidAlgorithmException, AuthorizationDeniedException, ApprovalException_Exception,
+            AuthorizationDeniedException_Exception, CADoesntExistsException_Exception, EjbcaException_Exception,
+            UserDoesntFullfillEndEntityProfile_Exception, WaitingForApprovalException_Exception, IllegalQueryException_Exception,
+            CertificateProfileExistsException {
         createTestCA(CA1);
         createTestCA(CA2);
         // Create suitable EE prof
@@ -489,12 +505,12 @@ public abstract class CommonEjbcaWS extends CaTestCase {
             }
             final int cpid = CommonEjbcaWS.this.certificateProfileSession.getCertificateProfileId(WS_CERTPROF_EI);
             profile.setValue(EndEntityProfile.AVAILCERTPROFILES, 0, Integer.toString(cpid));
-            if ( this.endEntityProfileSession.getEndEntityProfileId(WS_EEPROF_EI)==0 ) {
-            	this.endEntityProfileSession.addEndEntityProfile(intAdmin, WS_EEPROF_EI, profile);
+            if (this.endEntityProfileSession.getEndEntityProfile(WS_EEPROF_EI) == null) {
+                this.endEntityProfileSession.addEndEntityProfile(intAdmin, WS_EEPROF_EI, profile);
             }
         } catch (EndEntityProfileExistsException pee) {
         	log.error("Error creating end entity profile: ", pee);
-            assertTrue("Can not create end entity profile", false);
+            fail("Can not create end entity profile");
         }
         editUser(CA1_WSTESTUSER1, CA1);
         editUser(CA1_WSTESTUSER2, CA1);
@@ -1638,7 +1654,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         profile.setReUseKeyRecoveredCertificate(true);
         profile.setValue(EndEntityProfile.AVAILCAS, 0, Integer.toString(SecConst.ALLCAS));
         endEntityProfileSession.addEndEntityProfile(intAdmin, "KEYRECOVERY", profile);
-        assertTrue("Unable to kreate KEYRECOVERY end entity profile.", endEntityProfileSession.getEndEntityProfileId("KEYRECOVERY") != 0);
+        assertTrue("Unable to kreate KEYRECOVERY end entity profile.", endEntityProfileSession.getEndEntityProfile("KEYRECOVERY") != null);
 
         // Add a new user, set token to P12, status to new and end entity
         // profile to key recovery
