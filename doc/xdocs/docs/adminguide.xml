@@ -1124,7 +1124,7 @@ See EJBCA_HOME/modules/cmpProxy/resources/README for information how to build an
 
 <section name="Ocsp">
 <p>
-Note! Some OCSP clients does not handle external OCSP responders very well unfortunately. You should be aware of this.
+Note! Some OCSP clients do not handle external OCSP responders very well unfortunately. You should be aware of this.
 </p>
 <p>
 OCSP is used by PKI-clients to verify the validity of certificates in real-time. 
