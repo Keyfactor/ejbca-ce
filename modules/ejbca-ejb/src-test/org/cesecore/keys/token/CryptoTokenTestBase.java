@@ -415,7 +415,7 @@ public abstract class CryptoTokenTestBase {
                     pub = catoken.getPublicKey("sdfsdf77474");
                     assertTrue("Should throw", false);
                 } catch (CryptoTokenOfflineException e) {
-                    assertTrue(e.getMessage().contains("No key with alias 'sdfsdf77474'."));
+                    assertTrue(e.getMessage(), e.getMessage().contains("No key with alias 'sdfsdf77474'."));
                 }
                 // We have not set auto activate, so the internal key storage in CryptoToken is emptied
                 catoken.deactivate();
