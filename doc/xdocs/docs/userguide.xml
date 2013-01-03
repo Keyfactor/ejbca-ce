@@ -992,7 +992,7 @@ When editing an existing end entity and setting the status to new, from a non-ne
 </subsubsection>
 </subsection>
 <subsection name="Plug in field restrictions">
-<p>Administrators can develop further custom user field restictions using the Fieldvalidator as described in <a href="http://www.ejbca.org/adminguide.html#Customizing%20EJBCA">Customizing EJBCA</a>.
+<p>Administrators can develop further custom user field restictions using the Fieldvalidator as described in <a href="adminguide.html#Customizing%20EJBCA">Customizing EJBCA</a>.
 </p>
 </subsection>
 </section>
