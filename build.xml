@@ -654,10 +654,12 @@
         <antcall target="showtime" />
     </target>
     <!-- Check if there exist a dist/ejbca.ear, if it exists deployear can just deploy it directly, if not we have to build it before deployear can deploy it -->
-	<condition property="ejbcaear.built">	
-        <available file="${dist.dir}/ejbca.ear" type="file"/>
-    </condition>
-	<target name="buildifnotbuilt" unless="ejbcaear.built">
+	<target name="checkearexists">
+    	<condition property="ejbcaear.built">	
+            <available file="${dist.dir}/ejbca.ear" type="file"/>
+        </condition>
+	</target>
+	<target name="buildifnotbuilt" depends="checkearexists" unless="ejbcaear.built">
 		<antcall target="build"/>
 	</target>
     <target name="deployear" depends="buildifnotbuilt" description="Deploy the EJBCA application (ejbca.ear) without building and without deploying datasources or any configuration">       
