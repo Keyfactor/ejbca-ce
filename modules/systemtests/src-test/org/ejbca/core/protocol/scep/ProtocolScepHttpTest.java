@@ -744,9 +744,12 @@ public class ProtocolScepHttpTest extends CaTestCase {
     }
 
     private void updatePropertyOnServer(String property, String value) {
-        log.debug("Setting property on server: " + property + "=" + value);
-        assertTrue("Failed to set property \"" + property + "\" to \"" + value + "\"",
-                EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).updateProperty(property, value));
+        final String msg = "Setting property on server: " + property + "=" + value;
+        log.debug(msg);
+        boolean ret = EjbRemoteHelper.INSTANCE.getRemoteSession(ConfigurationSessionRemote.class, EjbRemoteHelper.MODULE_TEST).updateProperty(property, value);
+        if (!ret) {
+            throw new IllegalStateException("Failed operation: "+msg);
+        }
     }
 
     static class InternalResourcesStub extends InternalEjbcaResources {
