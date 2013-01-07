@@ -32,6 +32,7 @@ import org.apache.commons.fileupload.FileUpload;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.cesecore.ErrorCode;
 import org.cesecore.authentication.tokens.AlwaysAllowLocalAuthenticationToken;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -47,6 +48,7 @@ import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.FileTools;
 import org.ejbca.config.EjbcaConfigurationHolder;
+import org.ejbca.core.EjbcaException;
 import org.ejbca.core.ejb.ca.auth.EndEntityAuthenticationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSessionLocal;
 import org.ejbca.core.ejb.config.GlobalConfigurationSession;
@@ -72,6 +74,14 @@ public class RequestInstance {
 	private static final Logger log = Logger.getLogger(RequestInstance.class);
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 	
+    private class IncomatibleTokenTypeExtension extends EjbcaException {
+        private static final long serialVersionUID = 5435852400591856793L;
+
+        public IncomatibleTokenTypeExtension() {
+            super(ErrorCode.BAD_USER_TOKEN_TYPE);
+        }
+    }
+ 
 	private ServletContext servletContext;
 	private ServletConfig servletConfig;
 	private EndEntityAuthenticationSessionLocal authenticationSession;
@@ -312,6 +322,11 @@ public class RequestInstance {
 			tokentype = data.getTokenType();
 			GenerateToken tgen = new GenerateToken(authenticationSession, endEntityAccessSession, caSession, keyRecoverySession, signSession);
 			if(tokentype == SecConst.TOKEN_SOFT_P12){
+			    // If the user is configured for a server generated token, but submitted a CSR, it is most likely an administrative error.
+			    // The RA admin should probably have set token type usergenerated instead.
+			    if (hasCSRInRequest()) {
+			        throw new IncomatibleTokenTypeExtension();
+			    }
 				KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				if (StringUtils.equals(openvpn, "on")) {            	  
 					sendOpenVPNToken(ks, username, password, response);
@@ -320,10 +335,20 @@ public class RequestInstance {
 				}
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_JKS){
+                // If the user is configured for a server generated token, but submitted a CSR, it is most likely an administrative error.
+                // The RA admin should probably have set token type usergenerated instead.
+                if (hasCSRInRequest()) {
+                    throw new IncomatibleTokenTypeExtension();
+                }
 				KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, true, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendJKSToken(ks, username, password, response);
 			}
 			if(tokentype == SecConst.TOKEN_SOFT_PEM){
+                // If the user is configured for a server generated token, but submitted a CSR, it is most likely an administrative error.
+                // The RA admin should probably have set token type usergenerated instead.
+                if (hasCSRInRequest()) {
+                    throw new IncomatibleTokenTypeExtension();
+                }
 				KeyStore ks = tgen.generateOrKeyRecoverToken(administrator, username, password, data.getCAId(), keylength, keyalg, false, loadkeys, savekeys, reusecertificate, endEntityProfileId);
 				sendPEMTokens(ks, username, password, response);
 			}
@@ -448,6 +473,9 @@ public class RequestInstance {
 					} else {
 						throw new SignRequestException("No request bytes received.");
 					}
+				} else {
+				    // throw general exception, will be caught below and all parameters printed. 
+                    throw new Exception("No known request type received.");
 				}
 			}
 		} catch (ObjectNotFoundException oe) {
@@ -456,6 +484,8 @@ public class RequestInstance {
 			iErrorMessage = intres.getLocalizedMessage("certreq.wrongstatus");
 		} catch (AuthLoginException ale) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.wrongpassword");
+        } catch (IncomatibleTokenTypeExtension re) {
+            iErrorMessage = intres.getLocalizedMessage("certreq.csrreceivedforservergentoken");
 		} catch (SignRequestException re) {
 			iErrorMessage = intres.getLocalizedMessage("certreq.invalidreq", re.getMessage());
 		} catch (SignRequestSignatureException se) {
@@ -506,6 +536,20 @@ public class RequestInstance {
 		}
 	}
 
+    /** Check is a request to this servlet contains a Certificate Signing Request (CSR) in any
+     * format that we support.
+     */
+    private boolean hasCSRInRequest() {
+        if ((getParameter("cvcreq") != null) || (getParameter("cvcreqfile") != null)
+                || (getParameter("pkcs10req") != null) || (getParameter("pkcs10file") != null)
+                || (getParameter("pkcs10") != null) || (getParameter("PKCS10") != null)
+                || (getParameter("iidPkcs10") != null)
+                || (getParameter("keygen") != null)) {
+            return true;
+        }
+        return false;
+    }
+    
 	/**
 	 * Method creating a Map of request values, designed to handle both
 	 * regular x-encoded forms and multipart encoded upload forms.
