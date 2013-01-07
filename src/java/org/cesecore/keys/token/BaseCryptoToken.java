@@ -51,8 +51,6 @@ import org.cesecore.util.StringTools;
 /**
  * Base class for crypto tokens handling things that are common for all crypto tokens, hard or soft.
  *
- * Based on EJBCA version: BaseCAToken.java 10358 2010-11-03 18:34:23Z mikekushner
- *
  * @version $Id$
  */
 public abstract class BaseCryptoToken implements CryptoToken {
@@ -133,7 +131,9 @@ public abstract class BaseCryptoToken implements CryptoToken {
     }
 
     @Override
-    public void testKeyPair(PrivateKey privateKey, PublicKey publicKey) throws InvalidKeyException, NoSuchProviderException { // NOPMD:this is not a junit test
+    public void testKeyPair(final String alias) throws InvalidKeyException, NoSuchProviderException, CryptoTokenOfflineException { // NOPMD:this is not a junit test
+        final PrivateKey privateKey = getPrivateKey(alias);
+        final PublicKey publicKey = getPublicKey(alias);
         if (log.isDebugEnabled()) {
             final ByteArrayOutputStream baos = new ByteArrayOutputStream();
             final PrintStream ps = new PrintStream(baos);
@@ -210,6 +210,19 @@ public abstract class BaseCryptoToken implements CryptoToken {
         this.id = id;
     }
 
+    @Override
+    public String getTokenName() {
+        return properties.getProperty(CryptoToken.TOKENNAME_PROPERTY);
+    }
+
+    @Override
+    public void setTokenName(final String tokenName) {
+        if (properties == null) {
+            this.properties = new Properties();
+        }
+        properties.setProperty(CryptoToken.TOKENNAME_PROPERTY, tokenName);
+    }
+    
     @Override
     public Properties getProperties() {
         return properties;
@@ -634,4 +647,8 @@ public abstract class BaseCryptoToken implements CryptoToken {
         return getKeyStore().aliases();
     }
 
+    @Override
+    public boolean isAutoActivationPinPresent() {
+        return getAutoActivatePin(getProperties()) != null;
+    }
 }

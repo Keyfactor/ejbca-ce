@@ -50,8 +50,6 @@ signature
 /**
  * CRUD bean for creating, removing and retrieving CAs.
  * 
- * Based on EJBCA version: CaSession.java 10428 2010-11-11 16:45:12Z anatom
- * 
  * @version $Id$
  */
 public interface CaSession {
@@ -130,21 +128,6 @@ public interface CaSession {
      * @throws AuthorizationDeniedException if admin not authorized to CA 
      */
     public CAInfo getCAInfo(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException;
-
-    /**
-     * Returns a value object containing non-sensitive information about a CA
-     * give it's name. This method has the option of doing a signature test with the CAs token before returning the CAInfo object,
-     * the CAInfo token status is updated with the result of the signature test. This makes sure we don't read any cached value, or that the CA token went off-line 
-     * since we last used it.
-     * 
-     * @param admin administrator calling the method
-     * @param caid numerical unique id of CA
-     * @param doSignTest true if a signature operation with the CA token should be performed when getting the CA info
-     * @return CAInfo value object, never null
-     * @throws CADoesntExistsException if CA with caid does not exist
-     * @throws AuthorizationDeniedException if admin not authorized to CA 
-     */
-    public CAInfo getCAInfo(AuthenticationToken admin, int caid, boolean doSignTest) throws CADoesntExistsException, AuthorizationDeniedException;
 
     /**
      * Method used to remove a CA from the system. You should first check that

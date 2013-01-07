@@ -30,6 +30,7 @@ import javax.faces.model.SelectItem;
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
@@ -37,6 +38,7 @@ import org.cesecore.authorization.user.AccessMatchType;
 import org.cesecore.authorization.user.AccessUserAspectData;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValue;
 import org.cesecore.authorization.user.matchvalues.AccessMatchValueReverseLookupRegistry;
+import org.cesecore.keys.token.CryptoTokenInfo;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
@@ -566,8 +568,9 @@ public class RolesManagedBean extends BaseManagedBean {
         Collection<AccessRuleCollection> result = new ArrayList<AccessRuleCollection>();
         result.add(new AccessRuleCollection("ROLEBASEDACCESSRULES", getAccessRules().getRoleBasedAccessRules()));
         result.add(new AccessRuleCollection("REGULARACCESSRULES", getAccessRules().getRegularAccessRules()));
-        result.add(new AccessRuleCollection("ENDENTITYPROFILEACCESSR", getAccessRules().getEndEntityProfileAccessRules()));
         result.add(new AccessRuleCollection("CAACCESSRULES", getAccessRules().getCAAccessRules()));
+        result.add(new AccessRuleCollection("ENDENTITYPROFILEACCESSR", getAccessRules().getEndEntityProfileAccessRules()));
+        result.add(new AccessRuleCollection("CRYPTOTOKENACCESSRULES", getAccessRules().getCryptoTokenAccessRules()));
         result.add(new AccessRuleCollection("USERDATASOURCEACCESSRULES", getAccessRules().getUserDataSourceAccessRules()));
         return result;
     }
@@ -625,6 +628,21 @@ public class RolesManagedBean extends BaseManagedBean {
                         + resource.substring(resource.lastIndexOf('/'));
             }
         }
+        // Check if it is a CryptoToken rule, then replace CryptoToken id with CryptoToken name.
+        if (resource.startsWith(CryptoTokenRules.BASE.resource() + '/')) {
+            final int lastIndexOfSlash = resource.lastIndexOf('/');
+            try {
+                final Integer cryptoTokenId = Integer.valueOf(resource.substring(lastIndexOfSlash+1));
+                // Use local invocation without checking authorization, since we 
+                final CryptoTokenInfo cryptoTokenInfo = ejbLocalHelper.getCryptoTokenManagementSession().getCryptoTokenInfo(cryptoTokenId);
+                if (cryptoTokenInfo != null) {
+                    return resource.substring(0, lastIndexOfSlash+1) + cryptoTokenInfo.getName();
+                }
+            } catch (NumberFormatException e) {
+                // Ignore.. we only want to convert the ones where the last section is a number
+            }
+            return resource;
+        }
         return resource;
     }
 
@@ -642,6 +660,7 @@ public class RolesManagedBean extends BaseManagedBean {
         allRules.addAll(getAccessRules().getRegularAccessRules());
         allRules.addAll(getAccessRules().getEndEntityProfileAccessRules());
         allRules.addAll(getAccessRules().getCAAccessRules());
+        allRules.addAll(getAccessRules().getCryptoTokenAccessRules());
         allRules.addAll(getAccessRules().getUserDataSourceAccessRules());
         // Remove all access rules marked as UNUSED and replace the others
         for (AccessRuleData ar : allRules) {

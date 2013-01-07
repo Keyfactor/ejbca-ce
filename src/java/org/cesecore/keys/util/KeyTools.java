@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.math.BigInteger;
@@ -84,9 +85,11 @@ import org.bouncycastle.jce.provider.JCEECPublicKey;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
 import org.bouncycastle.jce.spec.ECPublicKeySpec;
 import org.bouncycastle.math.ec.ECCurve;
+import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.internal.InternalResources;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -96,8 +99,6 @@ import org.ejbca.cvc.PublicKeyEC;
 /**
  * Tools to handle common key and keystore operations.
  * 
- * Based on EJBCA version: 
- *      KeyTools.java 11098 2011-01-07 16:22:36Z anatom
  * CESeCore version:
  *      KeyTools.java 733 2011-05-02 10:41:57Z tomas
  * 
@@ -105,6 +106,7 @@ import org.ejbca.cvc.PublicKeyEC;
  */
 public final class KeyTools {
     private static final Logger log = Logger.getLogger(KeyTools.class);
+    private static final InternalResources intres = InternalResources.getInstance();
 
     /** The name of Suns pkcs11 implementation */
     public static final String SUNPKCS11CLASS = "sun.security.pkcs11.SunPKCS11";
@@ -714,6 +716,15 @@ public final class KeyTools {
         return buffer.toByteArray();
     }
 
+    /** @return a buffer with the public key in PEM format */
+    public static String getAsPem(final PublicKey publicKey) throws IOException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final PEMWriter pemWriter = new PEMWriter(new OutputStreamWriter(baos));
+        pemWriter.writeObject(publicKey);
+        pemWriter.close();
+        return new String(baos.toByteArray(), "UTF8");
+    }
+
     /**
      * Retrieves the certificate chain from a keystore.
      * 
@@ -1185,5 +1196,50 @@ public final class KeyTools {
             return result != null && result.bitLength() > 0;
         }
         return false;
+    }
+
+    public static void checkValidKeyLength(String keyspec) throws InvalidKeyException, NoSuchAlgorithmException,
+    NoSuchProviderException, InvalidAlgorithmParameterException {
+        String keyAlg;
+        int len;
+        if (StringUtils.isNumeric(keyspec)) {
+            keyAlg = AlgorithmConstants.KEYALGORITHM_RSA;
+            len = Integer.valueOf(keyspec); 
+        } else if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
+            keyAlg = AlgorithmConstants.KEYALGORITHM_DSA;
+            if (keyspec.startsWith(AlgorithmConstants.KEYALGORITHM_DSA)) {
+                keyspec = keyspec.substring(3);
+            }
+            len = Integer.valueOf(keyspec);
+        } else {
+            keyAlg = AlgorithmConstants.KEYALGORITHM_ECDSA;
+            final KeyPair kp = KeyTools.genKeys(keyspec, keyAlg);
+            len = KeyTools.getKeyLength(kp.getPublic());
+        }
+        checkValidKeyLength(keyAlg, len);
+    }
+
+    public static void checkValidKeyLength(final PublicKey pk) throws InvalidKeyException, NoSuchAlgorithmException,
+    NoSuchProviderException, InvalidAlgorithmParameterException {
+        final String keyAlg = AlgorithmTools.getKeyAlgorithm(pk);
+        final int len = KeyTools.getKeyLength(pk);
+        checkValidKeyLength(keyAlg, len);
+    }
+
+    public static void checkValidKeyLength(final String keyAlg, final int len) throws InvalidKeyException {
+        if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyAlg)) {
+            // We allow key lengths of 0, because that means that implicitlyCA is used. 
+            // for ImplicitlyCA we have no idea what the key length is, on the other hand only real professionals
+            // will ever use that to we will allow it.
+            if ((len > 0) && (len < 224)) {
+                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "ECDSA", "224", len);
+                throw new InvalidKeyException(msg);
+            }                            
+        } else if (AlgorithmConstants.KEYALGORITHM_RSA.equals(keyAlg) || AlgorithmConstants.KEYALGORITHM_DSA.equals(keyAlg)) {
+            if (len < 1024) {
+                final String msg = intres.getLocalizedMessage("catoken.invalidkeylength", "RSA/DSA", "1024", len);
+                throw new InvalidKeyException(msg);
+            }
+        }
     }
 }

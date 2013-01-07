@@ -46,7 +46,7 @@ public interface ApprovalSession {
      * @throws ApprovalException
      *             if an approval already exists for this request.
      */
-    public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest, GlobalConfiguration gc) throws ApprovalException;
+    public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException;
 
     /**
      * Method that goes through exists approvals in database to see if there
@@ -132,10 +132,8 @@ public interface ApprovalSession {
      * approval have been made by this user earlier.
      * 
      * 4. Runs the approval command in the end entity bean.
-     * 
-     * @param gc is the GlobalConfiguration used for notification info
      */
-    public void reject(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
+    public void reject(AuthenticationToken admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,
             AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException;
 
     /**

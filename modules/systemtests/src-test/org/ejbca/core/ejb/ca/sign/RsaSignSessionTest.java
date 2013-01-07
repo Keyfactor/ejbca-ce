@@ -233,7 +233,7 @@ public class RsaSignSessionTest extends SignSessionCommon {
             } catch (Exception e) {
                 //NOPMD
             }
-            caSession.removeCA(internalAdmin, inforsareverse.getCAId());
+            CaTestCase.removeTestCA(TEST_RSA_REVERSE_CA_NAME);
         }
     }
 

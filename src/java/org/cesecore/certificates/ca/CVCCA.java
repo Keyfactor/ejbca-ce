@@ -27,15 +27,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
@@ -49,7 +49,6 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.cvc.AccessRightEnum;
@@ -75,7 +74,6 @@ import org.ejbca.cvc.exception.ParseException;
 public class CVCCA extends CA implements Serializable {
 
 	private static final long serialVersionUID = 3L;
-
 	private static final Logger log = Logger.getLogger(CVCCA.class);
 
 	/** Internal localization of logs and errors */
@@ -84,49 +82,42 @@ public class CVCCA extends CA implements Serializable {
 	/** Version of this class, if this is increased the upgrade() method will be called automatically */
 	public static final float LATEST_VERSION = 3;
 
-    // protected fields for properties specific to this type of CA.
-
-	// Public Methods
 	/** Creates a new instance of CA, this constructor should be used when a new CA is created */
 	public CVCCA(CVCCAInfo cainfo) {
 		super(cainfo);  
-
 		data.put(CA.CATYPE, Integer.valueOf(CAInfo.CATYPE_CVC));
 		data.put(VERSION, new Float(LATEST_VERSION));   
 	}
 
-	/** Constructor used when retrieving existing CVCCA from database. 
-	 * @throws IllegalCryptoTokenException */
-	public CVCCA(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) throws IllegalCryptoTokenException{
+	/** Constructor used when retrieving existing CVCCA from database. */
+	public CVCCA(HashMap<Object, Object> data, int caId, String subjectDN, String name, int status, Date updateTime) {
 		super(data);
-		ArrayList<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
-		Iterator<Integer> iter = getExternalCAServiceTypes().iterator(); 	
-		while(iter.hasNext()){
-			ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(iter.next().intValue());
+		final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
+		for (final Integer externalCAServiceType : getExternalCAServiceTypes()) {
+			final ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(externalCAServiceType.intValue());
 			if (info != null) {
 				externalcaserviceinfos.add(info);  	    			
 			}
 		}
-		CAInfo info = new CVCCAInfo(subjectDN, name, status, updateTime, getCertificateProfileId(),  
+		final CAInfo info = new CVCCAInfo(subjectDN, name, status, updateTime, getCertificateProfileId(),  
 				getValidity(), getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(),
-				getCAToken(caId).getTokenInfo(), getDescription(), getRevocationReason(), getRevocationDate(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), 
+				getCAToken(), getDescription(), getRevocationReason(), getRevocationDate(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(), getDeltaCRLPeriod(), 
 				getCRLPublishers(), getFinishUser(), externalcaserviceinfos, 
 				getApprovalSettings(), getNumOfRequiredApprovals(),
 				getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(), isDoEnforceUniqueSubjectDNSerialnumber(),
 				isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage());
 		super.setCAInfo(info);
+        setCAId(caId);
 	}
 
-	public byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException {
-    	String msg = intres.getLocalizedMessage("cvc.info.nocvcpkcs7");
-		log.info(msg);
+	@Override
+	public byte[] createPKCS7(CryptoToken cryptoToken, Certificate cert, boolean includeChain) throws SignRequestSignatureException {
+		log.info(intres.getLocalizedMessage("cvc.info.nocvcpkcs7"));
 		return null;
 	}    
 
-	/**
-	 * @see CA#createRequest(Collection, String, Certificate, int)
-	 */
-	public byte[] createRequest(Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CryptoTokenOfflineException {
+	/** @see CA#createRequest(Collection, String, Certificate, int) */
+	public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose) throws CryptoTokenOfflineException {
 		if (log.isTraceEnabled()) {
 			log.trace(">createRequest: "+signAlg+", "+CertTools.getSubjectDN(cacert)+", "+signatureKeyPurpose);
 		}
@@ -136,20 +127,17 @@ public class CVCCA extends CA implements Serializable {
 		KeyPair keyPair;
 		try {
 			CAToken catoken = getCAToken();
-			keyPair = new KeyPair(catoken.getPublicKey(signatureKeyPurpose), catoken.getPrivateKey(signatureKeyPurpose));
+			final String alias = catoken.getAliasFromPurpose(signatureKeyPurpose);
+			keyPair = new KeyPair(cryptoToken.getPublicKey(alias), cryptoToken.getPrivateKey(alias));
 			String subject = getCAInfo().getSubjectDN();
 			String country = CertTools.getPartFromDN(subject, "C");
 			String mnemonic = CertTools.getPartFromDN(subject, "CN");
-			String seq = getCAToken().getTokenInfo().getKeySequence(); 
+			String seq = getCAToken().getKeySequence(); 
 			if (signatureKeyPurpose == CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT) {
 				// See if we have a next sequence to put in the holder reference instead of the current one, 
 				// since we are using the next key we should use the next sequence
-				String propdata = catoken.getTokenInfo().getPropertiesString();
-				Properties prop = new Properties();
-				if (propdata != null) {
-					prop.load(new ByteArrayInputStream(propdata.getBytes()));					
-				}
-				String nextSequence = (String)prop.get(CryptoToken.NEXT_SEQUENCE_PROPERTY);
+				final Properties caTokenProperties = catoken.getProperties();
+				final String nextSequence = (String)caTokenProperties.get(CATokenConstants.NEXT_SEQUENCE_PROPERTY);
 				// Only use next sequence if we also use previous key
 				if (nextSequence != null) {
 					seq = nextSequence;
@@ -191,11 +179,9 @@ public class CVCCA extends CA implements Serializable {
 				caRef = new CAReferenceField(holderRef.getCountry(), holderRef.getMnemonic(), holderRef.getSequence());				
 				log.debug("No CA cert, using caRef from the holder itself: "+caRef.getConcatenated());					
 			}
-			log.debug("Creating request with signature alg: "+signAlg+", using provider "+catoken.getCryptoToken().getSignProviderName());
-			CVCertificate request = CertificateGenerator.createRequest(keyPair, signAlg, caRef, holderRef, catoken.getCryptoToken().getSignProviderName());
+			log.debug("Creating request with signature alg: "+signAlg+", using provider "+cryptoToken.getSignProviderName());
+			CVCertificate request = CertificateGenerator.createRequest(keyPair, signAlg, caRef, holderRef, cryptoToken.getSignProviderName());
 			ret = request.getDEREncoded();
-		} catch (IllegalCryptoTokenException e) {
-            throw new RuntimeException(e);
 		} catch (InvalidKeyException e) {
             throw new RuntimeException(e);
 		} catch (NoSuchAlgorithmException e) {
@@ -214,150 +200,99 @@ public class CVCCA extends CA implements Serializable {
 	}
 
 	/** If the request is a CVC request, this method adds an outer signature to the request.
-	 * If this request is a CVCA certificate and this is the same CVCA, this method creates a CVCA link certificate.
-	 * If not creating a link certificate this means that an authenticated request, CVCAuthenticatedRequest is created.
-	 * 
-	 * @see CA#signRequest(byte[], boolean, boolean)
+	 *  This means that an authenticated request, CVCAuthenticatedRequest is created.
 	 */
-	public byte[] signRequest(byte[] request, boolean usepreviouskey, boolean createlinkcert) throws CryptoTokenOfflineException {
-		if (log.isTraceEnabled()) {
-			log.trace(">signRequest: usepreviouskey="+usepreviouskey+", createlinkcert="+createlinkcert);
-		}
-		byte[] ret = request;
-		try {
-			CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
-			if (cacert == null) {
-				// if we don't have a CA certificate, we can't sign any request, just return it
-				return request;
-			}
-			CAToken catoken = getCAToken();
-			// Get either the current or the previous signing key for signing this request
-			int key = CATokenConstants.CAKEYPURPOSE_CERTSIGN;
-			if (usepreviouskey) {
-				log.debug("Using previous CertSign key to sign request");
-				key = CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS;
-			} else {
-				log.debug("Using current CertSign key to sign request");
-			}
-			KeyPair keyPair = new KeyPair(catoken.getPublicKey(key), catoken.getPrivateKey(key));
-			String signAlg = getCAToken().getTokenInfo().getSignatureAlgorithm();
-			// Create the CA reference, should be from signing certificates holder field
-			HolderReferenceField caHolder = cacert.getCVCertificate().getCertificateBody().getHolderReference();
-			String sequence = caHolder.getSequence();
-			// See if we have a previous sequence to put in the CA reference instead of the same as we have from the request
-			String propdata = catoken.getTokenInfo().getPropertiesString();
-			Properties prop = new Properties();
-			if (propdata != null) {
-				prop.load(new ByteArrayInputStream(propdata.getBytes()));					
-			}
-			String previousSequence = (String)prop.get(CryptoToken.PREVIOUS_SEQUENCE_PROPERTY);
-			// Only use previous sequence if we also use previous key
-			if ( (previousSequence != null) && (usepreviouskey) ) {
-				sequence = previousSequence;
-				log.debug("Using previous sequence in caRef: "+sequence);
-			} else {
-				log.debug("Using current sequence in caRef: "+sequence);				
-			}
-			// Set the CA reference field for the authentication signature
-			CAReferenceField caRef = new CAReferenceField(caHolder.getCountry(), caHolder.getMnemonic(), sequence);
+	@Override
+    public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException {
+	    byte[] ret = null;
+	    try {
+	        CardVerifiableCertificate cacert = (CardVerifiableCertificate)getCACertificate();
+	        if (cacert == null) {
+	            // if we don't have a CA certificate, we can't sign any request
+	            return null;
+	        }
+	        CAToken catoken = getCAToken();
+	        final String alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+	        KeyPair keyPair = new KeyPair(cryptoToken.getPublicKey(alias), cryptoToken.getPrivateKey(alias));
+	        String signAlg = getCAToken().getSignatureAlgorithm();
+	        // Create the CA reference, should be from signing certificates holder field
+	        HolderReferenceField caHolder = cacert.getCVCertificate().getCertificateBody().getHolderReference();
+	        // Set the CA reference field for the authentication signature
+	        CAReferenceField caRef = new CAReferenceField(caHolder.getCountry(), caHolder.getMnemonic(), caHolder.getSequence());
+	        byte[] binbytes = request;
+	        try {
+	            // We don't know if this is a PEM or binary certificate or request request so we first try to 
+	            // decode it as a PEM certificate, and if it's not we try it as a PEM request and finally as a binary request 
+	            binbytes = CertTools.getCertsFromPEM(new ByteArrayInputStream(request)).get(0).getEncoded();
+	        } catch (Exception e) {
+	            log.debug("This is not a PEM certificate?: "+e.getMessage());
+	            try {
+	                binbytes = RequestMessageUtils.getRequestBytes(request);
+	            } catch (Exception e2) {
+	                log.debug("This is not a PEM request?: "+e2.getMessage());                      
+	            }
+	        }
+	        // This can be either a CV certificate, a CV certificate request, or an authenticated request that we should re-sign
+	        final CVCObject parsedObject = CertificateParser.parseCVCObject(binbytes);
+            CVCertificate cvcert = null;
+	        if (parsedObject instanceof CVCertificate) {
+	            cvcert = (CVCertificate) parsedObject;
+	            log.debug("This is a reqular CV request, or cert.");                    
+	        } else if (parsedObject instanceof CVCAuthenticatedRequest) {
+	            cvcert = ((CVCAuthenticatedRequest)parsedObject).getRequest();
+	            log.debug("This is an authenticated CV request, we will overwrite the old authentication with a new.");                 
+	        }
+	        log.debug("Creating authenticated request with signature alg: "+signAlg+", using provider "+cryptoToken.getSignProviderName());
+	        ret = CertificateGenerator.createAuthenticatedRequest(cvcert, keyPair, signAlg, caRef, cryptoToken.getSignProviderName()).getDEREncoded();
+	        log.debug("Signed a CardVerifiableCertificate request and returned a CVCAuthenticatedRequest.");
+	    } catch (ParseException e) {
+	        log.info(intres.getLocalizedMessage("cvc.error.notcvcrequest"), e);
+	    } catch (ClassCastException e) {
+	        log.info(intres.getLocalizedMessage("cvc.error.notcvcrequest"), e);
+	    } catch (Exception e) {
+	        throw new RuntimeException(e);
+	    }
+	    return ret;
+    }
 
-			CVCertificate cvcert = null;
-			try {
-				byte[] binbytes = request;
-				try {
-					// We don't know if this is a PEM or binary certificate or request request so we first try to 
-					// decode it as a PEM certificate, and if it's not we try it as a PEM request and finally as a binary request 
-					Collection<Certificate> col = CertTools.getCertsFromPEM(new ByteArrayInputStream(request));
-					Certificate cert = col.iterator().next();
-					if (cert != null) {
-						binbytes = cert.getEncoded();
-					}
-				} catch (Exception e) {
-					log.debug("This is not a PEM certificate?: "+e.getMessage());
-					try {
-						binbytes = RequestMessageUtils.getRequestBytes(request);
-					} catch (Exception e2) {
-						log.debug("This is not a PEM request?: "+e2.getMessage());						
-					}
-				}
-				// This can be either a CV certificate, a CV certificate request, or an authenticated request that we should re-sign
-				CVCObject parsedObject;
-				parsedObject = CertificateParser.parseCVCObject(binbytes);
-				if (parsedObject instanceof CVCertificate) {
-					cvcert = (CVCertificate) parsedObject;
-					log.debug("This is a reqular CV request, or cert.");					
-				} else if (parsedObject instanceof CVCAuthenticatedRequest) {
-					CVCAuthenticatedRequest authreq = (CVCAuthenticatedRequest)parsedObject;
-					cvcert = authreq.getRequest();
-					log.debug("This is an authenticated CV request, we will overwrite the old authentication with a new.");					
-				}
-			} catch (ParseException e) {
-            	String msg = intres.getLocalizedMessage("cvc.error.notcvcrequest");
-				log.info(msg, e);
-				return request;
-			} catch (ClassCastException e) {
-            	String msg = intres.getLocalizedMessage("cvc.error.notcvcrequest");
-				log.info(msg, e);
-				return request;
-			}
-			// Check if the input was a CVCA certificate, which is the same CVCA as this. If all is true we should create a CVCA link certificate
-			// instead of an authenticated request
-			CardVerifiableCertificate cvccert = new CardVerifiableCertificate(cvcert);
-			HolderReferenceField cvccertholder = cvccert.getCVCertificate().getCertificateBody().getHolderReference();
-			AuthorizationRoleEnum authRole = null;
-			AccessRightEnum rights = null;
-			try {
-				authRole = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole();					
- 				rights = cvccert.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight();
-			} catch (NoSuchFieldException e) {
-				log.debug("No AuthorizationRoleEnum or AccessRightEnum, this is not a CV certificate so we can't make a link certificate: "+e.getMessage());
-				
-			}
-			if (createlinkcert && (authRole != null) && (rights != null)) {
-				log.debug("We will create a link certificate.");
-				String msg = intres.getLocalizedMessage("cvc.info.createlinkcert", cvccertholder.getConcatenated(), caRef.getConcatenated());
-				log.info(msg);
-				PublicKey pk = cvccert.getPublicKey();
-				Date validFrom = cvccert.getCVCertificate().getCertificateBody().getValidFrom();
-				Date validTo = cvccert.getCVCertificate().getCertificateBody().getValidTo();
-				// Generate a new certificate with the same contents as the passed in certificate, but with new caRef and signature
-				CVCertificate retcert = CertificateGenerator.createCertificate(pk, keyPair.getPrivate(), signAlg, caRef, cvccertholder, authRole, rights, validFrom, validTo, catoken.getCryptoToken().getSignProviderName());
-				ret = retcert.getDEREncoded();
-				log.debug("Signed a CardVerifiableCertificate CardVerifiableCertificate.");
-			} else {
-				log.debug("Creating authenticated request with signature alg: "+signAlg+", using provider "+catoken.getCryptoToken().getSignProviderName());
-				CVCAuthenticatedRequest authreq = CertificateGenerator.createAuthenticatedRequest(cvcert, keyPair, signAlg, caRef, catoken.getCryptoToken().getSignProviderName());
-				ret = authreq.getDEREncoded();				
-				log.debug("Signed a CardVerifiableCertificate request and returned a CVCAuthenticatedRequest.");
-			}
-		} catch (IllegalCryptoTokenException e) {
-			throw new RuntimeException(e);
-		} catch (InvalidKeyException e) {
-			throw new RuntimeException(e);
-		} catch (NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);
-		} catch (NoSuchProviderException e) {
-			throw new RuntimeException(e);
-		} catch (SignatureException e) {
-			throw new RuntimeException(e);
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} catch (ConstructionException e) {
-			throw new RuntimeException(e);
-		} catch (NoSuchFieldException e) {
-			throw new RuntimeException(e);
-		}
-		if (log.isTraceEnabled()) {
-			log.trace("<signRequest");
-		}
-		return ret;
+	@Override
+	public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate) throws CryptoTokenOfflineException {
+	    byte[] ret = null;
+	    if (createLinkCertificate) {
+	        try {
+	            final CardVerifiableCertificate caCertificate = (CardVerifiableCertificate)getCACertificate();
+	            final CAToken caToken = getCAToken();
+	            final String previousSignKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
+	            final KeyPair previousSignKeyPair = new KeyPair(cryptoToken.getPublicKey(previousSignKeyAlias), cryptoToken.getPrivateKey(previousSignKeyAlias));
+	            final String caSigningAlgorithm = caToken.getSignatureAlgorithm();
+	            final HolderReferenceField caHolder = caCertificate.getCVCertificate().getCertificateBody().getHolderReference();
+	            final Properties caTokenProperties = caToken.getProperties();
+	            final String previousKeySequence = (String)caTokenProperties.get(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
+	            final CAReferenceField caRef = new CAReferenceField(caHolder.getCountry(), caHolder.getMnemonic(), previousKeySequence);
+	            final HolderReferenceField cvccertholder = caCertificate.getCVCertificate().getCertificateBody().getHolderReference();
+	            final AuthorizationRoleEnum authRole = caCertificate.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getRole();                    
+	            final AccessRightEnum rights = caCertificate.getCVCertificate().getCertificateBody().getAuthorizationTemplate().getAuthorizationField().getAccessRight();
+	            final PublicKey publicKey = caCertificate.getPublicKey();
+	            final Date validFrom = caCertificate.getCVCertificate().getCertificateBody().getValidFrom();
+	            final Date validTo = caCertificate.getCVCertificate().getCertificateBody().getValidTo();
+	            // Generate a new certificate with the same contents as the passed in certificate, but with new caRef and signature
+	            final CVCertificate retcert = CertificateGenerator.createCertificate(publicKey, previousSignKeyPair.getPrivate(), caSigningAlgorithm, caRef, cvccertholder, authRole, rights, validFrom, validTo, cryptoToken.getSignProviderName());
+	            ret = retcert.getDEREncoded();
+	            log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cvccertholder.getConcatenated(), caRef.getConcatenated()));
+	        } catch (CryptoTokenOfflineException e) {
+	            throw e;
+	        } catch (Exception e) {
+	            throw new RuntimeException("Bad CV CA certificate.", e);
+	        }
+	    }
+	    updateLatestLinkCertificate(ret);
 	}
 	
 	/**
      * @param sequence an optional requested sequence number (serial number) for the certificate. If null a random sequence will be generated.
      * requestX500Name is never used.
 	 */
-	public Certificate generateCertificate(EndEntityInformation subject, 
+	public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, 
     		X500Name requestX500Name,
             PublicKey publicKey, 
 			int keyusage, 
@@ -453,11 +388,12 @@ public class CVCCA extends CA implements Serializable {
         }
         // Generate the CVC certificate using Keijos library
         CAToken catoken = getCAToken();
-        String sigAlg = catoken.getTokenInfo().getSignatureAlgorithm();
-        log.debug("Creating CV certificate with algorithm "+sigAlg+", using provider "+catoken.getCryptoToken().getSignProviderName()+", public key algorithm from CVC request must match this algorithm.");
+        String sigAlg = catoken.getSignatureAlgorithm();
+        log.debug("Creating CV certificate with algorithm "+sigAlg+", using provider "+cryptoToken.getSignProviderName()+", public key algorithm from CVC request must match this algorithm.");
         log.debug("CARef: "+caRef.getConcatenated()+"; holderRef: "+holderRef.getConcatenated());
-        CVCertificate cvc = CertificateGenerator.createCertificate(publicKey, catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), 
-        		sigAlg, caRef, holderRef, authRole, accessRights, val.getNotBefore(), val.getNotAfter(), catoken.getCryptoToken().getSignProviderName());
+        final String alias = getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+        CVCertificate cvc = CertificateGenerator.createCertificate(publicKey, cryptoToken.getPrivateKey(alias), 
+        		sigAlg, caRef, holderRef, authRole, accessRights, val.getNotBefore(), val.getNotAfter(), cryptoToken.getSignProviderName());
 
         if (log.isDebugEnabled()) {
             log.debug("Certificate: "+cvc.toString());
@@ -466,21 +402,22 @@ public class CVCCA extends CA implements Serializable {
         
         CardVerifiableCertificate retCert = new CardVerifiableCertificate(cvc);
         // Verify certificate before returning
-        retCert.verify(getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        retCert.verify(cryptoToken.getPublicKey(alias));
         if (log.isTraceEnabled()) {
         	log.trace("<generateCertificate()");
         }
 		return retCert;                                                                                        
 	}
 
-
-    public X509CRLHolder generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) {
+    @Override
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;
     }
 
-    public X509CRLHolder generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) {
+    @Override
+    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) {
         String msg = intres.getLocalizedMessage("createcrl.nocrlcreate", "CVC");
         log.info(msg);
         return null;
@@ -522,21 +459,20 @@ public class CVCCA extends CA implements Serializable {
 	/**
 	 * Method to upgrade new (or existing external caservices)
 	 * This method needs to be called outside the regular upgrade
-	 * since the CA isn't instansiated in the regular upgrade.
-	 *
+	 * since the CA isn't instantiated in the regular upgrade.
 	 */
 	public boolean upgradeExtendedCAServices() {
 		// Nothing to upgrade yet
 		return false;
 	}
 
-
-	public byte[] decryptData(byte[] data, int cAKeyPurpose) throws Exception {
+	@Override
+	public byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) throws Exception {
 		throw new IllegalArgumentException("decryptData not implemented for CVC CA");
 	}
 
-	public byte[] encryptData(byte[] data, int keyPurpose) throws Exception {
+    @Override
+	public byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose) throws Exception {
 		throw new IllegalArgumentException("encryptData not implemented for CVC CA");
 	}
-
 }

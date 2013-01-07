@@ -54,6 +54,7 @@ public class PublicCryptoToken implements CryptoToken {
 	private static final Logger log = Logger.getLogger(PublicCryptoToken.class);
 	private PublicKey pk;
 	private final static String providerName = "SunRsaSign";
+	private String tokenName = "not available";
 
 	@Override
 	public void init(Properties properties, byte[] data, int _id)
@@ -124,7 +125,7 @@ public class PublicCryptoToken implements CryptoToken {
 	}
 
 	@Override
-	public void deleteEntry(char[] authenticationcode, String alias)
+	public void deleteEntry(String alias)
 			throws KeyStoreException, NoSuchAlgorithmException,
 			CertificateException, IOException, CryptoTokenOfflineException {
 		// static do nothing
@@ -197,12 +198,6 @@ public class PublicCryptoToken implements CryptoToken {
 	}
 
 	@Override
-	public void testKeyPair(PrivateKey privateKey, PublicKey publicKey)
-			throws InvalidKeyException, NoSuchProviderException {
-		// be positive
-	}
-
-	@Override
 	public byte[] extractKey(String privKeyTransform,
 			String encryptionKeyAlias, String privateKeyAlias)
 			throws NoSuchAlgorithmException, NoSuchPaddingException,
@@ -244,5 +239,26 @@ public class PublicCryptoToken implements CryptoToken {
 		}
 		this.pk = chain[0].getPublicKey();
 	}
+
+    @Override
+    public boolean isAutoActivationPinPresent() {
+        return BaseCryptoToken.getAutoActivatePin(getProperties()) != null;
+    }
+    
+    @Override
+    public void testKeyPair(final String alias) throws InvalidKeyException, NoSuchProviderException, CryptoTokenOfflineException {
+        // be positive.. NOT!
+        throw new CryptoTokenOfflineException("Implementation does not contain any private keys to use for test.");
+    }
+
+    @Override
+    public String getTokenName() {
+        return tokenName;
+    }
+
+    @Override
+    public void setTokenName(final String tokenName) {
+        this.tokenName = tokenName;
+    }
 
 }

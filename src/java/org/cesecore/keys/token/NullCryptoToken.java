@@ -28,8 +28,6 @@ import java.util.Properties;
 
 /** This class is used as crypto Token for virtual CAs that does not have a keystore, such as external SubCAs.
  * 
- * Based on EJBCA version: 
- *      NullCAToken.java 8373 2009-11-30 14:07:00Z jeklund $
  * CESeCore version:
  *      NullCryptoToken.java 278 2011-02-18 09:48:41Z tomas
  * 
@@ -73,7 +71,7 @@ public class NullCryptoToken extends BaseCryptoToken {
     }
     
     @Override
-    public void deleteEntry(final char[] authenticationCode, String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, CryptoTokenOfflineException {    	
+    public void deleteEntry(final String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, CryptoTokenOfflineException {    	
     }
 
     @Override

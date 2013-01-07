@@ -45,8 +45,6 @@ import org.cesecore.util.StringTools;
 /**
  * Handles maintenance of the soft devices producing signatures and handling the private key and stored in database.
  * 
- * Based on EJBCA version: 
- *      SoftCAToken.java 9781 2010-09-02 20:52:06Z primelars $
  * CESeCore version:
  *      SoftCryptoToken.java 477 2011-03-09 12:55:57Z mikek
  * 
@@ -67,16 +65,9 @@ public class SoftCryptoToken extends BaseCryptoToken {
 
     private static final String PROVIDER = "BC";
 
-    /** constants needed for soft CA keystores */
-    protected static final String SIGNKEYSPEC = "SIGNKEYSPEC";
-    protected static final String ENCKEYSPEC = "ENCKEYSPEC";
-    protected static final String SIGNKEYALGORITHM = "SIGNKEYALGORITHM";
-    protected static final String ENCKEYALGORITHM = "ENCKEYALGORITHM";
-
     public static final String NODEFAULTPWD = "NODEFAULTPWD";
 
     private byte[] keystoreData;
-
     private char[] keyStorePass;
 
     public SoftCryptoToken() {
@@ -86,24 +77,15 @@ public class SoftCryptoToken extends BaseCryptoToken {
         }
     }
 
-    @Override
-    public void init(final Properties properties, final byte[] data, final int id) {
-        super.setJCAProviderName(PROVIDER);
-
-        // by default, this implementation should allow to extract keys
-        this.allowsExtractablePrivateKey = true;
-
-        superInit(properties, data, id);
-    }
-
     /**
      * Sets up some basic properties used in soft keystores and calls init on BaseCryptoToken in order to set up all key string etc.
-     * 
      */
-    private void superInit(Properties properties, final byte[] data, final int id)  {
-
+    @Override
+    public void init(Properties properties, final byte[] data, final int cryptoTokenId) {
+        super.setJCAProviderName(PROVIDER);
+        // by default, this implementation should allow to extract keys
+        this.allowsExtractablePrivateKey = true;
         this.keystoreData = data;
-
         if (properties == null) {
             properties = new Properties();
         }
@@ -111,20 +93,10 @@ public class SoftCryptoToken extends BaseCryptoToken {
         String autoPwd = BaseCryptoToken.getAutoActivatePin(properties);
         if ((autoPwd == null) && (properties.getProperty(NODEFAULTPWD) == null)) {
             final String keystorepass = StringTools.passwordDecryption(CesecoreConfiguration.getCaKeyStorePass(), "ca.keystorepass");
-            // Test it first, don't set an incorrect password as autoactivate password
-            boolean okPwd = true;
-            try {
-                // make sure id is set if we need to log an error
-                super.setId(id);
-                // only verify password
-                checkSoftKeystorePassword(keystorepass.toCharArray());
-                log.debug("Succeded to load keystore with password");
-            } catch (Exception e) {
-                // Don't do it
-                okPwd = false;
-                log.debug("Failed to load keystore with password");
-            }
+            // Test it first, don't set an incorrect password as autoa-ctivate password
+            boolean okPwd = checkSoftKeystorePassword(keystorepass.toCharArray(), cryptoTokenId);
             if (okPwd) {
+                log.debug("Succeded to load keystore with password");
                 BaseCryptoToken.setAutoActivatePin(properties, keystorepass, true);
             }
         } else if (autoPwd != null) {
@@ -132,11 +104,21 @@ public class SoftCryptoToken extends BaseCryptoToken {
         } else if (properties.getProperty(NODEFAULTPWD) != null) {
             log.debug("No default pwd allowed for this soft crypto token.");
         }
-        init(null, properties, true, id);
+        boolean autoActivate = autoPwd != null || properties.getProperty(NODEFAULTPWD) == null;
+        init(null, properties, autoActivate, cryptoTokenId);
     }
 
     @Override
-    public void activate(final char[] authCode) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
+    public void activate(char[] authCode) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException {
+        if (keyStore != null) {
+            log.debug("Ignoring activation request for already active CryptoToken: " + getId());
+            return;
+        }
+        // If we use auto-activation, we will override whatever is used as parameter (probably null)
+        final String autoPwd = BaseCryptoToken.getAutoActivatePin(getProperties());
+        if (autoPwd!=null) {
+            authCode = autoPwd.toCharArray();
+        }
         if (keystoreData != null) {
             try {
                 KeyStore keystore = loadKeyStore(keystoreData, authCode);
@@ -164,6 +146,7 @@ public class SoftCryptoToken extends BaseCryptoToken {
             try {
                 KeyStore keystore = KeyStore.getInstance("PKCS12", PROVIDER);
                 keystore.load(null, null);
+                //keystore.load(null, authCode);
                 setKeyStore(keystore);
                 // If everything was OK we cache the load/save password so we can store the keystore
                 keyStorePass = authCode;
@@ -239,29 +222,26 @@ public class SoftCryptoToken extends BaseCryptoToken {
      * 
      * @param authenticationCode
      *            authentication code for the keystore
-     * @throws CryptoTokenAuthenticationFailedException
+     * @return true if verification was ok
      */
-    private void checkSoftKeystorePassword(final char[] authenticationCode) throws KeyStoreException, NoSuchProviderException,
-            NoSuchAlgorithmException, CertificateException, CryptoTokenAuthenticationFailedException {
+    private boolean checkSoftKeystorePassword(final char[] authenticationCode, int cryptoTokenId) {
         try {
             if (keystoreData != null) {
                 KeyStore keystore = KeyStore.getInstance("PKCS12", "BC");
                 keystore.load(new java.io.ByteArrayInputStream(keystoreData), authenticationCode);
             }
-        } catch (IOException e) {
-            // Invalid password
-            String msg = intres.getLocalizedMessage("token.wrongauthcode", getId());
-            log.info(msg);
-
+            return true;
+        } catch (Exception e) {
             // If it was not the wrong password we need to see what went wrong
             log.debug("Error: ", e);
-
-            throw new CryptoTokenAuthenticationFailedException(msg);
+            // Invalid password
+            log.info(intres.getLocalizedMessage("token.wrongauthcode", cryptoTokenId));
         }
+        return false;
     }
 
     @Override
-    public void deleteEntry(final char[] authenticationCode, final String alias) throws KeyStoreException, NoSuchAlgorithmException,
+    public void deleteEntry(final String alias) throws KeyStoreException, NoSuchAlgorithmException,
             CertificateException, IOException, CryptoTokenOfflineException {
         if (StringUtils.isNotEmpty(alias)) {
             KeyStoreTools cont = new KeyStoreTools(getKeyStore(), getSignProviderName());

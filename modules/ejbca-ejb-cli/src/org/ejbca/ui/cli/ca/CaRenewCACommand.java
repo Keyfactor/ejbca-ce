@@ -41,7 +41,7 @@ import org.ejbca.ui.cli.CliUsernameException;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 
 /**
- * Renews the CA certificate and optionally regenerates the key-pair. This is the CLI equivalent of pushing 
+ * Renews the CA certificate and optionally regenerates the key pair. This is the CLI equivalent of pushing 
  * the renewal button in EJBCA Admin Web.
  *
  * @author Markus Kilas
@@ -113,9 +113,9 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
     		buff.append(caname);
     		buff.append(" ");
     		if (regenerateKeys) {
-    			buff.append("with a new key-pair");
+    			buff.append("with a new key pair");
     		} else {
-    			buff.append("with the current key-pair");
+    			buff.append("with the current key pair");
     		}
     		if (customNotBefore != null) {
     			buff.append(" and with custom notBefore date: ");
@@ -139,7 +139,7 @@ public class CaRenewCACommand extends BaseCaAdminCommand {
                     System.console().readPassword();
     		}
             
-            ejb.getRemoteSession(CAAdminSessionRemote.class).renewCA(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), authCode, regenerateKeys, customNotBefore);
+    		ejb.getRemoteSession(CAAdminSessionRemote.class).renewCA(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), regenerateKeys, customNotBefore, regenerateKeys);
             getLogger().info("New certificate created:");
             cainfo = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class).getCAInfo(getAdmin(cliUserName, cliPassword), caname);
             final Object newCertificate = cainfo.getCertificateChain().iterator().next();

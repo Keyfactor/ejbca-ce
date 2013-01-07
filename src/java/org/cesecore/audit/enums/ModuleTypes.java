@@ -31,6 +31,7 @@ public enum ModuleTypes implements ModuleType {
 	CERTIFICATE,
 	CERTIFICATEPROFILE,
 	CRL,
+    CRYPTOTOKEN,
 	KEY_MANAGEMENT,
 	RECOVERY,
 	ROLES,

@@ -27,6 +27,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaSessionTest;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
@@ -88,9 +89,11 @@ public class CaExportImportProfilesCommandTest {
 
         final String profilename = "4712EEPROFILE";
         int caid = 0;
+        int cryptoTokenId = 0;
         try {
             // Create a CA that we can delete later
-            CA ca = CaSessionTest.createTestX509CAOptionalGenKeys(CA_DN, "foo", false, false);
+            CA ca = CaSessionTest.createTestX509CAOptionalGenKeys(CA_DN, "foo".toCharArray(), false, false);
+            cryptoTokenId = ca.getCAToken().getCryptoTokenId();
             caid = ca.getCAId();
             caSession.addCA(admin, ca);
 
@@ -144,6 +147,7 @@ public class CaExportImportProfilesCommandTest {
         } finally {
             eeProfileSession.removeEndEntityProfile(admin, profilename);
             caSession.removeCA(admin, caid);
+            CryptoTokenManagementSessionTest.removeCryptoToken(admin, cryptoTokenId);
         }
     }
 }

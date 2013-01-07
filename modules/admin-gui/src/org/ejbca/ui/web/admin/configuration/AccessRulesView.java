@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.ejbca.core.model.authorization.AccessRulesConstants;
@@ -37,6 +38,7 @@ public class AccessRulesView implements Serializable {
     private ArrayList<AccessRuleData> endentityprofileaccessrules;
     private ArrayList<AccessRuleData> userdatasourceaccessrules;
     private ArrayList<AccessRuleData> caaccessrules;
+    private ArrayList<AccessRuleData> cryptoTokenAccessRules;
 
     /**
      * Creates an AccessRulesView and sorts the access rules into their appropriate sets.
@@ -47,6 +49,7 @@ public class AccessRulesView implements Serializable {
         this.endentityprofileaccessrules = new ArrayList<AccessRuleData>();
         this.caaccessrules = new ArrayList<AccessRuleData>();
         this.userdatasourceaccessrules = new ArrayList<AccessRuleData>();
+        this.cryptoTokenAccessRules = new ArrayList<AccessRuleData>();
 
         for(AccessRuleData accessrule : accessrules) {  
             boolean regular = true;
@@ -72,6 +75,12 @@ public class AccessRulesView implements Serializable {
                 regular = false;
             }
 
+            // Check if rule is CryptoToken access rule
+            if (rulename.startsWith(CryptoTokenRules.BASE.resource())) {
+                this.cryptoTokenAccessRules.add(accessrule);
+                regular = false;
+            }
+
             // Check if rule is end entity profile access rule
             if (rulename.startsWith(AccessRulesConstants.USERDATASOURCEBASE)) {
                 this.userdatasourceaccessrules.add(accessrule);
@@ -88,6 +97,7 @@ public class AccessRulesView implements Serializable {
         Collections.sort(this.regularaccessrules);
         Collections.sort(this.endentityprofileaccessrules);
         Collections.sort(this.caaccessrules);
+        Collections.sort(this.cryptoTokenAccessRules);
         Collections.sort(this.userdatasourceaccessrules);
 
     }
@@ -127,4 +137,8 @@ public class AccessRulesView implements Serializable {
         return this.userdatasourceaccessrules;
     }
 
+    /** Method that returns all CryptoToken access rules, sorted. */
+    public Collection<AccessRuleData> getCryptoTokenAccessRules() {
+        return this.cryptoTokenAccessRules;
+    }
 }

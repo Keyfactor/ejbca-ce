@@ -12,12 +12,11 @@
  *************************************************************************/
 package org.cesecore.certificates.ca.catoken;
 
-import javax.ejb.Local;
 
 /**
  * @version $Id$
  */
-@Local
+@Deprecated
 public interface CaTokenSessionLocal extends CaTokenSession {
 
 }

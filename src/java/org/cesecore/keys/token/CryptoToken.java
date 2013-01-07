@@ -36,9 +36,6 @@ import javax.crypto.NoSuchPaddingException;
 /** Handles operations of the device producing signatures and handling the private key.
  *  All Crypto Token plug-ins must implement this interface.
  *
- *
- * Based on EJBCA version: ICAToken.java 8828 2010-03-29 08:10:51Z anatom
- *
  * @version $Id$
  */
 public interface CryptoToken extends Serializable {
@@ -48,14 +45,10 @@ public interface CryptoToken extends Serializable {
 
     /** Auto activation property that can be defined in Crypto token properties */
     static final String AUTOACTIVATE_PIN_PROPERTY = "pin";
-    /** Previous sequence (matching CryptoTokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS key) that can be set in CA token properties */
-    static final String PREVIOUS_SEQUENCE_PROPERTY = "previousSequence";
-    /** Next sequence (matching CryptoTokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT key) that can be set in CA token properties */
-    static final String NEXT_SEQUENCE_PROPERTY = "nextSequence";
-    /** Keyspec that is used as first choice when generating new keys in the GUI of form "1024" for RSA keys, "DSA1024" for DSA keys and secp256r1 for EC keys */
-    static final String KEYSPEC_PROPERTY = "keyspec";
     /** Boolean indicating if it should be allowed to extract private keys */
     static final String ALLOW_EXTRACTABLE_PRIVATE_KEY = "allow.extractable.privatekey";
+    /** */
+    static final String TOKENNAME_PROPERTY = "tokenName";
 
     /**
      * Method called after creation of instance. Gives the object it's properties.
@@ -125,7 +118,7 @@ public interface CryptoToken extends Serializable {
      * @throws CertificateException
      * @throws NoSuchAlgorithmException
      */
-    void deleteEntry(char[] authenticationcode, String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, CryptoTokenOfflineException;
+    void deleteEntry(String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, CryptoTokenOfflineException;
 
     /** Generates a key pair (asymmetric keys) in the crypto token.
      *
@@ -179,6 +172,11 @@ public interface CryptoToken extends Serializable {
      */
     void reset();
 
+    /** @return user friendly identifier */
+    String getTokenName();
+    /** Set user friendly identifier */
+    void setTokenName(String tokenName);
+    
     /**
      *  Method that returns the current status of the crypto token.
      *
@@ -218,11 +216,12 @@ public interface CryptoToken extends Serializable {
 
     /** Testing a keypair to see that it is usable
      *
-     * @param pair
+     * @param alias
      * @throws InvalidKeyException
      * @throws NoSuchProviderException
+     * @throws CryptoTokenOfflineException 
      */
-    void testKeyPair(PrivateKey privateKey, PublicKey publicKey) throws InvalidKeyException, NoSuchProviderException; // NOPMD:this is not a junit test
+    void testKeyPair(String alias) throws InvalidKeyException, NoSuchProviderException, CryptoTokenOfflineException; // NOPMD:this is not a junit test
 
     /**
      * This method extracts a PrivateKey from the keystore and wraps it, using a symmetric encryption key
@@ -278,5 +277,8 @@ public interface CryptoToken extends Serializable {
      * @throws CryptoTokenOfflineException if the keystore has not been initialized (loaded).
      */
     Enumeration<String> getAliases() throws KeyStoreException, CryptoTokenOfflineException;
+
+    /** @return true if there is an auto activation PIN stored in the token */
+    boolean isAutoActivationPinPresent();
 
 }

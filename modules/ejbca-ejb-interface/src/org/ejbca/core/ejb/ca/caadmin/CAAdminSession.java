@@ -56,48 +56,27 @@ import org.ejbca.core.model.approval.WaitingForApprovalException;
 public interface CAAdminSession {
 
     /**
-     * Creates a certificate request that should be sent to External Root CA for
-     * processing. To create a normal request using the CAs currently active
-     * signature keys use false for all of regenerateKeys, usenextkey and
-     * activatekey.
+     * Creates a certificate request that should be sent to External CA for
+     * processing. This command will not affect the current issuing key or
+     * certificate.
      * 
-     * There are three paths: current key, new key or existing next key. Down
-     * these paths there are first two choices activate or don't activate, not
-     * applicable for current key that is always active. And lastly the choice
-     * if CA status should be set to waiting_for_certificate_response, can be
-     * automatically determined depending on if a new key has been activated,
-     * making the CA unable to continue issuing certificate until a response is
-     * received.
-     * 
-     * @param admin
+     * @param authenticationToken
      *            the administrator performing the action
      * @param caid
      *            id of the CA that should create the request
      * @param cachain
      *            A Collection of CA-certificates, can be either a collection
      *            of Certificate or byte[], or even empty collection or null.
-     * @param regenerateKeys
-     *            if renewing a CA this is used to also generate a new KeyPair,
-     *            if this is true and activatekey is false, the new key will not
-     *            be activated immediately, but added as "next" signingkey.
-     * @param usenextkey
-     *            if regenerateKey is true this should be false. Otherwise it
-     *            makes a request using an already existing "next" signing key,
-     *            perhaps from a previous call with regenerateKeys true.
-     * @param activatekey
-     *            if regenerateKey is true or usenextkey is true, setting this
-     *            flag to true makes the new or "next" key be activated when the
-     *            request is created.
-     * @param keystorepass
-     *            password used when regenerating keys or activating keys, can
-     *            be null if regenerateKeys and activatekey is false.
+     * @param nextSignKeyAlias
+     *            The next key alias to use for this request.
+     *            If null, then a new key pair will be generated named using
+     *            the key sequence.
      * @return request message in binary format, can be a PKCS10 or CVC request
      */
-    public byte[] makeRequest(AuthenticationToken admin, int caid, Collection<?> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepass)
-            throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
+    public byte[] makeRequest(AuthenticationToken authenticationToken, int caid, Collection<?> certChain, String nextSignKeyAlias) throws AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException;
 
     /**
-     * If the CA can do so, this method signs another entitys CSR, for
+     * If the CA can do so, this method signs another entity's CSR, for
      * authentication. Prime example of for EU EAC ePassports where the DVs
      * initial certificate request is signed by the CVCA. The signature
      * algorithm used to sign the request will be whatever algorithm the CA uses
@@ -111,8 +90,8 @@ public interface CAAdminSession {
      *         also signed by the CA, or it might be the exact same if the CA
      *         does not support request signing
      */
-    public byte[] signRequest(AuthenticationToken admin, int caid, byte[] request, boolean usepreviouskey, boolean createlinkcert)
-    		throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException;
+    public byte[] createAuthCertSignRequest(AuthenticationToken authenticationToken, int caid, byte[] certSignRequest)
+            throws AuthorizationDeniedException, CADoesntExistsException, CryptoTokenOfflineException;
 
     /**
      * Receives a certificate response from an external CA and sets the newly
@@ -129,15 +108,11 @@ public interface CAAdminSession {
      *            an optional collection with the CA certificate(s), or null. If
      *            given the complete chain (except this CAs own certificate must
      *            be given). The contents can be either Certificate objects, or byte[]'s with DER encoded certificates.
-     * @param tokenAuthenticationCode
-     *            the CA token authentication code, if we need to activate new
-     *            CA keys. Otherwise this can be null. This is needed if we have
-     *            generated a request with new CA keys, but not activated the
-     *            new keys immediately. See makeRequest method
+     * @param nextKeyAlias compare received certificate to this alias's public key
      * @throws EjbcaException
      */
-    public void receiveResponse(AuthenticationToken admin, int caid, ResponseMessage responsemessage, Collection<?> cachain,
-            String tokenAuthenticationCode) throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException;
+    public void receiveResponse(AuthenticationToken authenticationToken, int caid, ResponseMessage responsemessage, Collection<?> cachain, String nextKeyAlias)
+            throws AuthorizationDeniedException, CertPathValidatorException, EjbcaException, CesecoreException;
 
     /**
      * Processes a Certificate Request from an external CA.
@@ -162,7 +137,7 @@ public interface CAAdminSession {
             throws CADoesntExistsException, AuthorizationDeniedException, IllegalCryptoTokenException, CAOfflineException;
 
     /**
-     * Renews a existing CA certificate using the same keys as before, or
+     * Renews a existing CA certificate using the requested keys or by
      * generating new keys. The specified notBefore date will be used. 
      * Other data about the new CA is taken from database. This
      * method is used for renewing CAs internally in EJBCA. For renewing CAs
@@ -170,9 +145,31 @@ public interface CAAdminSession {
      * request.
      * 
      * @param caid the caid of the CA that will be renewed
-     * @param keystorepass
-     *            password used when regenerating keys, can be null if
-     *            regenerateKeys is false.
+     * @param nextSignKeyAlias
+     *            The cryptoTokenAlias to use for the next keys or null to
+     *            generate a new key pair using the CA key sequence.
+     * @param customNotBefore 
+     *            date to use as notBefore date in the new certificate
+     *            or null if not custom date should be used which means 
+     *            that the current time will be used (normal case).
+     * @param createLinkCertificate
+     *            generates an additional certificate stored in the CA object
+     *            with the next keys signed by the current keys. 
+     * @throws AuthorizationDeniedException 
+     * @throws CryptoTokenOfflineException 
+     * @throws CryptoTokenAuthenticationFailedException 
+     */
+    public void renewCA(AuthenticationToken administrator, int caid, String nextSignKeyAlias, Date customNotBefore, boolean createLinkCertificate) throws AuthorizationDeniedException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
+
+    /**
+     * Renews a existing CA certificate using the requested keys or by
+     * generating new keys. The specified notBefore date will be used. 
+     * Other data about the new CA is taken from database. This
+     * method is used for renewing CAs internally in EJBCA. For renewing CAs
+     * signed by external CAs, makeRequest is used to generate a certificate
+     * request.
+     * 
+     * @param caid the caid of the CA that will be renewed
      * @param regenerateKeys
      *            if true and the CA have a soft CAToken the keys are
      *            regenerated before the certificate request.
@@ -180,8 +177,15 @@ public interface CAAdminSession {
      *            date to use as notBefore date in the new certificate
      *            or null if not custom date should be used which means 
      *            that the current time will be used (normal case).
+     * @param createLinkCertificate
+     *            generates an additional certificate stored in the CA object
+     *            with the new keys signed by the current keys.
+     *            For CVC CAs this is ignored and the link certificate is always generated.
+     * @throws AuthorizationDeniedException 
+     * @throws CryptoTokenOfflineException 
+     * @throws CryptoTokenAuthenticationFailedException 
      */
-    public void renewCA(AuthenticationToken admin, int caid, String keystorepass, boolean regenerateKeys, Date customNotBefore) throws CADoesntExistsException,
+    public void renewCA(AuthenticationToken admin, int caid, boolean regenerateKeys, Date customNotBefore, boolean createLinkCertificate) throws CADoesntExistsException,
             AuthorizationDeniedException, java.security.cert.CertPathValidatorException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException;
 
     /**
@@ -285,22 +289,16 @@ public interface CAAdminSession {
      * @param admin the administrator calling the method
      * @param caid the is of the CA to activate
      * @param authorizationcode the authorization code used to unlock the CA tokens private keys.
-     * @param gc is the GlobalConfiguration used to extract approval information
      * @throws AuthorizationDeniedException
      *             it the administrator isn't authorized to activate the CA.
-     * @throws CryptoTokenAuthenticationFailedException
-     *             if the current status of the ca or authenticationcode is
-     *             wrong.
-     * @throws CryptoTokenOfflineException
-     *             if the CA token is still off-line when calling the method.
      * @throws ApprovalException
      *             if an approval already is waiting for specified action
      * @throws WaitingForApprovalException
      *             if approval is required and the action have been added in the
      *             approval queue.
      */
-    public void activateCAToken(AuthenticationToken admin, int caid, String authorizationcode, GlobalConfiguration gc) throws AuthorizationDeniedException,
-            CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, ApprovalException, WaitingForApprovalException, CADoesntExistsException;
+    public void activateCAService(AuthenticationToken admin, int caid) throws AuthorizationDeniedException,
+        ApprovalException, WaitingForApprovalException, CADoesntExistsException;
 
     /**
      * Deactivates an 'active' CA token and sets the CA status to offline. The
@@ -315,7 +313,7 @@ public interface CAAdminSession {
      * @throws EjbcaException
      *             if the given caid couldn't be found or its status is wrong.
      */
-    public void deactivateCAToken(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, IllegalCryptoTokenException, CADoesntExistsException;
+    public void deactivateCAService(AuthenticationToken admin, int caid) throws AuthorizationDeniedException, CADoesntExistsException;
 
     /**
      * Removes the catoken keystore from the database and sets its status to
@@ -466,4 +464,6 @@ public interface CAAdminSession {
      */
     public void flushCACache();
 
+    /** @return the latest link certificate (if any) */
+    byte[] getLatestLinkCertificate(int caId) throws CADoesntExistsException;
 }

@@ -135,8 +135,6 @@ import org.ejbca.cvc.exception.ParseException;
 /**
  * Tools to handle common certificate operations.
  * 
- * Based on EJBCA version: 
- *      CertTools.java 11281 2011-01-28 16:45:42Z anatom
  * Based on CESeCore version:   
  *      CertTools.java 853 2011-05-24 12:54:31Z johane
  * 
@@ -2876,9 +2874,9 @@ public class CertTools {
      * @throws NoSuchAlgorithmException
      * @throws CertificateException
      */
-    public static Collection<Certificate> createCertChain(Collection<?> certlistin) throws CertPathValidatorException,
+    public static List<Certificate> createCertChain(Collection<?> certlistin) throws CertPathValidatorException,
             InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, CertificateException {
-        ArrayList<Certificate> returnval = new ArrayList<Certificate>();
+        final List<Certificate> returnval = new ArrayList<Certificate>();
 
         Collection<Certificate> certlist = orderCertificateChain(certlistin);
 

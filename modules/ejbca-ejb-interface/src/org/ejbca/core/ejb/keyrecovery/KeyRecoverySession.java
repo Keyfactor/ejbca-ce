@@ -18,7 +18,6 @@ import java.security.cert.X509Certificate;
 
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 
@@ -94,11 +93,10 @@ public interface KeyRecoverySession {
      * @param admin the administrator calling the function
      * @param username or the user.
      * @param the end entity profile of the user, used for access control
-     * @param gc The GlobalConfiguration used to extract approval information
      * @return true if operation went successful or false if no certificates could be found for
      *         user, or user already marked.
      */
-    boolean markNewestAsRecoverable(AuthenticationToken admin, String username, int endEntityProfileId, GlobalConfiguration gc)
+    boolean markNewestAsRecoverable(AuthenticationToken admin, String username, int endEntityProfileId)
             throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException;
 
     /**
@@ -106,10 +104,9 @@ public interface KeyRecoverySession {
      *
      * @param admin the administrator calling the function
      * @param certificate the certificate used with the keys about to be removed.
-     * @param gc The GlobalConfiguration used to extract approval information
      * @return true if operation went successful or false if  certificate couldn't be found.
      */
-    boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId, GlobalConfiguration gc)
+    boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId)
             throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException;
 
     /** Resets keyrecovery mark for a user. */

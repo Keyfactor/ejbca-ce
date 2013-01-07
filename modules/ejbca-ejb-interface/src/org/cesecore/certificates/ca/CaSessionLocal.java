@@ -23,8 +23,6 @@ import org.cesecore.keys.token.IllegalCryptoTokenException;
 /**
  * Local interface for CaSession
  * 
- * Based on EJCBA version: CaSessionLocal.java 10428 2010-11-11 16:45:12Z anatom
- * 
  * @version $Id$
  */
 @Local
@@ -137,13 +135,14 @@ public interface CaSessionLocal extends CaSession {
     public HashMap<Integer,String> getCAIdToNameMap();
 
     /**
-     * Internal (local only) method for getting CAInfo, to avoid access control logging for internal operations. Tries to find the CA even if the CAId is wrong due to CA certificate DN not being
-     * the same as CA DN. Uses CACacheManager directly if configured to do so in ejbca.properties.
+     * Internal (local only) method for getting CAInfo, to avoid access control logging for
+     * internal operations. Tries to find the CA even if the CAId is wrong due to CA certificate
+     * DN not being the same as CA DN.
      * 
      * Note! No authorization checks performed in this internal method
      * 
      * @param caid
-     *            numerical id of CA (subjectDN.hashCode()) that we search for, or -1 of a name is to ge used instead
+     *            numerical id of CA (subjectDN.hashCode()) that we search for, or -1 if a name is to be used instead
      * @param name
      *            human readable name of CA, used instead of caid if caid == -1, can be null if caid != -1
      * @param fromCache if we should use the CA cache or return a new, decoupled, instance from the database, to be used when you need
@@ -156,20 +155,16 @@ public interface CaSessionLocal extends CaSession {
 
     /**
      * Internal (local only) method for getting CAInfo, to avoid access control logging for internal operations.
-     * Uses CACacheManager directly if configured to do so in ejbca.properties.
      * 
      * Note! No authorization checks performed in this internal method
      * 
      * @param caid
-     *            numerical id of CA (subjectDN.hashCode()) that we search for, or -1 of a name is to ge used instead
-     * @param doSignTest
-     *            true if a test signature should be performed, false if only the status from token info is checked.
-     *            Should normally be set to false.
+     *            numerical id of CA (subjectDN.hashCode()) that we search for
      * @return CA value object, never null
      * @throws CADoesntExistsException
      *             if no CA was found
      */
-    public CAInfo getCAInfoInternal(final int caid, final boolean doSignTest) throws CADoesntExistsException;
+    public CAInfo getCAInfoInternal(final int caid) throws CADoesntExistsException;
 
     /**
      * Internal (local only) method to get the CA object without logging the authorization check.
@@ -188,4 +183,12 @@ public interface CaSessionLocal extends CaSession {
      * @throws AuthorizationDeniedException if not authorized to get CA
      */
     CA getCANoLog(AuthenticationToken admin, int caid) throws CADoesntExistsException, AuthorizationDeniedException;
+
+    /**
+     * Local access CRUD method for persisting the CA object to the database and removes any old
+     * object with this CA id from the cache.
+     * 
+     * @return the CA Id
+     */
+    int mergeCa(CA ca);
 }

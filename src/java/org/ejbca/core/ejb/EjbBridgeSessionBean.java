@@ -29,6 +29,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
@@ -106,6 +107,7 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@EJB WebAuthenticationProviderSessionLocal webAuthenticationProviderSession;
 	@EJB EndEntityAuthenticationSessionLocal endEntityAuthenticationSession;
 	@EJB AccessUserAspectManagerSessionLocal accessUserAspectSession;
+	@EJB CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
 	@Override public ApprovalExecutionSessionLocal getApprovalExecutionSession() { return approvalExecutionSession; }
 	@Override public ApprovalSessionLocal getApprovalSession() { return approvalSession; }
@@ -143,6 +145,5 @@ public class EjbBridgeSessionBean implements EjbBridgeSessionLocal {
 	@Override public EndEntityAuthenticationSessionLocal getEndEntityAuthenticationSession() { return endEntityAuthenticationSession; }
 	@Override public AccessUserAspectManagerSessionLocal getAccessUserAspectSession() { return accessUserAspectSession; }
 	@Override public EndEntityAccessSessionLocal getEndEntityAccessSession() { return endEntityAccessSession; }
-  
-
+    @Override public CryptoTokenManagementSessionLocal getCryptoTokenManagementSession() { return cryptoTokenManagementSession; }
 }

@@ -26,8 +26,6 @@ import org.junit.Test;
 /**
  * Tests PKCS11 keystore crypto token. To run this test a slot 1 must exist on the hsm, with a user with user pin "userpin1" that can use the slot.
  * 
- * Based on EJBCA version: CATokenContainerTest.java 10288 2010-10-26 11:27:21Z anatom $
- * 
  * @version $Id$
  */
 public class SoftCATokenTest extends CATokenTestBase {
@@ -38,96 +36,82 @@ public class SoftCATokenTest extends CATokenTestBase {
 
     @Test
     public void testCATokenRSA() throws Exception {
-    	CryptoToken cryptoToken = createSoftToken("rsatest00000", "1024", true);
-
-        doCaTokenRSA(cryptoToken);
+        CryptoToken cryptoToken = createSoftToken(false);
+        doCaTokenRSA("1024", cryptoToken, getCaTokenPropertes("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
     @Test
     public void testCATokenDSA() throws Exception {
-    	CryptoToken cryptoToken = createSoftToken("dsatest00000", "1024", true);
-
-        doCaTokenDSA(cryptoToken);
+    	CryptoToken cryptoToken = createSoftToken(true);
+        doCaTokenDSA("DSA1024", cryptoToken, getCaTokenPropertes("dsatest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
 	@Test
     public void testCATokenECC() throws Exception {
-    	CryptoToken cryptoToken = createSoftToken("ecctest00000", "secp256r1", true);
-
-        doCaTokenECC(cryptoToken);
+    	CryptoToken cryptoToken = createSoftToken(true);
+        doCaTokenECC("secp256r1", cryptoToken, getCaTokenPropertes("ecctest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
     @Test
     public void testActivateDeactivate() throws Exception {
-    	CryptoToken cryptoToken = createSoftToken("rsatest00000", "1024", true);
-
-    	doActivateDeactivate(cryptoToken);
+    	CryptoToken cryptoToken = createSoftToken(true);
+    	doActivateDeactivate("1024", cryptoToken, getCaTokenPropertes("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
 	@Test
 	public void testDefaultPwd() throws Exception {
-		// false parameter means we should enablöe default password
-    	CryptoToken cryptoToken = createSoftToken("rsatest00000", "1024", false);
-
-    	CAToken catoken = new CAToken(cryptoToken);
-    	
-		catoken.generateKeys("foo123".toCharArray(), false, true);
-		KeyTools.testKey(catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), null);
-
-		// With default pwd deactivate doesn't do anything because the token always auto-activates with the default pwd
-		catoken.getCryptoToken().deactivate();
-		KeyTools.testKey(catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), null);
+		// false parameter means we should enable default password
+    	CryptoToken cryptoToken = createSoftToken(true);
+    	CAToken catoken = new CAToken(cryptoToken.getId(), getCaTokenPropertes("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
+    	cryptoToken.activate(tokenpin.toCharArray());
+        cryptoToken.generateKeyPair("1024", "rsatest" + CAToken.DEFAULT_KEYSEQUENCE);
+		KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+		        cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), null);
+		// With auto-activate, deactivate doesn't do anything because the token always auto-activates with the default pwd
+		cryptoToken.deactivate();
+		KeyTools.testKey(cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+		        cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), null);
 	}
-
 
 	@Test
 	public void testSaveAndLoad() throws Exception {
-    	CryptoToken cryptoToken = createSoftToken("rsatest00000", "1024", false);
-
-    	doSaveAndLoad(cryptoToken);
+    	CryptoToken cryptoToken = createSoftToken(false);
+    	doSaveAndLoad("1024", cryptoToken, getCaTokenPropertes("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
 	}
 
 	@Test
 	public void testDefaultEjbcaSoftTokenProperties() throws Exception {
-    	CryptoToken cryptoToken = createSoftToken("rsatest00000", "1024", false);
-    	Properties prop = cryptoToken.getProperties();
-    	// Default soft token properties in EJBCA
-    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-    	prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-		cryptoToken.setProperties(prop);
-    	CAToken catoken = new CAToken(cryptoToken);
-        catoken.generateKeys("foo123".toCharArray(), false, true);
+    	CryptoToken cryptoToken = createSoftToken(false);
+        cryptoToken.activate(tokenpin.toCharArray());
+        cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATESIGNKEYALIAS);
         // Crypto token is not so picky about all aliases being populated
-        assertEquals("crypto token status should be active after key generation", CryptoToken.STATUS_ACTIVE, catoken.getCryptoToken().getTokenStatus());
-        // CA token requires that all aliases have keys associated with them
-        assertEquals("CA token status should be active after key generation", CryptoToken.STATUS_ACTIVE, catoken.getTokenStatus());
+        assertEquals("crypto token status should be active after key generation", CryptoToken.STATUS_ACTIVE, cryptoToken.getTokenStatus());
 	}
 
 	/** When nodefaultpwd == true, the property SoftCryptoToken.NODEFAULTPWD is set in order to avoid 
 	 * trying to use default pwd, if pwd is not specified.
 	 * Also the auto activation pin is not set when nodefaultpwd == false.
 	 * 
-	 * @param signAlias
-	 * @param keyspec
-	 * @param nodefaultpwd
+	 * @param useAutoActivationPin
 	 * @return
 	 */
-	private CryptoToken createSoftToken(String signAlias, String keyspec, boolean nodefaultpwd) {
-		CryptoToken cryptoToken = SoftCryptoTokenTest.createSoftToken(nodefaultpwd);
-    	Properties prop = cryptoToken.getProperties();
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, signAlias); // does not exist and never will, will be moved to new keys
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, signAlias); // does not exist and never will, will be moved to new keys
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, "rsatest00001"); // does not exist but will soon, after first generate
-
-        // Set key generation property, since we have no old keys to generate the same sort
-        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, keyspec);
+	private CryptoToken createSoftToken(boolean useAutoActivationPin) {
+		CryptoToken cryptoToken = SoftCryptoTokenTest.createSoftToken(true);
+		Properties cryptoTokenProperties = cryptoToken.getProperties();
         // Use autoactivation for easy testing
-        if (nodefaultpwd) {
-        	prop.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, tokenpin);
+        if (useAutoActivationPin) {
+        	cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, tokenpin);
         }
-        cryptoToken.setProperties(prop);
+        cryptoToken.setProperties(cryptoTokenProperties);
 		return cryptoToken;
+	}
+	
+	private Properties getCaTokenPropertes(final String signAlias) {
+        Properties caTokenProperties = new Properties();
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, signAlias); // does not exist and never will, will be moved to new keys
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, signAlias); // does not exist and never will, will be moved to new keys
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, "encryptionKey"); // does not exist but will soon, after first generate
+        return caTokenProperties;
 	}
     
     String getProvider() {

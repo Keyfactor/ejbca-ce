@@ -55,20 +55,15 @@ public class RenewCATest extends CaTestCase {
         return this.getClass().getSimpleName(); 
     }
 
-    /**
-     * renews CA.
-     * 
-     * @throws Exception error
-     */
+    /** Test renewal of a CA. */
     @Test
     public void test01renewCA() throws Exception {
         log.trace(">test01renewCA()");
-
         X509CAInfo info = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
         X509Certificate orgcert = (X509Certificate) info.getCertificateChain().iterator().next();
         // Sleep at least for one second so we are not so fast that we create a new cert with the same time
         Thread.sleep(2000);
-        caAdminSession.renewCA(internalAdmin, info.getCAId(), null, false, null);
+        caAdminSession.renewCA(internalAdmin, info.getCAId(), false, null, false);
         X509CAInfo newinfo = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
         X509Certificate newcertsamekeys = (X509Certificate) newinfo.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertsamekeys.getSerialNumber()));
@@ -78,16 +73,12 @@ public class RenewCATest extends CaTestCase {
         // The new certificate must have a validity greater than the old cert
         assertTrue("newcertsamekeys.getNotAfter: " + newcertsamekeys.getNotAfter() + " orgcert.getNotAfter: " + orgcert.getNotAfter(),
                 newcertsamekeys.getNotAfter().after(orgcert.getNotAfter()));
-
-        // This assumes that the default system keystore password is not changed from foo123
-        caAdminSession.renewCA(internalAdmin, info.getCAId(), "foo123", true, null);
+        caAdminSession.renewCA(internalAdmin, info.getCAId(), true, null, false);
         X509CAInfo newinfo2 = (X509CAInfo) caSession.getCAInfo(internalAdmin, "TEST");
         X509Certificate newcertnewkeys = (X509Certificate) newinfo2.getCertificateChain().iterator().next();
         assertTrue(!orgcert.getSerialNumber().equals(newcertnewkeys.getSerialNumber()));
         byte[] newkey = newcertnewkeys.getPublicKey().getEncoded();
         assertFalse(Arrays.equals(orgkey, newkey));
-
         log.trace("<test01renewCA()");
     }
-
 }

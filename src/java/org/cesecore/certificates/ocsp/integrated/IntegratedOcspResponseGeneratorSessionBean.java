@@ -40,6 +40,7 @@ import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
@@ -50,7 +51,8 @@ import org.cesecore.certificates.ocsp.cache.TokenAndChainCache;
 import org.cesecore.certificates.ocsp.exception.OcspFailureException;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.jndi.JndiConstants;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.log.SaferAppenderListener;
 import org.cesecore.util.log.SaferDailyRollingFileAppender;
 
@@ -90,6 +92,8 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
     private CaSessionLocal caSession;
     @EJB
     private CertificateStoreSessionLocal certificateStoreSession;
+    @EJB
+    private CryptoTokenSessionLocal cryptoTokenSession;
 
     @PostConstruct
     public void init() throws AuthorizationDeniedException {
@@ -124,7 +128,10 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
     			    //Likewise
     			    throw new Error("AlwaysAllowLocalAuthenticationToken was denied access.");
     			}
-
+                if (ca.getCAType() == CAInfo.CATYPE_CVC || ca.getCACertificate()==null) {
+                    // Bravely ignore OCSP for CVC CAs or CA's that have no CA certificate (yet)
+                    continue;
+                }
     			CertificateID certId = null;
     			try {
     				certId = new JcaCertificateID(SHA1DigestCalculator.buildSha1Instance(), (X509Certificate) ca.getCACertificate(), new BigInteger("1"));
@@ -133,12 +140,12 @@ public class IntegratedOcspResponseGeneratorSessionBean extends OcspResponseSess
     			} catch(CertificateEncodingException e) {
     			    throw new OcspFailureException(e);
     			}
-
-    			try {
-    				newCache.put(TokenAndChainCache.keyFromCertificateID(certId), new CryptoTokenAndChain(ca.getCAToken().getCryptoToken(), ca
-    						.getCertificateChain().toArray(new X509Certificate[ca.getCertificateChain().size()]), CAToken.SOFTPRIVATESIGNKEYALIAS));
-    			} catch (IllegalCryptoTokenException e) {
-    				throw new Error("Crypto token retrieved from CA was invalid. This is an erronous state.");
+    			final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+    			if (cryptoToken==null) {
+    	            log.error("Crypto token retrieved from CA was invalid. This is an erronous state.");
+    			} else {
+                    newCache.put(TokenAndChainCache.keyFromCertificateID(certId), new CryptoTokenAndChain(cryptoToken, ca
+                            .getCertificateChain().toArray(new X509Certificate[ca.getCertificateChain().size()]), CAToken.SOFTPRIVATESIGNKEYALIAS));
     			}
     		}
     		try {

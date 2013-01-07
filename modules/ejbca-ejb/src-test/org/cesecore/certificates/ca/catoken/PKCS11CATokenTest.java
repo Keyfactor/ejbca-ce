@@ -23,8 +23,6 @@ import org.junit.Test;
 /**
  * Tests PKCS11 keystore crypto token. To run this test a slot 1 must exist on the hsm, with a user with user pin "userpin1" that can use the slot.
  * 
- * Based on EJBCA version: CATokenContainerTest.java 10288 2010-10-26 11:27:21Z anatom $
- * 
  * @version $Id$
  */
 public class PKCS11CATokenTest extends CATokenTestBase {
@@ -37,45 +35,43 @@ public class PKCS11CATokenTest extends CATokenTestBase {
 
     @Test
     public void testCATokenRSA() throws Exception {
-    	CryptoToken cryptoToken = createPKCS11Token("rsatest00000", "1024");
-
-        doCaTokenRSA(cryptoToken);
+    	CryptoToken cryptoToken = createPKCS11Token();
+        doCaTokenRSA("1024", cryptoToken, getCaTokenProperties("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
 	@Test
     public void testCATokenECC() throws Exception {
-    	CryptoToken cryptoToken = createPKCS11Token("ecctest00000", "secp256r1");
-
-        doCaTokenECC(cryptoToken);
+    	CryptoToken cryptoToken = createPKCS11Token();
+        doCaTokenECC("secp256r1", cryptoToken, getCaTokenProperties("ecctest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
     @Test
     public void testActivateDeactivate() throws Exception {
-    	CryptoToken cryptoToken = createPKCS11Token("rsatest00000", "1024");
-
-    	doActivateDeactivate(cryptoToken);
+    	CryptoToken cryptoToken = createPKCS11Token();
+    	doActivateDeactivate("1024", cryptoToken, getCaTokenProperties("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
 	@Test
 	public void testSaveAndLoad() throws Exception {
-    	CryptoToken cryptoToken = createPKCS11Token("rsatest00000", "1024");
-
-    	doSaveAndLoad(cryptoToken);
+    	CryptoToken cryptoToken = createPKCS11Token();
+    	doSaveAndLoad("1024", cryptoToken, getCaTokenProperties("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
 	}
 
-	private CryptoToken createPKCS11Token(String signAlias, String keyspec) {
+	private CryptoToken createPKCS11Token(/*String keyspec*/) {
 		CryptoToken cryptoToken = PKCS11CryptoTokenTest.createPKCS11Token();
-    	Properties prop = cryptoToken.getProperties();
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, signAlias); // does not exist and never will, will be moved to new keys
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, signAlias); // does not exist and never will, will be moved to new keys
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, "rsatest00001"); // does not exist but will soon, after first generate
-
-        // Set key generation property, since we have no old keys to generate the same sort
-        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, keyspec);
+    	Properties cryptoTokenProperties = cryptoToken.getProperties();
         // Use autoactivation for easy testing
-        prop.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, tokenpin);
-        cryptoToken.setProperties(prop);
+        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, tokenpin);
+        cryptoToken.setProperties(cryptoTokenProperties);
 		return cryptoToken;
+	}
+	
+	private Properties getCaTokenProperties(String signAlias) {
+	    Properties caTokenProperties = new Properties();
+	    caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, signAlias); // does not exist and never will, will be moved to new keys
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, signAlias); // does not exist and never will, will be moved to new keys
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, "encryptionKey"); // does not exist but will soon, after first generate
+        return caTokenProperties;
 	}
 
     String getProvider() {

@@ -23,11 +23,8 @@ import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.X509CAInfo;
-import org.cesecore.certificates.ca.catoken.CATokenInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.NullCryptoToken;
-import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.util.SimpleTime;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
@@ -53,6 +50,7 @@ public class CAInfoView implements Serializable, Cloneable {
    
    public static final int EXPIRETIME              = 5;
    public static final int STATUS                  = 6;
+   @Deprecated
    public static final int CATOKEN_STATUS          = 7;
    public static final int DESCRIPTION             = 8;
    
@@ -75,11 +73,11 @@ public class CAInfoView implements Serializable, Cloneable {
     * It must also have "" in pos nr 9 (CRLSPACER) 
     */
    public static String[] X509CA_CAINFODATATEXTS = {"CANAME","CERT_SUBJECTDN","EXT_PKIX_SUBJECTALTNAME","CATYPE","",
-                                                    "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRL_CA_CRLPERIOD", 
+                                                    "EXPIRES","STATUS",/*"CATOKENSTATUS"*/ "","DESCRIPTION","", "CRL_CA_CRLPERIOD", 
                                                     "CRL_CA_ISSUEINTERVAL", "CRL_CA_OVERLAPTIME", "CRL_CA_DELTACRLPERIOD", "PUBLISHERS", "", "OCSPSERVICE"};
 
    public static String[] CVCCA_CAINFODATATEXTS = {"NAME","CERT_SUBJECTDN","","CATYPE","",
-       "EXPIRES","STATUS","CATOKENSTATUS","DESCRIPTION","", "CRL_CA_CRLPERIOD", 
+       "EXPIRES","STATUS",/*"CATOKENSTATUS"*/ "","DESCRIPTION","", "CRL_CA_CRLPERIOD", 
        "CRL_CA_ISSUEINTERVAL", "CRL_CA_OVERLAPTIME", "CRL_CA_DELTACRLPERIOD"};
 
    private String[] cainfodata = null;
@@ -181,22 +179,6 @@ public class CAInfoView implements Serializable, Cloneable {
                 cainfodata[STATUS]     = ejbcawebbean.getText("EXTERNALCA");
                 break;              
         } 
-
-        String tokentext = ejbcawebbean.getText("SOFT");
-        if(cainfo.getCATokenInfo().getClassPath().equals(PKCS11CryptoToken.class.getName())) {
-        	tokentext = ejbcawebbean.getText("HARDTOKEN");
-        }
-        if(cainfo.getCATokenInfo().getClassPath().equals(NullCryptoToken.class.getName())) {
-        	tokentext = ejbcawebbean.getText("EXTERNALCA");
-        }
-        switch(cainfo.getCATokenInfo().getTokenStatus()) {
-        case CryptoToken.STATUS_ACTIVE :
-        	cainfodata[CATOKEN_STATUS]     =  tokentext + ", " + ejbcawebbean.getText("ACTIVE");     
-        	break;
-        case CryptoToken.STATUS_OFFLINE :
-        	cainfodata[CATOKEN_STATUS]     = tokentext +", " + ejbcawebbean.getText("OFFLINE");
-        	break;
-        }
         
         cainfodata[DESCRIPTION] = HTMLTools.htmlescape(cainfo.getDescription());
         
@@ -212,6 +194,6 @@ public class CAInfoView implements Serializable, Cloneable {
    public String[] getCAInfoDataText(){ return cainfodatatexts;} 
 
    public CAInfo getCAInfo() { return cainfo;}
-   public CATokenInfo getCATokenInfo() { return cainfo.getCATokenInfo(); }
+   public CAToken getCAToken() { return cainfo.getCAToken(); }
    public Collection<Certificate> getCertificateChain() { return cainfo.getCertificateChain(); }
 }

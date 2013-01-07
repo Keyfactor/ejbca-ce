@@ -1,5 +1,5 @@
 <%
-  TreeMap canames     = info.getAllCANames(); 
+  TreeMap<String,Integer> canames     = info.getAllCANames(); 
 
   String[] statustexts = {"", "ACTIVE", "WAITINGFORCERTRESPONSE", "EXPIRED", "REVOKED", "OFFLINE","EXTERNALCA"};
 
@@ -97,11 +97,9 @@
     <tr> 
       <td width="40%">
         <select name="<%=SELECT_CAS%>" style="width: 50em" size="15"  >
-          <% Iterator iter = canames.keySet().iterator();               
-             while(iter.hasNext()){                 
-                 String nameofca = (String) iter.next();
-                 CAInfo cainfo = cabean.getCAInfo(((Integer) canames.get(nameofca)).intValue()).getCAInfo();
-                 String nameandstatus = nameofca + ", (" +ejbcawebbean.getText(statustexts[cainfo.getStatus()]) + ")"; %>
+          <% for (final String nameofca : canames.keySet()) {
+                 CAInfo cainfo2 = cabean.getCAInfo(canames.get(nameofca).intValue()).getCAInfo();
+                 String nameandstatus = nameofca + ", (" +ejbcawebbean.getText(statustexts[cainfo2.getStatus()]) + ")"; %>
             <option value="<c:out value="<%= canames.get(nameofca) %>"/>"> 
                 <c:out value="<%= nameandstatus %>"/>
              </option>
@@ -138,6 +136,11 @@
 
   <table class="add">
     <tr> 
+      <td width="100%"> 
+        <input type="submit" name="<%= BUTTON_SIGNREQUEST%>" value="<%= ejbcawebbean.getText("CREATEAUTHCSR") %>"> <%= ejbcawebbean.getHelpReference("/userguide.html#Signing%20a%20roll-over%20certificate%20(NewWithOld)") %>
+      </td>
+    </tr>
+    <tr> 
       <td width="100%"><h3><%= ejbcawebbean.getText("ADDCA") %></h3></td>
     </tr>
     <tr> 
@@ -145,8 +148,6 @@
         <input type="text" name="<%=TEXTFIELD_CANAME%>" size="40" maxlength="255">   
         <input type="submit" name="<%= BUTTON_CREATE_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("CREATE") %>...">&nbsp;&nbsp;&nbsp;
         <input type="submit" name="<%= BUTTON_RENAME_CA%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("RENAMESELECTED") %>"><br />
-        <input type="submit" name="<%= BUTTON_PROCESSREQUEST%>" onClick='return checkfieldforlegalchars("document.editcas.<%=TEXTFIELD_CANAME%>","<%= ejbcawebbean.getText("ONLYCHARACTERS",true) %>")' value="<%= ejbcawebbean.getText("PROCESSREQUEST") %>"> <%= ejbcawebbean.getHelpReference("/userguide.html#Signing%20an%20External%20CA") %>
-        <input type="submit" name="<%= BUTTON_SIGNREQUEST%>" value="<%= ejbcawebbean.getText("SIGNREQUEST") %>"> <%= ejbcawebbean.getHelpReference("/userguide.html#Signing%20a%20roll-over%20certificate%20(NewWithOld)") %>
       </td>
     </tr>
   </table>

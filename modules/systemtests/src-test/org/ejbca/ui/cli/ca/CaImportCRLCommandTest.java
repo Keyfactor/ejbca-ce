@@ -41,9 +41,11 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ra.CertificateRequestSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
 import org.ejbca.core.model.SecConst;
@@ -82,6 +84,7 @@ public class CaImportCRLCommandTest {
     private CertificateRequestSessionRemote certReqSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateRequestSessionRemote.class);
     private CertificateStoreSessionRemote certStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
+    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
 
     @Before
     public void setUp() throws Exception {
@@ -95,7 +98,7 @@ public class CaImportCRLCommandTest {
             if (f.exists()) {
                 f.delete();
             }
-            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
+            cleanUp();
         } catch (Exception e) {
             // Ignore.
 
@@ -198,9 +201,19 @@ public class CaImportCRLCommandTest {
             assertNotNull("Certificate should exist", cert2);
             fingerprint = CertTools.getFingerprintAsString(cert2);
         } finally {
-            caSession.removeCA(admin, caSession.getCAInfo(admin, CA_NAME).getCAId());
+            cleanUp();
             endEntityManagementSession.revokeAndDeleteUser(admin, testUsername, ReasonFlags.unused);
             internalCertStoreSession.removeCertificate(fingerprint);
+        }
+    }
+
+    private void cleanUp() throws Exception {
+        CaTestCase.removeTestCA(CA_NAME);
+        try {
+            cryptoTokenManagementSession.deleteCryptoToken(admin, caSession.getCAInfo(admin, CA_NAME).getCAToken().getCryptoTokenId());
+            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
+        } catch (Exception e) {
+            // Ignore
         }
     }
 }

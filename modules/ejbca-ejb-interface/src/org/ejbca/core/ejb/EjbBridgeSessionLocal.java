@@ -26,6 +26,7 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.certificates.crl.CrlCreateSessionLocal;
 import org.cesecore.certificates.crl.CrlStoreSessionLocal;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.roles.access.RoleAccessSessionLocal;
 import org.cesecore.roles.management.RoleManagementSessionLocal;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionLocal;
@@ -102,4 +103,5 @@ public interface EjbBridgeSessionLocal {
 	UserDataSourceSessionLocal getUserDataSourceSession();
 	EndEntityManagementSessionLocal getEndEntityManagementSession();
 	WebAuthenticationProviderSessionLocal getWebAuthenticationProviderSession();
+    CryptoTokenManagementSessionLocal getCryptoTokenManagementSession();
 }

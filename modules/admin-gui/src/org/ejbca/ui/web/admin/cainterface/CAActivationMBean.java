@@ -14,34 +14,33 @@ package org.ejbca.ui.web.admin.cainterface;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
-import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
+import org.cesecore.authorization.control.AccessControlSessionLocal;
+import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.certificates.ca.CAConstants;
+import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
-import org.cesecore.certificates.ca.CaSession;
-import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenInfo;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.ejbca.core.EjbcaException;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
-import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
-import org.ejbca.core.ejb.config.GlobalConfigurationSession;
-import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
-import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
-import org.ejbca.core.model.approval.ApprovalException;
-import org.ejbca.core.model.approval.WaitingForApprovalException;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.admin.BaseManagedBean;
 import org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper;
-import org.ejbca.ui.web.admin.configuration.EjbcaWebBean;
 
 /**
+ * JSF Managed Bean or the CA Activation page of the Admin GUI.
+ *
  * @author Tham Wickenberg
  * @version $Id$
  */
@@ -50,181 +49,216 @@ public class CAActivationMBean extends BaseManagedBean implements Serializable {
 	private static final Logger log = Logger.getLogger(CAActivationMBean.class);
 
 	private static final long serialVersionUID = -2660384552215596717L;
+	
+	/** GUI representation of a CA for the activation view */
+	public class CaActivationGuiInfo {
+	    private final int status;
+	    private final String name;
+	    private final int caId;
+        private boolean monitored;
+        private boolean monitoredNewState;
+        private boolean newState;
+	    
+	    private CaActivationGuiInfo(int status, boolean monitored, String name, int caId) {
+	        this.status = status;
+            this.newState = isActive();
+	        this.monitored = monitored;
+	        this.monitoredNewState = monitored;
+	        this.name = name;
+	        this.caId = caId;
+	    }
 
-	private EjbcaWebBean webBean;
-	private CADataHandler cadatahandler;
-	private CAInterfaceBean caBean;
+        public boolean isActive() { return status == CAConstants.CA_ACTIVE; }
+        public boolean isExpired() { return status == CAConstants.CA_EXPIRED; }
+        public boolean isRevoked() { return status == CAConstants.CA_REVOKED; }
+        public boolean isExternal() { return status == CAConstants.CA_EXTERNAL; }
+        public boolean isWaiting() { return status == CAConstants.CA_WAITING_CERTIFICATE_RESPONSE; }
+        public boolean isUnableToChangeState() { return isRevoked() || isExpired() || isExternal() || isWaiting(); }
+        public boolean isOffline() { return !isActive() && !isExpired() && !isRevoked(); }
+
+        public boolean isMonitoredNewState() { return monitoredNewState; }
+        public void setMonitoredNewState(boolean monitoredNewState) { this.monitoredNewState = monitoredNewState; }
+        public boolean isMonitored() { return monitored; }
+        public int getStatus() { return status; }
+        public String getName() { return name; }
+        public int getCaId() { return caId; }
+        public boolean isNewState() { return newState; }
+        public void setNewState(boolean newState) { this.newState = newState; }
+	}
+
+    /** GUI representation of a CryptoToken and its CA(s) for the activation view */
+	public class TokenAndCaActivationGuiInfo {
+	    private final CryptoTokenInfo cryptoTokenInfo;
+	    private final List<CaActivationGuiInfo> caActivationGuiInfos = new ArrayList<CaActivationGuiInfo>();
+        private final boolean allowedActivation;
+        private final boolean allowedDeactivation;
+        private boolean cryptoTokenNewState;
+
+        private TokenAndCaActivationGuiInfo(CryptoTokenInfo cryptoTokenInfo, boolean allowedActivation, boolean allowedDeactivation) {
+	        this.cryptoTokenInfo = cryptoTokenInfo;
+	        this.cryptoTokenNewState = cryptoTokenInfo.isActive();
+            this.allowedActivation = allowedActivation;
+            this.allowedDeactivation = allowedDeactivation;
+	    }
+
+	    public TokenAndCaActivationGuiInfo(Integer cryptoTokenId) {
+            this.cryptoTokenInfo = new CryptoTokenInfo(cryptoTokenId, "CryptoToken id " + cryptoTokenId,
+                    false, false, "NullCryptoToken", false, "", "", "");
+            this.cryptoTokenNewState = false;
+            this.allowedActivation = false;
+            this.allowedDeactivation = false;
+        }
+
+        public void add(CaActivationGuiInfo caActivationGuiInfo) {
+	        caActivationGuiInfos.add(caActivationGuiInfo);
+	    }
+
+        public List<CaActivationGuiInfo> getCas() { return caActivationGuiInfos; }
+	    
+        public int getCryptoTokenId() { return cryptoTokenInfo.getCryptoTokenId(); }
+        public String getCryptoTokenName() { return cryptoTokenInfo.getName(); }
+        public boolean isCryptoTokenActive() { return cryptoTokenInfo.isActive(); }
+        public boolean isAutoActivated() { return cryptoTokenInfo.isAutoActivation(); }
+        public boolean isStateChangeDisabled() { return isAutoActivated() || (isCryptoTokenActive() && !allowedDeactivation) || (!isCryptoTokenActive() && !allowedActivation);}
+        public boolean isCryptoTokenNewState() { return cryptoTokenNewState; }
+        public void setCryptoTokenNewState(boolean cryptoTokenNewState) { this.cryptoTokenNewState = cryptoTokenNewState; }
+	}
+	
+	private final AuthenticationToken authenticationToken = EjbcaJSFHelper.getBean().getEjbcaWebBean().getAdminObject();
+    private final EjbLocalHelper ejbLocalhelper = new EjbLocalHelper();
+	private final CAAdminSessionLocal caAdminSession = ejbLocalhelper.getCaAdminSession();
+	private final CaSessionLocal caSession = ejbLocalhelper.getCaSession(); 
+	private final CryptoTokenManagementSessionLocal cryptoTokenManagementSession = ejbLocalhelper.getCryptoTokenManagementSession();
+    private final AccessControlSessionLocal accessControlSession = ejbLocalhelper.getAccessControlSession();
+
+	private List<TokenAndCaActivationGuiInfo> authorizedTokensAndCas = null;
 	private String authenticationcode;
-	private List<CAWrapper> caInfoList;
-	
-	public static final String MAKEOFFLINE = "makeoffline";
-	public static final String ACTIVATE    = "activate";
-	public static final String KEEPCURRENT = "keepcurrent";
 
-	public CAActivationMBean () {
-	    EjbcaJSFHelper jsfHelper = EjbcaJSFHelper.getBean();
-		webBean = jsfHelper.getEjbcaWebBean();
-		new ViewCAInfoJSPHelper();
-		caBean = new CAInterfaceBean();
-		try {
-			caBean.initialize(webBean);
-		} catch (Exception e) {
-			log.error("Error initializing bean: ", e);
-		}
-		try {
-		    final AuthenticationToken administrator = webBean.getAdminObject();
-			final EjbLocalHelper ejbLocalhelper = new EjbLocalHelper();
-		    final AccessRuleManagementSessionLocal accessRuleManagementSession = ejbLocalhelper.getAccessRuleManagementSession();
-		    final AccessUserAspectManagerSessionLocal accessUserAspectManagerSession = ejbLocalhelper.getAccessUserAspectSession();
-			final CAAdminSession caadminsession = ejbLocalhelper.getCaAdminSession();
-			final CaSession caSession = ejbLocalhelper.getCaSession();
-			final EndEntityManagementSessionLocal adminsession = ejbLocalhelper.getEndEntityManagementSession();
-			final GlobalConfigurationSession globalconfigurationsession = ejbLocalhelper.getGlobalConfigurationSession();
-			final CertificateProfileSession certificateProfileSession = ejbLocalhelper.getCertificateProfileSession();
-			final EndEntityProfileSession endEntityProfileSession = ejbLocalhelper.getEndEntityProfileSession();
-			final RevocationSessionLocal revocationSession = ejbLocalhelper.getRevocationSession();
-			
-            cadatahandler = new CADataHandler(administrator, accessRuleManagementSession, accessUserAspectManagerSession, caadminsession, caSession, endEntityProfileSession, adminsession,
-                    globalconfigurationsession, certificateProfileSession, revocationSession,
-                    webBean);
-            caInfoList = new ArrayList<CAWrapper>();
-	initializeWrappers();
-		} catch (Exception e){
-			log.error("Error initializing bean: ", e);
-		}
+	public List<TokenAndCaActivationGuiInfo> getAuthorizedTokensAndCas() {
+	    final Map<Integer,TokenAndCaActivationGuiInfo> sortMap = new HashMap<Integer,TokenAndCaActivationGuiInfo>();
+	    for (final Integer caId : caSession.getAvailableCAs(authenticationToken)) {
+	        try {
+                final CAInfo caInfo = caSession.getCAInfoInternal(caId.intValue(), null, true);
+                final Integer cryptoTokenId = Integer.valueOf(caInfo.getCAToken().getCryptoTokenId());
+                if (sortMap.get(cryptoTokenId)==null) {
+                    // Perhaps not authorized to view the CryptoToken used by the CA, but we implicitly
+                    // allow this in the current context since we are authorized to the CA.
+                    final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(cryptoTokenId.intValue());
+                    if (cryptoTokenInfo==null) {
+                        sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenId));
+                    } else {
+                        final boolean allowedActivation = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.ACTIVATE.resource() + '/' + cryptoTokenId);
+                        final boolean allowedDeactivation = accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.DEACTIVATE.resource() + '/' + cryptoTokenId);
+                        sortMap.put(cryptoTokenId, new TokenAndCaActivationGuiInfo(cryptoTokenInfo, allowedActivation, allowedDeactivation));
+                    }
+                }
+                sortMap.get(cryptoTokenId).add(new CaActivationGuiInfo(caInfo.getStatus(), caInfo.getIncludeInHealthCheck(), caInfo.getName(), caInfo.getCAId()));
+            } catch (CADoesntExistsException e) {
+                throw new RuntimeException("Authorized CA Id does no longer exist.");
+            }
+	    }
+        final TokenAndCaActivationGuiInfo[] tokenAndCasArray = sortMap.values().toArray(new TokenAndCaActivationGuiInfo[0]);
+        // Sort array by CryptoToken name
+        Arrays.sort(tokenAndCasArray, new Comparator<TokenAndCaActivationGuiInfo>() {
+            @Override
+            public int compare(TokenAndCaActivationGuiInfo o1, TokenAndCaActivationGuiInfo o2) {
+                return o1.getCryptoTokenName().compareTo(o2.getCryptoTokenName());
+            }
+        });
+        final List<TokenAndCaActivationGuiInfo> retValues = new ArrayList<TokenAndCaActivationGuiInfo>();
+	    for (final TokenAndCaActivationGuiInfo value : tokenAndCasArray) {
+	        retValues.add(value);
+	    }
+	    authorizedTokensAndCas = retValues;
+	    return authorizedTokensAndCas;
 	}
 
-	/** Returns list of authorized CAs
-	 * 
-	 * @return List of CAWrapper
+	/**
+	 * Tries to activate CryptoTokens (once for each), if authentication code is present and activation is requested.
+	 * Set the CA service status to the requested state for each CA.
 	 */
-	public List<CAWrapper> getAuthorizedCAWrappers() {
-		initializeWrappers();
-		Iterator<CAWrapper> it = caInfoList.iterator();
-		while ( it.hasNext() ) {
-			CAWrapper temp = it.next();
-			try {
-				temp.setCAInfo(caBean.getCAInfo(temp.getID()).getCAInfo());
-			} catch (Exception e) {
-				log.error(e);
-			}
-		}
-		return caInfoList;
+	public void applyChanges() {
+	    if (authorizedTokensAndCas==null) {
+	        return;
+	    }
+	    for (final TokenAndCaActivationGuiInfo tokenAndCa : authorizedTokensAndCas) {
+            log.info("isCryptoTokenActive(): " + tokenAndCa.isCryptoTokenActive() + " isCryptoTokenNewState(): " + tokenAndCa.isCryptoTokenNewState());
+	        if (tokenAndCa.isCryptoTokenActive() != tokenAndCa.isCryptoTokenNewState()) {
+	            if (tokenAndCa.isCryptoTokenNewState()) {
+	                // Assert that authcode is present
+	                if (authenticationcode != null && authenticationcode.length()>0) {
+	                    // Activate CA's CryptoToken
+	                    try {
+	                        cryptoTokenManagementSession.activate(authenticationToken, tokenAndCa.getCryptoTokenId(), authenticationcode.toCharArray());
+	                        log.info(authenticationToken.toString() + " activated CryptoToken " + tokenAndCa.getCryptoTokenId());
+	                    } catch (CryptoTokenAuthenticationFailedException e) {
+	                        super.addNonTranslatedErrorMessage("Bad authentication code.");
+	                    } catch (CryptoTokenOfflineException e) {
+                            super.addNonTranslatedErrorMessage("Crypto Token is offline and cannot be activated.");
+                        } catch (AuthorizationDeniedException e) {
+                            super.addNonTranslatedErrorMessage(e.getMessage());
+                        }
+	                } else {
+	                    super.addNonTranslatedErrorMessage("Authentication code required.");
+	                }
+	            } else {
+	                // Deactivate CA's CryptoToken
+	                try {
+                        cryptoTokenManagementSession.deactivate(authenticationToken, tokenAndCa.getCryptoTokenId());
+                        log.info(authenticationToken.toString() + " deactivated CryptoToken " + tokenAndCa.getCryptoTokenId());
+                    } catch (AuthorizationDeniedException e) {
+                        super.addNonTranslatedErrorMessage(e.getMessage());
+                    }
+	            }
+	        }
+	        for (CaActivationGuiInfo ca : tokenAndCa.getCas()) {
+	            if (ca.isActive() != ca.isNewState()) {
+	                // Valid transition 1: Currently offline, become active
+	                if (ca.isNewState() && ca.getStatus()==CAConstants.CA_OFFLINE) {
+	                    try {
+                            caAdminSession.activateCAService(authenticationToken, ca.getCaId());
+                        } catch (Exception e) {
+                            super.addNonTranslatedErrorMessage(e.getMessage());
+                        }
+	                } 
+                    // Valid transition 2: Currently online, become offline
+	                if (!ca.isNewState() && ca.getStatus()==CAConstants.CA_ACTIVE) {
+                        try {
+                            caAdminSession.deactivateCAService(authenticationToken, ca.getCaId());
+                        } catch (Exception e) {
+                            super.addNonTranslatedErrorMessage(e.getMessage());
+                        }
+	                }
+	            }
+	            if (ca.isMonitored() != ca.isMonitoredNewState()) {
+	                // Only persist changes if there are any
+	                try {
+                        final CAInfo caInfo = caSession.getCAInfoInternal(ca.getCaId(), null, false);
+                        caInfo.setIncludeInHealthCheck(ca.isMonitoredNewState());
+                        caAdminSession.editCA(authenticationToken, caInfo);
+                    } catch (CADoesntExistsException e) {
+                        super.addNonTranslatedErrorMessage(e.getMessage());
+                    } catch (AuthorizationDeniedException e) {
+                        super.addNonTranslatedErrorMessage(e.getMessage());
+                    }
+	            }
+                log.info("caId: " + ca.getCaId() + " monitored: " + ca.isMonitored() + " newCaStatus: " + ca.isNewState());
+	        }
+	    }
 	}
 
-	public void initializeWrappers() {
-		Collection<Integer> idList = webBean.getAuthorizedCAIds();
-		Iterator<Integer> it = idList.iterator();
-		while ( it.hasNext() ) {
-			Integer caid = it.next();
-			boolean inList = false;
-			Iterator<CAWrapper> tempIt = caInfoList.iterator();
-			while (tempIt.hasNext()) {
-				CAWrapper wrapper = tempIt.next();
-				if (wrapper.getID() == caid.intValue() ) {
-					inList = true;
-				}
-			}
-			if (!inList) {
-				try {
-					caInfoList.add(new CAWrapper(caBean.getCAInfo( caid.intValue()).getCAInfo(), webBean, this));
-				} catch (Exception e) {
-					log.error(e);
-				}
-			}
-		}
-	}
-
-	public void setAuthenticationCode(String authenticationcode) {
-		this.authenticationcode = authenticationcode;
-	}
-
-	public String getAuthenticationCode() {
-		return "";
-	}
-
-	public CAInfo activateCAToken(int caid ) throws CryptoTokenAuthenticationFailedException, CryptoTokenOfflineException, AuthorizationDeniedException, ApprovalException, WaitingForApprovalException, Exception {
-		cadatahandler.activateCAToken(caid, authenticationcode);
-		log.debug("Successfully activated token");
-		return caBean.getCAInfo(caid).getCAInfo();
-	}
-
-	public CAInfo deactivateCAToken(int caid) throws AuthorizationDeniedException, EjbcaException, Exception {
-		cadatahandler.deactivateCAToken(caid);
-		log.debug("Successfully de-activated token");
-		return caBean.getCAInfo(caid).getCAInfo();
-	}
-
-	/** Updates the IncludeInChealthCheck flag in the database for the CA
-	 */
-	public CAInfo updateMonitored(int caid, boolean monitored) throws Exception {
-		CAInfoView cv = caBean.getCAInfo(caid);
-		if (cv != null) {
-			CAInfo cainfo = cv.getCAInfo();
-			cainfo.setIncludeInHealthCheck(monitored);
-			cadatahandler.editCA(cainfo);
-			return cainfo;			
-		} else {
-			log.debug("No CA with id: "+caid);
-		}
-		return null;
-	}
-	
-	public void apply() {
-		log.trace(">apply");
-		List<CAWrapper> list = caInfoList;
-		for (Iterator<CAWrapper> iterator = list.iterator(); iterator.hasNext();) {
-			CAWrapper wrapper = iterator.next();
-			try {
-				String option = wrapper.getActivateOption();
-				if (option.equals(CAActivationMBean.ACTIVATE)) {
-					wrapper.activateCAToken();
-				}
-				if (option.equals(CAActivationMBean.MAKEOFFLINE)) { 
-					wrapper.deactivateCAToken();
-				}
-				if (option.equals(CAActivationMBean.KEEPCURRENT)) {
-					wrapper.setCAActivationMessage("");			
-				}
-				// Update the monitored flag in the DB if it changed
-				CAInfoView cv = caBean.getCAInfo(wrapper.getID());
-				if (cv != null) {
-					CAInfo cainfo = cv.getCAInfo();
-					if (wrapper.getMonitored() != cainfo.getIncludeInHealthCheck()) {
-						wrapper.updateMonitored();
-					}					
-				} else {
-					log.debug("No CA with id: "+wrapper.getID());
-				}
-			} catch (Exception e) {
-				log.error(e);
-			}			
-		}
-		log.trace("<apply");
-	}
-
-	public String getMakeoffline() {
-		return MAKEOFFLINE;
-	}
-	public String getActivate() {
-		return ACTIVATE;
-	}
-	public String getKeepcurrent() {
-		return KEEPCURRENT;
-	}
-	
-	public List<CAWrapper> getHasMessages() {
-		log.trace(">getHasMessages");
-		List<CAWrapper> list = caInfoList;
-		List<CAWrapper> hasMessages = new ArrayList<CAWrapper>();
-		for (Iterator<CAWrapper> iterator = list.iterator(); iterator.hasNext();) {
-			CAWrapper wrapper = iterator.next();
-			String msg = wrapper.getCAActivationMessage();
-			if ( (msg != null) && (!msg.equals("")) ) {
-				hasMessages.add(wrapper);
-			}			
-		}
-		log.trace("<getHasMessages");
-		return hasMessages;
-	}
+	/** @return true when there is at least one CryptoToken that can be activated. */
+    public boolean isActivationCodeShown() {
+        if (authorizedTokensAndCas!=null) {
+            for (final TokenAndCaActivationGuiInfo tokenAndCa : authorizedTokensAndCas) {
+                if (!tokenAndCa.isCryptoTokenActive() && !tokenAndCa.isStateChangeDisabled()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+	public void setAuthenticationCode(String authenticationcode) { this.authenticationcode = authenticationcode; }
+	public String getAuthenticationCode() { return ""; }
 }

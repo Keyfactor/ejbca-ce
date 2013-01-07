@@ -13,7 +13,7 @@
 package org.cesecore.certificates.ca.catoken;
 
 /**
- * Based on EJBCA version: CATokenConstants.java 8629 2010-02-08 15:47:15Z jeklund
+ * Purpose mapping constants to for CryptoToken aliases and related.
  * 
  * @version $Id$
  */
@@ -44,4 +44,9 @@ public final class CATokenConstants {
 	final static public String CAKEYPURPOSE_HARDTOKENENCRYPT_STRING = "hardTokenEncrypt";
 	final static public String CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS = "previousCertSignKey";
 	final static public String CAKEYPURPOSE_CERTSIGN_STRING_NEXT = "nextCertSignKey";
+
+    /** Previous sequence (matching CryptoTokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_PREVIOUS key) that can be set in CA token properties */
+    public static final String PREVIOUS_SEQUENCE_PROPERTY = "previousSequence";
+    /** Next sequence (matching CryptoTokenConstants.CAKEYPURPOSE_CERTSIGN_STRING_NEXT key) that can be set in CA token properties */
+    public static final String NEXT_SEQUENCE_PROPERTY = "nextSequence";
 }

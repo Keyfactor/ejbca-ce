@@ -33,9 +33,9 @@ import org.bouncycastle.asn1.cmp.PKIMessage;
 import org.bouncycastle.asn1.cmp.RevDetails;
 import org.bouncycastle.asn1.cmp.RevReqContent;
 import org.bouncycastle.asn1.crmf.CertTemplate;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
-import org.bouncycastle.asn1.x500.X500Name;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSession;
@@ -50,8 +50,9 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
@@ -88,10 +89,12 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
     private AccessControlSession authorizationSession;
     private EndEntityAccessSession endEntityAccessSession;
     private final WebAuthenticationProviderSessionLocal authenticationProviderSession;
+    private CryptoTokenSessionLocal cryptoTokenSession;
 	
 	public RevocationMessageHandler(final AuthenticationToken admin, final EndEntityManagementSession endEntityManagementSession, final CaSessionLocal caSession, 
 	        final EndEntityProfileSessionLocal endEntityProfileSession, final CertificateProfileSession certificateProfileSession, final CertificateStoreSession certStoreSession,
-	        final AccessControlSession authSession, final EndEntityAccessSession eeAccessSession, final WebAuthenticationProviderSessionLocal authProviderSession) {
+	        final AccessControlSession authSession, final EndEntityAccessSession eeAccessSession, final WebAuthenticationProviderSessionLocal authProviderSession,
+	        final CryptoTokenSessionLocal cryptoTokenSession) {
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		responseProtection = CmpConfiguration.getResponseProtection();
 		this.endEntityManagementSession = endEntityManagementSession;
@@ -99,6 +102,7 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
         this.authorizationSession = authSession;
         this.endEntityAccessSession = eeAccessSession;
         this.authenticationProviderSession = authProviderSession;
+        this.cryptoTokenSession = cryptoTokenSession;
 	}
 	public ResponseMessage handleMessage(final BaseCmpMessage msg, boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
@@ -282,10 +286,10 @@ public class RevocationMessageHandler extends BaseCmpMessageHandler implements I
 		    rresp.setPbeParameters(keyId, cmpRaAuthSecret, owfAlg, macAlg, iterationCount);
 		} else {
 		    try {
-		        rresp.setSignKeyInfo(ca.getCACertificate(), ca.getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), ca.getCAToken().getCryptoToken().getSignProviderName());
+		        final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+		        final String aliasCertSign = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+		        rresp.setSignKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(aliasCertSign), cryptoToken.getSignProviderName());
 		    } catch (CryptoTokenOfflineException e) {
-		        LOG.error(e.getLocalizedMessage(), e);
-		    } catch (IllegalCryptoTokenException e) {
 		        LOG.error(e.getLocalizedMessage(), e);
 		    }
 		}
