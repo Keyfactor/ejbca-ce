@@ -35,33 +35,34 @@ public class PKCS11CATokenTest extends CATokenTestBase {
 
     @Test
     public void testCATokenRSA() throws Exception {
-    	CryptoToken cryptoToken = createPKCS11Token();
+    	CryptoToken cryptoToken = createPKCS11Token(false);
         doCaTokenRSA("1024", cryptoToken, getCaTokenProperties("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
 	@Test
     public void testCATokenECC() throws Exception {
-    	CryptoToken cryptoToken = createPKCS11Token();
+    	CryptoToken cryptoToken = createPKCS11Token(true);
         doCaTokenECC("secp256r1", cryptoToken, getCaTokenProperties("ecctest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
     @Test
     public void testActivateDeactivate() throws Exception {
-    	CryptoToken cryptoToken = createPKCS11Token();
+    	CryptoToken cryptoToken = createPKCS11Token(true);
     	doActivateDeactivate("1024", cryptoToken, getCaTokenProperties("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
 	@Test
 	public void testSaveAndLoad() throws Exception {
-    	CryptoToken cryptoToken = createPKCS11Token();
+    	CryptoToken cryptoToken = createPKCS11Token(true);
     	doSaveAndLoad("1024", cryptoToken, getCaTokenProperties("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
 	}
 
-	private CryptoToken createPKCS11Token(/*String keyspec*/) {
+	private CryptoToken createPKCS11Token(boolean useAutoActivationPin) {
 		CryptoToken cryptoToken = PKCS11CryptoTokenTest.createPKCS11Token();
     	Properties cryptoTokenProperties = cryptoToken.getProperties();
-        // Use autoactivation for easy testing
-        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, tokenpin);
+    	if (useAutoActivationPin) {
+            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, tokenpin);
+        }
         cryptoToken.setProperties(cryptoTokenProperties);
 		return cryptoToken;
 	}
