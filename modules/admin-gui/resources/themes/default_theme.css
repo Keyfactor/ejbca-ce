@@ -480,43 +480,50 @@ table.results tbody tr td a {
 }
 
 /* Page: CA > CA Activation */
-div#activation {
-	margin-top: 1em;
+.actTokenAndCasHeader {
+	text-align: left;
+	color: #000;
+	background-color: #FFF;
 }
-#activation table tbody tr:nth-child(2n) {
+.actCasHeader {
+	padding-left: 4px;
+	padding-right: 8px;
+	text-align: left;
+	background-color: #EEE;
+	color: #284E81;
+	border-top: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+}
+.actCas {
+	margin-top: 0.3em;
+	margin-bottom: 1em;
+	border-collapse: collapse;
+	right: auto;
+	left: auto;
+}
+.actCas tbody tr:nth-child(2n) {
 	background-color: #F7F9FD;
 }
-#activation table tbody tr:hover,
-#activation table tbody tr:focus,
-#activation table tbody tr:active {
+.actCas tbody tr:hover,
+.actCas tbody tr:focus,
+.actCas tbody tr:active {
 	background-color: #FFB;
 }
-#activation table th,
-#activation table td {
+.actCas tbody th,
+.actCas tbody td {
+	margin: 0px;
+	padding: 2px 3px;
+	border: 1px solid #2E5A94;
+	background-color: transparent;
 	padding: 4px 3px;
 	vertical-align: middle;
 	text-align: left;
 	white-space: nowrap;
-}
-#activation table td {
 	padding-right: 9px;
 }
-#activation table td img {
-	width: 16px;
-	height: 16px;
-	vertical-align: -.07em;
-	margin: 0em .35em 0em .5em;
-}
-#activation table td input[type="checkbox"],
-#activation table td label {
-	margin-right: .4em;
-}
-#activation table table th,
-#activation table table td {
-	margin: 0px;
-	padding: 0px;
-	border: 0px none;
-}
+
+
 div#code {
 	margin-top: 1.5em;
 }

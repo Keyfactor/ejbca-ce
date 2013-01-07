@@ -12,13 +12,22 @@
 #------------------- Performance settings -------------
 
 # Caches is used internally by EJBCA to optimize performance. 
-# You can manually flush internal caches using the command line command "ejbca.sh clearcache". Run the command for more detailed documentation of this command.
- 
-# Set to a value for caching calls to getCAInfo and getCA in CAAdminSession. This means that for CAInfo to be updated
-# the cache time expires, an "Edit CA" or server restart is done, or flushCACache is called on CAAdminSession. 
-# This cache works fine in a single server environment. In a multi server (clustered) environment, 
-# this can be used to disable the check if CA has been edited on another node, so the CA must be edited on all nodes, 
-# or nodes caches flushed after editing on one node.
+# You can manually flush internal caches using the command line command "ejbca.sh clearcache".
+# Run the command for more detailed documentation of this command.
+
+# CryptoToken object caching gets updates from database when a CryptoToken object is stale.
+# During this fetch, the currently cached CryptoToken object will continue to be used.
+# This cache can never be completely disabled to ensure that an activated CryptoToken object
+# is kept in the active state until removed or changed in the database.
+# Setting this value will improve performance for very large volume installations (>100 cert/s). 
+# Default: -1 (always check database for updates)
+# Possible values -1 (no caching) to 9223372036854775807 (2^63-1 = Long.MAX_VALUE), 
+#  anything more than 157680000000 (5 years) should mean infinitely in practice.
+#cryptotoken.cachetime=-1
+#cryptotoken.cachetime=157680000000
+
+# CA object caching gets updates from database when a CA object is stale.
+# During this fetch, the currently cached CA object will continue to be used.
 # Setting this value will improve performance for very large volume installations (>100 cert/s). 
 # For normal installations, where extreme speeds and response times are not required, leave as default.
 # Value is milliseconds.

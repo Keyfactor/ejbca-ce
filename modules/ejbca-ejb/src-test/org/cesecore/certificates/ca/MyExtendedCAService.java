@@ -21,6 +21,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.keys.token.CryptoToken;
 
 /**
  * @version $Id$
@@ -42,7 +43,7 @@ public class MyExtendedCAService extends ExtendedCAService {
 	public static int didrun = 0;
 	
 	@Override
-	public ExtendedCAServiceResponse extendedService(
+	public ExtendedCAServiceResponse extendedService(CryptoToken cryptoToken,
 			ExtendedCAServiceRequest request)
 	throws ExtendedCAServiceRequestException,
 	IllegalExtendedCAServiceRequestException,
@@ -57,12 +58,12 @@ public class MyExtendedCAService extends ExtendedCAService {
 	}
 
 	@Override
-	public void init(CA ca) throws Exception {
+	public void init(CryptoToken cryptoToken, CA ca) throws Exception {
 
 	}
 
 	@Override
-	public void update(ExtendedCAServiceInfo info, CA ca) {
+	public void update(CryptoToken cryptoToken, ExtendedCAServiceInfo info, CA ca) {
 	}
 
 	@Override

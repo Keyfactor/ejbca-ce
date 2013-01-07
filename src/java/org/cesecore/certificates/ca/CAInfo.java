@@ -17,7 +17,7 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 
-import org.cesecore.certificates.ca.catoken.CATokenInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.SimpleTime;
@@ -26,8 +26,6 @@ import org.cesecore.util.StringTools;
 /**
  * Holds non sensitive information about a CA.
  *
- * Based on EJBCA version: CAInfo.java 11009 2010-12-29 15:20:37Z jeklund $
- * 
  * @version $Id$
  */
 public class CAInfo implements Serializable {
@@ -71,10 +69,10 @@ public class CAInfo implements Serializable {
     /**
      * Constants indicating approval settings for activation of CA tokens
      */
-    public static final int REQ_APPROVAL_ACTIVATECATOKEN = 4;
+    public static final int REQ_APPROVAL_ACTIVATECA = 4;
         
-    public static final int[] AVAILABLE_APPROVALSETTINGS={REQ_APPROVAL_ADDEDITENDENTITY, REQ_APPROVAL_KEYRECOVER, REQ_APPROVAL_REVOCATION, REQ_APPROVAL_ACTIVATECATOKEN};
-    public static final String[] AVAILABLE_APPROVALSETTINGS_TEXTS={"APPROVEADDEDITENDENTITY","APPROVEKEYRECOVER", "APPROVEREVOCATION", "APACTIVATECATOKEN"};
+    public static final int[] AVAILABLE_APPROVALSETTINGS={REQ_APPROVAL_ADDEDITENDENTITY, REQ_APPROVAL_KEYRECOVER, REQ_APPROVAL_REVOCATION, REQ_APPROVAL_ACTIVATECA};
+    public static final String[] AVAILABLE_APPROVALSETTINGS_TEXTS={"APPROVEADDEDITENDENTITY","APPROVEKEYRECOVER", "APPROVEREVOCATION", "APPROVEACTIVATECA"};
     
     protected String subjectdn;
     protected int caid;
@@ -89,7 +87,7 @@ public class CAInfo implements Serializable {
     /** A CAId or CAInfo.SELFSIGNED */
     protected int signedby;
     protected Collection<Certificate> certificatechain;
-    protected CATokenInfo catokeninfo;
+    protected CAToken catoken;
     protected String description;
     protected int revocationReason;
     protected Date revocationDate;
@@ -149,8 +147,8 @@ public class CAInfo implements Serializable {
      */
     public Collection<Certificate> getCertificateChain(){ return certificatechain;}
     public void setCertificateChain(Collection<Certificate> certificatechain) { this.certificatechain = certificatechain; }
-    public CATokenInfo getCATokenInfo() {return this.catokeninfo;}
-    public void setCATokenInfo(CATokenInfo catokeninfo) {this.catokeninfo = catokeninfo;}
+    public CAToken getCAToken() {return this.catoken;}
+    public void setCAToken(CAToken catoken) {this.catoken = catoken;}
     
     public String getDescription(){ return this.description;}
     public void setDescription(String description){ this.description = description;}

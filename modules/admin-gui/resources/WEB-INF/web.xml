@@ -32,6 +32,13 @@
 
    <servlet>
       <description><![CDATA[Returns the specified CA certificate]]></description>
+      <display-name>CryptoTokenDownloadServlet</display-name>
+      <servlet-name>CryptoTokenDownloadServlet</servlet-name>
+      <servlet-class>org.ejbca.ui.web.admin.cryptotoken.CryptoTokenDownloadServlet</servlet-class>
+      <load-on-startup>99</load-on-startup>
+   </servlet>
+   <servlet>
+      <description><![CDATA[Returns the specified CA certificate]]></description>
       <display-name>CACertServlet</display-name>
       <servlet-name>CACert</servlet-name>
       <servlet-class>org.ejbca.ui.web.admin.cainterface.CACertServlet</servlet-class>
@@ -95,7 +102,10 @@
       <servlet-name>Faces Servlet</servlet-name>
       <url-pattern>*.jsf</url-pattern>
    </servlet-mapping>
-
+   <servlet-mapping>
+      <servlet-name>CryptoTokenDownloadServlet</servlet-name>
+      <url-pattern>/cryptoTokenDownloads</url-pattern>
+   </servlet-mapping>
    <servlet-mapping>
       <servlet-name>CACert</servlet-name>
       <url-pattern>/ca/cacert</url-pattern>

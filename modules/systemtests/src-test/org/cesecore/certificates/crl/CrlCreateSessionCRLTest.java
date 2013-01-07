@@ -41,7 +41,6 @@ import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.IssuingDistributionPoint;
-import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -57,9 +56,12 @@ import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.CaTestSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -68,6 +70,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -77,6 +80,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -84,15 +88,13 @@ import org.junit.Test;
 /**
  * Tests CRL create session.
  * 
- * Based on EJBCA version: CreateCRLSessionTest.java 11375 2011-02-21 12:25:48Z anatom
- * 
  * @version $Id$
  */
 public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
 
     private final static Logger log = Logger.getLogger(CrlCreateSessionCRLTest.class);
 
-    private static final String X509CADN = "CN=CRLTEST";
+    private static final String X509CADN = "CN=" + CrlCreateSessionCRLTest.class.getSimpleName();
     private static CA testx509ca;
 
     private static final String USERNAME = "crltest";
@@ -102,6 +104,7 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
 
+    private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
     private CrlCreateSessionRemote crlCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlCreateSessionRemote.class);
@@ -112,33 +115,35 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
     private static KeyPair keys;
 
     @BeforeClass
-    public static void createProvider() throws Exception {
+    public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
         testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
 
+    @AfterClass
+    public static void afterClass() {
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+    }
+
     @Before
     public void setUp() throws Exception {
         // Set up base role that can edit roles
-        setUpAuthTokenAndRole("CrlCreateSessionTest");
-
+        setUpAuthTokenAndRole(this.getClass().getSimpleName());
         // Now we have a role that can edit roles, we can edit this role to include more privileges
-        RoleData role = roleAccessSession.findRole("CrlCreateSessionTest");
-
-        List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
+        final RoleData role = roleAccessSession.findRole(this.getClass().getSimpleName());
+        final List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAADD.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAEDIT.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAREMOVE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECRL.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, true));
         roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
-
         // Remove any lingering testca before starting the tests
-        caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
+        caSession.removeCA(alwaysAllowToken, X509CADN.hashCode());
         // Now add the test CA so it is available in the tests
         caSession.addCA(alwaysAllowToken, testx509ca);
-
     }
 
     @After
@@ -154,7 +159,6 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
                 X509CRL x509crl = CertTools.getCRLfromByteArray(crl);
                 internalCertificateStoreSession.removeCRL(alwaysAllowToken, CertTools.getFingerprintAsString(x509crl));
             }
-
             caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
         } finally {
             // Be sure to to this, even if the above fails
@@ -494,18 +498,12 @@ public class CrlCreateSessionCRLTest extends RoleUsingTestCase {
     }
 
     private X509Certificate createCertWithValidity(int validity) throws Exception {
-        // Make user that we know...
         EndEntityInformation user = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=crltest", testx509ca.getCAId(), null, "crltest@anatom.se",
                 new EndEntityType(EndEntityTypes.ENDUSER), 0, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
-        // user that we know exists...
-        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        int keyusage = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment;
-        X509Certificate cert = (X509Certificate) testx509ca.generateCertificate(user, keys.getPublic(), keyusage, null, validity, cp, "00001");
-
-        certificateStoreSession.storeCertificate(roleMgmgToken, cert, USERNAME, "1234", CertificateConstants.CERT_ACTIVE,
-                CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", System.currentTimeMillis());
+        SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
+        X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+        X509Certificate cert = (X509Certificate)resp.getCertificate();
         assertNotNull("Failed to create certificate", cert);
         return cert;
     }
-
 }

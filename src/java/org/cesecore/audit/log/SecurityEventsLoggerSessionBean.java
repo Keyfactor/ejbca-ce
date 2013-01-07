@@ -12,6 +12,7 @@
  *************************************************************************/
 package org.cesecore.audit.log;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.ejb.EJB;
@@ -73,6 +74,14 @@ public class SecurityEventsLoggerSessionBean implements SecurityEventsLoggerSess
         log(eventType, eventStatus, module, service, authToken.toString(), customId, searchDetail1, searchDetail2, additionalDetails);
     }
     
+    @Override
+    public void log(final EventType eventType, final EventStatus eventStatus, final ModuleType module, final ServiceType service, final String authToken, final String customId, final String searchDetail1, final String searchDetail2,
+            final String additionalDetailsMsg) throws AuditRecordStorageException {
+        final Map<String, Object> additionalDetails = new LinkedHashMap<String, Object>();
+        additionalDetails.put("msg", additionalDetailsMsg);
+        log(eventType, eventStatus, module, service, authToken, customId, searchDetail1, searchDetail2, additionalDetails);
+    }
+
     @Override
     public void log(final EventType eventType, final EventStatus eventStatus, final ModuleType module, final ServiceType service, final String authToken, final String customId, final String searchDetail1, final String searchDetail2,
             final Map<String, Object> additionalDetails) throws AuditRecordStorageException {

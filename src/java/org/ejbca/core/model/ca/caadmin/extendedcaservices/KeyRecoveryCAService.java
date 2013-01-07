@@ -27,6 +27,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 
@@ -63,7 +64,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	}
 
 	@Override
-	public void init(final CA ca) throws Exception {
+	public void init(CryptoToken cryptoToken, final CA ca) throws Exception {
 		log.debug("OCSPCAService : init ");
 		setCA(ca);
 		final ExtendedCAServiceInfo info = getExtendedCAServiceInfo();
@@ -71,14 +72,14 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 	}   
 
 	@Override
-	public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) {		   
+	public void update(CryptoToken cryptoToken, final ExtendedCAServiceInfo serviceinfo, final CA ca) {		   
 		log.debug("OCSPCAService : update " + serviceinfo.getStatus());
 		setStatus(serviceinfo.getStatus());
 		setCA(ca);
 	}
 
 	@Override
-	public ExtendedCAServiceResponse extendedService(final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
+	public ExtendedCAServiceResponse extendedService(CryptoToken cryptoToken, final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
 		log.trace(">extendedService");
 		if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
 			String msg = intres.getLocalizedMessage("caservice.notactive", "KeyRecovery");
@@ -94,7 +95,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 		if (serviceReq.getCommand() == KeyRecoveryCAServiceRequest.COMMAND_ENCRYPTKEYS) {
 			try{	
 				returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_ENCRYPTKEYSRESPONSE, 
-						getCa().encryptKeys(serviceReq.getKeyPair()));	
+						getCa().encryptKeys(cryptoToken, serviceReq.getKeyPair()));	
 			} catch(CMSException e) {
 				log.error("encrypt:", e.getUnderlyingException());
 				throw new IllegalExtendedCAServiceRequestException(e);
@@ -105,7 +106,7 @@ public class KeyRecoveryCAService extends ExtendedCAService implements Serializa
 			if (serviceReq.getCommand() == KeyRecoveryCAServiceRequest.COMMAND_DECRYPTKEYS) {
 				try{
 					returnval = new KeyRecoveryCAServiceResponse(KeyRecoveryCAServiceResponse.TYPE_DECRYPTKEYSRESPONSE, 
-							getCa().decryptKeys(serviceReq.getKeyData()));
+							getCa().decryptKeys(cryptoToken, serviceReq.getKeyData()));
 				} catch(CMSException e) {
 					log.error("decrypt:", e.getUnderlyingException());
 					throw new IllegalExtendedCAServiceRequestException(e);

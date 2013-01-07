@@ -63,9 +63,11 @@ public class CACertReqServlet extends HttpServlet {
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
 
     private static final String COMMAND_PROPERTY_NAME = "cmd";
+    private static final String COMMAND_PROPERTY_CAID = "caid";
     private static final String COMMAND_CERTREQ = "certreq";
 	private static final String COMMAND_CERT           = "cert";    
 	private static final String COMMAND_CERTPKCS7 = "certpkcs7";
+    private static final String COMMAND_CERTLINK = "linkcert";
     private static final String FORMAT_PROPERTY_NAME = "format";
 
     @EJB
@@ -245,5 +247,24 @@ public class CACertReqServlet extends HttpServlet {
 				 return;
 			 }
 		 }
-    } // doGet
+        if (command.equalsIgnoreCase(COMMAND_CERTLINK)) {
+            try {
+                final int caId = Integer.parseInt(req.getParameter(COMMAND_PROPERTY_CAID));
+                final byte[] rawCert = cabean.getLinkCertificate(caId);
+                if (rawCert!=null) {
+                    if (!"binary".equals(format)) {
+                        final byte[] b64cert = Base64.encode(rawCert);  
+                        RequestHelper.sendNewB64Cert(b64cert, res, RequestHelper.BEGIN_CERTIFICATE_WITH_NL, RequestHelper.END_CERTIFICATE_WITH_NL);                         
+                    } else {
+                        RequestHelper.sendBinaryBytes(rawCert, res, "application/octet-stream", "cert.crt");
+                    }
+                }
+            } catch (Exception e) {
+                String errMsg = intres.getLocalizedMessage("certreq.errorsendcert", remoteAddr, e.getMessage());
+                log.error(errMsg, e);
+                res.sendError(HttpServletResponse.SC_NOT_FOUND, errMsg);
+                return;
+            }
+        }
+    }
 }

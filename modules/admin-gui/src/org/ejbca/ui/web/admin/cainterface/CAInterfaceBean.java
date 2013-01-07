@@ -13,35 +13,58 @@
  
 package org.ejbca.ui.web.admin.cainterface;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.security.KeyStoreException;
+import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
+import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.bouncycastle.util.encoders.Base64;
+import org.apache.commons.fileupload.DiskFileUpload;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUpload;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.log4j.Logger;
+import org.bouncycastle.jce.ECNamedCurveTable;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
-import org.cesecore.authorization.rules.AccessRuleManagementSessionLocal;
-import org.cesecore.authorization.user.AccessUserAspectManagerSessionLocal;
+import org.cesecore.authorization.control.CryptoTokenRules;
+import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CAOfflineException;
+import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSession;
+import org.cesecore.certificates.ca.X509CAInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
+import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionLocal;
 import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
+import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileDoesNotExistException;
@@ -52,22 +75,37 @@ import org.cesecore.certificates.crl.CrlCreateSession;
 import org.cesecore.certificates.crl.CrlStoreSession;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.ExtendedInformation;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
+import org.cesecore.certificates.util.DNFieldExtractor;
+import org.cesecore.keys.token.CryptoTokenInfo;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.KeyPairInfo;
+import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
-import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
+import org.cesecore.util.FileTools;
+import org.cesecore.util.StringTools;
+import org.cesecore.util.ValidityDate;
+import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
 import org.ejbca.core.ejb.ca.publisher.PublisherQueueSession;
 import org.ejbca.core.ejb.ca.publisher.PublisherSessionLocal;
-import org.ejbca.core.ejb.ca.revoke.RevocationSessionLocal;
 import org.ejbca.core.ejb.ca.sign.SignSession;
 import org.ejbca.core.ejb.ca.store.CertReqHistorySessionLocal;
-import org.ejbca.core.ejb.config.GlobalConfigurationSession;
 import org.ejbca.core.ejb.hardtoken.HardTokenSession;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSession;
 import org.ejbca.core.ejb.services.ServiceSessionLocal;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.CmsCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.HardTokenEncryptCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.KeyRecoveryCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.OCSPCAServiceInfo;
+import org.ejbca.core.model.ca.caadmin.extendedcaservices.XKMSCAServiceInfo;
 import org.ejbca.core.model.ca.store.CertReqHistory;
 import org.ejbca.core.model.util.EjbLocalHelper;
 import org.ejbca.ui.web.CertificateView;
+import org.ejbca.ui.web.ParameterError;
 import org.ejbca.ui.web.RequestHelper;
 import org.ejbca.ui.web.RevokedInfoView;
 import org.ejbca.ui.web.admin.cainterface.exception.ExcessiveResultsException;
@@ -81,18 +119,31 @@ import org.ejbca.ui.web.admin.configuration.InformationMemory;
  */
 public class CAInterfaceBean implements Serializable {
 
-	private static final long serialVersionUID = 3L;
+    /** Backing object for main page list of CA and CRL statuses. */
+    public class CaCrlStatusInfo {
+        final private String caName;
+        final private boolean caService;
+        final private boolean crlStatus;
+        private CaCrlStatusInfo(final String caName, final boolean caService, final boolean crlStatus) {
+            this.caName = caName;
+            this.caService = caService;
+            this.crlStatus = crlStatus;
+        }
+        public String getCaName() { return caName; }
+        public boolean isCaService() { return caService; }
+        public boolean isCrlStatus() { return crlStatus; }
+    }
 
+	private static final long serialVersionUID = 3L;
+	private static final Logger log = Logger.getLogger(CAInterfaceBean.class);
+	
     public static final int CATOKENTYPE_P12          = 1;
     public static final int CATOKENTYPE_HSM          = 2;
 	public static final int CATOKENTYPE_NULL         = 3;
 
 	private EjbLocalHelper ejbLocalHelper = new EjbLocalHelper();
-
-    private AccessControlSessionLocal authorizationsession;
-    private AccessRuleManagementSessionLocal accessRuleManagementSession;
-    private AccessUserAspectManagerSessionLocal accessUserAspectManagerSession;
-    private CAAdminSession caadminsession;
+    private AccessControlSessionLocal accessControlSession;
+    private CAAdminSessionLocal caadminsession;
     private CaSession caSession;
     private CertificateCreateSessionLocal certcreatesession;
     private CertificateProfileSession certificateProfileSession;
@@ -100,13 +151,12 @@ public class CAInterfaceBean implements Serializable {
     private CertReqHistorySessionLocal certreqhistorysession;
     private CrlStoreSession crlStoreSession;
     private CrlCreateSession crlCreateSession;
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private EndEntityManagementSessionLocal endEntityManagementSession;
     private EndEntityProfileSession endEntityProfileSession;
-    private GlobalConfigurationSession globalconfigurationsession;
     private HardTokenSession hardtokensession;
     private PublisherQueueSession publisherqueuesession;
     private PublisherSessionLocal publishersession;
-    private RevocationSessionLocal revocationSession;
     private ServiceSessionLocal serviceSession;
     private SignSession signsession; 
    
@@ -115,9 +165,10 @@ public class CAInterfaceBean implements Serializable {
     private PublisherDataHandler publisherdatahandler;
 
     private boolean initialized;
-    private AuthenticationToken administrator;
+    private AuthenticationToken authenticationToken;
     private InformationMemory informationmemory;
     private CAInfo cainfo;
+    private EjbcaWebBean ejbcawebbean;
     /** The certification request in binary format */
     transient private byte[] request;
     private Certificate processedcert;
@@ -129,18 +180,16 @@ public class CAInterfaceBean implements Serializable {
 
     // Public methods
     public void initialize(EjbcaWebBean ejbcawebbean) {
-        if(!initialized){
-            this.accessRuleManagementSession = ejbLocalHelper.getAccessRuleManagementSession();
-            this.accessUserAspectManagerSession = ejbLocalHelper.getAccessUserAspectSession();
+        if (!initialized) {
           caSession = ejbLocalHelper.getCaSession();
           certificatesession = ejbLocalHelper.getCertificateStoreSession();
           certreqhistorysession = ejbLocalHelper.getCertReqHistorySession();
           crlStoreSession = ejbLocalHelper.getCrlStoreSession();
           crlCreateSession = ejbLocalHelper.getCrlCreateSession();
+          cryptoTokenManagementSession = ejbLocalHelper.getCryptoTokenManagementSession();
           caadminsession = ejbLocalHelper.getCaAdminSession();
-          authorizationsession = ejbLocalHelper.getAccessControlSession();
+          accessControlSession = ejbLocalHelper.getAccessControlSession();
           endEntityManagementSession = ejbLocalHelper.getEndEntityManagementSession();
-          globalconfigurationsession = ejbLocalHelper.getGlobalConfigurationSession();             
           signsession = ejbLocalHelper.getSignSession();
           certcreatesession = ejbLocalHelper.getCertificateCreateSession();
           hardtokensession = ejbLocalHelper.getHardTokenSession();               
@@ -148,15 +197,14 @@ public class CAInterfaceBean implements Serializable {
           publisherqueuesession = ejbLocalHelper.getPublisherQueueSession();
           certificateProfileSession = ejbLocalHelper.getCertificateProfileSession();
           endEntityProfileSession = ejbLocalHelper.getEndEntityProfileSession(); 
-          revocationSession = ejbLocalHelper.getRevocationSession();
           serviceSession = ejbLocalHelper.getServiceSession();
           this.informationmemory = ejbcawebbean.getInformationMemory();
-          this.administrator = ejbcawebbean.getAdminObject();
+          this.authenticationToken = ejbcawebbean.getAdminObject();
+          this.ejbcawebbean = ejbcawebbean;
             
-          certificateprofiles = new CertificateProfileDataHandler(administrator, authorizationsession, caSession, certificateProfileSession, informationmemory);
-            cadatahandler = new CADataHandler(administrator, accessRuleManagementSession, accessUserAspectManagerSession,caadminsession, caSession, endEntityProfileSession, endEntityManagementSession, globalconfigurationsession,
-                    certificateProfileSession, revocationSession, ejbcawebbean);
-          publisherdatahandler = new PublisherDataHandler(administrator, publishersession, authorizationsession, caadminsession, certificateProfileSession,  informationmemory);
+          certificateprofiles = new CertificateProfileDataHandler(authenticationToken, accessControlSession, caSession, certificateProfileSession, informationmemory);
+          cadatahandler = new CADataHandler(authenticationToken, ejbLocalHelper, ejbcawebbean);
+          publisherdatahandler = new PublisherDataHandler(authenticationToken, publishersession, accessControlSession, caadminsession, certificateProfileSession,  informationmemory);
           isUniqueIndex = certcreatesession.isUniqueCertificateSerialNumberIndex();
           initialized =true;
         }
@@ -168,7 +216,7 @@ public class CAInterfaceBean implements Serializable {
 
     public CertificateView[] getCACertificates(int caid) {
     	try {
-    		final Collection<Certificate> chain = signsession.getCertificateChain(administrator, caid);
+    		final Collection<Certificate> chain = signsession.getCertificateChain(authenticationToken, caid);
     		final CertificateView[] returnval = new CertificateView[chain.size()];
     		final Iterator<Certificate> iter = chain.iterator();
     		int i=0;
@@ -206,7 +254,45 @@ public class CAInterfaceBean implements Serializable {
 
     public Collection<Integer> getAuthorizedCAs(){
       return informationmemory.getAuthorizedCAIds();
-    }  
+    }
+    
+    public List<CaCrlStatusInfo> getAuthorizedInternalCaCrlStatusInfos() throws Exception {
+        final List<CaCrlStatusInfo> ret = new ArrayList<CaCrlStatusInfo>();
+        final Collection<Integer> caIds = getAuthorizedCAs();
+        for (final Integer caId : caIds) {
+            final CAInfoView cainfo = getCAInfo(caId.intValue());
+            final int caStatus = cainfo.getCAInfo().getStatus();
+            if (cainfo == null || caStatus == CAConstants.CA_EXTERNAL) {
+                continue;
+            }
+            final String caName = cainfo.getCAInfo().getName();
+            boolean caTokenStatus = false;
+            final int cryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
+            try {
+                caTokenStatus = cryptoTokenManagementSession.isCryptoTokenStatusActive(authenticationToken, cryptoTokenId);
+            } catch (Exception e) {
+                final String msg = authenticationToken.toString() + " failed to load CryptoToken status for " + cryptoTokenId;
+                if (log.isDebugEnabled()) {
+                    log.debug(msg, e);
+                } else {
+                    log.info(msg);
+                }
+            }
+            final boolean caService = (caStatus == CAConstants.CA_ACTIVE) && caTokenStatus;
+            boolean crlStatus = true;
+            final Date now = new Date();
+            final CRLInfo crlinfo = getLastCRLInfo(cainfo.getCAInfo(), false);
+            if ( (crlinfo != null) && (now.after(crlinfo.getExpireDate())) ) {
+                crlStatus = false;
+            }
+            final CRLInfo deltacrlinfo = getLastCRLInfo(cainfo.getCAInfo(), true);
+            if ( (deltacrlinfo != null) && (now.after(deltacrlinfo.getExpireDate())) ) {
+                crlStatus = false;
+            }
+            ret.add(new CaCrlStatusInfo(caName, caService, crlStatus));
+        }
+        return ret;
+    }
 
     public TreeMap<String, Integer> getEditCertificateProfileNames() {
       return informationmemory.getEditCertificateProfileNames();
@@ -387,7 +473,7 @@ public class CAInterfaceBean implements Serializable {
       
     public void createCRL(String issuerdn) throws CryptoTokenOfflineException, CAOfflineException  {      
         try {
-            crlCreateSession.forceCRL(administrator, issuerdn.hashCode());
+            crlCreateSession.forceCRL(authenticationToken, issuerdn.hashCode());
         } catch (CADoesntExistsException e) {
             throw new RuntimeException(e);
         } catch (AuthorizationDeniedException e) {
@@ -397,7 +483,7 @@ public class CAInterfaceBean implements Serializable {
 
     public void createDeltaCRL(String issuerdn) throws CryptoTokenOfflineException, CAOfflineException {      
         try {
-            crlCreateSession.forceDeltaCRL(administrator, issuerdn.hashCode());
+            crlCreateSession.forceDeltaCRL(authenticationToken, issuerdn.hashCode());
         } catch (CADoesntExistsException e) {
             throw new RuntimeException(e);
         } catch (AuthorizationDeniedException e) {
@@ -457,10 +543,12 @@ public class CAInterfaceBean implements Serializable {
       return cadatahandler.getCAInfo(caid);   
     }    
     
+    @Deprecated
     public void saveRequestInfo(CAInfo cainfo){
     	this.cainfo = cainfo;
     }
     
+    @Deprecated
     public CAInfo getRequestInfo(){
     	return this.cainfo;
     }
@@ -477,7 +565,7 @@ public class CAInterfaceBean implements Serializable {
 		String returnval = null;	
 		if(request != null ){
 			returnval = RequestHelper.BEGIN_CERTIFICATE_REQUEST_WITH_NL
-			+ new String(Base64.encode(request))
+			+ new String(Base64.encode(request, true))
 			+ RequestHelper.END_CERTIFICATE_REQUEST_WITH_NL;  
 		}      
 		return returnval;
@@ -491,10 +579,18 @@ public class CAInterfaceBean implements Serializable {
 		return this.processedcert;
 	}    
 
+    public byte[] getLinkCertificate(final int caId) {
+        try {
+            return caadminsession.getLatestLinkCertificate(caId);
+        } catch (CADoesntExistsException e) {
+            return null;
+        }
+    }    
+
 	public String getProcessedCertificateAsString() throws Exception{
 		String returnval = null;	
 		if(request != null ){
-			byte[] b64cert = Base64.encode(this.processedcert.getEncoded());
+			byte[] b64cert = Base64.encode(this.processedcert.getEncoded(), true);
 			returnval = RequestHelper.BEGIN_CERTIFICATE_WITH_NL;
 			returnval += new String(b64cert);
 			returnval += RequestHelper.END_CERTIFICATE_WITH_NL;  	    
@@ -540,7 +636,7 @@ public class CAInterfaceBean implements Serializable {
 			final CertificateProfile certprofile = certificateProfileSession.getCertificateProfile(certificateProfileId);
 			if (certprofile != null) {
 				if (certprofile.getPublisherList().size() > 0) {
-					if (publishersession.storeCertificate(administrator, certprofile.getPublisherList(), certificatedata.getCertificate(), username, password, dn,
+					if (publishersession.storeCertificate(authenticationToken, certprofile.getPublisherList(), certificatedata.getCertificate(), username, password, dn,
 							certinfo.getCAFingerprint(), certinfo.getStatus() , certinfo.getType(), certinfo.getRevocationDate().getTime(), certinfo.getRevocationReason(),
 							certinfo.getTag(), certificateProfileId, certinfo.getUpdateTime().getTime(), ei)) {
 						returnval = "CERTREPUBLISHEDSUCCESS";
@@ -589,4 +685,603 @@ public class CAInterfaceBean implements Serializable {
 	public boolean isUniqueIndexForSerialNumber() {
 		return this.isUniqueIndex;
 	}
+
+	//
+	// Methods from editcas.jsp refactoring
+	//
+
+	public boolean actionCreateCaMakeRequest(String caName, String signatureAlgorithm,
+	        String extendedServiceSignatureKeySpec,
+	        String keySequenceFormat, String keySequence, int catype, String subjectdn,
+	        String certificateProfileIdString, String signedByString, String description, String validityString,
+	        String approvalSettingValues, String numofReqApprovalsParam, boolean finishUser, boolean isDoEnforceUniquePublicKeys,
+	        boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
+	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String subjectaltname,
+	        String policyid, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical,
+            long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod,
+            String availablePublisherValues, boolean usecrlnumber, boolean crlnumbercritical,
+            String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator,
+            String authorityInformationAccessString, String caDefinedFreshestCrlString, boolean useutf8policytext,
+            boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
+            boolean crldistpointoncrlcritical, boolean serviceOcspActive, boolean serviceXkmsActive,
+            boolean serviceCmsActive, String sharedCmpRaSecret, boolean buttonCreateCa, boolean buttonMakeRequest,
+            String cryptoTokenIdString, String keyAliasCertSignKey, String keyAliasCrlSignKey, String keyAliasDefaultKey,
+            String keyAliasHardTokenEncryptKey, String keyAliasKeyEncryptKey, String keyAliasKeyTestKey,
+            byte[] fileBuffer) throws Exception {
+
+	    boolean illegaldnoraltname = false;
+
+	    final int cryptoTokenId = Integer.parseInt(cryptoTokenIdString);
+	    final List<String> keyPairAliases = cryptoTokenManagementSession.getKeyPairAliases(authenticationToken, cryptoTokenId);
+	    if (!keyPairAliases.contains(keyAliasDefaultKey)) {
+	        log.info(authenticationToken.toString() + " attempted to createa a CA with a non-existing defaultKey alias: "+keyAliasDefaultKey);
+	        throw new Exception("Invalid default key alias!");
+	    }
+	    final String[] suppliedAliases = {keyAliasCertSignKey,keyAliasCrlSignKey,keyAliasHardTokenEncryptKey,keyAliasHardTokenEncryptKey,keyAliasKeyEncryptKey,keyAliasKeyTestKey};
+        for (final String currentSuppliedAlias : suppliedAliases) {
+            if (currentSuppliedAlias.length()>0 && !keyPairAliases.contains(currentSuppliedAlias)) {
+                log.info(authenticationToken.toString() + " attempted to createa a CA with a non-existing key alias: "+currentSuppliedAlias);
+                throw new Exception("Invalid key alias!");
+            }
+        }
+        final Properties caTokenProperties = new Properties();
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, keyAliasDefaultKey);
+        if (keyAliasCertSignKey.length()>0) {
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, keyAliasCertSignKey);
+        }
+        if (keyAliasCrlSignKey.length()>0) {
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, keyAliasCrlSignKey);
+        }
+        if (keyAliasHardTokenEncryptKey.length()>0) {
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, keyAliasHardTokenEncryptKey);
+        }
+        if (keyAliasKeyEncryptKey.length()>0) {
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, keyAliasKeyEncryptKey);
+        }
+        if (keyAliasKeyTestKey.length()>0) {
+            caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, keyAliasKeyTestKey);
+        }
+	    final CAToken catoken = new CAToken(cryptoTokenId, caTokenProperties);
+        if (signatureAlgorithm == null) {
+            throw new Exception("No signature algorithm supplied!");  
+        }
+        catoken.setSignatureAlgorithm(signatureAlgorithm);
+        catoken.setEncryptionAlgorithm(AlgorithmTools.getEncSigAlgFromSigAlg(signatureAlgorithm));
+
+        if (extendedServiceSignatureKeySpec == null || extendedServiceSignatureKeySpec.length()==0) {
+            throw new Exception("No key specification supplied.");
+        }
+        String extendedServiceSignatureKeyType = AlgorithmConstants.KEYALGORITHM_RSA;
+        try {
+            Integer.parseInt(extendedServiceSignatureKeySpec);
+        } catch (NumberFormatException e) {
+            if (extendedServiceSignatureKeySpec.startsWith("DSA")) {
+                extendedServiceSignatureKeyType = AlgorithmConstants.KEYALGORITHM_DSA;
+            } else {
+                extendedServiceSignatureKeyType = AlgorithmConstants.KEYALGORITHM_ECDSA;
+            }
+            
+        }
+        if (keySequenceFormat==null) {
+            catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        } else {
+            catoken.setKeySequenceFormat(Integer.parseInt(keySequenceFormat));
+        }
+        if (keySequence==null) {
+            catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        } else {
+            catoken.setKeySequence(keySequence);
+        }
+	    try {
+	        CertTools.stringToBcX500Name(subjectdn);
+	    } catch (Exception e) {
+	        illegaldnoraltname = true;
+	    }
+        int certprofileid = (certificateProfileIdString==null ? 0 : Integer.parseInt(certificateProfileIdString));
+	    int signedby = (signedByString==null ? 0 : Integer.parseInt(signedByString));
+
+	    if (description == null) {
+            description = "";
+	    }
+
+	    final long validity = ValidityDate.encode(validityString);
+	    if (validity<0) {
+	        throw new ParameterError(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+	    }
+
+	    if (catoken != null && catype != 0 && subjectdn != null && caName != null && signedby != 0) {
+	        // Approvals is generic for all types of CAs
+	        final ArrayList<Integer> approvalsettings = new ArrayList<Integer>();
+	        if (approvalSettingValues != null) {
+	            for (int i=0; i<approvalSettingValues.split(";").length; i++) {
+	                approvalsettings.add(Integer.valueOf(approvalSettingValues.split(";")[i]));
+	            }
+	        }
+            final int numofreqapprovals = (numofReqApprovalsParam==null ? 1 : Integer.parseInt(numofReqApprovalsParam));
+
+	        if (catype == CAInfo.CATYPE_X509) {
+	            // Create a X509 CA
+	            if (subjectaltname == null) {
+                    subjectaltname = ""; 
+	            } else {
+	                if (!subjectaltname.trim().equals("")) {
+	                    final DNFieldExtractor subtest = new DNFieldExtractor(subjectaltname,DNFieldExtractor.TYPE_SUBJECTALTNAME);                   
+	                    if (subtest.isIllegal() || subtest.existsOther()) {
+	                        illegaldnoraltname = true;
+	                    }
+	                }
+	            }
+	            /* Process certificate policies. */
+	            final ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>();
+	            if (!(policyid == null || policyid.trim().equals(""))) {
+	                final String[] str = policyid.split("\\s+");
+	                if (str.length > 1) {
+	                    policies.add(new CertificatePolicy(str[0], CertificatePolicy.id_qt_cps, str[1]));
+	                } else {
+	                    policies.add(new CertificatePolicy((policyid.trim()),null,null));
+	                }
+	            }
+                final CertificateProfile certprof = getCertificateProfile(certprofileid);
+	            if ((certprof.getCertificatePolicies().size() > 0) && (certprof.getCertificatePolicies() != null)) {
+	                policies.addAll(certprof.getCertificatePolicies());
+	            }
+
+	            final ArrayList<Integer> crlpublishers = new ArrayList<Integer>(); 
+	            if (availablePublisherValues != null) {
+	                for (final String availablePublisherId : availablePublisherValues.split(";")) {
+	                    crlpublishers.add(Integer.valueOf(availablePublisherId));
+	                }
+	            }
+	            final List<String> authorityInformationAccess = new ArrayList<String>();
+	            authorityInformationAccess.add(authorityInformationAccessString);
+	            String cadefinedfreshestcrl = "";
+	            if (caDefinedFreshestCrlString != null) {
+	                cadefinedfreshestcrl = caDefinedFreshestCrlString;
+	            }
+	            final int ocspactive = serviceOcspActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
+	            final int xkmsactive = serviceXkmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
+	            final int cmsactive = serviceCmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
+
+	            if (crlperiod != 0 && !illegaldnoraltname) {
+	                if (buttonCreateCa) {           
+	                    List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+                        // Create and active OSCP CA Service.
+	                    extendedcaservices.add(new OCSPCAServiceInfo(ocspactive));
+	                    extendedcaservices.add(
+	                            new XKMSCAServiceInfo(xkmsactive,
+	                                    "CN=XKMSCertificate, " + subjectdn,
+	                                    "",
+	                                    extendedServiceSignatureKeySpec,
+	                                    extendedServiceSignatureKeyType));
+	                    extendedcaservices.add(
+	                            new CmsCAServiceInfo(cmsactive,
+	                                    "CN=CMSCertificate, " + subjectdn,
+	                                    "",
+	                                    extendedServiceSignatureKeySpec,
+	                                    extendedServiceSignatureKeyType));
+	                    extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+	                    extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+	                    X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
+	                            certprofileid, validity, 
+	                            null, catype, signedby,
+	                            null, catoken, description, -1, null,
+	                            policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+	                            useauthoritykeyidentifier, 
+	                            authoritykeyidentifiercritical,
+	                            usecrlnumber, 
+	                            crlnumbercritical, 
+	                            defaultcrldistpoint,
+	                            defaultcrlissuer,
+	                            defaultocsplocator, 
+	                            authorityInformationAccess,
+	                            cadefinedfreshestcrl,
+	                            finishUser, extendedcaservices,
+	                            useutf8policytext,
+	                            approvalsettings,
+	                            numofreqapprovals,
+	                            useprintablestringsubjectdn,
+	                            useldapdnorder,
+	                            usecrldistpointoncrl,
+	                            crldistpointoncrlcritical,
+	                            true,
+	                            isDoEnforceUniquePublicKeys,
+	                            isDoEnforceUniqueDistinguishedName,
+	                            isDoEnforceUniqueSubjectDNSerialnumber,
+	                            useCertReqHistory,
+	                            useUserStorage,
+	                            useCertificateStorage,
+	                            sharedCmpRaSecret);
+	                    cadatahandler.createCA((CAInfo) x509cainfo);
+	                }
+
+	                if (buttonMakeRequest) {
+	                    List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+                        // Create and OSCP CA Service.
+	                    extendedcaservices.add(new OCSPCAServiceInfo(ocspactive));
+	                    extendedcaservices.add(
+	                            new XKMSCAServiceInfo(xkmsactive,
+	                                    "CN=XKMSCertificate, " + subjectdn,
+	                                    "",
+	                                    extendedServiceSignatureKeySpec,
+	                                    extendedServiceSignatureKeyType));
+	                    extendedcaservices.add(
+	                            new CmsCAServiceInfo(cmsactive,
+	                                    "CN=CMSCertificate, " + subjectdn,
+	                                    "",
+	                                    extendedServiceSignatureKeySpec,
+	                                    extendedServiceSignatureKeyType));
+	                    extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+	                    extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
+	                    X509CAInfo x509cainfo = new X509CAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(), subjectaltname,
+	                            certprofileid, validity,
+	                            null, catype, CAInfo.SIGNEDBYEXTERNALCA,
+	                            null, catoken, description, -1, null, 
+	                            policies, crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+	                            useauthoritykeyidentifier, 
+	                            authoritykeyidentifiercritical,
+	                            usecrlnumber, 
+	                            crlnumbercritical, 
+	                            defaultcrldistpoint,
+	                            defaultcrlissuer,
+	                            defaultocsplocator, 
+	                            authorityInformationAccess,
+	                            cadefinedfreshestcrl,
+	                            finishUser, extendedcaservices,
+	                            useutf8policytext,
+	                            approvalsettings,
+	                            numofreqapprovals,
+	                            useprintablestringsubjectdn,
+	                            useldapdnorder,
+	                            usecrldistpointoncrl,
+	                            crldistpointoncrlcritical,
+	                            true,
+	                            isDoEnforceUniquePublicKeys,
+	                            isDoEnforceUniqueDistinguishedName,
+	                            isDoEnforceUniqueSubjectDNSerialnumber,
+	                            useCertReqHistory,
+	                            useUserStorage,
+	                            useCertificateStorage,
+	                            null);
+	                    saveRequestInfo(x509cainfo);                
+	                }
+	            }                          
+	        }
+
+	        if (catype == CAInfo.CATYPE_CVC) {
+	            // Only default values for these that are not used
+	            crlperiod = 2400;
+	            crlIssueInterval = 0;
+	            crlOverlapTime = 0;
+	            deltacrlperiod = 0;
+	            List<Integer> crlpublishers = new ArrayList<Integer>(); 
+	            if(crlperiod != 0 && !illegaldnoraltname){
+	                // A CVC CA does not have any of the external services OCSP, XKMS, CMS
+	                List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+	                if (buttonMakeRequest) {
+	                    signedby = CAInfo.SIGNEDBYEXTERNALCA;
+	                }
+	                // Create the CAInfo to be used for either generating the whole CA or making a request
+	                CVCCAInfo cvccainfo = new CVCCAInfo(subjectdn, caName, CAConstants.CA_ACTIVE, new Date(),
+	                        certprofileid, validity, 
+	                        null, catype, signedby,
+	                        null, catoken, description, -1, null,
+	                        crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+	                        finishUser, extendedcaservices,
+	                        approvalsettings,
+	                        numofreqapprovals,
+	                        true,
+	                        isDoEnforceUniquePublicKeys,
+	                        isDoEnforceUniqueDistinguishedName,
+	                        isDoEnforceUniqueSubjectDNSerialnumber,
+	                        useCertReqHistory,
+	                        useUserStorage,
+	                        useCertificateStorage);
+	                if (buttonCreateCa) {
+	                    cadatahandler.createCA(cvccainfo);
+	                } else if (buttonMakeRequest) {
+	                    saveRequestInfo(cvccainfo);                
+	                }
+	            }
+	        }
+	    }
+        if (buttonMakeRequest && !illegaldnoraltname) {
+            CAInfo cainfo = getRequestInfo();
+            cadatahandler.createCA(cainfo);                           
+            int caid = cainfo.getCAId();
+            try {
+                byte[] certreq = cadatahandler.makeRequest(caid, fileBuffer, catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+                saveRequestData(certreq);
+            } catch (CryptoTokenOfflineException e) {
+                cadatahandler.removeCA(caid);
+            }
+        }
+	    return illegaldnoraltname;
+	}
+
+	public CAInfo actionEditCa(int caid, String caname, int catype,
+	        String keySequenceFormat, String keySequence, String description, String validityString,
+	        long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, boolean finishUser,
+	        boolean isDoEnforceUniquePublicKeys, boolean isDoEnforceUniqueDistinguishedName, boolean isDoEnforceUniqueSubjectDNSerialnumber,
+	        boolean useCertReqHistory, boolean useUserStorage, boolean useCertificateStorage, String approvalSettingValues, String numofReqApprovalsParam,
+	        String availablePublisherValues, boolean useauthoritykeyidentifier, boolean authoritykeyidentifiercritical, boolean usecrlnumber,
+	        boolean crlnumbercritical, String defaultcrldistpoint, String defaultcrlissuer, String defaultocsplocator, String authorityInformationAccessParam,
+	        String caDefinedFreshestCrl, boolean useutf8policytext, boolean useprintablestringsubjectdn, boolean useldapdnorder, boolean usecrldistpointoncrl,
+	        boolean crldistpointoncrlcritical, boolean serviceOcspActive, boolean serviceXkmsActive, boolean serviceCmsActive, String sharedCmpRaSecret
+	        ) throws Exception {
+        // We need to pick up the old CATokenInfo, so we don't overwrite with default values when we save the CA further down
+        CAInfoView infoView = cadatahandler.getCAInfo(caid);  
+        CAToken catoken = infoView.getCAToken();
+        if (catoken == null) {
+            catoken = new CAToken(caid, new Properties());
+        }
+        if (keySequenceFormat==null) {
+            catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        } else {
+            catoken.setKeySequenceFormat(Integer.parseInt(keySequenceFormat));
+        }
+        if (keySequence==null) {
+            catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        } else {
+            catoken.setKeySequence(keySequence);
+        }
+        if (description == null) {
+            description = "";
+        }
+        final long validity = ValidityDate.encode(validityString);
+        if (validity<0) {
+            throw new ParameterError(ejbcawebbean.getText("INVALIDVALIDITYORCERTEND"));
+        }
+        if (caid != 0  && catype !=0) {
+            // First common info for both X509 CAs and CVC CAs
+           CAInfo cainfo = null;
+           final ArrayList<Integer> approvalsettings = new ArrayList<Integer>();
+           if (approvalSettingValues != null) {
+               for (int i=0; i<approvalSettingValues.split(";").length; i++) {
+                   approvalsettings.add(Integer.valueOf(approvalSettingValues.split(";")[i]));
+               }
+           }
+           final int numofreqapprovals = (numofReqApprovalsParam==null ? 1 : Integer.parseInt(numofReqApprovalsParam));
+           final ArrayList<Integer> crlpublishers = new ArrayList<Integer>(); 
+           if (availablePublisherValues != null) {
+               for (final String availablePublisherId : availablePublisherValues.split(";")) {
+                   crlpublishers.add(Integer.valueOf(availablePublisherId));
+               }
+           }
+           // Info specific for X509 CA
+           if (catype == CAInfo.CATYPE_X509) {
+               final List<String> authorityInformationAccess = new ArrayList<String>();
+               authorityInformationAccess.add(authorityInformationAccessParam);
+               final String cadefinedfreshestcrl = (caDefinedFreshestCrl==null ? "" : caDefinedFreshestCrl);
+               // Create extended CA Service updatedata.
+               final int active = serviceOcspActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
+               final int xkmsactive = serviceXkmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
+               final int cmsactive = serviceCmsActive ? ExtendedCAServiceInfo.STATUS_ACTIVE : ExtendedCAServiceInfo.STATUS_INACTIVE;
+               final ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+               extendedcaservices.add(new OCSPCAServiceInfo(active));    
+               extendedcaservices.add(new XKMSCAServiceInfo(xkmsactive, false)); 
+               extendedcaservices.add(new CmsCAServiceInfo(cmsactive, false)); 
+               // No need to add the HardTokenEncrypt or Keyrecovery extended service here, because they are only "updated" in EditCA, and there
+               // is not need to update them.
+               cainfo = new X509CAInfo(caid, validity,
+                       catoken, description, 
+                       crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+                       useauthoritykeyidentifier, 
+                       authoritykeyidentifiercritical,
+                       usecrlnumber, 
+                       crlnumbercritical, 
+                       defaultcrldistpoint,
+                       defaultcrlissuer,
+                       defaultocsplocator, 
+                       authorityInformationAccess,
+                       cadefinedfreshestcrl,
+                       finishUser,extendedcaservices,
+                       useutf8policytext,
+                       approvalsettings,
+                       numofreqapprovals,
+                       useprintablestringsubjectdn,
+                       useldapdnorder,
+                       usecrldistpointoncrl,
+                       crldistpointoncrlcritical,
+                       true,
+                       isDoEnforceUniquePublicKeys,
+                       isDoEnforceUniqueDistinguishedName,
+                       isDoEnforceUniqueSubjectDNSerialnumber,
+                       useCertReqHistory,
+                       useUserStorage,
+                       useCertificateStorage,
+                       sharedCmpRaSecret);
+           }
+           // Info specific for CVC CA
+           if (catype == CAInfo.CATYPE_CVC) {
+               // Edit CVC CA data                            
+               // A CVC CA does not have any of the external services OCSP, XKMS, CMS
+               final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+               // Create the CAInfo to be used for either generating the whole CA or making a request
+               cainfo = new CVCCAInfo(caid, validity, 
+                       catoken, description,
+                       crlperiod, crlIssueInterval, crlOverlapTime, deltacrlperiod, crlpublishers, 
+                       finishUser, extendedcaservices,
+                       approvalsettings,
+                       numofreqapprovals,
+                       true,
+                       isDoEnforceUniquePublicKeys,
+                       isDoEnforceUniqueDistinguishedName,
+                       isDoEnforceUniqueSubjectDNSerialnumber,
+                       useCertReqHistory,
+                       useUserStorage,
+                       useCertificateStorage);
+           }
+           return cainfo;
+        }
+        return null;
+	}
+
+	public List<Entry<String, String>> getAvailableCryptoTokens(final String caSigingAlgorithm) throws AuthorizationDeniedException, KeyStoreException, CryptoTokenOfflineException {
+	    final List<Entry<String, String>> availableCryptoTokens = new ArrayList<Entry<String, String>>();
+	    if (caSigingAlgorithm != null && caSigingAlgorithm.length()>0) {
+	        final List<CryptoTokenInfo> cryptoTokenInfos = cryptoTokenManagementSession.getCryptoTokenInfos(authenticationToken);
+            for (final CryptoTokenInfo cryptoTokenInfo : cryptoTokenInfos) {
+                // Make sure we may use it
+                if (accessControlSession.isAuthorizedNoLogging(authenticationToken, CryptoTokenRules.USE.resource() + '/' + cryptoTokenInfo.getCryptoTokenId())
+                        && cryptoTokenInfo.isActive()) {
+	                final int cryptoTokenId = cryptoTokenInfo.getCryptoTokenId();
+	                // Fetch a list of all keys and their specs
+	                final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
+	                // Only allow tokens with at least one keypair
+	                if (cryptoTokenKeyPairInfos.size()>0) {
+	                    for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
+	                        String requiredKeyAlgorithm = AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigingAlgorithm);
+	                        if (requiredKeyAlgorithm.equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+	                            // We have at least on key in this token with the right key algorithm mathing the CA's singing algorithm, so add the token!
+	                            availableCryptoTokens.add(new AbstractMap.SimpleEntry<String,String>(Integer.toString(cryptoTokenId), cryptoTokenInfo.getName()));
+	                            break; // This token is fine, proceed with next token
+	                        }
+	                    }
+	                }
+	            }
+	        }
+	    }
+	    return availableCryptoTokens;
+	}
+
+	public List<String> getAvailableCryptoTokenAliases(int cryptoTokenId, final String caSigingAlgorithm) throws KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException {
+        final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
+        final List<String> aliases = new ArrayList<String>();
+        for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
+            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(caSigingAlgorithm).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+                aliases.add(cryptoTokenKeyPairInfo.getAlias());
+            }
+        }
+        return aliases;
+	}
+
+	public boolean isCryptoTokenActive(final int cryptoTokenId) throws AuthorizationDeniedException {
+	    return cryptoTokenManagementSession.isCryptoTokenStatusActive(authenticationToken, cryptoTokenId);
+	}
+	
+    public boolean isCryptoTokenPresent(final int cryptoTokenId) throws AuthorizationDeniedException {
+        return cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId) != null;
+    }
+    
+	public String getCryptoTokenName(final int cryptoTokenId) throws AuthorizationDeniedException {
+	    final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
+	    if (cryptoTokenInfo == null) {
+	        return "CryptoToken " + cryptoTokenId + " not found.";
+	    }
+	    return cryptoTokenInfo.getName();
+	}
+	
+	public boolean isCaExportable(CAInfo caInfo) throws AuthorizationDeniedException {
+	    boolean ret = false;
+	    final int caInfoStatus = caInfo.getStatus();
+	    if (caInfoStatus != CAConstants.CA_EXTERNAL && caInfoStatus != CAConstants.CA_WAITING_CERTIFICATE_RESPONSE) {
+	        final int cryptoTokenId = caInfo.getCAToken().getCryptoTokenId();
+	        final CryptoTokenInfo cryptoTokenInfo = cryptoTokenManagementSession.getCryptoTokenInfo(authenticationToken, cryptoTokenId);
+	        if (cryptoTokenInfo!=null) {
+	            ret = (SoftCryptoToken.class.getSimpleName().equals(cryptoTokenInfo.getType())) && cryptoTokenInfo.isAllowExportPrivateKey();
+	        }
+	    }
+	    return ret;
+	}
+
+    public List<String> getAvailableCryptoTokenEncryptionAliases(int cryptoTokenId, final String caSigingAlgorithm) throws KeyStoreException, CryptoTokenOfflineException, AuthorizationDeniedException {
+        final List<KeyPairInfo> cryptoTokenKeyPairInfos = cryptoTokenManagementSession.getKeyPairInfos(authenticationToken, cryptoTokenId);
+        final List<String> aliases = new ArrayList<String>();
+        for (final KeyPairInfo cryptoTokenKeyPairInfo : cryptoTokenKeyPairInfos) {
+            if (AlgorithmTools.getKeyAlgorithmFromSigAlg(AlgorithmTools.getEncSigAlgFromSigAlg(caSigingAlgorithm)).equals(cryptoTokenKeyPairInfo.getKeyAlgorithm())) {
+                aliases.add(cryptoTokenKeyPairInfo.getAlias());
+            }
+        }
+        return aliases;
+    }
+    
+	public List<Entry<String,String>> getAvailableCaCertificateProfiles() {
+	    final int[] types = { CertificateConstants.CERTTYPE_ROOTCA, CertificateConstants.CERTTYPE_SUBCA };
+        final Map<Integer, String> idToNameMap = certificateProfileSession.getCertificateProfileIdToNameMap();
+        final List<Entry<String,String>> ret = new ArrayList<Entry<String,String>>();
+	    for (int type : types) {
+	        final Collection<Integer> ids = certificateProfileSession.getAuthorizedCertificateProfileIds(type, caSession.getAvailableCAs(authenticationToken));
+	        for (final Integer id : ids) {
+	            ret.add(new SimpleEntry<String,String>(id.toString(), (type==CertificateConstants.CERTTYPE_ROOTCA ? "(RootCAs) " : "(SubCAs) ") + idToNameMap.get(id)));
+	        }
+	    }
+        return ret;
+	}
+
+    public List<Entry<String,String>> getAvailbleKeySpecs() {
+        final List<Entry<String,String>> ret = new ArrayList<Entry<String,String>>();
+        // Legacy idea: Never use larger keys than 2048 bit RSA for CMS and XKMS signing
+        final int[] SIZES_RSA = {1024, 1536, 2048, /*4096, 8192*/};
+        final int[] SIZES_DSA = {1024};
+        for (int size : SIZES_RSA) {
+            ret.add(new SimpleEntry<String,String>(String.valueOf(size), "RSA "+String.valueOf(size)));
+        }
+        for (int size : SIZES_DSA) {
+            ret.add(new SimpleEntry<String,String>("DSA"+String.valueOf(size), "DSA "+String.valueOf(size)));
+        }
+        @SuppressWarnings("unchecked")
+        final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
+        while (ecNamedCurves.hasMoreElements()) {
+            final String ecNamedCurve = ecNamedCurves.nextElement();
+            ret.add(new SimpleEntry<String,String>(ecNamedCurve, "ECDSA "+ecNamedCurve));
+        }
+        /* TODO: Will be supported..
+        @SuppressWarnings("unchecked")
+        final Enumeration<String> ecGostNamedCurves = ECGOST3410NamedCurveTable.getNames();
+        while (ecGostNamedCurves.hasMoreElements()) {
+            final String ecGostNamedCurve = ecGostNamedCurves.nextElement();
+            ret.add(new SimpleEntry<String,String>(ecGostNamedCurve, "ECGOST "+ecGostNamedCurve));
+        }
+        */
+        return ret;
+    }
+    
+    public boolean createAuthCertSignRequest(int caid, byte[] request) throws CADoesntExistsException, AuthorizationDeniedException, CertPathValidatorException, CryptoTokenOfflineException {
+        if (request != null) {
+            byte[] signedreq = cadatahandler.createAuthCertSignRequest(caid, request);
+            saveRequestData(signedreq);
+            return true;
+        }
+        return false;
+    }
+    
+    public byte[] parseRequestParameters(HttpServletRequest request, Map<String, String> requestMap) throws IOException {
+        byte[] fileBuffer = null;
+        try {
+            if (FileUpload.isMultipartContent(request)) {
+                final DiskFileUpload upload = new DiskFileUpload();
+                upload.setSizeMax(60000);                   
+                upload.setSizeThreshold(59999);
+                final List<FileItem> items = upload.parseRequest(request);     
+                for (final FileItem item : items) {
+                    if (item.isFormField()) {
+                        final String fieldName = item.getFieldName();
+                        final String currentValue = requestMap.get(fieldName);
+                        if (currentValue != null) {
+                            requestMap.put(fieldName, currentValue + ";" + item.getString("UTF8"));
+                        } else {
+                            requestMap.put(fieldName, item.getString("UTF8"));
+                        }
+                    } else {
+                        final InputStream file = item.getInputStream();
+                        byte[] fileBufferTmp = FileTools.readInputStreamtoBuffer(file);
+                        if (fileBuffer == null && fileBufferTmp.length > 0) {
+                            fileBuffer = fileBufferTmp;
+                        }
+                    }
+                } 
+            } else {
+                @SuppressWarnings("unchecked")
+                final Set<String> keySet = request.getParameterMap().keySet();
+                for (final String key : keySet) {
+                    requestMap.put(key, request.getParameter(key));
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        } catch (FileUploadException e) {
+            throw new IOException(e);
+        }
+        return fileBuffer;
+    }
 }

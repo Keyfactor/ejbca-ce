@@ -38,6 +38,7 @@ import javax.persistence.PersistenceContext;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.Extensions;
+import org.bouncycastle.asn1.x509.X509Extensions;
 import org.cesecore.CesecoreException;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
@@ -69,8 +70,9 @@ import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.EjbcaException;
@@ -116,6 +118,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
     private PublisherSessionLocal publisherSession;
     @EJB
     private CrlStoreSessionLocal crlStoreSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     /** Internal localization of logs and errors */
     private static final InternalEjbcaResources intres = InternalEjbcaResources.getInstance();
@@ -183,7 +187,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             log.trace(">createPKCS7(" + caId + ", " + CertTools.getIssuerDN(cert) + ")");
         }
         CA ca = caSession.getCA(admin, caId);
-        byte[] returnval = ca.createPKCS7(cert, includeChain);
+        final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+        byte[] returnval = ca.createPKCS7(cryptoToken, cert, includeChain);
         if (log.isTraceEnabled()) {
             log.trace("<createPKCS7()");
         }
@@ -243,7 +248,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         }
         try {
             // See if we need some key material to decrypt request
-            decryptAndVerify(req, ca);
+            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+            decryptAndVerify(cryptoToken, req, ca);
             if (ca.isUseUserStorage() && req.getUsername() == null) {
                 String msg = intres.getLocalizedMessage("signsession.nouserinrequest", req.getRequestDN());
                 throw new SignRequestException(msg);
@@ -369,17 +375,16 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         CertificateResponseMessage ret = null;
         final CA ca = getCAFromRequest(admin, req, true);
         try {
-            decryptAndVerify(req, ca);
-            //Create the response message with all nonces and checks etc
             final CAToken catoken = ca.getCAToken();
-            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken
-                    .getCryptoToken().getSignProviderName());
+            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
+            decryptAndVerify(cryptoToken, req, ca);
+            //Create the response message with all nonces and checks etc
+            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+                    cryptoToken.getSignProviderName());
             ret.setStatus(ResponseStatus.FAILURE);
             ret.setFailInfo(failInfo);
             ret.setFailText(failText);
             ret.create();
-        } catch (IllegalCryptoTokenException e) {
-            throw new IllegalKeyException(e);
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
@@ -410,9 +415,8 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         final CA ca = getCAFromRequest(admin, req, true);
         try {
             // See if we need some key material to decrypt request
-            decryptAndVerify(req, ca);
-        } catch (IllegalCryptoTokenException e) {
-            throw new IllegalKeyException(e);
+            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+            decryptAndVerify(cryptoToken, req, ca);
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {
@@ -430,24 +434,12 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
         return req;
     }
 
-    /**
-     * @param req
-     * @param ca
-     * @param catoken
-     * @throws CryptoTokenOfflineException
-     * @throws InvalidKeyException
-     * @throws NoSuchAlgorithmException
-     * @throws NoSuchProviderException
-     * @throws SignRequestSignatureException
-     * @throws IllegalCryptoTokenException 
-     */
-    private void decryptAndVerify(final RequestMessage req, final CA ca) throws CryptoTokenOfflineException, InvalidKeyException, NoSuchAlgorithmException,
-            NoSuchProviderException, SignRequestSignatureException, IllegalCryptoTokenException {
+    private void decryptAndVerify(final CryptoToken cryptoToken, final RequestMessage req, final CA ca) throws CryptoTokenOfflineException, InvalidKeyException, NoSuchAlgorithmException,
+            NoSuchProviderException, SignRequestSignatureException {
         final CAToken catoken = ca.getCAToken();
         if (req.requireKeyInfo()) {
             // You go figure...scep encrypts message with the public CA-cert
-            req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken()
-                    .getSignProviderName());
+            req.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), cryptoToken.getSignProviderName());
         }
         // Verify the request
         if (req.verify() == false) {
@@ -473,14 +465,15 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
                 throw new EJBException(msg);
             }
             // See if we need some key material to decrypt request
+            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
+            final String aliasCertSign = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken()
-                        .getSignProviderName());
+                req.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(aliasCertSign), cryptoToken.getSignProviderName());
             }
             //Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken
-                    .getCryptoToken().getSignProviderName());
+            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), cryptoToken.getPrivateKey(aliasCertSign),
+                    cryptoToken.getSignProviderName());
 
             // Get the Full CRL, don't even bother digging into the encrypted CRLIssuerDN...since we already
             // know that we are the CA (SCEP is soooo stupid!)
@@ -496,8 +489,6 @@ public class SignSessionBean implements SignSessionLocal, SignSessionRemote {
             ret.create();
             // TODO: handle returning errors as response message,
             // javax.ejb.ObjectNotFoundException and the others thrown...
-        } catch (IllegalCryptoTokenException e) {
-            throw new IllegalKeyException(e);
         } catch (NoSuchProviderException e) {
             log.error("NoSuchProvider provider: ", e);
         } catch (InvalidKeyException e) {

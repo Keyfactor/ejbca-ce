@@ -30,11 +30,8 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.apache.log4j.Logger;
-import org.cesecore.certificates.ca.internal.CACacheManager;
 import org.cesecore.dbprotection.ProtectedData;
 import org.cesecore.dbprotection.ProtectionStringBuilder;
-import org.cesecore.internal.UpgradeableDataHashMap;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.Base64GetHashMap;
 import org.cesecore.util.Base64PutHashMap;
 import org.cesecore.util.CertTools;
@@ -42,8 +39,6 @@ import org.cesecore.util.QueryResultWrapper;
 
 /**
  * Representation of a CA instance.
- * 
- * Based on EJBCA's org.ejbca.core.ejb.ca.caadmin.CAData (probably r11168)
  * 
  * @version $Id$
  */
@@ -63,8 +58,6 @@ public class CAData extends ProtectedData implements Serializable {
 	private String data;
 	private int rowVersion = 0;		// not null, we need a default
 	private String rowProtection;
-	// Not a mapped variable, used to determine if CAData has changed
-    private boolean databaseUpdateRequired = false;
     
 	/**
 	 * Entity Bean holding data of a CA.
@@ -74,26 +67,21 @@ public class CAData extends ProtectedData implements Serializable {
 	 * @param ca CA to store
 	 */
 	public CAData(final String subjectdn, final String name, final int status, final CA ca) {
-		try {
-    		setCaId(Integer.valueOf(subjectdn.hashCode()));
-    		setName(name);
-    		setSubjectDN(subjectdn);
-    		if (ca.getCACertificate() != null) {
-    			final Certificate cacert = ca.getCACertificate();
-    			setExpireTime(CertTools.getNotAfter(cacert).getTime());  
-    			ca.setExpireTime(CertTools.getNotAfter(cacert)); 
-    		}  
-    		// Set status, because it can occur in the ca object as well, but we think the one passed as argument here is what
-    		// is desired primarily, so make sure we set that
-    		ca.setStatus(status);        
-    		setCA(ca);
-    		if (log.isDebugEnabled()) {
-    			log.debug("Created CA "+ name);
-    		}
-		} catch(java.io.UnsupportedEncodingException e) {
-			log.error("CAData caught exception trying to create: ", e);
-			throw new RuntimeException(e.toString());
-		}
+	    setCaId(Integer.valueOf(subjectdn.hashCode()));
+	    setName(name);
+	    setSubjectDN(subjectdn);
+	    if (ca.getCACertificate() != null) {
+	        final Certificate cacert = ca.getCACertificate();
+	        setExpireTime(CertTools.getNotAfter(cacert).getTime());  
+	        ca.setExpireTime(CertTools.getNotAfter(cacert)); 
+	    }  
+	    // Set status, because it can occur in the ca object as well, but we think the one passed as argument here is what
+	    // is desired primarily, so make sure we set that
+	    ca.setStatus(status);        
+	    setCA(ca);
+	    if (log.isDebugEnabled()) {
+	        log.debug("Created CA "+ name);
+	    }
 	}
 	
 	public CAData() { }
@@ -142,156 +130,76 @@ public class CAData extends ProtectedData implements Serializable {
 		return new Date(getUpdateTime());
 	}
 
-	/** 
-	 * Method that retrieves the CA from the CA cache, reading from the database if the CA does not exist in cache or cache expired. 
-	 * This method will return a CA object which is in the CA cache.
-	 * This means that the object retrieved should not be altered, as it will be changed when the CA cache is updated.
-	 * 
-     * @return CA from cache, a shared cached object, _not_ a cloned object.
-     * @throws UnsupportedEncodingException
-     * @throws IllegalCryptoTokenException 
-	 */
-	@Transient
-	public CA getCA() throws UnsupportedEncodingException, IllegalCryptoTokenException {
-    	return readAndUpgradeCAInternal();
-	}
-
-	/** 
-	 * Method that retrieves the CA from the database. This method does not return an object from the CA cache, but returns a new object read from the database.
-	 * This method is suitable to use if you plan to edit the CA object and does not want your edits to be overwritten by another thread.
-     * @return CA a new CA object read from the database
-     * @throws UnsupportedEncodingException
-     * @throws IllegalCryptoTokenException 
-	 */
-	@Transient
-	public CA getCAFromDatabase() throws UnsupportedEncodingException, IllegalCryptoTokenException {
-    	return readAndUpgradeCAFromDatabase();
-	}
-
+	/** @return a CA in the form it was saved in the database + regular UpgradableHashMap upgrade-on-load */
     @Transient
-    public boolean isDatabaseUpgradeRequired() {
-        return databaseUpdateRequired;
-    }
-
-    @Transient
-    public void setDatabaseUpgradeRequired(final boolean databaseUpdateRequired) {
-        this.databaseUpdateRequired = databaseUpdateRequired;
-    }
-
-    public void upgradeCA() throws UnsupportedEncodingException, IllegalCryptoTokenException {
-    	readAndUpgradeCAInternal();
-    }
-
-    /** We have an internal method for this read operation with a side-effect. 
-     * This is because getCA() is a read-only method, so the possible side-effect of upgrade will not happen,
-     * and therefore this internal method can be called from another non-read-only method, upgradeCA().
-     * @return CA
-     * @throws java.io.UnsupportedEncodingException
-     * @throws IllegalKeyStoreException
-     */
-    private final CA readAndUpgradeCAInternal() throws UnsupportedEncodingException, IllegalCryptoTokenException {
+    public CA getCA() {
+        final LinkedHashMap<Object, Object> dataMap = getDataMap();
         CA ca = null;
-        // First check if we already have a cached instance of the CA
-        ca = CACacheManager.instance().getAndUpdateCA(getCaId().intValue(), getStatus(), getExpireTime(), getName(), getSubjectDN());
-        boolean isUpdated = false;
-        if (ca != null) {
-        	if (log.isDebugEnabled()) {
-        		log.debug("Found CA ('"+ca.getName()+"', "+getCaId().intValue()+") in cache.");
-        	}
-        	final long update = ca.getCAInfo().getUpdateTime().getTime();
-        	final long t = getUpdateTime();
-        	//log.debug("updateTime from ca = "+update);
-        	//log.debug("updateTime from db = "+t);
-        	if (update < t) {
-            	if (log.isDebugEnabled()) {
-            		log.debug("CA '"+ca.getName()+"' has been updated in database, need to refresh cache");
-            	}
-        		isUpdated = true;
-        	}
+        switch (((Integer)(dataMap.get(CA.CATYPE))).intValue()) {
+        case CAInfo.CATYPE_X509:
+            ca = new X509CA(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
+            break;
+        case CAInfo.CATYPE_CVC:
+            ca = new CVCCA(dataMap, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate());                    
+            break;
         }
-        if ( (ca == null) || isUpdated) {
-        	if (log.isDebugEnabled()) {
-        		log.debug("Re-reading CA from database: "+getCaId().intValue());
-        	}
-        	ca = readAndUpgradeCAFromDatabase();
-            // We have to do the same if CAToken was upgraded
-            // Add CA to the cache
-            CACacheManager.instance().addCA(getCaId().intValue(), ca);
-        }
-        return ca;              
+        return ca;
     }
 
-	private CA readAndUpgradeCAFromDatabase()
-			throws UnsupportedEncodingException, IllegalCryptoTokenException {
-		final java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
-    	final Map<?, ?> h = (Map<?, ?>)decoder.readObject();
-		decoder.close();
-		// Handle Base64 encoded string values
-        final LinkedHashMap<Object, Object> data = new Base64GetHashMap(h);
-		
-		// If CA-data is upgraded we want to save the new data, so we must get the old version before loading the data 
-		// and perhaps upgrading
-		CA ca = null;
-		final float oldversion = ((Float) data.get(UpgradeableDataHashMap.VERSION)).floatValue();
-		switch(((Integer)(data.get(CA.CATYPE))).intValue()){
-		    case CAInfo.CATYPE_X509:
-		        ca = new X509CA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate(), new Date(getExpireTime()));                    
-		        break;
-		    case CAInfo.CATYPE_CVC:
-		        ca = new CVCCA(data, getCaId().intValue(), getSubjectDN(), getName(), getStatus(), getUpdateTimeAsDate());                    
-		        break;
-		}
-		final boolean upgradedExtendedService = ca.upgradeExtendedCAServices();
-		// Compare old version with current version and save the data if there has been a change
-		if ( ((ca != null) && (Float.compare(oldversion, ca.getVersion()) != 0)) || upgradedExtendedService) {
-			// Make sure we upgrade the CAToken as well, if needed
-		    ca.getCAToken();
-		    setCA(ca);
-		    log.debug("Stored upgraded CA ('"+ca.getName()+"', "+getCaId().intValue()+") with version "+ca.getVersion());
-		}
-		return ca;
-	}
-
-	/** 
-	 * Method that saves the CA to database.
-	 * @ejb.interface-method
-	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-    public final void setCA(final CA ca) throws UnsupportedEncodingException {
-        // We must base64 encode string for UTF safety
-		final LinkedHashMap<?, ?> a = new Base64PutHashMap();
-        a.putAll((LinkedHashMap)ca.saveData());
-        
-        final java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
-        final java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
-        encoder.writeObject(a);
-        encoder.close();
-        final String data = baos.toString("UTF8");
-        if (log.isDebugEnabled()) {
-        	log.debug("Saving CA data with length: "+data.length()+" for CA '"+ca.getName()+"'.");
-        }
-        setData(data);
+	/**  Method that converts the CA object to storage representation. */
+	@SuppressWarnings({"unchecked"})
+    @Transient
+    public final void setCA(final CA ca) {
+        setDataMap((LinkedHashMap<Object, Object>) ca.saveData());
         setUpdateTime(System.currentTimeMillis());
-        setDatabaseUpgradeRequired(true);
         // We have to update status as well, because it is kept in it's own database column, but only do that if it was actually provided in the request
         if (ca.getStatus() > 0) {
             setStatus(ca.getStatus());        	
         }
+        setName(ca.getName());
+        setSubjectDN(ca.getSubjectDN());
         // set expire time, perhaps we have updated the CA certificate
-        Certificate cacert = ca.getCACertificate();
+        final Certificate cacert = ca.getCACertificate();
         if (cacert != null) {
             setExpireTime(CertTools.getNotAfter(cacert).getTime());
         }
-        // remove the CA from the cache to force an update the next time we load it
-        CACacheManager.instance().removeCA(getCaId().intValue());
-        // .. and we try to load it right away
-        try {
-			readAndUpgradeCAInternal();
-		} catch (IllegalCryptoTokenException e) {
-			// Ok.. so we failed after all.. try loading it next time so the error is displayed as it used to..
-	        CACacheManager.instance().removeCA(getCaId().intValue());
-		}
 	}   
+
+	@Transient
+	public LinkedHashMap<Object, Object> getDataMap() {
+        try {
+            java.beans.XMLDecoder decoder = new  java.beans.XMLDecoder(new java.io.ByteArrayInputStream(getData().getBytes("UTF8")));
+            final Map<?, ?> h = (Map<?, ?>)decoder.readObject();
+            decoder.close();
+            // Handle Base64 encoded string values
+            final LinkedHashMap<Object, Object> dataMap = new Base64GetHashMap(h);
+            return dataMap;
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);  // No UTF8 would be real trouble
+        }
+	}
+
+    @Transient
+    @SuppressWarnings({"rawtypes", "unchecked"})
+	public void setDataMap(final LinkedHashMap<Object, Object> dataMap) {
+        try {
+            // We must base64 encode string for UTF safety
+            final LinkedHashMap<?, ?> a = new Base64PutHashMap();
+            a.putAll((LinkedHashMap)dataMap);
+            final java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+            final java.beans.XMLEncoder encoder = new java.beans.XMLEncoder(baos);
+            encoder.writeObject(a);
+            encoder.close();
+            final String data = baos.toString("UTF8");
+            if (log.isDebugEnabled()) {
+                log.debug("Saving CA data with length: "+data.length()+" for CA.");
+            }
+            setData(data);
+            setUpdateTime(System.currentTimeMillis());
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        }
+	}
 
 	//
 	// Search functions. 
@@ -357,7 +265,7 @@ public class CAData extends ProtectedData implements Serializable {
 	
 	@Transient
 	@Override
-	protected String getProtectString(final int version) {
+	public String getProtectString(final int version) {
 		final ProtectionStringBuilder build = new ProtectionStringBuilder(8000);
 		// What is important to protect here is the data that we define
 		// rowVersion is automatically updated by JPA, so it's not important, it is only used for optimistic locking

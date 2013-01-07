@@ -40,7 +40,6 @@ import org.cesecore.certificates.certificate.CertificateInfo;
 import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.jndi.JndiConstants;
 import org.cesecore.util.CertTools;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalSessionLocal;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
@@ -123,11 +122,10 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
      * @param username 
      * @param userdata 
      * @param checkNewest 
-     * @param gc The GlobalConfiguration used to extract approval information
      * @throws ApprovalException 
      * @throws WaitingForApprovalException 
      */
-    private void checkIfApprovalRequired(AuthenticationToken admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest, GlobalConfiguration gc) throws ApprovalException, WaitingForApprovalException{    	
+    private void checkIfApprovalRequired(AuthenticationToken admin, Certificate certificate, String username, int endEntityProfileId, boolean checkNewest) throws ApprovalException, WaitingForApprovalException{    	
         final int caid = CertTools.getIssuerDN(certificate).hashCode();
 		final CertificateInfo certinfo = certificateStoreSession.getCertificateInfo(CertTools.getFingerprintAsString(certificate));
         // Check if approvals is required.
@@ -135,7 +133,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         if (numOfApprovalsRequired > 0){    
 			KeyRecoveryApprovalRequest ar = new KeyRecoveryApprovalRequest(certificate,username,checkNewest, admin,null,numOfApprovalsRequired,caid,endEntityProfileId);
 			if (ApprovalExecutorUtil.requireApproval(ar, NONAPPROVABLECLASSNAMES_KEYRECOVERY)){
-				approvalSession.addApprovalRequest(admin, ar, gc);
+				approvalSession.addApprovalRequest(admin, ar);
 	            String msg = intres.getLocalizedMessage("keyrecovery.addedforapproval");            	
 				throw new WaitingForApprovalException(msg, ar.generateApprovalId());
 			}
@@ -335,7 +333,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
 	};
 	
 	@Override
-    public boolean markNewestAsRecoverable(AuthenticationToken admin, String username, int endEntityProfileId, GlobalConfiguration gc) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
+    public boolean markNewestAsRecoverable(AuthenticationToken admin, String username, int endEntityProfileId) throws AuthorizationDeniedException, ApprovalException, WaitingForApprovalException {
     	if (log.isTraceEnabled()) {
             log.trace(">markNewestAsRecoverable(user: " + username + ")");
     	}
@@ -367,7 +365,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
         		// Check that the administrator is authorized to keyrecover
                 if (authorizedToKeyRecover(admin, endEntityProfileId)) {
                     // Check if approvals is required.            
-                    checkIfApprovalRequired(admin, newestcertificate, username, endEntityProfileId, true, gc);
+                    checkIfApprovalRequired(admin, newestcertificate, username, endEntityProfileId, true);
                     newest.setMarkedAsRecoverable(true);
                     returnval = true;
                 } else {
@@ -389,7 +387,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
     }
 
 	@Override
-    public boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId, GlobalConfiguration gc) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
+    public boolean markAsRecoverable(AuthenticationToken admin, Certificate certificate, int endEntityProfileId) throws AuthorizationDeniedException, WaitingForApprovalException, ApprovalException {        
         final String hexSerial = CertTools.getSerialNumber(certificate).toString(16); // same method to make hex as in KeyRecoveryDataBean
         final String dn = CertTools.getIssuerDN(certificate);        
     	if (log.isTraceEnabled()) {
@@ -402,7 +400,7 @@ public class KeyRecoverySessionBean implements KeyRecoverySessionLocal, KeyRecov
             // Check that the administrator is authorized to keyrecover
             if (authorizedToKeyRecover(admin, endEntityProfileId)) {
                 // Check if approvals is required.            
-                checkIfApprovalRequired(admin, certificate, username, endEntityProfileId, false, gc);
+                checkIfApprovalRequired(admin, certificate, username, endEntityProfileId, false);
                 krd.setMarkedAsRecoverable(true);
                 int caid = krd.getIssuerDN().hashCode();
                 String msg = intres.getLocalizedMessage("keyrecovery.markedcert", hexSerial, dn);

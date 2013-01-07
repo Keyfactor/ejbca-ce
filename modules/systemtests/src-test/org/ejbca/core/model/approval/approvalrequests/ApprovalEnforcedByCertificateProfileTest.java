@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
 
 import javax.persistence.PersistenceException;
@@ -39,10 +38,9 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
-import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
@@ -53,18 +51,15 @@ import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.EjbcaConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.keyrecovery.KeyRecoverySessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionRemote;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionRemote;
@@ -122,7 +117,10 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     
     private final String cliUserName = EjbcaConfiguration.getCliDefaultUser();
     private final String cliPassword = EjbcaConfiguration.getCliDefaultPassword();
-
+    private int cryptoTokenId1 = 0;
+    private int cryptoTokenId2 = 0;
+    private int cryptoTokenId3 = 0;
+    
     private static Collection<String> createdUsers = new LinkedList<String>();
 
     private CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
@@ -131,7 +129,6 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     private EndEntityAccessSessionRemote endEntityAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityAccessSessionRemote.class);
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
-    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private SignSessionRemote signSession = EjbRemoteHelper.INSTANCE.getRemoteSession(SignSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
@@ -152,25 +149,32 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
 
         // Create new CA
+        cryptoTokenId1 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin1, "ca1", "1024");
+        final CAToken catoken1 = CaSessionTest.createCaToken(cryptoTokenId1, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        cryptoTokenId2 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin1, "ca2", "1024");
+        final CAToken catoken2 = CaSessionTest.createCaToken(cryptoTokenId2, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+        cryptoTokenId3 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin1, "ca3", "1024");
+        final CAToken catoken3 = CaSessionTest.createCaToken(cryptoTokenId3, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+
         approvalCAID = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_ApprovalCA", new Integer[] {},
-                caAdminSession, caSession, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+                caAdminSession, caSession, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, catoken1);
 
         // Create certificate profiles
         certProfileIdNoApprovals = createCertificateProfile(admin1, CERTPROFILE1, new Integer[] {}, CertificateConstants.CERTTYPE_ENDENTITY);
         certProfileIdEndEntityApprovals = createCertificateProfile(admin1, CERTPROFILE2, new Integer[] { CAInfo.REQ_APPROVAL_ADDEDITENDENTITY },
                 CertificateConstants.CERTTYPE_ENDENTITY);
         certProfileIdActivateCATokensApprovals = createCertificateProfile(admin1, CERTPROFILE3,
-                new Integer[] { CAInfo.REQ_APPROVAL_ACTIVATECATOKEN }, CertificateConstants.CERTTYPE_ROOTCA);
+                new Integer[] { CAInfo.REQ_APPROVAL_ACTIVATECA }, CertificateConstants.CERTTYPE_ROOTCA);
         certProfileIdKeyRecoveryApprovals = createCertificateProfile(admin1, CERTPROFILE4, new Integer[] { CAInfo.REQ_APPROVAL_KEYRECOVER },
                 CertificateConstants.CERTTYPE_ENDENTITY);
-        certProfileIdAllApprovals = createCertificateProfile(admin1, CERTPROFILE5, new Integer[] { CAInfo.REQ_APPROVAL_ACTIVATECATOKEN,
+        certProfileIdAllApprovals = createCertificateProfile(admin1, CERTPROFILE5, new Integer[] { CAInfo.REQ_APPROVAL_ACTIVATECA,
                 CAInfo.REQ_APPROVAL_ADDEDITENDENTITY, CAInfo.REQ_APPROVAL_KEYRECOVER, CAInfo.REQ_APPROVAL_REVOCATION },
                 CertificateConstants.CERTTYPE_ENDENTITY);
         // Other CAs
         anotherCAID1 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA1", new Integer[] {},
-                caAdminSession, caSession, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+                caAdminSession, caSession, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, catoken2);
         anotherCAID2 = createCA(admin1, ApprovalEnforcedByCertificateProfileTest.class.getSimpleName() + "_AnotherCA2", new Integer[] {},
-                caAdminSession, caSession, certProfileIdActivateCATokensApprovals);
+                caAdminSession, caSession, certProfileIdActivateCATokensApprovals, catoken3);
 
         // Create an end entity profile with the certificate profiles
         endEntityProfileId = createEndEntityProfile(admin1, ENDENTITYPROFILE, new int[] { certProfileIdNoApprovals, certProfileIdEndEntityApprovals,
@@ -250,23 +254,21 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     @Test
     public void test02ActivateCAToken() throws Exception {
         log.info("test02ActivateCAToken");
-
         try {
-            caAdminSession.deactivateCAToken(admin1, anotherCAID1);
+            caAdminSession.deactivateCAService(admin1, anotherCAID1);
             CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, anotherCAID1);
             assertEquals("CA should be offline", CAConstants.CA_OFFLINE, cainfo.getStatus());
-            caAdminSession.activateCAToken(admin1, anotherCAID1, "foo123", globalConfigurationSession.getCachedGlobalConfiguration());
+            caAdminSession.activateCAService(admin1, anotherCAID1);
             cainfo = caSession.getCAInfo(roleMgmgToken, anotherCAID1);
             assertEquals("CA should be online", CAConstants.CA_ACTIVE, cainfo.getStatus());
         } catch (WaitingForApprovalException ex) {
             fail("This profile should not require approvals");
         }
-
         try {
-            caAdminSession.deactivateCAToken(admin1, anotherCAID2);
+            caAdminSession.deactivateCAService(admin1, anotherCAID2);
             CAInfo cainfo = caSession.getCAInfo(roleMgmgToken, anotherCAID2);
             assertEquals("CA should be offline", CAConstants.CA_OFFLINE, cainfo.getStatus());
-            caAdminSession.activateCAToken(admin1, anotherCAID2, "foo123", globalConfigurationSession.getCachedGlobalConfiguration());
+            caAdminSession.activateCAService(admin1, anotherCAID2);
             fail("This should have caused an approval request");
         } catch (WaitingForApprovalException ex) { // NOPMD: OK
         } catch (ApprovalException ex) {
@@ -382,6 +384,10 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
         removeCertificateProfile(CERTPROFILE3);
         removeCertificateProfile(CERTPROFILE4);
         removeCertificateProfile(CERTPROFILE5);
+        // Remove the CA's CryptoTokens
+        CryptoTokenManagementSessionTest.removeCryptoToken(admin1, cryptoTokenId1);
+        CryptoTokenManagementSessionTest.removeCryptoToken(admin1, cryptoTokenId2);
+        CryptoTokenManagementSessionTest.removeCryptoToken(admin1, cryptoTokenId3);
     }
     
     public String getRoleName() {
@@ -423,27 +429,15 @@ public class ApprovalEnforcedByCertificateProfileTest extends CaTestCase {
     }
 
     public static int createCA(AuthenticationToken internalAdmin, String nameOfCA, Integer[] approvalRequirementTypes,
-            CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, int certProfileId) throws Exception {
-        CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
-        Properties prop = catokeninfo.getProperties();
-        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, String.valueOf("1024"));
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-        catokeninfo.setProperties(prop);
-        List<Integer> approvalSettings = approvalRequirementTypes.length == 0 ? new ArrayList<Integer>() : Arrays.asList(approvalRequirementTypes);
+            CAAdminSessionRemote caAdminSession, CaSessionRemote caSession, int certProfileId, CAToken catoken) throws Exception {
+        final List<Integer> approvalSettings = approvalRequirementTypes.length == 0 ? new ArrayList<Integer>() : Arrays.asList(approvalRequirementTypes);
         log.info("approvalSettings: " + approvalSettings);
 
         ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
         X509CAInfo cainfo = new X509CAInfo("CN=" + nameOfCA, nameOfCA, CAConstants.CA_ACTIVE, new Date(), "", certProfileId, 365, new Date(
-                System.currentTimeMillis() + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catokeninfo,
+                System.currentTimeMillis() + 364 * 24 * 3600 * 1000), CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, null, catoken,
                 "Used for testing approvals", -1, null, null, 24, 0, 10, 0, new ArrayList<Integer>(), true, false, true, false, "", "", "", null, "", true,
                 extendedcaservices, false, approvalSettings, 1, false, true, false, false, true, true, true, false, true, true,
                 true, null);

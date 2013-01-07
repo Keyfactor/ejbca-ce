@@ -45,6 +45,8 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
@@ -54,6 +56,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.SimpleAuthenticationProviderSessionRemote;
 import org.cesecore.util.Base64;
@@ -290,9 +293,12 @@ public class EjbcaWSTest extends CommonEjbcaWS {
         String randomPostfix = Integer.toString(SecureRandom.getInstance("SHA1PRNG").nextInt(999999));
         String caname = "wsRevocationCA" + randomPostfix;
         String username = "wsRevocationUser" + randomPostfix;
+        int cryptoTokenId = 0;
         int caID = -1;
         try {
-            caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSessionRemote, caSession);
+            cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(intAdmin, caname, "1024");
+            final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            caID = RevocationApprovalTest.createApprovalCA(intAdmin, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSessionRemote, caSession, catoken);
             X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator().next();
             Set<X509Certificate> credentials = new HashSet<X509Certificate>();
             credentials.add(adminCert);
@@ -386,6 +392,7 @@ public class EjbcaWSTest extends CommonEjbcaWS {
                 caAdminSessionRemote.revokeCA(intAdmin, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
             } finally {
                 caSession.removeCA(intAdmin, caID);
+                CryptoTokenManagementSessionTest.removeCryptoToken(intAdmin, cryptoTokenId);
             }
         }
     	log.trace("<test19RevocationApprovals");

@@ -63,6 +63,7 @@ import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
@@ -71,6 +72,8 @@ import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleNotFoundException;
@@ -134,6 +137,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
     private CertificateProfileSessionLocal certProfileSession;
     @EJB
     private SecurityEventsLoggerSessionLocal securityEventsLogger;
+    @EJB
+    private CryptoTokenSessionLocal cryptoTokenSession;
    
 
     private UpgradeSessionLocal upgradeSession;
@@ -442,7 +447,8 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 					}
 					if (!extendedcaserviceinfos.isEmpty()) {
 						cainfo.setExtendedCAServiceInfos(extendedcaserviceinfos);
-						ca.updateCA(cainfo);
+						final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+						ca.updateCA(cryptoToken, cainfo);
 					}
 					// Finally store the upgraded CA
 					caSession.editCA(admin, ca, true);
@@ -453,7 +459,9 @@ public class UpgradeSessionBean implements UpgradeSessionLocal, UpgradeSessionRe
 				log.error("Authorization denied to CA during upgrade: "+caid, e);
 			} catch (IllegalCryptoTokenException e) {
 				log.error("Illegal Crypto Token editing CA during upgrade: "+caid, e);
-			}
+			} catch (InvalidAlgorithmException e) {
+                log.error("Illegal Crypto Token algortihm during upgrade. CA Id: "+caid, e);
+            }
     	}
     	/*
     	 *  Upgrade super_administrator access rules to be a /* rule, so super_administrators can still do everything.

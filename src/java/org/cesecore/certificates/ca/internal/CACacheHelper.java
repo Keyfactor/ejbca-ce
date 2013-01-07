@@ -15,29 +15,19 @@ package org.cesecore.certificates.ca.internal;
 import java.util.HashMap;
 import java.util.Map;
 
-
 /**
- * Class Holding cache variables. Needed because EJB spec does not allow volatile, non-final 
- * fields in session beans.
- * This is a trivial cache, too trivial, it only holds variables actually, does nothing. All updating etc is done by the user.
+ * Caching of CA SubjectDN hashes that maps to real CAId.
  * 
- * Based on EJBCA version: CaHelperCache.java 10862 2010-12-14 16:07:19Z anatom
+ * In some border cases the content of the CA certificate's subjectDN is not
+ * what was used to generate the CA Id and therefore we often want to lookup
+ * this "real" value.
  * 
  * @version $Id$
  */
 public final class CACacheHelper {
 
-    /**
-     * help variable used to control that CA info update (read from database)
-     * isn't performed to often.
-     */
-    private static volatile long lastCACacheUpdateTime = -1;
-
-    /**
-     * Caching of CA IDs with CA cert DN hash as ID
-     */
+    /** Caching of CA IDs with CA cert DN hash as ID */
     protected static volatile Map<Integer, Integer> caIdToCaCertHash = new HashMap<Integer, Integer>();
-
 
 	private CACacheHelper() {
 		// Do nothing
@@ -50,13 +40,4 @@ public final class CACacheHelper {
 	public static void putCaCertHash(Integer caid, Integer caCertHash) {
 		caIdToCaCertHash.put(caid, caCertHash);
 	}
-	public static long getLastCACacheUpdateTime() {
-		return lastCACacheUpdateTime;
-	}
-
-
-	public static void setLastCACacheUpdateTime(final long lastCACacheUpdateTime) {
-		CACacheHelper.lastCACacheUpdateTime = lastCACacheUpdateTime;
-	}
-
 }

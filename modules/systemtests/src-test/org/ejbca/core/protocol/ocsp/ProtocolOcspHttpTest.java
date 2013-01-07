@@ -50,8 +50,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import javax.ejb.ObjectNotFoundException;
 
@@ -88,12 +88,11 @@ import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.SignRequestException;
 import org.cesecore.certificates.ca.SignRequestSignatureException;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
-import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.IllegalKeyException;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
@@ -106,15 +105,13 @@ import org.cesecore.certificates.ocsp.SHA1DigestCalculator;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
-import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.SoftCryptoToken;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
 import org.ejbca.core.ejb.ca.revoke.RevocationSessionRemote;
 import org.ejbca.core.ejb.ca.sign.SignSessionRemote;
@@ -424,17 +421,17 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 	public void test08OcspEcdsaGood() throws Exception {
 		assertTrue("This test can only be run on a full EJBCA installation.",
 				((HttpURLConnection) new URL(httpReqPath + '/').openConnection()).getResponseCode() == 200);
-
 		final int ecdsacaid = "CN=OCSPECDSATEST".hashCode();
-		final X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSATEST", "secp256r1");
+		final CAInfo caInfo = addECDSACA("CN=OCSPECDSATEST", "secp256r1");
+        final X509Certificate ecdsacacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
 		helper.reloadKeys();
 		try {
 			// Make user and ocspTestCert that we know...
 			createUserCert(ecdsacaid);
-
 			this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
 		} finally {
 			endEntityManagementSession.deleteUser(admin, "ocsptest");
+			CryptoTokenManagementSessionTest.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
 		}
 	} // test08OcspEcdsaGood
 
@@ -448,17 +445,17 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 	public void test09OcspEcdsaImplicitlyCAGood() throws Exception {
 		assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
 				.getResponseCode() == 200);
-
 		int ecdsacaid = "CN=OCSPECDSAIMPCATEST".hashCode();
-		X509Certificate ecdsacacert = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
+		final CAInfo caInfo = addECDSACA("CN=OCSPECDSAIMPCATEST", "implicitlyCA");
+        final X509Certificate ecdsacacert = (X509Certificate) caInfo.getCertificateChain().iterator().next();
 		helper.reloadKeys();
 		try {
 			// Make user and ocspTestCert that we know...
 			createUserCert(ecdsacaid);
-
 			this.helper.verifyStatusGood( ecdsacaid, ecdsacacert, this.ocspTestCert.getSerialNumber() );
 		} finally {
 			endEntityManagementSession.deleteUser(admin, "ocsptest");
+            CryptoTokenManagementSessionTest.removeCryptoToken(admin, caInfo.getCAToken().getCryptoTokenId());
 		}
 	} // test09OcspEcdsaImplicitlyCAGood
 
@@ -538,7 +535,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 				.getResponseCode() == 200);
 
 		int dsacaid = "CN=OCSPDSATEST".hashCode();
-		X509Certificate ecdsacacert = addDSACA("CN=OCSPDSATEST", "1024");
+		X509Certificate ecdsacacert = addDSACA("CN=OCSPDSATEST", "DSA1024");
 		helper.reloadKeys();
 
 		// Make user and ocspTestCert that we know...
@@ -873,6 +870,12 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		assertTrue("This test can only be run on a full EJBCA installation.", ((HttpURLConnection) new URL(httpReqPath + '/').openConnection())
 				.getResponseCode() == 200);
 		try {
+	        final int cryptoTokenId = caSession.getCAInfo(admin, "CN=OCSPDSATEST".hashCode()).getCAToken().getCryptoTokenId();
+	        CryptoTokenManagementSessionTest.removeCryptoToken(admin, cryptoTokenId);
+        } catch (Exception e) {
+            log.error("",e);
+        }
+		try {
 			caSession.removeCA(admin, "CN=OCSPDSATEST".hashCode());
 		} catch (Exception e) {
 			log.info("Could not remove CA with SubjectDN CN=OCSPDSATEST");
@@ -1029,34 +1032,24 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 	 * @throws Exception
 	 *			 error
 	 */
-	private X509Certificate addECDSACA(String dn, String keySpec) throws Exception {
+	private CAInfo addECDSACA(String dn, String keySpec) throws Exception {
 		log.trace(">addECDSACA()");
 		boolean ret = false;
-		X509Certificate cacert = null;
+		int cryptoTokenId = 0;
+		CAInfo info = null;
 		try {
-			CATokenInfo catokeninfo = new CATokenInfo();
-			catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA);
-			catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-			catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-			catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-			catokeninfo.setClassPath(SoftCryptoToken.class.getName());
-			Properties prop = catokeninfo.getProperties();
-			prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, keySpec);
-			prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-			prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-			prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-			catokeninfo.setProperties(prop);
+	        cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, dn, keySpec);
+	        final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA256_WITH_ECDSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
 			// Create and active OSCP CA Service.
-			ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+			List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
 			extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 			extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 			extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-
-			ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+			List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
 			policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
 			X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
-					CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit ECDSA CA", -1, null, policies, // PolicyId
+					CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit ECDSA CA", -1, null, policies, // PolicyId
 					24, // CRLPeriod
 					0, // CRLIssueInterval
 					10, // CRLOverlapTime
@@ -1090,7 +1083,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 
 			caAdminSession.createCA(admin, cainfo);
 
-			CAInfo info = caSession.getCAInfo(admin, dn);
+			info = caSession.getCAInfo(admin, dn);
 
 			X509Certificate cert = (X509Certificate) info.getCertificateChain().iterator().next();
 			assertTrue("Error in created ca certificate", cert.getSubjectDN().toString().equals(dn));
@@ -1121,16 +1114,12 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 			}
 
 			ret = true;
-			Collection<?> coll = info.getCertificateChain();
-			Object[] certs = coll.toArray();
-			cacert = (X509Certificate) certs[0];
 		} catch (CAExistsException pee) {
 			log.info("CA exists.");
 		}
-
 		assertTrue("Creating ECDSA CA failed", ret);
 		log.trace("<addECDSACA()");
-		return cacert;
+		return info;
 	}
 
 	/**
@@ -1145,30 +1134,20 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		log.trace(">addDSACA()");
 		boolean ret = false;
 		X509Certificate cacert = null;
+		int cryptoTokenId = 0;
 		try {
-			CATokenInfo catokeninfo = new CATokenInfo();
-			catokeninfo.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_DSA);
-			catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-			catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-			catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-			catokeninfo.setClassPath(SoftCryptoToken.class.getName());
-			Properties prop = catokeninfo.getProperties();
-			prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, keySpec);
-			prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-			prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-			prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-			catokeninfo.setProperties(prop);
+            cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(admin, dn, keySpec);
+            final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_DSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
 			// Create and active OSCP CA Service.
-			ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
+			final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
 			extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 			extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
 			extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-
-			ArrayList<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
+			final List<CertificatePolicy> policies = new ArrayList<CertificatePolicy>(1);
 			policies.add(new CertificatePolicy("2.5.29.32.0", "", ""));
 
 			X509CAInfo cainfo = new X509CAInfo(dn, dn, CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 365, null, // Expiretime
-					CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit DSA CA", -1, null, policies, // PolicyId
+					CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit DSA CA", -1, null, policies, // PolicyId
 					24, // CRLPeriod
 					0, // CRLIssueInterval
 					10, // CRLOverlapTime
@@ -1216,7 +1195,6 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		} catch (CAExistsException pee) {
 			log.info("CA exists.");
 		}
-
 		assertTrue("Creating DSA CA failed", ret);
 		log.trace("<addDSACA()");
 		return cacert;
@@ -1229,16 +1207,16 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 	private KeyPair createUserCert(int caid) throws AuthorizationDeniedException, UserDoesntFullfillEndEntityProfile, ApprovalException,
 			WaitingForApprovalException, Exception, ObjectNotFoundException, AuthStatusException, AuthLoginException, IllegalKeyException,
 			CADoesntExistsException {
+	    final String USERNAME = "ocsptest";
+		if (!endEntityManagementSession.existsUser(USERNAME)) {
 
-		if (!endEntityManagementSession.existsUser("ocsptest")) {
-
-			endEntityManagementSession.addUser(admin, "ocsptest", "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
+			endEntityManagementSession.addUser(admin, USERNAME, "foo123", "C=SE,O=AnaTom,CN=OCSPTest", null, "ocsptest@anatom.se", false,
 					SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityTypes.ENDUSER.toEndEntityType(), SecConst.TOKEN_SOFT_PEM, 0, caid);
 			log.debug("created user: ocsptest, foo123, C=SE, O=AnaTom, CN=OCSPTest");
 
 		} else {
 			log.debug("User ocsptest already exists.");
-			EndEntityInformation userData = new EndEntityInformation("ocsptest", "C=SE,O=AnaTom,CN=OCSPTest",
+			EndEntityInformation userData = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=OCSPTest",
 					caid, null, "ocsptest@anatom.se", EndEntityConstants.STATUS_NEW, EndEntityTypes.ENDUSER.toEndEntityType(),
 					SecConst.EMPTY_ENDENTITYPROFILE, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, null, null, SecConst.TOKEN_SOFT_PEM, 0,
 					null);
@@ -1250,7 +1228,7 @@ public class ProtocolOcspHttpTest extends ProtocolOcspTestBase {
 		KeyPair keys = KeyTools.genKeys("512", "RSA");
 
 		// user that we know exists...
-		ocspTestCert = (X509Certificate) signSession.createCertificate(admin, "ocsptest", "foo123", keys.getPublic());
+		ocspTestCert = (X509Certificate) signSession.createCertificate(admin, USERNAME, "foo123", keys.getPublic());
 		assertNotNull("Failed to create new certificate", ocspTestCert);
 		return keys;
 	}

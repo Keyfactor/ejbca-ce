@@ -1,9 +1,12 @@
-<%@page import="org.cesecore.authorization.control.AuditLogRules"%>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="errorpage.jsp" import="org.ejbca.config.GlobalConfiguration,
-                                          org.cesecore.authorization.AuthorizationDeniedException,
-                                          org.ejbca.core.model.authorization.AccessRulesConstants"%>
+<%@page errorPage="errorpage.jsp" import="
+org.cesecore.authorization.AuthorizationDeniedException,
+org.cesecore.authorization.control.AuditLogRules,
+org.cesecore.authorization.control.CryptoTokenRules,
+org.ejbca.config.GlobalConfiguration,
+org.ejbca.core.model.authorization.AccessRulesConstants
+"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -22,6 +25,8 @@
                                                     + "/editcas/editcas.jsp";
     final String EDITPUBLISHERS_LINK      =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
                                                     + "/editpublishers/editpublishers.jsp";
+
+    final String CRYPTOTOKENS_LINK        =  ejbcawebbean.getBaseUrl() + globalconfiguration.getAdminWebPath() + "cryptotoken/cryptotokens.jsf";
 
     final String CA_LINK                  =  ejbcawebbean.getBaseUrl() + globalconfiguration.getCaPath() 
                                                     + "/cafunctions.jsp";
@@ -60,6 +65,7 @@
 
 
     final String MAIN_RESOURCE                          = AccessRulesConstants.ROLE_ADMINISTRATOR;
+    final String CRYPTOTOKEN_RESOURCE                   = CryptoTokenRules.BASE.resource();
     final String CABASICFUNCTIONS_RESOURCE              = "/ca_functionality/basic_functions";
     final String ACTIVATECA_RESOURCE                    = "/ca_functionality/basic_functions/activate_ca";
     final String EDITCAS_RESOURCE                       = "/super_administrator";
@@ -106,16 +112,25 @@
 <%    }
    }catch(AuthorizationDeniedException e){} 
 
-
    // --------------------------------------------------------------------------
    // CA FUNCTIONS
 
    // If authorized to use the ca then display related links.
    try{
+     if(ejbcawebbean.isAuthorizedNoLog(CRYPTOTOKEN_RESOURCE)){ 
+        if(!caheaderprinted){
+          out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
+           caheaderprinted=true;
+        } %>
+				<li><a href="<%= CRYPTOTOKENS_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CRYPTOTOKENS") %></a></li>
+<%    }
+   }catch(AuthorizationDeniedException e){} 
+   try{
      if(ejbcawebbean.isAuthorizedNoLog(CABASICFUNCTIONS_RESOURCE)){ 
-       caheaderprinted=true;%>
-		<li id="cat1" class="section"><strong><%=ejbcawebbean.getText("NAV_CAFUNCTIONS") %></strong>
-			<ul>
+         if(!caheaderprinted){
+             out.write("<li id=\"cat1\" class=\"section\"><strong>" + ejbcawebbean.getText("NAV_CAFUNCTIONS")+"</strong><ul>"); 
+              caheaderprinted=true;
+           } %>
 				<li><a href="<%= CA_LINK %>" target="<%=GlobalConfiguration.MAINFRAME %>"><%=ejbcawebbean.getText("NAV_CASTRUCTUREANDCRL") %></a></li>
 <%    }
    }catch(AuthorizationDeniedException e){} 

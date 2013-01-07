@@ -30,7 +30,6 @@ import java.security.SignatureException;
 import java.security.cert.CRLException;
 import java.security.cert.CertStore;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
 import java.security.cert.CollectionCertStoreParameters;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -96,7 +95,6 @@ import org.bouncycastle.pkcs.PKCS10CertificationRequest;
 import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAService;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.ca.internal.CertificateValidity;
@@ -116,6 +114,7 @@ import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.dn.PrintableStringEntryConverter;
 import org.cesecore.internal.InternalResources;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.NullCryptoToken;
@@ -194,20 +193,19 @@ public class X509CA extends CA implements Serializable {
      * @throws IllegalCryptoTokenException
      */
     public X509CA(final HashMap<Object, Object> data, final int caId, final String subjectDN, final String name, final int status,
-            final Date updateTime, final Date expireTime) throws IllegalCryptoTokenException {
+            final Date updateTime, final Date expireTime) {
         super(data);
         setExpireTime(expireTime); // Make sure the internal state is synched with the database column. Required for upgrades from EJBCA 3.5.6 or
                                    // EJBCA 3.6.1 and earlier.
-        ArrayList<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
-        Iterator<Integer> iter = getExternalCAServiceTypes().iterator();
-        while (iter.hasNext()) {
-            ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(iter.next().intValue());
+        final List<ExtendedCAServiceInfo> externalcaserviceinfos = new ArrayList<ExtendedCAServiceInfo>();
+        for (final Integer type : getExternalCAServiceTypes()) {
+            ExtendedCAServiceInfo info = this.getExtendedCAServiceInfo(type.intValue());
             if (info != null) {
                 externalcaserviceinfos.add(info);
             }
         }
         CAInfo info = new X509CAInfo(subjectDN, name, status, updateTime, getSubjectAltName(), getCertificateProfileId(), getValidity(),
-                getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), getCAToken(caId).getTokenInfo(), getDescription(),
+                getExpireTime(), getCAType(), getSignedBy(), getCertificateChain(), getCAToken(), getDescription(),
                 getRevocationReason(), getRevocationDate(), getPolicies(), getCRLPeriod(), getCRLIssueInterval(), getCRLOverlapTime(),
                 getDeltaCRLPeriod(), getCRLPublishers(), getUseAuthorityKeyIdentifier(), getAuthorityKeyIdentifierCritical(), getUseCRLNumber(),
                 getCRLNumberCritical(), getDefaultCRLDistPoint(), getDefaultCRLIssuer(), getDefaultOCSPServiceLocator(), getAuthorityInformationAccess(), getCADefinedFreshestCRL(),
@@ -216,6 +214,7 @@ public class X509CA extends CA implements Serializable {
                 getIncludeInHealthCheck(), isDoEnforceUniquePublicKeys(), isDoEnforceUniqueDistinguishedName(),
                 isDoEnforceUniqueSubjectDNSerialnumber(), isUseCertReqHistory(), isUseUserStorage(), isUseCertificateStorage(), getCmpRaAuthSecret());
         super.setCAInfo(info);
+        setCAId(caId);
     }
 
     // Public Methods.
@@ -374,8 +373,8 @@ public class X509CA extends CA implements Serializable {
         data.put(CMPRAAUTHSECRET, cmpRaAuthSecret);
     }
 
-    public void updateCA(CAInfo cainfo) throws IllegalCryptoTokenException {
-        super.updateCA(cainfo);
+    public void updateCA(CryptoToken cryptoToken, CAInfo cainfo) throws InvalidAlgorithmException {
+        super.updateCA(cryptoToken, cainfo);
         X509CAInfo info = (X509CAInfo) cainfo;
         setAuthorityInformationAccess(info.getAuthorityInformationAccess());
         setUseAuthorityKeyIdentifier(info.getUseAuthorityKeyIdentifier());
@@ -394,7 +393,8 @@ public class X509CA extends CA implements Serializable {
         setCmpRaAuthSecret(info.getCmpRaAuthSecret());
     }
 
-    public byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException {
+    @Override
+    public byte[] createPKCS7(CryptoToken cryptoToken, Certificate cert, boolean includeChain) throws SignRequestSignatureException {
         // First verify that we signed this certificate
         try {
             if (cert != null) {
@@ -403,7 +403,7 @@ public class X509CA extends CA implements Serializable {
                 if (cacert != null) {
                     verifyKey = cacert.getPublicKey();
                 } else {
-                    verifyKey = getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+                    verifyKey = cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
                 }
                cert.verify(verifyKey);
             }
@@ -422,21 +422,21 @@ public class X509CA extends CA implements Serializable {
             CMSProcessable msg = new CMSProcessableByteArray("EJBCA".getBytes());
             CertStore certs = CertStore.getInstance("Collection", new CollectionCertStoreParameters(certList), "BC");
             CMSSignedDataGenerator gen = new CMSSignedDataGenerator();
-            if (getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN) == null) {
+            final PrivateKey privateKey = cryptoToken.getPrivateKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            if (privateKey == null) {
                 String msg1 = "createPKCS7: Private key does not exist!";
                 log.debug(msg1);
                 throw new SignRequestSignatureException(msg1);
             }
-            gen.addSigner(getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), (X509Certificate) getCACertificate(),
-                    CMSSignedGenerator.DIGEST_SHA1);
+            gen.addSigner(privateKey, (X509Certificate) getCACertificate(), CMSSignedGenerator.DIGEST_SHA1);
             gen.addCertificatesAndCRLs(certs);
             CMSSignedData s = null;
             CAToken catoken = getCAToken();
-            CATokenInfo tokeninfo = getCAInfo().getCATokenInfo();
-            if (catoken != null && !StringUtils.equals(NullCryptoToken.class.getName(), tokeninfo.getClass().getName())) {
-                log.debug("createPKCS7: Provider=" + catoken.getCryptoToken().getSignProviderName() + " using algorithm "
-                        + getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN).getAlgorithm());
-                s = gen.generate(msg, true, catoken.getCryptoToken().getSignProviderName());
+            //CATokenInfo tokeninfo = getCAInfo().getCATokenInfo();
+            if (catoken != null && !(cryptoToken instanceof NullCryptoToken)) {
+                log.debug("createPKCS7: Provider=" + cryptoToken.getSignProviderName() + " using algorithm "
+                        + privateKey.getAlgorithm());
+                s = gen.generate(msg, true, cryptoToken.getSignProviderName());
             } else {
                 String msg1 = "CA Token does not exist!";
                 log.debug(msg);
@@ -453,7 +453,8 @@ public class X509CA extends CA implements Serializable {
     /**
      * @see CA#createRequest(Collection, String, Certificate, int)
      */
-    public byte[] createRequest(Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose)
+    @Override
+    public byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose)
             throws CryptoTokenOfflineException {
         log.trace(">createRequest: " + signAlg + ", " + CertTools.getSubjectDN(cacert) + ", " + signatureKeyPurpose);
         ASN1Set attrset = new DERSet();
@@ -476,9 +477,10 @@ public class X509CA extends CA implements Serializable {
         X500Name x509dn = CertTools.stringToBcX500Name(getSubjectDN(), converter, getUseLdapDNOrder());
         PKCS10CertificationRequest req;
         try {
-            CAToken catoken = getCAToken();
-            KeyPair keyPair = new KeyPair(catoken.getPublicKey(signatureKeyPurpose), catoken.getPrivateKey(signatureKeyPurpose));
-            req = CertTools.genPKCS10CertificationRequest(signAlg, x509dn, keyPair.getPublic(), attrset, keyPair.getPrivate(), catoken.getCryptoToken().getSignProviderName());
+            final CAToken catoken = getCAToken();
+            final String alias = catoken.getAliasFromPurpose(signatureKeyPurpose);
+            final KeyPair keyPair = new KeyPair(cryptoToken.getPublicKey(alias), cryptoToken.getPrivateKey(alias));
+            req = CertTools.genPKCS10CertificationRequest(signAlg, x509dn, keyPair.getPublic(), attrset, keyPair.getPrivate(), cryptoToken.getSignProviderName());
             log.trace("<createRequest");
             return req.getEncoded();
         } catch (CryptoTokenOfflineException e) { // NOPMD, since we catch wide below
@@ -504,88 +506,57 @@ public class X509CA extends CA implements Serializable {
      * 
      * @see CA#signRequest(Collection, String)
      */
-    public byte[] signRequest(final byte[] request, final boolean usepreviouskey, final boolean createlinkcert) throws CryptoTokenOfflineException {
-        byte[] ret = null;
-        try {
-            final CAToken catoken = getCAToken();
-            byte[] binbytes = request;
-            X509Certificate cert = null;
-            try {
-                // We don't know if this is a PEM or binary certificate so we first try to
-                // decode it as a PEM certificate, and if it's not we try it as a binary certificate
-                final Collection<Certificate> col = CertTools.getCertsFromPEM(new ByteArrayInputStream(request));
-                cert = (X509Certificate) col.iterator().next();
-                if (cert != null) {
-                    binbytes = cert.getEncoded();
-                }
-            } catch (Exception e) {
-                log.debug("This is not a PEM certificate?: " + e.getMessage());
-            }
-            cert = (X509Certificate) CertTools.getCertfromByteArray(binbytes);
-            // Check if the input was a CA certificate, which is the same CA as this. If all is true we should create a NewWithOld link-certificate
-            final X509Certificate cacert = (X509Certificate) getCACertificate();
-            if (CertTools.getSubjectDN(cert).equals(CertTools.getSubjectDN(cacert))) {
-                final PublicKey currentCaPublicKey = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-                cert.verify(currentCaPublicKey); // Throws SignatureException if verify fails
-                if (createlinkcert && usepreviouskey) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("We will create a link certificate.");
-                    }
-                    final X509CAInfo info = (X509CAInfo) getCAInfo();
-                    final EndEntityInformation cadata = new EndEntityInformation("nobody", info.getSubjectDN(), info.getSubjectDN().hashCode(), info.getSubjectAltName(), null,
-                            0, new EndEntityType(EndEntityTypes.INVALID), 0, info.getCertificateProfileId(), null, null, 0, 0, null);
-
-                    final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
-                    if ((info.getPolicies() != null) && (info.getPolicies().size() > 0)) {
-                        certProfile.setUseCertificatePolicies(true);
-                        certProfile.setCertificatePolicies(info.getPolicies());
-                    }
-                    final PublicKey previousCaPublicKey = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
-                    final PrivateKey previousCaPrivateKey = catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS);
-                    final String provider = catoken.getCryptoToken().getSignProviderName();
-                    final String sequence = catoken.getKeySequence(); // get from CAtoken to make sure it is fresh
-                    final Certificate retcert = generateCertificate(cadata, null, cert.getPublicKey(), -1, cert.getNotBefore(), cert.getNotAfter(),
-                            certProfile, null, sequence, previousCaPublicKey, previousCaPrivateKey, provider);
-                    if (log.isDebugEnabled()) {
-                        log.debug("Signed an X509Certificate: '" + cadata.getDN() + "'.");
-                    }
-                    final String msg = intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), cadata.getDN());
-                    log.info(msg);
-                    ret = retcert.getEncoded();
-                } else {
-                    if (log.isDebugEnabled()) {
-                        log.debug("Not signing any certificate, useprevious=" + usepreviouskey + ", createlinkcert=" + createlinkcert);
-                    }
-                }
-            } else {
-                if (log.isDebugEnabled()) {
-                    log.debug("Not signing any certificate, certSubjectDN != cacertSubjectDN.");
-                }
-            }
-
-        } catch (IllegalCryptoTokenException e) {
-            throw new javax.ejb.EJBException(e);
-        } catch (SignatureException e) {
-            log.debug("Not signing any certificate, input certificate did not verify with current CA signing key.");
-            // Will return request as it was
-        } catch (CertificateException e) {
-            log.debug("Not signing any certificate, input was not a certificate.");
-            // It was not a certificate, will return request as it was
-        } catch (Exception e) {
-            throw new javax.ejb.EJBException(e);
-        }
-        return ret;
+    @Override
+    public byte[] createAuthCertSignRequest(CryptoToken cryptoToken, final byte[] request) throws CryptoTokenOfflineException {
+        throw new UnsupportedOperationException("Creation of authenticated CSRs is not supported for X509 CAs.");
     }
 
     @Override
-    public Certificate generateCertificate(final EndEntityInformation subject, final X500Name requestX500Name, final PublicKey publicKey, final int keyusage, final Date notBefore,
+    public void createOrRemoveLinkCertificate(final CryptoToken cryptoToken, final boolean createLinkCertificate) throws CryptoTokenOfflineException {
+        byte[] ret = null;
+        if (createLinkCertificate) {
+            try {
+                final CAToken catoken = getCAToken();
+                // Check if the input was a CA certificate, which is the same CA as this. If all is true we should create a NewWithOld link-certificate
+                final X509Certificate currentCaCert = (X509Certificate) getCACertificate();
+                if (log.isDebugEnabled()) {
+                    log.debug("We will create a link certificate.");
+                }
+                final X509CAInfo info = (X509CAInfo) getCAInfo();
+                final EndEntityInformation cadata = new EndEntityInformation("nobody", info.getSubjectDN(), info.getSubjectDN().hashCode(), info.getSubjectAltName(), null,
+                        0, new EndEntityType(EndEntityTypes.INVALID), 0, info.getCertificateProfileId(), null, null, 0, 0, null);
+                final CertificateProfile certProfile = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA);
+                if ((info.getPolicies() != null) && (info.getPolicies().size() > 0)) {
+                    certProfile.setUseCertificatePolicies(true);
+                    certProfile.setCertificatePolicies(info.getPolicies());
+                }
+                final PublicKey previousCaPublicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+                final PrivateKey previousCaPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_PREVIOUS));
+                final String provider = cryptoToken.getSignProviderName();
+                // The sequence is ignored later, but we fetch the same previous for now to do this the same way as for CVC..
+                final String ignoredKeySequence = catoken.getProperties().getProperty(CATokenConstants.PREVIOUS_SEQUENCE_PROPERTY);
+                final Certificate retcert = generateCertificate(cadata, null, currentCaCert.getPublicKey(), -1, currentCaCert.getNotBefore(), currentCaCert.getNotAfter(),
+                        certProfile, null, ignoredKeySequence, previousCaPublicKey, previousCaPrivateKey, provider);
+                log.info(intres.getLocalizedMessage("cvc.info.createlinkcert", cadata.getDN(), cadata.getDN()));
+                ret = retcert.getEncoded();
+            } catch (CryptoTokenOfflineException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException("Bad CV CA certificate.", e);
+            }
+        }
+        updateLatestLinkCertificate(ret);
+    }
+
+    @Override
+    public Certificate generateCertificate(CryptoToken cryptoToken, final EndEntityInformation subject, final X500Name requestX500Name, final PublicKey publicKey, final int keyusage, final Date notBefore,
             final Date notAfter, final CertificateProfile certProfile, final Extensions extensions, final String sequence) throws Exception {
         // Before we start, check if the CA is off-line, we don't have to waste time
         // one the stuff below of we are off-line. The line below will throw CryptoTokenOfflineException of CA is offline
         final CAToken catoken = getCAToken();
-        final PublicKey caPublicKey = catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-        final PrivateKey caPrivateKey = catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-        final String provider = catoken.getCryptoToken().getSignProviderName();
+        final PublicKey caPublicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        final PrivateKey caPrivateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        final String provider = cryptoToken.getSignProviderName();
         return generateCertificate(subject, requestX500Name, publicKey, keyusage, notBefore, notAfter, certProfile, extensions, sequence,
                 caPublicKey, caPrivateKey, provider);
     }
@@ -609,7 +580,7 @@ public class X509CA extends CA implements Serializable {
 
         final String sigAlg;
         if (certProfile.getSignatureAlgorithm() == null) {
-            sigAlg = getCAInfo().getCATokenInfo().getSignatureAlgorithm();
+            sigAlg = getCAToken().getSignatureAlgorithm();
         } else {
             sigAlg = certProfile.getSignatureAlgorithm();
         }
@@ -866,15 +837,17 @@ public class X509CA extends CA implements Serializable {
         return cert;
     }
 
-    public X509CRLHolder generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) throws CryptoTokenOfflineException, IllegalCryptoTokenException,
+    @Override
+    public X509CRLHolder generateCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber) throws CryptoTokenOfflineException, IllegalCryptoTokenException,
             IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException, NoSuchAlgorithmException {
-        return generateCRL(certs, getCRLPeriod(), crlnumber, false, 0);
+        return generateCRL(cryptoToken, certs, getCRLPeriod(), crlnumber, false, 0);
     }
 
-    public X509CRLHolder generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws CryptoTokenOfflineException,
+    @Override
+    public X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws CryptoTokenOfflineException,
             IllegalCryptoTokenException, IOException, SignatureException, NoSuchProviderException, InvalidKeyException, CRLException,
             NoSuchAlgorithmException {
-        return generateCRL(certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber);
+        return generateCRL(cryptoToken, certs, getDeltaCRLPeriod(), crlnumber, true, basecrlnumber);
     }
 
     /**
@@ -900,10 +873,10 @@ public class X509CA extends CA implements Serializable {
      * @throws CRLException
      * @throws NoSuchAlgorithmException
      */
-    private X509CRLHolder generateCRL(Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber)
+    private X509CRLHolder generateCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, long crlPeriod, int crlnumber, boolean isDeltaCRL, int basecrlnumber)
             throws CryptoTokenOfflineException, IllegalCryptoTokenException, IOException, SignatureException, NoSuchProviderException,
             InvalidKeyException, CRLException, NoSuchAlgorithmException {
-        final String sigAlg = getCAInfo().getCATokenInfo().getSignatureAlgorithm();
+        final String sigAlg = getCAInfo().getCAToken().getSignatureAlgorithm();
 
         if (log.isDebugEnabled()) {
             log.debug("generateCRL(" + certs.size() + ", " + crlPeriod + ", " + crlnumber + ", " + isDeltaCRL + ", " + basecrlnumber);
@@ -948,8 +921,8 @@ public class X509CA extends CA implements Serializable {
              
         // Authority key identifier
         if (getUseAuthorityKeyIdentifier() == true) {      
-            SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(getCAToken()
-                    .getPublicKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN).getEncoded())).readObject());
+            SubjectPublicKeyInfo apki = new SubjectPublicKeyInfo((ASN1Sequence) new ASN1InputStream(new ByteArrayInputStream(
+                    cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN)).getEncoded())).readObject());
             AuthorityKeyIdentifier aki = new AuthorityKeyIdentifier(apki);
             crlgen.addExtension(Extension.authorityKeyIdentifier, getAuthorityKeyIdentifierCritical(), aki);
         }
@@ -1017,8 +990,9 @@ public class X509CA extends CA implements Serializable {
         if (log.isDebugEnabled()) {
             log.debug("Signing CRL. Free memory="+Runtime.getRuntime().freeMemory());
         }
+        final String alias = getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
         try {
-            final ContentSigner signer = new JcaContentSignerBuilder(sigAlg).setProvider(getCAToken().getCryptoToken().getSignProviderName()).build(getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN));
+            final ContentSigner signer = new JcaContentSignerBuilder(sigAlg).setProvider(cryptoToken.getSignProviderName()).build(cryptoToken.getPrivateKey(alias));
             //ContentSigner signer = buildContentSigner(sigAlg, getCAToken().getPrivateKey(SecConst.CAKEYPURPOSE_CRLSIGN), getCAToken().getProvider());
             crl = crlgen.build(signer);
         } catch (OperatorCreationException e) {
@@ -1039,7 +1013,7 @@ public class X509CA extends CA implements Serializable {
                 log.trace("Got the verify key from the CA certificate.");
             }
         } else {
-            verifyKey = getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
+            verifyKey = cryptoToken.getPublicKey(alias);
             if (log.isTraceEnabled()) {
                 log.trace("Got the verify key from the CA token.");
             }
@@ -1202,7 +1176,8 @@ public class X509CA extends CA implements Serializable {
         return retval;
     }
 
-    public byte[] encryptKeys(KeyPair keypair) throws IOException, CryptoTokenOfflineException {
+    @Override
+    public byte[] encryptKeys(CryptoToken cryptoToken, KeyPair keypair) throws IOException, CryptoTokenOfflineException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream os = new ObjectOutputStream(baos);
         os.writeObject(keypair);
@@ -1211,7 +1186,7 @@ public class X509CA extends CA implements Serializable {
 
         CMSEnvelopedData ed;
         try {
-            edGen.addKeyTransRecipient(this.getCAToken().getPublicKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT), this.keyId);
+            edGen.addKeyTransRecipient(cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT)), this.keyId);
             ed = edGen.generate(new CMSProcessableByteArray(baos.toByteArray()), CMSEnvelopedDataGenerator.AES256_CBC, "BC");
         } catch (Exception e) {
             log.error("-encryptKeys: ", e);
@@ -1221,14 +1196,15 @@ public class X509CA extends CA implements Serializable {
         return ed.getEncoded();
     }
 
-    public KeyPair decryptKeys(byte[] data) throws Exception {
+    @Override
+    public KeyPair decryptKeys(CryptoToken cryptoToken, byte[] data) throws Exception {
         CMSEnvelopedData ed = new CMSEnvelopedData(data);
 
         RecipientInformationStore recipients = ed.getRecipientInfos();
         RecipientInformation recipient = (RecipientInformation) recipients.getRecipients().iterator().next();
         ObjectInputStream ois = null;
-        JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
-        rec.setProvider(getCAToken().getCryptoToken().getEncProviderName());
+        JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT)));
+        rec.setProvider(cryptoToken.getEncProviderName());
         rec.setContentProvider("BC");
         byte[] recdata = recipient.getContent(rec);
         ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
@@ -1236,28 +1212,29 @@ public class X509CA extends CA implements Serializable {
         return (KeyPair) ois.readObject();
     }
 
-    public byte[] decryptData(byte[] data, int cAKeyPurpose) throws Exception {
+    @Override
+    public byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) throws Exception {
         CMSEnvelopedData ed = new CMSEnvelopedData(data);
         RecipientInformationStore recipients = ed.getRecipientInfos();
         RecipientInformation recipient = (RecipientInformation) recipients.getRecipients().iterator().next();
-        JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(getCAToken().getPrivateKey(cAKeyPurpose));
-        rec.setProvider(getCAToken().getCryptoToken().getSignProviderName());
+        JceKeyTransEnvelopedRecipient rec = new JceKeyTransEnvelopedRecipient(cryptoToken.getPrivateKey(getCAToken().getAliasFromPurpose(cAKeyPurpose)));
+        rec.setProvider(cryptoToken.getSignProviderName());
         rec.setContentProvider("BC");
         byte[] recdata = recipient.getContent(rec);
         return recdata;
     }
 
-    public byte[] encryptData(byte[] data, int keyPurpose) throws Exception {
+    @Override
+    public byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose) throws Exception {
         CMSEnvelopedDataGenerator edGen = new CMSEnvelopedDataGenerator();
         CMSEnvelopedData ed;
         try {
-            edGen.addKeyTransRecipient(this.getCAToken().getPublicKey(keyPurpose), this.keyId);
+            edGen.addKeyTransRecipient(cryptoToken.getPublicKey(getCAToken().getAliasFromPurpose(keyPurpose)), this.keyId);
             ed = edGen.generate(new CMSProcessableByteArray(data), CMSEnvelopedDataGenerator.AES256_CBC, "BC");
         } catch (Exception e) {
             log.error("-encryptKeys: ", e);
             throw new IOException(e.getMessage());
         }
-
         return ed.getEncoded();
     }
 

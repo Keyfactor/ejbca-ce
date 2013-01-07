@@ -18,12 +18,11 @@ import javax.security.auth.login.FailedLoginException;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.model.approval.ApprovalException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 import org.ejbca.ui.cli.CliUsernameException;
@@ -79,11 +78,19 @@ public class CaActivateCACommand extends BaseCaAdminCommand {
                 return;
             }
             // Check that CA has correct status.
-            if ((cainfo.getStatus() == CAConstants.CA_OFFLINE) || (cainfo.getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_OFFLINE)) {
+            final int cryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
+            final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+            final boolean tokenOffline = !cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(cliUserName, cliPassword), cryptoTokenId);
+            if (cainfo.getStatus()==CAConstants.CA_OFFLINE || tokenOffline) {
                 try {
-                    ejb.getRemoteSession(CAAdminSessionRemote.class).activateCAToken(getAdmin(cliUserName, cliPassword), cainfo.getCAId(), authorizationcode, ejb.getRemoteSession(GlobalConfigurationSessionRemote.class).getCachedGlobalConfiguration());
-                    getLogger().info("CA token activated.");
-
+                    if (cainfo.getStatus() == CAConstants.CA_OFFLINE) {
+                        ejb.getRemoteSession(CAAdminSessionRemote.class).activateCAService(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
+                        getLogger().info("CA Service activated.");
+                    }
+                    if (tokenOffline) {
+                        cryptoTokenManagementSession.activate(getAdmin(cliUserName, cliPassword), cryptoTokenId, authorizationcode.toCharArray());
+                        getLogger().info("CA's CryptoToken activated.");
+                    }
                 } catch (CryptoTokenAuthenticationFailedException e) {
                     getLogger().error("CA Token authentication failed.");
                     getLogger().error(e.getMessage());

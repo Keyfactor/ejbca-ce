@@ -118,7 +118,7 @@ public class ApproveActionSessionBean extends BaseManagedBean {
     	final Approval approval = new Approval(comment);
     	try {		   
     		final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
-    		ejb.getApprovalExecutionSession().approve(admin, approveRequestData.getApprovalId(), approval, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration());
+    		ejb.getApprovalExecutionSession().approve(admin, approveRequestData.getApprovalId(), approval);
     		updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
     	} catch (ApprovalRequestExpiredException e) {
     		addErrorMessage("APPROVALREQUESTEXPIRED");
@@ -140,7 +140,7 @@ public class ApproveActionSessionBean extends BaseManagedBean {
     	final Approval approval = new Approval(comment);
     	try {
     		final AuthenticationToken admin = EjbcaJSFHelper.getBean().getAdmin();
-    		ejb.getApprovalSession().reject(admin,  approveRequestData.getApprovalId(), approval, ejb.getGlobalConfigurationSession().getCachedGlobalConfiguration());
+    		ejb.getApprovalSession().reject(admin,  approveRequestData.getApprovalId(), approval);
     		updateApprovalRequestData(approveRequestData.getApproveActionDataVO().getId());
     	} catch (ApprovalRequestExpiredException e) {
     		addErrorMessage("APPROVALREQUESTEXPIRED");

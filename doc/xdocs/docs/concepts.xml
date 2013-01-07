@@ -75,14 +75,16 @@ It contains all information, that is specific to each individual end entity, for
 When adding a user in the PKI, the user must be connected with an end entity profile. The end entity profile specifies one or more certificate profiles used when generating certificates.
 </p>
 </subsection>
-<subsection name="CA Token">
+<subsection name="CryptoToken">
 <p>
-A CA Token is the token used by a CA to store it's keys. The CA Token's most important key are the CA signature keys. The token can also contain other keys used for encryption of sensitive data in the database.
+A CryptoToken is the token used by a CA to store it's keys. The CryptoToken's most important key are the CA signature keys.
+The CryptoToken can also contain other keys used for encryption of sensitive data in the database.
+A CryptoToken can be configured per CA or multiple CAs can share a CryptoToken.
 <br/>
-CA Tokens are configured per CA and can be in different forms:
+The different forms that are stored in the database are:
 <ul>
-<li>Soft tokens, PKCS#12 files protected by a password.</li>
-<li>Hardware tokens, usually a Hardware Security Module accessed using the PKCS#11 API.</li>
+<li>Soft token PKCS#12 files protected by a password.</li>
+<li>Hardware token configuration, usually a Hardware Security Module accessed using the PKCS#11 API</li>
 </ul>
 </p>
 </subsection>

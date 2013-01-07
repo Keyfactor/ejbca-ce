@@ -55,6 +55,7 @@ import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
+import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
@@ -62,6 +63,7 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.ValidityDate;
@@ -114,6 +116,7 @@ public class EjbcaWSHelper {
     private CaSessionLocal caSession;
     private CertificateStoreSession certificateStoreSession;
     private CertificateProfileSession certificateProfileSession;
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     private HardTokenSession hardTokenSession;
     private EndEntityAccessSession endEntityAccessSession;
     private EndEntityProfileSession endEntityProfileSession;
@@ -122,13 +125,15 @@ public class EjbcaWSHelper {
 
     protected EjbcaWSHelper(WebServiceContext wsContext, AccessControlSessionLocal authorizationSession, CAAdminSession caAdminSession, CaSessionLocal caSession,
             CertificateProfileSession certificateProfileSession, CertificateStoreSession certificateStoreSession, EndEntityAccessSession endEntityAccessSession,
-            EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, EndEntityManagementSession endEntityManagementSession, WebAuthenticationProviderSessionLocal authenticationSession) {
+            EndEntityProfileSession endEntityProfileSession, HardTokenSession hardTokenSession, EndEntityManagementSession endEntityManagementSession,
+            WebAuthenticationProviderSessionLocal authenticationSession, CryptoTokenManagementSessionLocal cryptoTokenManagementSession) {
     	this.wsContext = wsContext;
 		this.authorizationSession = authorizationSession;
 		this.caAdminSession = caAdminSession;
 		this.caSession = caSession;
 		this.certificateProfileSession = certificateProfileSession;
 		this.certificateStoreSession = certificateStoreSession;
+		this.cryptoTokenManagementSession = cryptoTokenManagementSession;
 		this.hardTokenSession = hardTokenSession;
 		this.endEntityProfileSession = endEntityProfileSession;
 		this.endEntityManagementSession = endEntityManagementSession;
@@ -824,7 +829,11 @@ public class EjbcaWSHelper {
 			// create response messages, for CVC certificates we use a regular X509ResponseMessage
 			X509ResponseMessage msg = new X509ResponseMessage();
 			msg.setCertificate(CertTools.getCertfromByteArray(cert));
-			caAdminSession.receiveResponse(admin, cainfo.getCAId(), msg, cachain, keystorepwd);
+			// Activate the CA's token using the provided keystorepwd if any
+			if (keystorepwd!=null) {
+	            cryptoTokenManagementSession.activate(admin, cainfo.getCAToken().getCryptoTokenId(), keystorepwd.toCharArray());
+			}
+			caAdminSession.receiveResponse(admin, cainfo.getCAId(), msg, cachain, null);
 		} catch (CertificateException e) {
             throw EjbcaWSHelper.getInternalException(e, null);
 		}
@@ -838,7 +847,18 @@ public class EjbcaWSHelper {
 	protected byte[] caRenewCertRequest(EjbcaWSHelper ejbhelper, AuthenticationToken admin, String caname, List<byte[]> cachain, boolean regenerateKeys, boolean usenextkey, boolean activatekey, String keystorepwd) 
 		throws CADoesntExistsException, AuthorizationDeniedException, EjbcaException, ApprovalException, WaitingForApprovalException, CertPathValidatorException, CryptoTokenOfflineException, CryptoTokenAuthenticationFailedException {
 		CAInfo cainfo = caSession.getCAInfo(admin, caname);
-		return caAdminSession.makeRequest(admin, cainfo.getCAId(), cachain, regenerateKeys, usenextkey, activatekey, keystorepwd);				
+		String nextSignKeyAlias = null;   // null means generate new keypair
+		if (!regenerateKeys) {
+		    nextSignKeyAlias = cainfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+	        if (usenextkey) {
+	            nextSignKeyAlias = cainfo.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN_NEXT);
+	        }
+		}
+		// Activate used to mean "move nextsignkeyalias to currentsignkeyalias", we changed the meaning here to be activate the CA's CryptoToken
+		if (activatekey) {
+	        cryptoTokenManagementSession.activate(admin, cainfo.getCAToken().getCryptoTokenId(), keystorepwd.toCharArray());
+		}
+        return caAdminSession.makeRequest(admin, cainfo.getCAId(), cachain, nextSignKeyAlias);
 	}
 
 	protected  static EjbcaException getInternalException(Throwable t, IPatternLogger logger) {

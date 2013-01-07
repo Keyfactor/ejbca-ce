@@ -132,9 +132,9 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 #
 # General error message to be presented to the user when an exception occur.
 # Default: An exception has occurred
-#web.errorpage.notification=Something is wrong. Please dial 911.
+#web.errorpage.notification=An exception has occurred.
 #
-# Print the stacktrace of the excpetion
+# Print the stacktrace of the exception
 # Default: true
 #web.errorpage.stacktrace=false
 
@@ -142,3 +142,30 @@ httpsserver.dn=CN=${httpsserver.hostname},O=EJBCA Sample,C=SE
 # using a Tomcat Valve or similar proxy.
 # Default is false.
 #web.enableproxiedauth=true
+
+# Available PKCS#11 CryptoToken libraries and their display names
+# If a library file's presence is not detected it will not show up in the Admin GUI.
+cryptotoken.p11.lib.10.name=SafeNet ProtectServer Gold Emulator
+cryptotoken.p11.lib.10.file=/opt/ETcpsdk/lib/linux-x86_64/libctsw.so
+cryptotoken.p11.lib.11.name=SafeNet ProtectServer Gold
+cryptotoken.p11.lib.11.file=/opt/ETcpsdk/lib/linux-x86_64/libcryptoki.so
+cryptotoken.p11.lib.12.name=SafeNet Luna 64
+cryptotoken.p11.lib.12.file=/usr/lunasa/lib/libCryptoki2_64.so
+cryptotoken.p11.lib.20.name=Utimaco
+cryptotoken.p11.lib.20.file=/opt/utimaco/p11/libcs2_pkcs11.so
+cryptotoken.p11.lib.21.name=Utimaco
+cryptotoken.p11.lib.21.file=C:/Program Files/Utimaco/SafeGuard CryptoServer/Lib/cs2_pkcs11.dll
+cryptotoken.p11.lib.30.name=nCipher
+cryptotoken.p11.lib.30.file=/opt/nfast/toolkits/pkcs11/libcknfast.so
+cryptotoken.p11.lib.40.name=ARX CoSign
+cryptotoken.p11.lib.40.file=C:/windows/system32/sadaptor.dll
+#...
+#cryptotoken.p11.lib.255.name=P11 Proxy
+#cryptotoken.p11.lib.255.file=/home/user/local/p11proxy/dist/p11proxy.so
+
+# Available PKCS#11 CryptoToken attribute files and their display names
+#cryptotoken.p11.attr.0.name=
+#cryptotoken.p11.attr.0.file=
+#...
+#cryptotoken.p11.attr.255.name=
+#cryptotoken.p11.attr.255.file=

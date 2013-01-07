@@ -19,11 +19,10 @@ import java.util.HashMap;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.keys.token.CryptoToken;
 
 /**
  * ExtendedCAService base class. An implementing class MUST have a constructor taking a ExtendedCAServiceInfo as argument.
- * 
- * Based on EJBCA version: ExtendedCAService.java 10397 2010-11-08 14:18:57Z anatom $
  * 
  * @version $Id$
  */
@@ -78,7 +77,7 @@ public abstract class ExtendedCAService extends UpgradeableDataHashMap implement
      * @param ca
      *            the CA from which the service can use private keys to generate service certificates etc. This must not be stored.
      */
-    public abstract void init(CA ca) throws Exception;
+    public abstract void init(final CryptoToken cryptoToken, CA ca) throws Exception;
 
     /**
      * Update the ExtendedCAService data
@@ -86,7 +85,7 @@ public abstract class ExtendedCAService extends UpgradeableDataHashMap implement
      * @param info
      *            contains information used to activate the service.
      */
-    public abstract void update(ExtendedCAServiceInfo info, CA ca);
+    public abstract void update(final CryptoToken cryptoToken, ExtendedCAServiceInfo info, CA ca);
 
     /**
      * Method used to retrieve information about the service.
@@ -100,7 +99,7 @@ public abstract class ExtendedCAService extends UpgradeableDataHashMap implement
      * @throws CertificateException 
      * @throws CertificateEncodingException 
      */
-    public abstract ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
+    public abstract ExtendedCAServiceResponse extendedService(final CryptoToken cryptoToken, ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
             IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CertificateEncodingException, CertificateException, OperatorCreationException;
 
 }

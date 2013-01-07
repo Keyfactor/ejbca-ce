@@ -61,6 +61,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -156,7 +157,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	}
 
 	@Override
-	public void init(final CA ca) throws Exception {
+	public void init(final CryptoToken cryptoToken, final CA ca) throws Exception {
 		m_log.debug("CmsCAService : init");
 		// lookup keystore passwords      
 	    final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaCmsKeyStorePass(), "ca.cmskeystorepass");
@@ -176,7 +177,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 		certProfile.setKeyUsageCritical(true);
 
 		final Certificate certificate =
-			ca.generateCertificate(new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,new EndEntityType(),0,0, null,null,0,0,null),
+			ca.generateCertificate(cryptoToken, new EndEntityInformation("NOUSERNAME", info.getSubjectDN(), 0, info.getSubjectAltName(), "NOEMAIL", 0,new EndEntityType(),0,0, null,null,0,0,null),
 					cmskeys.getPublic(),
 					-1, // KeyUsage
                     null, // Custom not before date
@@ -198,14 +199,14 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	}
 
 	@Override
-	public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) {
+	public void update(final CryptoToken cryptoToken, final ExtendedCAServiceInfo serviceinfo, final CA ca) {
 		final CmsCAServiceInfo info = (CmsCAServiceInfo) serviceinfo; 
 		m_log.debug("CmsCAService : update " + serviceinfo.getStatus());
 		setStatus(serviceinfo.getStatus());
 		if (info.getRenewFlag()) {
 			// Renew The Signers certificate.
 			try {
-				this.init(ca);
+				this.init(cryptoToken, ca);
 			} catch (Exception e) {
 				m_log.error("Error initilizing Extended CA service during upgrade: ", e);
 			}
@@ -215,7 +216,7 @@ public class CmsCAService extends ExtendedCAService implements java.io.Serializa
 	}
 
 	@Override
-	public ExtendedCAServiceResponse extendedService(final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
+	public ExtendedCAServiceResponse extendedService(final CryptoToken cryptoToken, final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
 		m_log.trace(">extendedService");
 		if (!(request instanceof CmsCAServiceRequest)) {
 			throw new IllegalExtendedCAServiceRequestException();            

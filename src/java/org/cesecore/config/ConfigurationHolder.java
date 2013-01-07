@@ -37,8 +37,6 @@ import org.apache.log4j.Logger;
  * 
  * See in-line comments below for the sources added to the configuration.
  * 
- * Based on EJBCA version: 
- *      ConfigurationHolder.java 11078 2011-01-07 08:20:50Z anatom
  * Based on CESeCore version:
  *      ConfigurationHolder.java 831 2011-05-19 07:45:39Z mikek
  * 
@@ -290,6 +288,7 @@ public final class ConfigurationHolder {
         if (configBackup != null) {
             return false;
         }
+        instance();
         configBackup = (CompositeConfiguration) config.clone();
         return true;
     }

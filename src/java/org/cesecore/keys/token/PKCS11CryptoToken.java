@@ -41,8 +41,6 @@ import org.cesecore.keys.util.KeyTools;
 /**
  * Class implementing a keystore on PKCS11 tokens.
  * 
- * Based on EJBCA version: PKCS11CAToken.java 9024 2010-05-06 14:09:14Z anatom $
- * 
  * @version $Id$
  */
 public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
@@ -85,7 +83,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     public void init(final Properties properties, final byte[] data, final int id) throws CryptoTokenOfflineException {
         // Don't autoactivate this right away, we must dynamically create the auth-provider with a slot
         setProperties(properties);
-        init("slot", properties, false, id);
+        init(SLOT_LABEL_KEY, properties, false, id);
         final boolean isIndex;
         if (this.sSlotLabel == null) {
             this.sSlotLabel = properties.getProperty(SLOT_LIST_INDEX_LABEL_KEY);
@@ -190,7 +188,7 @@ public class PKCS11CryptoToken extends BaseCryptoToken implements P11SlotUser {
     }
 
     @Override
-    public void deleteEntry(final char[] authenticationCode, final String alias) throws KeyStoreException, NoSuchAlgorithmException,
+    public void deleteEntry(final String alias) throws KeyStoreException, NoSuchAlgorithmException,
             CertificateException, IOException, CryptoTokenOfflineException {
         if (StringUtils.isNotEmpty(alias)) {
             KeyStoreTools cont = new KeyStoreTools(getKeyStore(), getSignProviderName());

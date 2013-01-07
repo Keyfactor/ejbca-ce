@@ -30,6 +30,7 @@ import org.apache.log4j.Logger;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.raadmin.EndEntityProfileSessionLocal;
@@ -57,6 +58,8 @@ public class ClearCacheServlet extends HttpServlet {
 	private CertificateProfileSessionLocal certificateprofilesession;
 	@EJB
 	private CaSessionLocal casession;
+    @EJB
+    private CryptoTokenSessionLocal cryptoTokenSession;
 	
     public void doPost(HttpServletRequest req, HttpServletResponse res)	throws IOException, ServletException {
     	doGet(req,res);
@@ -94,11 +97,14 @@ public class ClearCacheServlet extends HttpServlet {
         		if(log.isDebugEnabled()) {
         			log.debug("Authorization Rule cache cleared");
         		}
-			
         		casession.flushCACache();
         		if(log.isDebugEnabled()) {
         			log.debug("CA cache cleared");
         		}
+        		cryptoTokenSession.flushCache();
+                if(log.isDebugEnabled()) {
+                    log.debug("CryptoToken cache cleared");
+                }
         	}
         } else {
     		if (log.isDebugEnabled()) {

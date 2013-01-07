@@ -20,7 +20,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
-import org.cesecore.certificates.ca.catoken.CATokenInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
 import org.cesecore.util.CertTools;
@@ -30,8 +30,6 @@ import org.cesecore.util.StringTools;
 /**
  * Holds non-sensitive information about a X509CA.
  *
- * Based on EJBCA version: X509CAInfo.java 11009 2010-12-29 15:20:37Z jeklund
- * 
  * @version $Id$
  */
 public class X509CAInfo extends CAInfo{
@@ -52,15 +50,13 @@ public class X509CAInfo extends CAInfo{
 	private boolean useLdapDNOrder;
 	private boolean useCrlDistributionPointOnCrl;
 	private boolean crlDistributionPointOnCrlCritical;
-	private String cmpRaAuthSecret;
+	private String cmpRaAuthSecret = "";
 	private List<String> authorityInformationAccess;
     
-    /**
-     * Constructor that should be used when creating CA and retrieving CA info.
-     */
+    /** Constructor that should be used when creating CA and retrieving CA info. */
     public X509CAInfo(final String subjectdn,final  String name, final int status, final Date updateTime, 
     		final String subjectaltname, final int certificateprofileid, final long validity, final Date expiretime, 
-    		final int catype, final int signedby, final Collection<Certificate> certificatechain, final CATokenInfo catokeninfo, 
+    		final int catype, final int signedby, final Collection<Certificate> certificatechain, final CAToken catoken,
     		final String description, final int revocationReason, final Date revocationDate, final List<CertificatePolicy> policies,
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
     		final Collection<Integer> crlpublishers, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical, 
@@ -72,7 +68,7 @@ public class X509CAInfo extends CAInfo{
     		final boolean _doEnforceUniquePublicKeys, final boolean _doEnforceUniqueDistinguishedName, final boolean _doEnforceUniqueSubjectDNSerialnumber,
     		final boolean _useCertReqHistory, final boolean _useUserStorage, final boolean _useCertificateStorage, final String _cmpRaAuthSecret) {
         this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
-        this.caid = this.subjectdn.hashCode();
+        this.caid = CertTools.stringToBCDNString(this.subjectdn).hashCode();
         this.name = name;
         this.status = status;
         this.updatetime = updateTime;
@@ -96,9 +92,9 @@ public class X509CAInfo extends CAInfo{
 		} catch (NoSuchProviderException e) {
 			throw new IllegalArgumentException(e);
 		}
-        this.catokeninfo = catokeninfo; 
+        this.catoken = catoken; 
         this.description = description;
-        this.revocationReason = revocationReason;
+        setRevocationReason(revocationReason);
         this.revocationDate = revocationDate;
         this.policies = policies;
         this.crlperiod = crlperiod;
@@ -132,16 +128,13 @@ public class X509CAInfo extends CAInfo{
         this.useCertReqHistory = _useCertReqHistory;
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
-        this.cmpRaAuthSecret = _cmpRaAuthSecret;
+        setCmpRaAuthSecret(_cmpRaAuthSecret);
         this.authorityInformationAccess = authorityInformationAccess;
         
     }
 
-    /**
-     * Constructor that should be used when updating CA data.
-     * Used by the web. Jsp and stuff like that.
-     */
-    public X509CAInfo(final int caid, final long validity, final CATokenInfo catokeninfo, final String description,
+    /** Constructor that should be used when updating CA data. */
+    public X509CAInfo(final int caid, final long validity, final CAToken catoken, final String description,
     		final long crlperiod, final long crlIssueInterval, final long crlOverlapTime, final long deltacrlperiod, 
     		final Collection<Integer> crlpublishers, final boolean useauthoritykeyidentifier, final boolean authoritykeyidentifiercritical,
     		final boolean usecrlnumber, final boolean crlnumbercritical, final String defaultcrldistpoint, final String defaultcrlissuer, 
@@ -153,7 +146,7 @@ public class X509CAInfo extends CAInfo{
     		final boolean _useUserStorage, final boolean _useCertificateStorage, final String _cmpRaAuthSecret) {        
         this.caid = caid;
         this.validity=validity;
-        this.catokeninfo = catokeninfo; 
+        this.catoken = catoken;
         this.description = description;        
         this.crlperiod = crlperiod;
         this.crlIssueInterval = crlIssueInterval;
@@ -184,7 +177,7 @@ public class X509CAInfo extends CAInfo{
         this.useCertReqHistory = _useCertReqHistory;
         this.useUserStorage = _useUserStorage;
         this.useCertificateStorage = _useCertificateStorage;
-        this.cmpRaAuthSecret = _cmpRaAuthSecret;
+        setCmpRaAuthSecret(_cmpRaAuthSecret);
         this.authorityInformationAccess = authorityInformationAccess;
     }
   
@@ -204,8 +197,7 @@ public class X509CAInfo extends CAInfo{
   public void setCRLNumberCritical(boolean crlnumbercritical){ this.crlnumbercritical=crlnumbercritical;}
   
   public boolean getUseAuthorityKeyIdentifier(){ return useauthoritykeyidentifier;}
-  public void setUseAuthorityKeyIdentifier(boolean useauthoritykeyidentifier)
-                {this.useauthoritykeyidentifier=useauthoritykeyidentifier;}
+  public void setUseAuthorityKeyIdentifier(boolean useauthoritykeyidentifier) {this.useauthoritykeyidentifier=useauthoritykeyidentifier;}
   
   public boolean getAuthorityKeyIdentifierCritical(){ return authoritykeyidentifiercritical;}
   public void setAuthorityKeyIdentifierCritical(boolean authoritykeyidentifiercritical)
@@ -268,7 +260,7 @@ public class X509CAInfo extends CAInfo{
   }
   
   public String getCmpRaAuthSecret() { return cmpRaAuthSecret; }
-  public void setCmpRaAuthSecret(String cmpRaAuthSecret) { this.cmpRaAuthSecret = cmpRaAuthSecret; }
+  public void setCmpRaAuthSecret(String cmpRaAuthSecret) { this.cmpRaAuthSecret = cmpRaAuthSecret == null ? "" : cmpRaAuthSecret; }
 
     public List<String> getAuthorityInformationAccess() {
         return authorityInformationAccess;

@@ -56,7 +56,7 @@ public class ProtectedDataPKCS11Test extends ProtectedData {
     	// Create a PKCS#11 crypto token
     	CryptoToken token = PKCS11CryptoTokenTest.createPKCS11Token();
 	    token.activate(PKCS11CryptoTokenTest.tokenpin.toCharArray());
-	    token.deleteEntry(PKCS11CryptoTokenTest.tokenpin.toCharArray(), "dbProtKey");
+	    token.deleteEntry("dbProtKey");
 	    token.generateKeyPair("1024", "dbProtKey");
 	    try {
 		    Properties prop = token.getProperties();
@@ -91,7 +91,7 @@ public class ProtectedDataPKCS11Test extends ProtectedData {
 	    		// NOPMD
 	    	}	    	
 	    } finally {
-	    	token.deleteEntry(PKCS11CryptoTokenTest.tokenpin.toCharArray(), "dbProtKey");
+	    	token.deleteEntry("dbProtKey");
 	    }
     }
 

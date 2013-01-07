@@ -39,7 +39,6 @@ import java.util.Date;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
@@ -81,10 +80,9 @@ import org.cesecore.certificates.ca.CAExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CVCCAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
 import org.cesecore.certificates.ca.InvalidAlgorithmException;
 import org.cesecore.certificates.ca.catoken.CAToken;
-import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.request.CVCRequestMessage;
@@ -102,10 +100,9 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.DnComponents;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -115,7 +112,6 @@ import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.StringTools;
 import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.config.WebConfiguration;
 import org.ejbca.core.ejb.ca.CaTestCase;
@@ -2338,7 +2334,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // Create the request with WS API
         request = ejbcaraws.caRenewCertRequest(caname, cachain, false, false, false, pwd);
         // make the mandatory junit checks...
-        assertNotNull(request);
+        assertNotNull("ejbcaraws.caRenewCertRequest returned null", request);
         CVCRequestMessage cvcreq = RequestMessageUtils.genCVCRequestMessage(request);
         assertNotNull(cvcreq);
         assertEquals(dvinfo.getSubjectDN(), cvcreq.getRequestDN());
@@ -2371,7 +2367,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         /*
          * Second test is to renew a CA signed by an external CA *with renewing
          * the keys*, and activating them. This creates a new key pair and a
-         * certificate request. Status is set to
+         * certificate request.
+         * 
+         * Old behavior (where activate meant "start using"): Status is set to
          * "waiting for certificate response" because the new keys can not be
          * used until we have receive a certificate.
          */
@@ -2397,10 +2395,11 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         // The request should be targeted for the CVCA, i.e. ca_ref in request should be the same as the CVCAs ref
         assertEquals(cvcacert.getCVCertificate().getCertificateBody().getAuthorityReference().getConcatenated(), cert.getCertificateBody()
                 .getAuthorityReference().getConcatenated());
-        // Now test our WS API that it has set status to "WAITING_FOR_CERTIFICATE_RESPONSE"
+        // The CA should still be ACTIVE, since it has a valid CA certificate and signing keys
         dvinfo = caSession.getCAInfo(intAdmin, caname);
-        assertEquals(CAConstants.CA_WAITING_CERTIFICATE_RESPONSE, dvinfo.getStatus());
-        assertEquals("DV should not be available", ejbcaraws.getLastCAChain(caname).size(), 0);
+        assertEquals(CAConstants.CA_ACTIVE, dvinfo.getStatus());
+        final List<Certificate> lastCaChain = ejbcaraws.getLastCAChain(caname);
+        assertEquals("DV should still be available after creating a CSR", 2, lastCaChain.size());
         // Check to see that is really is a new keypair
         pubk1 = new String(Base64.encode(dvcertactive.getPublicKey().getEncoded(), false));
         pubk2 = new String(Base64.encode(cert.getCertificateBody().getPublicKey().getEncoded(), false));
@@ -2412,6 +2411,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                 dvholderref, signalg, AuthorizationRoleEnum.DV_D);
         ejbcaraws.caCertResponse(caname, dvretcert.getDEREncoded(), cachain, pwd);
         // Check that the cert was received and the CA activated
+        final List<Certificate> lastCaChain2 = ejbcaraws.getLastCAChain(caname);
+        assertEquals("DV should still be available after recieving response.", 2, lastCaChain2.size());
+        assertFalse("DV chain should have changed after recieving response.", lastCaChain2.get(0).getCertificateData().equals(lastCaChain.get(0).getCertificateData()));
         dvinfo = caSession.getCAInfo(intAdmin, caname);
         assertEquals(CAConstants.CA_ACTIVE, dvinfo.getStatus());
         dvcerts = dvinfo.getCertificateChain();
@@ -2709,33 +2711,20 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
     } // cleanUpAdmins
 
-    /**
-     * Create a CVCA, and a DV CA signed by the CVCA
-     * 
-     */
+    /** Create a CVCA, and a DV CA signed by the CVCA */
     private void createCVCCA(String rootcadn, String rootcaname, String subcadn, String subcaname, String keyspec, String signalg)
             throws Exception {
-        CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(signalg);
-        catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
-        Properties prop = catokeninfo.getProperties();
-        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, keyspec);
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-        catokeninfo.setProperties(prop);
+        final int cryptoTokenId1 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(intAdmin, rootcaname, keyspec);
+        final CAToken catoken1 = CaSessionTest.createCaToken(cryptoTokenId1, signalg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
+        final int cryptoTokenId2 = CryptoTokenManagementSessionTest.createCryptoTokenForCA(intAdmin, subcaname, keyspec);
+        final CAToken catoken2 = CaSessionTest.createCaToken(cryptoTokenId2, signalg, AlgorithmConstants.SIGALG_SHA256_WITH_RSA_AND_MGF1);
         // No CA Services.
-        List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-
+        List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>(0);
         java.security.cert.Certificate cvcacert = null;
         int cvcaid = rootcadn.hashCode();
         try {
-
             CVCCAInfo cvccainfo = new CVCCAInfo(rootcadn, rootcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, 3650, null, // Expiretime
-                    CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catokeninfo, "JUnit WS CVC CA", -1, null, 24, // CRLPeriod
+                    CAInfo.CATYPE_CVC, CAInfo.SELFSIGNED, null, catoken1, "JUnit WS CVC CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
@@ -2751,9 +2740,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     true, // useUserStorage
                     true // useCertificateStorage
             );
-
             caAdminSessionRemote.createCA(intAdmin, cvccainfo);
-
             CAInfo info = caSession.getCAInfo(intAdmin, rootcaname);
             cvcaid = info.getCAId();
             assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
@@ -2764,11 +2751,9 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         } catch (CAExistsException pee) {
             pee.printStackTrace();
         }
-
         try {
-
             CVCCAInfo cvcdvinfo = new CVCCAInfo(subcadn, subcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
-                    CAInfo.CATYPE_CVC, cvcaid, null, catokeninfo, "JUnit WS CVC DV CA", -1, null, 24, // CRLPeriod
+                    CAInfo.CATYPE_CVC, cvcaid, null, catoken2, "JUnit WS CVC DV CA", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
@@ -2784,9 +2769,7 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     true, // useUserStorage
                     true // useCertificateStorage
             );
-
             caAdminSessionRemote.createCA(intAdmin, cvcdvinfo);
-
             CAInfo info = caSession.getCAInfo(intAdmin, subcaname);
             assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
             Collection<java.security.cert.Certificate> col = info.getCertificateChain();
@@ -2799,32 +2782,15 @@ public abstract class CommonEjbcaWS extends CaTestCase {
         }
     }
 
-    /**
-     * Create a DVCA, signed by an external CVCA
-     * 
-     */
-    private String createDVCCASignedByExternal(final String dvcaname, final String dvcaMnemonic, final String keyspec,
-            final String signalg) throws Exception {
-        CATokenInfo catokeninfo = new CATokenInfo();
-        catokeninfo.setSignatureAlgorithm(signalg);
-        catokeninfo.setEncryptionAlgorithm(signalg);
-        catokeninfo.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
-        catokeninfo.setClassPath(SoftCryptoToken.class.getName());
-        Properties prop = catokeninfo.getProperties();
-        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, keyspec);
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-        catokeninfo.setProperties(prop);
-        // No CA Services.
-        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-
+    /** Create a DVCA, signed by an external CVCA */
+    private String createDVCCASignedByExternal(final String dvcaname, final String dvcaMnemonic, final String keyspec, final String signalg) throws Exception {
+        final int cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(intAdmin, PASSWORD.toCharArray(), true, false, dvcaname, keyspec);
+        final CAToken catoken = CaSessionTest.createCaToken(cryptoTokenId, signalg, signalg);
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>(0);
         try {
             String dvcadn = "CN=" + dvcaMnemonic + ",C=SE";
-
             CVCCAInfo cvcdvinfo = new CVCCAInfo(dvcadn, dvcaname, CAConstants.CA_ACTIVE, new Date(), CertificateProfileConstants.CERTPROFILE_FIXED_SUBCA, 3650, null, // Expiretime
-                    CAInfo.CATYPE_CVC, CAInfo.SIGNEDBYEXTERNALCA, null, catokeninfo, "JUnit WS CVC DV signed by external", -1, null, 24, // CRLPeriod
+                    CAInfo.CATYPE_CVC, CAInfo.SIGNEDBYEXTERNALCA, null, catoken, "JUnit WS CVC DV signed by external", -1, null, 24, // CRLPeriod
                     0, // CRLIssueInterval
                     10, // CRLOverlapTime
                     10, // Delta CRL period
@@ -2840,7 +2806,6 @@ public abstract class CommonEjbcaWS extends CaTestCase {
                     true, // useUserStorage
                     true // useCertificateStorage
             );
-
             caAdminSessionRemote.createCA(intAdmin, cvcdvinfo);
             CAInfo info = caSession.getCAInfo(intAdmin, dvcaname);
             assertEquals(CAInfo.CATYPE_CVC, info.getCAType());
@@ -2874,8 +2839,15 @@ public abstract class CommonEjbcaWS extends CaTestCase {
 
     private void removeCAIfItExists(String dn) {
         try {
-            // Remove CA if it exists
-        	caSession.removeCA(intAdmin, dn.hashCode());
+            final int caid = dn.hashCode();
+            try {
+                int cryptoTokenId = caSession.getCAInfo(intAdmin, caid).getCAToken().getCryptoTokenId();
+                CryptoTokenManagementSessionTest.removeCryptoToken(intAdmin, cryptoTokenId);
+                // Remove CA if it exists
+                caSession.removeCA(intAdmin, caid);
+            } catch (CADoesntExistsException e) {
+                // Ok.. keep calm and carry on!
+            }
         } catch (Exception e) {
             log.error("Error removing CA: ", e);
             assertTrue("Failed to remove CA with SubjectDN '" + dn + "'", false);

@@ -33,8 +33,9 @@ import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.certificates.certificate.CertificateStoreSession;
 import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSession;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.ejbca.config.CmpConfiguration;
@@ -69,16 +70,18 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
     private EndEntityAccessSession endEntityAccessSession;
     /** Certificate Store Session used to authenticate the request */
     private CertificateStoreSession certificateStoreSession;
+    private CryptoTokenSessionLocal cryptoTokenSession;
 	
 	public ConfirmationMessageHandler(AuthenticationToken admin, CaSessionLocal caSession, EndEntityProfileSessionLocal endEntityProfileSession,
             CertificateProfileSession certificateProfileSession, CertificateStoreSession certStoreSession, AccessControlSession authSession,
-            EndEntityAccessSession eeAccessSession, WebAuthenticationProviderSessionLocal authProvSession) {
+            EndEntityAccessSession eeAccessSession, WebAuthenticationProviderSessionLocal authProvSession, CryptoTokenSessionLocal cryptoTokenSession) {
 
 		super(admin, caSession, endEntityProfileSession, certificateProfileSession);
 		responseProtection = CmpConfiguration.getResponseProtection();
 		this.caSession = caSession;
         this.endEntityAccessSession = eeAccessSession;
         this.certificateStoreSession = certStoreSession;
+        this.cryptoTokenSession = cryptoTokenSession;
 	}
 	public ResponseMessage handleMessage(BaseCmpMessage msg, boolean authenticated) {
 		if (LOG.isTraceEnabled()) {
@@ -184,15 +187,14 @@ public class ConfirmationMessageHandler extends BaseCmpMessageHandler implements
             }
             if (ca != null) {
                 CAToken catoken = ca.getCAToken();
-                cresp.setSignKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken().getSignProviderName());
+                final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(catoken.getCryptoTokenId());
+                cresp.setSignKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)), cryptoToken.getSignProviderName());
             } else {
                 if (LOG.isDebugEnabled()) {
                     LOG.info("Could not find CA to sign Certificate Confirm, either from recipient ("+cadn+") or default ("+CmpConfiguration.getDefaultCA()+"). Not signing Certificate Confirm.");
                 }
             }
         } catch (CADoesntExistsException e) {
-            LOG.error("Exception during CMP response signing: ", e);            
-        } catch (IllegalCryptoTokenException e) {
             LOG.error("Exception during CMP response signing: ", e);            
         } catch (CryptoTokenOfflineException e) {
             LOG.error("Exception during CMP response signing: ", e);            

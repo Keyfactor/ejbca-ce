@@ -22,8 +22,6 @@ import org.apache.log4j.Logger;
 /**
  * This file handles configuration from ejbca.properties
  * 
- * Based on EJBCA (EjbcaConfiguration) version: 
- *      EjbcaConfiguration.java 11077 2011-01-07 08:06:11Z anatom
  * Based on CESeCore version:
  *      CesecoreConfiguration.java 897 2011-06-20 11:17:25Z johane
  * 
@@ -158,6 +156,17 @@ public final class CesecoreConfiguration {
             time = Long.valueOf(ConfigurationHolder.getString("cainfo.cachetime"));
         } catch (NumberFormatException e) {
             log.error("Invalid value in cainfo.cachetime, must be decimal number (milliseconds to cache CA info): " + e.getMessage());
+        }
+        return time;
+    }
+
+    /** @return configuration for when cached CryptoTokens are considered stale and will be refreshed from the database. */
+    public static long getCacheTimeCryptoToken() {
+        long time = -1; // don't cache at all is the default
+        try {
+            time = Long.valueOf(ConfigurationHolder.getString("cryptotoken.cachetime"));
+        } catch (NumberFormatException e) {
+            log.error("Invalid value in cryptotoken.cachetime, must be decimal number (milliseconds): " + e.getMessage());
         }
         return time;
     }

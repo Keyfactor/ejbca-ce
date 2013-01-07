@@ -69,7 +69,7 @@ public class DummyCryptoToken extends BaseCryptoToken {
     }
 
     @Override
-    public void deleteEntry(final char[] authenticationCode, final String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {    	
+    public void deleteEntry(final String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {    	
     }
 
     @Override

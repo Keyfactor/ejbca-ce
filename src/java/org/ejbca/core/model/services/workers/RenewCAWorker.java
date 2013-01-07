@@ -20,12 +20,9 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 import org.cesecore.authorization.AuthorizationDeniedException;
-import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CADoesntExistsException;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionLocal;
-import org.cesecore.certificates.ca.catoken.CATokenInfo;
-import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
@@ -83,14 +80,13 @@ public class RenewCAWorker extends BaseWorker {
 					if (expire.before(new Date(expiretime))) {
 						// Only try to renew active CAs
 						// There should be other monitoring available to check if CAs that should not be off-line are off-line (HealthCheck)
-						CATokenInfo tokeninfo = info.getCATokenInfo();
-						log.debug("CA status is "+info.getStatus()+", CA token status is "+tokeninfo.getTokenStatus());
-						if ( (info.getStatus() == CAConstants.CA_ACTIVE) && (tokeninfo.getTokenStatus() == CryptoToken.STATUS_ACTIVE) ) {
-							caAdminSession.renewCA(getAdmin(), info.getCAId(), null, isRenewKeys(), null);					
-						} else {
-							log.debug("Not trying to renew CA because CA and token status are not on-line.");
-						}
-					}				
+					    try {
+					        final boolean createLinkCertificate = isRenewKeys();   // We want link certs for new key..
+					        caAdminSession.renewCA(getAdmin(), info.getCAId(), isRenewKeys(), null, createLinkCertificate);
+					    } catch (CryptoTokenOfflineException e) {
+					        log.info("Not trying to renew CA because CA and token status are not on-line.");
+					    }
+					}
 				} else {
 					String msg = intres.getLocalizedMessage("services.errorworker.errornoca", caid, caname);
 					log.error(msg);
@@ -100,8 +96,6 @@ public class RenewCAWorker extends BaseWorker {
 			} catch (CryptoTokenAuthenticationFailedException e) {
 				log.error("Error renewing CA: ", e);
 			} catch (CertPathValidatorException e) {
-				log.error("Error renewing CA: ", e);
-			} catch (CryptoTokenOfflineException e) {
 				log.error("Error renewing CA: ", e);
 			} catch (AuthorizationDeniedException e) {
 				log.error("Error renewing CA: ", e);

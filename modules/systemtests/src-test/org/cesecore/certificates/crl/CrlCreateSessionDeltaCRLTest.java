@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.X509KeyUsage;
 import org.cesecore.RoleUsingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
@@ -39,9 +38,11 @@ import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.CaSessionTest;
-import org.cesecore.certificates.certificate.CertificateConstants;
+import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
 import org.cesecore.certificates.certificate.InternalCertificateStoreSessionRemote;
+import org.cesecore.certificates.certificate.request.SimpleRequestMessage;
+import org.cesecore.certificates.certificate.request.X509ResponseMessage;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityConstants;
@@ -50,6 +51,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.certificates.util.cert.CrlExtensions;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -59,6 +61,7 @@ import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -66,15 +69,13 @@ import org.junit.Test;
 /**
  * Tests Delta CRLs.
  * 
- * Based on EJBCA version: DeltaCRLTest.java 11010 2010-12-29 17:40:11Z jeklund
- * 
  * @version $Id$
  */
 public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
 
     private static final Logger log = Logger.getLogger(CrlCreateSessionDeltaCRLTest.class);
     
-    private static final String X509CADN = "CN=TEST";
+    private static final String X509CADN = "CN=" + CrlCreateSessionDeltaCRLTest.class.getSimpleName();
     private static CA testx509ca;
 
 	private static final String USERNAME = "deltacrltest";
@@ -82,6 +83,7 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
     private CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
     private RoleManagementSessionRemote roleManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleManagementSessionRemote.class);
+    private CertificateCreateSessionRemote certificateCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateCreateSessionRemote.class);
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class);
     private CrlStoreSessionRemote crlStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlStoreSessionRemote.class);
     private CrlCreateSessionRemote crlCreateSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CrlCreateSessionRemote.class);
@@ -91,35 +93,36 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
     
     private final AuthenticationToken alwaysAllowToken = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("CrlCreateSessionCRLTest"));
 
-    
     @BeforeClass
-    public static void createProvider() throws Exception {
+    public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProvider();
         testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
     
+    @AfterClass
+    public static void afterClass() {
+        CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
+    }
+    
     @Before
     public void setUp() throws Exception {
     	// Set up base role that can edit roles
-    	setUpAuthTokenAndRole("DeltaCrlCreateSessionTest");
-
+    	setUpAuthTokenAndRole(this.getClass().getSimpleName());
     	// Now we have a role that can edit roles, we can edit this role to include more privileges
-    	RoleData role = roleAccessSession.findRole("DeltaCrlCreateSessionTest");
-
+    	RoleData role = roleAccessSession.findRole(this.getClass().getSimpleName());
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAADD.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAEDIT.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAREMOVE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECRL.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, true));
         roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
-
         // Remove any lingering testca before starting the tests
         caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
         // Now add the test CA so it is available in the tests
         caSession.addCA(alwaysAllowToken, testx509ca);
-
     }
 
     @After
@@ -379,18 +382,12 @@ public class CrlCreateSessionDeltaCRLTest extends RoleUsingTestCase {
     //
 
     private X509Certificate createCert() throws Exception {
-        // Make user that we know...
         EndEntityInformation user = new EndEntityInformation(USERNAME, "C=SE,O=AnaTom,CN=deltacrltest", testx509ca.getCAId(), null, "deltacrltest@anatom.se", new EndEntityType(EndEntityTypes.ENDUSER), 0,
                 CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, EndEntityConstants.TOKEN_USERGEN, 0, null);
-        // user that we know exists...
-        CertificateProfile cp = new CertificateProfile(CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER);
-        int keyusage = X509KeyUsage.digitalSignature | X509KeyUsage.keyEncipherment;
-        X509Certificate cert = (X509Certificate)testx509ca.generateCertificate(user, keys.getPublic(), keyusage, null, 10, cp, "00001");
-
-        certificateStoreSession.storeCertificate(roleMgmgToken, cert, USERNAME, "1234", CertificateConstants.CERT_ACTIVE, 
-        		CertificateConstants.CERTTYPE_ENDENTITY, CertificateProfileConstants.CERTPROFILE_FIXED_ENDUSER, "footag", System.currentTimeMillis());
+        SimpleRequestMessage req = new SimpleRequestMessage(keys.getPublic(), user.getUsername(), user.getPassword());
+        X509ResponseMessage resp = (X509ResponseMessage)certificateCreateSession.createCertificate(roleMgmgToken, user, req, org.cesecore.certificates.certificate.request.X509ResponseMessage.class);
+        X509Certificate cert = (X509Certificate)resp.getCertificate();
         assertNotNull("Failed to create certificate", cert);
         return cert;
     }
-
 }

@@ -37,6 +37,7 @@ import org.cesecore.certificates.certificate.request.ResponseMessage;
 import org.cesecore.certificates.certificate.request.ResponseStatus;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionLocal;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.config.CmpConfiguration;
 import org.ejbca.core.ejb.authentication.web.WebAuthenticationProviderSessionLocal;
@@ -94,6 +95,8 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 	private AccessControlSessionLocal authSession;
 	@EJB
 	private WebAuthenticationProviderSessionLocal authenticationProviderSession;
+	@EJB
+	private CryptoTokenSessionLocal cryptoTokenSession;
 	
 	@PostConstruct
 	public void postConstruct() {
@@ -165,12 +168,14 @@ public class CmpMessageDispatcherSessionBean implements CmpMessageDispatcherSess
 				// PKI confirm (pkiconf, Confirmation)
 			case 24:
 				// Certificate confirmation (certConf, Certificate confirm)
-				handler = new ConfirmationMessageHandler(admin, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession);
+				handler = new ConfirmationMessageHandler(admin, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession,
+				        endEntityAccessSession, authenticationProviderSession, cryptoTokenSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
 			case 11:
 				// Revocation request (rr, Revocation Request)
-				handler = new RevocationMessageHandler(admin, endEntityManagementSession, caSession, endEntityProfileSession, certificateProfileSession, certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession);
+				handler = new RevocationMessageHandler(admin, endEntityManagementSession, caSession, endEntityProfileSession, certificateProfileSession,
+				        certificateStoreSession, authSession, endEntityAccessSession, authenticationProviderSession, cryptoTokenSession);
 				cmpMessage = new GeneralCmpMessage(req);
 				break;
             case 20:

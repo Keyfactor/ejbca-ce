@@ -17,6 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.KeyPair;
 import java.security.PublicKey;
@@ -34,8 +35,8 @@ import org.apache.commons.lang.ArrayUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -48,15 +49,14 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
-import org.cesecore.certificates.ca.internal.CATokenCacheManager;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.crl.RevokedCertInfo;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.internal.UpgradeableDataHashMap;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -64,8 +64,6 @@ import org.cesecore.util.ValidityDate;
 
 /**
  * CA is a base class that should be inherited by all CA types
- * 
- * Based on EJBCA version: CA.java 11112 2011-01-09 16:17:33Z anatom
  * 
  * @version $Id$
  */
@@ -114,6 +112,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     private static final String USE_CERTREQ_HISTORY = "useCertreqHistory";
     private static final String USE_USER_STORAGE = "useUserStorage";
     private static final String USE_CERTIFICATE_STORAGE = "useCertificateStorage";
+    private static final String LATESTLINKCERTIFICATE = "latestLinkCertificate";
 
     private HashMap<Integer, ExtendedCAService> extendedcaservicemap = new HashMap<Integer, ExtendedCAService>();
 
@@ -121,6 +120,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     private ArrayList<Certificate> requestcertchain = null;
 
     private CAInfo cainfo = null;
+    private CAToken caToken = null;
 
     /** Creates a new instance of CA, this constructor should be used when a new CA is created */
     public CA(CAInfo cainfo) {
@@ -129,7 +129,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         this.cainfo = cainfo;
 
         data.put(VALIDITY, Long.valueOf(cainfo.getValidity()));
-        data.put(SIGNEDBY, Integer.valueOf(cainfo.getSignedBy()));
+        setSignedBy(cainfo.getSignedBy());
         data.put(DESCRIPTION, cainfo.getDescription());
         data.put(REVOCATIONREASON, Integer.valueOf(-1));
         data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
@@ -259,6 +259,10 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         return ((Integer) data.get(SIGNEDBY)).intValue();
     }
 
+    public void setSignedBy(int signedby) {
+        data.put(SIGNEDBY, Integer.valueOf(signedby));
+    }
+
     public String getDescription() {
         return ((String) data.get(DESCRIPTION));
     }
@@ -332,72 +336,46 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         return ((Integer) data.get(CERTIFICATEPROFILEID)).intValue();
     }
 
-    /**
-     * Returns the CAs token. The token is fetched from the token registry, or created and added to the token registry.
-     * 
-     * @return The CAs token, be it soft or hard.
-     * @throws IllegalCryptoTokenException If the token keystore is invalid (crypto error thrown by crypto provider), or the CA token type is
-     *             undefined.
-     * @throws
-     */
-    protected CAToken getCAToken(int caid) throws IllegalCryptoTokenException {
-        CAToken ret = CATokenCacheManager.instance().getCAToken(caid);
-        if (ret == null) {
-            // Not cached we have to create the crypto token
+    /** @return the CAs token reference. */
+    public CAToken getCAToken() {
+        if (caToken == null) {
             @SuppressWarnings("unchecked")
             HashMap<String, String> tokendata = (HashMap<String, String>) data.get(CATOKENDATA);
-            ret = new CAToken(tokendata, caid);
+            final CAToken ret = new CAToken(tokendata);
             String signaturealg = tokendata.get(CAToken.SIGNATUREALGORITHM);
             String encryptionalg = tokendata.get(CAToken.ENCRYPTIONALGORITHM);
             String keysequence = CAToken.DEFAULT_KEYSEQUENCE;
             Object seqo = tokendata.get(CAToken.SEQUENCE);
             if (seqo != null) {
-                keysequence = (String)seqo;            	
+                keysequence = (String)seqo;             
             }
             int keysequenceformat = StringTools.KEY_SEQUENCE_FORMAT_NUMERIC;
             Object seqfo = tokendata.get(CAToken.SEQUENCE_FORMAT);
             if (seqfo != null) {
-            	keysequenceformat = (Integer)seqfo;            	
+                keysequenceformat = (Integer)seqfo;             
             }
             // Set values for new CA token
             ret.setSignatureAlgorithm(signaturealg);
             ret.setEncryptionAlgorithm(encryptionalg);
             ret.setKeySequence(keysequence);
             ret.setKeySequenceFormat(keysequenceformat);
-
-            CATokenCacheManager.instance().addCAToken(caid, ret);
+            caToken = ret;
         }
-        return ret;
+        return caToken;
     }
 
-    /**
-     * Returns the CAs token. The token is fetched from the token registry, or created and added to the token registry.
-     * 
-     * @return The CAs token, be it soft or hard.
-     * @throws IllegalCryptoTokenException If the token keystore is invalid (crypto error thrown by crypto provider), or the CA token type is
-     *             undefined.
-     */
-    public CAToken getCAToken() throws IllegalCryptoTokenException {
-        return getCAToken(getCAId());
-    }
-
-    /**
-     * Sets the CA token. Adds or updates the token in the token registry.
-     * 
-     * @param catoken The CAs token, be it soft or hard.
-     * @throws InvalidAlgorithmException 
-     */
+    /** Sets the CA token. */
     public void setCAToken(CAToken catoken) throws InvalidAlgorithmException {
         // Check that the signature algorithm is one of the allowed ones, only check if there is a sigAlg though
     	// things like a NulLCryptoToken does not have signature algorithms
-    	final String sigAlg = catoken.getTokenInfo().getSignatureAlgorithm();
+    	final String sigAlg = catoken.getSignatureAlgorithm();
     	if (StringUtils.isNotEmpty(sigAlg)) {
             if (!ArrayUtils.contains(AlgorithmConstants.AVAILABLE_SIGALGS, sigAlg)) {
                 final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", sigAlg, ArrayUtils.toString(AlgorithmConstants.AVAILABLE_SIGALGS));
                 throw new InvalidAlgorithmException(msg);        	
             }    		
     	}
-    	final String encAlg = catoken.getTokenInfo().getEncryptionAlgorithm();
+    	final String encAlg = catoken.getEncryptionAlgorithm();
     	if (StringUtils.isNotEmpty(encAlg)) {
     		if (!ArrayUtils.contains(AlgorithmConstants.AVAILABLE_SIGALGS, encAlg)) {
     			final String msg = intres.getLocalizedMessage("createcert.invalidsignaturealg", encAlg, ArrayUtils.toString(AlgorithmConstants.AVAILABLE_SIGALGS));
@@ -405,21 +383,17 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     		}
     	}
         data.put(CATOKENDATA, catoken.saveData());
-        CATokenCacheManager.instance().addCAToken(getCAId(), catoken);
+        this.caToken = catoken;
     }
 
-    /**
-     * Returns a collection of CA certificates, or null if no request certificate chain exists
-     */
+    /** Returns a collection of CA certificates, or null if no request certificate chain exists */
     public Collection<Certificate> getRequestCertificateChain() {
         if (requestcertchain == null) {
             @SuppressWarnings("unchecked")
-            Collection<String> storechain = (Collection<String>) data.get(REQUESTCERTCHAIN);
+            final Collection<String> storechain = (Collection<String>) data.get(REQUESTCERTCHAIN);
             if (storechain != null) {
-                Iterator<String> iter = storechain.iterator();
                 this.requestcertchain = new ArrayList<Certificate>();
-                while (iter.hasNext()) {
-                    String b64Cert = (String) iter.next();
+                for (final String b64Cert : storechain) {
                     try {
                         this.requestcertchain.add(CertTools.getCertfromByteArray(Base64.decode(b64Cert.getBytes())));
                     } catch (Exception e) {
@@ -432,19 +406,15 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     public void setRequestCertificateChain(Collection<Certificate> requestcertificatechain) {
-        Iterator<Certificate> iter = requestcertificatechain.iterator();
-        ArrayList<String> storechain = new ArrayList<String>();
-        while (iter.hasNext()) {
-            Certificate cert = iter.next();
+        final ArrayList<String> storechain = new ArrayList<String>();
+        for (final Certificate cert : requestcertificatechain) {
             try {
-                String b64Cert = new String(Base64.encode(cert.getEncoded()));
-                storechain.add(b64Cert);
+                storechain.add(new String(Base64.encode(cert.getEncoded())));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         }
         data.put(REQUESTCERTCHAIN, storechain);
-
         this.requestcertchain = new ArrayList<Certificate>();
         this.requestcertchain.addAll(requestcertificatechain);
     }
@@ -505,8 +475,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         this.cainfo.setCertificateChain(certificatechain);
     }
 
-    /* Returns the CAs certificate, or null if no CA-certificates exist.
-     */
+    /** Returns the CAs certificate, or null if no CA-certificates exist. */
     public Certificate getCACertificate() {
         if (certificatechain == null) {
             getCertificateChain();
@@ -603,10 +572,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     }
 
     /**
-     * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals, default none
-     * 
-     * 
-     * @return Collection of Integer, never null
+     * Returns a collection of Integers (CAInfo.REQ_APPROVAL_ constants) of which action that requires approvals,
+     * default none and never null.
      */
     @SuppressWarnings("unchecked")
     public Collection<Integer> getApprovalSettings() {
@@ -640,7 +607,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         data.put(NUMBEROFREQAPPROVALS, Integer.valueOf(numOfReqApprovals));
     }
 
-    public void updateCA(CAInfo cainfo) throws IllegalCryptoTokenException {
+    public void updateCA(CryptoToken cryptoToken, CAInfo cainfo) throws InvalidAlgorithmException {
         data.put(VALIDITY, Long.valueOf(cainfo.getValidity()));
         data.put(DESCRIPTION, cainfo.getDescription());
         data.put(CRLPERIOD, Long.valueOf(cainfo.getCRLPeriod()));
@@ -653,14 +620,8 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         if (cainfo.getCertificateProfileId() > 0) {
             data.put(CERTIFICATEPROFILEID, Integer.valueOf(cainfo.getCertificateProfileId()));
         }
-        CAToken token = getCAToken();
-        if ((token != null) && (cainfo.getCATokenInfo() != null)) {
-            token.updateTokenInfo(cainfo.getCATokenInfo());
-            try {
-				setCAToken(token);
-			} catch (InvalidAlgorithmException e) {
-				throw new IllegalCryptoTokenException(e);
-			}
+        if (cainfo.getCAToken() != null) {
+            setCAToken(cainfo.getCAToken());
         }
         setFinishUser(cainfo.getFinishUser());
         setIncludeInHealthCheck(cainfo.getIncludeInHealthCheck());
@@ -676,7 +637,6 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
             Certificate cacert = newcerts.iterator().next();
             setExpireTime(CertTools.getNotAfter(cacert));  
         }
-
         // Update or create extended CA services
         Collection<ExtendedCAServiceInfo> infos = cainfo.getExtendedCAServiceInfos();
         if (infos != null) {
@@ -695,7 +655,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
                     if (log.isDebugEnabled()) {
                         log.debug("Updating extended CA service of type: "+info.getType());
                     }
-                    service.update(info, this);
+                    service.update(cryptoToken, info, this);
                     setExtendedCAService(service);
                 }
             }
@@ -717,7 +677,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @return
      * @throws Exception
      */
-    public Certificate generateCertificate(EndEntityInformation subject, PublicKey publicKey, int keyusage, Date notBefore, long validity,
+    public Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, PublicKey publicKey, int keyusage, Date notBefore, long validity,
             CertificateProfile certProfile, String sequence) throws Exception {
         // Calculate the notAfter date
         if (notBefore == null) {
@@ -729,11 +689,12 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         } else {
             notAfter = null;
         }
-        return generateCertificate(subject, null, publicKey, keyusage, notBefore, notAfter, certProfile, null, sequence);
+        return generateCertificate(cryptoToken, subject, null, publicKey, keyusage, notBefore, notAfter, certProfile, null, sequence);
     }
 
     /**
      * 
+     * @param cryptoToken 
      * @param subject
      * @param requestX500Name if the certificate profile allows subject DN override this value will be used instead of the value from subject.getDN
      * @param publicKey
@@ -748,14 +709,14 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @return
      * @throws Exception
      */
-    public abstract Certificate generateCertificate(EndEntityInformation subject, X500Name requestX500Name, PublicKey publicKey, int keyusage,
+    public abstract Certificate generateCertificate(CryptoToken cryptoToken, EndEntityInformation subject, X500Name requestX500Name, PublicKey publicKey, int keyusage,
             Date notBefore, Date notAfter, CertificateProfile certProfile, Extensions extensions, String sequence) throws Exception;
 
-    public abstract X509CRLHolder generateCRL(Collection<RevokedCertInfo> certs, int crlnumber) throws Exception;
+    public abstract X509CRLHolder generateCRL(CryptoToken cryptoToken,Collection<RevokedCertInfo> certs, int crlnumber) throws Exception;
 
-    public abstract X509CRLHolder generateDeltaCRL(Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws Exception;
+    public abstract X509CRLHolder generateDeltaCRL(CryptoToken cryptoToken, Collection<RevokedCertInfo> certs, int crlnumber, int basecrlnumber) throws Exception;
 
-    public abstract byte[] createPKCS7(Certificate cert, boolean includeChain) throws SignRequestSignatureException;
+    public abstract byte[] createPKCS7(CryptoToken cryptoToken, Certificate cert, boolean includeChain) throws SignRequestSignatureException;
 
     /**
      * Creates a certificate signature request CSR), that can be sent to an external Root CA. Request format can vary depending on the type of CA. For
@@ -769,32 +730,20 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      *            be SecConst.CAKEYPURPOSE_CERTSIGN_NEXT.
      * @return byte array with binary encoded request
      */
-    public abstract byte[] createRequest(Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose)
+    public abstract byte[] createRequest(CryptoToken cryptoToken, Collection<ASN1Encodable> attributes, String signAlg, Certificate cacert, int signatureKeyPurpose)
             throws CryptoTokenOfflineException;
 
-    /**
-     * Signs a certificate signature request CSR), that can be sent to an external CA. This signature can be use to authenticate the original request.
-     * mainly used for CVC CAs where the CVC requests is created and (self)signed by the DV and then the CVCA adds an outer signature to the request.
-     * The signature algorithm used to sign the request will be whatever algorithm the CA uses to sign certificates.
-     * 
-     * @param request the binary coded request to be signed
-     * @param usepreviouskey true if the CAs previous key should be used to sign the request, if the CA has generated new keys. Primarily used to
-     *            create authenticated CVC requests.
-     * @param createlinkcert true if the signed request should be a link certificate. Primarily used to create CVC link certificates.
-     * @return byte array with binary encoded signed request or the original request of the CA can not create an additional signature on the passed in
-     *         request.
-     */
-    public abstract byte[] signRequest(byte[] request, boolean usepreviouskey, boolean createlinkcert) throws CryptoTokenOfflineException;
+    public abstract byte[] createAuthCertSignRequest(CryptoToken cryptoToken, byte[] request) throws CryptoTokenOfflineException;
 
-    public byte[] encryptKeys(KeyPair keypair) throws Exception {
+    public byte[] encryptKeys(CryptoToken cryptoToken, KeyPair keypair) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ObjectOutputStream os = new ObjectOutputStream(baos);
         os.writeObject(keypair);
-        return encryptData(baos.toByteArray(), CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+        return encryptData(cryptoToken, baos.toByteArray(), CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
     }
 
-    public KeyPair decryptKeys(byte[] data) throws Exception {
-        byte[] recdata = decryptData(data, CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+    public KeyPair decryptKeys(CryptoToken cryptoToken, byte[] data) throws Exception {
+        byte[] recdata = decryptData(cryptoToken, data, CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
         ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(recdata));
         return (KeyPair) ois.readObject();
     }
@@ -806,7 +755,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param keyPurpose should be one of the SecConst.CAKEYPURPOSE_ constants
      * @return encrypted data
      */
-    public abstract byte[] encryptData(byte[] data, int keyPurpose) throws Exception;
+    public abstract byte[] encryptData(CryptoToken cryptoToken, byte[] data, int keyPurpose) throws Exception;
 
     /**
      * General encryption method used to decrypt using a CA
@@ -815,7 +764,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @param keyPurpose should be one of the SecConst.CAKEYPURPOSE_ constants
      * @return decrypted data
      */
-    public abstract byte[] decryptData(byte[] data, int cAKeyPurpose) throws Exception;
+    public abstract byte[] decryptData(CryptoToken cryptoToken, byte[] data, int cAKeyPurpose) throws Exception;
 
     // Methods used with extended services
     /**
@@ -823,18 +772,15 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * 
      * @param info contains information used to activate the service.
      */
-    public void initExtendedService(int type, CA ca) throws Exception {
+    public void initExtendedService(CryptoToken cryptoToken, int type, CA ca) throws Exception {
         ExtendedCAService service = getExtendedCAService(type);
         if (service != null) {
-            service.init(ca);
+            service.init(cryptoToken, ca);
             setExtendedCAService(service);
         }
     }
 
-    /**
-     * Method used to retrieve information about the service.
-     */
-
+    /** Method used to retrieve information about the service. */
     public ExtendedCAServiceInfo getExtendedCAServiceInfo(int type) {
         ExtendedCAServiceInfo ret = null;
         ExtendedCAService service = getExtendedCAService(type);
@@ -850,7 +796,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
      * @throws CertificateException 
      * @throws CertificateEncodingException 
      */
-    public ExtendedCAServiceResponse extendedService(ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
+    public ExtendedCAServiceResponse extendedService(CryptoToken cryptoToken, ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
             IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CertificateEncodingException, CertificateException, OperatorCreationException {
         ExtendedCAService service = getExtendedCAService(request.getServiceType());
         if (service == null) {
@@ -860,7 +806,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         }
         // Enrich request with CA in order for the service to be able to use CA keys and certificates
         service.setCA(this);
-        return service.extendedService(request);
+        return service.extendedService(cryptoToken, request);
     }
 
     @SuppressWarnings("rawtypes")
@@ -922,10 +868,7 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
         extendedcaservicemap.put(Integer.valueOf(info.getType()), extendedcaservice);
     }
 
-    /**
-     * Returns a Collection of ExternalCAServices (int) added to this CA.
-     * 
-     */
+    /** Returns a Collection of ExternalCAServices (int) added to this CA. */
     @SuppressWarnings("unchecked")
     public Collection<Integer> getExternalCAServiceTypes() {
         if (data.get(EXTENDEDCASERVICES) == null) {
@@ -937,7 +880,34 @@ public abstract class CA extends UpgradeableDataHashMap implements Serializable 
     /**
      * Method to upgrade new (or existing externacaservices) This method needs to be called outside the regular upgrade since the CA isn't
      * instantiated in the regular upgrade.
-     * 
      */
     public abstract boolean upgradeExtendedCAServices();
+
+    /** Create a certificate with all the current CA certificate info, but signed by the old issuer */
+    public abstract void createOrRemoveLinkCertificate(CryptoToken cryptoToken, boolean createLinkCertificate) throws CryptoTokenOfflineException;
+
+    /** Store the latest link certificate in this object. */
+    protected void updateLatestLinkCertificate(byte[] encodedLinkCertificate) {
+        if (encodedLinkCertificate == null) {
+            data.remove(LATESTLINKCERTIFICATE);
+        } else {
+            try {
+                data.put(LATESTLINKCERTIFICATE, new String(Base64.encode(encodedLinkCertificate),"UTF8"));
+            } catch (final UnsupportedEncodingException e) {
+                throw new RuntimeException(e);  // Lack of UTF8 would be fatal.
+            }
+        }
+    }
+
+    /** @return the CA latest link certificate or null */
+    public byte[] getLatestLinkCertificate() {
+        if (data.get(LATESTLINKCERTIFICATE) == null) {
+            return null;
+        }
+        try {
+            return Base64.decode(((String)data.get(LATESTLINKCERTIFICATE)).getBytes("UTF8"));
+        } catch (final UnsupportedEncodingException e) {
+            throw new RuntimeException(e);  // Lack of UTF8 would be fatal.
+        }
+    }
 }

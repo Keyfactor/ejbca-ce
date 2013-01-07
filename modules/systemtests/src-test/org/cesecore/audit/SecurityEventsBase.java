@@ -56,7 +56,7 @@ public abstract class SecurityEventsBase extends RoleUsingTestCase {
         Properties props = new Properties();
         props.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, tokenPin);
 
-        CryptoToken token = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), props, null, 1);
+        CryptoToken token = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), props, null, 1, "name");
         token.activate(tokenPin.toCharArray());
         token.generateKeyPair(keyPairAlgorithm, keyAlias);
 

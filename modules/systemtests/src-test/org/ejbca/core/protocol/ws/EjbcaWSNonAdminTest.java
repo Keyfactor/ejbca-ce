@@ -59,10 +59,8 @@ import org.cesecore.roles.management.RoleManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.config.EjbcaConfiguration;
-import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.approval.ApprovalExecutionSessionRemote;
 import org.ejbca.core.ejb.approval.ApprovalSessionRemote;
-import org.ejbca.core.ejb.config.GlobalConfigurationSessionRemote;
 import org.ejbca.core.ejb.hardtoken.HardTokenSessionRemote;
 import org.ejbca.core.model.SecConst;
 import org.ejbca.core.model.approval.Approval;
@@ -103,7 +101,6 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     private static X509Certificate admincert1 = null;
     private static AuthenticationToken admin1 = null;
     private static int caid;
-    private static GlobalConfiguration gc = null;
 
     private List<AccessUserAspectData> adminEntities;
     private static final AuthenticationToken intadmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("EjbcaWSNonAdminTest"));
@@ -123,11 +120,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
     @BeforeClass
     public static void beforeClass() throws Exception {
         CryptoProviderTools.installBCProviderIfNotAvailable();
-        
-        GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
-        
         setupAccessRights(WS_ADMIN_ROLENAME);
-        gc = globalConfigurationSession.getCachedGlobalConfiguration();
         assertNotNull("Unable to fetch GlobalConfiguration.");
     }
 
@@ -326,7 +319,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
             Approval approval1 = new Approval("ap1test");
             try {
                 System.out.println("ID: "+approvalRequest.generateApprovalId());
-                approvalExecutionSession.approve(admin1, approvalRequest.generateApprovalId(), approval1, gc);
+                approvalExecutionSession.approve(admin1, approvalRequest.generateApprovalId(), approval1);
                 getHardTokenData(serialNumber, true);
                 try {
                     getHardTokenData(serialNumber, true);
@@ -334,7 +327,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
                 } catch (WaitingForApprovalException_Exception e) {
                     // NOPMD: desired
                 }
-                approvalSession.reject(admin1, approvalRequest.generateApprovalId(), approval1, gc);
+                approvalSession.reject(admin1, approvalRequest.generateApprovalId(), approval1);
                 try {
                     getHardTokenData(serialNumber, true);
                     fail("should not work");
@@ -404,7 +397,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         Approval approval1 = new Approval("ap1test");
 
         ApprovalRequest ar = new GenerateTokenApprovalRequest("WSTESTTOKENUSER1", "CN=WSTESTTOKENUSER1", HardToken.LABEL_PROJECTCARD, reqadmin, null, 1, 0, 0);
-        approvalExecutionSession.approve(admin1, ar.generateApprovalId(), approval1, gc);
+        approvalExecutionSession.approve(admin1, ar.generateApprovalId(), approval1);
 
         genTokenCertificates(true);
 
@@ -420,7 +413,7 @@ public class EjbcaWSNonAdminTest extends CommonEjbcaWS {
         } catch (WaitingForApprovalException_Exception e) {
         }
 
-        approvalSession.reject(admin1, ar.generateApprovalId(), approval1, gc);
+        approvalSession.reject(admin1, ar.generateApprovalId(), approval1);
 
         try {
             genTokenCertificates(true);

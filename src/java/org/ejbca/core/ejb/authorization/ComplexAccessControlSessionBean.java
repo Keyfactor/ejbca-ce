@@ -33,6 +33,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.cache.AccessTreeUpdateSessionLocal;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.AuditLogRules;
+import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleNotFoundException;
@@ -44,6 +45,7 @@ import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.roles.RoleData;
 import org.cesecore.roles.RoleExistsException;
 import org.cesecore.roles.RoleNotFoundException;
@@ -74,6 +76,8 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
     private AccessTreeUpdateSessionLocal accessTreeUpdateSession;
     @EJB
     private CaSessionLocal caSession;
+    @EJB
+    private CryptoTokenSessionLocal cryptoTokenSession;
     @EJB
     private RoleAccessSessionLocal roleAccessSession;
     @EJB
@@ -201,7 +205,23 @@ public class ComplexAccessControlSessionBean implements ComplexAccessControlSess
                 accessrules.add(rule.resource());
             }
         }
-
+        for (CryptoTokenRules rule : CryptoTokenRules.values()) {
+            final String fullRule = rule.resource();
+            if (accessControlSession.isAuthorizedNoLogging(authenticationToken, fullRule)) {
+                accessrules.add(fullRule);
+            }
+        }
+        final List<Integer> allCryptoTokenIds = cryptoTokenSession.getCryptoTokenIds();
+        for (Integer cryptoTokenId : allCryptoTokenIds) {
+            for (CryptoTokenRules rule : CryptoTokenRules.values()) {
+                if (!rule.equals(CryptoTokenRules.BASE) && !rule.equals(CryptoTokenRules.MODIFY_CRYPTOTOKEN) && !rule.equals(CryptoTokenRules.DELETE_CRYPTOTOKEN)) {
+                    final String fullRule = rule.resource() + "/" + cryptoTokenId;
+                    if (accessControlSession.isAuthorizedNoLogging(authenticationToken, fullRule)) {
+                        accessrules.add(fullRule);
+                    }
+                }
+            }
+        }
         if (usehardtokenissuing) {
             for (int i = 0; i < AccessRulesConstants.HARDTOKENACCESSRULES.length; i++) {
                 accessrules.add(AccessRulesConstants.HARDTOKENACCESSRULES[i]);

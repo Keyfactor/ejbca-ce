@@ -215,7 +215,7 @@ public final class ProtectedDataConfiguration {
 		        					// Data is base64 encoded byte[] so decode it
 		        					keydata = Base64.decode(data.getBytes());	        						
 	        					}
-	        					final CryptoToken token = CryptoTokenFactory.createCryptoToken(classname, properties, keydata, Integer.valueOf(keyid));
+	        					final CryptoToken token = CryptoTokenFactory.createCryptoToken(classname, properties, keydata, Integer.valueOf(keyid), String.valueOf(keyid));
 	        					// We must activate the token as well (if not using a default pwd of course, in which case we assume the tokenpin property is not set)
 	        					final String pin = conf.getString(pinstr+i);
 	        					try {

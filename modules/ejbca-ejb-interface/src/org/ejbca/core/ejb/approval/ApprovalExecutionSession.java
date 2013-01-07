@@ -42,7 +42,6 @@ public interface ApprovalExecutionSession {
      * 
      * 4. Runs the approval command in the end entity bean.
      * 
-     * @param gc is the GlobalConfiguration used for notification info
      * @throws ApprovalRequestExpiredException
      * @throws ApprovalRequestExecutionException
      * @throws AuthorizationDeniedException
@@ -50,6 +49,6 @@ public interface ApprovalExecutionSession {
      * @throws AdminAlreadyApprovedRequestException
      * @throws EjbcaException
      */
-    public void approve(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
+    public void approve(AuthenticationToken admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,
             ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, EjbcaException;
 }

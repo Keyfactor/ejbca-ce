@@ -72,6 +72,8 @@ import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.util.KeyTools;
@@ -81,8 +83,6 @@ import org.cesecore.util.CryptoProviderTools;
 
 /**
  * Interface for creating certificates
- * 
- * Based on EJBCA version: RSASignSessionBean.java 11374 2011-02-19 08:12:26Z anatom
  * 
  * Only one method from this bean is used, and it's the private method for creating certificates, also this modified.
  * 
@@ -109,6 +109,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
     private AccessControlSessionLocal accessSession;
     @EJB
     private SecurityEventsLoggerSessionLocal logSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
     // Myself needs to be looked up in postConstruct
     private CertificateCreateSessionLocal certificateCreateSession;
 
@@ -134,21 +136,18 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
         CertificateResponseMessage ret = null;
         try {
             final CAToken catoken = ca.getCAToken();
-
+            final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(catoken.getCryptoTokenId());
+            final String alias = catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
             // See if we need some key material to decrypt request
             if (req.requireKeyInfo()) {
                 // You go figure...scep encrypts message with the public CA-cert
-                req.setKeyInfo(ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), catoken.getCryptoToken()
-                        .getEncProviderName());
+                req.setKeyInfo(ca.getCACertificate(), cryptoToken.getPrivateKey(alias), cryptoToken.getEncProviderName());
             }
             // Verify the request
             final PublicKey reqpk;
             try {
                 if (req.verify() == false) {
-                    final String msg = intres.getLocalizedMessage("createcert.popverificationfailed");
-                    // logSession.log(admin, ca.getCAId(), LogConstants.MODULE_CA, new java.util.Date(), req.getUsername(), null,
-                    // LogConstants.EVENT_ERROR_CREATECERTIFICATE, msg);
-                    throw new SignRequestSignatureException(msg);
+                    throw new SignRequestSignatureException(intres.getLocalizedMessage("createcert.popverificationfailed"));
                 }
                 reqpk = req.getRequestPublicKey();
                 if (reqpk == null) {
@@ -192,8 +191,8 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             Certificate cert = createCertificate(admin, userData, ca, req.getRequestX500Name(), reqpk, keyusage, notBefore, notAfter, exts, sequence);
 
             // Create the response message with all nonces and checks etc
-            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
-                    catoken.getCryptoToken().getSignProviderName());
+            ret = req.createResponseMessage(responseClass, req, ca.getCACertificate(), cryptoToken.getPrivateKey(alias),
+                    cryptoToken.getSignProviderName());
 
             ResponseStatus status = ResponseStatus.SUCCESS;
             FailInfo failInfo = null;
@@ -381,7 +380,11 @@ public class CertificateCreateSessionBean implements CertificateCreateSessionLoc
             }
             Exception storeEx = null; // this will not be null if stored == false after the below passage
             for (int retrycounter = 0; retrycounter < maxRetrys; retrycounter++) {
-                cert = ca.generateCertificate(data, requestX500Name, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
+                final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+                if (cryptoToken==null) {
+                    throw new CryptoTokenOfflineException("CA's CryptoToken not found.");
+                }
+                cert = ca.generateCertificate(cryptoToken, data, requestX500Name, pk, keyusage, notBefore, notAfter, certProfile, extensions, sequence);
                 serialNo = CertTools.getSerialNumberAsString(cert);
                 cafingerprint = CertTools.getFingerprintAsString(cacert);
                 // Store certificate in the database, if this CA is configured to do so.

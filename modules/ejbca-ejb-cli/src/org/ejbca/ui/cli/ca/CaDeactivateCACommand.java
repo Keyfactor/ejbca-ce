@@ -16,6 +16,8 @@ package org.ejbca.ui.cli.ca;
 import org.cesecore.certificates.ca.CAConstants;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -54,11 +56,20 @@ public class CaDeactivateCACommand extends BaseCaAdminCommand {
             	getLogger().error("CA " + caname + " cannot be found");	
             	return;            	
             }
-            if(cainfo.getStatus() == CAConstants.CA_ACTIVE){
-              ejb.getRemoteSession(CAAdminSessionRemote.class).deactivateCAToken(getAdmin(cliUserName, cliPassword), cainfo.getCAId());                        
-              getLogger().info("CA token deactivated.");
-            }else{
-            	getLogger().error("CA or CAToken must be active to be put offline.");
+            final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = ejb.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+            final int cryptoTokenId = cainfo.getCAToken().getCryptoTokenId();
+            final boolean tokenOnline = cryptoTokenManagementSession.isCryptoTokenStatusActive(getAdmin(cliUserName, cliPassword), cryptoTokenId);
+            if (cainfo.getStatus() == CAConstants.CA_ACTIVE || tokenOnline) {
+                if (cainfo.getStatus() == CAConstants.CA_ACTIVE) {
+                    ejb.getRemoteSession(CAAdminSessionRemote.class).deactivateCAService(getAdmin(cliUserName, cliPassword), cainfo.getCAId());
+                    getLogger().info("CA Service deactivated.");
+                }
+                if (tokenOnline) {
+                    cryptoTokenManagementSession.deactivate(getAdmin(cliUserName, cliPassword), cryptoTokenId);
+                    getLogger().info("CA CryptoToken deactivated.");
+                }
+            } else {
+            	getLogger().error("CA Service or CryptoToken must be active for this command to do anything.");
             }
         } catch (Exception e) {
             throw new ErrorAdminCommandException(e);

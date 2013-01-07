@@ -1,10 +1,35 @@
+<%
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+%>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp"  import="java.util.*, java.security.cert.Certificate, java.security.cert.X509Certificate,org.ejbca.config.GlobalConfiguration,
-    org.ejbca.ui.web.RequestHelper,org.cesecore.certificates.crl.CRLInfo, org.cesecore.authorization.AuthorizationDeniedException,
-    org.cesecore.keys.token.CryptoToken, org.ejbca.core.model.authorization.AccessRulesConstants, org.cesecore.authorization.control.StandardRules, org.cesecore.util.CertTools, org.ejbca.util.HTMLTools,
-    org.cesecore.certificates.ca.CAConstants"%>
+<%@page errorPage="/errorpage.jsp" import="
+java.util.*,
+java.security.cert.Certificate,
+java.security.cert.X509Certificate,
+org.cesecore.authorization.AuthorizationDeniedException,
+org.cesecore.authorization.control.StandardRules,
+org.cesecore.certificates.ca.CAConstants,
+org.cesecore.certificates.crl.CRLInfo,
+org.cesecore.keys.token.CryptoToken,
+org.cesecore.util.CertTools,
+org.ejbca.config.GlobalConfiguration,
+org.ejbca.core.model.authorization.AccessRulesConstants,
+org.ejbca.ui.web.RequestHelper,
+org.ejbca.util.HTMLTools
+"%>
 <html>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
@@ -229,7 +254,9 @@ function getPasswordAndSubmit(formname) {
 <input type='hidden' name='<%=HIDDEN_NUMBEROFCAS %>' value='<%=canames.keySet().size()%>'> 
 <input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value="<%=subjectdn%>"> 
 <%=ejbcawebbean.getText("CREATENEWCRL") + " : " %>
-       <% if ( (cainfo.getCAInfo().getStatus() == CAConstants.CA_ACTIVE) && (cainfo.getCAInfo().getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_ACTIVE) ) { %>
+       <% 
+       if ( cainfo.getCAInfo().getStatus() == CAConstants.CA_ACTIVE ) {
+       %>
 <input type='submit' name='<%=BUTTON_CREATECRL + number %>' value='<%=ejbcawebbean.getText("CREATECRL") %>'>
        <% }else{
            out.write(ejbcawebbean.getText("CAISNTACTIVE"));
@@ -238,7 +265,9 @@ function getPasswordAndSubmit(formname) {
 <br />
 <input type='hidden' name='<%=HIDDEN_CASUBJECTDN + number %>' value="<%=subjectdn%>"> 
 <%=ejbcawebbean.getText("CREATENEWDELTACRL") + " : " %>
-       <% if ( (cainfo.getCAInfo().getStatus() == CAConstants.CA_ACTIVE) && (cainfo.getCAInfo().getCATokenInfo().getTokenStatus() == CryptoToken.STATUS_ACTIVE) ) { %>
+       <%
+       if ( cainfo.getCAInfo().getStatus() == CAConstants.CA_ACTIVE) {
+       %>
 <input type='submit' name='<%=BUTTON_CREATEDELTACRL + number %>' value='<%=ejbcawebbean.getText("CREATEDELTACRL") %>'>
        <% } else {
             out.write(ejbcawebbean.getText("CAISNTACTIVE"));

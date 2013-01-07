@@ -18,6 +18,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 
+import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.ejb.TransactionAttribute;
 import javax.ejb.TransactionAttributeType;
@@ -28,10 +29,13 @@ import org.bouncycastle.util.encoders.Hex;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CAData;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CaSessionLocal;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
+import org.cesecore.keys.token.CryptoTokenSessionLocal;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.keys.token.SoftCryptoToken;
 
@@ -46,20 +50,25 @@ public class CAAdminTestSessionBean implements CAAdminTestSessionRemote {
 
     @PersistenceContext(unitName="ejbca")
     private EntityManager entityManager;
-
+    @EJB
+    private CaSessionLocal caSession;
+    @EJB
+    private CryptoTokenSessionLocal cryptoTokenSession;
+    
     @Override
     public String getKeyFingerPrint(String caname) throws CADoesntExistsException, UnsupportedEncodingException, IllegalCryptoTokenException, CryptoTokenOfflineException, NoSuchAlgorithmException {
     	CAData cadata = CAData.findByNameOrThrow(entityManager, caname);
-    	CA thisCa = cadata.getCA();
+    	CA thisCa = cadata.getCA();//getCAFromDatabase(cadata.getCaId());
     	// Fetch keys
     	CAToken thisCAToken = thisCa.getCAToken();
+    	final CryptoToken cryptoToken = cryptoTokenSession.getCryptoToken(thisCAToken.getCryptoTokenId());
     	// Make sure we are not trying to export a hard or invalid token
-    	if (!(thisCAToken.getCryptoToken() instanceof SoftCryptoToken)) {
+    	if (!(cryptoToken instanceof SoftCryptoToken)) {
     		throw new IllegalCryptoTokenException("Cannot extract fingerprint from a non-soft token (" + thisCa.getCAType() + ").");
     	}
-    	PrivateKey p12PrivateEncryptionKey = thisCAToken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
-    	PrivateKey p12PrivateCertSignKey = thisCAToken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-    	PrivateKey p12PrivateCRLSignKey = thisCAToken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CRLSIGN);
+    	PrivateKey p12PrivateEncryptionKey = cryptoToken.getPrivateKey(thisCAToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT));
+    	PrivateKey p12PrivateCertSignKey = cryptoToken.getPrivateKey(thisCAToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+    	PrivateKey p12PrivateCRLSignKey = cryptoToken.getPrivateKey(thisCAToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CRLSIGN));
     	MessageDigest md = MessageDigest.getInstance("SHA1");
     	md.update(p12PrivateEncryptionKey.getEncoded());
     	md.update(p12PrivateCertSignKey.getEncoded());

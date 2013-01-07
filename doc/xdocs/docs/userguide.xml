@@ -73,6 +73,73 @@ If CRLs have expired you can generate new CRLs. See <a href="adminguide.html#CRL
 </subsection>
 </section>
 
+<section name="Managing CryptoTokens">
+<p>
+A Crypto(graphic)Token in EJBCA is where keys are stored. A CryptoToken can be either backed by a soft keystore
+(file in the database) or an HSM PKCS#11 slot.
+</p>
+<p>
+In the EJBCA Admin GUI the menu item "CryptoTokens" will show you all the CryptoToken related management.
+Activation of CryptoTokens can also be done from the CA Activation page.
+</p>
+<p>
+There is also a CLI for all the functionality available in the Admin GUI. Run
+</p>
+<source>
+bin/ejbca.sh cryptotoken
+</source>
+<p>
+for a list of available sub-commands.
+</p>
+<subsection name="New CryptoTokens">
+<p>
+<ul>
+<li>Name: A user-friendly name for the CryptoToken.</li>
+<li>Type: PKCS#11 HSM slot mapping or a Soft PKCS#12 keystore in the database.</li>
+<li>Authentication Code: The PKCS#11 slot PIN or the password that will protect the soft keystore.</li>
+<li>Repeat Authentication Code: Should be the same as the previous field.</li>
+<li>Auto-activation: If the authentication code should be stored (obfuscated) in the database and used to always keep the CryptoToken active.</li>
+<li>Allow export of private keys: Soft CryptoToken keystore export by EJBCA can be prevented by checking this flag.</li>
+<li>Library: PKCS#11 shared library configured as available in conf/web.properties.</li>
+<li>Attribute file: PKCS#11 attribute file configured as available in conf/web.properties.</li>
+<li>Slot: PKCS#11 slot number or index if the number starts with an "i".</li>
+</ul>
+The PKCS#11 properties above are described in more detail in the <a href="adminguide.html#Hardware Security Modules (HSM)">AdminGuide's HSM</a> section.
+A unique CryptoToken identifier will be generated when the token is created.
+</p>
+</subsection>
+<subsection name="View or Edit a CryptoToken">
+<p>
+The view is very similar to the creation of a token except for showing the id and activation status.
+It is not possible to change the CryptoToken id, type or the change the authentication code of soft CryptoTokens. 
+</p>
+</subsection>
+<subsection name="Activation and deactivation">
+<p>
+In the list of CryptoToken there are 3 possible actions available:
+<ul>
+<li>Activate: Enter a authentication code and clicking "Activate" will activate an inactive CryptoToken.</li>
+<li>Deactivate: Clicking "Deactivate" will deactivate an active CryptoToken.</li>
+<li>Reactivate: Clicking "Reactivate" will reactivate an active CryptoToken with auto-activation enabled.</li>
+</ul>
+</p>
+</subsection>
+<subsection name="Key management">
+<p>
+While viewing an active CryptoToken it is possible to also view and interact with the CryptoToken's keys.
+The shown SubjectKeyID column is a SHA1 over the public key.
+<ul>
+<li>A new key pair can be created by giving it an alias, a key specification and clicking generate.</li>
+<li>Key pairs can be removed by clicking "Remove" for the specific key pair or selecting multiple keys and clicking "Remove selected".</li>
+<li>A key pair can be tested by clicking "Test" for the specific key pair.</li>
+<li>A key pair's public key can be downloaded in PEM format by clicking "Download Public Key".</li>
+</ul>
+Please note that the show key specifications might not be supported by underlying PKCS#11 modules and
+an error will be shown when trying to use such a key specification.
+</p>
+</subsection>
+</section>
+
 <section name="Managing CAs">
 <subsection name="Creating CAs">
 <p>
@@ -119,6 +186,34 @@ and stored/published.
 Type of CA can be either X509 or <a href="cvccas.html">CVC</a>. <br/>
 An X509 CA is a <i>normal</i> CA for secure email, login, web authentication, VPN etc etc.<br/>
 A CVC CA is a CA issuing CV certificates, which are special certificates for EU EAC ePassports. CVC CAs are described in depth in the document about <a href="cvccas.html">CVC</a> CAs.
+</p>
+</subsubsection>
+
+<subsubsection name="Signing Algorithm">
+<p>
+The signing algorithm to use for issuing certificates, signing CRLs etc.
+</p>
+</subsubsection>
+
+<subsubsection name="CryptoToken">
+<p>
+The CryptoToken where the CA's key mappings are expected to exist.
+</p>
+<p>
+The list of available CryptoTokens are those that the administrator is authorized to view and use.
+The CryptoToken must also be active and contain a key that can be used with the CA signing algorithm in order to be shown.
+</p>
+<p>
+The purpose mappings are the key alias in the CryptoToken to use for what:
+<ul>
+<li>defaultKey: The key to use no specific alias is selected (Required).</li>
+<li>certSignKey: The key to use for certificate issuance. Must comply with the Signing Algorithm and only valid choices are shown.</li>
+<li>crlSignKey: The key to use for CRL signing. Even though it could theoretically be separate from the certSignKey according to the RFCs,
+client support is rare and the certSignKey will always be used.</li>
+<li>keyEncryptKey: Key to use for key recovery when enabled. Decrypts escrowed keys and must be RSA.</li>
+<li>hardTokenEncrypt: Key used for PUK recovery when enabled. Decrypts SmartCard PUKs and must be RSA.</li>
+<li>testKey: Key used by health-check to verify that the CryptoToken is usable. Usually a short key for speedy connection checks.</li>
+</ul>
 </p>
 </subsubsection>
 
@@ -302,26 +397,29 @@ In order to have your CA signed by an external CA you have to go through the fol
 <li>Go the the 'Edit Certificate Authorities' page in the Administration GUI.</li>
 <li>Create a new CA in the same way as internal CA:s. But when selecting signing CA, select 'External CA' instead.
 The fields 'Certificate Profile', 'Validity', 'Subject Alternative Name' and 'Policy Id' 
-will become gray and are no longer editable. Fill in the Description and CRL Specific data and click on the 'Make Certificate Request' 
-button in the bottom of the page.</li>
-<li>At the next page called 'Make Certificate Request' you can upload the external CA certificate chain that you want to sign your CA certificate with, or you can wait until later by checking 'No CA chain file available'.  
+will become gray and are no longer editable.
+Fill in the Description and CRL Specific data.
+Optionally select a file containing the CA certificate chain of the signing CA.
 This file should be in PEM encoding. If there is more than one top CA certificate then all their certificates should be appended into one single file. 
-It should be in plain PEM format without blank lines before or after. An example is below.</li>
+It should be in plain PEM format without blank lines before or after. An example is below.
+Click on the 'Make Certificate Request' button in the bottom of the page.</li>
 <li>After successfully clicking 'Make Certificate Request' the generated PKCS10 certificate request will be displayed.
 You can copy and paste it to the signing CA or download the PEM file if that approach is preferred.</li>
 <li>The external CA should sign the certificate request and return a certificate. Meanwhile, the newly created CA will
 have the status 'Waiting for Certificate Response' and will not appear anywhere in the system except in the 'Edit CA' page.</li>
-<li>When the Certificate Response has arrived, it is time to activate the new CA. You mark the waiting CA and click on 'Edit' button in the 'Edit CA' page. Go to the bottom of the page and click on 'Receive Certificate Response' (you can leave the password field blank). Then upload the received certificate and click again on 'Receive Certificate Response'.</li>
-<li>If the received certificate forms a valid certificate chain with the previously uploaded top CA certificates, the status of the CA will be set to 'Active'.</li>
-<li>If you did no upload a certificate chain when the request was created, you can do so now by uploading the complete
-PEM formatted chain. The CA's own certificate should be first in the file, followed by the issuing CAs certificate(s). 
-When uploading a chain, the certificates must be converted to PEM format if it isn't already so. This can be accomplished with OpenSSL among other tools with the following command if you have received a file in DER encoding (.cer ending):<br/>
-<code>openssl x509 -inform DER -in filename.cer -outform PEM -out filename.pem</code></li> 
+<li>When the Certificate Response has arrived, it is time to activate the new CA. You mark the waiting CA and click on 'Edit' button in the 'Edit CA' page.
+Go to the bottom of the page and click on 'Receive Certificate Response' (you can leave the password field blank).
+Then upload the received certificate and click again on 'Receive Certificate Response'.</li>
+<li>If the received certificate forms a valid certificate chain with the previously uploaded chain or contained a full chain, the status of the CA will be set to 'Active'.</li>
 <li>If you want to activate OCSP functionality for this new CA you have to edit it once again and mark the OCSP functionality as active.</li>
 <li>The new externally signed CA is ready to use.</li>
 </ol>
 </p>
-<p>Example of a plain PEM file for uploading as a certificate chain:
+<p>
+When uploading a chain, the certificates must be converted to PEM format if it isn't already so.
+This can be accomplished with OpenSSL among other tools with the following command if you have received a file in DER encoding (.cer ending):<br/>
+<code>openssl x509 -inform DER -in filename.cer -outform PEM -out filename.pem</code>
+Example of a plain PEM file for uploading as a certificate chain:
 </p>
 <source>
 -----BEGIN CERTIFICATE-----
@@ -364,8 +462,7 @@ Dw3PqQiroMNx2+gzC/f/wTXsF92aujyG+IZx1FIcNg/MoHXBWG7T8YrjnQ==
 </source>
 <p>
 You can treat an internal CA (a CA residing on the same EJBCA instance as another CA) as an external CA. 
-From the SubCA this works just like the normal case, but on the RootCA you must choose the exact same CA Name as
-the already existing internal CA when you choose to "Process Certificate Request".  
+From the SubCA this works just like the normal case, but on the RootCA you will issue the SubCA as an end entity.
 <br/>
 This can be useful if you have an HSM setup where only one set of keys can be active at one time, for example using nCipher with
 two different, non-persistence, operator cards sets for the RootCA and the SubCA. Using the SubCA as an external CA you can still create
@@ -376,27 +473,22 @@ the PKI but with only one CA active at a time.
 <p>
 In some cases you might want to have one of your CA:s signing another external CA. This can be done in two ways:
 <ol>
-<li>Create a certificate profile and an end entity profile for Sub CAs. The certificate profile must be of type 'Sub CA' (almost at the bottom of the edit certificate profile page).</li>
+<li>Create a certificate profile and an end entity profile for Sub CAs. The certificate profile must be of type 'Sub CA'
+(almost at the bottom of the edit certificate profile page).</li>
 <li>Create an End Entity where you select a SubCA certificate profile when adding the end entity.</li>
 <li>Issue the CA certificate as you would normally issue any end entity certificate.</li>
 <li>The SubCA can be managed and revoked conveniently just as other end entities.</li>
 </ol>
 Using an end entity is the recommended way to sign Sub CAs, because of the better management features.
-</p><p> 
-You can however also get the external Sub CA visible as a CA in EJBCA. 
-<ol>
-<li>In the 'Edit CA' page, enter a CA name of the external CA you are about to sign and click on 'Process Certificate Request'.</li>
-<li>Then you are requested to upload the certificate request sent from the external CA. This should be a file in PEM-encoding.</li>
-<li>The next step is to fill in the data about the CA certificate you are about to create. This is very similar to when you are creating an internal CA but with a fewer fields. The Subject DN is taken from the request. But the signing CA, certificate profile, validity, subject alt name and policy id have to filled in manually.</li>
-<li>After clicking 'Process Certificate Request' the certificate is created and displayed in PEM format. You can also download it as a regular PEM file or as a PKCS7 PEM file.</li>
-<li>Send the processed certificate back to the external CA for activation.</li>
-<li>In the 'Edit CA' page will the newly processed CA be displayed with the status 'External'. This processed CA will only be shown in the 'Edit CA' pages and nowhere else since the system cannot use it. If you want to view the processed certificate, go to the edit page and click on the 'View CA Certificate' link in the bottom of the page.</li>
-</ol>
+</p>
+<p>
+In EJBCA 5.0.x and before it was possible to manage external CAs in a more visible manner. This feature is no longer available.
 </p>
 </subsection>
 <subsection name="Renewing a SubCA signed by an external CA">
 <p>
-When you renew a SubCA signed by an external CA you create a new request that is sent to the external CA. The External CA issues a new certificate that you import in your SubCA.
+When you renew a SubCA signed by an external CA you create a new request that is sent to the external CA.
+The External CA issues a new certificate that you import in your SubCA.
 </p>
 <p>
 You can renew the SubCA in two ways:
@@ -405,47 +497,46 @@ You can renew the SubCA in two ways:
 <li>Generating new CA signing keys.</li>
 </ol>
 To renew a CA go to "Edit Certificate Authorities" select the SubCA and use the button "Renew CA" in the bottom of the page.
-When you use the same signing keys there is nothing in particular to consider. 
-When you also choose to renew the CA signing keys (check the checkbox "Renew keys") you must give the CA Token password as input to the renewal process, i.e. fill in the field "Authentication code for renewing keys".
-When you renew keys in an active SubCA you can choose:
-<ol>
-<li>Activate keys (default) - immediately activates the new keys. This makes the SubCA off-line waiting for the certificate response. The SubCA can not issue certificates until the response from the External CA is received.</li>
-<li>Do not activate keys - generates new keys and a request, but does not activate the new keys. The SubCA can continue to issue certificates with the old signing keys until the response is received from the External CA.</li>
-</ol>
-If you choose to not activate the new keys immediately you must give the CA Token password when receiving the response from the External CA.
+The CA's CryptoToken must be active to make a certificate signing request (and optionally for key generation).
 </p>
-<p>Note how PKCS#11 sessions works, once logged in to the session you are logged in and it does not matter which password you use in the GUI. Don't be surprised that it works with any password when using PKCS#11 CA tokens.</p>
+<p>
+When you generate new keys for the SubCA, the new keys will not be used until you upload a new CA certificate for this key pair.
+Until then, the CA will continue to work as if nothing has happened (and issue certificates with the current CA signing key pair).
+</p>
 </subsection>
 <subsection name="Requesting a cross or bridge certificate">
 <p>
-If you have set up your own CA you can request another CA to cross certify your CA, or you can get certified by Bridge CA such as the Federal Bridge. This is done in the following way:
+If you have set up your own CA you can request another CA to cross certify your CA, or you can get certified by Bridge CA such as the Federal Bridge.
+This is done in the following way:
 <ol>
 <li>In the 'Edit CA' page, choose a CA that you intend to get cross certified by another CA by and click on 'Edit'.</li>
-<li>In the lower part of the screen, click on 'Make Certificate Request'.</li>
-<li>Now check 'No CA chain file available' and click 'Make Certificate Request'.</li>
+<li>In the lower part of the screen, click on 'Make Certificate Request' and skip upload of the signing certificate chain.</li>
 <li>Save the created PKCS#10 certificate request to disc and send to the other CA.</li>
 </ol>
 </p>
-<p>Now you have a certificate request to send to the other CA or Bridge CA. When the other CA have issued a certificate for you, everything is completed.
-You don't need to (and you can not) import the cross-certificate or bridge-certificate in EJBCA. What you need to do is make sure the clients using the certificates issued by your CA
-have access to the correct certificate chain. If you are cross-certified with several other CA, multiple possible certificate chains exist.
-<br/>Handling the certificate chains on clients is out of the scope for EJBCA.
+<p>
+Now you have a certificate request to send to the other CA or Bridge CA. When the other CA have issued a certificate for you, everything is completed.
+You don't need to (and usually should not) import the cross-certificate or bridge-certificate in EJBCA.
+What you need to do is make sure the clients using the certificates issued by your CA
+have access to the correct certificate chain.
+If you are cross-certified with several other CA, multiple possible certificate chains exist.
+</p>
+<p>
+Handling the certificate chains on clients is out of the scope for EJBCA.
+</p>
+<p>
+If you choose to upload the resulting certificate chain, this will convert your CA from an internal CA to an externally signed CA.
 </p> 
 </subsection>
 <subsection name="Signing a roll-over certificate (NewWithOld)">
 <p>
 One way to handle update of trust points when renewing a Root CA is to generate a certificate that contains the new key signed with the old key.
-For X.509 CAs you can create such a certificate:
-<ol>
-<li>In 'Edit CA' screen, renew a Root CA, selecting to also renew keys.</li>
-<li>Download the new Root CA certificate.</li>
-<li>In the Edit Certificate Authorities screen, type the name of the CA in the input field and click 'Sign Certificate Request'.</li>
-<li>Upload the new Root CA certificate, select the checkboxes 'Use previous key' and 'Create link certificate' and click 'Sign Certificate Request'.</li>
-</ol>
+For X.509 CAs you can create such a certificate by checking "Create link certificate" before renewing the CA.
+The latest link certificate can then be downloaded from the edit CA view.
 </p>
-<p>The certificate that you upload must have the same DN as the CA you selected, and the certificate must also be verifiable using the CAs currently active signature keys. 
-This means that you can only use this function to create a 'NewWithOld' certificate, and not for other signing purposes.
-</p> 
+<p>
+For CVC CAs a link certificate is always generated during the renewal. 
+</p>
 </subsection>
 <subsection name="Converting an OpenSSL CA">
 <p>

@@ -13,6 +13,10 @@
 
 package org.ejbca.config;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 
 /**
@@ -145,5 +149,60 @@ public class WebConfiguration {
     /** @return true if we allow proxied authentication to the Admin GUI. */
     public static boolean isProxiedAuthenticationEnabled(){
         return Boolean.TRUE.toString().equalsIgnoreCase(EjbcaConfigurationHolder.getString("web.enableproxiedauth"));
+    }
+
+    private static Map<String,String> availableP11LibraryToAliasMap = null;
+    /** @return a (cached) mapping between the PKCS#11 libraries and their display names */
+    public static Map<String,String> getAvailableP11LibraryToAliasMap() {
+        if (availableP11LibraryToAliasMap==null) {
+            final Map<String,String> ret = new HashMap<String,String>();
+            for (int i=0; i<256; i++) {
+                String fileName = EjbcaConfigurationHolder.getString("cryptotoken.p11.lib." + i + ".file");
+                if (fileName!=null) {
+                    String displayName = EjbcaConfigurationHolder.getString("cryptotoken.p11.lib." + i + ".name");
+                    final File file = new File(fileName);
+                    if (file.exists()) {
+                        fileName = file.getAbsolutePath();
+                        if (displayName == null || displayName.length()==0) {
+                            displayName = fileName;
+                        }
+                        if (log.isDebugEnabled()) {
+                            log.info("Adding PKCS#11 library " + fileName + " with display name " + displayName);
+                        }
+                        ret.put(fileName, displayName);
+                    } else {
+                        if (log.isDebugEnabled()) {
+                            log.info("PKCS#11 library " + fileName + " was not detected in file system and will not be available.");
+                        }
+                    }
+                }
+            }
+            availableP11LibraryToAliasMap = ret;
+        }
+        return availableP11LibraryToAliasMap;
+    }
+    
+    private static Map<String,String> availableP11AttributeFiles = null;
+    /** @return a (cached) mapping between the PKCS#11 attribute files and their display names */
+    public static Map<String,String> getAvailableP11AttributeFiles() {
+        if (availableP11AttributeFiles==null) {
+            final Map<String,String> ret = new HashMap<String,String>();
+            for (int i=0; i<256; i++) {
+                String fileName = EjbcaConfigurationHolder.getString("cryptotoken.p11.attr." + i + ".file");
+                if (fileName!=null) {
+                    String displayName = EjbcaConfigurationHolder.getString("cryptotoken.p11.attr." + i + ".name");
+                    final File file = new File(fileName);
+                    if (file.exists()) {
+                        fileName = file.getAbsolutePath();
+                        if (displayName == null || displayName.length()==0) {
+                            displayName = fileName;
+                        }
+                        ret.put(fileName, displayName);
+                    }
+                }
+            }
+            availableP11AttributeFiles = ret;
+        }
+        return availableP11AttributeFiles;
     }
 }

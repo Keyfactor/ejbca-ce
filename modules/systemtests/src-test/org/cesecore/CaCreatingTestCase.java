@@ -27,6 +27,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import org.bouncycastle.operator.OperatorCreationException;
@@ -38,14 +39,11 @@ import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.keys.token.CryptoToken;
-import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
 
@@ -56,35 +54,25 @@ import org.cesecore.util.StringTools;
  *
  */
 public abstract class CaCreatingTestCase extends RoleUsingTestCase {
-    
-    protected CA createX509Ca(String cadn) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException,
-            InvalidAlgorithmParameterException, SignatureException, KeyStoreException, CertificateException, CryptoTokenOfflineException, IOException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException {
-        // Create catoken
-        Properties prop = new Properties();
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-        // Set key generation property, since we have no old keys to generate the same sort
-        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, "512");
-        CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), prop, null, 666);
-        cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATESIGNKEYALIAS);
-        cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATEDECKEYALIAS);
 
-        CAToken catoken = new CAToken(cryptoToken);
+    protected CA createX509Ca(CryptoToken cryptoToken, String cadn) throws InvalidKeyException, NoSuchAlgorithmException, NoSuchProviderException,
+            InvalidAlgorithmParameterException, SignatureException, KeyStoreException, CertificateException, CryptoTokenOfflineException, IOException, InvalidAlgorithmException, IllegalStateException, OperatorCreationException {
+        Properties caTokenProperties = new Properties();
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        // Set key generation property, since we have no old keys to generate the same sort
+        CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
         // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
         catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
         catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         catoken.setSignatureAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
         catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-
-        CATokenInfo catokeninfo = catoken.getTokenInfo();
         // No extended services
-        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-        // extendedcaservices.add(new OCSPCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
         X509CAInfo cainfo = new X509CAInfo(cadn, "TEST", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                 3650, null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
+                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
                 24, // CRLPeriod
                 0, // CRLIssueInterval
                 10, // CRLOverlapTime
@@ -114,12 +102,13 @@ public abstract class CaCreatingTestCase extends RoleUsingTestCase {
                 true, // useCertificateStorage
                 null // cmpRaAuthSecret
         );
-
         X509CA x509ca = new X509CA(cainfo);
         x509ca.setCAToken(catoken);
         // A CA certificate
-        X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
-                catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), "SHA256WithRSA", true);
+        X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1",
+                cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+                cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN)),
+                "SHA256WithRSA", true);
         assertNotNull(cacert);
         Collection<Certificate> cachain = new ArrayList<Certificate>();
         cachain.add(cacert);

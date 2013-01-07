@@ -23,6 +23,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
@@ -55,12 +57,12 @@ import org.cesecore.certificates.ca.X509CA;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileData;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.internal.UpgradeableDataHashMap;
 import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenFactory;
 import org.cesecore.keys.token.SoftCryptoToken;
@@ -72,8 +74,6 @@ import org.easymock.EasyMock;
 import org.ejbca.core.ejb.approval.ApprovalData;
 import org.ejbca.core.ejb.ra.raadmin.AdminPreferencesData;
 import org.ejbca.core.model.ra.raadmin.AdminPreference;
-import org.ejbca.database.DatabaseCliCommand;
-import org.ejbca.database.OutputFormat;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -252,7 +252,7 @@ public class DatabaseCliCommandTest {
         List<CAData> results = performImportWithGetNextBatch(exportFile);
         assertEquals("Incorrect result set, should have been one", 1, results.size());
         CAData result = results.get(0);
-        assertEquals(caData.getCA().getCAInfo(), result.getCA().getCAInfo());
+        assertTrue("Written map has differences to read map.", UpgradeableDataHashMap.diffMaps(caData.getDataMap(), result.getDataMap()).size() == 0);
     }
 
     @Test
@@ -264,11 +264,10 @@ public class DatabaseCliCommandTest {
         List<CAData> results = performImportWithGetNextBatch(exportFile);
         int foundObjects = 0;
         for (CAData resultItem : results) {
-            CAInfo resultCaInfo = resultItem.getCA().getCAInfo();
-            if (resultCaInfo.equals(foo.getCA().getCAInfo())) {
+            if (UpgradeableDataHashMap.diffMaps(resultItem.getDataMap(), foo.getDataMap()).size()==0) {
                 foundObjects++;
             }
-            if (resultCaInfo.equals(bar.getCA().getCAInfo())) {
+            if (UpgradeableDataHashMap.diffMaps(resultItem.getDataMap(), bar.getDataMap()).size()==0) {
                 foundObjects++;
             }
         }
@@ -297,31 +296,26 @@ public class DatabaseCliCommandTest {
      * @throws Exception
      */
     private static X509CA createTestCA(final String cadn, final String sigAlg) throws Exception {
-        // Create catoken
-        Properties prop = new Properties();
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-        prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-        // Set key generation property, since we have no old keys to generate the same sort
-        prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, "512");
-        CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), prop, null, 666);
-        cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATESIGNKEYALIAS);
-        cryptoToken.generateKeyPair("512", CAToken.SOFTPRIVATEDECKEYALIAS);
-
-        CAToken catoken = new CAToken(cryptoToken);
-        // Set key sequence so that next sequence will be 00001 (this is the default though so not really needed here)
-        catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
-        catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+        final Properties cryptoTokenProperties = new Properties();
+        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foobar123");
+        final CryptoToken cryptoToken = CryptoTokenFactory.createCryptoToken(SoftCryptoToken.class.getName(), cryptoTokenProperties, null, 666, "name");
+        cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATESIGNKEYALIAS);
+        cryptoToken.generateKeyPair("1024", CAToken.SOFTPRIVATEDECKEYALIAS);
+        // Create CAToken (what key in the CryptoToken should be used for what)
+        final Properties caTokenProperties = new Properties();
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+        caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
+        final CAToken catoken = new CAToken(cryptoToken.getId(), caTokenProperties);
         catoken.setSignatureAlgorithm(sigAlg);
         catoken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA256_WITH_RSA);
-
-        CATokenInfo catokeninfo = catoken.getTokenInfo();
+        catoken.setKeySequence(CAToken.DEFAULT_KEYSEQUENCE);
+        catoken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
         // No extended services
-        ArrayList<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>();
-
-        X509CAInfo cainfo = new X509CAInfo(cadn, "TEST", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
+        final List<ExtendedCAServiceInfo> extendedcaservices = new ArrayList<ExtendedCAServiceInfo>(0);
+        final X509CAInfo cainfo = new X509CAInfo(cadn, "TEST", CAConstants.CA_ACTIVE, new Date(), "", CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA,
                 3650, null, // Expiretime
-                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catokeninfo, "JUnit RSA CA", -1, null, null, // PolicyId
+                CAInfo.CATYPE_X509, CAInfo.SELFSIGNED, (Collection<Certificate>) null, catoken, "JUnit RSA CA", -1, null, null, // PolicyId
                 24, // CRLPeriod
                 0, // CRLIssueInterval
                 10, // CRLOverlapTime
@@ -351,12 +345,12 @@ public class DatabaseCliCommandTest {
                 true, // useCertificateStorage
                 null //cmpRaAuthSecret
         );
-
         X509CA x509ca = new X509CA(cainfo);
         x509ca.setCAToken(catoken);
         // A CA certificate
-        X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", catoken.getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN),
-                catoken.getPublicKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN), "SHA256WithRSA", true);
+        PrivateKey privateKey = cryptoToken.getPrivateKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        PublicKey publicKey = cryptoToken.getPublicKey(catoken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+        X509Certificate cacert = CertTools.genSelfCert(cadn, 10L, "1.1.1.1", privateKey, publicKey, "SHA256WithRSA", true);
         assertNotNull(cacert);
         Collection<Certificate> cachain = new ArrayList<Certificate>();
         cachain.add(cacert);
@@ -372,10 +366,7 @@ public class DatabaseCliCommandTest {
         performExport(exportList, exportFile, persistenceUnit, format);
     }
 
-    /**
-     * Utility method that performs an export with mocks and stubs.
-     * 
-     */
+    /** Utility method that performs an export with mocks and stubs. */
     private <T> void performExport(List<T> entities, File exportFile, String persistenceUnit, OutputFormat format) throws FileNotFoundException,
             IOException, SecurityException, IllegalArgumentException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         EntityManagerFactory entityManagerFactoryMock = EasyMock.createMock(EntityManagerFactory.class);

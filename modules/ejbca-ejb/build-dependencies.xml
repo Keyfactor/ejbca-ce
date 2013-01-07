@@ -82,7 +82,8 @@
 					<include name="org/cesecore/util/XmlSerializer.java"/>
 					<include name="org/cesecore/util/query/*.java"/>
 					<include name="org/cesecore/util/query/clauses/*.java"/>
-					<include name="org/cesecore/util/query/elems/*.java"/>							
+					<include name="org/cesecore/util/query/elems/*.java"/>
+					<include name="org/cesecore/internal/CommonCache*.java"/>
 					<include name="org/ejbca/config/DatabaseConfiguration.java"/>
 					<include name="org/ejbca/config/EjbcaConfiguration.java"/>
 					<include name="org/ejbca/config/EjbcaConfigurationHolder.java"/>			
@@ -458,9 +459,10 @@
 			<mkdir dir="${src-temp.dir}/certstore"/>
 			<mkdir dir="${build-temp.dir}/certstore"/>
 			<copy todir="${src-temp.dir}/certstore">
-				<fileset dir="${src-ejbca-ejb-interface.dir}">					
+				<fileset dir="${src-ejbca-ejb-interface.dir}">
 					<include name="org/cesecore/certificates/certificate/Certificate*Session*.java"/>
 					<include name="org/ejbca/core/ejb/ca/store/*.java"/>
+					<include name="org/cesecore/keys/token/CryptoTokenManagementSession*.java"/>
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">					
 					<include name="org/cesecore/core/ejb/ca/store/*.java"/>
@@ -474,7 +476,8 @@
 					<include name="org/cesecore/certificates/ca/CAConstants.java"/>					
 					<include name="org/ejbca/core/ejb/ca/store/CertreqHistorySessionBean.java"/>										
 					<include name="org/ejbca/core/model/ca/store/CertReqHistory*.java"/>
-					
+					<include name="org/cesecore/keys/token/KeyPairInfo.java"/>
+					<include name="org/cesecore/keys/token/CryptoTokenInfo.java"/>
 				</fileset>
 			</copy>
 			<javac srcdir="${src-temp.dir}/certstore" destdir="${build-temp.dir}/certstore" debug="on" includeantruntime="no"
@@ -489,34 +492,6 @@
 					<pathelement location="${build-temp.dir}/publish"/>
 					<pathelement location="${build-temp.dir}/certhist"/>
 					<pathelement location="${build-temp.dir}/certprof"/>
-				</classpath>
-			</javac>
-
-			<!-- CA Token component. Should be merged and divided into a Crypto Token component. See ECA-1532. -->
-			<echo message=" ** Validating component: CA Token **"/>
-			<mkdir dir="${src-temp.dir}/catoken"/>
-			<mkdir dir="${build-temp.dir}/catoken"/>
-			<copy todir="${src-temp.dir}/catoken">
-				<fileset dir="${src-ejbca-ejb-interface.dir}">
-					<include name="org/cesecore/certificates/ca/catoken/CaTokenSession*.java"/>
-				</fileset>
-				<fileset dir="${src.dir}">
-					<include name="org/cesecore/audit/enums/*.java"/>
-					<include name="org/cesecore/certificates/ca/catoken/*.java"/>	
-					<include name="org/ejbca/ui/cli/ErrorAdminCommandException.java"/>
-					<include name="org/ejbca/util/CMS.java"/>
-					<include name="org/ejbca/util/keystore/*.java"/>					
-				</fileset>
-			</copy>
-			<javac srcdir="${src-temp.dir}/catoken" destdir="${build-temp.dir}/catoken" debug="on" includeantruntime="no"
-        	encoding="iso8859-1" target="${java.target.version}">
-				<classpath>
-					<path refid="compile-util.classpath"/>
-					<pathelement location="${build-temp.dir}/common"/>
-					<pathelement location="${build-temp.dir}/certprof"/>
-					<pathelement location="${build-temp.dir}/logging"/>
-					<pathelement location="${build-temp.dir}/authorization"/>
-					<pathelement location="${build-temp.dir}/admins"/>
 				</classpath>
 			</javac>
 
@@ -594,6 +569,8 @@
 			<mkdir dir="${build-temp.dir}/caadmin" />
 			<copy todir="${src-temp.dir}/caadmin">
 				<fileset dir="${src-ejbca-ejb-interface.dir}">
+					<include name="org/cesecore/certificates/ca/Session*.java" />
+					<include name="org/cesecore/keys/token/CryptoTokenSession*.java" />
 					<include name="org/ejbca/core/ejb/ca/caadmin/*Session*.java" />
 				</fileset>
 				<fileset dir="${src-ejbca-entity.dir}">

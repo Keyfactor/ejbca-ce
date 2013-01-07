@@ -48,6 +48,7 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.Base64;
 import org.cesecore.util.CertTools;
@@ -144,7 +145,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     }
     
     @Override
-    public void init(final CA ca) throws Exception {
+    public void init(CryptoToken cryptoToken, final CA ca) throws Exception {
     	m_log.trace(">init");
     	// lookup keystore passwords      
     	final String keystorepass = StringTools.passwordDecryption(EjbcaConfiguration.getCaXkmsKeyStorePass(), "ca.xkmskeystorepass");
@@ -163,7 +164,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
 		certProfile.setKeyUsage(CertificateConstants.KEYENCIPHERMENT,true);
 		certProfile.setKeyUsage(CertificateConstants.DATAENCIPHERMENT,true);
 		certProfile.setKeyUsageCritical(true);
-    	final Certificate xKMSCertificate = ca.generateCertificate(user, xKMSkeys.getPublic(),
+    	final Certificate xKMSCertificate = ca.generateCertificate(cryptoToken, user, xKMSkeys.getPublic(),
     			-1, // KeyUsage
                 null, // Custom not before date
     			ca.getValidity(), certProfile,
@@ -184,14 +185,14 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     }   
 
     @Override
-    public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) {
+    public void update(CryptoToken cryptoToken, final ExtendedCAServiceInfo serviceinfo, final CA ca) {
     	final XKMSCAServiceInfo info = (XKMSCAServiceInfo) serviceinfo;
     	m_log.trace(">update: " + serviceinfo.getStatus());
     	setStatus(serviceinfo.getStatus());
     	if (info.getRenewFlag()) {
     		// Renew The XKMS Signers certificate.
     		try {
-				this.init(ca);
+				this.init(cryptoToken, ca);
 			} catch (Exception e) {
 				m_log.error("Error updating the XKMS service: ", e);
 			}
@@ -202,7 +203,7 @@ public class XKMSCAService extends ExtendedCAService implements Serializable {
     }
 
     @Override
-	public ExtendedCAServiceResponse extendedService(final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
+	public ExtendedCAServiceResponse extendedService(CryptoToken cryptoToken, final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
         m_log.trace(">extendedService");
         if (!(request instanceof XKMSCAServiceRequest)) {
             throw new IllegalExtendedCAServiceRequestException();            
