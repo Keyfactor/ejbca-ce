@@ -266,7 +266,11 @@ public class CryptoTokenManagementSessionTest extends RoleUsingTestCase {
             }
         } catch (Exception e) {
             // Cleanup token if we failed during the key creation stage
-            removeCryptoToken(null, cryptoTokenId);
+            try {
+                removeCryptoToken(null, cryptoTokenId);
+            } catch (Exception e2) {
+                log.error("", e2);
+            }
             throw new RuntimeException(e);
         }
         return cryptoTokenId;

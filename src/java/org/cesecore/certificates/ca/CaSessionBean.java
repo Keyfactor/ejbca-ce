@@ -672,6 +672,9 @@ public class CaSessionBean implements CaSessionLocal, CaSessionRemote {
             }
             return false;
         }
+        // Perform pre-upgrade of CATokenData to correct classpath changes (org.ejbca.core.model.ca.catoken.SoftCAToken)
+        tokendata = (LinkedHashMap<String, String>) new CAToken(tokendata).saveData();
+        data.put(CA.CATOKENDATA, tokendata);
         log.info("Pulling CryptoToken out of CA with id " + caid + " into a separate database table.");
         final String str = (String) tokendata.get(CAToken.KEYSTORE);
         byte[] keyStoreData = null;
