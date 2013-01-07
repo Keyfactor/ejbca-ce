@@ -104,7 +104,12 @@ public class CAToken extends UpgradeableDataHashMap {
     @SuppressWarnings("rawtypes")
     public CAToken(final HashMap tokendata) {
 		loadData(tokendata);
-        this.cryptoTokenId = Integer.parseInt((String) data.get(CAToken.CRYPTOTOKENID));
+		final Object cryptoTokenIdObject = data.get(CAToken.CRYPTOTOKENID);
+		if (cryptoTokenIdObject==null) {
+		    log.warn("No CryptoTokenId in CAToken map. This can safely be ignored if shown during an upgrade from EJBCA 5.0.x or lower.");
+		} else {
+            this.cryptoTokenId = Integer.parseInt((String) cryptoTokenIdObject);
+		}
         final Properties caTokenProperties = getProperties();
         internalInit(caTokenProperties);
     }
