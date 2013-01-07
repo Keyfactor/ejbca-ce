@@ -567,7 +567,7 @@ function checkallfields(){
            <% if(certificateprofiledata.getAllowExtensionOverride())
                  out.write("CHECKED");
            %> id="<%=CHECKBOX_ALLOWEXTENSIONOVERRIDE%>">
-           <label for="<%=CHECKBOX_ALLOWCERTSERIALNUMBEROVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
+           <label for="<%=CHECKBOX_ALLOWEXTENSIONOVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
       </td>
     </tr>
 
@@ -581,7 +581,8 @@ function checkallfields(){
            <% if(certificateprofiledata.getAllowCertSerialNumberOverride()) {
                  out.write("CHECKED");
            }
-           %>> 
+           %> id="<%=CHECKBOX_ALLOWCERTSERIALNUMBEROVERRIDE%>">
+           <label for="<%=CHECKBOX_ALLOWCERTSERIALNUMBEROVERRIDE%>"><c:out value="<%= ejbcawebbean.getText(\"ALLOW\") %>" /></label>
         <%} else {%>
            <c:out value="<%= ejbcawebbean.getText(\"CERTSERIALNOUNIQUEIX\") %>" />
         <%}%>
@@ -1199,8 +1200,6 @@ function checkallfields(){
 	    <input type="text" name="<%=TEXTFIELD_PRIVKEYUSAGEPERIODLENGTH%>" size="20" maxlength="255" <%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? "" : "disabled"%> value="<%=certificateprofiledata.isUsePrivateKeyUsagePeriodNotAfter() ? ValidityDate.getString(certificateprofiledata.getPrivateKeyUsagePeriodLength() / (24 * 3600)) : ""%>" />
 	  </td>
 	</tr>
-
-// TODO har kommit hit
 
     <%-- Other extensions --%>
 
