@@ -427,6 +427,11 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         	Certificate cert1 = certs1.iterator().next();
             cert1.verify(pk);
     	} finally {
+            // Since this could be a P11 slot, we need to clean up the actual keys in the slot, not just delete the token
+            int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
+            final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+            cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, signKeyAlias);
+            CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
     		caSession.removeCA(roleMgmgToken, ca.getCAId());
     		internalCertStoreSession.removeCertificate(cert);
     	}    	
@@ -539,6 +544,11 @@ public class CaSessionTestBase extends RoleUsingTestCase {
         		internalCertStoreSession.removeCRL(roleMgmgToken, CertTools.getFingerprintAsString(crl));    		
         	}
     	} finally {
+            // Since this could be a P11 slot, we need to clean up the actual keys in the slot, not just delete the token
+            int cryptoTokenId = ca.getCAToken().getCryptoTokenId();
+            final String signKeyAlias = ca.getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+            cryptoTokenManagementSession.removeKeyPair(alwaysAllowToken, cryptoTokenId, signKeyAlias);
+            CryptoTokenManagementSessionTest.removeCryptoToken(null, cryptoTokenId);
     		caSession.removeCA(roleMgmgToken, ca.getCAId());
     		internalCertStoreSession.removeCertificate(cert);
     	}    	
