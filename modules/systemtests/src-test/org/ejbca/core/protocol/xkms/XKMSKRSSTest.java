@@ -42,6 +42,8 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.CaSessionTest;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateStatus;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -53,6 +55,8 @@ import org.cesecore.certificates.endentity.EndEntityConstants;
 import org.cesecore.certificates.endentity.EndEntityInformation;
 import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
+import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.mock.authentication.tokens.TestX509CertificateAuthenticationToken;
 import org.cesecore.util.CertTools;
@@ -148,7 +152,6 @@ public class XKMSKRSSTest {
     private static String certprofilename2;
     private static String endentityprofilename;
 
-    private static GlobalConfiguration orgGlobalConfig;
 	private static CAInfo orgCaInfo;
 
     private static DocumentBuilderFactory dbf;
@@ -161,13 +164,11 @@ public class XKMSKRSSTest {
     private CertificateStoreSessionRemote certificateStoreSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateStoreSessionRemote.class); 
     private EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
     private KeyRecoverySessionRemote keyRecoverySession = EjbRemoteHelper.INSTANCE.getRemoteSession(KeyRecoverySessionRemote.class);
-    private GlobalConfigurationSessionRemote globalConfigurationSession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationSessionRemote.class);
     private EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
 
 
     @Before
     public void setUp() throws Exception {
-        orgGlobalConfig = globalConfigurationSession.getCachedGlobalConfiguration();
         orgCaInfo = caSession.getCAInfo(administrator, "AdminCA1");
     }
     
@@ -1089,8 +1090,11 @@ public class XKMSKRSSTest {
         String caname = "xkmsRevocationCA" + randomPostfix;
         String username = "xkmsRevocationUser" + randomPostfix;
         int caID = -1;
+        int cryptoTokenId = 0;
         try {
-            caID = RevocationApprovalTest.createApprovalCA(administrator, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession, caSession);
+            cryptoTokenId = CryptoTokenManagementSessionTest.createCryptoTokenForCA(administrator, caname, "1024");
+            final CAToken caToken = CaSessionTest.createCaToken(cryptoTokenId, AlgorithmConstants.SIGALG_SHA1_WITH_RSA, AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            caID = RevocationApprovalTest.createApprovalCA(administrator, caname, CAInfo.REQ_APPROVAL_REVOCATION, caAdminSession, caSession, caToken);
             X509Certificate adminCert = (X509Certificate) certificateStoreSession.findCertificatesByUsername(APPROVINGADMINNAME).iterator()
                     .next();
             Set<X509Certificate> credentials = new HashSet<X509Certificate>();
@@ -1166,6 +1170,7 @@ public class XKMSKRSSTest {
                 endEntityManagementSession.deleteUser(administrator, username);
             }
         } finally {
+            CryptoTokenManagementSessionTest.removeCryptoToken(administrator, cryptoTokenId);
             // Nuke CA
             try {
                 caAdminSession.revokeCA(administrator, caID, RevokedCertInfo.REVOCATION_REASON_UNSPECIFIED);
@@ -1199,7 +1204,6 @@ public class XKMSKRSSTest {
     	CAAdminSessionRemote caAdminSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CAAdminSessionRemote.class);
     	CertificateProfileSessionRemote certificateProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CertificateProfileSessionRemote.class);
     	EndEntityProfileSessionRemote endEntityProfileSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityProfileSessionRemote.class);
-    	GlobalConfigurationProxySessionRemote globalConfigurationProxySession = EjbRemoteHelper.INSTANCE.getRemoteSession(GlobalConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     	EndEntityManagementSessionRemote endEntityManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(EndEntityManagementSessionRemote.class);
     	
     	endEntityManagementSession.deleteUser(administrator, username2);
@@ -1209,8 +1213,6 @@ public class XKMSKRSSTest {
 
         certificateProfileSession.removeCertificateProfile(administrator, certprofilename1);
         certificateProfileSession.removeCertificateProfile(administrator, certprofilename2);
-
-        globalConfigurationProxySession.saveGlobalConfigurationRemote(administrator, orgGlobalConfig);
         caAdminSession.editCA(administrator, orgCaInfo);
     }
 
@@ -1249,7 +1251,7 @@ public class XKMSKRSSTest {
                             q.add(ApprovalMatch.MATCH_WITH_APPROVALID, BasicMatch.MATCH_TYPE_EQUALS, Integer.toString(approvalID));
                             ApprovalDataVO approvalData = (ApprovalDataVO) (approvalSession.query(internalAdmin, q, 0, 1, "cAId="+approvalCAID, "(endEntityProfileId="+SecConst.EMPTY_ENDENTITYPROFILE+")").get(0));
                             Approval approval = new Approval("Approved during testing.");
-                            approvalExecutionSession.approve(approvingAdmin, approvalID, approval, globalConfigurationSession.getCachedGlobalConfiguration());
+                            approvalExecutionSession.approve(approvingAdmin, approvalID, approval);
                             approvalData = (ApprovalDataVO) approvalSession.findApprovalDataVO(internalAdmin, approvalID).iterator().next();
                             assertEquals(approvalData.getStatus(), ApprovalDataVO.STATUS_EXECUTED);
                     CertificateStatus status = certificateStoreSession.getStatus(issuerDN, serialNumber);
