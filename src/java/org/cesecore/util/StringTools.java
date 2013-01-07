@@ -51,8 +51,6 @@ import org.bouncycastle.util.encoders.Hex;
 /**
  * This class implements some utility functions that are useful when handling Strings.
  * 
- * Based on EJBCA version: StringTools.java 11221 2011-01-18 14:08:34Z aveen4711
- * 
  * @version $Id$
  */
 public final class StringTools {
@@ -443,6 +441,7 @@ public final class StringTools {
     public static String pbeEncryptStringWithSha256Aes192(final String in) throws NoSuchAlgorithmException, NoSuchProviderException,
             NoSuchPaddingException, InvalidKeyException, InvalidAlgorithmParameterException, IllegalBlockSizeException, BadPaddingException,
             UnsupportedEncodingException {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
         if (CryptoProviderTools.isUsingExportableCryptography()) {
             log.warn("Obfuscation not possible due to weak crypto policy.");
             return in;
@@ -467,6 +466,7 @@ public final class StringTools {
     public static String pbeDecryptStringWithSha256Aes192(final String in) throws IllegalBlockSizeException, BadPaddingException,
             InvalidKeyException, InvalidKeySpecException, NoSuchAlgorithmException, NoSuchProviderException, NoSuchPaddingException,
             UnsupportedEncodingException {
+        CryptoProviderTools.installBCProviderIfNotAvailable();
         if (CryptoProviderTools.isUsingExportableCryptography()) {
             log.warn("De-obfuscation not possible due to weak crypto policy.");
             return in;

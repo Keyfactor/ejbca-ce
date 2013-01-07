@@ -28,6 +28,7 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 
@@ -64,7 +65,7 @@ public class HardTokenEncryptCAService extends ExtendedCAService implements Seri
 	}
 
 	@Override
-	public void init(final CA ca) throws Exception {
+	public void init(final CryptoToken cryptoToken, final CA ca) throws Exception {
 		log.debug("OCSPCAService : init ");
 		setCA(ca);
 		final ExtendedCAServiceInfo info = getExtendedCAServiceInfo();
@@ -72,14 +73,14 @@ public class HardTokenEncryptCAService extends ExtendedCAService implements Seri
 	}   
 
 	@Override
-	public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) {		   
+	public void update(final CryptoToken cryptoToken, final ExtendedCAServiceInfo serviceinfo, final CA ca) {		   
 		log.debug("OCSPCAService : update " + serviceinfo.getStatus());
 		setStatus(serviceinfo.getStatus());
 		setCA(ca);
 	}
 
 	@Override
-	public ExtendedCAServiceResponse extendedService(final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
+	public ExtendedCAServiceResponse extendedService(final CryptoToken cryptoToken, final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException, IllegalExtendedCAServiceRequestException,ExtendedCAServiceNotActiveException {
 		log.trace(">extendedService");
 		if (this.getStatus() != ExtendedCAServiceInfo.STATUS_ACTIVE) {
 			String msg = intres.getLocalizedMessage("caservice.notactive", "HardTokenEncrypt");
@@ -95,7 +96,7 @@ public class HardTokenEncryptCAService extends ExtendedCAService implements Seri
     	if(serviceReq.getCommand() == HardTokenEncryptCAServiceRequest.COMMAND_ENCRYPTDATA){
     		try{	
     			returnval = new HardTokenEncryptCAServiceResponse(HardTokenEncryptCAServiceResponse.TYPE_ENCRYPTRESPONSE, 
-    					getCa().encryptData(serviceReq.getData(), CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT));	
+    					getCa().encryptData(cryptoToken, serviceReq.getData(), CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT));	
     		}catch(CMSException e){
     			log.error("encrypt:", e.getUnderlyingException());
     			throw new IllegalExtendedCAServiceRequestException(e);
@@ -106,7 +107,7 @@ public class HardTokenEncryptCAService extends ExtendedCAService implements Seri
     		if(serviceReq.getCommand() == HardTokenEncryptCAServiceRequest.COMMAND_DECRYPTDATA){
             try{
             	returnval = new HardTokenEncryptCAServiceResponse(HardTokenEncryptCAServiceResponse.TYPE_DECRYPTRESPONSE, 
-            			getCa().decryptData(serviceReq.getData(), CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT));
+            			getCa().decryptData(cryptoToken, serviceReq.getData(), CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT));
     		  }catch(CMSException e){
     			 log.error("decrypt:", e.getUnderlyingException());
   		  	 throw new IllegalExtendedCAServiceRequestException(e);

@@ -42,6 +42,7 @@ import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authentication.tokens.X509CertificateAuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
@@ -65,6 +66,7 @@ import org.cesecore.certificates.endentity.EndEntityType;
 import org.cesecore.certificates.endentity.EndEntityTypes;
 import org.cesecore.certificates.endentity.ExtendedInformation;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.keys.token.CryptoTokenManagementSessionTest;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -82,17 +84,13 @@ import org.junit.Test;
 /**
  * Tests creating certificate with extended key usage.
  * 
- * Works similar to TestSignSession.
- *
- * Based on EJBCA version: ExtendedKeyUsageTest.java 11280 2011-01-28 15:42:09Z jeklund
- * 
  * @version $Id$
  */
 public class CertificateCreateSessionTest extends RoleUsingTestCase {
     
     private static KeyPair keys;
-    private static final String X509CADN = "CN=TEST";
-    private static CA testx509ca;
+    private static final String X509CADN = "CN=CertificateCreateSessionTest";
+    private CA testx509ca;
 
     private static CaSessionRemote caSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CaSessionRemote.class);
     private static RoleAccessSessionRemote roleAccessSession = EjbRemoteHelper.INSTANCE.getRemoteSession(RoleAccessSessionRemote.class);
@@ -107,12 +105,12 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     @BeforeClass
     public static void setUpCryptoProvider() throws Exception {
         CryptoProviderTools.installBCProvider();
-        testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
         keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
     }
     
     @Before
     public void setUp() throws Exception {
+        testx509ca = CaSessionTest.createTestX509CA(X509CADN, null, false);
     	// Set up base role that can edit roles
     	setUpAuthTokenAndRole("CertCreateSessionTest");
 
@@ -127,6 +125,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.EDITCERTIFICATEPROFILE.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), CryptoTokenRules.BASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         roleManagementSession.addAccessRulesToRole(alwaysAllowToken, role, accessRules);
 
         // Remove any lingering testca before starting the tests
@@ -139,6 +138,7 @@ public class CertificateCreateSessionTest extends RoleUsingTestCase {
     public void tearDown() throws Exception {
     	// Remove any testca before exiting tests
     	try {
+    	    CryptoTokenManagementSessionTest.removeCryptoToken(null, testx509ca.getCAToken().getCryptoTokenId());
     		caSession.removeCA(alwaysAllowToken, testx509ca.getCAId());
     	} finally {
     		// Be sure to to this, even if the above fails

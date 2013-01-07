@@ -61,6 +61,8 @@ import org.cesecore.certificates.certificate.CertificateStoreSessionLocal;
 import org.cesecore.config.CesecoreConfiguration;
 import org.cesecore.internal.InternalResources;
 import org.cesecore.jndi.JndiConstants;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenManagementSessionLocal;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
@@ -95,6 +97,8 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     private CrlStoreSessionLocal crlSession;
     @EJB
     private PublisherSessionLocal publisherSession;
+    @EJB
+    private CryptoTokenManagementSessionLocal cryptoTokenManagementSession;
 
     private CrlCreateSessionLocal crlCreateSession;	// Used to run methods using different transaction attributes
 
@@ -620,14 +624,18 @@ public class CrlCreateSessionBean implements CrlCreateSessionLocal, CrlCreateSes
     		// nextCrlNumber: The highest number of last CRL (full or delta) and increased by 1 (both full CRLs and deltaCRLs share the same series of CRL Number)
     		int nextCrlNumber = ( (fullnumber > deltanumber) ? fullnumber : deltanumber ) +1; 
     		boolean deltaCRL = (basecrlnumber > -1);
+    		final CryptoToken cryptoToken = cryptoTokenManagementSession.getCryptoToken(ca.getCAToken().getCryptoTokenId());
+    		if (cryptoToken==null) {
+    		    throw new CryptoTokenOfflineException("Could not find CryptoToken with id " + ca.getCAToken().getCryptoTokenId());
+    		}
     		if (deltaCRL) {
     			// Workaround if transaction handling fails so that crlNumber for deltaCRL would happen to be the same
     			if (nextCrlNumber == basecrlnumber) {
     				nextCrlNumber++;
     			}
-    			crl = ca.generateDeltaCRL(certs, nextCrlNumber, basecrlnumber);       
+    			crl = ca.generateDeltaCRL(cryptoToken, certs, nextCrlNumber, basecrlnumber);       
     		} else {
-    			crl = ca.generateCRL(certs, nextCrlNumber);
+    			crl = ca.generateCRL(cryptoToken, certs, nextCrlNumber);
     		}
     		if (crl != null) {
     			// Store CRL in the database, this can still fail so the whole thing is rolled back

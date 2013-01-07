@@ -39,8 +39,6 @@ import org.junit.Test;
 /**
  * Tests PKCS11 keystore crypto token. To run this test a slot 1 must exist on the hsm, with a user with user pin "userpin1" that can use the slot.
  *
- * Based on EJBCA version: CATokenContainerTest.java 10288 2010-10-26 11:27:21Z anatom $
- *
  * @version $Id$
  */
 public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
@@ -256,7 +254,7 @@ public class PKCS11CryptoTokenTest extends CryptoTokenTestBase {
         } else {
             prop.setProperty(CryptoToken.ALLOW_EXTRACTABLE_PRIVATE_KEY, "False");
         }
-        CryptoToken catoken = CryptoTokenFactory.createCryptoToken(PKCS11CryptoToken.class.getName(), prop, null, 111);
+        CryptoToken catoken = CryptoTokenFactory.createCryptoToken(PKCS11CryptoToken.class.getName(), prop, null, 111, "P11 CryptoToken");
 		return catoken;
 	}
 

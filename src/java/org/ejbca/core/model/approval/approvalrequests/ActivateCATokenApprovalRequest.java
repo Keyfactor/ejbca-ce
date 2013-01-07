@@ -24,8 +24,6 @@ import org.apache.log4j.Logger;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.certificates.ca.CADoesntExistsException;
-import org.cesecore.keys.token.CryptoTokenAuthenticationFailedException;
-import org.cesecore.keys.token.CryptoTokenOfflineException;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSession;
 import org.ejbca.core.model.approval.ApprovalDataText;
 import org.ejbca.core.model.approval.ApprovalDataVO;
@@ -35,11 +33,14 @@ import org.ejbca.core.model.approval.ApprovalRequestExecutionException;
 import org.ejbca.core.model.approval.WaitingForApprovalException;
 
 /**
- * Approval Request created when trying to activate a CA Token.
+ * Approval Request created when trying to activate a CA Service.
+ * 
+ * For historic reasons this class refers to "CA Tokens".
  * 
  * @author Philip Vendil
  * @version $Id$
  */
+@Deprecated // TODO: We should replace this by adding new better requests while allowing existing persisted to work
 public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 
 	private static final long serialVersionUID = -1L;
@@ -85,13 +86,9 @@ public class ActivateCATokenApprovalRequest extends ApprovalRequest {
 		log.debug("Executing " + ApprovalDataVO.APPROVALTYPENAMES[getApprovalType()] + " (" + getApprovalType() + ").");
 		try {
 			// Use 'null' for GlobalConfiguration here since it's only used to extract approval information in the underlying code..
-			caAdminSession.activateCAToken(getRequestAdmin(), getCAId(), authenticationCode, null);
-		} catch (CryptoTokenAuthenticationFailedException e) {
-			throw new ApprovalRequestExecutionException("CA Token Authentication Failed :" + e.getMessage(), e);
-		} catch (AuthorizationDeniedException e) {
-			throw new ApprovalRequestExecutionException("Authorization denied to activate CA Token :" + e.getMessage(), e);
-		} catch (CryptoTokenOfflineException e) {
-			throw new ApprovalRequestExecutionException("CA Token still off-line :" + e.getMessage(), e);
+			caAdminSession.activateCAService(getRequestAdmin(), getCAId());
+        } catch (AuthorizationDeniedException e) {
+            throw new ApprovalRequestExecutionException("Authorization denied to activate CA Token :" + e.getMessage(), e);
 		} catch (CADoesntExistsException e) {
 			throw new ApprovalRequestExecutionException("CA does not exist :" + e.getMessage(), e);
 		} catch (ApprovalException e) {

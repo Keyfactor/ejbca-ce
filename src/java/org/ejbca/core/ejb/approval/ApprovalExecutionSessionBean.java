@@ -35,6 +35,7 @@ import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionLocal;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityManagementSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -73,9 +74,11 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
     private ApprovalSessionLocal approvalSession;
     @EJB
     private SecurityEventsLoggerSessionLocal auditSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
 
     @Override
-    public void approve(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc) throws ApprovalRequestExpiredException,
+    public void approve(AuthenticationToken admin, int approvalId, Approval approval) throws ApprovalRequestExpiredException,
             ApprovalRequestExecutionException, AuthorizationDeniedException, AdminAlreadyApprovedRequestException, EjbcaException {
         if (log.isTraceEnabled()) {
             log.trace(">approve: "+approvalId);
@@ -92,6 +95,7 @@ public class ApprovalExecutionSessionBean implements ApprovalExecutionSessionLoc
 		approval.setApprovalAdmin(true, admin);
         try {
             approve(adl, approval);
+            GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
             if (gc.getUseApprovalNotifications()) {
             	final ApprovalDataVO approvalDataVO = approvalSession.getApprovalDataVO(adl);
                 if (approvalDataVO.getRemainingApprovals() != 0) {

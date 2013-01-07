@@ -32,8 +32,8 @@ import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequest;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceRequestException;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceResponse;
 import org.cesecore.certificates.ca.extendedservices.IllegalExtendedCAServiceRequestException;
+import org.cesecore.keys.token.CryptoToken;
 import org.cesecore.keys.token.CryptoTokenOfflineException;
-import org.cesecore.keys.token.IllegalCryptoTokenException;
 import org.cesecore.util.CryptoProviderTools;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.protocol.ocsp.OCSPUtil;
@@ -82,7 +82,7 @@ public class OCSPCAService extends ExtendedCAService implements Serializable {
     }
 
     @Override
-    public void init(final CA ca) throws Exception {
+    public void init(CryptoToken cryptoToken, final CA ca) throws Exception {
     	log.debug("OCSPCAService : init ");
     	setCA(ca);
     	final OCSPCAServiceInfo info = (OCSPCAServiceInfo) getExtendedCAServiceInfo();       
@@ -90,7 +90,7 @@ public class OCSPCAService extends ExtendedCAService implements Serializable {
     }   
 
     @Override
-    public void update(final ExtendedCAServiceInfo serviceinfo, final CA ca) {		   
+    public void update(CryptoToken cryptoToken, final ExtendedCAServiceInfo serviceinfo, final CA ca) {		   
     	log.debug("OCSPCAService : update " + serviceinfo.getStatus());
     	setStatus(serviceinfo.getStatus());
     	// Only status is updated
@@ -99,7 +99,7 @@ public class OCSPCAService extends ExtendedCAService implements Serializable {
     }
 
     @Override
-    public ExtendedCAServiceResponse extendedService(final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
+    public ExtendedCAServiceResponse extendedService(CryptoToken cryptoToken, final ExtendedCAServiceRequest request) throws ExtendedCAServiceRequestException,
             IllegalExtendedCAServiceRequestException, ExtendedCAServiceNotActiveException, CertificateEncodingException, CertificateException,
             OperatorCreationException {
         log.trace(">extendedService");
@@ -114,16 +114,14 @@ public class OCSPCAService extends ExtendedCAService implements Serializable {
 
         final OCSPCAServiceRequest ocspServiceReq = (OCSPCAServiceRequest) request;
         try {
-            final PrivateKey privKey = getCa().getCAToken().getPrivateKey(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
-            final String providerName = getCa().getCAToken().getCryptoToken().getSignProviderName();
+            final PrivateKey privKey = cryptoToken.getPrivateKey(getCa().getCAToken().getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN));
+            final String providerName = cryptoToken.getSignProviderName();
             final X509Certificate[] signerChain = (X509Certificate[]) getCa().getCertificateChain().toArray(new X509Certificate[0]);
             final ExtendedCAServiceResponse returnval = OCSPUtil.createOCSPCAServiceResponse(ocspServiceReq, privKey, providerName,
                     OCSPUtil.convertCertificateChainToCertificateHolderChain(signerChain));
             log.trace("<extendedService");
             return returnval;
         } catch (CryptoTokenOfflineException e) {
-            throw new ExtendedCAServiceNotActiveException(e);
-        } catch (IllegalCryptoTokenException e) {
             throw new ExtendedCAServiceNotActiveException(e);
         }
     }

@@ -53,6 +53,7 @@ import org.ejbca.config.GlobalConfiguration;
 import org.ejbca.core.ejb.audit.enums.EjbcaEventTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaModuleTypes;
 import org.ejbca.core.ejb.audit.enums.EjbcaServiceTypes;
+import org.ejbca.core.ejb.config.GlobalConfigurationSessionLocal;
 import org.ejbca.core.ejb.ra.EndEntityAccessSessionLocal;
 import org.ejbca.core.model.InternalEjbcaResources;
 import org.ejbca.core.model.approval.AdminAlreadyApprovedRequestException;
@@ -93,10 +94,11 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     private SecurityEventsLoggerSessionLocal auditSession;
     @EJB
     private EndEntityAccessSessionLocal endEntityAccessSession;
+    @EJB
+    private GlobalConfigurationSessionLocal globalConfigurationSession;
     
     @Override
-    public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest, GlobalConfiguration gc)
-            throws ApprovalException {
+    public void addApprovalRequest(AuthenticationToken admin, ApprovalRequest approvalRequest) throws ApprovalException {
     	if (log.isTraceEnabled()) {
     		log.trace(">addApprovalRequest");
     	}
@@ -125,6 +127,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                 approvalData.setExpiredate((new Date()).getTime() + approvalRequest.getRequestValidity());
                 approvalData.setRemainingapprovals(approvalRequest.getNumOfRequiredApprovals());
                 entityManager.persist(approvalData);
+                final GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
                 if (gc.getUseApprovalNotifications()) {
                     sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl()
                             + "adminweb/approval/approveaction.jsf?uniqueId=" + freeId,
@@ -158,11 +161,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
             ApprovalData ad = ApprovalData.findById(entityManager, Integer.valueOf(id));
             if (ad != null) {
                 entityManager.remove(ad);
-                String msg = intres.getLocalizedMessage("approval.removed", id);
-                final Map<String, Object> details = new LinkedHashMap<String, Object>();
-                details.put("msg", msg);
+                final String detailsMsg = intres.getLocalizedMessage("approval.removed", id);
                 auditSession.log(EjbcaEventTypes.APPROVAL_REMOVE, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
-                        admin.toString(), String.valueOf(ad.getCaid()), null, null, details);
+                        admin.toString(), String.valueOf(ad.getCaid()), null, null, detailsMsg);
             } else {
                 String msg = intres.getLocalizedMessage("approval.notexist", id);
                 log.info(msg);
@@ -181,7 +182,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
     }
 
     @Override
-    public void reject(AuthenticationToken admin, int approvalId, Approval approval, GlobalConfiguration gc)
+    public void reject(AuthenticationToken admin, int approvalId, Approval approval)
             throws ApprovalRequestExpiredException, AuthorizationDeniedException, ApprovalException, AdminAlreadyApprovedRequestException {
         log.trace(">reject");
         ApprovalData adl;
@@ -198,6 +199,7 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
 
         try {
             reject(adl, approval);
+            final GlobalConfiguration gc = globalConfigurationSession.getCachedGlobalConfiguration();
             if (gc.getUseApprovalNotifications()) {
                 final ApprovalDataVO approvalDataVO = getApprovalDataVO(adl);
                 sendApprovalNotification(admin, gc.getApprovalAdminEmailAddress(), gc.getApprovalNotificationFromAddress(), gc.getBaseUrl()
@@ -206,11 +208,9 @@ public class ApprovalSessionBean implements ApprovalSessionLocal, ApprovalSessio
                         intres.getLocalizedMessage("notification.requestrejected.msg"), adl.getId(), approvalDataVO.getRemainingApprovals(),
                         approvalDataVO.getRequestDate(), approvalDataVO.getApprovalRequest(), approval);
             }
-            String msg = intres.getLocalizedMessage("approval.rejected", approvalId);
-            final Map<String, Object> details = new LinkedHashMap<String, Object>();
-            details.put("msg", msg);
+            final String detailsMsg = intres.getLocalizedMessage("approval.rejected", approvalId);
             auditSession.log(EjbcaEventTypes.APPROVAL_REJECT, EventStatus.SUCCESS, EjbcaModuleTypes.APPROVAL, EjbcaServiceTypes.EJBCA,
-                    admin.toString(), String.valueOf(adl.getCaid()), null, null, details);
+                    admin.toString(), String.valueOf(adl.getCaid()), null, null, detailsMsg);
         } catch (ApprovalRequestExpiredException e) {
             String msg = intres.getLocalizedMessage("approval.expired", approvalId);
             log.info(msg);

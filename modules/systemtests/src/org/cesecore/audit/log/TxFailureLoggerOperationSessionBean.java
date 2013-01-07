@@ -52,7 +52,7 @@ public class TxFailureLoggerOperationSessionBean implements TxFailureLoggerOpera
     }
 
     public void log() throws Exception {
-        securityLog.log(EventTypes.LOG_SIGN, EventStatus.SUCCESS, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, "TxFailureUser", null, null, null, null);
+        securityLog.log(EventTypes.LOG_SIGN, EventStatus.SUCCESS, ModuleTypes.SECURITY_AUDIT, ServiceTypes.CORE, "TxFailureUser", null, null, null, (String)null);
         throw new Exception("Forced Exception to test that the previous will not be saved");
     }
 

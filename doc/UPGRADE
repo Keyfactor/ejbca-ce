@@ -33,6 +33,14 @@ From EJBCA 5.0.x to EJBCA 5.1.x
 -------------------------------
 See release notes for more details on changes.
 
+The CryptoToken concept has extended the internal CA Token concept. CA's now
+reference a named set of keys in a CryptoToken and CA Service and CryptoToken
+activation are clearly separated. Upgrades are made during first startup.
+Older EJBCA nodes will continue to function during a 100% up-time upgrade, as
+long as newer instances has been deployed with "app.version.effective" lower
+than 5.1.x.
+See web.properties.sample for PKCS#11 library auto-detection configuration.
+
 The class CliAuthenticationToken and associated classes have been moved from the CLI module to reside next to the other 
 authentication classes under src. This means that approval requests using the CliAuthenticationToken created in 5.0.x will not 
 be forwards compatible.

@@ -54,6 +54,11 @@
             <value>#{param.currentRole}</value>
         </managed-property>
   </managed-bean>
+  <managed-bean>
+    	<managed-bean-name>cryptoTokenMBean</managed-bean-name>
+    	<managed-bean-class>org.ejbca.ui.web.admin.cryptotoken.CryptoTokenMBean</managed-bean-class>
+    	<managed-bean-scope>session</managed-bean-scope>
+  </managed-bean>
   
   <validator>
         <validator-id>legalCharsValidator</validator-id>

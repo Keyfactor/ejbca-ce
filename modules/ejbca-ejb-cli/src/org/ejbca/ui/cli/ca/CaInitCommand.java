@@ -14,6 +14,7 @@
 package org.ejbca.ui.cli.ca;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.security.InvalidParameterException;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
@@ -32,7 +33,6 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.ca.X509CAInfo;
 import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.catoken.CATokenConstants;
-import org.cesecore.certificates.ca.catoken.CATokenInfo;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificateprofile.CertificatePolicy;
@@ -40,13 +40,13 @@ import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileConstants;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
 import org.cesecore.certificates.util.AlgorithmConstants;
-import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
+import org.cesecore.keys.token.PKCS11CryptoToken;
 import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.CryptoProviderTools;
 import org.cesecore.util.EjbRemoteHelper;
-import org.cesecore.util.FileTools;
 import org.cesecore.util.SimpleTime;
 import org.cesecore.util.StringTools;
 import org.ejbca.core.ejb.ca.caadmin.CAAdminSessionRemote;
@@ -241,14 +241,14 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 }
             }
             String signAlg = args[9];
-            String catokenproperties = null;
+            Properties cryptoTokenProperties = new Properties();
             if (args.length > 10 && !"soft".equals(catokentype)) {
                 String filename = args[10];
                 if ((filename != null) && (!filename.equalsIgnoreCase("null"))) {
                     if (!(new File(filename)).exists()) {
                         throw new IllegalAdminCommandException("File " + filename + " does not exist");
                     }
-                    catokenproperties = new String(FileTools.readFiletoBuffer(filename));
+                    cryptoTokenProperties.load(new FileInputStream(filename));
                 }
             }
             int signedByCAId = CAInfo.SELFSIGNED;
@@ -307,8 +307,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
             getLogger().info("Policy ID: " + policyId);
             getLogger().info("Signature alg: " + signAlg);
             getLogger().info("Certificate profile: " + profileName);
-            //getLogger().info("Certificate profile id: "+profileId);
-            getLogger().info("CA token properties: " + catokenproperties);
+            getLogger().info("CA token properties: " + cryptoTokenProperties.toString());
             getLogger().info("Signed by: " + (signedByCAId == CAInfo.SELFSIGNED ? "self signed " : signedByCAId));
             if (signedByCAId != CAInfo.SELFSIGNED) {
                 try {
@@ -321,41 +320,65 @@ public class CaInitCommand extends BaseCaAdminCommand {
             if (superAdminCN != null) {
                 initAuthorizationModule(getAdmin(cliUserName, cliPassword), dn.hashCode(), superAdminCN);
             }
-            // Define CAToken type (soft token or hsm).
-            CATokenInfo catokeninfo = new CATokenInfo();
-            catokeninfo.setSignatureAlgorithm(signAlg);
-            catokeninfo.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
-            catokeninfo.setProperties(catokenproperties);
-            Properties prop = catokeninfo.getProperties();
-            // Set some CA token properties if they are not set already
-            if (prop.getProperty(CryptoToken.KEYSPEC_PROPERTY) == null) {
-                prop.setProperty(CryptoToken.KEYSPEC_PROPERTY, keyspec);
-            }
-            if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-            }
-            if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
-            }
-            if (prop.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING) == null) {
-                prop.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
-            }
-            if (!catokenpassword.equalsIgnoreCase("null")) {
-                catokeninfo.setAuthenticationCode(catokenpassword);
-            }
-            if ( catokentype.equalsIgnoreCase("soft")) {
-                catokeninfo.setClassPath(SoftCryptoToken.class.getName());
-                if (catokeninfo.getAuthenticationCode() != null) {
-                    // We must do this in order to not set the default password when creating a new soft CA token
-                    // A bit tricky, but thats how it is as of EJBCA 5.0.x, 2012-05.
-                    getLogger().info("Non default password used for soft CA token, auto activation disabled.");
-                    prop.setProperty(SoftCryptoToken.NODEFAULTPWD, "true");
-                }
+            // Transform our mixed properties into CA Token properties and cryptoTokenProperties
+            final Properties caTokenProperties = new Properties();
+            final String defaultAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING);
+            if (defaultAlias != null) {
+                caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, defaultAlias);
+                cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING);
             } else {
-                catokeninfo.setClassPath(catokentype);
+                caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_DEFAULT_STRING, CAToken.SOFTPRIVATEDECKEYALIAS);
             }
-            catokeninfo.setProperties(prop);
-
+            final String certSignAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING);
+            if (certSignAlias != null) {
+                caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, certSignAlias);
+                cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING);
+            } else {
+                caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, CAToken.SOFTPRIVATESIGNKEYALIAS);
+            }
+            final String crlSignAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING);
+            if (crlSignAlias != null) {
+                caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING, crlSignAlias);
+                cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING);
+            } else {
+                final String certSignValue = caTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_CERTSIGN_STRING);
+                caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_CRLSIGN_STRING, certSignValue);
+            }
+            final String hardTokenEncAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING);
+            if (defaultAlias != null) {
+                caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING, hardTokenEncAlias);
+                cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_HARDTOKENENCRYPT_STRING);
+            }
+            final String keyEncAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING);
+            if (defaultAlias != null) {
+                caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING, keyEncAlias);
+                cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT_STRING);
+            }
+            final String testKeyAlias = cryptoTokenProperties.getProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING);
+            if (defaultAlias != null) {
+                caTokenProperties.setProperty(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING, testKeyAlias);
+                cryptoTokenProperties.remove(CATokenConstants.CAKEYPURPOSE_TESTKEY_STRING);
+            }
+            final char[] authenticationCode = "null".equalsIgnoreCase(catokenpassword) ? null : catokenpassword.toCharArray();
+            final String className = "soft".equals(catokentype) ? SoftCryptoToken.class.getName() : PKCS11CryptoToken.class.getName();
+            // Create the CryptoToken
+            final CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE.getRemoteSession(CryptoTokenManagementSessionRemote.class);
+            final int cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(getAdmin(cliUserName, cliPassword), caname, className, cryptoTokenProperties, null, authenticationCode);
+            // Create the CA Token
+            final CAToken caToken = new CAToken(cryptoTokenId, caTokenProperties);
+            caToken.setSignatureAlgorithm(signAlg);
+            caToken.setEncryptionAlgorithm(AlgorithmConstants.SIGALG_SHA1_WITH_RSA);
+            // Generate CA keys if it is a soft CryptoToken
+            if ("soft".equals(catokentype)) {
+                final String signKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_CERTSIGN);
+                final String signKeySpecification = "DSA".equals(keytype) ? "DSA" + keyspec : keyspec;
+                cryptoTokenManagementSession.createKeyPair(getAdmin(cliUserName, cliPassword), cryptoTokenId, signKeyAlias, signKeySpecification);
+                final String defaultKeyAlias = caToken.getAliasFromPurpose(CATokenConstants.CAKEYPURPOSE_KEYENCRYPT);
+                // Decryption key must be RSA
+                final String defaultKeySpecification = "RSA".equals(keytype) ? keyspec : "2048";
+                cryptoTokenManagementSession.createKeyPair(getAdmin(cliUserName, cliPassword), cryptoTokenId, defaultKeyAlias, defaultKeySpecification);
+            }
+            // Create the CA Info
             CAInfo cainfo = null;
             switch (type) {
             case CVC:
@@ -363,16 +386,16 @@ public class CaInitCommand extends BaseCaAdminCommand {
                 final String keysequence = CertTools.getPartFromDN(dn, "SN");
                 if (keysequence != null) {
                     getLogger().info("CVC key sequence: "+keysequence);
-                    catokeninfo.setKeySequence(keysequence);
+                    caToken.setKeySequence(keysequence);
                     if (StringUtils.isNumeric(keysequence)) {
                         getLogger().info("CVC key sequence format is numeric.");
-                        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
+                        caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_NUMERIC);
                     } else {
                         getLogger().info("CVC key sequence format is alphanumeric.");
-                        catokeninfo.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_ALPHANUMERIC);
+                        caToken.setKeySequenceFormat(StringTools.KEY_SEQUENCE_FORMAT_ALPHANUMERIC);
                     }
                 }
-                cainfo = createCVCCAInfo(dn, caname, certificateProfileId, validity, signedByCAId, catokeninfo);
+                cainfo = createCVCCAInfo(dn, caname, certificateProfileId, validity, signedByCAId, caToken);
                 break;
             case X509:
                 //Default, slip below.
@@ -394,7 +417,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
                         extendedServiceKeySpec, keytype));
                 extendedcaservices.add(new HardTokenEncryptCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
                 extendedcaservices.add(new KeyRecoveryCAServiceInfo(ExtendedCAServiceInfo.STATUS_ACTIVE));
-                cainfo = createX509CaInfo(dn, caname, certificateProfileId, validity, signedByCAId, catokeninfo, policies, extendedcaservices);
+                cainfo = createX509CaInfo(dn, caname, certificateProfileId, validity, signedByCAId, caToken, policies, extendedcaservices);
                 break;
             }
             getLogger().info("Creating CA...");
@@ -412,7 +435,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         }
     }
 
-    private CAInfo createX509CaInfo(String dn, String caname, int certificateProfileId, long validity, int signedByCAId, CATokenInfo catokeninfo,
+    private CAInfo createX509CaInfo(String dn, String caname, int certificateProfileId, long validity, int signedByCAId, CAToken catokeninfo,
             ArrayList<CertificatePolicy> policies, ArrayList<ExtendedCAServiceInfo> extendedcaservices) {
         return new X509CAInfo(dn, caname, CAConstants.CA_ACTIVE, new Date(), "", certificateProfileId, validity, null, // Expiretime                                             
                 CAInfo.CATYPE_X509, signedByCAId, new ArrayList<Certificate>(), // empty certificate chain
@@ -449,7 +472,7 @@ public class CaInitCommand extends BaseCaAdminCommand {
         );
     }
     
-    private CAInfo createCVCCAInfo(String dn, String caname, int certificateProfileId, long validity, int signedByCa, CATokenInfo catokeninfo) {
+    private CAInfo createCVCCAInfo(String dn, String caname, int certificateProfileId, long validity, int signedByCa, CAToken catokeninfo) {
         return new CVCCAInfo(dn, caname, CAConstants.CA_ACTIVE, new Date(), certificateProfileId, validity, 
                 null, // Expiretime
                 CAInfo.CATYPE_CVC, signedByCa, new ArrayList<Certificate>(), catokeninfo, "Initial CA", -1, null, 

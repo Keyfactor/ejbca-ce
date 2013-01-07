@@ -62,7 +62,14 @@ public class StandAloneVaMockSessionBean implements AccessControlSessionLocal, S
 		throw new UnsupportedOperationException();
 	}
 
-	@Override
+
+    @Override
+    public void log(EventType eventType, EventStatus eventStatus, ModuleType module, ServiceType service, String authToken, String customId,
+            String searchDetail1, String searchDetail2, String additionalDetailsMsg) throws AuditRecordStorageException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
 	public void log(AuthenticationToken authToken, EventType eventType, EventStatus eventStatus, ModuleType module, ServiceType service)
 			throws AuditRecordStorageException, AuthorizationDeniedException {
 		throw new UnsupportedOperationException();

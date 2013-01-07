@@ -1,19 +1,35 @@
+<%
+/*************************************************************************
+ *                                                                       *
+ *  EJBCA: The OpenSource Certificate Authority                          *
+ *                                                                       *
+ *  This software is free software; you can redistribute it and/or       *
+ *  modify it under the terms of the GNU Lesser General Public           *
+ *  License as published by the Free Software Foundation; either         *
+ *  version 2.1 of the License, or any later version.                    *
+ *                                                                       *
+ *  See terms of license at gnu.org.                                     *
+ *                                                                       *
+ *************************************************************************/
+
+ // Version: $Id$
+%>
 <%@ taglib uri="http://java.sun.com/jsf/html" prefix="h" %>
 <%@ taglib uri="http://java.sun.com/jsf/core" prefix="f" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ page pageEncoding="ISO-8859-1"%>
 <% response.setContentType("text/html; charset="+org.ejbca.config.WebConfiguration.getWebContentEncoding()); %>
-<%@page errorPage="/errorpage.jsp" import="org.ejbca.config.GlobalConfiguration,org.ejbca.ui.web.RequestHelper,
-                                           org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper,
-                                           org.ejbca.core.model.authorization.AccessRulesConstants" %>
+<%@page errorPage="/errorpage.jsp" import="
+org.ejbca.config.GlobalConfiguration,
+org.ejbca.ui.web.RequestHelper,
+org.ejbca.ui.web.admin.configuration.EjbcaJSFHelper,
+org.ejbca.core.model.authorization.AccessRulesConstants
+"%>
 <jsp:useBean id="ejbcawebbean" scope="session" class="org.ejbca.ui.web.admin.configuration.EjbcaWebBean" />
 <jsp:setProperty name="ejbcawebbean" property="*" /> 
-<jsp:useBean id="cabean" scope="session" class="org.ejbca.ui.web.admin.cainterface.CAInterfaceBean" />
-<jsp:setProperty name="cabean" property="*" />
-<%   // Initialize environment
- GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_ACTIVATECA); 
- EjbcaJSFHelper helpbean = EjbcaJSFHelper.getBean();
- helpbean.setEjbcaWebBean(ejbcawebbean);
+<%  // Initialize environment
+	GlobalConfiguration globalconfiguration = ejbcawebbean.initialize(request, AccessRulesConstants.ROLE_ADMINISTRATOR, AccessRulesConstants.REGULAR_ACTIVATECA); 
+	EjbcaJSFHelper.getBean().setEjbcaWebBean(ejbcawebbean);
 %>
 <html>
 <head>
@@ -25,76 +41,60 @@
 
 <f:view>
 <body>
-
-<h1><h:outputText value="#{web.text.ACTIVATECAS}"/></h1>
-
+	<h1><h:outputText value="#{web.text.ACTIVATECAS}"/></h1>
+	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
 	<h:form>
-	<h:dataTable border="0" value="#{cAActivationMBean.hasMessages}" var="item" style="right: auto; left: auto">
-	     	<h:column>
-	     		<td>
-	     		<h:outputText value="#{web.text.MESSAGE}: "/>
-	     		<h:outputText value="#{item.name}: "></h:outputText>
-				</td>	     	
-	     	</h:column>
-	     	<h:column>
-	     	<h:outputText value="#{item.CAActivationMessage}"></h:outputText>
-	     	</h:column>
-	     </h:dataTable>
-	<div id="activation">
-	<h:dataTable styleClass="grid" value="#{cAActivationMBean.authorizedCAWrappers}" var="item" style="border-collapse: collapse; right: auto; left: auto">
-	  			<h:column>
-	    			<f:facet name="header">
-	    				<h:outputText value="#{web.text.CA}" />
-	    			</f:facet>
-	    			<h:outputText value="#{item.name}"></h:outputText>
+	<h:dataTable value="#{cAActivationMBean.authorizedTokensAndCas}" var="tokenAndCa" styleClass="actTokenAndCas">
+		<h:column>
+			<h:panelGroup>
+				<h:outputLink value="adminweb/cryptotoken/cryptotoken.jsf?cryptoTokenId=#{tokenAndCa.cryptoTokenId}">
+					<h2><h:outputText value="#{tokenAndCa.cryptoTokenName}"/></h2>
+				</h:outputLink>
+				<h:graphicImage rendered="#{tokenAndCa.cryptoTokenActive}" url="adminweb/images/status-ca-active.png" height="12" width="12" style="border-width:0"/>
+				<h:graphicImage rendered="#{!tokenAndCa.cryptoTokenActive}" url="adminweb/images/status-ca-offline.png" height="12" width="12" style="border-width:0"/>
+				<h:outputText value=" CryptoToken is #{web.text.ACTIVE} on #{web.ejbcaWebBean.hostName}" rendered="#{tokenAndCa.cryptoTokenActive}"/>
+				<h:outputText value=" CryptoToken is #{web.text.OFFLINE} on #{web.ejbcaWebBean.hostName}" rendered="#{!tokenAndCa.cryptoTokenActive}"/>
+				<h:selectBooleanCheckbox value="#{tokenAndCa.cryptoTokenNewState}" disabled="#{tokenAndCa.stateChangeDisabled}"/>
+				<h:outputText value=" Keep #{web.text.ACTIVE}" rendered="#{tokenAndCa.cryptoTokenActive}"/>
+				<h:outputText value=" #{web.text.ACTIVATE}" rendered="#{!tokenAndCa.cryptoTokenActive}"/>
+			</h:panelGroup>
+			<h:dataTable value="#{tokenAndCa.cas}" var="ca" styleClass="actCas" headerClass="actCasHeader">
+				<h:column>
+	    			<f:facet name="header"><h:outputText value="#{web.text.CA}"/></f:facet>
+	    			<h:outputText value="#{ca.name}"/>
 	    		</h:column>
-	  			<h:column>
-	    			<f:facet name="header">
-	    				<h:outputText value="#{web.text.CASTATUS}" />
-	    			</f:facet>
-	    			<h:graphicImage height="16" width="16" url="#{item.statusImg}" style="border-width:0"/>
-	    			<h:outputText value="#{item.status}"></h:outputText>
-		    		</h:column>
-	    		<h:column>
-	    			<f:facet name="header">
-	    				<h:outputText value="#{web.text.CATOKENSTATUS}" />
-	    			</f:facet>
-	    			<h:graphicImage height="16" width="16" url="#{item.tokenStatusImg}" style="border-width:0"/>
-	    			<h:outputText value="#{item.tokenStatus}"></h:outputText>
-	    		</h:column>
-	    		<h:column>
-	    		<f:facet name="header">
-	    	 		<h:outputText value="#{web.text.ACTIVATEORMAKEOFFLINE}" />
-	    		</f:facet>
-	    		<h:selectOneRadio id="align" value="#{item.activateOption}">
-  					<f:selectItem itemLabel="#{web.text.ACTIVATE}" itemValue="#{cAActivationMBean.activate}"/>
-  					<f:selectItem itemLabel="#{web.text.MAKEOFFLINE}" itemValue="#{cAActivationMBean.makeoffline}"/>
-  					<f:selectItem itemLabel="#{web.text.NOCHANGE}" itemValue="#{cAActivationMBean.keepcurrent}"/>
-				</h:selectOneRadio>
-	    		</h:column>
-	    		<h:column>
-	    		<f:facet name="header">
-	    	 		<h:outputText value="#{web.text.MONITORIFCAACTIVE}" />
-	    		</f:facet>
-	    		<h:selectBooleanCheckbox value="#{item.monitored}" />
-	    		<h:outputText value="#{web.text.MONITORED}" />
-	    		</h:column>
-	         </h:dataTable>
-			</div>
+				<h:column>
+					<f:facet name="header"><h:outputText value="CA Service state"/></f:facet>
+					<h:graphicImage rendered="#{ca.active}" url="adminweb/images/status-ca-active.png" height="12" width="12" style="border-width:0"/>
+					<h:graphicImage rendered="#{!ca.active}" url="adminweb/images/status-ca-offline.png" height="12" width="12" style="border-width:0"/>
+					<h:outputText value="#{web.text.ACTIVE}" rendered="#{ca.active}"/>
+					<h:outputText value="#{web.text.EXPIRED}" rendered="#{ca.expired}"/>
+					<h:outputText value="#{web.text.REVOKED}" rendered="#{ca.revoked}"/>
+					<h:outputText value="#{web.text.OFFLINE}" rendered="#{!ca.active && !ca.expired && !ca.revoked}"/>
+				</h:column>
+				<h:column>
+					<f:facet name="header"><h:outputText value="Action"/></f:facet>
+					<h:selectBooleanCheckbox value="#{ca.newState}" disabled="#{ca.unableToChangeState}"/>
+					<h:outputText value="Keep #{web.text.ACTIVE}" rendered="#{ca.active}"/>
+					<h:outputText value="#{web.text.ACTIVATE}" rendered="#{!ca.active}"/>
+				</h:column>
+				<h:column>
+					<f:facet name="header"><h:outputText value="Monitor"/></f:facet>
+					<h:selectBooleanCheckbox value="#{ca.monitoredNewState}"/>
+					<h:outputText value="Monitored from HealthCheck"/>
+				</h:column>
+			</h:dataTable>
+		</h:column>
+	</h:dataTable>
+	<h:panelGrid columns="3">
+		<h:outputLabel rendered="#{cAActivationMBean.activationCodeShown}" for="authCode" value="CryptoToken activation code:"/>
+		<h:inputSecret rendered="#{cAActivationMBean.activationCodeShown}" id="authCode" value="#{cAActivationMBean.authenticationCode}"/>
+		<h:commandButton action="#{cAActivationMBean.applyChanges}" value="#{web.text.APPLY}"/>
+	</h:panelGrid>
+	</h:form>
 
-			<div id="code">
-	           <h:outputText value="#{web.text.AUTHENTICATIONCODE}"></h:outputText>
-	           <h:inputSecret id="password" value="#{cAActivationMBean.authenticationCode}" />
-	           <h:commandButton id="submit" action="#{cAActivationMBean.apply}" value="#{web.text.APPLY}" />
-			</div>
-
-	 </h:form>
-
-	<%	// Include Footer 
-	String footurl = globalconfiguration.getFootBanner(); %>
-   
-	<jsp:include page="<%= footurl %>" />
-
+	<%/* Include footer */%>
+	<jsp:include page="<%= globalconfiguration.getFootBanner() %>" />
 </body>
 </f:view>
 </html>

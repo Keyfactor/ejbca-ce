@@ -26,6 +26,7 @@ import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Properties;
 
 import javax.ejb.EJBException;
 
@@ -48,12 +49,15 @@ import org.cesecore.CaCreatingTestCase;
 import org.cesecore.authentication.tokens.AuthenticationToken;
 import org.cesecore.authentication.tokens.UsernamePrincipal;
 import org.cesecore.authorization.AuthorizationDeniedException;
+import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.authorization.control.StandardRules;
 import org.cesecore.authorization.rules.AccessRuleData;
 import org.cesecore.authorization.rules.AccessRuleState;
 import org.cesecore.certificates.ca.CA;
 import org.cesecore.certificates.ca.CADoesntExistsException;
+import org.cesecore.certificates.ca.CAInfo;
 import org.cesecore.certificates.ca.CaSessionRemote;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.certificate.CertificateConstants;
 import org.cesecore.certificates.certificate.CertificateCreateSessionRemote;
 import org.cesecore.certificates.certificate.CertificateStoreSessionRemote;
@@ -76,7 +80,11 @@ import org.cesecore.certificates.ocsp.logging.TransactionLogger;
 import org.cesecore.certificates.util.AlgorithmConstants;
 import org.cesecore.config.OcspConfiguration;
 import org.cesecore.configuration.CesecoreConfigurationProxySessionRemote;
+import org.cesecore.keys.token.CryptoToken;
+import org.cesecore.keys.token.CryptoTokenManagementProxySessionRemote;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.keys.token.IllegalCryptoTokenException;
+import org.cesecore.keys.token.SoftCryptoToken;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.roles.RoleData;
@@ -114,11 +122,15 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
             .getRemoteSession(InternalCertificateStoreSessionRemote.class, EjbRemoteHelper.MODULE_TEST);
     private CesecoreConfigurationProxySessionRemote cesecoreConfigurationProxySession = EjbRemoteHelper.INSTANCE
             .getRemoteSession(CesecoreConfigurationProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
-
-    private CA testx509ca;
-
+    private CryptoTokenManagementSessionRemote cryptoTokenManagementSession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CryptoTokenManagementSessionRemote.class);
+    private CryptoTokenManagementProxySessionRemote cryptoTokenManagementProxySession = EjbRemoteHelper.INSTANCE
+            .getRemoteSession(CryptoTokenManagementProxySessionRemote.class, EjbRemoteHelper.MODULE_TEST);
+    
     private X509Certificate caCertificate;
     private X509Certificate ocspCertificate;
+    private int cryptoTokenId;
+    private int caId;
     
     private final AuthenticationToken internalAdmin = new TestAlwaysAllowLocalAuthenticationToken(new UsernamePrincipal("Internal Admin"));
 
@@ -129,13 +141,10 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
 
     @Before
     public void setUp() throws Exception {
-
         // Set up base role that can edit roles
-        setUpAuthTokenAndRole("OcspSessionTest");
-
+        setUpAuthTokenAndRole(this.getClass().getSimpleName());
         // Now we have a role that can edit roles, we can edit this role to include more privileges
-        RoleData role = roleAccessSession.findRole("OcspSessionTest");
-
+        RoleData role = roleAccessSession.findRole(this.getClass().getSimpleName());
         // Add rules to the role
         List<AccessRuleData> accessRules = new ArrayList<AccessRuleData>();
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAADD.resource(), AccessRuleState.RULE_ACCEPT, true));
@@ -143,19 +152,32 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAREMOVE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESSBASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CREATECERT.resource(), AccessRuleState.RULE_ACCEPT, true));
+        accessRules.add(new AccessRuleData(role.getRoleName(), CryptoTokenRules.BASE.resource(), AccessRuleState.RULE_ACCEPT, true));
         roleManagementSession.addAccessRulesToRole(internalAdmin, role, accessRules);
 
-        testx509ca = createX509Ca("CN=TEST,O=Test,C=SE");
-        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESS.resource() + testx509ca.getCAId(), AccessRuleState.RULE_ACCEPT,
-                true));
+        final Properties cryptoTokenProperties = new Properties();
+        cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, "foo123");
+        cryptoTokenId = cryptoTokenManagementSession.createCryptoToken(roleMgmgToken, "IntegratedOcspResponseTest", SoftCryptoToken.class.getName(), cryptoTokenProperties, null, null);
+        cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, CAToken.SOFTPRIVATESIGNKEYALIAS, "1024");
+        cryptoTokenManagementSession.createKeyPair(roleMgmgToken, cryptoTokenId, CAToken.SOFTPRIVATEDECKEYALIAS, "1024");
+        /*
+         * Yes, this is intentional and makes some developers sad..
+         * 
+         * We generate keys on the server side and then fetch a copy of these keys to the client VM where we generate a
+         * self-signed CA certificate that is then added to the database instead of using non-CESeCore code for creating the CA.
+         */
+        final CryptoToken cryptoToken = cryptoTokenManagementProxySession.getCryptoToken(cryptoTokenId);
+        final CA testx509ca = createX509Ca(cryptoToken, "CN=TEST,O=Test,C=SE");
+        caId = testx509ca.getCAId();
+        accessRules.add(new AccessRuleData(role.getRoleName(), StandardRules.CAACCESS.resource() + caId, AccessRuleState.RULE_ACCEPT, true));
         roleManagementSession.addAccessRulesToRole(roleMgmgToken, role, accessRules);
 
         // Remove any lingering testca before starting the tests
-        caSession.removeCA(roleMgmgToken, testx509ca.getCAId());
-
+        caSession.removeCA(roleMgmgToken, caId);
         caSession.addCA(roleMgmgToken, testx509ca);
+        CAInfo testx509caInfo = caSession.getCAInfo(roleMgmgToken, caId);
 
-        caCertificate = (X509Certificate) testx509ca.getCACertificate();
+        caCertificate = (X509Certificate) testx509caInfo.getCertificateChain().iterator().next();
 
         // Store a root certificate in the database.
         if (certificateStoreSession.findCertificatesBySubject(DN).isEmpty()) {
@@ -163,7 +185,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
                     CertificateConstants.CERTTYPE_ROOTCA, CertificateProfileConstants.CERTPROFILE_FIXED_ROOTCA, "footag", new Date().getTime());
         }
 
-        EndEntityInformation user = new EndEntityInformation("username", "CN=User", testx509ca.getCAId(), "rfc822Name=user@user.com",
+        EndEntityInformation user = new EndEntityInformation("username", "CN=User", caId, "rfc822Name=user@user.com",
                 "user@user.com", EndEntityTypes.ENDUSER.toEndEntityType(), 0, 0, EndEntityConstants.TOKEN_USERGEN, 0, null);
         user.setPassword("foo123");
         KeyPair keys = KeyTools.genKeys("512", AlgorithmConstants.KEYALGORITHM_RSA);
@@ -181,14 +203,14 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
     @After
     public void tearDown() throws AuthorizationDeniedException, RoleNotFoundException {
         try {
-            caSession.removeCA(roleMgmgToken, testx509ca.getCAId());
+            caSession.removeCA(roleMgmgToken, caId);
+            cryptoTokenManagementSession.deleteCryptoToken(roleMgmgToken, cryptoTokenId);
         } finally {
             // Be sure to to this, even if the above fails
             tearDownRemoveRole();
             internalCertificateStoreSession.removeCertificate(caCertificate.getSerialNumber());
             internalCertificateStoreSession.removeCertificate(ocspCertificate.getSerialNumber());
         }
-
         // Restore the default value
         cesecoreConfigurationProxySession.setConfigurationValue("ocsp.defaultresponder", OcspConfiguration.getDefaultResponderId());
     }
@@ -198,9 +220,6 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
      */
     @Test
     public void testGetOcspResponseSanity() throws Exception {
-
-        testx509ca.getCAToken().getCryptoToken();
-
         integratedOcspResponseGeneratorProxySession.reloadTokenAndChainCache();
         // An OCSP request
         OCSPReqBuilder gen = new OCSPReqBuilder();
@@ -406,7 +425,7 @@ public class IntegratedOcspResponseTest extends CaCreatingTestCase {
             assertNull("Test could not run because initial ocsp response failed.",
                     ((BasicOCSPResp) (new OCSPResp(responseBytes)).getResponseObject()).getResponses()[0].getCertStatus());
             // Erase the cert. It should still exist in the cache.
-            caSession.removeCA(roleMgmgToken, testx509ca.getCAId());
+            caSession.removeCA(roleMgmgToken, caId);
             responseBytes = ocspResponseGeneratorSession.getOcspResponse(req.getEncoded(), null, "", "", null, auditLogger, transactionLogger)
                     .getOcspResponse();
             // Initial assert that status is null, i.e. "good"

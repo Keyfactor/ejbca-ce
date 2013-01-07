@@ -454,7 +454,7 @@ public class RegisterReqBean {
                 false, admin, null, numApprovalsRequired, caid, eeProfileId);
         
         try {
-            approvalSession.addApprovalRequest(admin, approvalReq, globalConfiguration);
+            approvalSession.addApprovalRequest(admin, approvalReq);
         } catch (EjbcaException e) {
             errors.add("Could not submit the information for approval: "+e.getMessage());
             log.info("Approval request could not be added", e);

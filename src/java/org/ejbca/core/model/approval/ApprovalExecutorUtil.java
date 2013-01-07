@@ -123,29 +123,15 @@ public class ApprovalExecutorUtil {
 		}
 		return globallyAllowed;
 	}
-	
-	private static boolean isCalledByOveridableClassnames(ApprovalOveradableClassName[] overridableClassNames){		
-		boolean retval = false;
-		try{
-			throw new Exception();
-		}catch(Exception e){
-			if(overridableClassNames != null){
-				Throwable next = e;
-				while(next != null){
-				  for(int j=0;j< overridableClassNames.length;j++){
-					retval = overridableClassNames[j].isInStackTrace(e.getStackTrace());
-					if(retval == true){
-						break;
-					}
-				  }
-				  if(retval == true){
-						break;
-				  }
-				  next = e.getCause();
-				}
-			}
-		}
-		
-		return retval;
-	}	
+
+	/** @return true if calling stack contains one of the overridableClassNames className,methodName combination. */
+	private static boolean isCalledByOveridableClassnames(final ApprovalOveradableClassName[] overridableClassNames){
+	    final StackTraceElement[] stackTraceElements = Thread.currentThread().getStackTrace();
+	    for (final ApprovalOveradableClassName overridableClassName : overridableClassNames) {
+	        if (overridableClassName.isInStackTrace(stackTraceElements)) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
 }

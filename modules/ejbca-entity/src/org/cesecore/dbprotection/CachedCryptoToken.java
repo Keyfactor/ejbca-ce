@@ -68,8 +68,8 @@ public class CachedCryptoToken implements CryptoToken {
     }
 
     @Override
-    public void deleteEntry(char[] authenticationcode, String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, CryptoTokenOfflineException {
-        wrappedCryptoToken.deleteEntry(authenticationcode, alias);
+    public void deleteEntry(String alias) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException, CryptoTokenOfflineException {
+        wrappedCryptoToken.deleteEntry(alias);
     }
 
     @Override
@@ -118,6 +118,16 @@ public class CachedCryptoToken implements CryptoToken {
     @Override
     public int getId() {
         return wrappedCryptoToken.getId();
+    }
+
+    @Override
+    public String getTokenName() {
+        return wrappedCryptoToken.getTokenName();
+    }
+
+    @Override
+    public void setTokenName(final String tokenName) {
+        wrappedCryptoToken.setTokenName(tokenName);
     }
 
     @Override
@@ -180,8 +190,8 @@ public class CachedCryptoToken implements CryptoToken {
     }
 
     @Override
-    public void testKeyPair(PrivateKey privateKey, PublicKey publicKey) throws InvalidKeyException, NoSuchProviderException {
-        wrappedCryptoToken.testKeyPair(privateKey, publicKey);
+    public void testKeyPair(final String alias) throws InvalidKeyException, NoSuchProviderException, CryptoTokenOfflineException {
+        wrappedCryptoToken.testKeyPair(alias);
     }
 
     @Override
@@ -193,5 +203,10 @@ public class CachedCryptoToken implements CryptoToken {
     public void storeKey(String alias, Key key, Certificate[] chain, char[] password) throws KeyStoreException {
         wrappedCryptoToken.storeKey(alias, key, chain, password);
         
+    }
+
+    @Override
+    public boolean isAutoActivationPinPresent() {
+        return wrappedCryptoToken.isAutoActivationPinPresent();
     }
 }

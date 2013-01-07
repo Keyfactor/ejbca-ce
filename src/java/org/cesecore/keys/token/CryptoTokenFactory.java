@@ -24,13 +24,10 @@ import org.cesecore.internal.InternalResources;
  * Class managing available Crypto Tokens and instantiated Crypto Tokens. 
  * Each CryptoToken plug-in should register itself by using the method register.
  * 
- * Based on EJBCA version: 
- *      CATokenManager.java 10174 2010-10-12 08:25:40Z mikekushner $
  * CESeCore version:
  *      CryptoTokenFactory.java 577 2011-03-16 12:26:39Z tomas
  * 
  * @version $Id$
- * 
  */
 public class CryptoTokenFactory {
 	
@@ -155,8 +152,9 @@ public class CryptoTokenFactory {
 	 * @param properties properties passed to the init method of the CryptoToken
 	 * @param data byte data passed to the init method of the CryptoToken
 	 * @param id id passed to the init method of the CryptoToken, the id is user defined and not used internally for anything but logging.
+     * @param tokenName user friendly identifier
      */
-    public static final CryptoToken createCryptoToken(final String inClassname, final Properties properties, final byte[] data, final int id) {
+    public static final CryptoToken createCryptoToken(final String inClassname, final Properties properties, final byte[] data, final int id, String tokenName) {
     	final String classname;
     	if ( inClassname!=null ) {
     		classname = inClassname;
@@ -173,7 +171,8 @@ public class CryptoTokenFactory {
 			token.init(properties, data, id);
 		} catch (Exception e) {
     		log.error("Error initializing Crypto Token. Classpath="+classname, e);
-		}				
+		}
+    	token.setTokenName(tokenName);
     	return token;
     }
     

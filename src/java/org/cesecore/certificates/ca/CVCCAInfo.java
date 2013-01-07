@@ -16,7 +16,7 @@ import java.security.cert.Certificate;
 import java.util.Collection;
 import java.util.Date;
 
-import org.cesecore.certificates.ca.catoken.CATokenInfo;
+import org.cesecore.certificates.ca.catoken.CAToken;
 import org.cesecore.certificates.ca.extendedservices.ExtendedCAServiceInfo;
 import org.cesecore.util.CertTools;
 import org.cesecore.util.StringTools;
@@ -36,7 +36,7 @@ public class CVCCAInfo extends CAInfo {
 	 */
 	public CVCCAInfo(String subjectdn, String name, int status, Date updateTime, int certificateprofileid, 
 			long validity, Date expiretime, int catype, int signedby, Collection<Certificate> certificatechain, 
-			CATokenInfo catokeninfo, String description, int revocationReason, Date revocationDate,
+			CAToken catoken, String description, int revocationReason, Date revocationDate,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
 			Collection<Integer> crlpublishers,boolean finishuser,Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
 			Collection<Integer> approvalSettings, int numOfReqApprovals,
@@ -44,7 +44,7 @@ public class CVCCAInfo extends CAInfo {
 			boolean _doEnforceUniqueDistinguishedName, boolean _doEnforceUniqueSubjectDNSerialnumber,
 			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {
 		this.subjectdn = CertTools.stringToBCDNString(StringTools.strip(subjectdn));
-		this.caid = this.subjectdn.hashCode();
+		this.caid = CertTools.stringToBCDNString(this.subjectdn).hashCode();
 		this.name = name;
 		this.status = status;
 		this.updatetime = updateTime;
@@ -53,7 +53,7 @@ public class CVCCAInfo extends CAInfo {
 		this.catype = catype;
 		this.signedby = signedby;
         this.certificatechain = certificatechain;	
-		this.catokeninfo = catokeninfo; 
+		this.catoken = catoken; 
 		this.description = description;
 		this.revocationReason = revocationReason;
 		this.revocationDate = revocationDate;
@@ -80,7 +80,7 @@ public class CVCCAInfo extends CAInfo {
 	 * Constructor that should be used when updating CA data.
      * Used by the web. Jsp and stuff like that.
 	 */
-	public CVCCAInfo(int caid, long validity, CATokenInfo catokeninfo, String description,
+	public CVCCAInfo(int caid, long validity, CAToken catoken, String description,
 			long crlperiod, long crlIssueInterval, long crlOverlapTime, long deltacrlperiod, 
 			Collection<Integer> crlpublishers,
 			boolean finishuser, Collection<ExtendedCAServiceInfo> extendedcaserviceinfos, 
@@ -90,7 +90,7 @@ public class CVCCAInfo extends CAInfo {
 			boolean _useCertReqHistory, boolean _useUserStorage, boolean _useCertificateStorage) {        
 		this.caid = caid;
 		this.validity=validity;
-		this.catokeninfo = catokeninfo; 
+		this.catoken = catoken;
 		this.description = description;    
 		this.crlperiod = crlperiod;
 		this.crlIssueInterval = crlIssueInterval;

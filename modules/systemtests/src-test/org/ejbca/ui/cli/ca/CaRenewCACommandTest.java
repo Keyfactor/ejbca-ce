@@ -97,7 +97,7 @@ public class CaRenewCACommandTest extends CaTestCase {
     }
     
     /**
-     * Test renewal of the CA using CLI and generating a new key-pair.
+     * Test renewal of the CA using CLI and generating a new key pair.
      * Assumption: the default system keystore password is not changed from foo123
      * @throws Exception in case of error
      */
@@ -159,7 +159,7 @@ public class CaRenewCACommandTest extends CaTestCase {
     }
     
     /**
-     * Test renewal of the CA using CLI and generating a new key-pair.
+     * Test renewal of the CA using CLI and generating a new key pair.
      * Assumption: the default system keystore password is not changed from foo123
      * 
      * @throws Exception in case of error

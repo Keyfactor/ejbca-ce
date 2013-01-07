@@ -25,8 +25,10 @@ import org.cesecore.certificates.ca.CaSessionRemote;
 import org.cesecore.certificates.certificateprofile.CertificateProfile;
 import org.cesecore.certificates.certificateprofile.CertificateProfileExistsException;
 import org.cesecore.certificates.certificateprofile.CertificateProfileSessionRemote;
+import org.cesecore.keys.token.CryptoTokenManagementSessionRemote;
 import org.cesecore.mock.authentication.tokens.TestAlwaysAllowLocalAuthenticationToken;
 import org.cesecore.util.EjbRemoteHelper;
+import org.ejbca.core.ejb.ca.CaTestCase;
 import org.ejbca.ui.cli.ErrorAdminCommandException;
 import org.junit.After;
 import org.junit.Assert;
@@ -64,74 +66,45 @@ public class CaInitCommandTest {
     @Before
     public void setUp() throws Exception {
         caInitCommand = new CaInitCommand();
-        try {
-            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
-        } catch (Exception e) {
-            // Ignore.
-
-        }
+        CaTestCase.removeTestCA(CA_NAME);
     }
 
     @After
     public void tearDown() throws Exception {
+        CaTestCase.removeTestCA(CA_NAME);
     }
 
-    /**
-     * Test trivial happy path for execute, i.e, create an ordinary CA.
-     * 
-     * @throws Exception
-     * @throws AuthorizationDeniedException
-     */
+    /** Test trivial happy path for execute, i.e, create an ordinary CA. */
     @Test
     public void testExecuteHappyPath() throws Exception {
-        try {
-            caInitCommand.execute(HAPPY_PATH_ARGS);
-            assertNotNull("Happy path CA was not created.", caSession.getCAInfo(admin, CA_NAME));
-        } finally {
-            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
-        }
+        caInitCommand.execute(HAPPY_PATH_ARGS);
+        assertNotNull("Happy path CA was not created.", caSession.getCAInfo(admin, CA_NAME));
     }
     
     @Test
     public void testWithX509Type() throws Exception{
-        try {
-            caInitCommand.execute(X509_TYPE_ARGS);
-            assertNotNull("X509 typed CA was not created.", caSession.getCAInfo(admin, CA_NAME));
-        } finally {
-            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
-        }
+        caInitCommand.execute(X509_TYPE_ARGS);
+        assertNotNull("X509 typed CA was not created.", caSession.getCAInfo(admin, CA_NAME));
     }
 
     @Test
     public void testWithX509TypeNonDefaultPwd() throws Exception{
-        try {
-            caInitCommand.execute(X509_ARGS_NON_DEFULTPWD);
-            assertNotNull("X509 typed CA with non default CA token pwd was not created.", caSession.getCAInfo(admin, CA_NAME));
-        } finally {
-            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
-        }
+        caInitCommand.execute(X509_ARGS_NON_DEFULTPWD);
+        assertNotNull("X509 typed CA with non default CA token pwd was not created.", caSession.getCAInfo(admin, CA_NAME));
     }
 
     @Test
     public void testWithCVCType() throws Exception{
-        try {
-            caInitCommand.execute(CVC_TYPE_ARGS);
-            CAInfo caInfo = caSession.getCAInfo(admin, CA_NAME);
-            assertNotNull("CVC typed CA was not created.", caInfo);
-            assertEquals("CAInfo was not of type CVC", caInfo.getCAType(), CAInfo.CATYPE_CVC);        
-        } finally {
-            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
-        }
+        caInitCommand.execute(CVC_TYPE_ARGS);
+        CAInfo caInfo = caSession.getCAInfo(admin, CA_NAME);
+        assertNotNull("CVC typed CA was not created.", caInfo);
+        assertEquals("CAInfo was not of type CVC", caInfo.getCAType(), CAInfo.CATYPE_CVC);        
     }
     
     @Test
     public void testExecuteWithRootCACertificateProfile() throws Exception {
-        try {
-            caInitCommand.execute(ROOT_CA_ARGS);
-            assertNotNull("CA was not created using ROOTCA certificate profile.", caSession.getCAInfo(admin, CA_NAME));
-        } finally {
-            caSession.removeCA(admin, caInitCommand.getCAInfo(admin, CA_NAME).getCAId());
-        }
+        caInitCommand.execute(ROOT_CA_ARGS);
+        assertNotNull("CA was not created using ROOTCA certificate profile.", caSession.getCAInfo(admin, CA_NAME));
     }
 
     @Test
@@ -159,5 +132,4 @@ public class CaInitCommandTest {
             certificateProfileSessionRemote.removeCertificateProfile(admin, CERTIFICATE_PROFILE_NAME);
         }
     }
-
 }
