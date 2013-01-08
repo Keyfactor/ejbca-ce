@@ -13,6 +13,9 @@
 package org.cesecore.certificates.ca.catoken;
 
 
+import static org.junit.Assert.fail;
+
+import java.security.InvalidAlgorithmParameterException;
 import java.util.Properties;
 
 import org.cesecore.keys.token.CryptoToken;
@@ -27,8 +30,6 @@ import org.junit.Test;
  */
 public class PKCS11CATokenTest extends CATokenTestBase {
 
-    public static final String tokenpin = "userpin1";
-
     public PKCS11CATokenTest() {
         CryptoProviderTools.installBCProvider();
     }
@@ -39,8 +40,20 @@ public class PKCS11CATokenTest extends CATokenTestBase {
         doCaTokenRSA("1024", cryptoToken, getCaTokenProperties("rsatest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
 
+    @Test
+    public void testCATokenECCprime() throws Exception {
+        CryptoToken cryptoToken = createPKCS11Token(true);
+        cryptoToken.deleteEntry("testCATokenECCprime");
+        try {
+            cryptoToken.generateKeyPair("prime256v1", "testCATokenECCprime");
+            fail("We do not expect the SUN PKCS#11 provider to recognize the EC curve 'prime256v1', but if it does it would be a good thing! (Update the test.)");
+        } catch (InvalidAlgorithmParameterException e) {
+            // Expected
+        }
+    }
+
 	@Test
-    public void testCATokenECC() throws Exception {
+    public void testCATokenECCsecp() throws Exception {
     	CryptoToken cryptoToken = createPKCS11Token(true);
         doCaTokenECC("secp256r1", cryptoToken, getCaTokenProperties("ecctest" + CAToken.DEFAULT_KEYSEQUENCE));
     }
@@ -61,7 +74,7 @@ public class PKCS11CATokenTest extends CATokenTestBase {
 		CryptoToken cryptoToken = PKCS11CryptoTokenTest.createPKCS11Token();
     	Properties cryptoTokenProperties = cryptoToken.getProperties();
     	if (useAutoActivationPin) {
-            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, tokenpin);
+            cryptoTokenProperties.setProperty(CryptoToken.AUTOACTIVATE_PIN_PROPERTY, CATokenTestBase.tokenpin);
         }
         cryptoToken.setProperties(cryptoTokenProperties);
 		return cryptoToken;

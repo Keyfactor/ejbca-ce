@@ -12,19 +12,33 @@
  *************************************************************************/
 package org.cesecore.certificates.util;
 
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPairGenerator;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.ECGenParameterSpec;
+import java.security.spec.ECParameterSpec;
+import java.security.spec.ECPoint;
+import java.security.spec.EllipticCurve;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.LinkedList;
+import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.bouncycastle.jce.spec.ECNamedCurveSpec;
+import org.bouncycastle.math.ec.ECCurve;
 import org.cesecore.keys.util.KeyTools;
 import org.cesecore.util.CertTools;
 import org.ejbca.cvc.AlgorithmUtil;
@@ -148,7 +162,7 @@ public final class AlgorithmTools {
 	/**
 	 * Gets the key specification from a public key. Example: "1024" for a RSA 
 	 * or DSA key or "secp256r1" for EC key. The EC curve is only detected 
-	 * if <i>publickey</i> is an object created with the bouncy castle provider.
+	 * if <i>publickey</i> is an object known by the bouncy castle provider.
 	 * @param publicKey The public key to get the key specification from
 	 * @return The key specification, "unknown" if it could not be determined and
 	 * null if the key algorithm is not supported
@@ -163,10 +177,57 @@ public final class AlgorithmTools {
 		} else if ( publicKey instanceof DSAPublicKey ) {
 			keyspec = Integer.toString( ((DSAPublicKey) publicKey).getParams().getP().bitLength() );
 		} else if ( publicKey instanceof ECPublicKey) {
-			if ( ((ECPublicKey) publicKey).getParams() instanceof ECNamedCurveSpec ) {
-				keyspec = ((ECNamedCurveSpec) ((ECPublicKey) publicKey).getParams()).getName();
+		    final ECPublicKey ecPublicKey = (ECPublicKey) publicKey;
+			if ( ecPublicKey.getParams() instanceof ECNamedCurveSpec ) {
+				keyspec = ((ECNamedCurveSpec) ecPublicKey.getParams()).getName();
 			} else {
-				keyspec = KEYSPEC_UNKNOWN;
+                keyspec = KEYSPEC_UNKNOWN;
+			    // Try to detect if it is a curve name known by BC even though the public key isn't a BC key
+                final ECParameterSpec namedCurve = ecPublicKey.getParams();
+                final int c1 = namedCurve.getCofactor();
+                final EllipticCurve ec1 = namedCurve.getCurve();
+                final BigInteger a1 = ec1.getA();
+                final BigInteger b1 = ec1.getB();
+                final int fs1 = ec1.getField().getFieldSize();
+                //final byte[] s1 = ec1.getSeed();
+                final ECPoint g1 = namedCurve.getGenerator();
+                final BigInteger ax1 = g1.getAffineX();
+                final BigInteger ay1 = g1.getAffineY();
+                final BigInteger o1 = namedCurve.getOrder();
+                if (log.isDebugEnabled()) {
+                    log.debug("a1=" + a1 + " b1=" + b1 + " fs1=" + fs1 + " ax1=" + ax1 + " ay1=" + ay1 + " o1=" + o1 + " c1="+c1);
+                }
+                @SuppressWarnings("unchecked")
+                final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
+                while (ecNamedCurves.hasMoreElements()) {
+                    final String ecNamedCurveBc = ecNamedCurves.nextElement();
+                    final ECNamedCurveParameterSpec parameterSpec2 = ECNamedCurveTable.getParameterSpec(ecNamedCurveBc);
+                    final ECCurve ec2 = parameterSpec2.getCurve();
+                    final BigInteger a2 = ec2.getA().toBigInteger();
+                    final BigInteger b2 = ec2.getB().toBigInteger();
+                    final int fs2 = ec2.getFieldSize();
+                    final org.bouncycastle.math.ec.ECPoint g2 = parameterSpec2.getG();
+                    final BigInteger ax2 = g2.getX().toBigInteger();
+                    final BigInteger ay2 = g2.getY().toBigInteger();
+                    final BigInteger h2 = parameterSpec2.getH();
+                    final BigInteger n2 = parameterSpec2.getN();
+                    if (a1.equals(a2) && ax1.equals(ax2) && b1.equals(b2) && ay1.equals(ay2) && fs1==fs2 && o1.equals(n2) && c1==h2.intValue()) {
+                        // We have a matching curve here!
+                        if (log.isDebugEnabled()) {
+                            log.debug("a2=" + a2 + " b2=" + b2 + " fs2=" + fs2 + " ax2=" + ax2 + " ay2=" + ay2 + " h2=" + h2 + " n2=" + n2 + " " + ecNamedCurveBc);
+                        }
+                        // Since this public key is a SUN PKCS#11 pub key if we get here, we only return an alias if it is recognized by the provider
+                        try {
+                            KeyPairGenerator.getInstance("EC").initialize(new ECGenParameterSpec(ecNamedCurveBc));
+                            keyspec = ecNamedCurveBc;
+                        } catch (InvalidAlgorithmParameterException e) {
+                            log.debug(ecNamedCurveBc + " is not available in default provider.");
+                        } catch (NoSuchAlgorithmException e) {
+                            log.debug("Elliptic curves was not recognized by default provider");
+                            break;
+                        }
+                    }
+                }
 			}
 		}
 		if (log.isTraceEnabled()) {
@@ -175,6 +236,25 @@ public final class AlgorithmTools {
 		return keyspec;
 	}
 
+	/** @return a list of aliases for the provided curve name (including the provided name) */
+	public static List<String> getEcKeySpecAliases(final String namedEllipticCurve) {
+        final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(namedEllipticCurve);
+	    final List<String> ret = new ArrayList<String>();
+	    ret.add(namedEllipticCurve);
+        @SuppressWarnings("unchecked")
+        final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
+        while (ecNamedCurves.hasMoreElements()) {
+            final String currentCurve = ecNamedCurves.nextElement();
+            if (!namedEllipticCurve.equals(currentCurve)) {
+                final ECNamedCurveParameterSpec parameterSpec2 = ECNamedCurveTable.getParameterSpec(currentCurve);
+                if (parameterSpec.equals(parameterSpec2)) {
+                    ret.add(currentCurve);
+                }
+            }
+        }
+	    return ret;
+	}
+	
 	/**
 	 * Gets the algorithm to use for encryption given a specific signature algorithm.
 	 * Some signature algorithms (i.e. DSA and ECDSA) can not be used for 
