@@ -151,9 +151,12 @@ public final class CesecoreConfiguration {
      * Parameter to specify if retrieving CAInfo and CA from CAAdminSession should be cached, and in that case for how long.
      */
     public static long getCacheCaTimeInCaSession() {
+        final String value = ConfigurationHolder.getString("cainfo.cachetime");
         long time = -1; // don't cache at all is the default
         try {
-            time = Long.valueOf(ConfigurationHolder.getString("cainfo.cachetime"));
+            if (value!=null) {
+                time = Long.valueOf(value);
+            }
         } catch (NumberFormatException e) {
             log.error("Invalid value in cainfo.cachetime, must be decimal number (milliseconds to cache CA info): " + e.getMessage());
         }
@@ -162,9 +165,12 @@ public final class CesecoreConfiguration {
 
     /** @return configuration for when cached CryptoTokens are considered stale and will be refreshed from the database. */
     public static long getCacheTimeCryptoToken() {
+        final String value = ConfigurationHolder.getString("cryptotoken.cachetime");
         long time = -1; // don't cache at all is the default
         try {
-            time = Long.valueOf(ConfigurationHolder.getString("cryptotoken.cachetime"));
+            if (value!=null) {
+                time = Long.valueOf(value);
+            }
         } catch (NumberFormatException e) {
             log.error("Invalid value in cryptotoken.cachetime, must be decimal number (milliseconds): " + e.getMessage());
         }
