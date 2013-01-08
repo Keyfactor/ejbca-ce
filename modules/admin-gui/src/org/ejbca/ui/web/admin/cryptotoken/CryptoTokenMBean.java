@@ -13,12 +13,18 @@
 package org.ejbca.ui.web.admin.cryptotoken;
 
 import java.io.Serializable;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPairGenerator;
+import java.security.spec.ECGenParameterSpec;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
@@ -27,7 +33,6 @@ import javax.faces.model.ListDataModel;
 import javax.faces.model.SelectItem;
 
 import org.apache.log4j.Logger;
-import org.bouncycastle.jce.ECGOST3410NamedCurveTable;
 import org.bouncycastle.jce.ECNamedCurveTable;
 import org.bouncycastle.jce.spec.ECNamedCurveParameterSpec;
 import org.cesecore.authentication.tokens.AuthenticationToken;
@@ -35,6 +40,7 @@ import org.cesecore.authorization.AuthorizationDeniedException;
 import org.cesecore.authorization.control.AccessControlSessionLocal;
 import org.cesecore.authorization.control.CryptoTokenRules;
 import org.cesecore.certificates.util.AlgorithmConstants;
+import org.cesecore.certificates.util.AlgorithmTools;
 import org.cesecore.keys.token.AvailableCryptoToken;
 import org.cesecore.keys.token.BaseCryptoToken;
 import org.cesecore.keys.token.CryptoToken;
@@ -143,7 +149,13 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         
         public String getAlias() { return keyPairInfo.getAlias(); }
         public String getKeyAlgorithm() { return keyPairInfo.getKeyAlgorithm(); }
-        public String getKeySpecification() { return keyPairInfo.getKeySpecification(); }
+        public String getKeySpecification() {
+            if (AlgorithmConstants.KEYALGORITHM_ECDSA.equals(keyPairInfo.getKeyAlgorithm())) {
+                return getEcKeySpecAliases(keyPairInfo.getKeySpecification());
+            } else {
+                return keyPairInfo.getKeySpecification();
+            }
+        }
         public String getSubjectKeyID() { return keyPairInfo.getSubjectKeyID(); }
         public boolean isSelected() { return selected; }
         public void setSelected(boolean selected) { this.selected = selected; }
@@ -489,6 +501,7 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         for (int size : SIZES_DSA) {
             availableKeySpecs.add(new SelectItem(AlgorithmConstants.KEYALGORITHM_DSA+String.valueOf(size), AlgorithmConstants.KEYALGORITHM_DSA+" "+String.valueOf(size)));
         }
+        final Map<String,String> processedCurveNames = new HashMap<String,String>();
         @SuppressWarnings("unchecked")
         final Enumeration<String> ecNamedCurves = ECNamedCurveTable.getNames();
         while (ecNamedCurves.hasMoreElements()) {
@@ -498,10 +511,40 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                 final ECNamedCurveParameterSpec parameterSpec = ECNamedCurveTable.getParameterSpec(ecNamedCurve);
                 final int bitLength = parameterSpec.getN().bitLength();
                 KeyTools.checkValidKeyLength(AlgorithmConstants.KEYALGORITHM_ECDSA, bitLength);
-                availableKeySpecs.add(new SelectItem(ecNamedCurve, AlgorithmConstants.KEYALGORITHM_ECDSA + " "+ecNamedCurve));
+                // Check if this exists under another alias
+                boolean added = false;
+                for (final String name : processedCurveNames.keySet()) {
+                    final ECNamedCurveParameterSpec parameterSpec2 = ECNamedCurveTable.getParameterSpec(name);
+                    if (parameterSpec.equals(parameterSpec2)) {
+                        // We have already listed this curve under another name
+                        added = true;
+                        break;
+                    }
+                }
+                if (!added) {
+                    try {
+                        if (PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
+                            KeyPairGenerator.getInstance("EC").initialize(new ECGenParameterSpec(ecNamedCurve));
+                        }
+                        processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
+                    } catch (InvalidAlgorithmParameterException e) {
+                        log.debug(ecNamedCurve  + " is not available in default provider (assumed to be the Sun PKCS#11 provider).");
+                    }
+                }
             } catch (Exception e) {
                 // Ignore
+                log.debug(e);
             }
+        }
+        String[] keys = processedCurveNames.keySet().toArray(new String[0]);
+        Arrays.sort(keys, new Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                return o1.compareTo(o2);
+            }
+        });
+        for (String name : keys) {
+            availableKeySpecs.add(new SelectItem(name, AlgorithmConstants.KEYALGORITHM_ECDSA + " "+processedCurveNames.get(name)));
         }
         /* Add when we start supporting GOST...
         final Enumeration<String> ecGostNamedCurves = ECGOST3410NamedCurveTable.getNames();
@@ -520,6 +563,17 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
         }
         */
         return availableKeySpecs;
+    }
+
+    private String getEcKeySpecAliases(final String ecKeySpec) {
+        StringBuilder ret = new StringBuilder();
+        for (final String alias : AlgorithmTools.getEcKeySpecAliases(ecKeySpec)) {
+            if (ret.length()!=0) {
+                ret.append(" / ");
+            }
+            ret.append(alias);
+        }
+        return ret.toString();
     }
 
     /** @return true if admin may generate keys in the current CryptoTokens. */

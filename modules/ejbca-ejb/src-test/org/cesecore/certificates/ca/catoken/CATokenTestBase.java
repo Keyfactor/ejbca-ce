@@ -514,7 +514,7 @@ public abstract class CATokenTestBase {
 			}
 			// Activate with wrong PIN should not work
 			try {
-				cryptoToken.activate("foo123".toCharArray());
+				cryptoToken.activate((tokenpin+"x").toCharArray());
 				assertTrue("should throw", false);
 			} catch (CryptoTokenAuthenticationFailedException e) {
 				String strsoft = "PKCS12 key store mac invalid - wrong password or corrupted file.";
