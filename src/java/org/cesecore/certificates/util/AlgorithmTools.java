@@ -180,6 +180,13 @@ public final class AlgorithmTools {
 		    final ECPublicKey ecPublicKey = (ECPublicKey) publicKey;
 			if ( ecPublicKey.getParams() instanceof ECNamedCurveSpec ) {
 				keyspec = ((ECNamedCurveSpec) ecPublicKey.getParams()).getName();
+				// Prefer to return a curve name alias that also works with the default and BC provider
+				for (String keySpecAlias : getEcKeySpecAliases(keyspec)) {
+                    if (isNamedECKnownInDefaultProvider(keySpecAlias)) {
+                        keyspec = keySpecAlias;
+                        break;
+                    }
+				}
 			} else {
                 keyspec = KEYSPEC_UNKNOWN;
 			    // Try to detect if it is a curve name known by BC even though the public key isn't a BC key
@@ -218,13 +225,8 @@ public final class AlgorithmTools {
                                 log.debug("a2=" + a2 + " b2=" + b2 + " fs2=" + fs2 + " ax2=" + ax2 + " ay2=" + ay2 + " h2=" + h2 + " n2=" + n2 + " " + ecNamedCurveBc);
                             }
                             // Since this public key is a SUN PKCS#11 pub key if we get here, we only return an alias if it is recognized by the provider
-                            try {
-                                KeyPairGenerator.getInstance("EC").initialize(new ECGenParameterSpec(ecNamedCurveBc));
+                            if (isNamedECKnownInDefaultProvider(ecNamedCurveBc)) {
                                 keyspec = ecNamedCurveBc;
-                            } catch (InvalidAlgorithmParameterException e) {
-                                log.debug(ecNamedCurveBc + " is not available in default provider.");
-                            } catch (NoSuchAlgorithmException e) {
-                                log.debug("Elliptic curves was not recognized by default provider");
                                 break;
                             }
                         }
@@ -236,6 +238,18 @@ public final class AlgorithmTools {
 			log.trace("<getKeySpecification: "+keyspec);
 		}
 		return keyspec;
+	}
+	
+	private static boolean isNamedECKnownInDefaultProvider(String ecNamedCurveBc) {
+        try {
+            KeyPairGenerator.getInstance("EC").initialize(new ECGenParameterSpec(ecNamedCurveBc));
+            return true;
+        } catch (InvalidAlgorithmParameterException e) {
+            log.debug(ecNamedCurveBc + " is not available in default provider.");
+        } catch (NoSuchAlgorithmException e) {
+            log.debug("Elliptic curves was not recognized by default provider");
+        }
+        return false;
 	}
 
 	/** @return a list of aliases for the provided curve name (including the provided name) */
