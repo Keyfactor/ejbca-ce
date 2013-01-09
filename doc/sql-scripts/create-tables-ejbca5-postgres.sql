@@ -154,6 +154,18 @@ CREATE TABLE CertificateProfileData (
     PRIMARY KEY (id)
 );
 
+CREATE TABLE CryptoTokenData (
+    id INT4 NOT NULL,
+    lastUpdate INT8 NOT NULL,
+    rowProtection TEXT,
+    rowVersion INT4 NOT NULL,
+    tokenData TEXT,
+    tokenName TEXT NOT NULL,
+    tokenProps TEXT,
+    tokenType TEXT NOT NULL,
+    PRIMARY KEY (id)
+);
+
 CREATE TABLE EndEntityProfileData (
     id INT4 NOT NULL,
     data BYTEA NOT NULL,

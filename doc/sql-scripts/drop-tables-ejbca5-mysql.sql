@@ -12,6 +12,7 @@ drop table if exists CRLData;
 drop table if exists CertReqHistoryData;
 drop table if exists CertificateData;
 drop table if exists CertificateProfileData;
+drop table if exists CryptoTokenData;
 drop table if exists EndEntityProfileData;
 drop table if exists GlobalConfigurationData;
 drop table if exists HardTokenCertificateMap;
