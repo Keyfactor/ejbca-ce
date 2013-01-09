@@ -33,7 +33,19 @@ org.cesecore.authorization.control.CryptoTokenRules
   <base href="<%= ejbcawebbean.getBaseUrl() %>" />
   <link rel="stylesheet" type="text/css" href="<%= ejbcawebbean.getCssFile() %>" />
   <script src="<%= globalconfiguration.getAdminWebPath() %>ejbcajslib.js"></script>
-     <style type="text/css">
+  <script>
+	/** Prevent form submission if enter is pressed in form and instead clicks on the button right of the inputText instead..) */
+	function preventSubmitOnEnter(o, e) {
+		if (typeof e == 'undefined' && window.event) {
+			e = window.event;
+		}
+		if (e.keyCode == 13) {
+			e.returnValue = false;
+			o.nextSibling.click();
+		}
+	}
+  </script>
+  <style type="text/css">
 		/* TODO: Move re-usable styles to included .css */
 		.expandOnClick { width: 25em;  height: 1em;  display: block; overflow: hidden; white-space: nowrap; }
 		.expandOnClick:after { content: "..."; }
@@ -49,7 +61,7 @@ org.cesecore.authorization.control.CryptoTokenRules
 		<%= ejbcawebbean.getHelpReference("/userguide.html#Managing%20CryptoTokens") %>
 	</h1>
 	<div class="message"><h:messages layout="table" errorClass="alert"/></div>
-	<h:form>
+	<h:form id="cryptotokens">
 	<h:dataTable value="#{cryptoTokenMBean.cryptoTokenGuiList}" var="cryptoTokenGuiInfo"
 		styleClass="grid" style="border-collapse: collapse; right: auto; left: auto">
 		<h:column rendered="false">
@@ -85,14 +97,15 @@ org.cesecore.authorization.control.CryptoTokenRules
 			</h:panelGroup>
    			</f:facet>
 			<h:panelGroup rendered="#{!cryptoTokenGuiInfo.active && cryptoTokenGuiInfo.allowedActivation}">
-				<h:inputSecret size="16" title="#{web.text.CRYPTOTOKEN_PIN}" value="#{cryptoTokenGuiInfo.authenticationCode}"/>
+				<h:inputSecret size="16" title="#{web.text.CRYPTOTOKEN_PIN}" value="#{cryptoTokenGuiInfo.authenticationCode}" onkeypress="preventSubmitOnEnter(this,event)"/>
 				<h:commandButton value="#{web.text.CRYPTOTOKEN_ACTIVATE}" action="#{cryptoTokenMBean.activateCryptoToken}"/>
 			</h:panelGroup>
 			<h:panelGroup rendered="#{cryptoTokenGuiInfo.active && cryptoTokenGuiInfo.allowedDeactivation}">
 				<h:commandButton value="#{web.text.CRYPTOTOKEN_DEACTIVATE}" action="#{cryptoTokenMBean.deactivateCryptoToken}" rendered="#{!cryptoTokenGuiInfo.autoActivation}"/>
 				<h:commandButton value="#{web.text.CRYPTOTOKEN_REACTIVATE}" action="#{cryptoTokenMBean.deactivateCryptoToken}" rendered="#{cryptoTokenGuiInfo.autoActivation}"/>
 			</h:panelGroup>
-			<h:commandButton value="#{web.text.CRYPTOTOKEN_DELETE}" action="#{cryptoTokenMBean.deleteCryptoToken}" rendered="#{!cryptoTokenGuiInfo.active && cryptoTokenMBean.allowedToDelete}"/>
+			<h:commandButton value="#{web.text.CRYPTOTOKEN_DELETE}" action="#{cryptoTokenMBean.deleteCryptoToken}"
+				rendered="#{!cryptoTokenGuiInfo.active && cryptoTokenMBean.allowedToDelete}" onclick="return confirm('#{web.text.CRYPTOTOKEN_CONF_DELETE}')"/>
 		</h:column>
 	</h:dataTable>
 	<br/>
