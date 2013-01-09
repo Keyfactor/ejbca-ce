@@ -16,7 +16,10 @@ import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.Provider;
 import java.security.PublicKey;
+import java.security.Security;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.DSAPublicKey;
@@ -240,14 +243,32 @@ public final class AlgorithmTools {
 		return keyspec;
 	}
 	
+	/** Check if the curve name is known by the first found PKCS#11 provider or default (if none was found)*/
 	private static boolean isNamedECKnownInDefaultProvider(String ecNamedCurveBc) {
-        try {
-            KeyPairGenerator.getInstance("EC").initialize(new ECGenParameterSpec(ecNamedCurveBc));
+        final Provider[] providers = Security.getProviders("KeyPairGenerator.EC");
+        String providerName = providers[0].getName();
+	    try {
+	        for (Provider ecProvider : providers) {
+	            //This will list something like: SunPKCS11-NSS, BC, SunPKCS11-<library>-slot<slotnumber>
+	            if (log.isDebugEnabled()) {
+	                log.debug("Found EC capable provider named: " + ecProvider.getName());
+	            }
+	            if (ecProvider.getName().startsWith("SunPKCS11-") && !ecProvider.getName().startsWith("SunPKCS11-NSS") ) {
+	                providerName = ecProvider.getName();
+	                break;
+	            }
+	        }
+            final KeyPairGenerator kpg = KeyPairGenerator.getInstance("EC", providerName);
+            kpg.initialize(new ECGenParameterSpec(ecNamedCurveBc));
             return true;
         } catch (InvalidAlgorithmParameterException e) {
-            log.debug(ecNamedCurveBc + " is not available in default provider.");
+            if (log.isDebugEnabled()) {
+                log.debug(ecNamedCurveBc + " is not available in provider " + providerName);
+            }
         } catch (NoSuchAlgorithmException e) {
-            log.debug("Elliptic curves was not recognized by default provider");
+            throw new RuntimeException("EC capabale provider " + providerName + " could no longer handle elliptic curve algorithm.." ,e);
+        } catch (NoSuchProviderException e) {
+            throw new RuntimeException("EC capabale provider " + providerName + " disappeard unexpectedly." ,e);
         }
         return false;
 	}
