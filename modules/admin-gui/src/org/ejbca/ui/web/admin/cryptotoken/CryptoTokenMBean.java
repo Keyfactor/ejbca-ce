@@ -522,13 +522,12 @@ public class CryptoTokenMBean extends BaseManagedBean implements Serializable {
                     }
                 }
                 if (!added) {
-                    try {
-                        if (PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
-                            KeyPairGenerator.getInstance("EC").initialize(new ECGenParameterSpec(ecNamedCurve));
+                    if (PKCS11CryptoToken.class.getSimpleName().equals(getCurrentCryptoToken().getType())) {
+                        if (AlgorithmTools.isNamedECKnownInDefaultProvider(ecNamedCurve)) {
+                            processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
                         }
+                    } else {
                         processedCurveNames.put(ecNamedCurve, getEcKeySpecAliases(ecNamedCurve));
-                    } catch (InvalidAlgorithmParameterException e) {
-                        log.debug(ecNamedCurve  + " is not available in default provider (assumed to be the Sun PKCS#11 provider).");
                     }
                 }
             } catch (Exception e) {
