@@ -12,6 +12,7 @@ drop table if exists CRLData cascade;
 drop table if exists CertReqHistoryData cascade;
 drop table if exists CertificateData cascade;
 drop table if exists CertificateProfileData cascade;
+drop table if exists CryptoTokenData cascade;
 drop table if exists EndEntityProfileData cascade;
 drop table if exists GlobalConfigurationData cascade;
 drop table if exists HardTokenCertificateMap cascade;
