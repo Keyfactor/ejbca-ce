@@ -156,6 +156,18 @@ CREATE TABLE CertificateProfileData (
     PRIMARY KEY (id)
 ) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
 
+CREATE TABLE CryptoTokenData (
+    id INT(11) NOT NULL,
+    lastUpdate BIGINT(20) NOT NULL,
+    rowProtection LONGTEXT,
+    rowVersion INT(11) NOT NULL,
+    tokenData LONGTEXT,
+    tokenName VARCHAR(250) BINARY NOT NULL,
+    tokenProps LONGTEXT,
+    tokenType VARCHAR(250) BINARY NOT NULL,
+    PRIMARY KEY (id)
+) TABLESPACE ejbca_ts STORAGE DISK ENGINE=NDB;
+
 CREATE TABLE EndEntityProfileData (
     id INT(11) NOT NULL,
     data LONGBLOB NOT NULL,

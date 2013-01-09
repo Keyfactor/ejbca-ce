@@ -10,6 +10,7 @@ drop table CRLData;
 drop table CertReqHistoryData;
 drop table CertificateData;
 drop table CertificateProfileData;
+drop table CryptoTokenData;
 drop table EndEntityProfileData;
 drop table GlobalConfigurationData;
 drop table HardTokenCertificateMap;
